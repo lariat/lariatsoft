@@ -1,8 +1,8 @@
 # ======================================================================
-#  larcore main build file
+#  lariatsoft main build file
 #
 #  cd .../path/to/build/directory
-#  source .../path/to/larcore/ups/setup_for_development <-d|-p>
+#  source .../path/to/lariatsoft/ups/setup_for_development <-d|-p>
 #  cmake [-DCMAKE_INSTALL_PREFIX=/install/path]
 #        -DCMAKE_BUILD_TYPE=$CETPKG_TYPE
 #        $CETPKG_SOURCE
@@ -16,7 +16,7 @@
 # use cmake 2.8 or later
 cmake_minimum_required (VERSION 2.8)
 
-project(larcore)
+project(lariatsoft)
 
 # cetbuildtools contains our cmake modules
 SET ( CETBUILDTOOLS_VERSION $ENV{CETBUILDTOOLS_VERSION} )
@@ -47,6 +47,7 @@ find_ups_product( art v1_06_00 )
 find_ups_product( messagefacility v1_10_00 )
 find_ups_product( cetbuildtools v3_05_00 )
 find_ups_root( root v5_34_00 )
+find_ups_product( larsoft v0_02_02 )
 
 cet_check_gcc()
 
@@ -56,9 +57,10 @@ include(ArtMake)
 include(BuildPlugins)
 
 # source
-add_subdirectory(Geometry)
-add_subdirectory(SimpleTypesAndConstants)
-add_subdirectory(SummaryData)
+add_subdirectory(Calibration)
+add_subdirectory(DetectorSim)
+add_subdirectory(Geo)
+add_subdirectory(LArSoftConfigurations)
 
 # ups - table and config files
 add_subdirectory(ups)
