@@ -28,11 +28,6 @@ namespace geo
   class ExptGeoHelperInterface;
 }
 
-namespace geo
-{
-  class ChannelMapAlg;
-}
-
 // Declaration
 //
 namespace lariatgeo
