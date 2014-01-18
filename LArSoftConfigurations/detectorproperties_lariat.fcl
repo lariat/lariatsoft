@@ -1,0 +1,7 @@
+#include "detectorproperties.fcl"
+
+BEGIN_PROLOG
+
+lariat_detproperties:   @local::standard_detproperties
+
+END_PROLOG

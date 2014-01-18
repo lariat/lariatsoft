@@ -1,0 +1,13 @@
+#include "databaseutil.fcl"
+
+BEGIN_PROLOG
+
+lariat_database:               @local::standard_database
+lariat_database.DBName:	       "lariat_dev"
+lariat_database.DBUser:	       "lariat_reader"
+lariat_database.Port:	       5457
+lariat_database.PassFileName:  ".apswd"
+lariat_database.ShouldConnect: true
+
+
+END_PROLOG

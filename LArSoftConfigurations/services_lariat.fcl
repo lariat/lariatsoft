@@ -1,0 +1,37 @@
+#include "geometry_lariat.fcl"
+#include "detectorproperties_lariat.fcl"
+#include "larproperties.fcl"
+#include "larfft_lariat.fcl"
+#include "messageservice.fcl"
+#include "simulationservices_lariat.fcl"
+#include "magfield.fcl"
+#include "databaseutil_lariat.fcl"
+#include "backtracker.fcl"
+
+BEGIN_PROLOG
+
+lariat_services:
+{
+ Geometry:           @local::lariat_geo 	       
+ DetectorProperties: @local::lariat_detproperties
+ LArProperties:      @local::lariat_properties	       
+ LArFFT:             @local::lariat_larfft  	     
+ DatabaseUtil:	     @local::lariat_database    
+ BackTracker:        @local::lariat_backtracker  
+}
+
+lariat_simulation_services:
+{
+ LArG4Parameters:    @local::lariat_largeantparameters
+ LArVoxelCalculator: @local::lariat_larvoxelcalculator
+ MagneticField:      @local::no_mag
+ Geometry:           @local::lariat_geo          
+ DetectorProperties: @local::lariat_detproperties
+ LArProperties:      @local::lariat_properties            
+ LArFFT:             @local::lariat_larfft         
+ DatabaseUtil:	     @local::lariat_database    
+ BackTracker:        @local::lariat_backtracker  
+}
+
+
+END_PROLOG
