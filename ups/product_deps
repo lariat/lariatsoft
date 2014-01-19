@@ -1,13 +1,8 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v0_00_01
+parent	lariatsoft develop
+#parent	lariatsoft v0_00_01
 defaultqual	e4
-
-# larsoft itself has no bin, inc, or fcl directories
-# the lib directory just contains larsoftConfig.cmake and larsoftConfigVersion.cmake
-incdir      -
-fcldir      -
-bindir      -
 
 #
 product         version

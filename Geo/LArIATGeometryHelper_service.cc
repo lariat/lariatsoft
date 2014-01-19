@@ -49,4 +49,4 @@ namespace lariatgeo
 
 }
 
-DEFINE_ART_SERVICE_INTERFACE_IMPL(lbne::LArIATGeometryHelper, geo::ExptGeoHelperInterface)
+DEFINE_ART_SERVICE_INTERFACE_IMPL(lariatgeo::LArIATGeometryHelper, geo::ExptGeoHelperInterface)

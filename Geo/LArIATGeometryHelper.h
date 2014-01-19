@@ -67,6 +67,6 @@ namespace lariatgeo
   };
 
 }
-DECLARE_ART_SERVICE_INTERFACE_IMPL(lbne::LArIATGeometryHelper, geo::ExptGeoHelperInterface, LEGACY)
+DECLARE_ART_SERVICE_INTERFACE_IMPL(lariatgeo::LArIATGeometryHelper, geo::ExptGeoHelperInterface, LEGACY)
 
 #endif // LArIAT_ExptGeoHelperInterface_h
