@@ -1,6 +1,6 @@
 #include "geometry_lariat.fcl"
 #include "detectorproperties_lariat.fcl"
-#include "larproperties.fcl"
+#include "larproperties_lariat.fcl"
 #include "larfft_lariat.fcl"
 #include "messageservice.fcl"
 #include "simulationservices_lariat.fcl"
@@ -18,7 +18,7 @@ lariat_services:
  LArProperties:          @local::lariat_properties	   
  LArFFT:                 @local::lariat_larfft  	 
  DatabaseUtil:	         @local::lariat_database     
- BackTracker:            @local::lariat_backtracker  
+ BackTracker:            @local::standard_backtracker  
 }
 
 lariat_simulation_services:
@@ -32,7 +32,7 @@ lariat_simulation_services:
  LArProperties:          @local::lariat_properties          
  LArFFT:                 @local::lariat_larfft              
  DatabaseUtil:	         @local::lariat_database            
- BackTracker:            @local::lariat_backtracker         
+ BackTracker:            @local::standard_backtracker         
 }
 
 
