@@ -47,6 +47,8 @@ find_ups_product( art v1_06_00 )
 find_ups_product( messagefacility v1_10_00 )
 find_ups_product( cetbuildtools v3_05_00 )
 find_ups_root( root v5_34_00 )
+
+# these are the larsoft products 
 find_ups_product( larsoft         v0_02_02 )
 find_ups_product( larana          v0_02_02 )
 find_ups_product( larcore         v0_02_02 )
