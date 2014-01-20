@@ -11,4 +11,9 @@ lariat_geo:
 #ROOT:     "lariat_wdisk.gdml"
 }
 
+lariat_geometry_helper:
+{
+ service_provider : StandardGeometryHelper
+}
+
 END_PROLOG
