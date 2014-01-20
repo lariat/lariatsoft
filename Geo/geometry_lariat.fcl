@@ -13,7 +13,7 @@ lariat_geo:
 
 lariat_geometry_helper:
 {
- service_provider : StandardGeometryHelper
+ service_provider : LArIATGeometryHelper
 }
 
 END_PROLOG
