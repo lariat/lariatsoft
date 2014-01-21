@@ -71,6 +71,7 @@ add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
 add_subdirectory(LArSoftConfigurations)
+add_subdirectory(JobConfigurations)
 
 # ups - table and config files
 add_subdirectory(ups)
