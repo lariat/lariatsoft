@@ -6,7 +6,7 @@ defaultqual	e4
 
 #
 product         version
-larsoft		v0_02_02
+larsoft		v1_00_01
 gcc		v4_8_1
 
 # list products required ONLY for the build
