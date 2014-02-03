@@ -22,7 +22,7 @@ e4:prof		e4:prof		-nq-
 # table file fragment to set FW_DATA
 table_fragment_begin
     pathPrepend(FW_DATA,        /grid/fermiapp/lariat/)
-    pathPrepend(FW_SEARCH_PATH, /grid/fermiapp/lariat/:/grid/fermiapp/lbne/lar/aux/)
+    pathPrepend(FW_SEARCH_PATH, ${UPS_PROD_DIR}/gdml:/grid/fermiapp/lariat/:/grid/fermiapp/lbne/lar/aux/)
 table_fragment_end
 
 
