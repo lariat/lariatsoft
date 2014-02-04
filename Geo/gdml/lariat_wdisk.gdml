@@ -32,7 +32,7 @@
 
   <position name="TPCalign" unit="cm" x="0.5*(0.5*(2.54))-0.5*(0.4)" y="-0.2" z="0"/>
 
-  <!--position name="SteelDiskalign" unit="cm" x="1.5*(0.4)-0.5*(0.5*(2.54))" y="0.0" z="-(100./2)+(1.75/2+1.75)"/-->
+  <position name="SteelDiskalign" unit="cm" x="1.5*(0.4)-0.5*(0.5*(2.54))" y="0.0" z="-(100./2)+(1.75/2+1.75)"/>
   <!--<position name="ComboDiskalign" unit="cm" x="1.5*(0.4)-0.5*(0.5*(2.54))" y="0.0" z="-(100./2)+(3.5/2)"/>-->
   <!--position name="AirDiskalign" unit="cm" x="1.5*(0.4)-0.5*(0.5*(2.54))" y="0.0" z="-(100./2)+(1.75/2)"/-->
   <position name="ComboDiskalign" unit="cm" x="0" y="0.0" z="((79.8+3./2))"/>
@@ -40,12 +40,75 @@
   <position name="ComboDiskouter" unit="cm" x="0" y="0.0" z="((79.8+4.+1./2))"/>
   <position name="InnerDiskPosition" unit="cm" x="0" y="0.0" z="(62.64)"/>
   <position name="InnerDiskPosition2" unit="cm" x="0" y="0.0" z="(62.64-3)"/>
+
+  <position name="InnerDiskPosition3" unit="cm" x="0" y="0.0" z="61.517"/>
   <position name="InnerConePosition" unit="cm" x="0" y="0.0" z="(62.64-3.3)"/>
   <position name="InnerConcavePos" unit="cm" x="0" y="0.0" z="(3.3)"/>
+ <position name="TorusCutterPosition1" unit="cm" x="0" y="0.0" z="7.84"/>
+ <position name="TorusCutterPosition2" unit="cm" x="0" y="0.0" z="-5.0"/>
+ <position name="TorusCutterPosition3" unit="cm" x="0" y="0.0" z="0.0"/>
+ <position name="BrimTubePosition" unit="cm" x="0" y="0.0" z="-0.64"/>
+ <position name="InnerSCapPosition" unit="cm" x="0" y="0.0" z="-6.826"/>
+ <position name="TorusFillerPosition" unit="cm" x="0" y="0.0" z="1.42"/>
+ <position name="SideTubePosition1" unit="cm" x="-2.88" y="0.0" z="1.76"/>
+ <position name="SideTubePosition2" unit="cm" x="4.32" y="0.0" z="1.76"/>
+ <position name="ZeroPosition" unit="cm" x="0.0" y="0.0" z="0.0"/>
+ <position name="center" unit="cm" x="0.0" y="0.0" z="0.0"/>
+ <position name="InnerFlangeTubePosition" unit="cm" x="0.0" y="0.0" z="2.0"/>
+ <position name="InnerFlangeB2Position" unit="cm" x="0.0" y="0.0" z="-0.62976"/>
+ <position name="FlangeTopPosition" unit="cm" x="0.0" y="0.0" z="1.28"/>
+ <position name="FlangeOnTubePosition" unit="cm" x="0.0" y="0.0" z="2.3424"/>
+ <position name="InnerLidPosition" unit="cm" x="0.0" y="0.0" z="5.28"/>
+ <position name="CutTubePosition" unit="cm" x="0.0" y="0.0" z="-40.38"/>
+ <position name="InnerFlangePosition" unit="cm" x="-40.38" y="0.0" z="0.0"/>
+ <position name="InnerBottomPlatePosition" unit="cm" x="0.0" y="0.0" z="3.72"/>
+ <position name="InnerFlangeTopPartPosition" unit="cm" x="0.0" y="0.0" z="6.28"/>
+<!--FOR TESTS ONLY TO CHECK NEWLY ASSEMBLED PART-->
+ <position name="TestingPosition" unit="cm" x="0.0" y="0.0" z="50.00"/>
+
+ <position name="OuterLidPosition" unit="cm" x="0.0" y="0.0" z="9.22"/>
+ <position name="SideTubePositionOut1" unit="cm" x="-3.84" y="0.0" z="1.92"/>
+ <position name="SideTubePositionOut2" unit="cm" x="3.84" y="0.0" z="1.92"/>
+ <position name="OuterFlangeTubePosition" unit="cm" x="0.0" y="0.0" z="3.97"/>
+ <position name="OuterInBPlatePosition" unit="cm" x="0.0" y="0.0" z="2.78"/>
+ <position name="OuterInBaseTubePosition" unit="cm" x="0.0" y="0.0" z="5.5"/>
+ <position name="OuterFlangePosition" unit="cm" x="-51.34" y="0.0" z="0.0"/>
+
+ <position name="HmmBottomPosition" unit="cm" x="0.0" y="0.0" z="-5.25"/>
+ <position name="EtlRimPosition" unit="cm" x="0.0" y="0.0" z="-2.75"/>
+ <position name="WindowHmmPosition" unit="cm" x="0.0" y="0.0" z="-6.2"/>
+ <position name="WindowEtlPosition" unit="cm" x="0.0" y="0.0" z="-6.2"/>
+ <position name="HmmCutPosition" unit="cm" x="-2.88" y="0.0" z="0.0"/>
+ <position name="EtlCutPosition" unit="cm" x="4.32" y="0.0" z="0.0"/>
+
+ <position name="HolderCutPosition1" unit="cm" x="0.0" y="11.5" z="0.0"/>
+ <position name="HolderCutPosition2" unit="cm" x="0.0" y="-11.5" z="0.0"/>
+ <position name="PMTFixPosition1" unit="cm" x="6.1" y="3.6" z="10.52"/>
+ <position name="PMTFixPosition2" unit="cm" x="6.1" y="-3.6" z="10.52"/>
+ <position name="PMTFixPosition3" unit="cm" x="-6.1" y="-3.6" z="10.52"/>
+ <position name="PMTFixPosition4" unit="cm" x="-6.1" y="3.6" z="10.52"/>
+ <position name="PMTHTopPosition" unit="cm" x="0.0" y="0.0" z="12.04"/>
+ <position name="ArgonFrontCapSubtrPosition" unit="cm" x="0.0" y="0.0" z="-0.238"/>
+ <position name="PMTHoldPos" unit="cm" x="-29.94" y="0.0" z="0.00"/>
+ <position name="PMTHoldPos2" unit="cm" x="-29.94" y="0.0" z="-12.00"/>
+<position name="PMTEtlPos" unit="cm" x="-36.34" y="0.0" z="4.32"/><!--was 36.44-->
+<position name="PMTHmmPos" unit="cm" x="-36.340" y="0.0" z="-2.88"/>
+<position name="PMTEtlWPos" unit="cm" x="-36.34+6.2" y="0.0" z="4.32"/>
+<position name="PMTHmmWPos" unit="cm" x="-36.34+6.2" y="0.0" z="-2.88"/>
+<position name="MinusPosMND" unit="cm" x="(93.07-0.5*47.5)" y="-190.5+173.228" z="-151.68"/>
+
+ <position name="tpb1pos" unit="cm" x="0.0" y="-(20-(0.02844/2))" z="0.0"/>
+ <position name="tpb2pos" unit="cm" x="0.0" y="(20-(0.02844/2))" z="0.0"/>
+ <position name="tpb3pos" unit="cm" x="-(23.0-(0.02844/2))" y="0.0" z="0.0"/>
+ <position name="tpb4pos" unit="cm" x="(23.0-(0.02844/2))" y="0.0" z="0.0"/>
+ <position name="tpb5pos" unit="cm" x="0.0" y="0.0" z="-(45.0-(0.02844/2.))"/>
+ <position name="tpb6pos" unit="cm" x="0.0" y="0.0" z="(45.0-(0.02844/2.))"/>
 </define>
 <materials>
   <element name="videRef" formula="VACUUM" Z="1">  <atom value="1"/> </element>
+  <element name="antimony" formula="Sb" Z="51"> <atom value="121.76"/> </element>
   <element name="bromine" formula="Br" Z="35"> <atom value="79.904"/> </element>
+  <element name="caesium" formula="Cs" Z="55"> <atom value="132.9"/> </element>
   <element name="hydrogen" formula="H" Z="1">  <atom value="1.0079"/> </element>
   <element name="nitrogen" formula="N" Z="7">  <atom value="14.0067"/> </element>
   <element name="oxygen" formula="O" Z="8">  <atom value="15.999"/> </element>
@@ -65,6 +128,13 @@
   <material name="Vacuum" formula="Vacuum">
    <D value="1.e-25" unit="g/cm3"/>
    <fraction n="1.0" ref="videRef"/>
+  </material>
+
+  <material name="bialkali" formula="SbKCs">
+   <D value="1.93" unit="g/cm3"/>
+   <composite n="1" ref="antimony"/>
+   <composite n="1" ref="potassium"/>
+   <composite n="1" ref="caesium"/>
   </material>
 
   <material name="ALUMINUM_Al" formula="ALUMINUM_Al">
@@ -212,6 +282,13 @@
    <fraction n="0.040" ref="aluminum"/>
   </material>
 
+  <material name="vm2000" formula="vm2000">
+   <D value="1.2" unit="g/cm3"/>
+   <composite n="2" ref="carbon"/>
+   <composite n="4" ref="hydrogen"/>
+  </material>
+
+
   <material formula="H2O" name="Water">
    <D value="1.0" unit="g/cc"/>
    <fraction n="0.1119" ref="hydrogen"/>
@@ -276,7 +353,8 @@
    deltaphi="360"
    aunit="deg"
    lunit="cm"/> 
-<!--<tube name="AirFlangeDisk"
+<!--
+<tube name="AirFlangeDisk"
    rmax="10."
    z="((1.75))"
    deltaphi="360"
@@ -907,20 +985,24 @@
   y="(40)"
   z="(90)"/>
 
- <tube name="Cryostat" 
+ <tube name="Cryostat_ph1" 
   rmax="(53.34)"
-  z="174.08"
+  z="173.08"
   deltaphi="360"
   aunit="deg"
   lunit="cm"/>
-<tube name="OuterSteelTube"
+
+<!--EDITED TO ADD OUTER FLANGE AND REPLACED BY THE UNION CALLED OuterSteelTube - add ph1 again cryostat was rmax 53.34 and z 170.08-->
+<tube name="OuterSteelTube_ph1"
   rmin="(53.34)-0.635"
   rmax="(53.34)"
   z="122.516"
   deltaphi="360"
   aunit="deg"
   lunit="cm"/>
-<tube name="InnerSteelTube"
+
+<!--ADD ph1-->
+<tube name="InnerSteelTube_ph1"
   rmin="38.1-0.476"
   rmax="38.1"
   z="101.13"
@@ -954,14 +1036,17 @@
   aunit="deg"
   lunit="cm"/>
 
-<sphere name="Argon_solid_L" rmin="0" rmax="62.64" deltaphi="360" deltatheta="36.92" aunit="deg"
+<sphere name="Argon_solid_L" rmin="0" rmax="62.944" deltaphi="360" deltatheta="36.92" aunit="deg"
 lunit="cm"/>
 <sphere name="Inner_endcap" rmin="62.944" rmax="63.42" deltaphi="360" deltatheta="36.92" aunit="deg"
 lunit="cm"/>
 <sphere name="Outer_endcap" rmin="80.80" rmax="81.28" deltaphi="360" deltatheta="40.966" aunit="deg"
 lunit="cm"/>
-
+<!-- 40.966 theta for outer endcap -->
 <sphere name="Inner_vac" rmin="12.0-0.3" rmax="12." deltaphi="360" deltatheta="60.0" aunit="deg"
+lunit="cm"/>
+
+<sphere name="Inner_vac_mod" rmin="16.32-0.3" rmax="16.32" deltaphi="360" deltatheta="53.66" aunit="deg"
 lunit="cm"/>
 
 <cone name="Inner_cone" 
@@ -971,6 +1056,86 @@ z="6.65"
 deltaphi="361" startphi="0.0" 
 aunit="deg"
 lunit="cm"/>
+
+<!--ADDITION 27.10.2013 and further on -->
+<torus name="Inner_torus"
+rmin="4.8-0.3" rmax="4.8"
+rtor="9.28" 
+deltaphi="360.0" startphi="0.0" 
+aunit="deg"
+lunit="cm"/>
+
+<tube name="Inner_brim_tube"
+  rmin="14.08-0.3"
+  rmax="14.08"
+  z="1.28"
+  deltaphi="360"
+  aunit="deg"
+  lunit="cm"/>
+
+<tube name="Subtraction_tube_mod"
+  rmin="0.0"
+  rmax="14.08"
+  z="10.0"
+  deltaphi="360"
+  aunit="deg"
+  lunit="cm"/>
+
+ <tube name="Inner_torus_bottom_cutter"
+  rmin="0.0"
+  rmax="15.0"
+  z="10.0"
+  deltaphi="360"
+  aunit="deg"
+  lunit="cm"/>
+
+ 
+
+ <tube name="Inner_torus_middle_cutter"
+  rmin="0.0"
+  rmax="10.0"
+  z="10.0"
+  deltaphi="360"
+  aunit="deg"
+  lunit="cm"/>
+
+ <tube name="Inner_torus_filler"
+  rmin="0.0"
+  rmax="13.146"
+  z="2.84"
+  deltaphi="360"
+  aunit="deg"
+  lunit="cm"/>
+
+
+<subtraction name="Inner_torus_ph1">
+   <first ref="Inner_torus"/><second ref="Inner_torus_bottom_cutter"/>
+   <positionref  ref="TorusCutterPosition1" />
+</subtraction>
+
+<subtraction name="Inner_torus_ph2">
+   <first ref="Inner_torus_ph1"/><second ref="Inner_torus_bottom_cutter"/>
+   <positionref  ref="TorusCutterPosition2" />
+</subtraction>
+<subtraction name="Inner_torus_ph3">
+   <first ref="Inner_torus_ph2"/><second ref="Inner_torus_middle_cutter"/>
+   <positionref  ref="TorusCutterPosition3" />
+</subtraction>
+
+<union name="Inner_torus_brim">
+   <first ref="Inner_torus_ph3"/><second ref="Inner_brim_tube"/>
+   <positionref  ref="BrimTubePosition" />
+   <rotationref ref="rPlus180AboutY"/>
+</union>
+
+<union name="Inner_torus_brim2">
+   <first ref="Inner_torus_brim"/><second ref="Inner_vac_mod"/>
+   <positionref  ref="InnerSCapPosition" />
+</union>
+
+<!--ADDITION 27.10.2013 and further on -->
+
+
 
 <sphere name="Inner_vac_solid" rmin="0." rmax="12." deltaphi="360" deltatheta="60.0" aunit="deg"
 lunit="cm"/>
@@ -983,14 +1148,30 @@ deltaphi="361" startphi="0.0"
 aunit="deg"
 lunit="cm"/>
 
-
-
-<!--<tube name="Tube_for_subtr"
+<sphere name="Inner_vac_solid_mod" rmax="16.32" deltaphi="360" deltatheta="53.66" aunit="deg"
+lunit="cm"/>
+<!--
+<tube name="Tube_for_subtr"
   rmax="38.1"
   z="101.13"
   deltaphi="360"
   aunit="deg"
-  lunit="cm"/> -->
+  lunit="cm"/>
+-->
+
+<box name="refl1"     x="40.00"  y="0.025" z="90.0"  lunit="cm"/>
+<box name="refl2"     x="40.00"  y="0.025" z="90.0"  lunit="cm"/>
+<box name="refl3"     x="0.025"  y="40.0" z="45.0"  lunit="cm"/>
+<box name="refl4"     x="0.025"  y="40.0" z="45.0"  lunit="cm"/>
+<box name="refl5"     x="40.00"  y="40.0" z="0.025"  lunit="cm"/>
+<box name="refl6"     x="40.00"  y="40.0" z="0.025"  lunit="cm"/>
+
+<box name="tpb1"     x="40.00"  y="0.02844" z="90.0"  lunit="cm"/>
+<box name="tpb2"     x="40.00"  y="0.02844" z="90.0"  lunit="cm"/>
+<box name="tpb3"     x="0.02844"  y="40.0" z="45.0"  lunit="cm"/>
+<box name="tpb4"     x="0.02844"  y="40.0" z="45.0"  lunit="cm"/>
+<box name="tpb5"     x="40.00"  y="40.0" z="0.02844"  lunit="cm"/>
+<box name="tpb6"     x="40.00"  y="40.0" z="0.02844"  lunit="cm"/>
 
   <tube name="ComboFlangeDisk"
    rmax="12.5"
@@ -1029,11 +1210,601 @@ lunit="cm"/>
    deltaphi="360"
    aunit="deg"
    lunit="cm"/> 
-   
-   
-   
+
+<tube name="SideTube"
+   rmax="(3.84/2.)"
+   rmin="(3.5328/2.)"
+   z="4.48"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="SideTube_solid"
+   rmax="(3.84/2.)"
+   rmin="0.0"
+   z="6.48"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="NozzlePlate"
+   rmax="(15.36/2.)"
+   rmin="0.0"
+   z="0.96"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="ClosingFlangeTop"
+   rmax="(7.04/2.)"
+   rmin="0.0"
+   z="1.28"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/>
+ 
+  <tube name="ClosingFlangeB1"
+   rmax="(3.52/2.)"
+   rmin="0.0"
+   z="1.28"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/>
+
+  <tube name="ClosingFlangeB2"
+   rmax="(3.84/2.)"
+   rmin="0.0"
+   z="1.28"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/>  
+
+  <tube name="Inner_flange_tube"
+   rmax="(16.62/2.0)"
+   rmin="(15.36/2.0)"
+   z="6.56"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+  <tube name="Inner_flange_tube_solid"
+   rmax="(16.62/2.0)"
+   rmin="0.0"
+   z="6.56"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Inner_flange_plate_ph1"
+   rmax="(28.8/2.)"
+   rmin="(16.62/2.0)"
+   z="2.56"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+  <tube name="Inner_flange_plate_ph1_solid"
+   rmax="(28.8/2.)"
+   rmin="0.0"
+   z="2.56"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+  <tube name="Inner_flange_bottom_plate"
+   rmax="(28.8/2.)"
+   rmin="(16.62/2.0)"
+   z="2.56"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+  <tube name="Inner_flange_bottom_plate_solid"
+   rmax="(28.8/2.)"
+   rmin="0.0"
+   z="2.56"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Inner_flange_basetube_ph1"
+   rmax="(16.62/2.0)"
+   rmin="(15.36/2.0)"
+   z="10.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Inner_flange_basetube_solid"
+   rmax="(16.62/2.0)"
+   rmin="0.0"
+   z="10.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="NozzlePlate_out"
+   rmax="(15.36/2.)"
+   rmin="0.0"
+   z="0.64"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Outer_flange_tube"
+   rmax="(16.62/2.0)"
+   rmin="(15.36/2.0)"
+   z="10.5"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Outer_flange_tube_solid"
+   rmax="(16.62/2.0)"
+   rmin="0."
+   z="10.5"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Outer_flange_plate_ph1"
+   rmax="(46.0/2.)"
+   rmin="(16.62/2.0)"
+   z="2.56"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Outer_flange_plate_ph1_solid"
+   rmax="(46.0/2.)"
+   rmin="0.0"
+   z="2.56"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Outer_flange_bottom_plate"
+   rmax="(46.0/2.)"
+   rmin="(35.84/2.0)"
+   z="3.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Outer_flange_bottom_plate_solid"
+   rmax="(46.0/2.)"
+   rmin="0.0"
+   z="3.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Outer_flange_basetube"
+   rmax="(35.84/2.)"
+   rmin="((35.84/2.0)-0.42)"
+   z="9.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="Outer_flange_basetube_solid"
+   rmax="(35.84/2.)"
+   rmin="0.0"
+   z="9.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+  <tube name="PMTEtlBase"
+   rmax="(2.56)"
+   rmin="0.0"
+   z="12.5"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/>
+  <tube name="PMTEtlC"
+   rmax="(2.56)"
+   rmin="0.0"
+   z="0.96"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/>  
+
+
+  <tube name="PMTEtlRim"
+   rmax="(2.56)"
+   rmin="2.46"
+   z="0.3"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="PMTEtlWindow"
+   rmax="(2.56)"
+   rmin="0.0"
+   z="1.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="PMTHmmBase"
+   rmax="(2.56)"
+   rmin="0.0"
+   z="12.5"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="PMTHmmBottom"
+   rmax="(3.84)"
+   rmin="0.0"
+   z="2.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+  <tube name="PMTHmmC"
+   rmax="(3.84)"
+   rmin="0.0"
+   z="0.96"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <tube name="PMTHmmWindow"
+   rmax="(3.84)"
+   rmin="0.0"
+   z="1.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+
+  <ellipsoid name="PMTHmmWindow_e"
+   ax="(3.84)"
+   by="(3.84)"
+   cz="1.0"
+   zcut2="0.0"
+
+   lunit="cm"/> 
+
+  <ellipsoid name="PMTEtlWindow_e"
+   ax="(2.56)"
+   by="(2.56)"
+   cz="1.0"
+   zcut2="0.0"
+
+   lunit="cm"/>
+ <box name="HolderCut"
+  lunit="cm"
+  x="15.0"
+  y="15.0"
+  z="2."/>
+
+  <tube name="PMTHolderFix"
+   rmax="0.3"
+   rmin="0.0"
+   z="22.0"
+   deltaphi="360"
+   aunit="deg"
+   lunit="cm"/> 
+<!--PMTS-->
+
+
+<union name="PMTHmmBrutto_ph1">
+   <first ref="PMTHmmBase"/><second ref="PMTHmmBottom"/>
+   <positionref  ref="HmmBottomPosition" />
+</union>
+
+<subtraction name="PMTEtlBrutto_ph1">
+   <first ref="PMTEtlBase"/><second ref="PMTEtlRim"/>
+   <positionref  ref="EtlRimPosition" />
+</subtraction>
+
+<union name="PMTHmmBrutto">
+   <first ref="PMTHmmBrutto_ph1"/><second ref="PMTHmmWindow_e"/>
+   <positionref  ref="WindowHmmPosition" />
+</union>
+
+<union name="PMTEtlBrutto">
+   <first ref="PMTEtlBrutto_ph1"/><second ref="PMTEtlWindow_e"/>
+   <positionref  ref="WindowEtlPosition" />
+</union>
+<!--PMT HOLDER-->
+<subtraction name="PMTHolder_bottom_ph1">
+   <first ref="NozzlePlate"/><second ref="HolderCut"/>
+   <positionref  ref="HolderCutPosition1" />
+</subtraction>
+
+<subtraction name="PMTHolder_bottom_ph2">
+   <first ref="PMTHolder_bottom_ph1"/><second ref="HolderCut"/>
+   <positionref  ref="HolderCutPosition2" />
+</subtraction>
+
+<subtraction name="PMTHolder_bottom_ph3">
+   <first ref="PMTHolder_bottom_ph2"/><second ref="PMTEtlC"/>
+   <positionref  ref="EtlCutPosition" />
+</subtraction>
+
+<subtraction name="PMTHolder_bottom">
+   <first ref="PMTHolder_bottom_ph3"/><second ref="PMTHmmC"/>
+   <positionref  ref="HmmCutPosition" />
+</subtraction>
+
+<subtraction name="PMTHolder_top_ph1">
+   <first ref="PMTHolder_bottom_ph2"/><second ref="PMTEtlBase"/>
+   <positionref  ref="EtlCutPosition" />
+</subtraction>
+
+<subtraction name="PMTHolder_top">
+   <first ref="PMTHolder_top_ph1"/><second ref="PMTHmmBase"/>
+   <positionref  ref="HmmCutPosition" />
+</subtraction>
+
+<union name="PMTHolder_ph1">
+   <first ref="PMTHolder_bottom"/><second ref="PMTHolderFix"/>
+   <positionref  ref="PMTFixPosition1" />
+</union>
+
+<union name="PMTHolder_ph2">
+   <first ref="PMTHolder_ph1"/><second ref="PMTHolderFix"/>
+   <positionref  ref="PMTFixPosition2" />
+</union>
+
+<union name="PMTHolder_ph3">
+   <first ref="PMTHolder_ph2"/><second ref="PMTHolderFix"/>
+   <positionref  ref="PMTFixPosition3" />
+</union>
+
+<union name="PMTHolder_ph4">
+   <first ref="PMTHolder_ph3"/><second ref="PMTHolderFix"/>
+   <positionref  ref="PMTFixPosition4" />
+</union>
+<union name="PMTHolder">
+   <first ref="PMTHolder_ph4"/><second ref="PMTHolder_top"/>
+   <positionref  ref="PMTHTopPosition" />
+</union>
+
+
+
+<!-- SIDE FLANGE-->
+<!--INNER SIDE FLANGE-->
+  
+<subtraction name="Closing_flange_ph1">
+   <first ref="ClosingFlangeTop"/><second ref="ClosingFlangeB1"/>
+   <positionref  ref="ZeroPosition" />
+</subtraction>
+
+<subtraction name="Closing_flange">
+   <first ref="Closing_flange_ph1"/><second ref="ClosingFlangeB2"/>
+   <positionref  ref="ZeroPosition" />
+</subtraction>
+
+<union name="Closing_flange_full">
+   <first ref="Closing_flange"/><second ref="ClosingFlangeTop"/>
+   <positionref  ref="FlangeTopPosition" />
+</union>
+<!--SOLID for closing flange - ClosingFlangeTop-->
+<union name="SideTubeFl">
+   <first ref="SideTube"/><second ref="Closing_flange_full"/>
+   <positionref  ref="FlangeOnTubePosition" />
+</union>
+<union name="SideTubeFlSolid">
+   <first ref="SideTube_solid"/><second ref="ClosingFlangeTop"/>
+   <positionref  ref="FlangeOnTubePosition" />
+</union>
+
+<subtraction name="Nozzle_plate_ph1">
+   <first ref="NozzlePlate"/><second ref="SideTube_solid"/>
+   <positionref  ref="SideTubePosition1" />
+</subtraction>
+
+<subtraction name="Nozzle_plate_ph2">
+   <first ref="Nozzle_plate_ph1"/><second ref="SideTube_solid"/>
+   <positionref  ref="SideTubePosition2" />
+</subtraction>
+
+<union name="Nozzle_plate_ph3">
+   <first ref="Nozzle_plate_ph2"/><second ref="SideTubeFl"/>
+   <positionref  ref="SideTubePosition1" />
+</union>
+
+<union name="Inner_lid">
+   <first ref="Nozzle_plate_ph3"/><second ref="SideTubeFl"/>
+   <positionref  ref="SideTubePosition2" />
+</union>
+<!--SOLID INNER LID -->
+<union name="Inner_lid_solid">
+   <first ref="NozzlePlate"/><second ref="SideTubeFlSolid"/>
+   <positionref  ref="SideTubePosition2" />
+</union>
+
+<union name="Inner_flange_plate_ph2">
+   <first ref="Inner_flange_plate_ph1"/><second ref="Inner_flange_tube"/>
+   <positionref  ref="InnerFlangeTubePosition" />
+</union>
+<union name="Inner_flange_plate_solid">
+   <first ref="Inner_flange_plate_ph1_solid"/><second ref="Inner_flange_tube_solid"/>
+   <positionref  ref="InnerFlangeTubePosition" />
+</union>
+
+<union name="Inner_flange_ph1">
+   <first ref="Inner_flange_plate_ph2"/><second ref="Inner_lid"/>
+   <positionref  ref="InnerLidPosition" />
+</union>
+
+<union name="Inner_flange_ph1_solid">
+   <first ref="Inner_flange_plate_solid"/><second ref="Inner_lid_solid"/>
+   <positionref  ref="InnerLidPosition" />
+</union>
+
+<subtraction name="Inner_flange_basetube_ph2">
+   <first ref="Inner_flange_basetube_ph1"/><second ref="Tube_for_subtr"/>
+   <positionref  ref="CutTubePosition" />
+   <rotationref ref="rMinus90AboutY"/>
+</subtraction>
+
+<union name="Inner_flange_basetube_ph3">
+   <first ref="Inner_flange_basetube_ph2"/><second ref="Inner_flange_bottom_plate"/>
+   <positionref  ref="InnerBottomPlatePosition" />
+  </union>
+<union name="Inner_flange_basetube_ph3_solid">
+   <first ref="Inner_flange_basetube_solid"/><second ref="Inner_flange_bottom_plate_solid"/>
+   <positionref  ref="InnerBottomPlatePosition" />
+  </union>
+
+<union name="Inner_flange_ph2">
+   <first ref="Inner_flange_basetube_ph3"/><second ref="Inner_flange_ph1"/>
+   <positionref  ref="InnerFlangeTopPartPosition" />
+  </union>
+
+<union name="Inner_flange_ph2_solid">
+   <first ref="Inner_flange_basetube_ph3_solid"/><second ref="Inner_flange_ph1_solid"/>
+   <positionref  ref="InnerFlangeTopPartPosition" />
+  </union>
+
+
+
+
+
+<!--INNER STEEL TUBE Inner_flange_ph2-->
+
+<subtraction name="InnerSteelTube_ph2">
+   <first ref="InnerSteelTube_ph1"/><second ref="Inner_flange_basetube_solid"/>
+   <positionref  ref="InnerFlangePosition" />
+   <rotationref ref="rMinus90AboutY"/>
+</subtraction>
+<union name="InnerSteelTube_subtr">
+   <first ref="InnerSteelTube_ph2"/><second ref="Inner_flange_ph2_solid"/>
+   <positionref  ref="InnerFlangePosition" />
+   <rotationref ref="rMinus90AboutY"/>
+</union>
+
+
+
+
+<!--
+<subtraction name="Cryostat_ph2m">
+   <first ref="Cryostat_ph20"/><second ref="InnerSteelTube_subtr"/>
+   <positionref  ref="ZeroPosition" />
+  </subtraction>
+-->
+
+<union name="InnerSteelTube">
+   <first ref="InnerSteelTube_ph2"/><second ref="Inner_flange_ph2"/>
+   <positionref  ref="InnerFlangePosition" />
+   <rotationref ref="rMinus90AboutY"/>
+</union>
+<union name="Cryostat_ph2">
+   <first ref="Cryostat_ph1"/><second ref="InnerSteelTube"/>
+   <positionref  ref="ZeroPosition" />
+  </union>
+
+<!--OUTER SIDE FLANGE-->
+  
+<subtraction name="Nozzle_plate_out_ph1">
+   <first ref="NozzlePlate_out"/><second ref="SideTube_solid"/>
+   <positionref  ref="SideTubePositionOut1" />
+  </subtraction>
+
+<subtraction name="Nozzle_plate_out_ph2">
+   <first ref="Nozzle_plate_out_ph1"/><second ref="SideTube_solid"/>
+   <positionref  ref="SideTubePositionOut2" />
+</subtraction>
+
+<union name="Nozzle_plate_out_ph3">
+   <first ref="Nozzle_plate_out_ph2"/><second ref="SideTubeFl"/>
+   <positionref  ref="SideTubePositionOut1" />
+  </union>
+<!--nozzle plate SOLID -->
+<union name="Nozzle_plate_out_ph3_solid">
+   <first ref="NozzlePlate_out"/><second ref="SideTubeFlSolid"/>
+   <positionref  ref="SideTubePositionOut1" />
+  </union>
+
+<union name="Outer_lid">
+   <first ref="Nozzle_plate_out_ph3"/><second ref="SideTubeFl"/>
+   <positionref  ref="SideTubePositionOut2" />
+ </union>
+
+<!--OUTER LID SOLID-->
+<union name="Outer_lid_solid">
+   <first ref="Nozzle_plate_out_ph3_solid"/><second ref="SideTubeFlSolid"/>
+   <positionref  ref="SideTubePositionOut2" />
+  </union>
+
+<union name="Outer_flange_plate_ph2">
+   <first ref="Outer_flange_plate_ph1"/><second ref="Outer_flange_tube"/>
+   <positionref  ref="OuterFlangeTubePosition" />
+</union>
+
+<union name="Outer_flange_plate_ph2_solid">
+   <first ref="Outer_flange_plate_ph1_solid"/><second ref="Outer_flange_tube_solid"/>
+   <positionref  ref="OuterFlangeTubePosition" />
+</union>
+
+<union name="Outer_flange_ph1">
+   <first ref="Outer_flange_plate_ph2"/><second ref="Outer_lid"/>
+   <positionref  ref="OuterLidPosition" />
+</union>
+
+<union name="Outer_flange_ph1_solid">
+   <first ref="Outer_flange_plate_ph2_solid"/><second ref="Outer_lid_solid"/>
+   <positionref  ref="OuterLidPosition" />
+</union>
+
+
+<union name="Outer_flange_ph2">
+   <first ref="Outer_flange_bottom_plate"/><second ref="Outer_flange_ph1"/>
+   <positionref  ref="OuterInBPlatePosition" />
+</union>
+
+<union name="Outer_flange_ph2_solid">
+   <first ref="Outer_flange_bottom_plate_solid"/><second ref="Outer_flange_ph1_solid"/>
+   <positionref  ref="OuterInBPlatePosition" />
+</union>
+
+<union name="Outer_flange">
+   <first ref="Outer_flange_basetube"/><second ref="Outer_flange_ph2"/>
+   <positionref  ref="OuterInBaseTubePosition" />
+</union>
+
+<union name="Outer_flange_solid">
+   <first ref="Outer_flange_basetube_solid"/><second ref="Outer_flange_ph2_solid"/>
+   <positionref  ref="OuterInBaseTubePosition" />
+</union>
+
+
+<!--OUTER STEEL TUBE WITH FLANGE add ph1-->
+
+<subtraction name="OuterSteelTube_ph2">
+   <first ref="OuterSteelTube_ph1"/><second ref="Outer_flange_basetube_solid"/>
+   <positionref  ref="OuterFlangePosition" />
+   <rotationref ref="rMinus90AboutY"/>
+</subtraction>
+<union name="OuterSteelTube_subtr">
+   <first ref="OuterSteelTube_ph2"/><second ref="Outer_flange_solid"/>
+   <positionref  ref="OuterFlangePosition" />
+<rotationref ref="rMinus90AboutY"/>
+</union>
+
+
+
+
+<!--NO PROBLEM UNTIL THE NEW TUBE IS PUT INTO THE SUBTRACTION -drop ph1-->
+
+<union name="OuterSteelTube">
+   <first ref="OuterSteelTube_ph2"/><second ref="Outer_flange"/>
+   <positionref  ref="OuterFlangePosition" />
+<rotationref ref="rMinus90AboutY"/>
+</union>
+<union name="Cryostat_ph3">
+   <first ref="Cryostat_ph2"/><second ref="OuterSteelTube"/>
+   <positionref  ref="ZeroPosition" />
+  </union>
+<!--TEST PURPOSE - REPLACE in INNER ENDCAP FRONT MOD UNION WITH NON-TEST VERSION!!!-->
+<union name="Inner_torus_brim2_test">
+   <first ref="Inner_torus_brim2"/><second ref="Outer_lid"/>
+   <positionref  ref="TestingPosition" />
+  <!--<rotationref ref="rMinus90AboutY"/>-->
+</union>
+
 <subtraction name="Argon_cap_L">
    <first ref="Argon_solid_L"/> <second ref="Tube_for_subtr"/>
+   <positionref  ref="ArgonFrontCapSubtrPosition" />
 </subtraction>
 
 <union name="Argon_concave_solid">
@@ -1041,6 +1812,52 @@ lunit="cm"/>
    <positionref  ref="InnerConcavePos" />
   <!-- <rotationref ref="rPlus180AboutY"/>-->
   </union>
+<torus name="Inner_torus_solid"
+rmin="0.0" rmax="4.8"
+rtor="9.28" 
+deltaphi="360.0" startphi="0.0" 
+aunit="deg"
+lunit="cm"/>
+
+<tube name="Inner_brim_tube_solid"
+  rmin="0.0"
+  rmax="14.08"
+  z="1.28"
+  deltaphi="360"
+  aunit="deg"
+  lunit="cm"/>
+
+
+<subtraction name="Inner_torus_ph1_solid">
+   <first ref="Inner_torus_solid"/><second ref="Inner_torus_bottom_cutter"/>
+   <positionref  ref="TorusCutterPosition1" />
+   <rotationref ref="rPlus360AboutX"/>
+</subtraction>
+
+<subtraction name="Inner_torus_ph2_solid">
+   <first ref="Inner_torus_ph1_solid"/><second ref="Inner_torus_bottom_cutter"/>
+   <positionref  ref="TorusCutterPosition2" />
+   <rotationref ref="rPlus360AboutX"/>
+</subtraction>
+<union name="Inner_torus_ph3_solid">
+   <first ref="Inner_torus_ph2_solid"/><second ref="Inner_torus_filler"/>
+   <positionref  ref="TorusFillerPosition" />
+   <rotationref ref="rPlus360AboutX"/>
+</union>
+
+<union name="Inner_torus_brim_solid">
+   <first ref="Inner_torus_ph3_solid"/><second ref="Inner_brim_tube_solid"/>
+   <positionref  ref="BrimTubePosition" />
+   <rotationref ref="rPlus180AboutY"/>
+</union>
+
+<union name="Torus_concave_solid">
+   <first ref="Inner_torus_brim_solid"/> <second ref="Inner_vac_solid_mod"/>
+   <positionref  ref="InnerSCapPosition" />
+   <rotationref ref="rPlus360AboutX"/>
+  </union>
+
+
 
 
 <union name="Argon_concave">
@@ -1048,20 +1865,34 @@ lunit="cm"/>
    <positionref  ref="InnerConcavePos" />
   <!-- <rotationref ref="rPlus180AboutY"/>-->
 </union>
-
+<!--
 <subtraction name="Inner_endcap_front_ph1">
    <first ref="Inner_endcap"/><second ref="Inner_cone_solid"/>
    <positionref  ref="InnerDiskPosition2" />
    <rotationref ref="rPlus180AboutY"/>
 </subtraction>
 
+-->
+<!--ADDITION 27.10.2013 and further on -->
+<subtraction name="Inner_endcap_front_ph1_mod">
+   <first ref="Inner_endcap"/><second ref="Subtraction_tube_mod"/>
+   <positionref  ref="InnerDiskPosition2" />
+   <rotationref ref="rPlus180AboutY"/>
+</subtraction>
 
+<!--ADDITION 27.10.2013 and further on REPLACE TESTING PART HERE!!-->
+<union name="Inner_endcap_front_mod">
+   <first ref="Inner_endcap_front_ph1_mod"/> <second ref="Inner_torus_brim2"/>
+   <positionref  ref="InnerDiskPosition3" />
+   <rotationref ref="rPlus180AboutY"/>
+</union>
+<!--
 <union name="Inner_endcap_front">
    <first ref="Inner_endcap_front_ph1"/> <second ref="Argon_concave"/>
    <positionref  ref="InnerDiskPosition" />
    <rotationref ref="rPlus180AboutY"/>
 </union>
- 
+ -->
   
 <!--<subtraction name="Argon_cap_ph1">
    <first ref="Argon_cap_L"/> <second ref="Inner_cone_solid"/>
@@ -1070,10 +1901,15 @@ lunit="cm"/>
   </subtraction>-->
 
 <subtraction name="Argon_cap_front">
+   <first ref="Argon_cap_L"/> <second ref="Torus_concave_solid"/>
+   <positionref ref="InnerDiskPosition3"/>
+   <rotationref ref="rPlus180AboutY"/>
+  </subtraction>  
+<!--<subtraction name="Argon_cap_front">
    <first ref="Argon_cap_L"/> <second ref="Argon_concave_solid"/>
    <positionref ref="InnerDiskPosition"/>
    <rotationref ref="rPlus180AboutY"/>
-  </subtraction>  
+  </subtraction>  -->
   
   
 <subtraction name="Outer_endcap_ph1">
@@ -1104,9 +1940,33 @@ lunit="cm"/>
 </subtraction>
 
 
-<subtraction name="ArgonTubeMinusTPC">
+<subtraction name="ArgonTubeMinusTPC_ph1">
    <first ref="ArgonTube"/> <second ref="TPC"/>
    <positionref ref="TPCalign"/>
+  </subtraction>
+
+<subtraction name="ArgonTubeMinusTPC_ph2">
+   <first ref="ArgonTubeMinusTPC_ph1"/> <second ref="PMTHolder"/>
+   <positionref  ref="PMTHoldPos" />
+ <rotationref ref="rMinus90AboutY"/>
+  </subtraction>
+
+<subtraction name="ArgonTubeMinusTPC_ph3">
+   <first ref="ArgonTubeMinusTPC_ph2"/> <second ref="PMTEtlBrutto"/>
+   <positionref  ref="PMTEtlPos" />
+ <rotationref ref="rMinus90AboutY"/>
+  </subtraction>
+
+<subtraction name="ArgonTubeMinusTPC_ph4">
+   <first ref="ArgonTubeMinusTPC_ph3"/> <second ref="PMTHmmBrutto"/>
+   <positionref  ref="PMTHmmPos" />
+ <rotationref ref="rMinus90AboutY"/>
+  </subtraction>
+
+<subtraction name="ArgonTubeMinusTPC">
+   <first ref="ArgonTubeMinusTPC_ph4"/> <second ref="PMTHmmWindow_e"/>
+   <positionref  ref="PMTHmmWPos" />
+ <rotationref ref="rMinus90AboutY"/>
   </subtraction>
 
 <!--subtraction name="TPC_L">
@@ -1121,9 +1981,36 @@ lunit="cm"/>
   </subtraction>-->
 
 
+<union name="Cryostat_ph4">
+   <first ref="Cryostat_ph3"/><second ref="PMTHolder"/>
+   <positionref  ref="PMTHoldPos2" />
+ <rotationref ref="rPlus90AboutY"/>
 
+  </union>
+
+
+<union name="Cryostat_ph5">
+   <first ref="Cryostat_ph4"/><second ref="PMTHmmBrutto"/>
+   <positionref  ref="PMTHmmPos" />
+ <rotationref ref="rPlus90AboutY"/>
+  </union>
+<union name="Cryostat_ph6">
+   <first ref="Cryostat_ph5"/><second ref="PMTEtlBrutto"/>
+   <positionref  ref="PMTEtlPos" />
+ <rotationref ref="rPlus90AboutY"/>
+  </union>
+<union  name="Cryostat_ph7">
+   <first ref="Cryostat_ph6"/> <second ref="PMTHmmWindow_e"/>
+   <positionref  ref="PMTHmmWPos" />
+ <rotationref ref="rPlus90AboutY"/>
+  </union>
+<union  name="Cryostat">
+   <first ref="Cryostat_ph7"/> <second ref="PMTEtlWindow_e"/>
+   <positionref  ref="PMTEtlWPos" />
+ <rotationref ref="rPlus90AboutY"/>
+  </union>
  <box name="DetEnclosure" lunit="cm"
-   x="(58.0*(2.54)+0.125*(2.54)*2)" y="(64.0*(2.54)+0.125*(2.54)*2+0.5)" z="(70.0*(2.54)+0.125*(2.54)*2)"
+   x="(158.0*(2.54)+0.125*(2.54)*2)" y="(164.0*(2.54)+0.125*(2.54)*2+0.5)" z="(68.0*(2.54)+0.125*(2.54)*2)"
  />
 
 <!-- <box name="TubLongSide"  lunit="cm" x="(0.125*(2.54))" y="(64.0*(2.54))"       z="(68.0*(2.54))" />
@@ -1181,11 +2068,180 @@ lunit="cm"/>
 
    <box name="World" lunit="cm" x="((58.0*(2.54)+0.125*(2.54)*2))+47.5+500" y="((64.0*(2.54)+0.125*(2.54)*2+0.5))+20+3*0.15*2.54+4+260" z="((68.0*(2.54)+0.125*(2.54)*2))+90+62.49+2.54"/>
 
-   <box name="MND" lunit="cm" x="485.15" y="381" z="2.54"/>
+   <box name="MND" lunit="cm" x="485.15" y="381" z="2.54"/><!--<box name="MND" lunit="cm" x="485.15" y="381" z="2.54"/>-->
 
 
 </solids>
 <structure>
+
+
+<!--TPB sheets!!!!-->
+
+<volume name="volrefl1">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl1"/>
+ </volume>
+
+<volume name="volrefl2">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl2"/>
+ </volume>
+
+<volume name="volrefl3">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl3"/>
+ </volume>
+
+<volume name="volrefl4">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl4"/>
+ </volume>
+
+<volume name="volrefl5">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl5"/>
+ </volume>
+
+<volume name="volrefl6">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl6"/>
+ </volume>
+
+<volume name="voltpb1">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb1"/>
+<physvol>
+<volumeref ref="volrefl1"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="voltpb2">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb2"/>
+<physvol>
+<volumeref ref="volrefl2"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="voltpb3">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb3"/>
+<physvol>
+<volumeref ref="volrefl3"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="voltpb4">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb4"/>
+<physvol>
+<volumeref ref="volrefl4"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="voltpb5">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb5"/>
+<physvol>
+<volumeref ref="volrefl5"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="voltpb6">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb6"/>
+<physvol>
+<volumeref ref="volrefl6"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+
+<!-- volumes for pmt holder and pmts - simplified holder - nobody would use g-10 screws here...-->
+
+
+
+ <volume name="volPMTHolder">
+  <materialref ref="G10"/>
+  <solidref ref="PMTHolder"/>
+ </volume>
+
+ <volume name="volPMTHmm_ph1">
+  <materialref ref="Glass"/>
+  <solidref ref="PMTHmmBrutto"/>
+ </volume>
+ <volume name="volPMTHmm_ph0">
+  <materialref ref="Glass"/>
+  <solidref ref="PMTHmmBrutto_ph1"/>
+ </volume>
+
+ <volume name="PMTVolume">
+  <materialref ref="LAr"/>
+  <solidref ref="PMTHmmBrutto"/>
+ </volume>
+
+ <volume name="volPMTEtl_ph0">
+  <materialref ref="Glass"/>
+  <solidref ref="PMTEtlBrutto_ph1"/>
+ </volume>
+
+ <volume name="volPMTEtl_ph1">
+  <materialref ref="Glass"/>
+  <solidref ref="PMTEtlBrutto"/>
+ </volume>
+<!--
+ <volume name="volPMTHmmWindow_e">
+  <materialref ref="bialkali"/>
+  <solidref ref="PMTHmmWindow_e"/>
+ </volume>
+
+-->
+ <volume name="volOpDetSensitive">
+  <materialref ref="LAr"/>
+  <solidref ref="PMTHmmWindow_e"/>
+ </volume>
+
+ <volume name="volOpDetSensitive_1">
+  <materialref ref="LAr"/>
+  <solidref ref="PMTEtlWindow_e"/>
+ </volume>
+<!--
+ <volume name="volPMTEtlWindow_e">
+  <materialref ref="bialkali"/>
+  <solidref ref="PMTEtlWindow_e"/>
+ </volume>
+-->
+<volume name="volPMT">
+  <materialref ref="LAr"/>
+  <solidref ref="PMTHmmBrutto"/>
+<physvol>
+   <volumeref ref="volOpDetSensitive"/>
+   <positionref  ref="WindowHmmPosition" />
+  </physvol>
+<physvol>
+<volumeref ref="volPMTHmm_ph0"/>
+   <positionref  ref="ZeroPosition" />
+ </physvol>
+</volume>
+
+<volume name="volPMT_1">
+  <materialref ref="LAr"/>
+  <solidref ref="PMTEtlBrutto"/>
+<physvol>
+   <volumeref ref="volOpDetSensitive_1"/>
+   <positionref  ref="WindowEtlPosition" />
+  </physvol>
+<physvol>
+<volumeref ref="volPMTEtl_ph0"/>
+   <positionref  ref="ZeroPosition" />
+ </physvol>
+</volume>
+
  <volume name="volTPCShieldPlaneWire">
   <materialref ref="Titanium"/>
   <solidref ref="TPCShieldPlaneWire"/>
@@ -5175,6 +6231,38 @@ lunit="cm"/>
  <volume name="volTPCActive">
   <materialref ref="LAr"/>
   <solidref ref="TPCActive"/>
+ <!-- bottom sheet -->
+		<physvol>
+			<volumeref ref="voltpb1"/>
+			<positionref  ref="tpb1pos" />
+		</physvol>
+  <!-- top sheet -->
+		<physvol>
+			<volumeref ref="voltpb2"/>
+			<positionref  ref="tpb2pos" />
+		</physvol>
+<!-- pmts sheet 
+		<physvol>
+			<volumeref ref="voltpb3"/>
+			<positionref  ref="tpb3pos" />
+		</physvol>
+cathode sheet
+		<physvol>
+			<volumeref ref="voltpb4"/>
+			<positionref  ref="tpb4pos" />
+		</physvol>
+-->
+		<physvol>
+			<volumeref ref="voltpb5"/>
+			<positionref  ref="tpb5pos" />
+		</physvol>
+
+		<physvol>
+			<volumeref ref="voltpb6"/>
+			<positionref  ref="tpb6pos" />
+		</physvol>
+
+
  </volume>
  
  
@@ -5182,8 +6270,8 @@ lunit="cm"/>
   <materialref ref="STEEL_STAINLESS_Fe7Cr2Ni"/>
   <solidref ref="SteelFlangeDisk"/>
  </volume>
-
-<!-- <volume name="volAirFlangeDisk">
+<!--
+<volume name="volAirFlangeDisk">
   <materialref ref="Air"/>
   <solidref ref="AirFlangeDisk"/>
  </volume>-->
@@ -5197,8 +6285,12 @@ lunit="cm"/>
    <position name="posTPCActive" unit="cm" x="1.5*(0.4)-0.5*(0.5*(2.54))" y="0.0" z="0"/>
   </physvol>
 
-
- <!--  <volumeref ref="volAirFlangeDisk"/>
+ <!-- <physvol>
+   <volumeref ref="volSteelFlangeDisk"/>
+   <positionref ref="SteelDiskalign"/>
+  </physvol>
+  <physvol>
+   <volumeref ref="volAirFlangeDisk"/>
    <positionref ref="AirDiskalign"/>
   </physvol>-->
 
@@ -5236,7 +6328,7 @@ lunit="cm"/>
    <volumeref ref="volTPCPlaneCollection"/>
    <position name="posTPCPlane3" unit="cm" x="-0.5*(47.5)-(0.4)-0.5*(0.5*(2.54))" y="0" z="0"/>
    <rotationref ref="rPlus90AboutXMinus90AboutZ"/>
-   </physvol>
+</physvol>
  </volume> 
 
  <volume name="volOuterSteelTube">
@@ -5281,11 +6373,15 @@ lunit="cm"/>
   <materialref ref="STEEL_STAINLESS_Fe7Cr2Ni"/>
   <solidref ref="Inner_endcap"/>
 </volume>
-
-<volume name="volInner_endcap_front">
+<!--ADDITION 27.10.2013 and further on-->
+<volume name="volInner_endcap_front_mod">
+  <materialref ref="STEEL_STAINLESS_Fe7Cr2Ni"/>
+  <solidref ref="Inner_endcap_front_mod"/>
+</volume>
+<!--<volume name="volInner_endcap_front">
   <materialref ref="STEEL_STAINLESS_Fe7Cr2Ni"/>
   <solidref ref="Inner_endcap_front"/>
-</volume>
+</volume>-->
 
 <volume name="volOuter_endcap">
   <materialref ref="STEEL_STAINLESS_Fe7Cr2Ni"/>
@@ -5302,6 +6398,9 @@ lunit="cm"/>
 <volume name="volArgonTubeMinusTPC">
   <materialref ref="LAr"/>
   <solidref ref="ArgonTubeMinusTPC"/>
+
+
+
  </volume>
 
 
@@ -5318,13 +6417,53 @@ lunit="cm"/>
    <position name="posArgon_cap1" x="0.0" y="0" z="0"/>
   </physvol>
 
+<!--<physvol>
+<volumeref ref="volPMTHmmWindow_e"/>
+   <positionref  ref="PMTHmmWPos" />
+ <rotationref ref="rPlus90AboutY"/>
+ </physvol>
+
+<physvol>
+<volumeref ref="volPMTEtlWindow_e"/>
+   <positionref  ref="PMTEtlWPos" />
+ <rotationref ref="rPlus90AboutY"/>
+ </physvol>
+
+-->
+ 
+<physvol>
+<volumeref ref="volPMTHolder"/>
+   <positionref  ref="PMTHoldPos" />
+ <rotationref ref="rPlus90AboutY"/>
+ </physvol>
+<!--
+<physvol>
+<volumeref ref="volPMTEtl_ph1"/>
+   <positionref  ref="PMTEtlPos" />
+ <rotationref ref="rPlus90AboutY"/>
+ </physvol>
+
+-->
+<physvol>
+<volumeref ref="volPMT"/>
+   <positionref  ref="PMTHmmPos" />
+ <rotationref ref="rPlus90AboutY"/>
+ </physvol>
+
+<physvol>
+<volumeref ref="volPMT_1"/>
+   <positionref  ref="PMTEtlPos" />
+ <rotationref ref="rPlus90AboutY"/>
+ </physvol>
+
 
 
 <physvol>
    <volumeref ref="volArgon_cap_front"/>
-   <position name="posArgon_cap2" x="0.0" y="0" z="0"/>
+   <position name="posArgon_cap2" unit="cm" x="0.0" y="0" z="-0.238-0.00576844"/>
 <rotationref ref="rPlus180AboutY"/>
 </physvol>
+
 <physvol>
    <volumeref ref="volOuterSteelTube"/>
    <position name="posOuterSteelTube" unit="cm" x="0" y="0" z="0"/>
@@ -5333,7 +6472,6 @@ lunit="cm"/>
    <volumeref ref="volInnerSteelTube"/>
    <position name="posInnerSteelTube" unit="cm" x="0" y="0" z="0"/>
   </physvol>
-
 <physvol>
    <volumeref ref="volArgonTubeMinusTPC"/>
    <position name="posArgonTubeMinusTPC" x="0" y="0" z="0"/>
@@ -5352,10 +6490,16 @@ lunit="cm"/>
   </physvol>
 
 <physvol>
-   <volumeref ref="volInner_endcap_front"/>
+   <volumeref ref="volInner_endcap_front_mod"/>
    <position name="posInner_endcap1" unit="cm" x="0" y="0" z="-0.238-0.00576844"/>
  <rotationref ref="rPlus180AboutY"/>
   </physvol>
+
+<!--<physvol>
+   <volumeref ref="volInner_endcap_front"/>
+   <position name="posInner_endcap1" unit="cm" x="0" y="0" z="-0.238-0.00576844"/>
+ <rotationref ref="rPlus180AboutY"/>
+  </physvol>-->
 <physvol>
    <volumeref ref="volInner_endcap"/>
    <position name="posInner_endcap2" unit="cm" x="0" y="0" z="0.238+0.00576844"/>
@@ -5433,6 +6577,11 @@ lunit="cm"/>
    <volumeref ref="volTubShortSide"/>
    <position  name="posTubShortSide2" unit="cm" x="0" y="0.3175" z="0.5*(68.0*(2.54))+0.5*0.3175" />
   </physvol>  -->
+
+
+
+
+
   <physvol>
    <volumeref ref="volTubBottom"/>
    <position  name="posTubBottom" unit="cm" x="0" y="-0.5*(64.0*(2.54))" z="0" />
@@ -5480,6 +6629,7 @@ lunit="cm"/>
  </volume>
 <volume name="volWorld" >
   <materialref ref="Air"/> <solidref ref="World"/>
+
 <physvol>
     <volumeref ref="volDetEnclosure"/>
 <position name="posDetEnclosure" unit="cm" x="0.5*(47.5)" y="-12" z="0.5*(90)"/>
@@ -5487,8 +6637,9 @@ lunit="cm"/>
 
 <physvol>
 <volumeref ref="volMND"/>
-<position name="posMND" unit="cm" x="-(93.07-0.5*47.5)" y="190.5-173.228" z="151.68"/>
+<position name="posMND" unit="cm" x="-(93.07-0.5*47.5)" y="190.5-173.228" z="151.68"/><!--PREVIOUSLY 151.68-->
  </physvol>
+
 
 
 
