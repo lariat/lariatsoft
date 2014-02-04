@@ -985,12 +985,12 @@ lunit="cm"/>
 
 
 
-<tube name="Tube_for_subtr"
+<!--<tube name="Tube_for_subtr"
   rmax="38.1"
   z="101.13"
   deltaphi="360"
   aunit="deg"
-  lunit="cm"/>
+  lunit="cm"/> -->
 
   <tube name="ComboFlangeDisk"
    rmax="12.5"
@@ -5372,13 +5372,13 @@ lunit="cm"/>
 
 <physvol>
    <volumeref ref="volFlangeWindow"/>
-   <position name="posOuter_endcap2" unit="cm" x="0" y="0" z="-0.238-0.00846643199-((79.8+4.+1./2))"/>
+   <position name="posOuter_endcap3" unit="cm" x="0" y="0" z="-0.238-0.00846643199-((79.8+4.+1./2))"/>
  <!--<rotationref ref="rPlus180AboutY"/>-->
 </physvol>
 
  <physvol>
    <volumeref ref="volSteelFlangeDisk"/>
-  <position name="posOuter_endcap3" unit="cm" x="0" y="0" z="-0.238-0.00846643199-((79.8+4.+1./2))+0.0154/2.- 1.77/2"/>
+  <position name="posOuter_endcap4" unit="cm" x="0" y="0" z="-0.238-0.00846643199-((79.8+4.+1./2))+0.0154/2.- 1.77/2"/>
  </physvol>
 
  </volume>
