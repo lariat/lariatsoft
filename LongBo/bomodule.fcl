@@ -1,0 +1,12 @@
+BEGIN_PROLOG
+
+bo_anatree:
+{
+    module_type:              "AnaTree"
+    HitsModuleLabel:          "hit"
+    TrigModuleLabel:          "daq"
+    TrackModuleLabel:         "track3d"
+
+}
+
+END_PROLOG

@@ -73,6 +73,7 @@ add_subdirectory(Geo)
 add_subdirectory(LArIATEventGenerator)
 add_subdirectory(LArSoftConfigurations)
 add_subdirectory(JobConfigurations)
+add_subdirectory(LongBo)
 
 # ups - table and config files
 add_subdirectory(ups)
