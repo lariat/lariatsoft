@@ -92,6 +92,10 @@ private:
   double hit_peakT[kMaxHits];
   double hit_charge[kMaxHits];
   double hit_ph[kMaxHits];
+  double hit_tstart[kMaxHits];
+  double hit_tend[kMaxHits];
+  double hit_mult[kMaxHits];
+  double hit_goodness[kMaxHits];
   int    hit_trkid[kMaxHits];
 
   std::string fTrigModuleLabel;
@@ -220,6 +224,10 @@ void bo::AnaTree::analyze(art::Event const & evt)
     hit_peakT[i]   = hitlist[i]->PeakTime();
     hit_charge[i]  = hitlist[i]->Charge();
     hit_ph[i]      = hitlist[i]->Charge(true);
+    hit_tstart[i]  = hitlist[i]->StartTime();
+    hit_tend[i]    = hitlist[i]->EndTime();
+    hit_mult[i]    = hitlist[i]->Multiplicity();
+    hit_goodness[i]= hitlist[i]->GoodnessOfFit();
     if (fmtk.at(i).size()!=0){
       hit_trkid[i] = fmtk.at(i)[0]->ID();
     }
@@ -265,6 +273,10 @@ void bo::AnaTree::beginJob()
   fTree->Branch("hit_peakT",hit_peakT,"hit_peakT[nhits]/D");
   fTree->Branch("hit_charge",hit_charge,"hit_charge[nhits]/D");
   fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/D");
+  fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/D");
+  fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/D");
+  fTree->Branch("hit_mult",hit_mult,"hit_mult[nhits]/D");
+  fTree->Branch("hit_goodness",hit_goodness,"hit_goodness[nhits]/D");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
 }
 
@@ -315,6 +327,10 @@ void bo::AnaTree::ResetVars(){
     hit_charge[i] = -99999;
     hit_ph[i] = -99999;
     hit_trkid[i] = -99999;
+    hit_tstart[i] = -99999;
+    hit_tend[i] = -99999;
+    hit_mult[i] = -99999;
+    hit_goodness[i] = -99999;
   }
   
 }
