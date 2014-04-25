@@ -94,7 +94,7 @@ private:
   double hit_ph[kMaxHits];
   double hit_tstart[kMaxHits];
   double hit_tend[kMaxHits];
-  double hit_mult[kMaxHits];
+  int hit_mult[kMaxHits];
   double hit_goodness[kMaxHits];
   int    hit_trkid[kMaxHits];
 
@@ -275,7 +275,7 @@ void bo::AnaTree::beginJob()
   fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/D");
   fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/D");
   fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/D");
-  fTree->Branch("hit_mult",hit_mult,"hit_mult[nhits]/D");
+  fTree->Branch("hit_mult",hit_mult,"hit_mult[nhits]/I");
   fTree->Branch("hit_goodness",hit_goodness,"hit_goodness[nhits]/D");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
 }
