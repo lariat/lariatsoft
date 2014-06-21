@@ -67,6 +67,7 @@ include(ArtMake)
 include(BuildPlugins)
 
 # source
+add_subdirectory(Utilities)
 add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)

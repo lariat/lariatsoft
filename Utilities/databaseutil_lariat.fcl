@@ -1,0 +1,12 @@
+#include "databaseutil.fcl"
+
+BEGIN_PROLOG
+
+microboone_database:               @local::standard_database
+microboone_database.PassFileName:  ".apswd"
+microboone_database.DBName:	 "argoneut_dev"
+microboone_database.DBUser:	 "argoneut_reader"
+microboone_database.ShouldConnect: false       # enable it when DB is available
+microboone_database.ToughErrorTreatment: false # enable it when DB is available too
+
+END_PROLOG
