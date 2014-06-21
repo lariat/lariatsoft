@@ -8,9 +8,9 @@
 #include "magfield.fcl"
 #include "databaseutil_lariat.fcl"
 #include "backtracker.fcl"
-#include "photpropservices_lariat.fcl"
+## #include "photpropservices_lariat.fcl"
 #include "opticaldetectorservices_lariat.fcl"
-#include "sam_lariat.fcl"
+## #include "sam_lariat.fcl"
 #include "timeservice_lariat.fcl"
 
 BEGIN_PROLOG
@@ -24,7 +24,7 @@ lariat_services:
  LArProperties:                  @local::lariat_properties    
  LArFFT:                         @local::lariat_larfft        
  DatabaseUtil:	                 @local::lariat_database      
- SignalShapingServiceMicroBooNE: @local::lariat_signalshapingservice
+ SignalShapingServiceT1034: @local::lariat_signalshapingservice
  BackTracker:                    @local::lariat_backtracker  
 #OpDigiProperties:               @local::lariat_opdigiproperties
  TimeService:                    @local::lariat_timeservice
@@ -44,7 +44,7 @@ lariat_simulation_services:
  LArProperties:                  @local::lariat_properties	   
  LArFFT:                         @local::lariat_larfft             
  DatabaseUtil:	                 @local::lariat_database           
- SignalShapingServiceMicroBooNE: @local::lariat_signalshapingservice
+ SignalShapingServiceT1034: @local::lariat_signalshapingservice
  MagneticField:                  @local::no_mag 	       
  BackTracker:                    @local::lariat_backtracker
  TimeService:                    @local::lariat_timeservice

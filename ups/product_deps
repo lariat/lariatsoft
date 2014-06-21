@@ -6,7 +6,7 @@ defaultqual	e5
 
 # dependencies on external packages
 product         version
-larsoft		v02_00_00
+larsoft		v02_01_01
 gcc		v4_8_2
 
 # list products required ONLY for the build
