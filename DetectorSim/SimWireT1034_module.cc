@@ -193,7 +193,7 @@ namespace detsim {
 				     << "May cause issues in (de)convolution.\n";
 
     if ( fNTimeSamples > fNTicks ) 
-      mf::LogError("SimWireMircoBooNE") << "Cannot have number of readout samples "
+      mf::LogError("SimWireT1034") << "Cannot have number of readout samples "
 					<< "greater than FFTSize!";
     
     return;

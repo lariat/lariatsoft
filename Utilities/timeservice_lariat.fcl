@@ -4,16 +4,16 @@ BEGIN_PROLOG
 
 lariat_timeservice: @local::standard_timeservice
 
-lariat_timeservice.TrigModuleName:     "triggersim"
-lariat_timeservice.InheritClockConfig: true
-lariat_timeservice.G4RefTime:        -1.6e3 # G4 time [us] where electronics clock counting start
-lariat_timeservice.TriggerOffsetTPC: -1.6e3 # Time [us] for TPC readout start w.r.t. trigger time
-lariat_timeservice.FramePeriod:       1.6e3 # Frame period [us]
-lariat_timeservice.ClockSpeedTPC:     3.90625    # TPC clock speed in MHz
-lariat_timeservice.ClockSpeedOptical: 1000.   # Optical clock speed in MHz
-lariat_timeservice.ClockSpeedTrigger: 16.   # Trigger clock speed in MHz
-lariat_timeservice.DefaultTrigTime:   1600. # Default trigger time [us].
-lariat_timeservice.DefaultBeamTime:   1600. # Default beam time [us].
+#lariat_timeservice.TrigModuleName:     ""
+#lariat_timeservice.InheritClockConfig: true
+#lariat_timeservice.G4RefTime:        -1.6e3 # G4 time [us] where electronics clock counting start
+#lariat_timeservice.TriggerOffsetTPC: -1.6e3 # Time [us] for TPC readout start w.r.t. trigger time
+#lariat_timeservice.FramePeriod:       1.6e3 # Frame period [us]
+#lariat_timeservice.ClockSpeedTPC:     3.90625    # TPC clock speed in MHz
+#lariat_timeservice.ClockSpeedOptical: 1000.   # Optical clock speed in MHz
+#lariat_timeservice.ClockSpeedTrigger: 16.   # Trigger clock speed in MHz
+#lariat_timeservice.DefaultTrigTime:   1600. # Default trigger time [us].
+#lariat_timeservice.DefaultBeamTime:   1600. # Default beam time [us].
 
 
 

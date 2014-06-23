@@ -46,7 +46,8 @@ lariat_disp:
  ScanOptions:                                 @local::lariat_scanopt                
  LArG4Parameters:                             @local::lariat_largeantparameters     
  LArVoxelCalculator:                          @local::lariat_larvoxelcalculator     
- InfoTransfer:		                      @local::lariat_infotransfer           
+ InfoTransfer:		                      @local::lariat_infotransfer    
+ TimeService:                  		       @local::lariat_timeservice
 }                                                                                  
                                                                                    
                                                                                    

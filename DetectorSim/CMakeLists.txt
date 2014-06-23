@@ -1,6 +1,6 @@
 
 simple_plugin(SimWireT1034 "module"
-			 Geometry
+			Geometry
                         Geometry_service
                         Simulation
                         Utilities

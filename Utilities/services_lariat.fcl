@@ -1,6 +1,6 @@
 #include "geometry_lariat.fcl"
 #include "detectorproperties_lariat.fcl"
-#include "larproperties.fcl"
+#include "larproperties_lariat.fcl"
 #include "larfft_lariat.fcl"
 #include "messageservice.fcl"
 #include "simulationservices_lariat.fcl"
@@ -9,7 +9,7 @@
 #include "databaseutil_lariat.fcl"
 #include "backtracker.fcl"
 ## #include "photpropservices_lariat.fcl"
-#include "opticaldetectorservices_lariat.fcl"
+##include "opticaldetectorservices_lariat.fcl"
 ## #include "sam_lariat.fcl"
 #include "timeservice_lariat.fcl"
 
@@ -25,9 +25,10 @@ lariat_services:
  LArFFT:                         @local::lariat_larfft        
  DatabaseUtil:	                 @local::lariat_database      
  SignalShapingServiceT1034: @local::lariat_signalshapingservice
- BackTracker:                    @local::lariat_backtracker  
+ BackTracker:                    @local::standard_backtracker  
 #OpDigiProperties:               @local::lariat_opdigiproperties
- TimeService:                    @local::lariat_timeservice
+TimeService:                    @local::lariat_timeservice
+
 }
 
 # Define lariat_optical_service (exclude simulation specific component)
@@ -46,7 +47,7 @@ lariat_simulation_services:
  DatabaseUtil:	                 @local::lariat_database           
  SignalShapingServiceT1034: @local::lariat_signalshapingservice
  MagneticField:                  @local::no_mag 	       
- BackTracker:                    @local::lariat_backtracker
+ BackTracker:                    @local::standard_backtracker
  TimeService:                    @local::lariat_timeservice
 }
 
