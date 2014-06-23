@@ -154,19 +154,26 @@ util::SignalShapingServiceT1034::SignalShaping(unsigned int channel) const
   //geo::SigType_t sigtype = geom->SignalType(channel);
 
   // we need to distiguish the U and V planes
-  geo::View_t view = geom->View(channel);
+  //geo::View_t view = geom->View(channel);
 
   // Return appropriate shaper.
 
-  if(view == geo::kU)
-    return fIndUSignalShaping;
-  else if(view == geo::kV)
-    return fIndVSignalShaping;
-  else if(view == geo::kZ)
-    return fColSignalShaping;
+  geo::SigType_t sigtype = geom->SignalType(channel);
+  if (sigtype == geo::kInduction)
+      return fIndUSignalShaping;
+  else if (sigtype == geo::kCollection)
+      return fColSignalShaping;
   else
     throw cet::exception("SignalShapingServiceT1034")<< "can't determine"
-                                                          << " SignalType\n";
+                                                          << " SignalType\n";  
+  
+//   if(view == geo::kU)
+//     
+//   else if(view == geo::kV)
+    
+//   else if(view == geo::kZ)
+//     return fColSignalShaping;
+  
   return fColSignalShaping;
 }
 
