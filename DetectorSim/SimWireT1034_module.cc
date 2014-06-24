@@ -173,7 +173,7 @@ namespace detsim {
     art::ServiceHandle<util::DetectorProperties> detprop;
     fNTimeSamples  = detprop->NumberTimeSamples();
 
-    std::cout << " N time Samples: " << fNTimeSamples << " time tick:  " << detprop->SamplingRate() <<std::endl;
+ 
     
     return;
   }
@@ -238,7 +238,7 @@ namespace detsim {
     std::vector<short>    adcvec(fNTimeSamples, 0);
     std::vector<double>   chargeWork(fNTicks,0.);
 
-    std::cout << "++++ Simulation, fNTicks: " << fNTicks << std::endl;
+   
     
     // make a unique_ptr of sim::SimDigits that allows ownership of the produced
     // digits to be transferred to the art::Event after the put statement below
