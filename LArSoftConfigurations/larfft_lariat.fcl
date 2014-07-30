@@ -3,5 +3,7 @@
 BEGIN_PROLOG
 
 lariat_larfft:   @local::standard_larfft
+lariat_larfft.FFTSize:     4096
+
 
 END_PROLOG
