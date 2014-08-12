@@ -227,6 +227,8 @@ namespace detsim {
     // of entries as the number of channels in the detector
     // and set the entries for the channels that have signal on them
     // using the chanHandle
+    
+    
     std::vector<const sim::SimChannel*> channels(geo->Nchannels(),nullptr);
     for(size_t c = 0; c < chanHandle.size(); ++c){
       channels.at(chanHandle.at(c)->Channel()) = chanHandle.at(c);
@@ -254,7 +256,8 @@ namespace detsim {
 
       // get the sim::SimChannel for this channel
       const sim::SimChannel* sc = channels.at(chan);
-
+      std::fill(chargeWork.begin(), chargeWork.end(), 0.);
+	  
       if( sc ){
 
 	// loop over the tdcs and grab the number of electrons for each
@@ -262,11 +265,14 @@ namespace detsim {
 
 	  int tdc = ts->TPCTick2TDC(t);
 
+	  
 	  // continue if tdc < 0
 	  if( tdc < 0 ) continue;
 
 	  chargeWork.at(t) = sc->Charge(tdc);
 
+	
+	  
 	}
 
         // Convolve charge with appropriate response function 
@@ -321,6 +327,7 @@ namespace detsim {
       // compress the adc vector using the desired compression scheme,
       // if raw::kNone is selected nothing happens to adcvec
       // This shrinks adcvec, if fCompression is not kNone.
+      
       raw::Compress(adcvec, fCompression); 
       
       // add this digit to the collection
