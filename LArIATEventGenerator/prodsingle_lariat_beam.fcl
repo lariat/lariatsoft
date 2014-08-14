@@ -68,11 +68,12 @@ outputs:
 
 #physics.producers.generator.Theta0YZ:  [0.0]
 
-physics.producers.generator.FileName:  "/lariat/data/users/stjohn/LAriaT_8GeVpiplus_128mmWCs_neg0.2FieldScale_MegaTreeFromHalo.root"
+#physics.producers.generator.FileName:  "/lariat/data/users/stjohn/LAriaT_8GeVpiplus_128mmWCs_neg0.2FieldScale_MegaTreeFromHalo.root"
+physics.producers.generator.FileName:  "/lariat/data/users/stjohn/Mergedresults_sim_LAriaT_13degProdxn_10degAna_NomGeom_10000jobsof30k_80GeV_pos0.35Tesla_aka__14.07.28.11.44.57.root"
 physics.producers.generator.EventSpillOffset: 1
 physics.producers.generator.EventsPerSpill: 300000
 physics.producers.generator.EventsPerFile: 10
 physics.producers.generator.EventFileOffset: 0
 #physics.producers.generator.UseTrigger: true
-#physics.producers.generator.TriggerCut: "TrackPresentTOFus && TrackPresentDet1 && TrackPresentDet2 &&TrackPresentDet3  &&  TrackPresentTODdsHorz && TrackPresentHaloHole  "
+#physics.producers.generator.TriggerCut: "TrackPresentTOFus && TrackPresentDet1 && TrackPresentDet2 &&TrackPresentDet3  &&  TOFdsHorz && TrackPresentHaloHole "
 

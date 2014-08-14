@@ -9,11 +9,14 @@ lariat_filegen:
  FileName:  "/lariat/data/users/stjohn/LAriaT_8GeVpiplus_128mmWCs_pos1.0FieldScale_MegaTreeFromHalo.root"
  TreeName:  "EventTree"
  BranchNames: ["x", "y", "z","t","Px", "Py", "Pz", "PDGid","TrackPresent"] # To read in from above Tree.
+ DetectorNames: ["Det1", "Det2", "Det3","Det4","TOFus", "Halo", "HaloHole", "TOFdsHorz","TiWindow","PunchUL","PunchLL","PunchUR","PunchLR"] # To read in from above Tree. 
+ InnerDetName: "Halo"      # TiWindow or other detector that is closest to detector entry (i.e. this is where triggers come in)
+ OuterDetName: "HaloHole"   # Detector that catches all particles that will get in the detector (i.e. this is where the background comes in).
  EventSpillOffset: 1
  EventsPerSpill: 300000
  EventsPerFile: 1000
  EventFileOffset: 0
- TriggerCut: "TrackPresentTOFus && TrackPresentDet1 && TrackPresentDet2 &&TrackPresentDet3  &&  TrackPresentTODdsHorz && TrackPresentHaloHole  "
+ TriggerCut: "TrackPresentTOFus && TrackPresentDet1 && TrackPresentDet2 &&TrackPresentDet3  &&  TOFdsHorz && TrackPresentHaloHole"
  UseTrigger: false
 }
 
