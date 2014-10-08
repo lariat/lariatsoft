@@ -43,19 +43,22 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
-find_ups_product( art v1_10_00 )
+find_ups_product( art v1_12_02 )
 find_ups_root( root v5_34_18 )
 
 # these are the larsoft products 
-find_ups_product( larsoft         v2_06_01 )
-find_ups_product( larcore         v2_06_00 )
-find_ups_product( lardata         v2_06_01 )
-find_ups_product( larevt          v2_06_01 )
-find_ups_product( larsim          v2_06_01 )
-find_ups_product( larreco         v2_06_01 )
-find_ups_product( larana          v2_06_01 )
-find_ups_product( larpandora      v2_06_01 )
-find_ups_product( lareventdisplay v2_06_01 )
+find_ups_product( larsoft         v03_02_00 )
+find_ups_product( larcore         v03_02_00 )
+find_ups_product( lardata         v03_02_00 )
+find_ups_product( larevt          v03_02_00 )
+find_ups_product( larsim          v03_02_00 )
+find_ups_product( larreco         v03_02_00 )
+find_ups_product( larana          v03_02_00 )
+find_ups_product( larpandora      v03_02_00 )
+find_ups_product( lareventdisplay v03_02_00 )
+
+# products that LArIAT needs for input data
+find_ups_product( LariatFilters   v01_00   )
 
 # macros for artdaq_dictionary and simple_plugin
 include(ArtDictionary)
