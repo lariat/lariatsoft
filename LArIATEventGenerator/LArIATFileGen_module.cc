@@ -400,7 +400,7 @@ namespace evgen{
     
     
     TDatabasePDG  pdgt;
-    double m;
+    double m = 0.;
     std::cout << " building index on time on the subtree - this make also take a while " << std::endl;
     TNtupleSmall->BuildIndex("tHalo*1000000");  //sorting on integers, need microseconds
     TTreeIndex *index = (TTreeIndex*)TNtupleSmall->GetTreeIndex();
@@ -477,11 +477,12 @@ namespace evgen{
 	  PDG=PDGidHalo;
 	  }
       
-          
+        
 	TParticlePDG* pdgp = pdgt.GetParticle(PDG);
 	if (pdgp) m = pdgp->Mass();
+	
 	double Ener=std::sqrt((Px*Px+Py*Py+Pz*Pz)/1000./1000.+m*m);
-    
+
 	//      titatnium window position wrt. TPCActive (based on gdml file wdisk)
       // in gdml	    (-0,435 ,0.2 ,-84.54646643)
       // to transfer into LArSOFT coordinates, X changes by HalfWidth
