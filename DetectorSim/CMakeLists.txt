@@ -5,14 +5,14 @@ include_directories( $ENV{LARSIM_INC}     )
 include_directories( $ENV{POSTGRESQL_INC} )
 
 simple_plugin(SimWireLArIAT "module"
-			${SIMULATION}
-	                ${RAWDATA}
-	                ${GEOMETRY}
-	                ${GEOMETRY_SERVICE}
-			${LARFFT_SERVICE}
-			${LARPROPERTIES_SERVICE}
-			${DETECTORPROPERTIES_SERVICE}
-			${UTILITIES}
+			Simulation
+	                RawData
+	                Geometry
+	                Geometry_service
+			LArFFT_service
+			LArProperties_service
+			DetectorProperties_service
+			Utilities
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
