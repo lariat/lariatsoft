@@ -43,7 +43,6 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
   // Reset kernels.
 
   fColSignalShaping.Reset();
-  fIndUSignalShaping.Reset();
   fIndVSignalShaping.Reset();
 
   // Fetch fcl parameters.
@@ -54,7 +53,6 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
   fCol3DCorrection = pset.get<double>("Col3DCorrection");
   fInd3DCorrection = pset.get<double>("Ind3DCorrection");
   fColFieldRespAmp = pset.get<double>("ColFieldRespAmp");
-  fIndUFieldRespAmp = pset.get<double>("IndUFieldRespAmp");
   fIndVFieldRespAmp = pset.get<double>("IndVFieldRespAmp");
   fShapeTimeConst = pset.get<std::vector<double> >("ShapeTimeConst");
 
@@ -77,12 +75,6 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
     
     // Construct parameterized induction filter function.
 
-    std::string indUFilt = pset.get<std::string>("IndUFilter");
-    std::vector<double> indUFiltParams = pset.get<std::vector<double> >("IndUFilterParams");
-    fIndUFilterFunc = new TF1("indUFilter", indUFilt.c_str());
-    for(unsigned int i=0; i<indUFiltParams.size(); ++i)
-      fIndUFilterFunc->SetParameter(i, indUFiltParams[i]);
-
     std::string indVFilt = pset.get<std::string>("IndVFilter");
     std::vector<double> indVFiltParams = pset.get<std::vector<double> >("IndVFilterParams");
     fIndVFilterFunc = new TF1("indVFilter", indVFilt.c_str());
@@ -92,7 +84,8 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
   
     std::string histoname = pset.get<std::string>("FilterHistoName");
     mf::LogInfo("SignalShapingServiceT1034") << " using filter from .root file " ;
-    int fNPlanes=3;
+    //art::ServiceHandle<geo::Geometry> geom;
+    int fNPlanes=2;
    
     // constructor decides if initialized value is a path or an environment variable
     std::string fname;
@@ -121,12 +114,6 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
 
     // Construct parameterized induction filter function.
     
-    std::string indUField = pset.get<std::string>("IndUFieldShape");
-    std::vector<double> indUFieldParams = pset.get<std::vector<double> >("IndUFieldParams");
-    fIndUFieldFunc = new TF1("indUField", indUField.c_str());
-    for(unsigned int i=0; i<indUFieldParams.size(); ++i)
-      fIndUFieldFunc->SetParameter(i, indUFieldParams[i]);
-    // Warning, last parameter needs to be multiplied by the FFTSize, in current version of the code,
     
     std::string indVField = pset.get<std::string>("IndVFieldShape");
     std::vector<double> indVFieldParams = pset.get<std::vector<double> >("IndVFieldParams");
@@ -160,7 +147,7 @@ util::SignalShapingServiceT1034::SignalShaping(unsigned int channel) const
 
   geo::SigType_t sigtype = geom->SignalType(channel);
   if (sigtype == geo::kInduction)
-      return fIndUSignalShaping;
+      return fIndVSignalShaping;
   else if (sigtype == geo::kCollection)
       return fColSignalShaping;
   else
@@ -201,10 +188,6 @@ void util::SignalShapingServiceT1034::init()
     fColSignalShaping.AddResponseFunction(fElectResponse);
     fColSignalShaping.SetPeakResponseTime(0.);
 
-    fIndUSignalShaping.AddResponseFunction(fIndUFieldResponse);
-    fIndUSignalShaping.AddResponseFunction(fElectResponse);
-    fIndUSignalShaping.SetPeakResponseTime(0.);
-
     fIndVSignalShaping.AddResponseFunction(fIndVFieldResponse);
     fIndVSignalShaping.AddResponseFunction(fElectResponse);
     fIndVSignalShaping.SetPeakResponseTime(0.);
@@ -217,9 +200,6 @@ void util::SignalShapingServiceT1034::init()
 
     fColSignalShaping.AddFilterFunction(fColFilter);
     fColSignalShaping.CalculateDeconvKernel();
-
-    fIndUSignalShaping.AddFilterFunction(fIndUFilter);
-    fIndUSignalShaping.CalculateDeconvKernel();
 
     fIndVSignalShaping.AddFilterFunction(fIndVFilter);
     fIndVSignalShaping.CalculateDeconvKernel();
@@ -251,7 +231,6 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
   double pitch = xyz2[0] - xyz1[0]; ///in cm
 
   fColFieldResponse.resize(fNFieldBins, 0.);
-  fIndUFieldResponse.resize(fNFieldBins, 0.);
   fIndVFieldResponse.resize(fNFieldBins, 0.);
 
   // set the response for the collection plane first
@@ -272,11 +251,9 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     std::vector<double> bipolar(signalSize);    
     
     fColFieldResponse.resize(signalSize, 0.);
-    fIndUFieldResponse.resize(signalSize, 0.);
     fIndVFieldResponse.resize(signalSize, 0.);
    
     // Hardcoding. Bad. Temporary hopefully.
-    fIndUFieldFunc->SetParameter(4,fIndUFieldFunc->GetParameter(4)*signalSize);
     fIndVFieldFunc->SetParameter(4,fIndVFieldFunc->GetParameter(4)*signalSize);
 
     for(int i = 0; i < signalSize; i++) {
@@ -284,8 +261,6 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
       fColFieldResponse[i]=ramp[i];
       integral += fColFieldResponse[i];
       // rampc->Fill(i,ramp[i]);
-      bipolar[i]=fIndUFieldFunc->Eval(i);
-      fIndUFieldResponse[i]=bipolar[i];
       bipolar[i]=fIndVFieldFunc->Eval(i);
       fIndVFieldResponse[i]=bipolar[i];
       // bipol->Fill(i,bipolar[i]);
@@ -296,7 +271,6 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     }
       
     //this might be not necessary if the function definition is not defined in the middle of the signal range  
-    fft->ShiftData(fIndUFieldResponse,signalSize/2.0);
     fft->ShiftData(fIndVFieldResponse,signalSize/2.0);
 
   } else if (fUseSimpleFieldShape) {
@@ -322,64 +296,8 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     }
 
     //const int nbiniOld = 6;
-    const int nbinuPlane = 228;
-    // now induction plane 0 ("U")
-    // this response function has a very long (first) positive lobe, ~ 100 usec
-    // So for starters, we us the single-lobe filter
+  
 
-    double uPlaneResponse[nbinuPlane] = {
-      0, 0.0001881008778, 0.0003762017556, 0.0005643026334, 0.0007524035112, 
-      0.000940504389,  0.001128605267,  0.001316706145,  0.001504807022,    0.0016929079, 
-      0.001881008778,  0.002069109656,  0.002257210534,  0.002445311411,  0.002633412289, 
-      0.002821513167,  0.003009614045,  0.003197714923,    0.0033858158,  0.003573916678, 
-      0.003762017556,  0.003950118434,  0.004138219312,  0.004326320189,  0.004514421067, 
-      0.004702521945,  0.004890622823,  0.005078723701,  0.005266824579,  0.005454925456, 
-      0.005643026334,  0.005831127212,   0.00601922809,  0.006207328968,  0.006395429845, 
-      0.006583530723,  0.006771631601,  0.006959732479,  0.007147833357,  0.007335934234, 
-      0.007524035112,   0.00771213599,  0.007900236868,  0.008088337746,  0.008276438623, 
-      0.008464539501,  0.008652640379,  0.008840741257,  0.009028842135,  0.009216943012, 
-      0.00940504389,  0.009593144768,  0.009781245646,  0.009969346524,    0.0101574474, 
-      0.01034554828,   0.01053364916,   0.01072175003,   0.01090985091,   0.01109795179, 
-      0.01128605267,   0.01147415355,   0.01166225442,    0.0118503553,   0.01203845618, 
-      0.01222655706,   0.01241465794,   0.01260275881,   0.01279085969,   0.01297896057, 
-      0.01316706145,   0.01335516232,    0.0135432632,   0.01373136408,   0.01391946496, 
-      0.01410756584,   0.01429566671,   0.01448376759,   0.01467186847,   0.01485996935, 
-      0.01504807022,    0.0152361711,   0.01542427198,   0.01561237286,   0.01580047374, 
-      0.01598857461,   0.01617667549,   0.01636477637,   0.01655287725,   0.01674097812, 
-      0.016929079,   0.01711717988,   0.01730528076,   0.01749338164,   0.01768148251, 
-      0.01786958339,   0.01805768427,   0.01824578515,   0.01843388602,    0.0186219869, 
-      0.01881008778,   0.01899818866,   0.01918628954,   0.01937439041,   0.01956249129, 
-      0.01975059217,   0.01993869305,   0.02012679393,    0.0203148948,   0.02050299568, 
-      0.02069109656,   0.02087919744,   0.02106729831,   0.02125539919,   0.02144350007, 
-      0.02163160095,   0.02181970183,    0.0220078027,   0.02219590358,   0.02238400446, 
-      0.02257210534,   0.02302354744,   0.02347498955,   0.02392643166,   0.02437787376, 
-      0.02482931587,   0.02528075798,   0.02573220008,   0.02618364219,    0.0266350843, 
-      0.0270865264,   0.02753796851,   0.02798941062,   0.02844085272,   0.02889229483, 
-      0.02934373694,   0.02979517904,   0.03024662115,   0.03069806326,   0.03114950536, 
-      0.03160094747,    0.0321652501,   0.03272955274,   0.03329385537,     0.033858158, 
-      0.03442246064,   0.03498676327,    0.0355510659,   0.03611536854,   0.03667967117, 
-      0.03724397381,   0.03780827644,   0.03837257907,   0.03893688171,   0.03950118434, 
-      0.04006548697,   0.04062978961,   0.04119409224,   0.04175839487,   0.04232269751, 
-      0.04288700014,    0.0435641633,   0.04424132646,   0.04491848962,   0.04559565278, 
-      0.04627281594,    0.0469499791,   0.04762714226,   0.04830430542,   0.04898146858, 
-      0.04965863174,    0.0503357949,   0.05101295806,   0.05169012122,   0.05236728438, 
-      0.05304444754,    0.0537216107,   0.05439877386,   0.05507593702,   0.05575310018, 
-      0.05643026334,    0.0572579072,   0.05808555107,   0.05891319493,   0.05974083879, 
-      0.06056848265,   0.06139612652,   0.06222377038,   0.06305141424,    0.0638790581, 
-      0.06470670196,   0.06553434583,   0.06636198969,   0.06718963355,   0.06801727741, 
-      0.06884492128,   0.06967256514,     0.070500209,   0.07132785286,   0.07215549673, 
-      0.07298314059,   0.07305838094,   0.07313362129,   0.07320886164,   0.07328410199, 
-      0.07335934234,   0.07524035112,   0.07524035112,   0.07524035112,   0.07524035112, 
-      0.07524035112,   0.07524035112,   0.07524035112,   0.07565835307,   0.06688031211, 
-      -1.508982036,    -1.401197605,    -1.293413174,   -0.5748502994,   -0.3233532934, 
-      -0.2694610778,   -0.2694610778,   -0.1796407186,   -0.1437125749,  -0.03592814371, 
-      0,               0,               0
-    };
-
-    for(int i = 0; i < nbinuPlane; ++i){
-      //fIndUFieldResponse[i] = fIndUFieldRespAmp*uPlaneResponse[i]/(nbiniOld);
-      fIndUFieldResponse[i] = uPlaneResponse[i]/integral;
-    }
    
     const int nbinvPlane = 20;
     double vPlaneResponse[nbinvPlane] = {
@@ -413,10 +331,7 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     // now the induction plane
     
     int nbini = TMath::Nint(fInd3DCorrection*(std::abs(pitch))/(driftvelocity*detprop->SamplingRate()));//KP
-    for(int i = 0; i < nbini; ++i){
-      fIndUFieldResponse[i] = fIndUFieldRespAmp/(1.*nbini);
-      fIndUFieldResponse[nbini+i] = -fIndUFieldRespAmp/(1.*nbini);
-    }
+   
 
     for(int i = 0; i < nbini; ++i){
       fIndVFieldResponse[i] = fIndVFieldRespAmp/(1.*nbini);
@@ -521,7 +436,6 @@ void util::SignalShapingServiceT1034::SetFilters()
   // Calculate collection filter.
 
   fColFilter.resize(n+1);
-  fIndUFilter.resize(n+1);
   fIndVFilter.resize(n+1);
   
   if(!fGetFilterFromHisto)
@@ -537,14 +451,7 @@ void util::SignalShapingServiceT1034::SetFilters()
 
   // Calculate induction filters.
  
-  fIndUFilterFunc->SetRange(0, double(n));
-
-  for(int i=0; i<=n; ++i) {
-    double freq = 500. * i / (ts * n);      // Cycles / microsecond.
-    double f = fIndUFilterFunc->Eval(freq);
-    fIndUFilter[i] = TComplex(f, 0.);
-    }
-
+ 
    fIndVFilterFunc->SetRange(0, double(n));
 
   for(int i=0; i<=n; ++i) {
@@ -558,17 +465,15 @@ void util::SignalShapingServiceT1034::SetFilters()
   {
     
     for(int i=0; i<=n; ++i) {
-      double f = fFilterHist[2]->GetBinContent(i);  // hardcoded plane numbers. Bad. To change later.
+      double f = fFilterHist[1]->GetBinContent(i);  // hardcoded plane numbers. Bad. but detector specific. Leaving for now.
       fColFilter[i] = TComplex(f, 0.);
-      double g = fFilterHist[1]->GetBinContent(i);
+      double g = fFilterHist[0]->GetBinContent(i);
       fIndVFilter[i] = TComplex(g, 0.);
-      double h = fFilterHist[0]->GetBinContent(i);
-      fIndUFilter[i] = TComplex(h, 0.);
+  
       
     }
   }
   
-  fIndUSignalShaping.AddFilterFunction(fIndUFilter);
   fIndVSignalShaping.AddFilterFunction(fIndVFilter);
   fColSignalShaping.AddFilterFunction(fColFilter);
   

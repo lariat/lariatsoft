@@ -98,11 +98,9 @@ namespace util {
     double fInd3DCorrection;  			///< correction factor to account for 3D path of 
 						///< electrons thru wires
     double fColFieldRespAmp;  			///< amplitude of response to field 
-    double fIndUFieldRespAmp;  			///< amplitude of response to field in U plane
     double fIndVFieldRespAmp;  			///< amplitude of response to field in V plane
     std::vector<double> fShapeTimeConst;  	///< time constants for exponential shaping
     TF1* fColFilterFunc;      			///< Parameterized collection filter function.
-    TF1* fIndUFilterFunc;      			///< Parameterized induction filter function for U plane.
     TF1* fIndVFilterFunc;      			///< Parameterized induction filter function for V plane
 
     
@@ -110,20 +108,19 @@ namespace util {
     bool fUseSimpleFieldShape;                 ///< Flag that turns on new field response shapes
     bool fGetFilterFromHisto;   		///< Flag that allows to use a filter function from a histogram instead of the functional dependency
     TF1* fColFieldFunc;      			///< Parameterized collection field shape function.
-    TF1* fIndUFieldFunc;      			///< Parameterized induction field shape function for U plane.
     TF1* fIndVFieldFunc;      			///< Parameterized induction field shape function for V plane.
     
-    TH1D *fFilterHist[3];    			///< Histogram used to hold the collection filter, hardcoded for the time being
+    TH1D *fFilterHist[2];    			///< Histogram used to hold the collection filter, hardcoded for the time being
     
     // Following attributes hold the convolution and deconvolution kernels
 
-    util::SignalShaping fIndUSignalShaping;
+    
     util::SignalShaping fIndVSignalShaping;
     util::SignalShaping fColSignalShaping;
 
     // Field response.
 
-    std::vector<double> fIndUFieldResponse;
+    
     std::vector<double> fIndVFieldResponse;
     std::vector<double> fColFieldResponse;
 
@@ -133,7 +130,7 @@ namespace util {
 
     // Filters.
 
-    std::vector<TComplex> fIndUFilter;
+    
     std::vector<TComplex> fIndVFilter;
     std::vector<TComplex> fColFilter;
   };
