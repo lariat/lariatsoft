@@ -2,22 +2,24 @@
 # This line defines the product name and version
 parent	lariatsoft develop
 #parent	lariatsoft v0_00_01
-defaultqual	e5
+defaultqual	e6
 
 # dependencies on external packages
 product         version
-larsoft		v02_04_00
-gcc		v4_8_2
 
-# list products required ONLY for the build
-# any products here must NOT have qualifiers
-only_for_build  cetbuildtools   v3_11_00
+larsoft		v03_03_01
+LariatFilters   v01_00
+
+cetbuildtools   v4_02_02 - only_for_build
+end_product_list
   
-# e5  - with gcc 4.8.2 and -std=c++11
-qualifier	larsoft 	gcc	notes
-e5:debug	e5:debug	-nq-	
-e5:opt		e5:opt		-nq-	
-e5:prof		e5:prof		-nq-	
+# e6  - with gcc 4.9.1 and -std=c++11
+qualifier	larsoft   LariatFilters notes
+e6:debug	e6:debug  -nq-
+e6:opt		e6:opt	  -nq-
+e6:prof		e6:prof	  -nq-
+
+end_qualifier_list
 
 # table file fragment to set FW_DATA
 table_fragment_begin

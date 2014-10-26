@@ -1,4 +1,9 @@
 
+include_directories( $ENV{LARDATA_INC}    )
+include_directories( $ENV{LARCORE_INC}    )
+include_directories( $ENV{LARSIM_INC}     )
+include_directories( $ENV{POSTGRESQL_INC} )
+
 simple_plugin(SimWireT1034 "module"
 			Geometry
                         Geometry_service
