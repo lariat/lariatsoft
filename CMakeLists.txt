@@ -65,13 +65,21 @@ include(ArtDictionary)
 include(ArtMake)
 include(BuildPlugins)
 
+if( DEFINED ENV{LARIATONLINE_INC} )
+  MESSAGE("LARIATONLILNE_INC is set to $ENV{LARIATONLINE_INC}")
+else()
+  SET(ENV{LARIATONLINE_INC} "${CMAKE_SOURCE_DIR}/lariat-online")
+  MESSAGE("SETTING LARIATONLILNE_INC to ${CMAKE_SOURCE_DIR}/lariat-online $ENV{LARIATONLINE_INC}")
+endif()
+
 # source
 add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
+add_subdirectory(JobConfigurations)
 add_subdirectory(LArIATEventGenerator)
 add_subdirectory(LArSoftConfigurations)
-add_subdirectory(JobConfigurations)
+add_subdirectory(RawDataUtilities)
 add_subdirectory(LongBo)
 
 # ups - table and config files
