@@ -206,20 +206,20 @@ void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFr
       data.dstof1_logic.clear();
       data.dstof2_logic.clear();
       
-      CAENFragment::WaveForm const& waveForm2 = *(caenFrag.dataBegin() + 2);
-      CAENFragment::WaveForm const& waveForm3 = *(caenFrag.dataBegin() + 3);
-      CAENFragment::WaveForm const& waveForm4 = *(caenFrag.dataBegin() + 4);
-      CAENFragment::WaveForm const& waveForm5 = *(caenFrag.dataBegin() + 5);
-      CAENFragment::WaveForm const& waveForm6 = *(caenFrag.dataBegin() + 6);
-      CAENFragment::WaveForm const& waveForm7 = *(caenFrag.dataBegin() + 7);
-      for(size_t time = 0; time < caenFrag.getHeader()->nSamples; ++time){
-	data.ustof1_logic.push_back(waveForm2.data[time]);
-	data.ustof2_logic.push_back(waveForm3.data[time]);
-	data.ustof3_logic.push_back(waveForm4.data[time]);
-	data.ustof4_logic.push_back(waveForm5.data[time]);
-	data.dstof1_logic.push_back(waveForm6.data[time]);
-	data.dstof2_logic.push_back(waveForm7.data[time]);
-      }
+      // CAENFragment::WaveForm const& waveForm2 = *(caenFrag.dataBegin() + 2);
+      // CAENFragment::WaveForm const& waveForm3 = *(caenFrag.dataBegin() + 3);
+      // CAENFragment::WaveForm const& waveForm4 = *(caenFrag.dataBegin() + 4);
+      // CAENFragment::WaveForm const& waveForm5 = *(caenFrag.dataBegin() + 5);
+      // CAENFragment::WaveForm const& waveForm6 = *(caenFrag.dataBegin() + 6);
+      // CAENFragment::WaveForm const& waveForm7 = *(caenFrag.dataBegin() + 7);
+      // for(size_t time = 0; time < caenFrag.getHeader()->nSamples; ++time){
+      // 	data.ustof1_logic.push_back(waveForm2.data[time]);
+      // 	data.ustof2_logic.push_back(waveForm3.data[time]);
+      // 	data.ustof3_logic.push_back(waveForm4.data[time]);
+      // 	data.ustof4_logic.push_back(waveForm5.data[time]);
+      // 	data.dstof1_logic.push_back(waveForm6.data[time]);
+      // 	data.dstof2_logic.push_back(waveForm7.data[time]);
+      // }
       
       fCAENs.push_back(data);
       
