@@ -23,13 +23,11 @@
 #include "artdaq-core/Data/Fragment.hh"
 
 #include "daq/include/LariatFragment.h"
+#include "daq/include/WUTFragment.h"
+#include "daq/include/CAENFragment.h"
 #include "daq/lariat-artdaq/lariat-artdaq/Overlays/GenericFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/WUTHitFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/V1495HitFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/CAENADCFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCEventFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCControllerFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCSpillFragment.hh"
+#include "daq/lariat-artdaq/lariat-artdaq/Overlays/WUTWrapperFragment.hh"
+#include "daq/lariat-artdaq/lariat-artdaq/Overlays/CAENWrapperFragment.hh"
 #include "daq/lariat-artdaq/lariat-artdaq/ArtModules/ModuleUtils.hh"
 
 #include "TTree.h"
@@ -187,18 +185,19 @@ void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFr
   fCAENs.clear();
   CAENData data;
   for(size_t i = 0; i < numberCaenFrags; ++i) {
-    lariat::CAENADCFragment caenFrag(caenFragPtrs[i]);
+    lariat::CAENWrapperFragment caenWrapper(caenFragPtrs[i]);
+    CAENFragment const& frag = *(caenWrapper.GetCAENFragment());
     
-    if (caenFrag.getHeader()->boardId == 8) {
+    if (frag.header.boardId == 8) {
 
       fSpill.fragment_id = i;
-      data.trigger_time_tag = caenFrag.getHeader()->triggerTimeTag;
+      data.trigger_time_tag = frag.header.triggerTimeTag;
       
       LOG_VERBATIM("LArIATFragmentReader") << "///////////////////////////////////////"
 					   << "\nFragment number: " << fSpill.fragment_id 
 					   << "\n///////////////////////////////////////"
-					   << "\nBoard ID: " << caenFrag.getHeader()->boardId
-					   << "\nNumber of samples: " << caenFrag.getHeader()->nSamples;
+					   << "\nBoard ID: " << frag.header.boardId
+					   << "\nNumber of samples: " << frag.header.nSamples;
       data.ustof1_logic.clear();
       data.ustof2_logic.clear();
       data.ustof3_logic.clear();
@@ -206,20 +205,14 @@ void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFr
       data.dstof1_logic.clear();
       data.dstof2_logic.clear();
       
-      // CAENFragment::WaveForm const& waveForm2 = *(caenFrag.dataBegin() + 2);
-      // CAENFragment::WaveForm const& waveForm3 = *(caenFrag.dataBegin() + 3);
-      // CAENFragment::WaveForm const& waveForm4 = *(caenFrag.dataBegin() + 4);
-      // CAENFragment::WaveForm const& waveForm5 = *(caenFrag.dataBegin() + 5);
-      // CAENFragment::WaveForm const& waveForm6 = *(caenFrag.dataBegin() + 6);
-      // CAENFragment::WaveForm const& waveForm7 = *(caenFrag.dataBegin() + 7);
-      // for(size_t time = 0; time < caenFrag.getHeader()->nSamples; ++time){
-      // 	data.ustof1_logic.push_back(waveForm2.data[time]);
-      // 	data.ustof2_logic.push_back(waveForm3.data[time]);
-      // 	data.ustof3_logic.push_back(waveForm4.data[time]);
-      // 	data.ustof4_logic.push_back(waveForm5.data[time]);
-      // 	data.dstof1_logic.push_back(waveForm6.data[time]);
-      // 	data.dstof2_logic.push_back(waveForm7.data[time]);
-      // }
+      for(size_t time = 0; time < frag.header.nSamples; ++time){
+      	data.ustof1_logic.push_back(frag.waveForms[2].data[time]);
+      	data.ustof2_logic.push_back(frag.waveForms[3].data[time]);
+      	data.ustof3_logic.push_back(frag.waveForms[4].data[time]);
+      	data.ustof4_logic.push_back(frag.waveForms[5].data[time]);
+      	data.dstof1_logic.push_back(frag.waveForms[6].data[time]);
+      	data.dstof2_logic.push_back(frag.waveForms[7].data[time]);
+      }
       
       fCAENs.push_back(data);
       
@@ -241,9 +234,12 @@ void rdu::LArIATFragmentReader::FillWUTInfo(std::vector<const uint8_t*>& wutFrag
   WUTData data;
 
   for(size_t i = 0; i < numberWutFrags; ++i){
-    lariat::WUTHitFragment wutFrag(wutFragPtrs[i]);
+    lariat::WUTWrapperFragment wutWrapper(wutFragPtrs[i]);
 
-    size_t numberHits = wutFrag.total_values();
+    WUTFragment const& frag = *(wutWrapper.GetWUTFragment());
+
+    size_t numberHits = frag.header.nHits;
+
     LOG_VERBATIM("LArIATFragmentReader") << "  WUT fragment ID: " << i 
 					 << "\n  Number of WUT hits: " << numberHits;
 
@@ -251,10 +247,10 @@ void rdu::LArIATFragmentReader::FillWUTInfo(std::vector<const uint8_t*>& wutFrag
     data.hit_time_bin.clear();
     data.hit_time.clear();
     
-    data.time_header = wutFrag.getHeader()->timeHeader;
+    data.time_header = frag.header.timeHeader;
 
     for (size_t j = 0; j < numberHits; ++j) {
-      WUTFragment::WutHit const& hit = *(wutFrag.dataBegin() + j);
+      WUTFragment::WutHit const& hit = frag.hits[j];
       
       // hit time since beginning of spill
       uint64_t hitTime = ((uint64_t) data.time_header << 20) | ((uint64_t) hit.timeBin);

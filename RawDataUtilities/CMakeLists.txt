@@ -9,6 +9,7 @@ include_directories( $ENV{POSTGRESQL_INC}       )
 simple_plugin(LArIATFragmentReader "module"
               RawData
 	      LariatFragments
+	      ModuleUtils
               ${ART_FRAMEWORK_CORE}
 	      ${ART_FRAMEWORK_PRINCIPAL}
 	      ${ART_FRAMEWORK_SERVICES_REGISTRY}
