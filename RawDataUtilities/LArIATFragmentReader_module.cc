@@ -38,18 +38,16 @@
 namespace rdu {
   class LArIATFragmentReader;
 
-  class WUTData {
+  typedef struct{
 
-  public:
     uint32_t time_header;  // Each count in the time header is 16 us
     std::vector<uint16_t> hit_channel;
     std::vector<uint32_t> hit_time_bin;
     std::vector<uint64_t> hit_time;
-  };
+  } WUTData;
   
-  class CAENData {
+  typedef struct{
 
-  public:
     uint32_t trigger_time_tag;  // Each count in the trigger time tag is 8 ns
     std::vector<uint16_t> ustof1_logic;
     std::vector<uint16_t> ustof2_logic;
@@ -57,7 +55,7 @@ namespace rdu {
     std::vector<uint16_t> ustof4_logic;
     std::vector<uint16_t> dstof1_logic;
     std::vector<uint16_t> dstof2_logic;
-  };
+  } CAENData;
   
   typedef struct{
     uint16_t spill;
@@ -121,9 +119,18 @@ void rdu::LArIATFragmentReader::beginJob()
   art::ServiceHandle<art::TFileService> tfs;
 
   fDataTree = tfs->make<TTree>("LArIATData", "LArIATData");
-  fDataTree->Branch("event", &fSpill, "spill/i:fragment_id/i");
-  fDataTree->Branch("caen", &fCAEN);
-  fDataTree->Branch("wut",   &fWUT);
+  fDataTree->Branch("event",                 &fSpill,         "spill/i:fragment_id/i"); 
+  fDataTree->Branch("wut_time_header",       &fWUT.time_header);			   
+  fDataTree->Branch("wut_hit_channel",       &fWUT.hit_channel);			   
+  fDataTree->Branch("wut_hit_time_bin",      &fWUT.hit_time_bin);			   
+  fDataTree->Branch("wut_hit_time",          &fWUT.hit_time);                           
+  fDataTree->Branch("caen_trigger_time_tag", &fCAEN.trigger_time_tag);
+  fDataTree->Branch("caen_ustof1_logic",     &fCAEN.ustof1_logic);
+  fDataTree->Branch("caen_ustof2_logic",     &fCAEN.ustof2_logic);
+  fDataTree->Branch("caen_ustof3_logic",     &fCAEN.ustof3_logic);
+  fDataTree->Branch("caen_ustof4_logic",     &fCAEN.ustof4_logic);
+  fDataTree->Branch("caen_dstof1_logic",     &fCAEN.dstof1_logic);
+  fDataTree->Branch("caen_dstof2_logic",     &fCAEN.dstof2_logic);
 
   return;
 }
