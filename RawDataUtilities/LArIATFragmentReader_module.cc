@@ -40,14 +40,18 @@ namespace rdu {
 
   typedef struct{
 
+    uint16_t wut_spill;
+    uint16_t wut_fragment_id;
     uint32_t time_header;  // Each count in the time header is 16 us
     std::vector<uint16_t> hit_channel;
     std::vector<uint32_t> hit_time_bin;
     std::vector<uint64_t> hit_time;
   } WUTData;
-  
+
   typedef struct{
 
+    uint16_t caen_spill;
+    uint16_t caen_fragment_id;
     uint32_t trigger_time_tag;  // Each count in the trigger time tag is 8 ns
     std::vector<uint16_t> ustof1_logic;
     std::vector<uint16_t> ustof2_logic;
@@ -56,11 +60,6 @@ namespace rdu {
     std::vector<uint16_t> dstof1_logic;
     std::vector<uint16_t> dstof2_logic;
   } CAENData;
-  
-  typedef struct{
-    uint16_t spill;
-    uint16_t fragment_id;
-  } SpillInfo;
 }
 
 
@@ -88,14 +87,15 @@ private:
   void FillCAENInfo(std::vector<const uint8_t*>& caenFragPtrs);
   void FillWUTInfo(std::vector<const uint8_t*>&  wutFragPtrs);
 
-  TTree                *fDataTree;            ///< Tree holding the data from the various fragments 
-  CAENData              fCAEN;    	      ///< data from CAEN V1751				 
-  WUTData    	        fWUT;      	      ///< data from WUT				       	 
-  SpillInfo   	        fSpill;    	      ///< data from the event/spill                       
+  TTree *               fCaenDataTree;        ///< Tree holding the data from the various fragments 
+  TTree *               fWutDataTree;         ///< Tree holding the data from the various fragments 
+  CAENData              fCAEN;    	          ///< data from CAEN V1751				 
+  WUTData    	        fWUT;      	          ///< data from WUT				       	 
   std::vector<CAENData> fCAENs;               ///< collection of all CAEN fragments
   std::vector<WUTData>  fWUTs;                ///< collection of all CAEN fragments
   std::string           fRawFragmentLabel;    ///< label for module producing artdaq fragments
-  std::string  		fRawFragmentInstance; ///< instance label for artdaq fragments        
+  std::string  		    fRawFragmentInstance; ///< instance label for artdaq fragments        
+  uint16_t              fSpill;               ///< Spill number
 };
 
 
@@ -118,19 +118,26 @@ void rdu::LArIATFragmentReader::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
 
-  fDataTree = tfs->make<TTree>("LArIATData", "LArIATData");
-  fDataTree->Branch("event",                 &fSpill,         "spill/i:fragment_id/i"); 
-  fDataTree->Branch("wut_time_header",       &fWUT.time_header);			   
-  fDataTree->Branch("wut_hit_channel",       &fWUT.hit_channel);			   
-  fDataTree->Branch("wut_hit_time_bin",      &fWUT.hit_time_bin);			   
-  fDataTree->Branch("wut_hit_time",          &fWUT.hit_time);                           
-  fDataTree->Branch("caen_trigger_time_tag", &fCAEN.trigger_time_tag);
-  fDataTree->Branch("caen_ustof1_logic",     &fCAEN.ustof1_logic);
-  fDataTree->Branch("caen_ustof2_logic",     &fCAEN.ustof2_logic);
-  fDataTree->Branch("caen_ustof3_logic",     &fCAEN.ustof3_logic);
-  fDataTree->Branch("caen_ustof4_logic",     &fCAEN.ustof4_logic);
-  fDataTree->Branch("caen_dstof1_logic",     &fCAEN.dstof1_logic);
-  fDataTree->Branch("caen_dstof2_logic",     &fCAEN.dstof2_logic);
+  //fWutDataTree = tfs->make<TTree>("WutData", "WutData");
+  fWutDataTree = tfs->make<TTree>("wut", "wut");
+  fWutDataTree->Branch("spill",                 &fWUT.wut_spill);
+  fWutDataTree->Branch("fragment_id",           &fWUT.wut_fragment_id);
+  fWutDataTree->Branch("wut_time_header",       &fWUT.time_header);
+  fWutDataTree->Branch("wut_hit_channel",       &fWUT.hit_channel);
+  fWutDataTree->Branch("wut_hit_time_bin",      &fWUT.hit_time_bin);
+  fWutDataTree->Branch("wut_hit_time",          &fWUT.hit_time);
+
+  //fCaenDataTree = tfs->make<TTree>("CaenData", "CaenData");
+  fCaenDataTree = tfs->make<TTree>("v1751", "v1751");
+  fCaenDataTree->Branch("spill",                 &fCAEN.caen_spill);
+  fCaenDataTree->Branch("fragment_id",           &fCAEN.caen_fragment_id);
+  fCaenDataTree->Branch("caen_trigger_time_tag", &fCAEN.trigger_time_tag);
+  fCaenDataTree->Branch("caen_ustof1_logic",     &fCAEN.ustof1_logic);
+  fCaenDataTree->Branch("caen_ustof2_logic",     &fCAEN.ustof2_logic);
+  fCaenDataTree->Branch("caen_ustof3_logic",     &fCAEN.ustof3_logic);
+  fCaenDataTree->Branch("caen_ustof4_logic",     &fCAEN.ustof4_logic);
+  fCaenDataTree->Branch("caen_dstof1_logic",     &fCAEN.dstof1_logic);
+  fCaenDataTree->Branch("caen_dstof2_logic",     &fCAEN.dstof2_logic);
 
   return;
 }
@@ -145,6 +152,8 @@ void rdu::LArIATFragmentReader::analyze(art::Event const & e)
     throw cet::exception("LARIATFragementReader") << "artdaq::Fragment handle is not valid, bail";
   if( fragments->size() != 1 )
     throw cet::exception("LARIATFragementReader") << "artdaq::Fragment handle contains more than one fragment, bail";
+
+  fSpill = (uint16_t) e.id().event();
 
   // get the fragments we are interested in
   const auto& frag((*fragments)[0]);
@@ -164,20 +173,16 @@ void rdu::LArIATFragmentReader::analyze(art::Event const & e)
 			     caenFragPtrs);
   this->FillCAENInfo(caenFragPtrs);
 
-
-  // fill the trees
-  if( fWUTs.size() != fCAENs.size() )
-    throw cet::exception("LArIATFragmentReader") << "Different number of CAEN and WUT fragments - is that expected?";
-
-  fSpill.spill = e.id().event();
-
   for(size_t s = 0; s < fCAENs.size(); ++s){
-    fWUT  = fWUTs[s];
     fCAEN = fCAENs[s];
-
-    fDataTree->Fill();
+    fCaenDataTree->Fill();
   }
-  
+
+  for(size_t s = 0; s < fWUTs.size(); ++s){
+    fWUT  = fWUTs[s];
+    fWutDataTree->Fill();
+  }
+
   return;  
 }
 
@@ -186,33 +191,34 @@ void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFr
 {
   const size_t numberCaenFrags = caenFragPtrs.size();
   LOG_VERBATIM("LArIATFragmentReader") << "Found " << numberCaenFrags << " CAEN fragments";
-  
+
   LOG_VERBATIM("LArIATFragmentReader") << "Looking at CAEN fragments...";
 
   fCAENs.clear();
   CAENData data;
-  for(size_t i = 0; i < numberCaenFrags; ++i) {
+  for (size_t i = 0; i < numberCaenFrags; ++i) {
     lariat::CAENWrapperFragment caenWrapper(caenFragPtrs[i]);
     CAENFragment const& frag = *(caenWrapper.GetCAENFragment());
-    
+
     if (frag.header.boardId == 8) {
 
-      fSpill.fragment_id = i;
+      data.caen_spill = fSpill;
+      data.caen_fragment_id = (uint16_t) i;
       data.trigger_time_tag = frag.header.triggerTimeTag;
-      
+
       LOG_VERBATIM("LArIATFragmentReader") << "///////////////////////////////////////"
-					   << "\nFragment number: " << fSpill.fragment_id 
-					   << "\n///////////////////////////////////////"
-					   << "\nBoard ID: " << frag.header.boardId
-					   << "\nNumber of samples: " << frag.header.nSamples;
+                << "\nFragment number: " << i
+                << "\n///////////////////////////////////////"
+                << "\nBoard ID: " << frag.header.boardId
+                << "\nNumber of samples: " << frag.header.nSamples;
       data.ustof1_logic.clear();
       data.ustof2_logic.clear();
       data.ustof3_logic.clear();
       data.ustof4_logic.clear();
       data.dstof1_logic.clear();
       data.dstof2_logic.clear();
-      
-      for(size_t time = 0; time < frag.header.nSamples; ++time){
+
+      for (size_t time = 0; time < frag.header.nSamples; ++time) {
       	data.ustof1_logic.push_back(frag.waveForms[2].data[time]);
       	data.ustof2_logic.push_back(frag.waveForms[3].data[time]);
       	data.ustof3_logic.push_back(frag.waveForms[4].data[time]);
@@ -220,12 +226,12 @@ void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFr
       	data.dstof1_logic.push_back(frag.waveForms[6].data[time]);
       	data.dstof2_logic.push_back(frag.waveForms[7].data[time]);
       }
-      
-      fCAENs.push_back(data);
-      
-    }// end if board ID is 8
 
-  }// end loop over fragment pointers
+      fCAENs.push_back(data);
+
+    } // end if board ID is 8
+
+  } // end loop over fragment pointers
 
   return;
 }
@@ -240,7 +246,7 @@ void rdu::LArIATFragmentReader::FillWUTInfo(std::vector<const uint8_t*>& wutFrag
   fWUTs.clear();
   WUTData data;
 
-  for(size_t i = 0; i < numberWutFrags; ++i){
+  for (size_t i = 0; i < numberWutFrags; ++i) {
     lariat::WUTWrapperFragment wutWrapper(wutFragPtrs[i]);
 
     WUTFragment const& frag = *(wutWrapper.GetWUTFragment());
@@ -253,15 +259,17 @@ void rdu::LArIATFragmentReader::FillWUTInfo(std::vector<const uint8_t*>& wutFrag
     data.hit_channel.clear();
     data.hit_time_bin.clear();
     data.hit_time.clear();
-    
+
+    data.wut_spill = fSpill;
+    data.wut_fragment_id = (uint16_t) i;
     data.time_header = frag.header.timeHeader;
 
     for (size_t j = 0; j < numberHits; ++j) {
       WUTFragment::WutHit const& hit = frag.hits[j];
-      
+
       // hit time since beginning of spill
       uint64_t hitTime = ((uint64_t) data.time_header << 20) | ((uint64_t) hit.timeBin);
-      
+
       data.hit_channel.push_back((uint16_t) hit.channel);
       data.hit_time_bin.push_back(hit.timeBin);
       data.hit_time.push_back(hitTime);
@@ -272,10 +280,10 @@ void rdu::LArIATFragmentReader::FillWUTInfo(std::vector<const uint8_t*>& wutFrag
 					   << "\n  Time since BOS: " << hitTime
 					   << "\n  Time since BOS (s): " << hitTime * 15.625e-12 ;
 
-    }// end loop over WUT hits
+    } // end loop over WUT hits
 
     fWUTs.push_back(data);
-  }// end loop over WUT fragment pointers
+  } // end loop over WUT fragment pointers
 
   return;
 }
