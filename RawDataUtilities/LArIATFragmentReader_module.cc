@@ -25,9 +25,13 @@
 #include "daq/include/LariatFragment.h"
 #include "daq/include/WUTFragment.h"
 #include "daq/include/CAENFragment.h"
+#include "daq/include/TDCFragment.h"
 #include "daq/lariat-artdaq/lariat-artdaq/Overlays/GenericFragment.hh"
 #include "daq/lariat-artdaq/lariat-artdaq/Overlays/WUTWrapperFragment.hh"
 #include "daq/lariat-artdaq/lariat-artdaq/Overlays/CAENWrapperFragment.hh"
+#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCControllerFragment.hh"
+#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCSpillFragment.hh"
+#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCEventFragment.hh"
 #include "daq/lariat-artdaq/lariat-artdaq/ArtModules/ModuleUtils.hh"
 
 #include "TTree.h"
@@ -128,7 +132,7 @@ void rdu::LArIATFragmentReader::beginJob()
   fWutDataTree->Branch("wut_hit_time",          &fWUT.hit_time);
 
   //fCaenDataTree = tfs->make<TTree>("CaenData", "CaenData");
-  fCaenDataTree = tfs->make<TTree>("v1751", "v1751");
+  fCaenDataTree = tfs->make<TTree>("caen", "caen");
   fCaenDataTree->Branch("spill",                 &fCAEN.caen_spill);
   fCaenDataTree->Branch("fragment_id",           &fCAEN.caen_fragment_id);
   fCaenDataTree->Branch("caen_trigger_time_tag", &fCAEN.trigger_time_tag);
@@ -143,23 +147,26 @@ void rdu::LArIATFragmentReader::beginJob()
 }
 
 //------------------------------------------------------------------------------
-void rdu::LArIATFragmentReader::analyze(art::Event const & e)
+void rdu::LArIATFragmentReader::analyze(art::Event const & evt)
 {
   art::Handle< std::vector<artdaq::Fragment> > fragments;
-  e.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
+  evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
 
   if( !fragments.isValid() )
     throw cet::exception("LARIATFragementReader") << "artdaq::Fragment handle is not valid, bail";
   if( fragments->size() != 1 )
     throw cet::exception("LARIATFragementReader") << "artdaq::Fragment handle contains more than one fragment, bail";
 
-  fSpill = (uint16_t) e.id().event();
+  fSpill = (uint16_t) evt.id().event();
 
   // get the fragments we are interested in
   const auto& frag((*fragments)[0]);
 
   std::vector<const uint8_t*> wutFragPtrs;
   std::vector<const uint8_t*> caenFragPtrs;
+  std::vector<const uint8_t*> tdcControllerFragPtrs;
+  std::vector<const uint8_t*> tdcSpillFragPtrs;
+  std::vector<const uint8_t*> tdcEventFragPtrs;
 
   // first the WUT fragments
   lariat::getLariatFragments(frag, 
@@ -173,6 +180,20 @@ void rdu::LArIATFragmentReader::analyze(art::Event const & e)
 			     caenFragPtrs);
   this->FillCAENInfo(caenFragPtrs);
 
+  // get the TDC fragments
+  lariat::getLariatFragments(frag, 
+                 LariatFragment::LariatFragmentType::FRAGMENT_TYPE_TDC_CONTROLLER_HEADER,
+                 tdcControllerFragPtrs);
+  lariat::getLariatFragments(frag, 
+                 LariatFragment::LariatFragmentType::FRAGMENT_TYPE_TDC_TDC_SPILL_HEADER,
+                 tdcSpillFragPtrs);
+  lariat::getLariatFragments(frag, 
+                 LariatFragment::LariatFragmentType::FRAGMENT_TYPE_TDC_TDC_EVENT_HEADER,
+                 tdcEventFragPtrs);
+
+  std::cout << "Run " << evt.run() << ", subrun " << evt.subRun()
+            << ", spill " << fSpill << std::endl;
+
   for(size_t s = 0; s < fCAENs.size(); ++s){
     fCAEN = fCAENs[s];
     fCaenDataTree->Fill();
@@ -181,6 +202,36 @@ void rdu::LArIATFragmentReader::analyze(art::Event const & e)
   for(size_t s = 0; s < fWUTs.size(); ++s){
     fWUT  = fWUTs[s];
     fWutDataTree->Fill();
+  }
+
+  std::cout << "////////////////////////////////////////" << std::endl;
+  std::cout << "Dumping TDC controller fragments" << std::endl;
+  std::cout << "////////////////////////////////////////" << std::endl;
+  for (size_t s = 0; s < tdcControllerFragPtrs.size(); ++s) {
+    lariat::TDCControllerFragment tdcc(tdcControllerFragPtrs[s]);
+    tdcc.printHeader();
+  }
+
+  std::cout << "////////////////////////////////////////" << std::endl;
+  std::cout << "Dumping TDC spill fragments" << std::endl;
+  std::cout << "////////////////////////////////////////" << std::endl;
+  for (size_t s = 0; s < tdcSpillFragPtrs.size(); ++s) {
+    lariat::TDCSpillFragment tdcs(tdcSpillFragPtrs[s]);
+    tdcs.printHeader();
+  }
+
+  std::cout << "////////////////////////////////////////" << std::endl;
+  std::cout << "Dumping TDC event fragments" << std::endl;
+  std::cout << "////////////////////////////////////////" << std::endl;
+  for (size_t s = 0; s < tdcEventFragPtrs.size(); ++s) {
+    lariat::TDCEventFragment tdce(tdcEventFragPtrs[s]);
+    tdce.printHeader();
+    //std::cout << "TDC number: " << (uint16_t) tdce.getHeader()->tdcNumber << std::endl;
+    //std::cout << "Number of hits: " << (uint16_t) tdce.getHeader()->nHits << std::endl;
+    for (auto hit = tdce.dataBegin(); hit != tdce.dataEnd(); ++hit) {
+        std::cout << "channel: " << (uint16_t) hit->channel << std::endl;
+        std::cout << "timeBin: " << (uint16_t) hit->timeBin << std::endl;
+    }
   }
 
   return;  
