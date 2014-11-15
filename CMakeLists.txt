@@ -59,7 +59,7 @@ find_ups_product( lareventdisplay v03_02_04 )
 
 # products that LArIAT needs for input data
 find_ups_product( LariatFilters   v01_00    )
-find_ups_product( lariatonline    v01_01_01 )
+find_ups_product( lariatonline    v01_00_03 )
 
 # macros for artdaq_dictionary and simple_plugin
 include(ArtDictionary)
