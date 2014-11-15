@@ -7,11 +7,11 @@ defaultqual	e6
 # dependencies on external packages
 product         version
 
-larsoft		v03_03_01
+larsoft		v03_04_01
 LariatFilters   v01_00
-lariatonline    v01_01_00
+lariatonline    v01_01_01
 
-cetbuildtools   v4_02_02 - only_for_build
+cetbuildtools   v4_03_03 - only_for_build
 end_product_list
   
 # e6  - with gcc 4.9.1 and -std=c++11
