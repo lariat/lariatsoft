@@ -6,6 +6,7 @@
 #include "simulationservices_lariat.fcl"
 #include "magfield.fcl"
 #include "databaseutil_lariat.fcl"
+#include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
 
 BEGIN_PROLOG
@@ -18,6 +19,7 @@ lariat_services:
  LArProperties:          @local::lariat_properties	   
  LArFFT:                 @local::lariat_larfft  	 
  DatabaseUtil:	         @local::lariat_database     
+ TimeService:            @local::lariat_timeservice
  BackTracker:            @local::standard_backtracker  
 }
 
@@ -32,6 +34,7 @@ lariat_simulation_services:
  LArProperties:          @local::lariat_properties          
  LArFFT:                 @local::lariat_larfft              
  DatabaseUtil:	         @local::lariat_database            
+ TimeService:            @local::lariat_timeservice
  BackTracker:            @local::standard_backtracker         
 }
 
