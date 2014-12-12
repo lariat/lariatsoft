@@ -7,7 +7,7 @@ defaultqual	e6
 # dependencies on external packages
 product         version
 
-larsoft		v03_04_01
+larsoft		v03_04_05
 LariatFilters   v01_00
 lariatonline    v01_00_03
 
