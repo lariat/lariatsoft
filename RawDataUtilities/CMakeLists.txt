@@ -1,6 +1,7 @@
 
 include_directories( $ENV{ARTDAQ_CORE_INC}      )
 include_directories( $ENV{LARIATONLINE_INC}/daq )
+include_directories( $ENV{LARIATONLINE_INC}/daq/include )
 include_directories( $ENV{LARDATA_INC}          )
 include_directories( $ENV{LARCORE_INC}          )
 include_directories( $ENV{LARSIM_INC}           )

@@ -47,7 +47,7 @@ find_ups_product( art v1_12_04 )
 find_ups_root( root v5_34_18 )
 
 # these are the larsoft products 
-find_ups_product( larsoft         v03_04_01 )
+find_ups_product( larsoft         v03_04_05 )
 find_ups_product( larcore         v03_03_01 )
 find_ups_product( lardata         v03_03_01 )
 find_ups_product( larevt          v03_02_04 )
@@ -59,7 +59,7 @@ find_ups_product( lareventdisplay v03_02_04 )
 
 # products that LArIAT needs for input data
 find_ups_product( LariatFilters   v01_00    )
-find_ups_product( lariatonline    v01_00_03 )
+find_ups_product( lariatonline    v01_01_00 )
 
 # macros for artdaq_dictionary and simple_plugin
 include(ArtDictionary)
@@ -80,9 +80,7 @@ add_subdirectory(Utilities)
 add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
-add_subdirectory(JobConfigurations)
 add_subdirectory(LArIATEventGenerator)
-add_subdirectory(LArSoftConfigurations)
 add_subdirectory(RawDataUtilities)
 add_subdirectory(LongBo)
 
