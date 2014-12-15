@@ -249,7 +249,7 @@ void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFr
   CAENData data;
   for (size_t i = 0; i < numberCaenFrags; ++i) {
     lariat::CAENWrapperFragment caenWrapper(caenFragPtrs[i]);
-    CAENFragment const& frag = *(caenWrapper.GetCAENFragment());
+    CAENFragment const& frag = *(caenWrapper.GetFragment());
 
     if (frag.header.boardId == 8) {
 
@@ -300,7 +300,7 @@ void rdu::LArIATFragmentReader::FillWUTInfo(std::vector<const uint8_t*>& wutFrag
   for (size_t i = 0; i < numberWutFrags; ++i) {
     lariat::WUTWrapperFragment wutWrapper(wutFragPtrs[i]);
 
-    WUTFragment const& frag = *(wutWrapper.GetWUTFragment());
+    WUTFragment const& frag = *(wutWrapper.GetFragment());
 
     size_t numberHits = frag.header.nHits;
 
