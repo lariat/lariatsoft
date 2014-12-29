@@ -43,7 +43,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
-find_ups_product( art v1_12_04 )
+find_ups_product( art v1_12_02 )
 find_ups_root( root v5_34_18 )
 
 # these are the larsoft products 
