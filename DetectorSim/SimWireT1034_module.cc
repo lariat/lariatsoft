@@ -7,7 +7,7 @@
 //
 // - Revised to use sim::RawDigit instead of rawdata::RawDigit, and to
 // - save the electron clusters associated with each digit.
-// - ported from the MicroBooNE class by A.Szlec
+// - ported from the MicroBooNE class by A.Szelc
 ////////////////////////////////////////////////////////////////////////
 #include <vector>
 #include <string>
@@ -271,7 +271,7 @@ namespace detsim {
 
 	  chargeWork.at(t) = sc->Charge(tdc);
 
-	
+		  
 	  
 	}
 
@@ -316,6 +316,7 @@ namespace detsim {
 	if ( adcval < 0 )
 	  adcval = 0;
 
+	
 	adcvec.at(i) = (unsigned short)(adcval);
 
       }// end loop over signal size
@@ -404,6 +405,7 @@ namespace detsim {
 	  
 	  pval = fNoiseHist->GetBinContent(i)*((1-fNoiseRand)+2*fNoiseRand*rnd[0])*fNoiseFact; 
 	  //mf::LogInfo("SimWireT1034")  << " pval: " << pval;
+	//  std::cout << " noise " << i << " " << pval << " " << fNoiseHist->GetBinContent(i) << std::endl;
 	}
       
       phase = rnd[1]*2.*TMath::Pi();

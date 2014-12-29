@@ -243,26 +243,28 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
 
     art::ServiceHandle<util::LArFFT> fft;
     int signalSize = fft->FFTSize();
-    std::vector<double> ramp(signalSize);
+ //   std::vector<double> ramp(signalSize);
     // TComplex kernBin;
     // int size = signalSize/2;
     // int bin=0;
     //std::vector<TComplex> freqSig(size+1);
-    std::vector<double> bipolar(signalSize);    
+ //   std::vector<double> bipolar(signalSize);    
     
     fColFieldResponse.resize(signalSize, 0.);
     fIndVFieldResponse.resize(signalSize, 0.);
-   
+    
+  
+    
     // Hardcoding. Bad. Temporary hopefully.
-    fIndVFieldFunc->SetParameter(4,fIndVFieldFunc->GetParameter(4)*signalSize);
+  //  fIndVFieldFunc->SetParameter(4,fIndVFieldFunc->GetParameter(4)*signalSize);
 
     for(int i = 0; i < signalSize; i++) {
-      ramp[i]=fColFieldFunc->Eval(i);
-      fColFieldResponse[i]=ramp[i];
+     //ramp[i]=;
+      fColFieldResponse[i]=fColFieldFunc->Eval(i);
       integral += fColFieldResponse[i];
       // rampc->Fill(i,ramp[i]);
-      bipolar[i]=fIndVFieldFunc->Eval(i);
-      fIndVFieldResponse[i]=bipolar[i];
+      //bipolar[i]=
+      fIndVFieldResponse[i]=fIndVFieldFunc->Eval(i);
       // bipol->Fill(i,bipolar[i]);
     }
      
@@ -271,7 +273,7 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     }
       
     //this might be not necessary if the function definition is not defined in the middle of the signal range  
-    fft->ShiftData(fIndVFieldResponse,signalSize/2.0);
+   // fft->ShiftData(fIndVFieldResponse,signalSize/2.0);
 
   } else if (fUseSimpleFieldShape) {
    
