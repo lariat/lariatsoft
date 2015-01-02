@@ -7,9 +7,9 @@ defaultqual	e6
 # dependencies on external packages
 product         version
 
-larsoft		v03_04_01
+larsoft		v03_04_06
 LariatFilters   v01_00
-lariatonline    v01_01_04
+lariatonline    v01_01_08
 
 cetbuildtools   v4_03_03 - only_for_build
 end_product_list
