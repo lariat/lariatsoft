@@ -15,6 +15,7 @@
 #include <sstream>
 #include <fstream>
 #include <bitset>
+#include <iostream>
 
 extern "C" {
 #include <sys/types.h>
@@ -188,7 +189,8 @@ namespace detsim {
     fNoiseDist  = tfs->make<TH1D>("Noise", ";Noise  (ADC);", 1000,   -10., 10.);
 
     art::ServiceHandle<util::LArFFT> fFFT;
-    fNTicks = fFFT->FFTSize();
+    fNTicks = 2048; //Used to extend noise from 1536 ticks to 2048 for reconstruction purposes, was fFFT->FFTSize();
+    fNTimeSamples = fNTicks; //same deal as ^
 
    if ( fNTicks%2 != 0 ) 
       LOG_DEBUG("SimWireT1034") << "Warning: FFTSize not a power of 2. "
@@ -305,6 +307,8 @@ namespace detsim {
       for(unsigned int i = 0; i < fNTimeSamples; ++i){
  	float adcval = noisetmp.at(i) + chargeWork.at(i) + ped_mean;
 	
+	
+
 	//Add Noise to NoiseDist Histogram
 	if (i%100==0)
 	  fNoiseDist->Fill(noisetmp.at(i));
@@ -426,7 +430,7 @@ namespace detsim {
     // divides each bin by fNTicks assuming that a forward FFT
     // has already been done.
     for(unsigned int i = 0; i < noise.size(); ++i) noise.at(i) *= 1.*fNTicks;
-
+    
   }
   
   
