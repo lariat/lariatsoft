@@ -189,8 +189,8 @@ namespace detsim {
     fNoiseDist  = tfs->make<TH1D>("Noise", ";Noise  (ADC);", 1000,   -10., 10.);
 
     art::ServiceHandle<util::LArFFT> fFFT;
-    fNTicks = 2048; //Used to extend noise from 1536 ticks to 2048 for reconstruction purposes, was fFFT->FFTSize();
-    fNTimeSamples = fNTicks; //same deal as ^
+    fNTicks = fFFT->FFTSize();
+    fNTimeSamples = fNTicks; //Used to extend noise from 1536 ticks to 2048 for reconstruction purposes
 
    if ( fNTicks%2 != 0 ) 
       LOG_DEBUG("SimWireT1034") << "Warning: FFTSize not a power of 2. "
