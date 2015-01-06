@@ -190,7 +190,6 @@ namespace detsim {
 
     art::ServiceHandle<util::LArFFT> fFFT;
     fNTicks = fFFT->FFTSize();
-    fNTimeSamples = fNTicks; //Used to extend noise from 1536 ticks to 2048 for reconstruction purposes
 
    if ( fNTicks%2 != 0 ) 
       LOG_DEBUG("SimWireT1034") << "Warning: FFTSize not a power of 2. "
@@ -304,7 +303,7 @@ namespace detsim {
       CLHEP::RandGaussQ rGaussPed(engine, 0.0, fBaselineRMS);
       ped_mean += rGaussPed.fire();
       
-      for(unsigned int i = 0; i < fNTimeSamples; ++i){
+      for(unsigned int i = 0; i < fNTicks; ++i){
  	float adcval = noisetmp.at(i) + chargeWork.at(i) + ped_mean;
 	
 	
