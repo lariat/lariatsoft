@@ -238,7 +238,7 @@ namespace detsim {
     const auto NChannels = geo->Nchannels();
 
     // vectors for working
-    std::vector<short>    adcvec(fNTimeSamples, 0);
+    std::vector<short>    adcvec(fNTicks, 0);
     std::vector<double>   chargeWork(fNTicks,0.);
 
    
@@ -335,7 +335,7 @@ namespace detsim {
       raw::Compress(adcvec, fCompression); 
       
       // add this digit to the collection
-      raw::RawDigit rd(chan, fNTimeSamples, adcvec, fCompression);
+      raw::RawDigit rd(chan,fNTicks,adcvec,fCompression);// fNTimeSamples, adcvec, fCompression);
       rd.SetPedestal(ped_mean);
       digcol->push_back(rd);
 
