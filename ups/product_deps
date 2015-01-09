@@ -8,14 +8,14 @@ defaultqual	e6
 product         version
 
 larsoft		v03_04_06
-LariatFilters   v01_00
-lariatonline    v01_01_08
+LariatFilters   v01_01
+lariatfragments v01_00_00
 
 cetbuildtools   v4_03_03 - only_for_build
 end_product_list
   
 # e6  - with gcc 4.9.1 and -std=c++11
-qualifier	larsoft   LariatFilters	lariatonline notes
+qualifier	larsoft   LariatFilters	lariatfragments notes
 e6:debug	e6:debug  -nq-		e6:debug
 e6:opt		e6:opt	  -nq-		e6:opt
 e6:prof		e6:prof	  -nq-		e6:prof

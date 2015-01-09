@@ -19,11 +19,10 @@
 
 #include "artdaq-core/Data/Fragment.hh"
 
-#include "daq/include/LariatFragment.h"
-#include "daq/include/WUTFragment.h"
-#include "daq/include/CAENFragment.h"
-#include "daq/include/TDCFragment.h"
-#include "daq/lariat-artdaq/lariat-artdaq/ArtModules/ModuleUtils.hh"
+#include "LariatFragment.h"
+#include "WUTFragment.h"
+#include "CAENFragment.h"
+#include "TDCFragment.h"
 
 #include "TTree.h"
 

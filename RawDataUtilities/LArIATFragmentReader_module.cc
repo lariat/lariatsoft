@@ -22,17 +22,10 @@
 
 #include "artdaq-core/Data/Fragment.hh"
 
-#include "daq/include/LariatFragment.h"
-#include "daq/include/WUTFragment.h"
-#include "daq/include/CAENFragment.h"
-#include "daq/include/TDCFragment.h"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/GenericFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/WUTWrapperFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/CAENWrapperFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCControllerFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCSpillFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCEventFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/ArtModules/ModuleUtils.hh"
+#include "LariatFragment.h"
+#include "WUTFragment.h"
+#include "CAENFragment.h"
+#include "TDCFragment.h"
 
 #include "TTree.h"
 
@@ -88,8 +81,8 @@ public:
 
 private:
 
-  void FillCAENInfo(std::vector<const uint8_t*>& caenFragPtrs);
-  void FillWUTInfo(std::vector<const uint8_t*>&  wutFragPtrs);
+  void FillCAENInfo(LariatFragment const& lariatFrag);
+  void FillWUTInfo (LariatFragment const& lariatFrag);
 
   TTree *               fCaenDataTree;        ///< Tree holding the data from the various fragments 
   TTree *               fWutDataTree;         ///< Tree holding the data from the various fragments 
@@ -162,34 +155,13 @@ void rdu::LArIATFragmentReader::analyze(art::Event const & evt)
   // get the fragments we are interested in
   const auto& frag((*fragments)[0]);
 
-  std::vector<const uint8_t*> wutFragPtrs;
-  std::vector<const uint8_t*> caenFragPtrs;
-  std::vector<const uint8_t*> tdcControllerFragPtrs;
-  std::vector<const uint8_t*> tdcSpillFragPtrs;
-  std::vector<const uint8_t*> tdcEventFragPtrs;
+  char const* bytePtr = reinterpret_cast<char const*> (&*frag.dataBegin());
 
-  // first the WUT fragments
-  lariat::getLariatFragments(frag, 
-			     LariatFragment::LariatFragmentType::FRAGMENT_TYPE_WUT_HIT_HEADER,
-			     wutFragPtrs);
-  this->FillWUTInfo(wutFragPtrs);
+  LariatFragment lariatFrag((char *)bytePtr, frag.dataSize() * sizeof(unsigned long long));
 
-  // now get the CAEN fragments
-  lariat::getLariatFragments(frag, 
-			     LariatFragment::LariatFragmentType::FRAGMENT_TYPE_CAEN_ADC,
-			     caenFragPtrs);
-  this->FillCAENInfo(caenFragPtrs);
+  this->FillWUTInfo(lariatFrag);
 
-  // get the TDC fragments
-  lariat::getLariatFragments(frag, 
-                 LariatFragment::LariatFragmentType::FRAGMENT_TYPE_TDC_CONTROLLER_HEADER,
-                 tdcControllerFragPtrs);
-  lariat::getLariatFragments(frag, 
-                 LariatFragment::LariatFragmentType::FRAGMENT_TYPE_TDC_TDC_SPILL_HEADER,
-                 tdcSpillFragPtrs);
-  lariat::getLariatFragments(frag, 
-                 LariatFragment::LariatFragmentType::FRAGMENT_TYPE_TDC_TDC_EVENT_HEADER,
-                 tdcEventFragPtrs);
+  this->FillCAENInfo(lariatFrag);
 
   std::cout << "Run " << evt.run() << ", subrun " << evt.subRun()
             << ", spill " << fSpill << std::endl;
@@ -207,40 +179,18 @@ void rdu::LArIATFragmentReader::analyze(art::Event const & evt)
   std::cout << "////////////////////////////////////////" << std::endl;
   std::cout << "Dumping TDC controller fragments" << std::endl;
   std::cout << "////////////////////////////////////////" << std::endl;
-  for (size_t s = 0; s < tdcControllerFragPtrs.size(); ++s) {
-    lariat::TDCControllerFragment tdcc(tdcControllerFragPtrs[s]);
-    tdcc.printHeader();
-  }
-
-  std::cout << "////////////////////////////////////////" << std::endl;
-  std::cout << "Dumping TDC spill fragments" << std::endl;
-  std::cout << "////////////////////////////////////////" << std::endl;
-  for (size_t s = 0; s < tdcSpillFragPtrs.size(); ++s) {
-    lariat::TDCSpillFragment tdcs(tdcSpillFragPtrs[s]);
-    tdcs.printHeader();
-  }
-
-  std::cout << "////////////////////////////////////////" << std::endl;
-  std::cout << "Dumping TDC event fragments" << std::endl;
-  std::cout << "////////////////////////////////////////" << std::endl;
-  for (size_t s = 0; s < tdcEventFragPtrs.size(); ++s) {
-    lariat::TDCEventFragment tdce(tdcEventFragPtrs[s]);
-    tdce.printHeader();
-    //std::cout << "TDC number: " << (uint16_t) tdce.getHeader()->tdcNumber << std::endl;
-    //std::cout << "Number of hits: " << (uint16_t) tdce.getHeader()->nHits << std::endl;
-    for (auto hit = tdce.dataBegin(); hit != tdce.dataEnd(); ++hit) {
-        std::cout << "channel: " << (uint16_t) hit->channel << std::endl;
-        std::cout << "timeBin: " << (uint16_t) hit->timeBin << std::endl;
-    }
+  for (size_t s = 0; s < lariatFrag.tdcFrags.size(); ++s) {
+    lariatFrag.tdcFrags[s].print();
   }
 
   return;  
 }
 
 //------------------------------------------------------------------------------
-void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFragPtrs)
+void rdu::LArIATFragmentReader::FillCAENInfo(LariatFragment const& lariatFrag)
 {
-  const size_t numberCaenFrags = caenFragPtrs.size();
+  
+  const size_t numberCaenFrags = lariatFrag.caenFrags.size();
   LOG_VERBATIM("LArIATFragmentReader") << "Found " << numberCaenFrags << " CAEN fragments";
 
   LOG_VERBATIM("LArIATFragmentReader") << "Looking at CAEN fragments...";
@@ -248,8 +198,7 @@ void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFr
   fCAENs.clear();
   CAENData data;
   for (size_t i = 0; i < numberCaenFrags; ++i) {
-    lariat::CAENWrapperFragment caenWrapper(caenFragPtrs[i]);
-    CAENFragment const& frag = *(caenWrapper.GetFragment());
+    CAENFragment const& frag = lariatFrag.caenFrags[i];
 
     if (frag.header.boardId == 8) {
 
@@ -288,19 +237,17 @@ void rdu::LArIATFragmentReader::FillCAENInfo(std::vector<const uint8_t*>& caenFr
 }
 
 //------------------------------------------------------------------------------
-void rdu::LArIATFragmentReader::FillWUTInfo(std::vector<const uint8_t*>& wutFragPtrs)
+void rdu::LArIATFragmentReader::FillWUTInfo(LariatFragment const& lariatFrag)
 {
 
-  const size_t numberWutFrags = wutFragPtrs.size();
+  const size_t numberWutFrags = lariatFrag.wutFrags.size();
   LOG_VERBATIM("LArIATFragmentReader") << "Found " << numberWutFrags << " WUT fragments";
 
   fWUTs.clear();
   WUTData data;
 
   for (size_t i = 0; i < numberWutFrags; ++i) {
-    lariat::WUTWrapperFragment wutWrapper(wutFragPtrs[i]);
-
-    WUTFragment const& frag = *(wutWrapper.GetFragment());
+    WUTFragment const& frag = lariatFrag.wutFrags[i];
 
     size_t numberHits = frag.header.nHits;
 
