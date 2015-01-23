@@ -8,6 +8,7 @@
 #include "databaseutil_lariat.fcl"
 #include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
+#include "sam_lariat.fcl"
 
 BEGIN_PROLOG
 
