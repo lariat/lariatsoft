@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v00_01_00
+parent	lariatsoft v00_01_02
 #parent	lariatsoft v0_00_01
 defaultqual	e6
 
@@ -11,6 +11,7 @@ larsoft		v03_04_06
 LariatFilters   v01_01
 lariatfragments v01_00_00
 artdaq_core     v1_04_07
+lariatutil      v01_10_00
 
 cetbuildtools   v4_03_03 - only_for_build
 end_product_list
