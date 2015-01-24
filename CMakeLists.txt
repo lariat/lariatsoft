@@ -43,8 +43,6 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
 cet_report_compiler_flags()
 
 # these are minimum required versions, not the actual product versions
-find_ups_product( art v1_12_02 )
-find_ups_root( root v5_34_18 )
 
 # these are the larsoft products 
 find_ups_product( larsoft         v03_04_05 )
@@ -57,32 +55,31 @@ find_ups_product( larana          v03_03_01 )
 find_ups_product( larpandora      v03_03_03 )
 find_ups_product( lareventdisplay v03_02_04 )
 
+# art related products
+find_ups_product( art             v1_12_02 )
+find_ups_product( artdaq_core     v1_04_06 )
+
 # products that LArIAT needs for input data
 find_ups_product( LariatFilters   v01_00    )
-find_ups_product( lariatonline    v01_01_00 )
+find_ups_product( lariatfragments v01_00_00 )
+
+find_ups_root( root v5_34_18 )
 
 # macros for artdaq_dictionary and simple_plugin
 include(ArtDictionary)
 include(ArtMake)
 include(BuildPlugins)
 
-if( DEFINED ENV{LARIATONLINE_INC} )
-  MESSAGE("LARIATONLILNE_INC is set to $ENV{LARIATONLINE_INC}")
-else()
-  SET(ENV{LARIATONLINE_INC} "${CMAKE_SOURCE_DIR}/lariatonline")
-  MESSAGE("SETTING LARIATONLILNE_INC to ${CMAKE_SOURCE_DIR}/lariatonline $ENV{LARIATONLINE_INC}")
-endif()
-
 # source
 add_subdirectory(LArSoftConfigurations)
 add_subdirectory(JobConfigurations)
-add_subdirectory(Utilities)
 add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
 add_subdirectory(LArIATEventGenerator)
 add_subdirectory(RawDataUtilities)
 add_subdirectory(LongBo)
+add_subdirectory(Utilities)
 
 # ups - table and config files
 add_subdirectory(ups)

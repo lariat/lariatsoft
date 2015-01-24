@@ -1,16 +1,14 @@
 
-include_directories( $ENV{ARTDAQ_CORE_INC}      )
-include_directories( $ENV{LARIATONLINE_INC}/daq )
-include_directories( $ENV{LARIATONLINE_INC}/daq/include )
-include_directories( $ENV{LARDATA_INC}          )
-include_directories( $ENV{LARCORE_INC}          )
-include_directories( $ENV{LARSIM_INC}           )
-include_directories( $ENV{POSTGRESQL_INC}       )
+include_directories( $ENV{ARTDAQ_CORE_INC}                     )
+include_directories( $ENV{LARIATFRAGMENTS_INC}/LArIATFragments )
+include_directories( $ENV{LARDATA_INC}                         )
+include_directories( $ENV{LARCORE_INC}          	       )
+include_directories( $ENV{LARSIM_INC}           	       )
+include_directories( $ENV{POSTGRESQL_INC}       	       )
 
 simple_plugin(LArIATFragmentReader "module"
               RawData
-	      LariatFragments
-	      ModuleUtils
+	      LArIATFragments
               ${ART_FRAMEWORK_CORE}
 	      ${ART_FRAMEWORK_PRINCIPAL}
 	      ${ART_FRAMEWORK_SERVICES_REGISTRY}
