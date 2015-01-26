@@ -45,7 +45,7 @@ cet_report_compiler_flags()
 # these are minimum required versions, not the actual product versions
 
 # these are the larsoft products 
-find_ups_product( larsoft         v03_04_01 )
+find_ups_product( larsoft         v03_04_05 )
 find_ups_product( larcore         v03_03_01 )
 find_ups_product( lardata         v03_03_01 )
 find_ups_product( larevt          v03_02_04 )
@@ -71,12 +71,12 @@ include(ArtMake)
 include(BuildPlugins)
 
 # source
+add_subdirectory(LArSoftConfigurations)
+add_subdirectory(JobConfigurations)
 add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
-add_subdirectory(JobConfigurations)
 add_subdirectory(LArIATEventGenerator)
-add_subdirectory(LArSoftConfigurations)
 add_subdirectory(RawDataUtilities)
 add_subdirectory(LongBo)
 add_subdirectory(Utilities)

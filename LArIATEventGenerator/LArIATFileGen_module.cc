@@ -51,8 +51,82 @@
 
 namespace simb { class MCTruth; }
 
+
+// ##helper class to avoid hardcoding branches. For now, for lack of a smarter solution am assuiming that TrackPresent is the last variable.
+// ## all things will go to hell if it's not.
+
+
+
+
+
+
 namespace evgen {
 
+  
+  
+  class det_info{
+    
+public:
+    
+  det_info(std::vector< std::string > var_names, std::string detname);
+  void SetBranches(TTree * TNtuple,std::vector< std::string > var_names);
+  
+
+  
+  std::vector< TBranch *> b_obj;
+  std::vector< TString > branchname;
+  double x,y,z,t,Px,Py,Pz,PDGid,ParentID;
+  bool TrackPresent;
+  int nvars;
+  
+};
+
+det_info::det_info(std::vector< std::string > var_names, std::string detname)
+{
+ nvars =var_names.size();
+ b_obj.resize(nvars);
+ branchname.resize(nvars);
+// value.resize(nvars); 
+ for(int i=0;i<nvars;i++)
+ {
+   branchname[i]=var_names[i]+detname;
+ }
+   
+ TrackPresent=false;
+}
+  
+  
+void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
+{
+  for(unsigned int br_id=0;br_id<var_names.size();br_id++)
+      {
+      if(var_names[br_id]=="x")	
+        TNtuple->SetBranchAddress(branchname[br_id], &x, &b_obj[br_id]);
+      else if(var_names[br_id]=="y")	 
+	TNtuple->SetBranchAddress(branchname[br_id], &y, &b_obj[br_id]);
+      else if(var_names[br_id]=="z")	 
+	TNtuple->SetBranchAddress(branchname[br_id], &z, &b_obj[br_id]);
+      else if(var_names[br_id]=="t")	 
+	TNtuple->SetBranchAddress(branchname[br_id], &t, &b_obj[br_id]);
+      else if(var_names[br_id]=="Px")	
+        TNtuple->SetBranchAddress(branchname[br_id], &Px, &b_obj[br_id]);
+      else if(var_names[br_id]=="Py")	 
+	TNtuple->SetBranchAddress(branchname[br_id], &Py, &b_obj[br_id]);
+      else if(var_names[br_id]=="Pz")	 
+	TNtuple->SetBranchAddress(branchname[br_id], &Pz, &b_obj[br_id]);
+      else if(var_names[br_id]=="PDGid")	 
+	TNtuple->SetBranchAddress(branchname[br_id], &PDGid, &b_obj[br_id]);
+       else if(var_names[br_id]=="TrackPresent")	 
+	TNtuple->SetBranchAddress(branchname[br_id], &TrackPresent, &b_obj[br_id]);
+   
+      }
+      
+  
+  
+}
+  
+  
+  
     
   class EventFrame{
     public:
@@ -113,14 +187,16 @@ namespace evgen {
     std::string fMuonsFileType;
     std::string fTreeName;
     std::vector<std::string> fBranchNames; 
+    std::vector<std::string> fDetectorNames; 
     int fEventSpillOffset;  // Where in file to start.
     int fEventsPerSpill;
     int fEventsPerFile; 
     int fEventFileOffset; 
     std::string fTriggerCut;
+    std::string fInnerDetName;
+    std::string fOuterDetName;
     bool fUseTrigger; 
-    
-    
+  
     
     ifstream *fMuonFile;
     TFile *fMuonFileR;
@@ -144,38 +220,38 @@ namespace evgen {
     TBranch * b_eventid, * b_trackid;
     TEntryList *elist; //used for triggered events
     
-    
-    //Det1
-    double xDet1,yDet1,zDet1,tDet1,PxDet1,PyDet1,PzDet1,PDGidDet1,ParentIDDet1;bool TrackPresentDet1;
-    
-    TBranch *b_xDet1,*b_yDet1,*b_zDet1,*b_tDet1,*b_PxDet1,*b_PyDet1,*b_PzDet1,*b_PDGidDet1,*b_ParentIDDet1,*b_TrackPresentDet1;
-    //Det2
-    double xDet2,yDet2,zDet2,tDet2,PxDet2,PyDet2,PzDet2,PDGidDet2,ParentIDDet2;bool TrackPresentDet2;
-    TBranch *b_xDet2,*b_yDet2,*b_zDet2,*b_tDet2,*b_PxDet2,*b_PyDet2,*b_PzDet2,*b_PDGidDet2,*b_ParentIDDet2,*b_TrackPresentDet2;
-    //Det3
-    double xDet3,yDet3,zDet3,tDet3,PxDet3,PyDet3,PzDet3,PDGidDet3,ParentIDDet3;bool TrackPresentDet3;
-    TBranch *b_xDet3,*b_yDet3,*b_zDet3,*b_tDet3,*b_PxDet3,*b_PyDet3,*b_PzDet3,*b_PDGidDet3,*b_ParentIDDet3,*b_TrackPresentDet3;
-    //Det4
-    double xDet4,yDet4,zDet4,tDet4,PxDet4,PyDet4,PzDet4,PDGidDet4,ParentIDDet4;bool TrackPresentDet4;
-    TBranch *b_xDet4,*b_yDet4,*b_zDet4,*b_tDet4,*b_PxDet4,*b_PyDet4,*b_PzDet4,*b_PDGidDet4,*b_ParentIDDet4,*b_TrackPresentDet4;
-    //TOFus
-    double xTOFus,yTOFus,zTOFus,tTOFus,PxTOFus,PyTOFus,PzTOFus,PDGidTOFus,ParentIDTOFus;bool TrackPresentTOFus;
-    TBranch *b_xTOFus,*b_yTOFus,*b_zTOFus,*b_tTOFus,*b_PxTOFus,*b_PyTOFus,*b_PzTOFus,*b_PDGidTOFus,*b_ParentIDTOFus,*b_TrackPresentTOFus;
-    //TODdsVert
-    double xTODdsVert,yTODdsVert,zTODdsVert,tTODdsVert,PxTODdsVert,PyTODdsVert,PzTODdsVert,PDGidTODdsVert,ParentIDTODdsVert;bool TrackPresentTODdsVert;
-    TBranch *b_xTODdsVert,*b_yTODdsVert,*b_zTODdsVert,*b_tTODdsVert,*b_PxTODdsVert,*b_PyTODdsVert,*b_PzTODdsVert,*b_PDGidTODdsVert,*b_ParentIDTODdsVert,*b_TrackPresentTODdsVert;
-    //TODdsHorz
-    double xTODdsHorz,yTODdsHorz,zTODdsHorz,tTODdsHorz,PxTODdsHorz,PyTODdsHorz,PzTODdsHorz,PDGidTODdsHorz,ParentIDTODdsHorz;bool TrackPresentTODdsHorz;
-    TBranch *b_xTODdsHorz,*b_yTODdsHorz,*b_zTODdsHorz,*b_tTODdsHorz,*b_PxTODdsHorz,*b_PyTODdsHorz,*b_PzTODdsHorz,*b_PDGidTODdsHorz,*b_ParentIDTODdsHorz,*b_TrackPresentTODdsHorz;
-    //Halo
-    double xHalo,yHalo,zHalo,tHalo,PxHalo,PyHalo,PzHalo,PDGidHalo,ParentIDHalo;bool TrackPresentHalo;
-    TBranch *b_xHalo,*b_yHalo,*b_zHalo,*b_tHalo,*b_PxHalo,*b_PyHalo,*b_PzHalo,*b_PDGidHalo,*b_ParentIDHalo,*b_TrackPresentHalo;
-    //HaloHole
-    double xHaloHole,yHaloHole,zHaloHole,tHaloHole,PxHaloHole,PyHaloHole,PzHaloHole,PDGidHaloHole,ParentIDHaloHole;bool TrackPresentHaloHole;
-    TBranch *b_xHaloHole,*b_yHaloHole,*b_zHaloHole,*b_tHaloHole,*b_PxHaloHole,*b_PyHaloHole,*b_PzHaloHole,*b_PDGidHaloHole,*b_ParentIDHaloHole,*b_TrackPresentHaloHole;
-    //TiWindow
-    double xTiWindow,yTiWindow,zTiWindow,tTiWindow,PxTiWindow,PyTiWindow,PzTiWindow,PDGidTiWindow,ParentIDTiWindow;bool TrackPresentTiWindow;
-    TBranch *b_xTiWindow,*b_yTiWindow,*b_zTiWindow,*b_tTiWindow,*b_PxTiWindow,*b_PyTiWindow,*b_PzTiWindow,*b_PDGidTiWindow,*b_ParentIDTiWindow,*b_TrackPresentTiWindow;
+    std::vector < det_info > detectors;
+//     //Det1
+//     double xDet1,yDet1,zDet1,tDet1,PxDet1,PyDet1,PzDet1,PDGidDet1,ParentIDDet1;bool TrackPresentDet1;
+//     
+//     TBranch *b_xDet1,*b_yDet1,*b_zDet1,*b_tDet1,*b_PxDet1,*b_PyDet1,*b_PzDet1,*b_PDGidDet1,*b_ParentIDDet1,*b_TrackPresentDet1;
+//     //Det2
+//     double xDet2,yDet2,zDet2,tDet2,PxDet2,PyDet2,PzDet2,PDGidDet2,ParentIDDet2;bool TrackPresentDet2;
+//     TBranch *b_xDet2,*b_yDet2,*b_zDet2,*b_tDet2,*b_PxDet2,*b_PyDet2,*b_PzDet2,*b_PDGidDet2,*b_ParentIDDet2,*b_TrackPresentDet2;
+//     //Det3
+//     double xDet3,yDet3,zDet3,tDet3,PxDet3,PyDet3,PzDet3,PDGidDet3,ParentIDDet3;bool TrackPresentDet3;
+//     TBranch *b_xDet3,*b_yDet3,*b_zDet3,*b_tDet3,*b_PxDet3,*b_PyDet3,*b_PzDet3,*b_PDGidDet3,*b_ParentIDDet3,*b_TrackPresentDet3;
+//     //Det4
+//     double xDet4,yDet4,zDet4,tDet4,PxDet4,PyDet4,PzDet4,PDGidDet4,ParentIDDet4;bool TrackPresentDet4;
+//     TBranch *b_xDet4,*b_yDet4,*b_zDet4,*b_tDet4,*b_PxDet4,*b_PyDet4,*b_PzDet4,*b_PDGidDet4,*b_ParentIDDet4,*b_TrackPresentDet4;
+//     //TOFus
+//     double xTOFus,yTOFus,zTOFus,tTOFus,PxTOFus,PyTOFus,PzTOFus,PDGidTOFus,ParentIDTOFus;bool TrackPresentTOFus;
+//     TBranch *b_xTOFus,*b_yTOFus,*b_zTOFus,*b_tTOFus,*b_PxTOFus,*b_PyTOFus,*b_PzTOFus,*b_PDGidTOFus,*b_ParentIDTOFus,*b_TrackPresentTOFus;
+//     //TODdsVert
+//     double xTODdsVert,yTODdsVert,zTODdsVert,tTODdsVert,PxTODdsVert,PyTODdsVert,PzTODdsVert,PDGidTODdsVert,ParentIDTODdsVert;bool TrackPresentTODdsVert;
+//     TBranch *b_xTODdsVert,*b_yTODdsVert,*b_zTODdsVert,*b_tTODdsVert,*b_PxTODdsVert,*b_PyTODdsVert,*b_PzTODdsVert,*b_PDGidTODdsVert,*b_ParentIDTODdsVert,*b_TrackPresentTODdsVert;
+//     //TODdsHorz
+//     double xTODdsHorz,yTODdsHorz,zTODdsHorz,tTODdsHorz,PxTODdsHorz,PyTODdsHorz,PzTODdsHorz,PDGidTODdsHorz,ParentIDTODdsHorz;bool TrackPresentTODdsHorz;
+//     TBranch *b_xTODdsHorz,*b_yTODdsHorz,*b_zTODdsHorz,*b_tTODdsHorz,*b_PxTODdsHorz,*b_PyTODdsHorz,*b_PzTODdsHorz,*b_PDGidTODdsHorz,*b_ParentIDTODdsHorz,*b_TrackPresentTODdsHorz;
+//     //Halo
+//     double xHalo,yHalo,zHalo,tHalo,PxHalo,PyHalo,PzHalo,PDGidHalo,ParentIDHalo;bool TrackPresentHalo;
+//     TBranch *b_xHalo,*b_yHalo,*b_zHalo,*b_tHalo,*b_PxHalo,*b_PyHalo,*b_PzHalo,*b_PDGidHalo,*b_ParentIDHalo,*b_TrackPresentHalo;
+//     //HaloHole
+//     double xHaloHole,yHaloHole,zHaloHole,tHaloHole,PxHaloHole,PyHaloHole,PzHaloHole,PDGidHaloHole,ParentIDHaloHole;bool TrackPresentHaloHole;
+//     TBranch *b_xHaloHole,*b_yHaloHole,*b_zHaloHole,*b_tHaloHole,*b_PxHaloHole,*b_PyHaloHole,*b_PzHaloHole,*b_PDGidHaloHole,*b_ParentIDHaloHole,*b_TrackPresentHaloHole;
+//     //TiWindow
+//     double xTiWindow,yTiWindow,zTiWindow,tTiWindow,PxTiWindow,PyTiWindow,PzTiWindow,PDGidTiWindow,ParentIDTiWindow;bool TrackPresentTiWindow;
+//     TBranch *b_xTiWindow,*b_yTiWindow,*b_zTiWindow,*b_tTiWindow,*b_PxTiWindow,*b_PyTiWindow,*b_PzTiWindow,*b_PDGidTiWindow,*b_ParentIDTiWindow,*b_TrackPresentTiWindow;
     
     std::vector<  EventFrame  > fEventFrames;
     int fEventCounter;
@@ -201,11 +277,14 @@ namespace evgen{
      , fMuonsFileType    (pset.get< std::string             	>("MuonsFileType")    	)
      , fTreeName         (pset.get< std::string   	     	>("TreeName")         	)      
      , fBranchNames      (pset.get< std::vector<std::string> 	>("BranchNames")      	)
+     , fDetectorNames    (pset.get< std::vector<std::string> 	>("DetectorNames")     	)
      , fEventSpillOffset (pset.get<int				>("EventSpillOffset")	)
      , fEventsPerSpill (pset.get<int				>("EventsPerSpill")	)
      , fEventsPerFile (pset.get<int				>("EventsPerFile")	)
      , fEventFileOffset (pset.get<int				>("EventFileOffset")	) 
-     , fTriggerCut         (pset.get< std::string     	     	>("TriggerCut")       	)  
+     , fTriggerCut         (pset.get< std::string     	     	>("TriggerCut")       	)
+     , fInnerDetName       (pset.get< std::string     	 	>("InnerDetName")      	)  
+     , fOuterDetName       (pset.get< std::string     	     	>("OuterDetName")      	)  
      , fUseTrigger(pset.get<     bool                		>("UseTrigger")		)
   {
 
@@ -243,127 +322,16 @@ namespace evgen{
     TNtuple->SetBranchAddress("EventID", &EventID, &b_eventid);
     TNtuple->SetBranchAddress("TrackID", &TrackID, &b_trackid);
     
-    //Det1
-    TNtuple->SetBranchAddress("xDet1", &xDet1, &b_xDet1);
-    TNtuple->SetBranchAddress("yDet1", &yDet1, &b_yDet1);
-    TNtuple->SetBranchAddress("zDet1", &zDet1, &b_zDet1);
-    TNtuple->SetBranchAddress("tDet1", &tDet1, &b_tDet1);
-    TNtuple->SetBranchAddress("PxDet1", &PxDet1, &b_PxDet1);
-    TNtuple->SetBranchAddress("PyDet1", &PyDet1, &b_PyDet1);
-    TNtuple->SetBranchAddress("PzDet1", &PzDet1, &b_PzDet1);
-    TNtuple->SetBranchAddress("PDGidDet1", &PDGidDet1, &b_PDGidDet1);
-    TNtuple->SetBranchAddress("ParentIDDet1", &ParentIDDet1, &b_ParentIDDet1);
-    TNtuple->SetBranchAddress("TrackPresentDet1", &TrackPresentDet1, &b_TrackPresentDet1);
-    
-    //Det2
-    TNtuple->SetBranchAddress("xDet2", &xDet2, &b_xDet2);
-    TNtuple->SetBranchAddress("yDet2", &yDet2, &b_yDet2);
-    TNtuple->SetBranchAddress("zDet2", &zDet2, &b_zDet2);
-    TNtuple->SetBranchAddress("tDet2", &tDet2, &b_tDet2);
-    TNtuple->SetBranchAddress("PxDet2", &PxDet2, &b_PxDet2);
-    TNtuple->SetBranchAddress("PyDet2", &PyDet2, &b_PyDet2);
-    TNtuple->SetBranchAddress("PzDet2", &PzDet2, &b_PzDet2);
-    TNtuple->SetBranchAddress("PDGidDet2", &PDGidDet2, &b_PDGidDet2);
-    TNtuple->SetBranchAddress("ParentIDDet2", &ParentIDDet2, &b_ParentIDDet2);
-    TNtuple->SetBranchAddress("TrackPresentDet2", &TrackPresentDet2, &b_TrackPresentDet2);
-    
-    //Det3
-    TNtuple->SetBranchAddress("xDet3", &xDet3, &b_xDet3);
-    TNtuple->SetBranchAddress("yDet3", &yDet3, &b_yDet3);
-    TNtuple->SetBranchAddress("zDet3", &zDet3, &b_zDet3);
-    TNtuple->SetBranchAddress("tDet3", &tDet3, &b_tDet3);
-    TNtuple->SetBranchAddress("PxDet3", &PxDet3, &b_PxDet3);
-    TNtuple->SetBranchAddress("PyDet3", &PyDet3, &b_PyDet3);
-    TNtuple->SetBranchAddress("PzDet3", &PzDet3, &b_PzDet3);
-    TNtuple->SetBranchAddress("PDGidDet3", &PDGidDet3, &b_PDGidDet3);
-    TNtuple->SetBranchAddress("ParentIDDet3", &ParentIDDet3, &b_ParentIDDet3);
-    TNtuple->SetBranchAddress("TrackPresentDet3", &TrackPresentDet3, &b_TrackPresentDet3);
-    
-    //Det4
-    TNtuple->SetBranchAddress("xDet4", &xDet4, &b_xDet4);
-    TNtuple->SetBranchAddress("yDet4", &yDet4, &b_yDet4);
-    TNtuple->SetBranchAddress("zDet4", &zDet4, &b_zDet4);
-    TNtuple->SetBranchAddress("tDet4", &tDet4, &b_tDet4);
-    TNtuple->SetBranchAddress("PxDet4", &PxDet4, &b_PxDet4);
-    TNtuple->SetBranchAddress("PyDet4", &PyDet4, &b_PyDet4);
-    TNtuple->SetBranchAddress("PzDet4", &PzDet4, &b_PzDet4);
-    TNtuple->SetBranchAddress("PDGidDet4", &PDGidDet4, &b_PDGidDet4);
-    TNtuple->SetBranchAddress("ParentIDDet4", &ParentIDDet4, &b_ParentIDDet4);
-    TNtuple->SetBranchAddress("TrackPresentDet4", &TrackPresentDet4, &b_TrackPresentDet4);
-    
-    //TOFus
-    TNtuple->SetBranchAddress("xTOFus", &xTOFus, &b_xTOFus);
-    TNtuple->SetBranchAddress("yTOFus", &yTOFus, &b_yTOFus);
-    TNtuple->SetBranchAddress("zTOFus", &zTOFus, &b_zTOFus);
-    TNtuple->SetBranchAddress("tTOFus", &tTOFus, &b_tTOFus);
-    TNtuple->SetBranchAddress("PxTOFus", &PxTOFus, &b_PxTOFus);
-    TNtuple->SetBranchAddress("PyTOFus", &PyTOFus, &b_PyTOFus);
-    TNtuple->SetBranchAddress("PzTOFus", &PzTOFus, &b_PzTOFus);
-    TNtuple->SetBranchAddress("PDGidTOFus", &PDGidTOFus, &b_PDGidTOFus);
-    TNtuple->SetBranchAddress("ParentIDTOFus", &ParentIDTOFus, &b_ParentIDTOFus);
-    TNtuple->SetBranchAddress("TrackPresentTOFus", &TrackPresentTOFus, &b_TrackPresentTOFus);
-    
-    //TODdsVert
-    TNtuple->SetBranchAddress("xTODdsVert", &xTODdsVert, &b_xTODdsVert);
-    TNtuple->SetBranchAddress("yTODdsVert", &yTODdsVert, &b_yTODdsVert);
-    TNtuple->SetBranchAddress("zTODdsVert", &zTODdsVert, &b_zTODdsVert);
-    TNtuple->SetBranchAddress("tTODdsVert", &tTODdsVert, &b_tTODdsVert);
-    TNtuple->SetBranchAddress("PxTODdsVert", &PxTODdsVert, &b_PxTODdsVert);
-    TNtuple->SetBranchAddress("PyTODdsVert", &PyTODdsVert, &b_PyTODdsVert);
-    TNtuple->SetBranchAddress("PzTODdsVert", &PzTODdsVert, &b_PzTODdsVert);
-    TNtuple->SetBranchAddress("PDGidTODdsVert", &PDGidTODdsVert, &b_PDGidTODdsVert);
-    TNtuple->SetBranchAddress("ParentIDTODdsVert", &ParentIDTODdsVert, &b_ParentIDTODdsVert);
-    TNtuple->SetBranchAddress("TrackPresentTODdsVert", &TrackPresentTODdsVert, &b_TrackPresentTODdsVert);
-    
-    //TODdsHorz
-    TNtuple->SetBranchAddress("xTODdsHorz", &xTODdsHorz, &b_xTODdsHorz);
-    TNtuple->SetBranchAddress("yTODdsHorz", &yTODdsHorz, &b_yTODdsHorz);
-    TNtuple->SetBranchAddress("zTODdsHorz", &zTODdsHorz, &b_zTODdsHorz);
-    TNtuple->SetBranchAddress("tTODdsHorz", &tTODdsHorz, &b_tTODdsHorz);
-    TNtuple->SetBranchAddress("PxTODdsHorz", &PxTODdsHorz, &b_PxTODdsHorz);
-    TNtuple->SetBranchAddress("PyTODdsHorz", &PyTODdsHorz, &b_PyTODdsHorz);
-    TNtuple->SetBranchAddress("PzTODdsHorz", &PzTODdsHorz, &b_PzTODdsHorz);
-    TNtuple->SetBranchAddress("PDGidTODdsHorz", &PDGidTODdsHorz, &b_PDGidTODdsHorz);
-    TNtuple->SetBranchAddress("ParentIDTODdsHorz", &ParentIDTODdsHorz, &b_ParentIDTODdsHorz);
-    TNtuple->SetBranchAddress("TrackPresentTODdsHorz", &TrackPresentTODdsHorz, &b_TrackPresentTODdsHorz);
-    
-    //Halo
-    TNtuple->SetBranchAddress("xHalo", &xHalo, &b_xHalo);
-    TNtuple->SetBranchAddress("yHalo", &yHalo, &b_yHalo);
-    TNtuple->SetBranchAddress("zHalo", &zHalo, &b_zHalo);
-    TNtuple->SetBranchAddress("tHalo", &tHalo, &b_tHalo);
-    TNtuple->SetBranchAddress("PxHalo", &PxHalo, &b_PxHalo);
-    TNtuple->SetBranchAddress("PyHalo", &PyHalo, &b_PyHalo);
-    TNtuple->SetBranchAddress("PzHalo", &PzHalo, &b_PzHalo);
-    TNtuple->SetBranchAddress("PDGidHalo", &PDGidHalo, &b_PDGidHalo);
-    TNtuple->SetBranchAddress("ParentIDHalo", &ParentIDHalo, &b_ParentIDHalo);
-    TNtuple->SetBranchAddress("TrackPresentHalo", &TrackPresentHalo, &b_TrackPresentHalo);
-    
-    //HaloHole
-    TNtuple->SetBranchAddress("xHaloHole", &xHaloHole, &b_xHaloHole);
-    TNtuple->SetBranchAddress("yHaloHole", &yHaloHole, &b_yHaloHole);
-    TNtuple->SetBranchAddress("zHaloHole", &zHaloHole, &b_zHaloHole);
-    TNtuple->SetBranchAddress("tHaloHole", &tHaloHole, &b_tHaloHole);
-    TNtuple->SetBranchAddress("PxHaloHole", &PxHaloHole, &b_PxHaloHole);
-    TNtuple->SetBranchAddress("PyHaloHole", &PyHaloHole, &b_PyHaloHole);
-    TNtuple->SetBranchAddress("PzHaloHole", &PzHaloHole, &b_PzHaloHole);
-    TNtuple->SetBranchAddress("PDGidHaloHole", &PDGidHaloHole, &b_PDGidHaloHole);
-    TNtuple->SetBranchAddress("ParentIDHaloHole", &ParentIDHaloHole, &b_ParentIDHaloHole);
-    TNtuple->SetBranchAddress("TrackPresentHaloHole", &TrackPresentHaloHole, &b_TrackPresentHaloHole);
-    
-    //TiWindow
-    TNtuple->SetBranchAddress("xTiWindow", &xTiWindow, &b_xTiWindow);
-    TNtuple->SetBranchAddress("yTiWindow", &yTiWindow, &b_yTiWindow);
-    TNtuple->SetBranchAddress("zTiWindow", &zTiWindow, &b_zTiWindow);
-    TNtuple->SetBranchAddress("tTiWindow", &tTiWindow, &b_tTiWindow);
-    TNtuple->SetBranchAddress("PxTiWindow", &PxTiWindow, &b_PxTiWindow);
-    TNtuple->SetBranchAddress("PyTiWindow", &PyTiWindow, &b_PyTiWindow);
-    TNtuple->SetBranchAddress("PzTiWindow", &PzTiWindow, &b_PzTiWindow);
-    TNtuple->SetBranchAddress("PDGidTiWindow", &PDGidTiWindow, &b_PDGidTiWindow);
-    TNtuple->SetBranchAddress("ParentIDTiWindow", &ParentIDTiWindow, &b_ParentIDTiWindow);
-    TNtuple->SetBranchAddress("TrackPresentTiWindow", &TrackPresentTiWindow, &b_TrackPresentTiWindow);
- 
-    
+    for (unsigned int detId=0;detId<fDetectorNames.size();detId++ )
+    {
+      std::cout << " setting detector branches for" << detId << fDetectorNames[detId]  << std::endl;
+      
+      detectors.push_back( det_info(fBranchNames,fDetectorNames[detId]));
+      detectors[detId].SetBranches(TNtuple,fBranchNames);
+     std::cout << " setting detector branches for" << detId << fDetectorNames[detId] << " " << detectors[detId].branchname[0] << std::endl;
+      
+    }
+     
     TFile * testfile=new TFile("out.root","RECREATE");
     TNtupleSmall = TNtuple->CloneTree(0);    
     Long64_t nentries = TNtuple->GetEntries();
@@ -414,6 +382,18 @@ namespace evgen{
       std::cout << ListNEntries << " entries in Event List " << std::endl;
     double last_tHalo_trig=0;
     
+    
+    int INNER_DET_INDEX=0;  // position in the detectors vector of the inner detector
+    int OUTER_DET_INDEX=0;  // position in the detectors vector of the outer detector
+    
+    for(unsigned int ix=0;ix<fDetectorNames.size();ix++)
+    {
+     if(fDetectorNames[ix]==fInnerDetName) 
+      INNER_DET_INDEX=ix;
+     if(fDetectorNames[ix]==fOuterDetName) 
+      OUTER_DET_INDEX=ix;
+    }
+    
     //if running with trigger then loop only on selected entries, i.e. ListNEntries
     // ir running without trigger then loop on all events and save them by frame.
     Long64_t MainIndexEntries = (fUseTrigger) ? ListNEntries : index->GetN() - 1;
@@ -431,17 +411,17 @@ namespace evgen{
 	
 	// std::cout <<  "  Selected Trigger event, i " << i << " " << EventID << " " << TrackID << " present in TrackPresentTOFus" << TrackPresentTOFus << " tHalo " <<  tHalo*1000 << " tree_entry " << tree_entry << " curr trig time and distance: "<< last_tHalo_trig*1000 << " "<< (tHalo- last_tHalo_trig)*1000 << " frtime " << frametime/1000000 << " " << last_tHalo_trig +frametime/1000000<<  std::endl;
 	
- 	if(tHalo<last_tHalo_trig+frametime/1000000) // cannot retrigger on same frame.
+ 	if(detectors[INNER_DET_INDEX].t<last_tHalo_trig+frametime/1000000) // cannot retrigger on same frame.
  	  continue;
 	
 	if(fEventFrames.size() >  (unsigned int)fEventsPerFile)  // break if too many events.
 	  break;
 	
 	if(fUseTrigger)
-	  last_tHalo_trig=tHalo;
+	  last_tHalo_trig=detectors[INNER_DET_INDEX].t;
 	else
 	  {
-	   while(tHalo > frameindex*frametime/1000000)  
+	   while(detectors[INNER_DET_INDEX].t > frameindex*frametime/1000000)  
 	      {frameindex++; }
 	   last_tHalo_trig=frameindex*frametime/1000000;
 	  }
@@ -464,17 +444,17 @@ namespace evgen{
 	
 	 double x,y,Px,Py,Pz,PDG ;//z,
       
-	if(TrackPresentHaloHole)
+	if(detectors[OUTER_DET_INDEX].TrackPresent)
 	  {
-	  x=xHaloHole;y=yHaloHole;//z=zHaloHole;
-	  Px=PxHaloHole;Py=PyHaloHole;Pz=PzHaloHole;	
-	  PDG=PDGidHaloHole;
+	  x=detectors[OUTER_DET_INDEX].x;y=detectors[OUTER_DET_INDEX].y;//z=zHaloHole;
+	  Px=detectors[OUTER_DET_INDEX].Px;Py=detectors[OUTER_DET_INDEX].Py;Pz=detectors[OUTER_DET_INDEX].Pz;	
+	  PDG=detectors[OUTER_DET_INDEX].PDGid;
 	  }
 	else
 	  {
-	  x=xHalo;y=yHalo;//z=zHalo;
-	  Px=PxHalo;Py=PyHalo;Pz=PzHalo;	
-	  PDG=PDGidHalo;
+	  x=detectors[INNER_DET_INDEX].x;y=detectors[INNER_DET_INDEX].y;//z=zHalo;
+	  Px=detectors[INNER_DET_INDEX].Px;Py=detectors[INNER_DET_INDEX].Py;Pz=detectors[INNER_DET_INDEX].Pz;	
+	  PDG=detectors[INNER_DET_INDEX].PDGid;
 	  }
       
         
@@ -489,8 +469,8 @@ namespace evgen{
       // Z changes by HalfLength. 
       // geom->CryostatHalfHeight()*0.01,geom->CryostatLength()
          
-	locPDG.push_back(PDGidHalo);
- 	locXYZ.push_back(TLorentzVector(x/10.-0.435+geom->DetHalfWidth(),y/10.+0.2,-84.54646+geom->DetLength()/2.-1,(tHalo-last_tHalo_trig)*1e9)); //convert to ns
+	locPDG.push_back(detectors[INNER_DET_INDEX].PDGid);
+ 	locXYZ.push_back(TLorentzVector(x/10.-0.435+geom->DetHalfWidth(),y/10.+0.2,-84.54646+geom->DetLength()/2.-1,(detectors[INNER_DET_INDEX].t-last_tHalo_trig)*1e9)); //convert to ns
 	locMOM.push_back(TLorentzVector(Px/1000.,Py/1000.,Pz/1000.,Ener));
 	  
 	//first back track to find particles that are one frame before:
