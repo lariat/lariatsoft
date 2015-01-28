@@ -69,7 +69,7 @@ private:
   std::vector<uint16_t> wut_hit_channel;
   std::vector<uint32_t> wut_hit_time_bin;
   std::vector<uint64_t> wut_hit_time;
-  // variables that will go into fWutDataTree
+  // variables that will go into fCaenDataTree
   uint16_t v1751_spill;
   uint16_t v1751_fragment_id;
   uint32_t v1751_trigger_time_tag;  // Each count in the trigger time tag is 8 ns
@@ -86,14 +86,10 @@ private:
   uint16_t tdc_trigger_counter;
   uint16_t tdc_controller_time_stamp;
   uint32_t tdc_time_stamp;
-  //uint64_t tdc_trigger_time_stamp;
+  uint32_t tdc_total_hits;
   std::vector<uint16_t> tdc_number;
-  //std::vector<uint16_t> tdc_number_hits;
-  //std::vector<uint16_t> tdc_hit_channel;
-  //std::vector<uint16_t> tdc_hit_time_bin;
-  std::vector<uint16_t> tdc_number_hits;
-  std::vector< std::vector<uint16_t> > tdc_hit_channel;
-  std::vector< std::vector<uint16_t> > tdc_hit_time_bin;
+  std::vector<uint16_t> tdc_hit_channel;
+  std::vector<uint16_t> tdc_hit_time_bin;
 };
 
 
@@ -114,6 +110,25 @@ void rdu::LArIATFragmentDump::reconfigure(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void rdu::LArIATFragmentDump::beginJob()
 {
+
+  size_t wut_max_hits_capacity = 4 * 128;
+
+  wut_hit_channel.reserve(wut_max_hits_capacity);
+  wut_hit_time_bin.reserve(wut_max_hits_capacity);
+
+  v1751_ustof1_logic.reserve(1792);
+  v1751_ustof2_logic.reserve(1792);
+  v1751_ustof3_logic.reserve(1792);
+  v1751_ustof4_logic.reserve(1792);
+  v1751_dstof1_logic.reserve(1792);
+  v1751_dstof2_logic.reserve(1792);
+
+  size_t tdc_max_hits_capacity = TDCFragment::MAX_TDCS * TDCFragment::MAX_HITS;
+
+  tdc_number.reserve(tdc_max_hits_capacity);
+  tdc_hit_channel.reserve(tdc_max_hits_capacity);
+  tdc_hit_time_bin.reserve(tdc_max_hits_capacity);
+
   art::ServiceHandle<art::TFileService> tfs;
 
   //fWutDataTree = tfs->make<TTree>("WutData", "WutData");
@@ -121,21 +136,30 @@ void rdu::LArIATFragmentDump::beginJob()
   //fWutDataTree->Branch("spill",                 &fWUT.wut_spill);
   fWutDataTree->Branch("fragment_id", &wut_fragment_id, "fragment_id/s");
   fWutDataTree->Branch("time_header", &wut_time_header, "time_header/i");
-  fWutDataTree->Branch("number_hits", &wut_number_hits, "number_hits/s");
-  fWutDataTree->Branch("hit_channel", &wut_hit_channel);
-  fWutDataTree->Branch("hit_time_bin", &wut_hit_time_bin);
+  fWutDataTree->Branch("total_hits", &wut_number_hits, "total_hits/s");
+  fWutDataTree->Branch("hit_channel", wut_hit_channel.data(),
+                       "hit_channel[total_hits]/s");
+  fWutDataTree->Branch("hit_time_bin", wut_hit_time_bin.data(),
+                       "hit_time_bin[total_hits]/i");
 
   //fCaenDataTree = tfs->make<TTree>("CaenData", "CaenData");
   fCaenDataTree = tfs->make<TTree>("v1751", "v1751");
   //fCaenDataTree->Branch("spill",                 &fCAEN.caen_spill);
   fCaenDataTree->Branch("fragment_id", &v1751_fragment_id, "fragment_id/s");
-  fCaenDataTree->Branch("trigger_time_tag", &v1751_trigger_time_tag, "trigger_time_tag/i");
-  fCaenDataTree->Branch("ustof1_logic", &v1751_ustof1_logic);
-  fCaenDataTree->Branch("ustof2_logic", &v1751_ustof2_logic);
-  fCaenDataTree->Branch("ustof3_logic", &v1751_ustof3_logic);
-  fCaenDataTree->Branch("ustof4_logic", &v1751_ustof4_logic);
-  fCaenDataTree->Branch("dstof1_logic", &v1751_dstof1_logic);
-  fCaenDataTree->Branch("dstof2_logic", &v1751_dstof2_logic);
+  fCaenDataTree->Branch("trigger_time_tag", &v1751_trigger_time_tag,
+                        "trigger_time_tag/i");
+  fCaenDataTree->Branch("ustof1_logic", v1751_ustof1_logic.data(),
+                        "ustof1_logic[1792]/s");
+  fCaenDataTree->Branch("ustof2_logic", v1751_ustof2_logic.data(),
+                        "ustof2_logic[1792]/s");
+  fCaenDataTree->Branch("ustof3_logic", v1751_ustof3_logic.data(),
+                        "ustof3_logic[1792]/s");
+  fCaenDataTree->Branch("ustof4_logic", v1751_ustof4_logic.data(),
+                        "ustof4_logic[1792]/s");
+  fCaenDataTree->Branch("dstof1_logic", v1751_dstof1_logic.data(),
+                        "dstof1_logic[1792]/s");
+  fCaenDataTree->Branch("dstof2_logic", v1751_dstof2_logic.data(),
+                        "dstof2_logic[1792]/s");
 
   ////fTdcDataTree = tfs->make<TTree>("TdcData", "TdcData");
   ////fTdcDataTree = tfs->make<TTree>("tdc", "tdc");
@@ -143,16 +167,17 @@ void rdu::LArIATFragmentDump::beginJob()
 
   //fTdcDataTree->Branch("spill", &tdc_spill, "spill/s");
   //fTdcDataTree->Branch("fragment_id", &tdc_fragment_id, "fragment_id/s");
-  //fTdcDataTree->Branch("trigger_id", &tdc_trigger_id, "trigger_id/s");
+  fTdcDataTree->Branch("trigger_id", &tdc_trigger_id, "trigger_id/s");
   fTdcDataTree->Branch("controller_time_stamp", &tdc_controller_time_stamp,
                        "controller_time_stamp/s");
   fTdcDataTree->Branch("tdc_time_stamp", &tdc_time_stamp, "tdc_time_stamp/i");
-  //fTdcDataTree->Branch("trigger_time_stamp", &tdc_trigger_time_stamp,
-  //                      "trigger_time_stamp/l");
-  fTdcDataTree->Branch("tdc_number", &tdc_number);
-  fTdcDataTree->Branch("number_hits", &tdc_number_hits);
-  fTdcDataTree->Branch("hit_channel", &tdc_hit_channel);
-  fTdcDataTree->Branch("hit_time_bin", &tdc_hit_time_bin);
+  fTdcDataTree->Branch("total_hits", &tdc_total_hits, "total_hits/i");
+  fTdcDataTree->Branch("tdc_number", tdc_number.data(),
+                       "tdc_number[total_hits]/s");
+  fTdcDataTree->Branch("hit_channel", tdc_hit_channel.data(),
+                       "hit_channel[total_hits]/s");
+  fTdcDataTree->Branch("hit_time_bin", tdc_hit_time_bin.data(),
+                       "hit_time_bin[total_hits]/s");
 
   return;
 }
@@ -287,13 +312,14 @@ void rdu::LArIATFragmentDump::analyze(art::Event const & evt)
 
     for (size_t j = 0; j < tdcEvents.size(); ++j) {
 
+      tdc_trigger_id = j;
+
       std::cout << "TDC event index: " << j << std::endl;
       tdc_number.clear();
-      tdc_number_hits.clear();
       tdc_hit_channel.clear();
       tdc_hit_time_bin.clear();
 
-      uint16_t tdc_total_hits = 0;
+      tdc_total_hits = 0;
 
       for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
            ++tdc_index) {
@@ -314,23 +340,15 @@ void rdu::LArIATFragmentDump::analyze(art::Event const & evt)
           std::cout << "TDC event index and TDC trigger counter mismatch!" << std::endl;
         }
 
-        std::vector<uint16_t> hit_channel;
-        std::vector<uint16_t> hit_time_bin;
-
         for (size_t hit_index = 0; hit_index < tdcEventData.tdcHits.size();
              ++hit_index) {
           TDCFragment::TdcHit & hit = tdcEventData.tdcHits[hit_index];
-          std::cout << "hit.channel: " << hit.channel << std::endl;
-          std::cout << "hit.timeBin: " << hit.timeBin << std::endl;
-          hit_channel.push_back((uint16_t) hit.channel);
-          hit_time_bin.push_back(hit.timeBin);
+          tdc_hit_channel.push_back((uint16_t) hit.channel);
+          tdc_hit_time_bin.push_back(hit.timeBin);
+          tdc_number.push_back(tdc_index + 1);
         }
 
         if (tdcEventData.tdcEventHeader.nHits == 0) continue;
-        tdc_number.push_back(tdcEventData.tdcEventHeader.tdcNumber);
-        tdc_number_hits.push_back((uint16_t) tdcEventData.tdcEventHeader.nHits);
-        tdc_hit_channel.push_back(hit_channel);
-        tdc_hit_time_bin.push_back(hit_time_bin);
       }
       if (tdc_total_hits == 0) continue;
       fTdcDataTree->Fill();

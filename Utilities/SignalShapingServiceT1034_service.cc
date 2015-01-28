@@ -4,7 +4,7 @@
 /// \author H. Greenlee   (adapted to LArIAT by A. Szelc)
 ////////////////////////////////////////////////////////////////////////
 
-#include "lariatsoft/Utilities/SignalShapingServiceT1034.h"
+#include "Utilities/SignalShapingServiceT1034.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
