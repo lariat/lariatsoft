@@ -28,7 +28,7 @@ extern "C" {
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 #include "cetlib/exception.h"
 #include "cetlib/search_path.h"
-#include "lariatsoft/Utilities/SignalShapingServiceT1034.h"
+#include "Utilities/SignalShapingServiceT1034.h"
 #include "Geometry/Geometry.h"
 #include "Filters/ChannelFilter.h"
 #include "RawData/RawDigit.h"

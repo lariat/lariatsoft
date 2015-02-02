@@ -38,7 +38,7 @@ extern "C" {
 #include "RawData/TriggerData.h"
 #include "Utilities/LArProperties.h"
 #include "Utilities/TimeService.h"
-#include "lariatsoft/Utilities/SignalShapingServiceT1034.h"
+#include "Utilities/SignalShapingServiceT1034.h"
 #include "Geometry/Geometry.h"
 #include "Simulation/sim.h"
 #include "Simulation/SimChannel.h"
