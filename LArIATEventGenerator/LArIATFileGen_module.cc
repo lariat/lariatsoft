@@ -322,13 +322,16 @@ namespace evgen{
     TNtuple->SetBranchAddress("EventID", &EventID, &b_eventid);
     TNtuple->SetBranchAddress("TrackID", &TrackID, &b_trackid);
     
+    //reserve memory to avoid vector memory location shifting, found out by Dr E. Church, esq.
+    detectors.reserve(fDetectorNames.size());
+    
     for (unsigned int detId=0;detId<fDetectorNames.size();detId++ )
     {
-      std::cout << " setting detector branches for" << detId << fDetectorNames[detId]  << std::endl;
+     std::cout << " setting detector branches for " << detId << " " << fDetectorNames[detId] << std::endl;
       
-      detectors.push_back( det_info(fBranchNames,fDetectorNames[detId]));
-      detectors[detId].SetBranches(TNtuple,fBranchNames);
-     std::cout << " setting detector branches for" << detId << fDetectorNames[detId] << " " << detectors[detId].branchname[0] << std::endl;
+     detectors.push_back( det_info(fBranchNames,fDetectorNames[detId]));
+     detectors[detId].SetBranches(TNtuple,fBranchNames);
+     std::cout << " setting detector branches for " << detId << " " << fDetectorNames[detId] << " " << detectors[detId].branchname[0]  << " detinfo address " << &detectors[0] << std::endl;
       
     }
      

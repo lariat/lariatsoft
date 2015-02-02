@@ -16,7 +16,7 @@ lariat_filegen:
  EventsPerSpill: 300000
  EventsPerFile: 1000
  EventFileOffset: 0
- TriggerCut: "TrackPresentTOFus && TrackPresentDet1 && TrackPresentDet2 &&TrackPresentDet3  &&  TOFdsHorz && TrackPresentHaloHole"
+ TriggerCut: "TrackPresentTOFus && TrackPresentDet1 && TrackPresentDet2 &&TrackPresentDet3  &&  TrackPresentTOFdsHorz && TrackPresentHaloHole"
  UseTrigger: false
 }
 
