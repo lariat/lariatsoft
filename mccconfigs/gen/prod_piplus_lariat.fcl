@@ -1,0 +1,24 @@
+#include "prodsingle_common_lariat.fcl"
+
+process_name: SinglesGen
+
+outputs.out1.fileName: "prod_piplus_lariat_%tc_gen.root"
+
+physics.producers.generator.PDG: [ 211 ]           # pi+
+physics.producers.generator.PosDist: 0             # Flat position dist.
+physics.producers.generator.X0: [ 22.5 ]
+physics.producers.generator.Y0: [ 0.0 ]
+physics.producers.generator.Z0: [ -41.5 ]
+physics.producers.generator.T0: [ 0.0 ]
+physics.producers.generator.SigmaX: [ 12.5 ]      # x = (10,35 )
+physics.producers.generator.SigmaY: [ 10.0 ]      # y = (-10.0, 10.0)
+physics.producers.generator.SigmaZ: [ 0. ]      # z = (-41.5, 41.5)
+physics.producers.generator.SigmaT: [ 10.0 ]        # In time
+physics.producers.generator.PDist: 0               # Flat momentum dist. (0.1-2.0 GeV)
+physics.producers.generator.P0: [ 0.5 ]
+physics.producers.generator.SigmaP: [ 0.45 ]
+physics.producers.generator.AngleDist: 0           # Flat angle dist.
+physics.producers.generator.Theta0XZ: [ 0. ]       # y-azimuth
+physics.producers.generator.Theta0YZ: [ 0. ]       # y-latitude
+physics.producers.generator.SigmaThetaXZ: [ 5. ] # narrow band
+physics.producers.generator.SigmaThetaYZ: [ 5. ]
