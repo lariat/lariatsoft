@@ -80,6 +80,7 @@ add_subdirectory(LArIATEventGenerator)
 add_subdirectory(RawDataUtilities)
 add_subdirectory(LongBo)
 add_subdirectory(Utilities)
+add_subdirectory(mccconfigs)
 
 # ups - table and config files
 add_subdirectory(ups)
