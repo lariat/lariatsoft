@@ -1,0 +1,6 @@
+#include "services_lariat.fcl"
+#include "analysistreemodule.fcl"
+
+#include "standard_ana_uboone.fcl"
+outputs: {}
+physics.stream1: []
