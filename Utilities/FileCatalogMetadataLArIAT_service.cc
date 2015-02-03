@@ -43,9 +43,9 @@ void util::FileCatalogMetadataLArIAT::postBeginJob()
 
   mds->addMetadata("fclName", fFCLName);
   mds->addMetadata("fclVersion", fFCLVersion);
-  mds->addMetadata("ubProjectName", fProjectName);
-  mds->addMetadata("ubProjectStage", fProjectStage);
-  mds->addMetadata("ubProjectVersion", fProjectVersion);
+  mds->addMetadata("lariatProjectName", fProjectName);
+  mds->addMetadata("lariatProjectStage", fProjectStage);
+  mds->addMetadata("lariatProjectVersion", fProjectVersion);
 }
 
 DEFINE_ART_SERVICE(util::FileCatalogMetadataLArIAT)
