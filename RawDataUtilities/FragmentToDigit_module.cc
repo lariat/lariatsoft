@@ -21,20 +21,6 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
 #include "artdaq-core/Data/Fragment.hh"
-/*
-#include "daq/include/LariatFragment.h"
-#include "daq/include/WUTFragment.h"
-#include "daq/include/CAENFragment.h"
-#include "daq/include/TDCFragment.h"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/GenericFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/WUTWrapperFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/CAENWrapperFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCControllerFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCSpillFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/TDCEventFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/Overlays/V1495HitFragment.hh"
-#include "daq/lariat-artdaq/lariat-artdaq/ArtModules/ModuleUtils.hh"
-*/
 #include "LariatFragment.h"
 #include "WUTFragment.h"
 #include "CAENFragment.h"
@@ -84,12 +70,12 @@ private:
     uint16_t caen_spill;
     uint16_t caen_fragment_id;
     uint32_t trigger_time_tag;  // Each count in the trigger time tag is 8 ns
-    std::vector<uint16_t> ustof1_logic;
-    std::vector<uint16_t> ustof2_logic;
-    std::vector<uint16_t> ustof3_logic;
-    std::vector<uint16_t> ustof4_logic;
-    std::vector<uint16_t> dstof1_logic;
-    std::vector<uint16_t> dstof2_logic;
+    std::vector<short> ustof1_logic;
+    std::vector<short> ustof2_logic;
+    std::vector<short> ustof3_logic;
+    std::vector<short> ustof4_logic;
+    std::vector<short> dstof1_logic;
+    std::vector<short> dstof2_logic;
   } CAENData;
 
   void FillCAENInfo(LariatFragment const& lariatFrag);
@@ -116,6 +102,12 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 
   produces< std::vector<raw::AuxDetDigit> >("a");
   produces< std::vector<raw::AuxDetDigit> >("b");
+  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 USToF1");
+  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 USToF2");
+  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 USToF3");
+  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 USToF4");
+  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 DSToF1");
+  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 DSToF2");
 }
 
 void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
@@ -148,60 +140,41 @@ void FragmentToDigit::beginJob()
   fCaenDataTree->Branch("caen_dstof1_logic",     &fCAEN.dstof1_logic);
   fCaenDataTree->Branch("caen_dstof2_logic",     &fCAEN.dstof2_logic);
 
-//  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol  (new std::vector<raw::AuxDetDigit>);
-
-/*  std::vector<short> ADCarray (3,1);
-  std::cout<<"ADCarray[1]: "<<ADCarray[1]<<std::endl;
-  unsigned short TheChannel = 10;
-  std::cout<<"TheChannel: "<<TheChannel<<std::endl;
-  raw::AuxDetType_t TheType = raw::kCherenkov;
-  std::cout<<"TheType: "<<TheType<<std::endl;
-
-  raw::AuxDetDigit Name;
-  Name = raw::AuxDetDigit(TheChannel,ADCarray,TheType);
-  std::cout<<"Name.NADC(): "<<Name.NADC()<<std::endl;
-
-  partCol->push_back(Name);
-*/
-//  TFileDirectory subDir = tfs->mkdir( "mySubDirectory" );
-//  caen_ustof1_digit = tfs->make<>;
-
 }
 
 void FragmentToDigit::produce(art::Event & evt)
 {
 
-////////////////
-  art::EventNumber_t spillNumber = evt.event();
-  std::cout<<"spillNumber: "<<spillNumber<<std::endl;
-
-//  raw::AuxDetDigit Name;
-//  std::cout<<"Name.NADC(): "<<Name.NADC()<<std::endl;
-//WHF
-/*
   std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol  (new std::vector<raw::AuxDetDigit>);
   std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol2  (new std::vector<raw::AuxDetDigit>);
+//  std::unique_ptr< std::vector<raw::AuxDetDigit> > partColWUT  (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751USTOF1  (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751USTOF2  (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751USTOF3  (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751USTOF4  (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751DSTOF1  (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751DSTOF2  (new std::vector<raw::AuxDetDigit>);
 
   std::vector<short> ADCarray (3,1);
   std::cout<<"ADCarray[1]: "<<ADCarray[1]<<std::endl;
   unsigned short TheChannel = 10;
   std::cout<<"TheChannel: "<<TheChannel<<std::endl;
-  raw::AuxDetType_t TheType = raw::kCherenkov;
-  raw::AuxDetType_t TheType2 = raw::kTimeOfFlight;
-  std::cout<<"TheType: "<<TheType<<std::endl;
+  std::string TheDetector ("DetectorA");
+  std::string TheDetector2 ("DetectorB");
+  std::cout<<"TheDetector: "<<TheDetector<<std::endl;
 
   raw::AuxDetDigit Name;
   raw::AuxDetDigit Name2;
-  Name = raw::AuxDetDigit(TheChannel,ADCarray,TheType);
-  Name2 = raw::AuxDetDigit(TheChannel,ADCarray,TheType2);
+  Name = raw::AuxDetDigit(TheChannel,ADCarray,TheDetector);
+  Name2 = raw::AuxDetDigit(TheChannel,ADCarray,TheDetector2);
   std::cout<<"Name.NADC(): "<<Name.NADC()<<std::endl;
 
   partCol->push_back(Name);
-  partCol2->push_back(Name);
+  partCol2->push_back(Name2);
 
   evt.put(std::move(partCol),"a");
   evt.put(std::move(partCol2),"b");
-*/
+
 ////////////////
 
   art::Handle< std::vector<artdaq::Fragment> > fragments;
@@ -228,12 +201,39 @@ void FragmentToDigit::produce(art::Event & evt)
   std::cout << "Run " << evt.run() << ", subrun " << evt.subRun()
             << ", spill " << fSpill << std::endl;
 
+  std::string CAEN1751USTOF1Label ("1751 ToF USToF1 Hits");
+  std::string CAEN1751USTOF2Label ("1751 ToF USToF2 Hits");
+  std::string CAEN1751USTOF3Label ("1751 ToF USToF3 Hits");
+  std::string CAEN1751USTOF4Label ("1751 ToF USToF4 Hits");
+  std::string CAEN1751DSTOF1Label ("1751 ToF DSToF1 Hits");
+  std::string CAEN1751DSTOF2Label ("1751 ToF DSToF2 Hits");
+  raw::AuxDetDigit CAEN1751AuxDetDigit;
   for(size_t s = 0; s < fCAENs.size(); ++s){
     fCAEN = fCAENs[s];
     fCaenDataTree->Fill();
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF1Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF2Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF3Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF4Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751DSTOF1Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751DSTOF2Label);
+    partCol1751USTOF1->push_back(CAEN1751AuxDetDigit);
+    partCol1751USTOF2->push_back(CAEN1751AuxDetDigit);
+    partCol1751USTOF3->push_back(CAEN1751AuxDetDigit);
+    partCol1751USTOF4->push_back(CAEN1751AuxDetDigit);
+    partCol1751DSTOF1->push_back(CAEN1751AuxDetDigit);
+    partCol1751DSTOF2->push_back(CAEN1751AuxDetDigit);
   }
 
+    evt.put(std::move(partCol1751USTOF1),"CAEN1751 USToF1");
+    evt.put(std::move(partCol1751USTOF2),"CAEN1751 USToF2");
+    evt.put(std::move(partCol1751USTOF3),"CAEN1751 USToF3");
+    evt.put(std::move(partCol1751USTOF4),"CAEN1751 USToF4");
+    evt.put(std::move(partCol1751DSTOF1),"CAEN1751 DSToF1");
+    evt.put(std::move(partCol1751DSTOF2),"CAEN1751 DSToF2");
+
   for(size_t s = 0; s < fWUTs.size(); ++s){
+//    for(size_t t = 0; t < fWUT.hit_channel.size(); ++t){std::cout<<"t: "<<t<<std::endl;}
     fWUT  = fWUTs[s];
     fWutDataTree->Fill();
   }
@@ -292,12 +292,13 @@ void FragmentToDigit::FillCAENInfo(LariatFragment const& lariatFrag)
       data.dstof2_logic.clear();
 
       for (size_t time = 0; time < frag.header.nSamples; ++time) {
-        data.ustof1_logic.push_back(frag.waveForms[2].data[time]);
-        data.ustof2_logic.push_back(frag.waveForms[3].data[time]);
-        data.ustof3_logic.push_back(frag.waveForms[4].data[time]);
-        data.ustof4_logic.push_back(frag.waveForms[5].data[time]);
-        data.dstof1_logic.push_back(frag.waveForms[6].data[time]);
-        data.dstof2_logic.push_back(frag.waveForms[7].data[time]);
+        data.ustof1_logic.push_back((short) frag.waveForms[2].data[time]);
+        data.ustof2_logic.push_back((short) frag.waveForms[3].data[time]);
+        data.ustof3_logic.push_back((short) frag.waveForms[4].data[time]);
+        data.ustof4_logic.push_back((short) frag.waveForms[5].data[time]);
+        data.dstof1_logic.push_back((short) frag.waveForms[6].data[time]);
+        data.dstof2_logic.push_back((short) frag.waveForms[7].data[time]);
+        std::cout<<"frag.waveForms[2].data[time] (ustof1_logic): "<<frag.waveForms[2].data[time]<<std::endl;
       }
 
       fCAENs.push_back(data);
