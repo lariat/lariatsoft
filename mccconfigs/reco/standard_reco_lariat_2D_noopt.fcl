@@ -18,7 +18,7 @@ services:
   RandomNumberGenerator: {} #ART native random number generator
   message:      @local::lariat_message_services_prod_debug
   FileCatalogMetadata:  @local::art_file_catalog_mc
-  user:         @local::lariat_services_reco
+  user:         @local::lariat_simulation_services_reco
 }
 services.user.DatabaseUtil.ShouldConnect: false
 

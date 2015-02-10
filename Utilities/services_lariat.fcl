@@ -9,6 +9,8 @@
 #include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
 #include "sam_lariat.fcl"
+#include "signalservices_lariat.fcl"
+
 
 BEGIN_PROLOG
 
@@ -20,6 +22,7 @@ lariat_services:
  LArProperties:          @local::lariat_properties	   
  LArFFT:                 @local::lariat_larfft  	 
  DatabaseUtil:	         @local::lariat_database     
+ SignalShapingServiceT1034:      @local::lariat_signalshapingservice
  TimeService:            @local::lariat_timeservice
  BackTracker:            @local::standard_backtracker  
 }
@@ -32,9 +35,10 @@ lariat_simulation_services:
  ExptGeoHelperInterface: @local::lariat_geometry_helper
  Geometry:               @local::lariat_geo                 
  DetectorProperties:     @local::lariat_detproperties       
- LArProperties:          @local::lariat_properties          
+ LArProperties:          @local::lariat_properties 
  LArFFT:                 @local::lariat_larfft              
  DatabaseUtil:	         @local::lariat_database            
+ SignalShapingServiceT1034:      @local::lariat_signalshapingservice
  TimeService:            @local::lariat_timeservice
  BackTracker:            @local::standard_backtracker         
 }

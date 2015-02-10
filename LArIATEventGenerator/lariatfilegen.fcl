@@ -9,15 +9,24 @@ lariat_filegen:
  FileName:  "/lariat/data/users/stjohn/LAriaT_8GeVpiplus_128mmWCs_pos1.0FieldScale_MegaTreeFromHalo.root"
  TreeName:  "EventTree"
  BranchNames: ["x", "y", "z","t","Px", "Py", "Pz", "PDGid","TrackPresent"] # To read in from above Tree.
- DetectorNames: ["Det1", "Det2", "Det3","Det4","TOFus", "Halo", "HaloHole", "TOFdsHorz","TiWindow","PunchUL","PunchLL","PunchUR","PunchLR"] # To read in from above Tree. 
- InnerDetName: "Halo"      # TiWindow or other detector that is closest to detector entry (i.e. this is where triggers come in)
- OuterDetName: "HaloHole"   # Detector that catches all particles that will get in the detector (i.e. this is where the background comes in).
+ DetectorNames: ["Det1", "Det2", "Det3","Det4","TOFus", "Halo", "HaloHole", "TOFdsHorz","TiWindow","BigDisk","PunchUL","PunchLL","PunchUR","PunchLR"] # To read in from above Tree. 
+ InnerDetName: "TiWindow"    # "TiWindow", "HaloHole" or other detector that is closest to detector entry (i.e. this is where triggers come in)
+ OuterDetName: "BigDisk"     # "BigDisk", "Halo" or other detector that catches all particles that will get in the detector (i.e. this is where the background comes in).
+ TimeDetName: "BigDisk"      # Detector used to sort events in time
+
+ TiWindowBeamx: -112.43      # x-coordinate of TiWindow in the beam reference frame. Expressed in cm.
+ TiWindowBeamy: 0.0          # y-coordinate of TiWindow in the beam reference frame. Expressed in cm.  
+ TiWindowBeamz: 716.792      # z-coordinate of TiWindow in the beam reference frame. Expressed in cm. 
+ TiWindowTPCx: 23.785        # x-coordinate of TiWindow in the TPC reference frame. Expressed in cm.
+ TiWindowTPCy: 0.0           # y-coordinate of TiWindow in the TPC reference frame. Expressed in cm.  
+ TiWindowTPCz: -39.546       # z-coordinate of TiWindow in the TPC reference frame. Expressed in cm.
+
  EventSpillOffset: 1
  EventsPerSpill: 300000
  EventsPerFile: 1000
  EventFileOffset: 0
  TriggerCut: "TrackPresentTOFus && TrackPresentDet1 && TrackPresentDet2 &&TrackPresentDet3  &&  TrackPresentTOFdsHorz && TrackPresentHaloHole"
- UseTrigger: false
+ UseTrigger: true
 }
 
 END_PROLOG

@@ -176,18 +176,18 @@ void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
     int                 fSeed;           // random number seed    
     std::vector<int>    fPDG;           
     std::vector<double> fXYZ_Off;           
-    
-    
-    
-    
-    
-    
-    
+       
     std::string fFileName;
     std::string fMuonsFileType;
     std::string fTreeName;
     std::vector<std::string> fBranchNames; 
     std::vector<std::string> fDetectorNames; 
+    double fTiWindowBeamx;
+    double fTiWindowBeamy;
+    double fTiWindowBeamz;
+    double fTiWindowTPCx;
+    double fTiWindowTPCy;
+    double fTiWindowTPCz;
     int fEventSpillOffset;  // Where in file to start.
     int fEventsPerSpill;
     int fEventsPerFile; 
@@ -195,6 +195,7 @@ void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
     std::string fTriggerCut;
     std::string fInnerDetName;
     std::string fOuterDetName;
+    std::string fTimeDetName;
     bool fUseTrigger; 
   
     
@@ -202,6 +203,7 @@ void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
     TFile *fMuonFileR;
     TTree *TNtuple;
     TTree *TNtupleSmall;
+    TTree *TNtupleSorted;
     unsigned int countFile;
 
     Float_t xtmp, ytmp, ztmp;
@@ -278,6 +280,12 @@ namespace evgen{
      , fTreeName         (pset.get< std::string   	     	>("TreeName")         	)      
      , fBranchNames      (pset.get< std::vector<std::string> 	>("BranchNames")      	)
      , fDetectorNames    (pset.get< std::vector<std::string> 	>("DetectorNames")     	)
+     , fTiWindowBeamx    (pset.get<double			>("TiWindowBeamx")     	)
+     , fTiWindowBeamy    (pset.get<double			>("TiWindowBeamy")     	)
+     , fTiWindowBeamz    (pset.get<double			>("TiWindowBeamz")     	)
+     , fTiWindowTPCx     (pset.get<double			>("TiWindowTPCx")     	) 
+     , fTiWindowTPCy     (pset.get<double			>("TiWindowTPCy")     	) 
+     , fTiWindowTPCz     (pset.get<double			>("TiWindowTPCz")     	) 
      , fEventSpillOffset (pset.get<int				>("EventSpillOffset")	)
      , fEventsPerSpill (pset.get<int				>("EventsPerSpill")	)
      , fEventsPerFile (pset.get<int				>("EventsPerFile")	)
@@ -285,6 +293,7 @@ namespace evgen{
      , fTriggerCut         (pset.get< std::string     	     	>("TriggerCut")       	)
      , fInnerDetName       (pset.get< std::string     	 	>("InnerDetName")      	)  
      , fOuterDetName       (pset.get< std::string     	     	>("OuterDetName")      	)  
+     , fTimeDetName        (pset.get< std::string     	     	>("TimeDetName")      	) 
      , fUseTrigger(pset.get<     bool                		>("UseTrigger")		)
   {
 
@@ -339,28 +348,26 @@ namespace evgen{
     TNtupleSmall = TNtuple->CloneTree(0);    
     Long64_t nentries = TNtuple->GetEntries();
     art::ServiceHandle<geo::Geometry> geom;
+
     //Create small TTree for sorting.
     // check that neiter of these numbers goes out of bounds.
     //nentries = (nentries > fEventNumberOffset+fEventsPerSpill ) ? fEventNumberOffset+fEventsPerSpill : nentries;
     std::cout << " creating a subtree for sorting - this make take a while. from evt: " <<  fEventSpillOffset*fEventsPerSpill << " to: " << nentries << std::endl;
     
-  //   int counter =0;
     long start_event=fEventSpillOffset*fEventsPerSpill;
-    for (Long64_t i=0;i<nentries; i++) {
+    for (Long64_t i=0;i<nentries; i++) 
+    {
       TNtuple->GetEntry(i);
-    //  if(counter++ < 20)
-//	std::cout << " EventID " << EventID << " " <<  TrackID << " " << tHalo << std::endl;
+
       if (EventID > start_event   && EventID < start_event+fEventsPerSpill) TNtupleSmall->Fill();
-      if(EventID > start_event+fEventsPerSpill)
-	break;
-   }
+      if(EventID > start_event+fEventsPerSpill) break;
+    }
     
     TNtupleSmall->Write();
     
     std::cout << "old tree size, new tree size: " << TNtuple->GetEntries() << " " << TNtupleSmall->GetEntries() << std::endl;
     
     art::ServiceHandle<util::DetectorProperties> detprop;
-
     
     const double frametime=detprop->SamplingRate()*detprop->NumberTimeSamples()/1000.; 
     int frameindex=1;
@@ -368,26 +375,65 @@ namespace evgen{
     std::vector< int > locPDG;
     std::vector< TLorentzVector > locXYZ;
     std::vector< TLorentzVector > locMOM;
-    
-    
+        
     TDatabasePDG  pdgt;
     double m = 0.;
+    int time_index=0;  // Index of the detector time sorting is based on
+    int time_tag=0;    // index for the position of t variable in fBranchNames
+
     std::cout << " building index on time on the subtree - this make also take a while " << std::endl;
-    TNtupleSmall->BuildIndex("tHalo*1000000");  //sorting on integers, need microseconds
+
+    TNtupleSorted = TNtupleSmall->CloneTree(0); 
+       
+    for(unsigned int ix=0;ix<fDetectorNames.size();ix++)
+    {
+//     std::cout << "Detector " << fDetectorNames[ix] << "   Index: " << ix << std::endl;
+     if(fDetectorNames[ix]==fTimeDetName) time_index=ix;
+    }
+    
+    for(unsigned int it=0;it<fBranchNames.size();it++)
+    {
+//     std::cout << "Variable " << fBranchNames[it] << "   Index: " << it << std::endl;
+     if(fBranchNames[it]=="t") time_tag=it;
+    }
+
+//    std::cout << "Time Detector Index " << time_index << std::endl;
+//    std::cout << "Variable Index " << time_tag << std::endl;
+    std::cout << "Selected branch for time ordering: " << (detectors[time_index].branchname[time_tag]).Data() << std::endl;
+    
+    TNtupleSmall->BuildIndex(Form("%s*10000000",(detectors[time_index].branchname[time_tag]).Data()));  //sorting on integers, need microseconds
     TTreeIndex *index = (TTreeIndex*)TNtupleSmall->GetTreeIndex();
+
+    for(int qq=0; qq<TNtupleSmall->GetEntries(); qq++)
+    {
+       int tree_entry;
+       tree_entry=TNtupleSmall->LoadTree( index->GetIndex()[qq] );
+       TNtupleSmall->GetEntry(tree_entry);
+       TNtupleSorted->Fill();
+//       std::cout << "Step: " << qq << "   Event ID: " << EventID << " Time: " << detectors[time_index].t << std::endl;       
+    }
    
-  // if(fUseTrigger)
-  // {
-    TNtupleSmall->Draw(">>elist", fTriggerCut.data(), "entrylist");
+   std::cout << "Size of sorted Ntuple: " << TNtupleSorted->GetEntries() << std::endl; 
+
+    TNtupleSorted->Draw(">>elist", fTriggerCut.data(), "entrylist");
     elist = (TEntryList*)gDirectory->Get("elist");
     Long64_t ListNEntries=elist->GetN();
     if(fUseTrigger)
-      std::cout << ListNEntries << " entries in Event List " << std::endl;
+    std::cout <<  "Number of entries in Event List " << ListNEntries << std::endl;  
+
     double last_tHalo_trig=0;
-    
-    
+        
     int INNER_DET_INDEX=0;  // position in the detectors vector of the inner detector
     int OUTER_DET_INDEX=0;  // position in the detectors vector of the outer detector
+    double x_shift=0;       // distance between TPC and beam reference frames in the x axis
+    double y_shift=0;       // distance between TPC and beam reference frames in the x axis
+    double z_shift=0;       // distance between TPC and beam reference frames in the x axis
+/*    double x_inner_shift=0; //x position of the center of inner detector in Jason's coordinate frame
+    double x_outer_shift=0; //x position of the center of outer detector in Jason's coordinate frame
+    double y_inner_shift=0; //y position of the center of inner detector in Jason's coordinate frame
+    double y_outer_shift=0; //y position of the center of outer detector in Jason's coordinate frame
+    double z_inner_shift=0; //z position of the center of inner detector in Jason's coordinate frame
+    double z_outer_shift=0; //z position of the center of outer detector in Jason's coordinate frame*/
     
     for(unsigned int ix=0;ix<fDetectorNames.size();ix++)
     {
@@ -396,85 +442,112 @@ namespace evgen{
      if(fDetectorNames[ix]==fOuterDetName) 
       OUTER_DET_INDEX=ix;
     }
-    
+  
+    x_shift=fTiWindowTPCx-fTiWindowBeamx;
+    y_shift=fTiWindowTPCy-fTiWindowBeamy;
+    z_shift=fTiWindowTPCz-fTiWindowBeamz;
+
     //if running with trigger then loop only on selected entries, i.e. ListNEntries
     // ir running without trigger then loop on all events and save them by frame.
     Long64_t MainIndexEntries = (fUseTrigger) ? ListNEntries : index->GetN() - 1;
+     
     //loop over selected trigger entries.
     for (int i = 0;  i<MainIndexEntries ; i++)
       {
 	int tree_entry; 
 	
-	if(fUseTrigger)
-	  tree_entry=elist->GetEntry(i);
-	else
-	  tree_entry=TNtupleSmall->LoadTree( index->GetIndex()[i] );
+	if(fUseTrigger)  tree_entry=elist->GetEntry(i);
+	else   tree_entry=TNtupleSorted->LoadTree( index->GetIndex()[i] );
 	  
-	TNtupleSmall->GetEntry(tree_entry);
-	
-	// std::cout <<  "  Selected Trigger event, i " << i << " " << EventID << " " << TrackID << " present in TrackPresentTOFus" << TrackPresentTOFus << " tHalo " <<  tHalo*1000 << " tree_entry " << tree_entry << " curr trig time and distance: "<< last_tHalo_trig*1000 << " "<< (tHalo- last_tHalo_trig)*1000 << " frtime " << frametime/1000000 << " " << last_tHalo_trig +frametime/1000000<<  std::endl;
-	
- 	if(detectors[INNER_DET_INDEX].t<last_tHalo_trig+frametime/1000000) // cannot retrigger on same frame.
+	TNtupleSorted->GetEntry(tree_entry);
+
+        std::cout << std::endl;
+        std::cout <<  "  Selected Trigger event # " << i << " Event ID: " << EventID << " Event Time: " << detectors[time_index].t << std::endl;
+        	
+ 	if(detectors[time_index].t<last_tHalo_trig+frametime/1000000) // cannot retrigger on same frame.
  	  continue;
 	
 	if(fEventFrames.size() >  (unsigned int)fEventsPerFile)  // break if too many events.
 	  break;
 	
 	if(fUseTrigger)
-	  last_tHalo_trig=detectors[INNER_DET_INDEX].t;
+        {
+	  last_tHalo_trig=detectors[time_index].t;
+        }
 	else
-	  {
-	   while(detectors[INNER_DET_INDEX].t > frameindex*frametime/1000000)  
+	{
+	   while(detectors[time_index].t > frameindex*frametime/1000000)  
 	      {frameindex++; }
 	   last_tHalo_trig=frameindex*frametime/1000000;
-	  }
-	//std::cout << "cut: " << Form("tHalo > %lf && tHalo < %lf",last_tHalo_trig-frametime/1000000,last_tHalo_trig+frametime/1000000) << std::endl;
-	TNtupleSmall->Draw(">>loclist",Form("tHalo > %lf && tHalo < %lf",last_tHalo_trig-frametime/1000000,last_tHalo_trig+frametime/1000000),"entrylist");
+	}
+
+//	std::cout << "Time cut: " << Form("%s > %lf && %s < %lf",(detectors[time_index].branchname[time_tag]).Data(),last_tHalo_trig-frametime/1000000,(detectors[time_index].branchname[time_tag]).Data(),last_tHalo_trig+frametime/1000000) << std::endl;
+
+	TNtupleSorted->Draw(">>loclist",Form("%s > %lf && %s < %lf",(detectors[time_index].branchname[time_tag]).Data(),last_tHalo_trig-frametime/1000000,(detectors[time_index].branchname[time_tag]).Data(),last_tHalo_trig+frametime/1000000),"entrylist");
 	
 	TEntryList * loclist = (TEntryList*)gDirectory->Get("loclist");
-	 Long64_t ListlocNEntries=loclist->GetN();
+        Long64_t ListlocNEntries=loclist->GetN();
 	
-	// std::cout << " found" << ListlocNEntries << " other particles in frame " << std::endl;
+	std::cout << "Found " << ListlocNEntries << " particles in frame " << std::endl;
 	 
 	locPDG.clear();
 	locXYZ.clear();
 	locMOM.clear(); 
 	 
 	for (int xx = 0;  xx<ListlocNEntries ; xx++)
-	  {int tree_entry=loclist->GetEntry(xx);
-	  TNtupleSmall->GetEntry(tree_entry);
-	//  std::cout <<  "  Selected Frame event " << EventID << " " << TrackID << " present in TrackPresentTOFus" << TrackPresentTOFus << " tHalo " << tHalo << " tree_entry " << tree_entry << std::endl;
+	{ 
+          int tree_entry=loclist->GetEntry(xx);
+	  TNtupleSorted->GetEntry(tree_entry);
+//	  std::cout <<  "  Selected Frame event " << EventID << " Time:  " << detectors[time_index].t << " tree_entry " << tree_entry << std::endl;
 	
-	 double x,y,Px,Py,Pz,PDG ;//z,
+	  double x,y,z,Px,Py,Pz,PDG ; //z
+         //double x_shift,y_shift,z_shift;
+         //double x_extra_shift,y_extra_shift; // shift between the x(y) position of TiWindow and x(y) position of the inner or outer detector considered
       
-	if(detectors[OUTER_DET_INDEX].TrackPresent)
+	 if(detectors[INNER_DET_INDEX].TrackPresent)
+         {
+	    x=detectors[INNER_DET_INDEX].x;y=detectors[INNER_DET_INDEX].y;z=detectors[INNER_DET_INDEX].z;//z=zHalo;
+	    Px=detectors[INNER_DET_INDEX].Px;Py=detectors[INNER_DET_INDEX].Py;Pz=detectors[INNER_DET_INDEX].Pz;	
+	    PDG=detectors[INNER_DET_INDEX].PDGid;
+//          x_shift=x_inner_shift;
+//          y_shift=y_inner_shift;
+//          z_shift=z_inner_shift;
+//            std::cout << "Track in inner detector " << std::endl;
+          }
+	  else
 	  {
-	  x=detectors[OUTER_DET_INDEX].x;y=detectors[OUTER_DET_INDEX].y;//z=zHaloHole;
-	  Px=detectors[OUTER_DET_INDEX].Px;Py=detectors[OUTER_DET_INDEX].Py;Pz=detectors[OUTER_DET_INDEX].Pz;	
-	  PDG=detectors[OUTER_DET_INDEX].PDGid;
-	  }
-	else
-	  {
-	  x=detectors[INNER_DET_INDEX].x;y=detectors[INNER_DET_INDEX].y;//z=zHalo;
-	  Px=detectors[INNER_DET_INDEX].Px;Py=detectors[INNER_DET_INDEX].Py;Pz=detectors[INNER_DET_INDEX].Pz;	
-	  PDG=detectors[INNER_DET_INDEX].PDGid;
+	    x=detectors[OUTER_DET_INDEX].x;y=detectors[OUTER_DET_INDEX].y;z=detectors[OUTER_DET_INDEX].z;//z=zHaloHole;
+	    Px=detectors[OUTER_DET_INDEX].Px;Py=detectors[OUTER_DET_INDEX].Py;Pz=detectors[OUTER_DET_INDEX].Pz;	
+	    PDG=detectors[OUTER_DET_INDEX].PDGid;
+//          x_shift=x_outer_shift;
+//          y_shift=y_outer_shift;
+//          z_shift=z_outer_shift;
+//            std::cout << "Track in outer detector " << std::endl;
 	  }
       
+/*        x_extra_shift=x_shift+112.43; // x_shift - Ti window x position. To account for
+        y_extra_shift=y_shift-0.0; // y_shift - Ti window y position
         
-	TParticlePDG* pdgp = pdgt.GetParticle(PDG);
-	if (pdgp) m = pdgp->Mass();
+       std::cout << " X Shift: " << x_shift << "   Y Shift: " << y_shift << "   Z Shift: " << z_shift << std::endl;  
+        std::cout << " X Extra Shift: " << x_extra_shift << "   Y Extra Shift: " << y_extra_shift << std::endl;*/        
+ 
+	  TParticlePDG* pdgp = pdgt.GetParticle(PDG);
+	  if (pdgp) m = pdgp->Mass();
 	
-	double Ener=std::sqrt((Px*Px+Py*Py+Pz*Pz)/1000./1000.+m*m);
+	  double Ener=std::sqrt((Px*Px+Py*Py+Pz*Pz)/1000./1000.+m*m);
 
-	//      titatnium window position wrt. TPCActive (based on gdml file wdisk)
-      // in gdml	    (-0,435 ,0.2 ,-84.54646643)
-      // to transfer into LArSOFT coordinates, X changes by HalfWidth
-      // Z changes by HalfLength. 
+      // titatnium window position wrt. TPCActive (based on gdml file wdisk)
+      // in gdml (0,035 ,0.0 ,-84.54646643)
+      // to transfer into LArSOFT coordinates, 
+      // X changes by HalfWidth + difference btw TiWindow and TPCactive + difference btw TiWindow and Jason coordinate system's center
+      // Z changes by distance btw TPCactive and Tiwindow + distance btw TiWindow and inner or outer detector considered. 
       // geom->CryostatHalfHeight()*0.01,geom->CryostatLength()
-         
-	locPDG.push_back(detectors[INNER_DET_INDEX].PDGid);
- 	locXYZ.push_back(TLorentzVector(x/10.-0.435+geom->DetHalfWidth(),y/10.+0.2,-84.54646+geom->DetLength()/2.-1,(detectors[INNER_DET_INDEX].t-last_tHalo_trig)*1e9)); //convert to ns
-	locMOM.push_back(TLorentzVector(Px/1000.,Py/1000.,Pz/1000.,Ener));
+
+	  locPDG.push_back(detectors[INNER_DET_INDEX].PDGid);
+//	locXYZ.push_back(TLorentzVector(x/10.-0.435+geom->DetHalfWidth(),y/10.+0.2,-84.54646+geom->DetLength()/2.-1,(detectors[INNER_DET_INDEX].t-last_tHalo_trig)*1e9)); //convert to ns
+//        locXYZ.push_back(TLorentzVector(x/10.-x_shift+x_extra_shift+geom->DetHalfWidth()+0.035,y/10.+y_shift+y_extra_shift,-39.546-(716.792-z_shift),(detectors[INNER_DET_INDEX].t-last_tHalo_trig)*1e9)); //convert to ns
+          locXYZ.push_back(TLorentzVector(x/10.+x_shift,y/10.+y_shift,z/10.+z_shift,(detectors[time_index].t-last_tHalo_trig)*1e9)); //convert to ns
+	  locMOM.push_back(TLorentzVector(Px/1000.,Py/1000.,Pz/1000.,Ener));
 	  
 	//first back track to find particles that are one frame before:
 	//while(tHalo > tHalo_trig-frametime/1000000)
@@ -482,8 +555,9 @@ namespace evgen{
 	  } //end for loop inside of frame
 
 	if(locPDG.size() && locXYZ.size() && locMOM.size() )  // skipping non needed files
-	  {  fEventFrames.push_back(EventFrame(locPDG,locXYZ,locMOM)); 
-	  }
+	{  
+          fEventFrames.push_back(EventFrame(locPDG,locXYZ,locMOM)); 
+	}
 	  
       } //end for loop on triggered particles
 	
