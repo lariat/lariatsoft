@@ -1,29 +1,29 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v01_00_02
+parent	lariatsoft v01_00_04
 #parent	lariatsoft v0_00_01
 defaultqual	e6
 
 # dependencies on external packages
 product         version
 
-larsoft		v03_04_06
+larsoft		v03_08_00
 LariatFilters   v01_01
 lariatfragments v01_00_00
-artdaq_core     v1_04_07
-lariatutil      v01_10_03
+artdaq_core     v1_04_08
+lariatutil      v01_10_04
 
-cetbuildtools   v4_03_03 - only_for_build
+cetbuildtools   v4_04_03 - only_for_build
 end_product_list
   
 # e6  - with gcc 4.9.1 and -std=c++11
 qualifier	larsoft   LariatFilters	lariatfragments artdaq_core	lariatutil	notes
-e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s5:debug	-
-e6:opt		e6:opt	  -nq-		e6:opt		e6:nu:s5:opt	-
-e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s5:prof	-
-e6:debug:grid	e6:debug  -nq-		e6:debug        e6:nu:s5:debug	e6:debug
-e6:opt:grid		e6:opt	  -nq-		e6:opt		e6:nu:s5:opt	e6:opt
-e6:prof:grid		e6:prof	  -nq-		e6:prof		e6:nu:s5:prof	e6:prof
+e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-
+e6:opt		e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-
+e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-
+e6:debug:grid	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	e6:debug
+e6:opt:grid		e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	e6:opt
+e6:prof:grid		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	e6:prof
 
 end_qualifier_list
 

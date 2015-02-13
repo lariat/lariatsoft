@@ -31,12 +31,13 @@ namespace lariatgeo
   //------------------------------------------------------------------------
   void LArIATGeometryHelper::doConfigureChannelMapAlg(const TString                  & detectorName,
 						      fhicl::ParameterSet      const & sortingParam,
-						      std::vector<geo::CryostatGeo*> & c )
+						      std::vector<geo::CryostatGeo*> & c, 
+                                                     std::vector<geo::AuxDetGeo*>   & ad  )
   {
     fChannelMap = nullptr;
     
     fChannelMap = std::shared_ptr<geo::ChannelMapAlg>(new geo::ChannelMapStandardAlg(sortingParam));
-    if(fChannelMap) fChannelMap->Initialize(c);
+    if(fChannelMap) fChannelMap->Initialize(c,ad);
 
     return;
   }
