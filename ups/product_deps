@@ -22,8 +22,8 @@ e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-
 e6:opt		e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-
 e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-
 e6:debug:grid	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	e6:debug
-e6:opt:grid		e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	e6:opt
-e6:prof:grid		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	e6:prof
+e6:opt:grid	e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	e6:opt
+e6:prof:grid	e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	e6:prof
 
 end_qualifier_list
 

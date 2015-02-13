@@ -1,14 +1,19 @@
 
 include_directories( $ENV{ARTDAQ_CORE_INC}                     )
-include_directories( $ENV{LARIATFRAGMENTS_INC}/LArIATFragments )
 include_directories( $ENV{LARDATA_INC}                         )
 include_directories( $ENV{LARCORE_INC}          	       )
 include_directories( $ENV{LARSIM_INC}           	       )
 include_directories( $ENV{POSTGRESQL_INC}       	       )
 
+if( DEFINED ENV{LARIATFRAGMENTS_INC} )
+  include_directories( $ENV{LARIATFRAGMENTS_INC}/LArIATFragments )
+else()
+  include_directories( ${CMAKE_SOURCE_DIR}/lariatfragments/LArIATFragments )
+endif()
+
 simple_plugin(LArIATFragmentReader "module"
               RawData
-	      LArIATFragments
+	      LariatFragments
               ${ART_FRAMEWORK_CORE}
 	      ${ART_FRAMEWORK_PRINCIPAL}
 	      ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -28,7 +33,7 @@ simple_plugin(LArIATFragmentReader "module"
 
 simple_plugin(LArIATFragmentDump "module"
               RawData
-              LArIATFragments
+              LariatFragments
               ${ART_FRAMEWORK_CORE}
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -48,7 +53,7 @@ simple_plugin(LArIATFragmentDump "module"
 
 simple_plugin(FragmentToDigit "module"
               RawData
-              LArIATFragments
+              LariatFragments
               ${ART_FRAMEWORK_CORE}
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
