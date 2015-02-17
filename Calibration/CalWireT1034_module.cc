@@ -39,6 +39,8 @@ extern "C" {
 #include "TFile.h"
 #include "TH2D.h"
 #include "TF1.h"
+#include "RecoBaseArt/WireCreator.h"
+
 
 ///creation of calibrated signals on wires
 namespace caldata {
@@ -210,7 +212,9 @@ namespace caldata {
         holder.resize(transformSize, 0.);
 
         // uncompress the data
-        raw::Uncompress(digitVec->fADC, rawadc, digitVec->Compression());
+       // raw::Uncompress(digitVec->fADC, rawadc, digitVec->Compression());
+        raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
+
 
         // loop over all adc values and subtract the pedestal
         float pdstl = digitVec->GetPedestal();
@@ -234,7 +238,9 @@ namespace caldata {
       // adaptive baseline subtraction
       if(fBaseSampleBins) SubtractBaseline(holder, fBaseSampleBins);
       // Make a single ROI that spans the entire data size
-      wirecol->emplace_back(holder,digitVec);
+     // wirecol->emplace_back(holder,digitVec);
+      wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
+
     }
 
     if(wirecol->size() == 0)
