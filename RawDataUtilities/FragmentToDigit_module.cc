@@ -212,25 +212,31 @@ void FragmentToDigit::produce(art::Event & evt)
     fCAEN = fCAENs[s];
     fCaenDataTree->Fill();
     CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF1Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF2Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF3Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF4Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751DSTOF1Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751DSTOF2Label);
-    partCol1751USTOF1->push_back(CAEN1751AuxDetDigit);
-    partCol1751USTOF2->push_back(CAEN1751AuxDetDigit);
-    partCol1751USTOF3->push_back(CAEN1751AuxDetDigit);
-    partCol1751USTOF4->push_back(CAEN1751AuxDetDigit);
-    partCol1751DSTOF1->push_back(CAEN1751AuxDetDigit);
-    partCol1751DSTOF2->push_back(CAEN1751AuxDetDigit);
+//    std::cout<<"fCAEN.ustof1_logic: "<<fCAEN.ustof1_logic<<std::endl;
+    std::cout<<"CAEN1751AuxDetDigit.NADC(): "<<CAEN1751AuxDetDigit.NADC()<<std::endl;
+    std::cout<<"CAEN1751AuxDetDigit.ADC(0): "<<CAEN1751AuxDetDigit.ADC(0)<<std::endl;
+    std::cout<<"CAEN1751AuxDetDigit.Channel(): "<<CAEN1751AuxDetDigit.Channel()<<std::endl;
+    std::cout<<"CAEN1751AuxDetDigit.AuxDetName(): "<<CAEN1751AuxDetDigit.AuxDetName()<<std::endl;
+/*    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof2_logic,CAEN1751USTOF2Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof3_logic,CAEN1751USTOF3Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof4_logic,CAEN1751USTOF4Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.dstof1_logic,CAEN1751DSTOF1Label);
+    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.dstof2_logic,CAEN1751DSTOF2Label);*/
+    partCol1751USTOF1->push_back(raw::AuxDetDigit(0, fCAEN.ustof1_logic, CAEN1751USTOF1Label));
+    partCol1751USTOF2->push_back(raw::AuxDetDigit(0, fCAEN.ustof2_logic, CAEN1751USTOF2Label));
+    partCol1751USTOF3->push_back(raw::AuxDetDigit(0, fCAEN.ustof3_logic, CAEN1751USTOF3Label));
+    partCol1751USTOF4->push_back(raw::AuxDetDigit(0, fCAEN.ustof4_logic, CAEN1751USTOF4Label));
+    partCol1751DSTOF1->push_back(raw::AuxDetDigit(0, fCAEN.dstof1_logic, CAEN1751DSTOF1Label));
+    partCol1751DSTOF2->push_back(raw::AuxDetDigit(0, fCAEN.dstof2_logic, CAEN1751DSTOF2Label));
+    std::cout<<"partCol1751USTOF1->size(): "<<partCol1751USTOF1->size()<<std::endl;
   }
 
-    evt.put(std::move(partCol1751USTOF1),"CAEN1751 USToF1");
-    evt.put(std::move(partCol1751USTOF2),"CAEN1751 USToF2");
-    evt.put(std::move(partCol1751USTOF3),"CAEN1751 USToF3");
-    evt.put(std::move(partCol1751USTOF4),"CAEN1751 USToF4");
-    evt.put(std::move(partCol1751DSTOF1),"CAEN1751 DSToF1");
-    evt.put(std::move(partCol1751DSTOF2),"CAEN1751 DSToF2");
+  evt.put(std::move(partCol1751USTOF1),"CAEN1751 USToF1");
+  evt.put(std::move(partCol1751USTOF2),"CAEN1751 USToF2");
+  evt.put(std::move(partCol1751USTOF3),"CAEN1751 USToF3");
+  evt.put(std::move(partCol1751USTOF4),"CAEN1751 USToF4");
+  evt.put(std::move(partCol1751DSTOF1),"CAEN1751 DSToF1");
+  evt.put(std::move(partCol1751DSTOF2),"CAEN1751 DSToF2");
 
   for(size_t s = 0; s < fWUTs.size(); ++s){
 //    for(size_t t = 0; t < fWUT.hit_channel.size(); ++t){std::cout<<"t: "<<t<<std::endl;}
