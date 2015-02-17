@@ -1,0 +1,8 @@
+BEGIN_PROLOG
+
+standard_digitreader:
+{
+module_type:           "DigitReader"
+}
+
+END_PROLOG
