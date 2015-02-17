@@ -102,12 +102,12 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 
   produces< std::vector<raw::AuxDetDigit> >("a");
   produces< std::vector<raw::AuxDetDigit> >("b");
-  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 USToF1");
-  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 USToF2");
-  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 USToF3");
-  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 USToF4");
-  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 DSToF1");
-  produces< std::vector<raw::AuxDetDigit> >("CAEN1751 DSToF2");
+  produces< std::vector<raw::AuxDetDigit> >("caen1751ustof1");
+  produces< std::vector<raw::AuxDetDigit> >("caen1751ustof2");
+  produces< std::vector<raw::AuxDetDigit> >("caen1751ustof3");
+  produces< std::vector<raw::AuxDetDigit> >("caen1751ustof4");
+  produces< std::vector<raw::AuxDetDigit> >("caen1751dstof1");
+  produces< std::vector<raw::AuxDetDigit> >("caen1751dstof2");
 }
 
 void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
@@ -201,12 +201,12 @@ void FragmentToDigit::produce(art::Event & evt)
   std::cout << "Run " << evt.run() << ", subrun " << evt.subRun()
             << ", spill " << fSpill << std::endl;
 
-  std::string CAEN1751USTOF1Label ("1751 ToF USToF1 Hits");
-  std::string CAEN1751USTOF2Label ("1751 ToF USToF2 Hits");
-  std::string CAEN1751USTOF3Label ("1751 ToF USToF3 Hits");
-  std::string CAEN1751USTOF4Label ("1751 ToF USToF4 Hits");
-  std::string CAEN1751DSTOF1Label ("1751 ToF DSToF1 Hits");
-  std::string CAEN1751DSTOF2Label ("1751 ToF DSToF2 Hits");
+  std::string CAEN1751USTOF1Label ("caen1751ustof1hits");
+  std::string CAEN1751USTOF2Label ("caen1751ustof2hits");
+  std::string CAEN1751USTOF3Label ("caen1751ustof3hits");
+  std::string CAEN1751USTOF4Label ("caen1751ustof4hits");
+  std::string CAEN1751DSTOF1Label ("caen1751dstof1hits");
+  std::string CAEN1751DSTOF2Label ("caen1751dstof2hits");
   raw::AuxDetDigit CAEN1751AuxDetDigit;
   for(size_t s = 0; s < fCAENs.size(); ++s){
     fCAEN = fCAENs[s];
@@ -231,12 +231,12 @@ void FragmentToDigit::produce(art::Event & evt)
     std::cout<<"partCol1751USTOF1->size(): "<<partCol1751USTOF1->size()<<std::endl;
   }
 
-  evt.put(std::move(partCol1751USTOF1),"CAEN1751 USToF1");
-  evt.put(std::move(partCol1751USTOF2),"CAEN1751 USToF2");
-  evt.put(std::move(partCol1751USTOF3),"CAEN1751 USToF3");
-  evt.put(std::move(partCol1751USTOF4),"CAEN1751 USToF4");
-  evt.put(std::move(partCol1751DSTOF1),"CAEN1751 DSToF1");
-  evt.put(std::move(partCol1751DSTOF2),"CAEN1751 DSToF2");
+  evt.put(std::move(partCol1751USTOF1),"caen1751ustof1");
+  evt.put(std::move(partCol1751USTOF2),"caen1751ustof2");
+  evt.put(std::move(partCol1751USTOF3),"caen1751ustof3");
+  evt.put(std::move(partCol1751USTOF4),"caen1751ustof4");
+  evt.put(std::move(partCol1751DSTOF1),"caen1751dstof1");
+  evt.put(std::move(partCol1751DSTOF2),"caen1751dstof2");
 
   for(size_t s = 0; s < fWUTs.size(); ++s){
 //    for(size_t t = 0; t < fWUT.hit_channel.size(); ++t){std::cout<<"t: "<<t<<std::endl;}

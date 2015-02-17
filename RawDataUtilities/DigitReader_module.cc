@@ -60,7 +60,7 @@ void DigitReader::analyze(art::Event const & e)
   std::cout<<"e.event(): "<<e.event()<<std::endl;
 
   art::Handle< std::vector<raw::AuxDetDigit> > digitVecHandle;
-  e.getByLabel("FragmentToDigit","CAEN1751 DSToF1", digitVecHandle);
+  e.getByLabel("FragmentToDigit", "caen1751dstof1", digitVecHandle);
   std::cout << "digitVecHandle Size is: " << digitVecHandle->size() << std::endl;
 
   art::Handle< std::vector<raw::AuxDetDigit> > digitVecHandleDummy;
