@@ -40,40 +40,76 @@ public:
   // Required functions.
   void analyze(art::Event const & e) override;
 
+  // Selected optional functions.
+  void beginJob() override;
+  void reconfigure(fhicl::ParameterSet const & p) override;
 
 private:
 
-  // Declare member data here.
+  std::string fCaenV1740Board8Label;
+  std::string fCaenV1751Board1Label;
+  std::string fCaenV1751Board2Label;
 
 };
 
-
+//------------------------------------------------------------------------------
 DigitReader::DigitReader(fhicl::ParameterSet const & p)
-  :
-  EDAnalyzer(p)  // ,
- // More initializers here.
-{}
+  : EDAnalyzer(p)
+{
+  this->reconfigure(p);
+}
 
-void DigitReader::analyze(art::Event const & e)
+//------------------------------------------------------------------------------
+void DigitReader::reconfigure(fhicl::ParameterSet const & p)
+{
+  fCaenV1740Board8Label = p.get< std::string >("CaenV1740Board8Label",
+                                               "CaenV1740Board8");
+  fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label",
+                                               "CaenV1751Board1");
+  fCaenV1751Board2Label = p.get< std::string >("CaenV1751Board2Label",
+                                               "CaenV1751Board2");
+}
+
+//------------------------------------------------------------------------------
+void DigitReader::beginJob()
+{
+  return;
+}
+
+//------------------------------------------------------------------------------
+void DigitReader::analyze(art::Event const & evt)
 {
 
-  std::cout<<"e.event(): "<<e.event()<<std::endl;
+  std::cout << "evt.run(): " << evt.run() << "; evtsubRun(): " << evt.subRun()
+            << "; evt.event(): " << evt.event() << std::endl;
+
+  //std::cout << "evt.event(): " << evt.event() << std::endl;
 
   art::Handle< std::vector<raw::AuxDetDigit> > digitVecHandle;
-  e.getByLabel("FragmentToDigit", "caen1751dstof1", digitVecHandle);
+  evt.getByLabel("FragmentToDigit", fCaenV1751Board1Label, digitVecHandle);
   std::cout << "digitVecHandle Size is: " << digitVecHandle->size() << std::endl;
 
-  art::Handle< std::vector<raw::AuxDetDigit> > digitVecHandleDummy;
-  e.getByLabel("FragmentToDigit","a", digitVecHandleDummy);
-  std::cout << "digitVecHandleDummy Size is: " << digitVecHandleDummy->size() << std::endl;
+  for (size_t i = 0; i < digitVecHandle->size(); ++i) {
 
-  for(size_t dummyIter = 0; dummyIter < digitVecHandleDummy->size(); ++dummyIter){ // ++ move
+    art::Ptr<raw::AuxDetDigit> digitVec(digitVecHandle, i);
+    std::cout << "digitVec->NADC(): " << digitVec->NADC() << std::endl;
+    std::cout << "digitVec->Channel(): " << digitVec->Channel() << std::endl;
+    std::cout << "digitVec->AuxDetName(): " << digitVec->AuxDetName() << std::endl;
+    std::cout << "digitVec->TimeStamp(): " << digitVec->TimeStamp() << std::endl;
 
-    art::Ptr<raw::AuxDetDigit> dummydigitVec(digitVecHandleDummy, dummyIter);
-    std::cout << "dummydigitVec->NADC(): " << dummydigitVec->NADC() << std::endl;
-    std::cout << "dummydigitVec->Channel(): " << dummydigitVec->Channel() << std::endl;
-    std::cout << "dummydigitVec->AuxDetName(): " << dummydigitVec->AuxDetName() << std::endl;
   }
+
+  //art::Handle< std::vector<raw::AuxDetDigit> > digitVecHandleDummy;
+  //evt.getByLabel("FragmentToDigit", "a", digitVecHandleDummy);
+  //std::cout << "digitVecHandleDummy Size is: " << digitVecHandleDummy->size() << std::endl;
+
+  //for (size_t dummyIter = 0; dummyIter < digitVecHandleDummy->size(); ++dummyIter){ // ++ move
+
+  //  art::Ptr<raw::AuxDetDigit> dummydigitVec(digitVecHandleDummy, dummyIter);
+  //  std::cout << "dummydigitVec->NADC(): " << dummydigitVec->NADC() << std::endl;
+  //  std::cout << "dummydigitVec->Channel(): " << dummydigitVec->Channel() << std::endl;
+  //  std::cout << "dummydigitVec->AuxDetName(): " << dummydigitVec->AuxDetName() << std::endl;
+  //}
 
 }
 

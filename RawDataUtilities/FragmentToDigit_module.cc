@@ -7,6 +7,16 @@
 // from cetpkgsupport v1_07_01.
 ////////////////////////////////////////////////////////////////////////
 
+//////////////////////////////////////////////////////////////
+// TODO
+//////////////////////////////////////////////////////////////
+// [x] Add CAEN V1751 board 1
+// [x] Add CAEN V1751 board 2
+// [x] Add channels 32 to 64 of CAEN V1740 board 8
+// [ ] Add WUT
+// [ ] Add MWPCs
+//////////////////////////////////////////////////////////////
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -22,17 +32,24 @@
 
 #include "artdaq-core/Data/Fragment.hh"
 #include "LariatFragment.h"
-#include "WUTFragment.h"
+//#include "WUTFragment.h"
 #include "CAENFragment.h"
-#include "TDCFragment.h"
+//#include "TDCFragment.h"
 
 #include "RawData/AuxDetDigit.h"
 
 #include "TTree.h"
 
 #include <memory>
-#include <iostream>
 #include <vector>
+#include <string>
+
+enum {
+  V1740_N_CHANNELS = 64,
+  V1740_N_SAMPLES = 1536,
+  V1751_N_CHANNELS = 8,
+  V1751_N_SAMPLES = 1792,
+};
 
 class FragmentToDigit;
 
@@ -57,103 +74,55 @@ public:
 
 private:
 
-  typedef struct{
-    uint16_t wut_spill;
-    uint16_t wut_fragment_id;
-    uint32_t time_header;  // Each count in the time header is 16 us
-    std::vector<uint16_t> hit_channel;
-    std::vector<uint32_t> hit_time_bin;
-    std::vector<uint64_t> hit_time;
-  } WUTData;
-
-  typedef struct{
-    uint16_t caen_spill;
-    uint16_t caen_fragment_id;
-    uint32_t trigger_time_tag;  // Each count in the trigger time tag is 8 ns
-    std::vector<short> ustof1_logic;
-    std::vector<short> ustof2_logic;
-    std::vector<short> ustof3_logic;
-    std::vector<short> ustof4_logic;
-    std::vector<short> dstof1_logic;
-    std::vector<short> dstof2_logic;
-  } CAENData;
-
-  void FillCAENInfo(LariatFragment const& lariatFrag);
-  void FillWUTInfo (LariatFragment const& lariatFrag);
-
-
-  TTree *               fCaenDataTree;        ///< Tree holding the data from the various fragments 
-  TTree *               fWutDataTree;         ///< Tree holding the data from the various fragments 
-  CAENData              fCAEN;                    ///< data from CAEN V1751                              
-  WUTData               fWUT;                     ///< data from WUT                                     
-  std::vector<CAENData> fCAENs;               ///< collection of all CAEN fragments
-  std::vector<WUTData>  fWUTs;                ///< collection of all CAEN fragments
   std::string           fRawFragmentLabel;    ///< label for module producing artdaq fragments
-  std::string               fRawFragmentInstance; ///< instance label for artdaq fragments        
-  uint16_t              fSpill;               ///< Spill number
+  std::string  		    fRawFragmentInstance; ///< instance label for artdaq fragments        
+  std::string           fCaenV1740Board8Label;
+  std::string           fCaenV1751Board1Label;
+  std::string           fCaenV1751Board2Label;
 
 };
 
-
+//------------------------------------------------------------------------------
 FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
-// : EDProducer(p)
+//  : EDProducer(p)
 {
   this->reconfigure(p);
-
   produces< std::vector<raw::AuxDetDigit> >("a");
   produces< std::vector<raw::AuxDetDigit> >("b");
-  produces< std::vector<raw::AuxDetDigit> >("caen1751ustof1");
-  produces< std::vector<raw::AuxDetDigit> >("caen1751ustof2");
-  produces< std::vector<raw::AuxDetDigit> >("caen1751ustof3");
-  produces< std::vector<raw::AuxDetDigit> >("caen1751ustof4");
-  produces< std::vector<raw::AuxDetDigit> >("caen1751dstof1");
-  produces< std::vector<raw::AuxDetDigit> >("caen1751dstof2");
+  produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board8Label);
+  produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board1Label);
+  produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board2Label);
 }
 
+//------------------------------------------------------------------------------
 void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 {
   fRawFragmentLabel    = p.get< std::string >("RawFragmentLabel", "daq");
   fRawFragmentInstance = p.get< std::string >("RawFragmentInstance", "SPILL");
+  fCaenV1740Board8Label = p.get< std::string >("CaenV1740Board8Label",
+                                               "CaenV1740Board8");
+  fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label",
+                                               "CaenV1751Board1");
+  fCaenV1751Board2Label = p.get< std::string >("CaenV1751Board2Label",
+                                               "CaenV1751Board2");
 }
 
+//------------------------------------------------------------------------------
 void FragmentToDigit::beginJob()
 {
-
-  art::ServiceHandle<art::TFileService> tfs;
-
-  fWutDataTree = tfs->make<TTree>("wut", "wut");
-  fWutDataTree->Branch("spill",                 &fWUT.wut_spill);
-  fWutDataTree->Branch("fragment_id",           &fWUT.wut_fragment_id);
-  fWutDataTree->Branch("wut_time_header",       &fWUT.time_header);
-  fWutDataTree->Branch("wut_hit_channel",       &fWUT.hit_channel);
-  fWutDataTree->Branch("wut_hit_time_bin",      &fWUT.hit_time_bin);
-  fWutDataTree->Branch("wut_hit_time",          &fWUT.hit_time);
-
-  fCaenDataTree = tfs->make<TTree>("caen", "caen");
-  fCaenDataTree->Branch("spill",                 &fCAEN.caen_spill);
-  fCaenDataTree->Branch("fragment_id",           &fCAEN.caen_fragment_id);
-  fCaenDataTree->Branch("caen_trigger_time_tag", &fCAEN.trigger_time_tag);
-  fCaenDataTree->Branch("caen_ustof1_logic",     &fCAEN.ustof1_logic);
-  fCaenDataTree->Branch("caen_ustof2_logic",     &fCAEN.ustof2_logic);
-  fCaenDataTree->Branch("caen_ustof3_logic",     &fCAEN.ustof3_logic);
-  fCaenDataTree->Branch("caen_ustof4_logic",     &fCAEN.ustof4_logic);
-  fCaenDataTree->Branch("caen_dstof1_logic",     &fCAEN.dstof1_logic);
-  fCaenDataTree->Branch("caen_dstof2_logic",     &fCAEN.dstof2_logic);
-
+  return;
 }
 
+//------------------------------------------------------------------------------
 void FragmentToDigit::produce(art::Event & evt)
 {
 
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol  (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol2  (new std::vector<raw::AuxDetDigit>);
-//  std::unique_ptr< std::vector<raw::AuxDetDigit> > partColWUT  (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751USTOF1  (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751USTOF2  (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751USTOF3  (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751USTOF4  (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751DSTOF1  (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol1751DSTOF2  (new std::vector<raw::AuxDetDigit>);
+  ////////////////////////////////////////////////////////////
+  // Begin dummies
+  ////////////////////////////////////////////////////////////
+
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol2 (new std::vector<raw::AuxDetDigit>);
 
   std::vector<short> ADCarray (3,1);
   std::cout<<"ADCarray[1]: "<<ADCarray[1]<<std::endl;
@@ -172,197 +141,118 @@ void FragmentToDigit::produce(art::Event & evt)
   partCol->push_back(Name);
   partCol2->push_back(Name2);
 
-  evt.put(std::move(partCol),"a");
-  evt.put(std::move(partCol2),"b");
+  evt.put(std::move(partCol), "a");
+  evt.put(std::move(partCol2), "b");
 
-////////////////
+  ////////////////////////////////////////////////////////////
+  // End dummies
+  ////////////////////////////////////////////////////////////
 
   art::Handle< std::vector<artdaq::Fragment> > fragments;
   evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
 
-  if( !fragments.isValid() )                                                                                                                                                
-    throw cet::exception("LARIATFragementReader") << "artdaq::Fragment handle is not valid, bail";                                                                          
-  if( fragments->size() != 1 )                                                                                                                                              
-    throw cet::exception("LARIATFragementReader") << "artdaq::Fragment handle contains more than one fragment, bail";                                                       
-                                                                                                                                                                            
-  fSpill = (uint16_t) evt.id().event();                                                                                                                                     
-                                                                                                                                                                            
-  // get the fragments we are interested in                                                                                                                                 
-  const auto& frag((*fragments)[0]);                                                                                                                                        
-                               
-  char const* bytePtr = reinterpret_cast<char const*> (&*frag.dataBegin());
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board8Vec
+      (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board1Vec
+      (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board2Vec
+      (new std::vector<raw::AuxDetDigit>);
 
-  LariatFragment lariatFrag((char *)bytePtr, frag.dataSize() * sizeof(unsigned long long));
+  if ( !fragments.isValid() )
+      throw cet::exception("FragmentToDigit")
+      << "artdaq::Fragment handle is not valid, bail";
+  if ( fragments->size() != 1 )
+      throw cet::exception("FragmentToDigit")
+      << "artdaq::Fragment handle contains more than one fragment, bail";
 
-  this->FillWUTInfo(lariatFrag);
+  art::EventNumber_t spillNumber = evt.event();
 
-  this->FillCAENInfo(lariatFrag);
+  // get the fragments we are interested in
+  const auto& frag((*fragments)[0]);
 
-  std::cout << "Run " << evt.run() << ", subrun " << evt.subRun()
-            << ", spill " << fSpill << std::endl;
+  const char * bytePtr = reinterpret_cast<const char *> (&*frag.dataBegin());
+  LariatFragment * data = new LariatFragment((char *) bytePtr,
+      frag.dataSize() * sizeof(unsigned long long));
+  std::cout << "Have data fragment "
+            << frag.dataSize() * sizeof(unsigned long long)
+            << std::endl;
+  data->print();
 
-  std::string CAEN1751USTOF1Label ("caen1751ustof1hits");
-  std::string CAEN1751USTOF2Label ("caen1751ustof2hits");
-  std::string CAEN1751USTOF3Label ("caen1751ustof3hits");
-  std::string CAEN1751USTOF4Label ("caen1751ustof4hits");
-  std::string CAEN1751DSTOF1Label ("caen1751dstof1hits");
-  std::string CAEN1751DSTOF2Label ("caen1751dstof2hits");
-  raw::AuxDetDigit CAEN1751AuxDetDigit;
-  for(size_t s = 0; s < fCAENs.size(); ++s){
-    fCAEN = fCAENs[s];
-    fCaenDataTree->Fill();
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof1_logic,CAEN1751USTOF1Label);
-//    std::cout<<"fCAEN.ustof1_logic: "<<fCAEN.ustof1_logic<<std::endl;
-    std::cout<<"CAEN1751AuxDetDigit.NADC(): "<<CAEN1751AuxDetDigit.NADC()<<std::endl;
-    std::cout<<"CAEN1751AuxDetDigit.ADC(0): "<<CAEN1751AuxDetDigit.ADC(0)<<std::endl;
-    std::cout<<"CAEN1751AuxDetDigit.Channel(): "<<CAEN1751AuxDetDigit.Channel()<<std::endl;
-    std::cout<<"CAEN1751AuxDetDigit.AuxDetName(): "<<CAEN1751AuxDetDigit.AuxDetName()<<std::endl;
-/*    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof2_logic,CAEN1751USTOF2Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof3_logic,CAEN1751USTOF3Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.ustof4_logic,CAEN1751USTOF4Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.dstof1_logic,CAEN1751DSTOF1Label);
-    CAEN1751AuxDetDigit = raw::AuxDetDigit(0,fCAEN.dstof2_logic,CAEN1751DSTOF2Label);*/
-    partCol1751USTOF1->push_back(raw::AuxDetDigit(0, fCAEN.ustof1_logic, CAEN1751USTOF1Label));
-    partCol1751USTOF2->push_back(raw::AuxDetDigit(0, fCAEN.ustof2_logic, CAEN1751USTOF2Label));
-    partCol1751USTOF3->push_back(raw::AuxDetDigit(0, fCAEN.ustof3_logic, CAEN1751USTOF3Label));
-    partCol1751USTOF4->push_back(raw::AuxDetDigit(0, fCAEN.ustof4_logic, CAEN1751USTOF4Label));
-    partCol1751DSTOF1->push_back(raw::AuxDetDigit(0, fCAEN.dstof1_logic, CAEN1751DSTOF1Label));
-    partCol1751DSTOF2->push_back(raw::AuxDetDigit(0, fCAEN.dstof2_logic, CAEN1751DSTOF2Label));
-    std::cout<<"partCol1751USTOF1->size(): "<<partCol1751USTOF1->size()<<std::endl;
+  std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
+            << "; spill: " << spillNumber << std::endl;
+
+  const size_t numberCaenFrags = data->caenFrags.size();
+  std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
+
+  if (numberCaenFrags > 0) {
+    std::cout << "Looking at CAEN fragments..." << std::endl;
   }
 
-  evt.put(std::move(partCol1751USTOF1),"caen1751ustof1");
-  evt.put(std::move(partCol1751USTOF2),"caen1751ustof2");
-  evt.put(std::move(partCol1751USTOF3),"caen1751ustof3");
-  evt.put(std::move(partCol1751USTOF4),"caen1751ustof4");
-  evt.put(std::move(partCol1751DSTOF1),"caen1751dstof1");
-  evt.put(std::move(partCol1751DSTOF2),"caen1751dstof2");
-
-  for(size_t s = 0; s < fWUTs.size(); ++s){
-//    for(size_t t = 0; t < fWUT.hit_channel.size(); ++t){std::cout<<"t: "<<t<<std::endl;}
-    fWUT  = fWUTs[s];
-    fWutDataTree->Fill();
-  }
-
-  std::cout << "////////////////////////////////////////" << std::endl;
-  std::cout << "Dumping TDC controller fragments" << std::endl;
-  std::cout << "////////////////////////////////////////" << std::endl;
-  for (size_t s = 0; s < lariatFrag.tdcFrags.size(); ++s) {
-    lariatFrag.tdcFrags[s].print();
-  }
-/*
-  std::cout << "////////////////////////////////////////" << std::endl;
-  std::cout << "Dumping CAEN 1495 (Beamline Counter) fragments" << std::endl;
-  std::cout << "////////////////////////////////////////" << std::endl;
-  for (size_t s = 0; s < caen1495FragPtrs.size(); ++s) {
-    lariat::V1495HitFragment Beamline(caen1495FragPtrs[s]);
-    Beamline.printHeader();
-    std::cout<<"Beamline.getHeader()->fragmentSize: "<<Beamline.getHeader()->fragmentSize<<std::endl;
-    for (auto V1495hit = Beamline.dataBegin(); V1495hit != Beamline.dataEnd(); ++V1495hit) {
-      std::cout << "V1495hit->counts() " << V1495hit->counts() << std::endl;
-    }
-  }
-*/
-  return;
-
-}
-
-void FragmentToDigit::FillCAENInfo(LariatFragment const& lariatFrag)
-{
-  const size_t numberCaenFrags = lariatFrag.caenFrags.size();
-  LOG_VERBATIM("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
-
-  LOG_VERBATIM("FragmentToDigit") << "Looking at CAEN fragments...";
-
-  fCAENs.clear();
-  CAENData data;
   for (size_t i = 0; i < numberCaenFrags; ++i) {
-    CAENFragment const& frag = lariatFrag.caenFrags[i];
+    CAENFragment & caenFrag = data->caenFrags[i];
 
-    if (frag.header.boardId == 8) {
+    uint32_t boardId = caenFrag.header.boardId;
+    uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
 
-      data.caen_spill = fSpill;
-      data.caen_fragment_id = (uint16_t) i;
-      data.trigger_time_tag = frag.header.triggerTimeTag;
+    //caenFrag.print();
+    //std::cout << "CAEN event counter: " << caenFrag.header.eventCounter
+    //          << std::endl;
 
-      LOG_VERBATIM("FragmentToDigit") << "///////////////////////////////////////"
-                << "\nFragment number: " << i
-                << "\n///////////////////////////////////////"
-                << "\nBoard ID: " << frag.header.boardId
-                << "\nNumber of samples: " << frag.header.nSamples;
-      data.ustof1_logic.clear();
-      data.ustof2_logic.clear();
-      data.ustof3_logic.clear();
-      data.ustof4_logic.clear();
-      data.dstof1_logic.clear();
-      data.dstof2_logic.clear();
-
-      for (size_t time = 0; time < frag.header.nSamples; ++time) {
-        data.ustof1_logic.push_back((short) frag.waveForms[2].data[time]);
-        data.ustof2_logic.push_back((short) frag.waveForms[3].data[time]);
-        data.ustof3_logic.push_back((short) frag.waveForms[4].data[time]);
-        data.ustof4_logic.push_back((short) frag.waveForms[5].data[time]);
-        data.dstof1_logic.push_back((short) frag.waveForms[6].data[time]);
-        data.dstof2_logic.push_back((short) frag.waveForms[7].data[time]);
-        std::cout<<"frag.waveForms[2].data[time] (ustof1_logic): "<<frag.waveForms[2].data[time]<<std::endl;
+    if (boardId == 7) {
+      for (size_t j = 31; j < V1740_N_CHANNELS; ++j) {
+        std::vector<short> caenFragWaveForm
+            (caenFrag.waveForms[j].data.begin(),
+             caenFrag.waveForms[j].data.end());
+        caenV1740Board8Vec->push_back(
+            raw::AuxDetDigit(
+                static_cast <unsigned short> (j),
+                caenFragWaveForm,
+                fCaenV1740Board8Label,
+                static_cast <unsigned long long> (triggerTimeTag)
+                )
+            );
       }
+    }
 
-      fCAENs.push_back(data);
+    else if (boardId == 8) {
+      for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
+        std::vector<short> caenFragWaveForm
+            (caenFrag.waveForms[j].data.begin(),
+             caenFrag.waveForms[j].data.end());
+        caenV1751Board1Vec->push_back(
+            raw::AuxDetDigit(
+                static_cast <unsigned short> (j),
+                caenFragWaveForm,
+                fCaenV1751Board1Label,
+                static_cast <unsigned long long> (triggerTimeTag)
+                )
+            );
+      }
+    }
 
-    } // end if board ID is 8
+    else if (boardId == 9) {
+      for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
+        std::vector<short> caenFragWaveForm
+            (caenFrag.waveForms[j].data.begin(),
+             caenFrag.waveForms[j].data.end());
+        caenV1751Board2Vec->push_back(
+            raw::AuxDetDigit(
+                static_cast <unsigned short> (j),
+                caenFragWaveForm,
+                fCaenV1751Board2Label,
+                static_cast <unsigned long long> (triggerTimeTag)
+                )
+            );
+      }
+    }
 
-  } // end loop over fragment pointers
+  }
 
-  return;
-}
+  evt.put(std::move(caenV1740Board8Vec), fCaenV1740Board8Label);
+  evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
+  evt.put(std::move(caenV1751Board2Vec), fCaenV1751Board2Label);
 
-void FragmentToDigit::FillWUTInfo(LariatFragment const& lariatFrag)
-{
-
-  const size_t numberWutFrags = lariatFrag.wutFrags.size();
-  LOG_VERBATIM("FragmentToDigit") << "Found " << numberWutFrags << " WUT fragments";
-
-  fWUTs.clear();
-  WUTData data;
-
-  for (size_t i = 0; i < numberWutFrags; ++i) {
-    WUTFragment const& frag = lariatFrag.wutFrags[i];
-
-    size_t numberHits = frag.header.nHits;
-
-    LOG_VERBATIM("FragmentToDigit") << "  WUT fragment ID: " << i
-                                         << "\n  Number of WUT hits: " << numberHits;
-
-    data.hit_channel.clear();
-    data.hit_time_bin.clear();
-    data.hit_time.clear();
-
-    data.wut_spill = fSpill;
-    data.wut_fragment_id = (uint16_t) i;
-    data.time_header = frag.header.timeHeader;
-
-    for (size_t j = 0; j < numberHits; ++j) {
-      WUTFragment::WutHit const& hit = frag.hits[j];
-
-      // hit time since beginning of spill
-      uint64_t hitTime = ((uint64_t) data.time_header << 20) | ((uint64_t) hit.timeBin);
-
-      data.hit_channel.push_back((uint16_t) hit.channel);
-      data.hit_time_bin.push_back(hit.timeBin);
-      data.hit_time.push_back(hitTime);
-
-      LOG_VERBATIM("FragmentToDigit") << "    Hit ID: " << j
-                                           << "\n   Channel: " << (uint16_t) hit.channel
-                                           << "\n  Time bin: " << hit.timeBin
-                                           << "\n  Time since BOS: " << hitTime
-                                           << "\n  Time since BOS (s): " << hitTime * 15.625e-12 ;
-
-    } // end loop over WUT hits
-
-    fWUTs.push_back(data);
-  } // end loop over WUT fragment pointers
-
-  return;
+  return;  
 }
 
 DEFINE_ART_MODULE(FragmentToDigit)
