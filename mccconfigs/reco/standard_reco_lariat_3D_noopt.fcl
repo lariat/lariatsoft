@@ -19,7 +19,7 @@ services:
   Timing:       {}
   SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
-  message:      @local::lariat_message_services_prod_debug
+#  message:      @local::lariat_message_services_prod_debug
   FileCatalogMetadata:  @local::art_file_catalog_mc
   user:         @local::lariat_simulation_services
 }
@@ -46,17 +46,17 @@ physics:
   rns:                 { module_type: RandomNumberSaver }
 
   ### track-finder producers
-  trackkalmanhit:      @local::lariat_track3Dkalmanhit
-  trackkalmanhitcc:    @local::lariat_track3Dkalmanhit
+ # trackkalmanhit:      @local::lariat_track3Dkalmanhit
+ # trackkalmanhitcc:    @local::lariat_track3Dkalmanhit
   spacepointfinder:    @local::lariat_spacepoint_finder
-  trackkalsps:         @local::lariat_kalman
-  stitch:	       @local::lariat_trackstitcher
-  stitchkalmanhit:     @local::lariat_trackstitcher
-  beziertracker:       @local::lariat_beziertrackermodule
+ # trackkalsps:         @local::lariat_kalman
+ # stitch:	       @local::lariat_trackstitcher
+ # stitchkalmanhit:     @local::lariat_trackstitcher
+#  beziertracker:       @local::lariat_beziertrackermodule
   spacepointfindercc:  @local::lariat_spacepoint_finder
-  trackkalspscc:       @local::lariat_kalman
-  stitchcc:	       @local::lariat_trackstitcher
-  beziertrackercc:     @local::lariat_beziertrackermodule
+#  trackkalspscc:       @local::lariat_kalman
+#  stitchcc:	       @local::lariat_trackstitcher
+#  beziertrackercc:     @local::lariat_beziertrackermodule
   costrk:              @local::lariat_cosmictracker
   costrkcc:            @local::lariat_cosmictracker
 
@@ -65,15 +65,15 @@ physics:
   ### vertex-finder producers
 
   ### calorimetry producers
-  trackkalmanhitcalo:  @local::lariat_calomc
-  trackkalmanhitcccalo:@local::lariat_calomc
-  trackkalspscalo:     @local::lariat_calomc
-  stitchcalo:          @local::lariat_calomc
-  stitchkalmanhitcalo: @local::lariat_calomc
-  trackkalspscccalo:   @local::lariat_calomc
-  stitchcccalo:	       @local::lariat_calomc
-  beziertrackercalo:   @local::lariat_beziercalorimetry
-  beziertrackercccalo: @local::lariat_beziercalorimetry
+ # trackkalmanhitcalo:  @local::lariat_calomc
+#  trackkalmanhitcccalo:@local::lariat_calomc
+ # trackkalspscalo:     @local::lariat_calomc
+ # stitchcalo:          @local::lariat_calomc
+ # stitchkalmanhitcalo: @local::lariat_calomc
+ # trackkalspscccalo:   @local::lariat_calomc
+ # stitchcccalo:	       @local::lariat_calomc
+#  beziertrackercalo:   @local::lariat_beziercalorimetry
+#  beziertrackercccalo: @local::lariat_beziercalorimetry
   costrkcalo:          @local::lariat_calomc
   costrkcccalo:        @local::lariat_calomc
 
@@ -84,12 +84,11 @@ physics:
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
  reco: [ rns,
-         trackkalmanhit, trackkalmanhitcc, spacepointfinder, trackkalsps, stitch, stitchkalmanhit, beziertracker, 
-         spacepointfindercc, trackkalspscc, stitchcc, beziertrackercc, costrk, costrkcc,
-         trackkalmanhitcalo, trackkalmanhitcccalo, trackkalspscalo, stitchcalo, stitchkalmanhitcalo,
-         trackkalspscccalo, stitchcccalo, beziertrackercccalo, beziertrackercalo, costrkcalo, costrkcccalo ]
+         spacepointfinder, spacepointfindercc, costrk, costrkcc,
+          costrkcalo, costrkcccalo ]
 #         beamflashcompat ]
- ana:  [ analysistree ]
+# ana:  [ analysistree ]
+ ana:  [  ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -121,66 +120,66 @@ outputs:
 ### Here, we overwrite ALL module labels with the ones defined above.
 
 
-physics.producers.trackkalmanhit.HitModuleLabel:                "gaushit"
-physics.producers.trackkalmanhit.ClusterModuleLabel:            "fuzzycluster"
+#physics.producers.trackkalmanhit.HitModuleLabel:                "gaushit"
+#physics.producers.trackkalmanhit.ClusterModuleLabel:            "fuzzycluster"
 
-physics.producers.trackkalmanhitcc.HitModuleLabel:              "cccluster"
-physics.producers.trackkalmanhitcc.ClusterModuleLabel:          "cccluster"
+#physics.producers.trackkalmanhitcc.HitModuleLabel:              "cccluster"
+#physics.producers.trackkalmanhitcc.ClusterModuleLabel:          "cccluster"
 
 physics.producers.spacepointfinder.ClusterModuleLabel:          "fuzzycluster"
 
-physics.producers.trackkalsps.ClusterModuleLabel:               "fuzzycluster"
-physics.producers.trackkalsps.SpptModuleLabel:                  "spacepointfinder"
-physics.producers.trackkalsps.GenieGenModuleLabel:              "generator"
-physics.producers.trackkalsps.G4ModuleLabel:                    "largeant"
+#physics.producers.trackkalsps.ClusterModuleLabel:               "fuzzycluster"
+#physics.producers.trackkalsps.SpptModuleLabel:                  "spacepointfinder"
+#physics.producers.trackkalsps.GenieGenModuleLabel:              "generator"
+#physics.producers.trackkalsps.G4ModuleLabel:                    "largeant"
 
-physics.producers.stitch.TrackModuleLabel:                      "trackkalsps"
-physics.producers.stitch.SpptModuleLabel:                       "spacepointfinder"
+#physics.producers.stitch.TrackModuleLabel:                      "trackkalsps"
+#physics.producers.stitch.SpptModuleLabel:                       "spacepointfinder"
 
-physics.producers.stitchkalmanhit.TrackModuleLabel:             "trackkalmanhit"
-physics.producers.stitchkalmanhit.SpptModuleLabel:              "trackkalmanhit"
+#physics.producers.stitchkalmanhit.TrackModuleLabel:             "trackkalmanhit"
+#physics.producers.stitchkalmanhit.SpptModuleLabel:              "trackkalmanhit"
 
-physics.producers.beziertracker.ClusterModuleLabel:             "fuzzycluster"
+#physics.producers.beziertracker.ClusterModuleLabel:             "fuzzycluster"
 
 physics.producers.spacepointfindercc.ClusterModuleLabel:        "cccluster"
 
-physics.producers.trackkalspscc.ClusterModuleLabel:             "cccluster"
-physics.producers.trackkalspscc.SpptModuleLabel:                "spacepointfindercc"
-physics.producers.trackkalspscc.GenieGenModuleLabel:            "generator"
-physics.producers.trackkalspscc.G4ModuleLabel:                  "largeant"
+#physics.producers.trackkalspscc.ClusterModuleLabel:             "cccluster"
+#physics.producers.trackkalspscc.SpptModuleLabel:                "spacepointfindercc"
+#physics.producers.trackkalspscc.GenieGenModuleLabel:            "generator"
+#physics.producers.trackkalspscc.G4ModuleLabel:                  "largeant"
 
-physics.producers.stitchcc.TrackModuleLabel:                    "trackkalspscc"
-physics.producers.stitchcc.SpptModuleLabel:                     "spacepointfindercc"
+#physics.producers.stitchcc.TrackModuleLabel:                    "trackkalspscc"
+#physics.producers.stitchcc.SpptModuleLabel:                     "spacepointfindercc"
 
-physics.producers.beziertrackercc.ClusterModuleLabel:           "cccluster"
+#physics.producers.beziertrackercc.ClusterModuleLabel:           "cccluster"
 
 physics.producers.costrk.ClusterModuleLabel:                    "fuzzycluster"
 physics.producers.costrkcc.ClusterModuleLabel:                  "cccluster"
 
-physics.producers.trackkalmanhitcalo.TrackModuleLabel:          "trackkalmanhit"
-physics.producers.trackkalmanhitcalo.SpacePointModuleLabel:     "trackkalmanhit"
+#physics.producers.trackkalmanhitcalo.TrackModuleLabel:          "trackkalmanhit"
+#physics.producers.trackkalmanhitcalo.SpacePointModuleLabel:     "trackkalmanhit"
 
-physics.producers.trackkalmanhitcccalo.TrackModuleLabel:        "trackkalmanhitcc"
-physics.producers.trackkalmanhitcccalo.SpacePointModuleLabel:   "trackkalmanhitcc"
+#physics.producers.trackkalmanhitcccalo.TrackModuleLabel:        "trackkalmanhitcc"
+#physics.producers.trackkalmanhitcccalo.SpacePointModuleLabel:   "trackkalmanhitcc"
 
-physics.producers.trackkalspscalo.TrackModuleLabel:             "trackkalsps"
-physics.producers.trackkalspscalo.SpacePointModuleLabel:        "spacepointfinder"
+#physics.producers.trackkalspscalo.TrackModuleLabel:             "trackkalsps"
+#physics.producers.trackkalspscalo.SpacePointModuleLabel:        "spacepointfinder"
 
-physics.producers.stitchcalo.TrackModuleLabel:                  "stitch"
-physics.producers.stitchcalo.SpacePointModuleLabel:             "spacepointfinder"
+#physics.producers.stitchcalo.TrackModuleLabel:                  "stitch"
+#physics.producers.stitchcalo.SpacePointModuleLabel:             "spacepointfinder"
 
-physics.producers.stitchkalmanhitcalo.TrackModuleLabel:         "stitchkalmanhit"
-physics.producers.stitchkalmanhitcalo.SpacePointModuleLabel:    "spacepointfinder"
+#physics.producers.stitchkalmanhitcalo.TrackModuleLabel:         "stitchkalmanhit"
+#physics.producers.stitchkalmanhitcalo.SpacePointModuleLabel:    "spacepointfinder"
 
-physics.producers.trackkalspscccalo.TrackModuleLabel:           "trackkalspscc"
-physics.producers.trackkalspscccalo.SpacePointModuleLabel:      "spacepointfindercc"
+#physics.producers.trackkalspscccalo.TrackModuleLabel:           "trackkalspscc"
+#physics.producers.trackkalspscccalo.SpacePointModuleLabel:      "spacepointfindercc"
 
-physics.producers.stitchcccalo.TrackModuleLabel:                "stitchcc"
-physics.producers.stitchcccalo.SpacePointModuleLabel:           "spacepointfindercc"
+#physics.producers.stitchcccalo.TrackModuleLabel:                "stitchcc"
+#physics.producers.stitchcccalo.SpacePointModuleLabel:           "spacepointfindercc"
 
-physics.producers.beziertrackercalo.BTrackModuleLabel:          "beziertracker"
+#physics.producers.beziertrackercalo.BTrackModuleLabel:          "beziertracker"
 
-physics.producers.beziertrackercccalo.BTrackModuleLabel:        "beziertrackercc"
+#physics.producers.beziertrackercccalo.BTrackModuleLabel:        "beziertrackercc"
 
 physics.producers.costrkcalo.TrackModuleLabel:                   "costrk"
 physics.producers.costrkcalo.SpacePointModuleLabel:              "costrk"
@@ -191,13 +190,13 @@ physics.producers.costrkcccalo.SpacePointModuleLabel:            "costrkcc"
 #physics.producers.beamflashcompat.TrackModuleLabel:             "beziertracker"
 #physics.producers.beamflashcompat.FlashModuleLabel:             "opflash"
 
-physics.analyzers.analysistree:  @local::lariat_analysistree
-physics.analyzers.analysistree.HitsModuleLabel:                 "gaushit"
-physics.analyzers.analysistree.TrackModuleLabel:                ["trackkalmanhit", "trackkalmanhitcc", "trackkalsps", "stitch", "trackkalspscc", "stitchcc", "beziertrackercc", "beziertracker", "costrk", "costrkcc"]
-physics.analyzers.analysistree.VertexModuleLabel:               ["trackkalmanhit", "trackkalmanhitcc", "trackkalsps", "stitch", "trackkalspscc", "stitchcc", "beziertrackercc", "beziertracker", "costrk", "costrkcc"]
-physics.analyzers.analysistree.CalorimetryModuleLabel:          ["trackkalmanhitcalo", "trackkalmanhitcccalo", "trackkalspscalo", "stitchcalo", "trackkalspscccalo", "stitchcccalo", "beziertrackercccalo", "beziertrackercalo", "costrkcalo", "costrkcccalo"]
-physics.analyzers.analysistree.ParticleIDModuleLabel:          ["trackkalmanhitpid", "trackkalmanhitccpid", "trackkalspspid", "stitchpid","trackkalspsccpid", "stitchccpid", "beziertrackerccpid", "beziertrackerpid", "costrkpid", "costrkccpid"]
-physics.analyzers.analysistree.GenieGenModuleLabel:             "generator"
-physics.analyzers.analysistree.POTModuleLabel:                  "generator"
+#physics.analyzers.analysistree:  @local::lariat_analysistree
+#physics.analyzers.analysistree.HitsModuleLabel:                 "gaushit"
+#physics.analyzers.analysistree.TrackModuleLabel:                ["trackkalmanhit", "trackkalmanhitcc", "trackkalsps", "stitch", "trackkalspscc", "stitchcc", "beziertrackercc", "beziertracker", "costrk", "costrkcc"]
+#physics.analyzers.analysistree.VertexModuleLabel:               ["trackkalmanhit", "trackkalmanhitcc", "trackkalsps", "stitch", "trackkalspscc", "stitchcc", "beziertrackercc", "beziertracker", "costrk", "costrkcc"]
+#physics.analyzers.analysistree.CalorimetryModuleLabel:          ["trackkalmanhitcalo", "trackkalmanhitcccalo", "trackkalspscalo", "stitchcalo", "trackkalspscccalo", "stitchcccalo", "beziertrackercccalo", "beziertrackercalo", "costrkcalo", "costrkcccalo"]
+#physics.analyzers.analysistree.ParticleIDModuleLabel:          ["trackkalmanhitpid", "trackkalmanhitccpid", "trackkalspspid", "stitchpid","trackkalspsccpid", "stitchccpid", "beziertrackerccpid", "beziertrackerpid", "costrkpid", "costrkccpid"]
+#physics.analyzers.analysistree.GenieGenModuleLabel:             "generator"
+#physics.analyzers.analysistree.POTModuleLabel:                  "generator"
 
 
