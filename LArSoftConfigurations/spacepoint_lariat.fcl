@@ -1,4 +1,4 @@
-#include "services_argoneut.fcl"
+#include "services_lariat.fcl"
 #include "trackfinderservices.fcl"
 #include "trackfindermodules.fcl"
 
@@ -7,7 +7,7 @@ process_name: SpacePointAna
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "spacepoint_argoneut.root" }
+  TFileService: { fileName: "spacepoint_lariat.root" }
   scheduler:    { wantTracer: true wantSummary: true }
   Timing:       {}
   message:   @local::standard_debug
@@ -17,15 +17,15 @@ services:
 
 
 # services from LArSoft - see definitions for configurations in 
-# geometry_argoneut.fcl
-# services_argoneut.fcl
-services.user.ExptGeoHelperInterface: @local::argoneut_geometry_helper
-services.user.Geometry:           @local::argoneut_geo 
-services.user.DetectorProperties: @local::argoneut_detproperties
-services.user.LArProperties:      @local::argoneut_properties
-services.user.LArFFT:             @local::argoneut_larfft  
-services.user.DatabaseUtil:       @local::argoneut_database
-services.user.BackTracker:        @local::argoneut_backtracker
+# geometry_lariat.fcl
+# services_lariat.fcl
+services.user.ExptGeoHelperInterface: @local::lariat_geometry_helper
+services.user.Geometry:           @local::lariat_geo 
+services.user.DetectorProperties: @local::lariat_detproperties
+services.user.LArProperties:      @local::lariat_properties
+services.user.LArFFT:             @local::lariat_larfft  
+services.user.DatabaseUtil:       @local::lariat_database
+services.user.BackTracker:        @local::lariat_backtracker
 
 services.message.destinations.debugmsg.type: "cout"
 services.message.destinations.debugmsg.categories.default.limit: 1000000
@@ -60,5 +60,5 @@ physics:
  end_paths:     [ ana ]  
 }
 
-physics.analyzers.spacepoint: @local::argoneut_spacepoint
+physics.analyzers.spacepoint: @local::lariat_spacepoint
 physics.analyzers.spacepoint.UseMC: true
