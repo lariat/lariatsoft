@@ -322,8 +322,13 @@ namespace evgen{
       
     fEventCounter=0;
   //Create subtree of the     
-      
-    fMuonFileR = new TFile(fFileName.c_str(),"READ");
+    
+     // constructor decides if initialized value is a path or an environment variable
+    std::string fname;
+    cet::search_path sp("FW_SEARCH_PATH");
+    sp.find_file(fFileName, fname);
+    fMuonFileR = new TFile(fname.c_str(),"READ");
+    
     TNtuple = (TTree*)(fMuonFileR->Get(fTreeName.c_str()));
 
     //Set Branches for all detectors to extract the data per spill.
@@ -352,9 +357,10 @@ namespace evgen{
     //Create small TTree for sorting.
     // check that neiter of these numbers goes out of bounds.
     //nentries = (nentries > fEventNumberOffset+fEventsPerSpill ) ? fEventNumberOffset+fEventsPerSpill : nentries;
-    std::cout << " creating a subtree for sorting - this make take a while. from evt: " <<  fEventSpillOffset*fEventsPerSpill << " to: " << nentries << std::endl;
+   
     
     long start_event=fEventSpillOffset*fEventsPerSpill;
+     std::cout << " creating a subtree for sorting - this make take a while. from evt: " <<  fEventSpillOffset*fEventsPerSpill << " to: " << start_event+fEventsPerSpill << std::endl;
     for (Long64_t i=0;i<nentries; i++) 
     {
       TNtuple->GetEntry(i);
@@ -467,7 +473,7 @@ namespace evgen{
  	if(detectors[time_index].t<last_tHalo_trig+frametime/1000000) // cannot retrigger on same frame.
  	  continue;
 	
-	if(fEventFrames.size() >  (unsigned int)fEventsPerFile)  // break if too many events.
+	if(fEventFrames.size() >=  (unsigned int)fEventsPerFile)  // break if too many events.
 	  break;
 	
 	if(fUseTrigger)
@@ -522,7 +528,7 @@ namespace evgen{
 //          x_shift=x_outer_shift;
 //          y_shift=y_outer_shift;
 //          z_shift=z_outer_shift;
-//            std::cout << "Track in outer detector " << std::endl;
+	    std::cout << "Track in outer detector " <<OUTER_DET_INDEX << " "<< fDetectorNames[OUTER_DET_INDEX] << " " << fOuterDetName << " PDG " <<detectors[OUTER_DET_INDEX].PDGid << std::endl;
 	  }
       
 /*        x_extra_shift=x_shift+112.43; // x_shift - Ti window x position. To account for
@@ -543,7 +549,7 @@ namespace evgen{
       // Z changes by distance btw TPCactive and Tiwindow + distance btw TiWindow and inner or outer detector considered. 
       // geom->CryostatHalfHeight()*0.01,geom->CryostatLength()
 
-	  locPDG.push_back(detectors[INNER_DET_INDEX].PDGid);
+	  locPDG.push_back(PDG);
 //	locXYZ.push_back(TLorentzVector(x/10.-0.435+geom->DetHalfWidth(),y/10.+0.2,-84.54646+geom->DetLength()/2.-1,(detectors[INNER_DET_INDEX].t-last_tHalo_trig)*1e9)); //convert to ns
 //        locXYZ.push_back(TLorentzVector(x/10.-x_shift+x_extra_shift+geom->DetHalfWidth()+0.035,y/10.+y_shift+y_extra_shift,-39.546-(716.792-z_shift),(detectors[INNER_DET_INDEX].t-last_tHalo_trig)*1e9)); //convert to ns
           locXYZ.push_back(TLorentzVector(x/10.+x_shift,y/10.+y_shift,z/10.+z_shift,(detectors[time_index].t-last_tHalo_trig)*1e9)); //convert to ns

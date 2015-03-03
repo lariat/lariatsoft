@@ -1,0 +1,3 @@
+ #include "prodbeam_common_lariat.fcl"
+
+physics.producers.generator.FileName: "results_14.11.05.13.22.23_MergedAtBigDisksim_LAriaT_13degProdxn_10degAna_SurveyedGeom_1000jobsof30k_08GeV_pos0.35Tesla.root"
