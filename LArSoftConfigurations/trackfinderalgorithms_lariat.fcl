@@ -6,4 +6,17 @@ lariat_spacepointalg:   @local::standard_spacepointalg
 
 lariat_kalmanfilteralg: @local::standard_kalmanfilteralg
 
+lariat_trackstitcheralg:  @local::standard_trackstitcheralg
+
+
+
+
+lariat_seedfinderalgorithm:                          @local::standard_seedfinderalgorithm
+lariat_seedfinderalgorithm.SpacePointAlg :           @local::lariat_spacepointalg
+lariat_seedfinderalgorithm.SpacePointAlg.PreferColl: true
+lariat_seedfinderalgorithm.SpacePointAlg.Filter:     false
+
+lariat_beziertrackeralgorithm:                       @local::standard_beziertrackeralgorithm
+lariat_beziertrackeralgorithm.SeedFinder:            @local::lariat_seedfinderalgorithm
+
 END_PROLOG
