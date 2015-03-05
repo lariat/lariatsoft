@@ -123,8 +123,6 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 //  : EDProducer(p)
 {
   this->reconfigure(p);
-  produces< std::vector<raw::AuxDetDigit> >("a");
-  produces< std::vector<raw::AuxDetDigit> >("b");
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board8Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board1Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board2Label);
@@ -186,37 +184,6 @@ void FragmentToDigit::beginJob()
 //------------------------------------------------------------------------------
 void FragmentToDigit::produce(art::Event & evt)
 {
-
-  ////////////////////////////////////////////////////////////
-  // Begin dummies
-  ////////////////////////////////////////////////////////////
-
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol2 (new std::vector<raw::AuxDetDigit>);
-
-  std::vector<short> ADCarray (3,1);
-  std::cout<<"ADCarray[1]: "<<ADCarray[1]<<std::endl;
-  unsigned short TheChannel = 10;
-  std::cout<<"TheChannel: "<<TheChannel<<std::endl;
-  std::string TheDetector ("DetectorA");
-  std::string TheDetector2 ("DetectorB");
-  std::cout<<"TheDetector: "<<TheDetector<<std::endl;
-
-  raw::AuxDetDigit Name;
-  raw::AuxDetDigit Name2;
-  Name = raw::AuxDetDigit(TheChannel,ADCarray,TheDetector);
-  Name2 = raw::AuxDetDigit(TheChannel,ADCarray,TheDetector2);
-  std::cout<<"Name.NADC(): "<<Name.NADC()<<std::endl;
-
-  partCol->push_back(Name);
-  partCol2->push_back(Name2);
-
-  evt.put(std::move(partCol), "a");
-  evt.put(std::move(partCol2), "b");
-
-  ////////////////////////////////////////////////////////////
-  // End dummies
-  ////////////////////////////////////////////////////////////
 
   art::Handle< std::vector<artdaq::Fragment> > fragments;
   evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
