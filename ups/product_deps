@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v01_00_04
+parent	lariatsoft v01_00_05
 #parent	lariatsoft v0_00_01
 defaultqual	e6
 
