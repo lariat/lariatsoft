@@ -60,7 +60,7 @@ public:
 
 private:
 
-  //TTree *     fCaenV1740DataTree;   ///< Tree holding the data from the CAEN V1740 fragments 
+  TTree *     fCaenV1740DataTree;   ///< Tree holding the data from the CAEN V1740 fragments 
   TTree *     fCaenV1751DataTree;   ///< Tree holding the data from the CAEN V1751 fragments 
   TTree *     fWutDataTree;         ///< Tree holding the data from the Wave Union TDC fragments 
   TTree *     fMwpcTdcDataTree;     ///< Tree holding the data from the MWPC TDC fragments 
@@ -129,25 +129,25 @@ void DataQuality::beginJob()
 
   art::ServiceHandle<art::TFileService> tfs;
 
-  //fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
-  //fCaenV1740DataTree->Branch("spill", &spill, "spill/i");
-  //fCaenV1740DataTree->Branch("fragment", &caen_fragment, "fragment/i");
-  //fCaenV1740DataTree->Branch("event_counter", &caen_event_counter,
-  //                           "event_counter/i");
-  //fCaenV1740DataTree->Branch("board_id", &caen_board_id, "board_id/i");
-  //fCaenV1740DataTree->Branch("trigger_time_tag", &caen_trigger_time_tag,
-  //                           "trigger_time_tag/i");
+  fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
+  fCaenV1740DataTree->Branch("spill", &spill, "spill/i");
+  fCaenV1740DataTree->Branch("fragment", &caen_fragment, "fragment/i");
+  fCaenV1740DataTree->Branch("event_counter", &caen_event_counter,
+                             "event_counter/i");
+  fCaenV1740DataTree->Branch("board_id", &caen_board_id, "board_id/i");
+  fCaenV1740DataTree->Branch("trigger_time_tag", &caen_trigger_time_tag,
+                             "trigger_time_tag/i");
 
-  //for (size_t i = 0; i < V1740_N_CHANNELS; ++i) {
-  //  std::string branch_name = "channel_" + std::to_string(i);
-  //  std::string leaf_list = "channel_" + std::to_string(i) + "[" +
-  //                          std::to_string(V1740_N_SAMPLES) + "]/s";
-  //  //std::cout << "branch_name: " << branch_name << std::endl;
-  //  //std::cout << "leaf_list: " << leaf_list << std::endl;
-  //  fCaenV1740DataTree->Branch(branch_name.c_str(),
-  //                             caen_v1740_waveform[i].data(),
-  //                             leaf_list.c_str());
-  //}
+  for (size_t i = 0; i < V1740_N_CHANNELS; ++i) {
+    std::string branch_name = "channel_" + std::to_string(i);
+    std::string leaf_list = "channel_" + std::to_string(i) + "[" +
+                            std::to_string(V1740_N_SAMPLES) + "]/s";
+    //std::cout << "branch_name: " << branch_name << std::endl;
+    //std::cout << "leaf_list: " << leaf_list << std::endl;
+    fCaenV1740DataTree->Branch(branch_name.c_str(),
+                               caen_v1740_waveform[i].data(),
+                               leaf_list.c_str());
+  }
 
   fCaenV1751DataTree = tfs->make<TTree>("v1751", "v1751");
   fCaenV1751DataTree->Branch("spill", &spill, "spill/i");
@@ -267,7 +267,7 @@ void DataQuality::analyze(art::Event const & evt)
         }
       }
 
-      //fCaenV1740DataTree->Fill();
+      fCaenV1740DataTree->Fill();
     }
     else if (board == 8 or board == 9) {
       //caenFrag.print();
