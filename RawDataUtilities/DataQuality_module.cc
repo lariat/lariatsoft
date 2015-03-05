@@ -211,12 +211,6 @@ void DataQuality::analyze(art::Event const & evt)
       throw cet::exception("LARIATFragementReader")
       << "artdaq::Fragment handle contains more than one fragment, bail";
 
-  // this does not return the spill number...
-  fSpill = (uint32_t) evt.id().event();
-  //fSpill = (uint32_t) evt.event();
-
-  art::EventNumber_t spillNumber = evt.event();
-
   // get the fragments we are interested in
   const auto& frag((*fragments)[0]);
 
@@ -227,9 +221,15 @@ void DataQuality::analyze(art::Event const & evt)
             << frag.dataSize() * sizeof(unsigned long long)
             << std::endl;
   data->print();
+  data->printSpillTrailer();
+
+  LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
+  spill = spillTrailer.spillNumber;
+
+  //art::EventNumber_t spillNumber = evt.event();
 
   std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
-            << "; spill: " << spillNumber << std::endl;
+            << "; spill: " << spill << std::endl;
 
   const size_t numberCaenFrags = data->caenFrags.size();
   std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
