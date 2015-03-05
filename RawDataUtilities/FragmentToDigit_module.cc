@@ -253,8 +253,6 @@ void FragmentToDigit::produce(art::Event & evt)
       throw cet::exception("FragmentToDigit")
       << "artdaq::Fragment handle contains more than one fragment, bail";
 
-  art::EventNumber_t spillNumber = evt.event();
-
   // get the fragments we are interested in
   const auto& frag((*fragments)[0]);
 
@@ -265,9 +263,15 @@ void FragmentToDigit::produce(art::Event & evt)
             << frag.dataSize() * sizeof(unsigned long long)
             << std::endl;
   data->print();
+  data->printSpillTrailer();
+
+  LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
+  spill = spillTrailer.spillNumber;
+
+  //art::EventNumber_t spillNumber = evt.event();
 
   std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
-            << "; spill: " << spillNumber << std::endl;
+            << "; spill: " << spill << std::endl;
 
   const size_t numberCaenFrags = data->caenFrags.size();
   std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
