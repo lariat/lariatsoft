@@ -59,6 +59,6 @@ lariat_linemerger:                                @local::standard_linemerger
 lariat_endpointmod:                               @local::standard_endpointmod        
 lariat_endpointmod.EndPointAlg:                   @local::lariat_endpointalg          
                                                                                       
-lariat_showeranglecluster:                        @local::standard_showeranglecluster 
+#lariat_showeranglecluster:                        @local::standard_showeranglecluster 
 
 END_PROLOG
