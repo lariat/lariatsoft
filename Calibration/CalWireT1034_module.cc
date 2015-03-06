@@ -267,7 +267,8 @@ namespace caldata {
         evt.put(std::move(WireDigitAssn), fSpillName);
       }
     
-    else evt.put(std::move(wirecol));
+    else { evt.put(std::move(wirecol));
+           evt.put(std::move(WireDigitAssn), fSpillName); }
     delete chanFilt;
     return;
 
