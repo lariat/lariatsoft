@@ -15,6 +15,7 @@
 // [x] Add channels 32 to 64 of CAEN V1740 board 8
 // [x] Add WUT
 // [x] Add MWPCs
+// [ ] Add SpillTrailer fragments
 //
 // [ ] Test with DigitReader module
 //     NOTE: Testing may be difficult to do because the files
@@ -116,6 +117,11 @@ private:
   std::string fMwpcTdc15Label;
   std::string fMwpcTdc16Label;
 
+  // variables from the SpillTrailer fragments
+  uint32_t runNumber;
+  uint32_t spillNumber;
+  uint32_t timeStamp;
+
 };
 
 //------------------------------------------------------------------------------
@@ -123,8 +129,6 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 //  : EDProducer(p)
 {
   this->reconfigure(p);
-  produces< std::vector<raw::AuxDetDigit> >("a");
-  produces< std::vector<raw::AuxDetDigit> >("b");
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board8Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board1Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board2Label);
@@ -186,37 +190,6 @@ void FragmentToDigit::beginJob()
 //------------------------------------------------------------------------------
 void FragmentToDigit::produce(art::Event & evt)
 {
-
-  ////////////////////////////////////////////////////////////
-  // Begin dummies
-  ////////////////////////////////////////////////////////////
-
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol2 (new std::vector<raw::AuxDetDigit>);
-
-  std::vector<short> ADCarray (3,1);
-  std::cout<<"ADCarray[1]: "<<ADCarray[1]<<std::endl;
-  unsigned short TheChannel = 10;
-  std::cout<<"TheChannel: "<<TheChannel<<std::endl;
-  std::string TheDetector ("DetectorA");
-  std::string TheDetector2 ("DetectorB");
-  std::cout<<"TheDetector: "<<TheDetector<<std::endl;
-
-  raw::AuxDetDigit Name;
-  raw::AuxDetDigit Name2;
-  Name = raw::AuxDetDigit(TheChannel,ADCarray,TheDetector);
-  Name2 = raw::AuxDetDigit(TheChannel,ADCarray,TheDetector2);
-  std::cout<<"Name.NADC(): "<<Name.NADC()<<std::endl;
-
-  partCol->push_back(Name);
-  partCol2->push_back(Name2);
-
-  evt.put(std::move(partCol), "a");
-  evt.put(std::move(partCol2), "b");
-
-  ////////////////////////////////////////////////////////////
-  // End dummies
-  ////////////////////////////////////////////////////////////
 
   art::Handle< std::vector<artdaq::Fragment> > fragments;
   evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
@@ -286,8 +259,6 @@ void FragmentToDigit::produce(art::Event & evt)
       throw cet::exception("FragmentToDigit")
       << "artdaq::Fragment handle contains more than one fragment, bail";
 
-  art::EventNumber_t spillNumber = evt.event();
-
   // get the fragments we are interested in
   const auto& frag((*fragments)[0]);
 
@@ -298,9 +269,19 @@ void FragmentToDigit::produce(art::Event & evt)
             << frag.dataSize() * sizeof(unsigned long long)
             << std::endl;
   data->print();
+  data->printSpillTrailer();
 
-  std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
-            << "; spill: " << spillNumber << std::endl;
+  LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
+  runNumber = spillTrailer.runNumber;
+  spillNumber = spillTrailer.spillNumber;
+  timeStamp = spillTrailer.timeStamp;
+
+  //art::EventNumber_t spillNumber = evt.event();
+
+  std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
+            << "; evt.event(): " << evt.event() << std::endl;
+  std::cout << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
+            << "; timeStamp: " << timeStamp << std::endl;
 
   const size_t numberCaenFrags = data->caenFrags.size();
   std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;

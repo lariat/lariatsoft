@@ -60,23 +60,31 @@ public:
 
 private:
 
-  //TTree *     fCaenV1740DataTree;   ///< Tree holding the data from the CAEN V1740 fragments 
-  TTree *     fCaenV1751DataTree;   ///< Tree holding the data from the CAEN V1751 fragments 
-  TTree *     fWutDataTree;         ///< Tree holding the data from the Wave Union TDC fragments 
-  TTree *     fMwpcTdcDataTree;     ///< Tree holding the data from the MWPC TDC fragments 
-  std::string fRawFragmentLabel;    ///< label for module producing artdaq fragments
-  std::string fRawFragmentInstance; ///< instance label for artdaq fragments        
-  uint32_t    fSpill;               ///< Spill number
+  TTree *     fSpillTrailerTree;     ///< Tree holding the data from the SpillTrailer fragments
+  TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments 
+  TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments 
+  TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments 
+  TTree *     fMwpcTdcDataTree;      ///< Tree holding the data from the MWPC TDC fragments 
+  std::string fRawFragmentLabel;     ///< label for module producing artdaq fragments
+  std::string fRawFragmentInstance;  ///< instance label for artdaq fragments        
 
+  // variables that will go into fSpillTrailerTree
+  uint32_t runNumber;
+  uint32_t spillNumber;
+  uint32_t timeStamp;
+
+  // spill number that goes into fCaenV1740DataTree, fCaenV1751DataTree, fMwpcTdcDataTree, fWutDataTree
   uint32_t spill;
+
+  // variables that will go into fCaenV1740DataTree and/or fCaenV1751DataTree
   uint32_t caen_fragment;
   uint32_t caen_board_id;
   uint32_t caen_event_counter;
   uint32_t caen_trigger_time_tag;  // Each count in the V1751 trigger time tag is 8 ns
-  // variables that will go into fCaenV1751DataTree
   std::vector< std::vector<uint16_t> > caen_v1751_waveform;
   std::vector< std::vector<uint16_t> > caen_v1740_waveform;
 
+  // variables that will go into fMwpcTdcDataTree
   uint32_t mwpc_trigger_counter;
   uint16_t mwpc_controller_time_stamp;
   uint32_t mwpc_tdc_time_stamp;
@@ -85,6 +93,7 @@ private:
   std::vector<uint16_t> mwpc_hit_channel;
   std::vector<uint16_t> mwpc_hit_time_bin;
 
+  // variables that will go into fWutDataTree
   uint32_t wut_time_header;  // Each count in the time header is 16 us
   uint32_t wut_number_hits;
   std::vector<uint16_t> wut_hit_channel;
@@ -129,25 +138,30 @@ void DataQuality::beginJob()
 
   art::ServiceHandle<art::TFileService> tfs;
 
-  //fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
-  //fCaenV1740DataTree->Branch("spill", &spill, "spill/i");
-  //fCaenV1740DataTree->Branch("fragment", &caen_fragment, "fragment/i");
-  //fCaenV1740DataTree->Branch("event_counter", &caen_event_counter,
-  //                           "event_counter/i");
-  //fCaenV1740DataTree->Branch("board_id", &caen_board_id, "board_id/i");
-  //fCaenV1740DataTree->Branch("trigger_time_tag", &caen_trigger_time_tag,
-  //                           "trigger_time_tag/i");
+  fSpillTrailerTree = tfs->make<TTree>("spillTrailer", "spillTrailer");
+  fSpillTrailerTree->Branch("runNumber", &runNumber, "runNumber/i");
+  fSpillTrailerTree->Branch("spillNumber", &spillNumber, "spillNumber/i");
+  fSpillTrailerTree->Branch("timeStamp", &timeStamp, "timeStamp/i");
 
-  //for (size_t i = 0; i < V1740_N_CHANNELS; ++i) {
-  //  std::string branch_name = "channel_" + std::to_string(i);
-  //  std::string leaf_list = "channel_" + std::to_string(i) + "[" +
-  //                          std::to_string(V1740_N_SAMPLES) + "]/s";
-  //  //std::cout << "branch_name: " << branch_name << std::endl;
-  //  //std::cout << "leaf_list: " << leaf_list << std::endl;
-  //  fCaenV1740DataTree->Branch(branch_name.c_str(),
-  //                             caen_v1740_waveform[i].data(),
-  //                             leaf_list.c_str());
-  //}
+  fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
+  fCaenV1740DataTree->Branch("spill", &spill, "spill/i");
+  fCaenV1740DataTree->Branch("fragment", &caen_fragment, "fragment/i");
+  fCaenV1740DataTree->Branch("event_counter", &caen_event_counter,
+                             "event_counter/i");
+  fCaenV1740DataTree->Branch("board_id", &caen_board_id, "board_id/i");
+  fCaenV1740DataTree->Branch("trigger_time_tag", &caen_trigger_time_tag,
+                             "trigger_time_tag/i");
+
+  for (size_t i = 0; i < V1740_N_CHANNELS; ++i) {
+    std::string branch_name = "channel_" + std::to_string(i);
+    std::string leaf_list = "channel_" + std::to_string(i) + "[" +
+                            std::to_string(V1740_N_SAMPLES) + "]/s";
+    //std::cout << "branch_name: " << branch_name << std::endl;
+    //std::cout << "leaf_list: " << leaf_list << std::endl;
+    fCaenV1740DataTree->Branch(branch_name.c_str(),
+                               caen_v1740_waveform[i].data(),
+                               leaf_list.c_str());
+  }
 
   fCaenV1751DataTree = tfs->make<TTree>("v1751", "v1751");
   fCaenV1751DataTree->Branch("spill", &spill, "spill/i");
@@ -211,12 +225,6 @@ void DataQuality::analyze(art::Event const & evt)
       throw cet::exception("LARIATFragementReader")
       << "artdaq::Fragment handle contains more than one fragment, bail";
 
-  // this does not return the spill number...
-  fSpill = (uint32_t) evt.id().event();
-  //fSpill = (uint32_t) evt.event();
-
-  art::EventNumber_t spillNumber = evt.event();
-
   // get the fragments we are interested in
   const auto& frag((*fragments)[0]);
 
@@ -227,9 +235,19 @@ void DataQuality::analyze(art::Event const & evt)
             << frag.dataSize() * sizeof(unsigned long long)
             << std::endl;
   data->print();
+  data->printSpillTrailer();
 
-  std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
-            << "; spill: " << spillNumber << std::endl;
+  LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
+  runNumber = spillTrailer.runNumber;
+  spillNumber = spillTrailer.spillNumber;
+  timeStamp = spillTrailer.timeStamp;
+
+  spill = spillNumber;
+
+  std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
+            << "; evt.event(): " << evt.event() << std::endl;
+  std::cout << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
+            << "; timeStamp: " << timeStamp << std::endl;
 
   const size_t numberCaenFrags = data->caenFrags.size();
   std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
@@ -267,7 +285,7 @@ void DataQuality::analyze(art::Event const & evt)
         }
       }
 
-      //fCaenV1740DataTree->Fill();
+      fCaenV1740DataTree->Fill();
     }
     else if (board == 8 or board == 9) {
       //caenFrag.print();
@@ -385,6 +403,8 @@ void DataQuality::analyze(art::Event const & evt)
     fWutDataTree->Fill();
 
   }
+
+  fSpillTrailerTree->Fill();
 
   return;  
 }
