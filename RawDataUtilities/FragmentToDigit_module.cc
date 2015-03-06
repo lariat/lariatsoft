@@ -266,12 +266,12 @@ void FragmentToDigit::produce(art::Event & evt)
   data->printSpillTrailer();
 
   LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
-  spill = spillTrailer.spillNumber;
+  uint32_t spillNumber = spillTrailer.spillNumber;
 
   //art::EventNumber_t spillNumber = evt.event();
 
   std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
-            << "; spill: " << spill << std::endl;
+            << "; spill: " << spillNumber << std::endl;
 
   const size_t numberCaenFrags = data->caenFrags.size();
   std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
