@@ -15,6 +15,7 @@
 // [x] Add channels 32 to 64 of CAEN V1740 board 8
 // [x] Add WUT
 // [x] Add MWPCs
+// [ ] Add SpillTrailer fragments
 //
 // [ ] Test with DigitReader module
 //     NOTE: Testing may be difficult to do because the files
@@ -115,6 +116,11 @@ private:
   std::string fMwpcTdc14Label;
   std::string fMwpcTdc15Label;
   std::string fMwpcTdc16Label;
+
+  // variables from the SpillTrailer fragments
+  uint32_t runNumber;
+  uint32_t spillNumber;
+  uint32_t timeStamp;
 
 };
 
@@ -266,12 +272,16 @@ void FragmentToDigit::produce(art::Event & evt)
   data->printSpillTrailer();
 
   LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
-  uint32_t spillNumber = spillTrailer.spillNumber;
+  runNumber = spillTrailer.runNumber;
+  spillNumber = spillTrailer.spillNumber;
+  timeStamp = spillTrailer.timeStamp;
 
   //art::EventNumber_t spillNumber = evt.event();
 
-  std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
-            << "; spill: " << spillNumber << std::endl;
+  std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
+            << "; evt.event(): " << evt.event() << std::endl;
+  std::cout << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
+            << "; timeStamp: " << timeStamp << std::endl;
 
   const size_t numberCaenFrags = data->caenFrags.size();
   std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
