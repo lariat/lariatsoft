@@ -60,23 +60,31 @@ public:
 
 private:
 
-  TTree *     fCaenV1740DataTree;   ///< Tree holding the data from the CAEN V1740 fragments 
-  TTree *     fCaenV1751DataTree;   ///< Tree holding the data from the CAEN V1751 fragments 
-  TTree *     fWutDataTree;         ///< Tree holding the data from the Wave Union TDC fragments 
-  TTree *     fMwpcTdcDataTree;     ///< Tree holding the data from the MWPC TDC fragments 
-  std::string fRawFragmentLabel;    ///< label for module producing artdaq fragments
-  std::string fRawFragmentInstance; ///< instance label for artdaq fragments        
-  uint32_t    fSpill;               ///< Spill number
+  TTree *     fSpillTrailerTree;     ///< Tree holding the data from the SpillTrailer fragments
+  TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments 
+  TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments 
+  TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments 
+  TTree *     fMwpcTdcDataTree;      ///< Tree holding the data from the MWPC TDC fragments 
+  std::string fRawFragmentLabel;     ///< label for module producing artdaq fragments
+  std::string fRawFragmentInstance;  ///< instance label for artdaq fragments        
 
+  // variables that will go into fSpillTrailerTree
+  uint32_t runNumber;
+  uint32_t spillNumber;
+  uint32_t timeStamp;
+
+  // spill number that goes into fCaenV1740DataTree, fCaenV1751DataTree, fMwpcTdcDataTree, fWutDataTree
   uint32_t spill;
+
+  // variables that will go into fCaenV1740DataTree and/or fCaenV1751DataTree
   uint32_t caen_fragment;
   uint32_t caen_board_id;
   uint32_t caen_event_counter;
   uint32_t caen_trigger_time_tag;  // Each count in the V1751 trigger time tag is 8 ns
-  // variables that will go into fCaenV1751DataTree
   std::vector< std::vector<uint16_t> > caen_v1751_waveform;
   std::vector< std::vector<uint16_t> > caen_v1740_waveform;
 
+  // variables that will go into fMwpcTdcDataTree
   uint32_t mwpc_trigger_counter;
   uint16_t mwpc_controller_time_stamp;
   uint32_t mwpc_tdc_time_stamp;
@@ -85,6 +93,7 @@ private:
   std::vector<uint16_t> mwpc_hit_channel;
   std::vector<uint16_t> mwpc_hit_time_bin;
 
+  // variables that will go into fWutDataTree
   uint32_t wut_time_header;  // Each count in the time header is 16 us
   uint32_t wut_number_hits;
   std::vector<uint16_t> wut_hit_channel;
@@ -128,6 +137,11 @@ void DataQuality::beginJob()
   wut_hit_time_bin.reserve(4 * WUT_MAX_HITS);
 
   art::ServiceHandle<art::TFileService> tfs;
+
+  fSpillTrailerTree = tfs->make<TTree>("spillTrailer", "spillTrailer");
+  fSpillTrailerTree->Branch("runNumber", &runNumber, "runNumber/i");
+  fSpillTrailerTree->Branch("spillNumber", &spillNumber, "spillNumber/i");
+  fSpillTrailerTree->Branch("timeStamp", &timeStamp, "timeStamp/i");
 
   fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
   fCaenV1740DataTree->Branch("spill", &spill, "spill/i");
@@ -224,12 +238,16 @@ void DataQuality::analyze(art::Event const & evt)
   data->printSpillTrailer();
 
   LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
-  spill = spillTrailer.spillNumber;
+  runNumber = spillTrailer.runNumber;
+  spillNumber = spillTrailer.spillNumber;
+  timeStamp = spillTrailer.timeStamp;
 
-  //art::EventNumber_t spillNumber = evt.event();
+  spill = spillNumber;
 
-  std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
-            << "; spill: " << spill << std::endl;
+  std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
+            << "; evt.event(): " << evt.event() << std::endl;
+  std::cout << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
+            << "; timeStamp: " << timeStamp << std::endl;
 
   const size_t numberCaenFrags = data->caenFrags.size();
   std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
@@ -385,6 +403,8 @@ void DataQuality::analyze(art::Event const & evt)
     fWutDataTree->Fill();
 
   }
+
+  fSpillTrailerTree->Fill();
 
   return;  
 }
