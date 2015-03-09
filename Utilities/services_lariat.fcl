@@ -9,7 +9,11 @@
 #include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
 #include "sam_lariat.fcl"
+##include "pmtconfig_lariat.fcl"
+#include "opticaldetectorservices_lariat.fcl"
+
 #include "signalservices_lariat.fcl"
+
 
 
 BEGIN_PROLOG
@@ -40,7 +44,11 @@ lariat_simulation_services:
  DatabaseUtil:	         @local::lariat_database            
  SignalShapingServiceT1034:      @local::lariat_signalshapingservice
  TimeService:            @local::lariat_timeservice
- BackTracker:            @local::standard_backtracker         
+ BackTracker:            @local::standard_backtracker 
+ OpDetResponseInterface: @local::lariat_opdetresponse 
+ #UBOpticalChConfig:       @local::lariat_optical_ch_config
+
+       
 }
 
 
