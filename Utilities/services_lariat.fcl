@@ -9,8 +9,12 @@
 #include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
 #include "sam_lariat.fcl"
+
+#include "opticaldetectorservices_lariat.fcl"
+
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
+
 
 BEGIN_PROLOG
 
@@ -48,6 +52,8 @@ lariat_simulation_services:
  TimeService:            @local::lariat_timeservice
  BackTracker:            @local::standard_backtracker         
  SeedService:            @local::standard_seedservice
+ OpDetResponseInterface: @local::lariat_opdetresponse 
+
 }
 
 
