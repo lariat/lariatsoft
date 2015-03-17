@@ -10,12 +10,12 @@ product         version
 
 larsoft		v04_02_00
 
-LariatFilters   v01_01
+LariatFilters   v01_02
 lariatfragments v01_01_01
 artdaq_core     v1_04_08
 lariatutil      v01_11_00
 LariatBeamFiles v01_00
-
+LariatOptLib v00_01
 cetbuildtools   v4_04_03 - only_for_build
 end_product_list
   

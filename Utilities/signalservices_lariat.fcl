@@ -32,7 +32,8 @@ lariat_signalshapingservice:
   GetFilterFromHisto:   true  
 
   FilterFunctionFname:  "LArIAT_filter.root"
-  FilterHistoName:	"noisefilter_%d"       
+ # FilterHistoName:	"noisefilter_%d"       
+  FilterHistoName:	"fft_filter_0_0_%d_av"       
   
 
   UseFunctionFieldShape: true 
