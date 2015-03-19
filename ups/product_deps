@@ -13,7 +13,7 @@ lariatfragments v01_01_01
 artdaq_core     v1_04_08
 LariatBeamFiles v01_00
 
-cetbuildtools   v4_04_03 - only_for_build
+cetbuildtools   v4_08_01 - only_for_build
 end_product_list
   
 # e6  - with gcc 4.9.1 and -std=c++11
