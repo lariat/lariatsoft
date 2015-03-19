@@ -9,8 +9,8 @@
 #include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
 #include "sam_lariat.fcl"
-
-#include "opticaldetectorservices_lariat.fcl"
+##include "pmtconfig_lariat.fcl"
+##include "opticaldetectorservices_lariat.fcl"
 
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
@@ -34,7 +34,7 @@ lariat_services:
  TimeService:            @local::lariat_timeservice
  BackTracker:            @local::standard_backtracker  
  SeedService:            @local::standard_seedservice
-
+ UBOpticalChConfig:       @local::lariat_optical_ch_config
 }
 
 lariat_simulation_services:
@@ -52,8 +52,8 @@ lariat_simulation_services:
  TimeService:            @local::lariat_timeservice
  BackTracker:            @local::standard_backtracker         
  SeedService:            @local::standard_seedservice
- OpDetResponseInterface: @local::lariat_opdetresponse 
-
+ #OpDetResponseInterface: @local::lariat_opdetresponse 
+ #UBOpticalChConfig:       @local::lariat_optical_ch_config
 }
 
 
