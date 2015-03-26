@@ -63,8 +63,8 @@ private:
   TTree *     fSpillTrailerTree;     ///< Tree holding the data from the SpillTrailer fragments
   TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments 
   TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments 
-  TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments 
   TTree *     fMwpcTdcDataTree;      ///< Tree holding the data from the MWPC TDC fragments 
+  TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments 
   std::string fRawFragmentLabel;     ///< label for module producing artdaq fragments
   std::string fRawFragmentInstance;  ///< instance label for artdaq fragments        
 
@@ -72,9 +72,6 @@ private:
   uint32_t runNumber;
   uint32_t spillNumber;
   uint32_t timeStamp;
-
-  // spill number that goes into fCaenV1740DataTree, fCaenV1751DataTree, fMwpcTdcDataTree, fWutDataTree
-  uint32_t spill;
 
   // variables that will go into fCaenV1740DataTree and/or fCaenV1751DataTree
   uint32_t caen_fragment;
@@ -144,7 +141,8 @@ void DataQuality::beginJob()
   fSpillTrailerTree->Branch("timeStamp", &timeStamp, "timeStamp/i");
 
   fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
-  fCaenV1740DataTree->Branch("spill", &spill, "spill/i");
+  fCaenV1740DataTree->Branch("run", &runNumber, "run/i");
+  fCaenV1740DataTree->Branch("spill", &spillNumber, "spill/i");
   fCaenV1740DataTree->Branch("fragment", &caen_fragment, "fragment/i");
   fCaenV1740DataTree->Branch("event_counter", &caen_event_counter,
                              "event_counter/i");
@@ -164,7 +162,8 @@ void DataQuality::beginJob()
   }
 
   fCaenV1751DataTree = tfs->make<TTree>("v1751", "v1751");
-  fCaenV1751DataTree->Branch("spill", &spill, "spill/i");
+  fCaenV1751DataTree->Branch("run", &runNumber, "run/i");
+  fCaenV1751DataTree->Branch("spill", &spillNumber, "spill/i");
   fCaenV1751DataTree->Branch("fragment", &caen_fragment, "fragment/i");
   fCaenV1751DataTree->Branch("event_counter", &caen_event_counter,
                              "event_counter/i");
@@ -184,7 +183,8 @@ void DataQuality::beginJob()
   }
 
   fMwpcTdcDataTree = tfs->make<TTree>("mwpc", "mwpc");
-  fMwpcTdcDataTree->Branch("spill", &spill, "spill/i");
+  fMwpcTdcDataTree->Branch("run", &runNumber, "run/i");
+  fMwpcTdcDataTree->Branch("spill", &spillNumber, "spill/i");
   fMwpcTdcDataTree->Branch("trigger_counter", &mwpc_trigger_counter,
                            "trigger_counter/i");
   fMwpcTdcDataTree->Branch("controller_time_stamp",
@@ -201,7 +201,8 @@ void DataQuality::beginJob()
                            "hit_time_bin[number_hits]/s");
 
   fWutDataTree = tfs->make<TTree>("wut", "wut");
-  fWutDataTree->Branch("spill", &spill, "spill/i");
+  fWutDataTree->Branch("run", &runNumber, "run/i");
+  fWutDataTree->Branch("spill", &spillNumber, "spill/i");
   fWutDataTree->Branch("time_header", &wut_time_header, "time_header/i");
   fWutDataTree->Branch("number_hits", &wut_number_hits, "number_hits/i");
   fWutDataTree->Branch("hit_channel", wut_hit_channel.data(),
@@ -241,8 +242,6 @@ void DataQuality::analyze(art::Event const & evt)
   runNumber = spillTrailer.runNumber;
   spillNumber = spillTrailer.spillNumber;
   timeStamp = spillTrailer.timeStamp;
-
-  spill = spillNumber;
 
   std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
             << "; evt.event(): " << evt.event() << std::endl;
@@ -349,7 +348,10 @@ void DataQuality::analyze(art::Event const & evt)
 
         mwpc_trigger_counter = tdcEventData.tdcEventHeader.triggerCounter;
 
-        //std::cout << "triggerCounter: " << mwpc_trigger_counter << std::endl;
+        //std::cout << "  triggerCounter: " << mwpc_trigger_counter << std::endl;
+        //std::cout << "    eventWordCount: "
+        //          << (uint32_t) tdcEventData.tdcEventHeader.eventWordCount
+        //          << std::endl;
 
         mwpc_controller_time_stamp = tdcEventData.tdcEventHeader.controllerTimeStamp;
         mwpc_tdc_time_stamp = tdcEventData.tdcEventHeader.tdcTimeStamp;
