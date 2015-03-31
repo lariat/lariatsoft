@@ -16,12 +16,26 @@
 #include "art/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 
 #include "RawData/AuxDetDigit.h"
 
+#include "TTree.h"
+
+#include <vector>
+#include <string>
 #include <memory>
 #include <iostream>
 #include <vector>
+
+enum {
+  V1740_N_CHANNELS = 64,
+  V1740_N_SAMPLES = 1536,
+  V1751_N_CHANNELS = 8,
+  V1751_N_SAMPLES = 1792,
+};
 
 class DigitReader;
 
@@ -50,6 +64,14 @@ private:
   std::string fCaenV1751Board1Label;
   std::string fCaenV1751Board2Label;
 
+  TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments 
+  TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments 
+
+  // variables that will go into fCaenV1740DataTree and/or fCaenV1751DataTree
+  uint32_t caen_trigger_time_tag;  // Each count in the V1751 trigger time tag is 8 ns
+  std::vector< std::vector<uint16_t> > caen_v1751_waveform;
+  std::vector< std::vector<uint16_t> > caen_v1740_waveform;
+
 };
 
 //------------------------------------------------------------------------------
@@ -73,6 +95,45 @@ void DigitReader::reconfigure(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void DigitReader::beginJob()
 {
+
+  caen_v1740_waveform.resize(V1740_N_CHANNELS);
+  for (size_t i = 0; i < V1740_N_CHANNELS; ++i) {
+    caen_v1740_waveform[i].reserve(V1740_N_SAMPLES);
+  }
+
+  caen_v1751_waveform.resize(V1751_N_CHANNELS);
+  for (size_t i = 0; i < V1751_N_CHANNELS; ++i) {
+    caen_v1751_waveform[i].reserve(V1751_N_SAMPLES);
+  }
+
+  art::ServiceHandle<art::TFileService> tfs;
+
+  fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
+  fCaenV1740DataTree->Branch("trigger_time_tag", &caen_trigger_time_tag,
+                             "trigger_time_tag/i");
+
+  for (size_t i = 0; i < V1740_N_CHANNELS; ++i) {
+    std::string branch_name = "channel_" + std::to_string(i);
+    std::string leaf_list = "channel_" + std::to_string(i) + "[" +
+                            std::to_string(V1740_N_SAMPLES) + "]/s";
+    fCaenV1740DataTree->Branch(branch_name.c_str(),
+                               caen_v1740_waveform[i].data(),
+                               leaf_list.c_str());
+  }
+
+  fCaenV1751DataTree = tfs->make<TTree>("v1751", "v1751");
+  fCaenV1751DataTree->Branch("trigger_time_tag", &caen_trigger_time_tag,
+                             "trigger_time_tag/i");
+
+  for (size_t i = 0; i < V1751_N_CHANNELS; ++i) {
+    std::string branch_name = "channel_" + std::to_string(i);
+    std::string leaf_list = "channel_" + std::to_string(i) + "[" +
+                            std::to_string(V1751_N_SAMPLES) + "]/s";
+    fCaenV1751DataTree->Branch(branch_name.c_str(),
+                               caen_v1751_waveform[i].data(),
+                               leaf_list.c_str());
+  }
+
   return;
 }
 
@@ -80,6 +141,51 @@ void DigitReader::beginJob()
 void DigitReader::analyze(art::Event const & evt)
 {
 
+  art::Handle< std::vector<raw::AuxDetDigit> > CaenV1751Board1Handle;
+  evt.getByLabel("FragmentToDigit", fCaenV1751Board1Label, CaenV1751Board1Handle);
+  art::Handle< std::vector<raw::AuxDetDigit> > CaenV1751Board2Handle;
+  evt.getByLabel("FragmentToDigit", fCaenV1751Board2Label, CaenV1751Board2Handle);
+  art::Handle< std::vector<raw::AuxDetDigit> > CaenV1740Board8Handle;
+  evt.getByLabel("FragmentToDigit", fCaenV1740Board8Label, CaenV1740Board8Handle);
+
+  std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
+            << "; evt.event(): " << evt.event() << std::endl;
+
+  for (size_t i = 0; i < CaenV1740Board8Handle->size(); ++i) {
+
+    art::Ptr<raw::AuxDetDigit> digitVec(CaenV1740Board8Handle, i);
+    caen_trigger_time_tag=digitVec->TimeStamp();
+
+    for (size_t j = 0; j < V1740_N_CHANNELS; ++j) {
+      caen_v1740_waveform[j].clear();
+    }
+
+    for (size_t sample = 0; sample < V1740_N_SAMPLES; ++sample) {
+      caen_v1740_waveform[digitVec->Channel()].push_back(digitVec->ADC(sample));
+    }
+
+    fCaenV1740DataTree->Fill();
+
+  }
+
+  for (size_t i = 0; i < CaenV1751Board1Handle->size(); ++i) {
+
+    art::Ptr<raw::AuxDetDigit> digitVec(CaenV1751Board1Handle, i);
+    caen_trigger_time_tag=digitVec->TimeStamp();
+
+    for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
+      caen_v1751_waveform[j].clear();
+    }
+
+    for (size_t sample = 0; sample < V1751_N_SAMPLES; ++sample) {
+      caen_v1751_waveform[digitVec->Channel()].push_back(digitVec->ADC(sample));
+    }
+
+    fCaenV1751DataTree->Fill();
+
+  }
+
+/*
   std::cout << "evt.run(): " << evt.run() << "; evtsubRun(): " << evt.subRun()
             << "; evt.event(): " << evt.event() << std::endl;
 
@@ -98,18 +204,7 @@ void DigitReader::analyze(art::Event const & evt)
     std::cout << "digitVec->TimeStamp(): " << digitVec->TimeStamp() << std::endl;
 
   }
-
-  //art::Handle< std::vector<raw::AuxDetDigit> > digitVecHandleDummy;
-  //evt.getByLabel("FragmentToDigit", "a", digitVecHandleDummy);
-  //std::cout << "digitVecHandleDummy Size is: " << digitVecHandleDummy->size() << std::endl;
-
-  //for (size_t dummyIter = 0; dummyIter < digitVecHandleDummy->size(); ++dummyIter){ // ++ move
-
-  //  art::Ptr<raw::AuxDetDigit> dummydigitVec(digitVecHandleDummy, dummyIter);
-  //  std::cout << "dummydigitVec->NADC(): " << dummydigitVec->NADC() << std::endl;
-  //  std::cout << "dummydigitVec->Channel(): " << dummydigitVec->Channel() << std::endl;
-  //  std::cout << "dummydigitVec->AuxDetName(): " << dummydigitVec->AuxDetName() << std::endl;
-  //}
+*/
 
 }
 
