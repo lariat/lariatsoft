@@ -62,12 +62,12 @@ private:
 
   TTree *     fArtEventTree;         ///< Tree holding the data from art::Event
   TTree *     fSpillTrailerTree;     ///< Tree holding the data from the SpillTrailer fragments
-  TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments 
-  TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments 
-  TTree *     fMwpcTdcDataTree;      ///< Tree holding the data from the MWPC TDC fragments 
-  TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments 
+  TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments
+  TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments
+  TTree *     fMwpcTdcDataTree;      ///< Tree holding the data from the MWPC TDC fragments
+  TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments
   std::string fRawFragmentLabel;     ///< label for module producing artdaq fragments
-  std::string fRawFragmentInstance;  ///< instance label for artdaq fragments        
+  std::string fRawFragmentInstance;  ///< instance label for artdaq fragments
 
   // variables that will go into fArtEventTree
   uint32_t run_number;
@@ -85,24 +85,24 @@ private:
   uint32_t caen_fragment;
   uint32_t caen_board_id;
   uint32_t caen_event_counter;
-  uint32_t caen_trigger_time_tag;  // Each count in the V1751 trigger time tag is 8 ns
-  std::vector< std::vector<uint16_t> > caen_v1751_waveform;
-  std::vector< std::vector<uint16_t> > caen_v1740_waveform;
+  uint32_t caen_trigger_time_tag;  // Each count in the CAEN trigger time tag is 8 ns
+  std::vector< std::vector<uint16_t> > caen_v1751_waveform;  // 1 ns per sample, 1792 samples per trigger
+  std::vector< std::vector<uint16_t> > caen_v1740_waveform;  // 250 ns per sample, 1536 samples per trigger
 
   // variables that will go into fMwpcTdcDataTree
   uint32_t mwpc_trigger_counter;
   uint16_t mwpc_controller_time_stamp;
-  uint32_t mwpc_tdc_time_stamp;
+  uint32_t mwpc_tdc_time_stamp;  // Each TDC time stamp count is 1/106.208e6 seconds
   uint32_t mwpc_number_hits;
   std::vector<uint16_t> mwpc_tdc_number;
   std::vector<uint16_t> mwpc_hit_channel;
-  std::vector<uint16_t> mwpc_hit_time_bin;
+  std::vector<uint16_t> mwpc_hit_time_bin;  // Each time tick is 1.177 ns
 
   // variables that will go into fWutDataTree
   uint32_t wut_time_header;  // Each count in the time header is 16 us
   uint32_t wut_number_hits;
   std::vector<uint16_t> wut_hit_channel;
-  std::vector<uint32_t> wut_hit_time_bin;
+  std::vector<uint32_t> wut_hit_time_bin;  // Each time tick is 15.625 ps
 
 };
 
