@@ -60,7 +60,7 @@ public:
 
 private:
 
-  TTree *     fArtEventTree;         ///< Tree holding the data from art::Event
+  TTree *     artEventTree;          ///< Tree holding the data from art::Event
   TTree *     fSpillTrailerTree;     ///< Tree holding the data from the SpillTrailer fragments
   TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments
   TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments
@@ -69,7 +69,7 @@ private:
   std::string fRawFragmentLabel;     ///< label for module producing artdaq fragments
   std::string fRawFragmentInstance;  ///< instance label for artdaq fragments
 
-  // variables that will go into fArtEventTree
+  // variables that will go into artEventTree
   uint32_t run_number;
   uint32_t sub_run_number;
   uint32_t event_number;
@@ -143,12 +143,12 @@ void DataQuality::beginJob()
 
   art::ServiceHandle<art::TFileService> tfs;
 
-  fArtEventTree = tfs->make<TTree>("art", "art");
-  fArtEventTree->Branch("run_number", &run_number, "run_number/i");
-  fArtEventTree->Branch("sub_run_number", &sub_run_number, "sub_run_number/i");
-  fArtEventTree->Branch("event_number", &event_number, "event_number/i");
-  fArtEventTree->Branch("time_stamp_low", &time_stamp_low, "time_stamp_low/i");
-  fArtEventTree->Branch("time_stamp_high", &time_stamp_high, "time_stamp_high/i");
+  artEventTree = tfs->make<TTree>("art", "art");
+  artEventTree->Branch("run_number", &run_number, "run_number/i");
+  artEventTree->Branch("sub_run_number", &sub_run_number, "sub_run_number/i");
+  artEventTree->Branch("event_number", &event_number, "event_number/i");
+  artEventTree->Branch("time_stamp_low", &time_stamp_low, "time_stamp_low/i");
+  artEventTree->Branch("time_stamp_high", &time_stamp_high, "time_stamp_high/i");
 
   fSpillTrailerTree = tfs->make<TTree>("spillTrailer", "spillTrailer");
   fSpillTrailerTree->Branch("runNumber", &runNumber, "runNumber/i");
@@ -437,7 +437,7 @@ void DataQuality::analyze(art::Event const & evt)
 
   }
 
-  fArtEventTree->Fill();
+  artEventTree->Fill();
   fSpillTrailerTree->Fill();
 
   return;  
