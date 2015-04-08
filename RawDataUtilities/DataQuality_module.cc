@@ -157,8 +157,8 @@ void DataQuality::beginJob()
   fSpillTrailerTree->Branch("timeStamp", &timeStamp, "timeStamp/i");
 
   fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
-  fCaenV1740DataTree->Branch("run", &runNumber, "run/i");
-  fCaenV1740DataTree->Branch("spill", &spillNumber, "spill/i");
+  fCaenV1740DataTree->Branch("run", &run_number, "run/i");
+  fCaenV1740DataTree->Branch("spill", &sub_run_number, "spill/i");
   fCaenV1740DataTree->Branch("fragment", &caen_fragment, "fragment/i");
   fCaenV1740DataTree->Branch("event_counter", &caen_event_counter,
                              "event_counter/i");
@@ -178,8 +178,8 @@ void DataQuality::beginJob()
   }
 
   fCaenV1751DataTree = tfs->make<TTree>("v1751", "v1751");
-  fCaenV1751DataTree->Branch("run", &runNumber, "run/i");
-  fCaenV1751DataTree->Branch("spill", &spillNumber, "spill/i");
+  fCaenV1751DataTree->Branch("run", &run_number, "run/i");
+  fCaenV1751DataTree->Branch("spill", &sub_run_number, "spill/i");
   fCaenV1751DataTree->Branch("fragment", &caen_fragment, "fragment/i");
   fCaenV1751DataTree->Branch("event_counter", &caen_event_counter,
                              "event_counter/i");
@@ -199,8 +199,8 @@ void DataQuality::beginJob()
   }
 
   fMwpcTdcDataTree = tfs->make<TTree>("mwpc", "mwpc");
-  fMwpcTdcDataTree->Branch("run", &runNumber, "run/i");
-  fMwpcTdcDataTree->Branch("spill", &spillNumber, "spill/i");
+  fMwpcTdcDataTree->Branch("run", &run_number, "run/i");
+  fMwpcTdcDataTree->Branch("spill", &sub_run_number, "spill/i");
   fMwpcTdcDataTree->Branch("trigger_counter", &mwpc_trigger_counter,
                            "trigger_counter/i");
   fMwpcTdcDataTree->Branch("controller_time_stamp",
@@ -217,8 +217,8 @@ void DataQuality::beginJob()
                            "hit_time_bin[number_hits]/s");
 
   fWutDataTree = tfs->make<TTree>("wut", "wut");
-  fWutDataTree->Branch("run", &runNumber, "run/i");
-  fWutDataTree->Branch("spill", &spillNumber, "spill/i");
+  fWutDataTree->Branch("run", &run_number, "run/i");
+  fWutDataTree->Branch("spill", &sub_run_number, "spill/i");
   fWutDataTree->Branch("time_header", &wut_time_header, "time_header/i");
   fWutDataTree->Branch("number_hits", &wut_number_hits, "number_hits/i");
   fWutDataTree->Branch("hit_channel", wut_hit_channel.data(),
