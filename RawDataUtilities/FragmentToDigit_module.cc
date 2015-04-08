@@ -15,20 +15,7 @@
 // [x] Add channels 32 to 64 of CAEN V1740 board 8
 // [x] Add WUT
 // [x] Add MWPCs
-//
-// [ ] Test with DigitReader module
-//     NOTE: Testing may be difficult to do because the files
-//           in /lariat/data/users/willhf/140925 do not have
-//           the spill/subrun number in them. Events with the
-//           same run and subrun numbers are seemingly treated
-//           as duplicates (and the second instance is
-//           ignored?).
-//           Might be a problem during the LArIATDAQ->ArtDAQ
-//           format conversion of the old files? New files
-//           written by ArtDAQ do not have to same problem. In
-//           any case, the latest PID/TOF plots CANNOT be
-//           reproduced with AuxDetDigits until this is fixed.
-//
+// [ ] Add SpillTrailer fragments
 // [ ] Add helpful comments throughout code. This may never be
 //     checked off.
 //////////////////////////////////////////////////////////////
@@ -53,7 +40,7 @@
 #include "TDCFragment.h"
 
 #include "RawData/AuxDetDigit.h"
-
+#include "RawData/OpDetPulse.h"
 #include "TTree.h"
 
 #include <memory>
@@ -98,6 +85,8 @@ private:
   std::string fCaenV1740Board8Label;
   std::string fCaenV1751Board1Label;
   std::string fCaenV1751Board2Label;
+  std::string fCaenOpLabel1;
+  std::string fCaenOpLabel2;
   std::string fWutLabel;
   std::string fMwpcTdc01Label;
   std::string fMwpcTdc02Label;
@@ -116,6 +105,11 @@ private:
   std::string fMwpcTdc15Label;
   std::string fMwpcTdc16Label;
 
+  // variables from the SpillTrailer fragments
+  uint32_t runNumber;
+  uint32_t spillNumber;
+  uint32_t timeStamp;
+std::vector<std::vector<int>> fOpDetChID;
 };
 
 //------------------------------------------------------------------------------
@@ -123,8 +117,6 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 //  : EDProducer(p)
 {
   this->reconfigure(p);
-  produces< std::vector<raw::AuxDetDigit> >("a");
-  produces< std::vector<raw::AuxDetDigit> >("b");
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board8Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board1Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board2Label);
@@ -145,6 +137,8 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
   produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc14Label);
   produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc15Label);
   produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc16Label);
+  produces< std::vector<raw::OpDetPulse> >(fCaenOpLabel1);
+  produces< std::vector<raw::OpDetPulse> >(fCaenOpLabel2);
 }
 
 //------------------------------------------------------------------------------
@@ -175,6 +169,9 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   fMwpcTdc14Label = p.get< std::string >("MwpcTdc14Label", "MwpcTdc14");
   fMwpcTdc15Label = p.get< std::string >("MwpcTdc15Label", "MwpcTdc15");
   fMwpcTdc16Label = p.get< std::string >("MwpcTdc16Label", "MwpcTdc16");
+  fOpDetChID = p.get< std::vector<std::vector<int>> >("pmt_channel_ids");
+  fCaenOpLabel1 = p.get< std::string >("OpDetBoardLabel1", "Caenv1751Optical1");
+  fCaenOpLabel2 = p.get< std::string >("OpDetBoardLabel2", "Caenv1751Optical2");
 }
 
 //------------------------------------------------------------------------------
@@ -186,37 +183,6 @@ void FragmentToDigit::beginJob()
 //------------------------------------------------------------------------------
 void FragmentToDigit::produce(art::Event & evt)
 {
-
-  ////////////////////////////////////////////////////////////
-  // Begin dummies
-  ////////////////////////////////////////////////////////////
-
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > partCol2 (new std::vector<raw::AuxDetDigit>);
-
-  std::vector<short> ADCarray (3,1);
-  std::cout<<"ADCarray[1]: "<<ADCarray[1]<<std::endl;
-  unsigned short TheChannel = 10;
-  std::cout<<"TheChannel: "<<TheChannel<<std::endl;
-  std::string TheDetector ("DetectorA");
-  std::string TheDetector2 ("DetectorB");
-  std::cout<<"TheDetector: "<<TheDetector<<std::endl;
-
-  raw::AuxDetDigit Name;
-  raw::AuxDetDigit Name2;
-  Name = raw::AuxDetDigit(TheChannel,ADCarray,TheDetector);
-  Name2 = raw::AuxDetDigit(TheChannel,ADCarray,TheDetector2);
-  std::cout<<"Name.NADC(): "<<Name.NADC()<<std::endl;
-
-  partCol->push_back(Name);
-  partCol2->push_back(Name2);
-
-  evt.put(std::move(partCol), "a");
-  evt.put(std::move(partCol2), "b");
-
-  ////////////////////////////////////////////////////////////
-  // End dummies
-  ////////////////////////////////////////////////////////////
 
   art::Handle< std::vector<artdaq::Fragment> > fragments;
   evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
@@ -263,6 +229,10 @@ void FragmentToDigit::produce(art::Event & evt)
       (new std::vector<raw::AuxDetDigit>);
   std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc16Vec
       (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr<std::vector< raw::OpDetPulse > >  OpDetVec1
+      (new std::vector<raw::OpDetPulse>);
+  std::unique_ptr<std::vector< raw::OpDetPulse > >  OpDetVec2
+      (new std::vector<raw::OpDetPulse>);
 
   // the following line is way too long
   std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > mwpcTdcVecs = {
@@ -286,27 +256,42 @@ void FragmentToDigit::produce(art::Event & evt)
       throw cet::exception("FragmentToDigit")
       << "artdaq::Fragment handle contains more than one fragment, bail";
 
-  art::EventNumber_t spillNumber = evt.event();
-
   // get the fragments we are interested in
   const auto& frag((*fragments)[0]);
 
   const char * bytePtr = reinterpret_cast<const char *> (&*frag.dataBegin());
   LariatFragment * data = new LariatFragment((char *) bytePtr,
       frag.dataSize() * sizeof(unsigned long long));
-  std::cout << "Have data fragment "
-            << frag.dataSize() * sizeof(unsigned long long)
-            << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "Have data fragment "
+      << frag.dataSize() * sizeof(unsigned long long);
   data->print();
+  data->printSpillTrailer();
 
-  std::cout << "Run: " << evt.run() << "; subrun: " << evt.subRun()
-            << "; spill: " << spillNumber << std::endl;
+  LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
+  runNumber = spillTrailer.runNumber;
+  spillNumber = spillTrailer.spillNumber;
+  timeStamp = spillTrailer.timeStamp;
+
+  //art::EventNumber_t spillNumber = evt.event();
+
+  mf::LogInfo("FragmentToDigit")
+      << "evt.run(): " << evt.run()
+      << "; evt.subRun(): " << evt.subRun()
+      << "; evt.event(): " << evt.event()
+      << "; evt.time().timeLow(): " << evt.time().timeLow()
+      << "; evt.time().timeHigh(): " << evt.time().timeHigh();
+
+  mf::LogInfo("FragmentToDigit")
+      << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
+      << "; timeStamp: " << timeStamp;
 
   const size_t numberCaenFrags = data->caenFrags.size();
-  std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberCaenFrags << " CAEN fragments";
 
   if (numberCaenFrags > 0) {
-    std::cout << "Looking at CAEN fragments..." << std::endl;
+    mf::LogInfo("FragmentToDigit") << "Looking at CAEN fragments...";
   }
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
@@ -316,8 +301,9 @@ void FragmentToDigit::produce(art::Event & evt)
     uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
 
     //caenFrag.print();
-    //std::cout << "CAEN event counter: " << caenFrag.header.eventCounter
-    //          << std::endl;
+    //LOG_DEBUG("FragmentToDigit")
+    //    << "CAEN event counter: "
+    //    << caenFrag.header.eventCounter;
 
     if (boardId == 7) {
       for (size_t j = 31; j < V1740_N_CHANNELS; ++j) {
@@ -348,6 +334,25 @@ void FragmentToDigit::produce(art::Event & evt)
                 static_cast <unsigned long long> (triggerTimeTag)
                 )
             );
+
+//OpDetPulse modification - channels to be chosen accordingly in fcl
+	if(fOpDetChID[boardId].size()!=0){
+			if(int(fOpDetChID[boardId].size())>int(j)){
+				if(fOpDetChID[boardId][j]==int(j)){
+        				OpDetVec1->push_back(
+            				raw::OpDetPulse(
+                				static_cast <unsigned short> (j),
+                				caenFragWaveForm,
+                				0,
+                				static_cast <unsigned int> (triggerTimeTag)
+                			)
+				);
+			}
+		}
+            
+	}
+
+//OpDetPulse modification - channels to be chosen accordingly in fcl
       }
     }
 
@@ -364,21 +369,41 @@ void FragmentToDigit::produce(art::Event & evt)
                 static_cast <unsigned long long> (triggerTimeTag)
                 )
             );
+
+//OpDetPulse modification - channels to be chosen accordingly in fcl
+	if(fOpDetChID[boardId].size()!=0){
+			if(int(fOpDetChID[boardId].size())>int(j)){
+				if(fOpDetChID[boardId][j]==int(j)){
+        				OpDetVec1->push_back(
+            				raw::OpDetPulse(
+                				static_cast <unsigned short> (j),
+                				caenFragWaveForm,
+                				0,
+                				static_cast <unsigned int> (triggerTimeTag)
+                			)
+				);
+			}
+		}
+            
+	}
+
+//OpDetPulse modification - channels to be chosen accordingly in fcl
       }
     }
 
   }
 
   const int numberWutFrags = data->wutFrags.size();
-  std::cout << "Found " << numberWutFrags << " WUT fragments" << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberWutFrags << " WUT fragments";
 
   if (numberWutFrags > 0) {
-    std::cout << "Looking at WUT fragments..." << std::endl;
+    mf::LogInfo("FragmentToDigit") << "Looking at WUT fragments...";
   }
 
   for (int i = 0; i < numberWutFrags; ++i) {
     WUTFragment & wutFrag = data->wutFrags[i];
-    wutFrag.print();
+    //wutFrag.print();
     uint32_t numberHits = wutFrag.header.nHits;
     std::vector<WUTFragment::WutHit> & hits = wutFrag.hits;
 
@@ -413,10 +438,11 @@ void FragmentToDigit::produce(art::Event & evt)
   }
 
   const int numberTdcFrags = data->tdcFrags.size();
-  std::cout << "Found " << numberTdcFrags << " TDC fragments" << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberTdcFrags > 0) {
-    std::cout << "Looking at TDC fragments..." << std::endl;
+    mf::LogInfo("FragmentToDigit") << "Looking at TDC fragments...";
   }
 
   for (int i = 0; i < numberTdcFrags; ++i) {
@@ -426,14 +452,16 @@ void FragmentToDigit::produce(art::Event & evt)
     std::vector< std::vector<TDCFragment::TdcEventData> > &
         tdcEvents = tdcFrag.tdcEvents;
 
-    //std::cout << "tdcEvents.size(): " << tdcEvents.size() << std::endl;
+    //LOG_DEBUG("FragmentToDigit")
+    //    << "tdcEvents.size(): " << tdcEvents.size();
     //tdcFrag.print();
 
     for (size_t j = 0; j < tdcEvents.size(); ++j) {
 
       if (tdcFrag.controllerHeader.nTDCs != tdcEvents[j].size()) {
-        std::cout << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
-                  << " != " << tdcFrag.controllerHeader.nTDCs << std::endl;
+        mf::LogError("FragmentToDigit")
+            << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
+            << " != " << tdcFrag.controllerHeader.nTDCs;
       }
 
       for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
@@ -481,7 +509,8 @@ void FragmentToDigit::produce(art::Event & evt)
   evt.put(std::move(caenV1740Board8Vec), fCaenV1740Board8Label);
   evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
   evt.put(std::move(caenV1751Board2Vec), fCaenV1751Board2Label);
-
+evt.put(std::move(OpDetVec1), fCaenOpLabel1);
+evt.put(std::move(OpDetVec2), fCaenOpLabel2);
   evt.put(std::move(wutVec), fWutLabel);
 
   for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
