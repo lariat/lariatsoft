@@ -63,8 +63,6 @@ find_ups_product( artdaq_core     v1_04_06 )
 find_ups_product( LariatFilters   v01_00    )
 find_ups_product( lariatfragments v01_00_00 )
 
-find_ups_product( G4beamline v2_16 )
-
 find_ups_root( root v5_34_18 )
 
 # macros for artdaq_dictionary and simple_plugin
