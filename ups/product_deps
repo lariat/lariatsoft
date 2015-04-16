@@ -12,20 +12,19 @@ LariatFilters   v01_02
 lariatfragments v01_01_01
 artdaq_core     v1_04_08
 LariatBeamFiles v01_00
+G4beamline      v2_16
 
 cetbuildtools   v4_08_01 - only_for_build
 end_product_list
   
 # e6  - with gcc 4.9.1 and -std=c++11
-qualifier	larsoft   LariatFilters	lariatfragments artdaq_core	LariatBeamFiles	notes
-e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-nq-
-e6:opt		e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-nq-
-e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-nq-
-e6:debug:nobeam	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-
-e6:opt:nobeam	e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-
-e6:prof:nobeam	e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-
-
-
+qualifier	larsoft   LariatFilters	lariatfragments artdaq_core	LariatBeamFiles	G4beamline	notes
+e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-nq-		e6:debug:nu
+e6:opt		e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-nq-		e6:opt:nu
+e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-nq-		e6:prof:nu
+e6:debug:nobeam	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-		e6:debug:nu
+e6:opt:nobeam	e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-		e6:opt:nu
+e6:prof:nobeam	e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-		e6:prof:nu
 
 end_qualifier_list
 
