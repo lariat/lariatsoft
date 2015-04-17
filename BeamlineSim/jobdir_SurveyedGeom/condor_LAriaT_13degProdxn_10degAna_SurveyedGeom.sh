@@ -11,7 +11,7 @@
 # Outputs:
 #  - All output files are created in the grid scratch space.  At the end of the job
 #    all files in this directory will be copied to:
-#      /lariat/data/users/stjohn/outstage/
+#      /lariat/data/users/MYUSERNAME/outstage/
 #     USED TO BE /grid/data/lariat/outstage/$user/${cluster}_${process}
 #    This includes a copy of the input files.
 #
@@ -50,25 +50,22 @@ echo "Beginning work in "`pwd`
 export GROUP=lariat
 export EXPERIMENT=lariat
 export EXTRA_PATH=lariat
-export HOME=/lariat/app/users/stjohn/G4beamline-2.14/condor/lardbt_jobs/AndFinalGeometry
+export HOME=`cd ../;pwd`
 echo "Sourcing setup"
 source /cvmfs/oasis.opensciencegrid.org/fermilab/products/common/etc/setup
 echo "Setting up ifdh"
 setup ifdhc
 
 source /grid/fermiapp/products/lariat/setup
-source /lariat/app/users/stjohn/G4beamline-2.14/bin/g4bl-setup.sh
+setup G4beamline v2_16 -q e6:prof:nu
 setup root v5_34_21b -q e6:nu:prof
 
 echo "Bringing over from " ${ORIGDIR} " all this:"
 ls -ltra $ORIGDIR/*
 ifdh cp -r $ORIGDIR/* .
-# echo "What's in Geant4Data?"
-# ls -ltra /lariat/data/users/stjohn/Geant4Data
 
 # Directory in which to put the output files.
-#outstage=/grid/data/lariat/outstage/stjohn
-outstage=/lariat/data/users/stjohn/outstage/
+outstage=/lariat/data/users/MYUSERNAME/outstage/
 
 # run jobs
 cd $TMP
@@ -91,7 +88,7 @@ ls -ltra
 test -e $outstage || ifdh mkdir $outstage
 if [ ! -d $outstage ];then
    echo "${outstage} is not a directory."
-   outstage=/lariat/data/users/stjohn/condor-tmp/
+   outstage=/lariat/data/users/MYUSERNAME/condor-tmp/
    echo "Changing outstage directory to: " $outstage 
    exit
 fi
