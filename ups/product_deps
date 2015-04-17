@@ -18,14 +18,12 @@ end_product_list
   
 # e6  - with gcc 4.9.1 and -std=c++11
 qualifier	larsoft   LariatFilters	lariatfragments artdaq_core	LariatBeamFiles	notes
-e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-nq-
+e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-nq-					
 e6:opt		e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-nq-
-e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-nq-
-e6:debug:nobeam	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-
-e6:opt:nobeam	e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-
-e6:prof:nobeam	e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-
-
-
+e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-nq-		
+e6:debug:nobeam	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-		
+e6:opt:nobeam	e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-		
+e6:prof:nobeam	e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-		
 
 end_qualifier_list
 
