@@ -468,6 +468,64 @@ void FragmentToDigit::produce(art::Event & evt)
     evt.put(std::move(mwpcTdcVecs[i].get()), mwpcTdcLabels[i]);
   }
 
+  // Matching v1751, v1740, and TDC fragments
+  // CAEN triggerTimeTag must be multiplied by 0.008 to get microseconds since the start of spill
+  // TDC tdcTimeStamp must be divided by 106.208 to get microseconds since the start of spill
+  // I am currently calling triggers within 200 microseconds a match
+
+  size_t v1751FragNumber = 1;
+  size_t numberOf1740Matches = 0;
+  size_t numberOfTDCMatches = 0;
+  std::cout<<"Lets do some fragment timestamp matching so that we can group triggers..."<<std::endl;
+
+  for (size_t i = 0; i < numberCaenFrags; ++i) {
+
+    numberOf1740Matches = 0;
+    numberOfTDCMatches = 0;
+    CAENFragment & caenFrag = data->caenFrags[i];
+
+    if (caenFrag.header.boardId == 8) {
+
+      std::cout<<"v1751 fragment number "<<v1751FragNumber<<" at t="<<caenFrag.header.triggerTimeTag*0.008<<"ns"<<std::endl;
+
+      for (size_t k = 0; k < numberCaenFrags; ++k) {
+
+        CAENFragment & secondCaenFrag = data->caenFrags[k];
+
+        if (secondCaenFrag.header.boardId == 7 && abs(secondCaenFrag.header.triggerTimeTag*0.008 - caenFrag.header.triggerTimeTag*0.008)<200) {
+
+          numberOf1740Matches++;
+
+        }
+
+      }
+
+      std::cout<<" has "<<numberOf1740Matches<<" matching v1740 fragments "<<std::endl;
+
+      for (int j = 0; j < numberTdcFrags; ++j) {
+
+        TDCFragment & tdcFrag = data->tdcFrags[j];
+
+        for (size_t l = 0; l < tdcFrag.tdcEvents.size(); ++l) {
+
+        if (abs(tdcFrag.tdcEvents[l].at(0).tdcEventHeader.tdcTimeStamp/106.208 - caenFrag.header.triggerTimeTag*0.008)<200) {
+
+          numberOfTDCMatches++;
+
+        }
+
+        }
+
+      }
+
+      std::cout<<" and "<<numberOfTDCMatches<<" matching TDC fragments "<<std::endl;
+
+    v1751FragNumber++;
+
+    }
+
+  }
+
   return;  
 }
 
