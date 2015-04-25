@@ -8,7 +8,7 @@ include_directories( $ENV{POSTGRESQL_INC}       	       )
 
 simple_plugin(DigitReader "module"
               RawData
-              LArIATFragments
+              LariatFragments
               ${ART_FRAMEWORK_CORE}
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -28,7 +28,7 @@ simple_plugin(DigitReader "module"
 
 simple_plugin(LArIATFragmentReader "module"
               RawData
-	      LArIATFragments
+	      LariatFragments
               ${ART_FRAMEWORK_CORE}
 	      ${ART_FRAMEWORK_PRINCIPAL}
 	      ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -48,7 +48,7 @@ simple_plugin(LArIATFragmentReader "module"
 
 simple_plugin(LArIATFragmentDump "module"
               RawData
-              LArIATFragments
+              LariatFragments
               ${ART_FRAMEWORK_CORE}
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -68,7 +68,7 @@ simple_plugin(LArIATFragmentDump "module"
 
 simple_plugin(FragmentToDigit "module"
               RawData
-              LArIATFragments
+              LariatFragments
               ${ART_FRAMEWORK_CORE}
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -88,7 +88,7 @@ simple_plugin(FragmentToDigit "module"
 
 simple_plugin(DataQuality "module"
               RawData
-              LArIATFragments
+              LariatFragments
               ${ART_FRAMEWORK_CORE}
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_FRAMEWORK_SERVICES_REGISTRY}

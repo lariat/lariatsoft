@@ -34,10 +34,10 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
 #include "artdaq-core/Data/Fragment.hh"
-#include "LariatFragment.h"
-#include "WUTFragment.h"
-#include "CAENFragment.h"
-#include "TDCFragment.h"
+#include "LArIATFragments/LariatFragment.h"
+#include "LArIATFragments/WUTFragment.h"
+#include "LArIATFragments/CAENFragment.h"
+#include "LArIATFragments/TDCFragment.h"
 
 #include "RawData/AuxDetDigit.h"
 #include "RawData/OpDetPulse.h"
