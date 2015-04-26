@@ -6,7 +6,11 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "Geo/ChannelMapLArIATAlg.h"
+// ART Includes
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h" 
+
+// LArSoft Includes
 #include "Geometry/AuxDetGeo.h"
 #include "Geometry/AuxDetSensitiveGeo.h"
 #include "Geometry/CryostatGeo.h"
@@ -14,8 +18,8 @@
 #include "Geometry/PlaneGeo.h"
 #include "Geometry/WireGeo.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h" 
+// LArIATSoft
+#include "Geo/ChannelMapLArIATAlg.h"
 
 namespace geo{
 
