@@ -8,7 +8,7 @@
 #include "Geo/LArIATGeometryHelper.h"
 #include "Geometry/ChannelMapAlg.h"
 
-#include "Geometry/ChannelMapStandardAlg.h"
+#include "Geo/ChannelMapLArIATAlg.h"
 
 #include "TString.h"
 
@@ -32,11 +32,11 @@ namespace lariatgeo
   void LArIATGeometryHelper::doConfigureChannelMapAlg(const TString                  & detectorName,
 						      fhicl::ParameterSet      const & sortingParam,
 						      std::vector<geo::CryostatGeo*> & c, 
-                                                     std::vector<geo::AuxDetGeo*>   & ad  )
+						      std::vector<geo::AuxDetGeo*>   & ad  )
   {
     fChannelMap = nullptr;
     
-    fChannelMap = std::shared_ptr<geo::ChannelMapAlg>(new geo::ChannelMapStandardAlg(sortingParam));
+    fChannelMap = std::shared_ptr<geo::ChannelMapAlg>(new geo::ChannelMapLArIATAlg(sortingParam));
     if(fChannelMap) fChannelMap->Initialize(c,ad);
 
     return;

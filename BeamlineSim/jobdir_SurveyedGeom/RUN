@@ -1,0 +1,26 @@
+#!/bin/bash 
+source /grid/fermiapp/products/common/etc/setups.sh
+export GROUP=lariat
+setup jobsub_client
+source /grid/fermiapp/products/lariat/setup
+setup G4beamline v2_16 -q e6:prof:nu
+setup root v5_34_21b -q e6:nu:prof
+setup jobsub_client
+
+
+njobs=10
+partperjob=30
+
+nparticles=$(($njobs*$partperjob))
+
+datenow=$(date +%y.%m.%d.%H.%M.%S)
+clusternumbersfile=jobs_$datenow
+echo $clusternumbersfile
+
+# Now with the new josub_client:
+jobsub_submit -G lariat -N $njobs --resource-provides=usage_model=OPPORTUNISTIC --OS=SL6 -f `pwd`/MergeTrees.py -f `pwd`/LAriaT_13degProdxn_10degAna_SurveyedGeom.in file://`pwd`/condor_LAriaT_13degProdxn_10degAna_SurveyedGeom.sh MYUSERNAME $partperjob | grep -e "cluster" | awk '{print $6}' | sed 's/\./_/' > $clusternumbersfile
+
+# Append the number of jobs, so we know later on which jobs we wanted to have results back from.
+echo ${njobs} >> $clusternumbersfile
+
+

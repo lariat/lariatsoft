@@ -19,10 +19,10 @@
 
 #include "artdaq-core/Data/Fragment.hh"
 
-#include "LariatFragment.h"
-#include "WUTFragment.h"
-#include "CAENFragment.h"
-#include "TDCFragment.h"
+#include "LArIATFragments/LariatFragment.h"
+#include "LArIATFragments/WUTFragment.h"
+#include "LArIATFragments/CAENFragment.h"
+#include "LArIATFragments/TDCFragment.h"
 
 #include "TTree.h"
 
@@ -60,13 +60,21 @@ public:
 
 private:
 
+  TTree *     fEventRecord;          ///< Tree holding some data from art::Event
   TTree *     fSpillTrailerTree;     ///< Tree holding the data from the SpillTrailer fragments
-  TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments 
-  TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments 
-  TTree *     fMwpcTdcDataTree;      ///< Tree holding the data from the MWPC TDC fragments 
-  TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments 
+  TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments
+  TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments
+  TTree *     fMwpcTdcDataTree;      ///< Tree holding the data from the MWPC TDC fragments
+  TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments
   std::string fRawFragmentLabel;     ///< label for module producing artdaq fragments
-  std::string fRawFragmentInstance;  ///< instance label for artdaq fragments        
+  std::string fRawFragmentInstance;  ///< instance label for artdaq fragments
+
+  // variables that will go into fEventRecord
+  uint32_t run_number;
+  uint32_t sub_run_number;
+  uint32_t event_number;
+  uint32_t time_stamp_low;
+  uint32_t time_stamp_high;
 
   // variables that will go into fSpillTrailerTree
   uint32_t runNumber;
@@ -77,24 +85,24 @@ private:
   uint32_t caen_fragment;
   uint32_t caen_board_id;
   uint32_t caen_event_counter;
-  uint32_t caen_trigger_time_tag;  // Each count in the V1751 trigger time tag is 8 ns
-  std::vector< std::vector<uint16_t> > caen_v1751_waveform;
-  std::vector< std::vector<uint16_t> > caen_v1740_waveform;
+  uint32_t caen_trigger_time_tag;  // Each count in the CAEN trigger time tag is 8 ns
+  std::vector< std::vector<uint16_t> > caen_v1751_waveform;  // 1 ns per sample, 1792 samples per trigger
+  std::vector< std::vector<uint16_t> > caen_v1740_waveform;  // 250 ns per sample, 1536 samples per trigger
 
   // variables that will go into fMwpcTdcDataTree
   uint32_t mwpc_trigger_counter;
   uint16_t mwpc_controller_time_stamp;
-  uint32_t mwpc_tdc_time_stamp;
+  uint32_t mwpc_tdc_time_stamp;  // Each TDC time stamp count is 1/106.208e6 seconds
   uint32_t mwpc_number_hits;
   std::vector<uint16_t> mwpc_tdc_number;
   std::vector<uint16_t> mwpc_hit_channel;
-  std::vector<uint16_t> mwpc_hit_time_bin;
+  std::vector<uint16_t> mwpc_hit_time_bin;  // Each time tick is 1.177 ns
 
   // variables that will go into fWutDataTree
   uint32_t wut_time_header;  // Each count in the time header is 16 us
   uint32_t wut_number_hits;
   std::vector<uint16_t> wut_hit_channel;
-  std::vector<uint32_t> wut_hit_time_bin;
+  std::vector<uint32_t> wut_hit_time_bin;  // Each time tick is 15.625 ps
 
 };
 
@@ -135,14 +143,22 @@ void DataQuality::beginJob()
 
   art::ServiceHandle<art::TFileService> tfs;
 
+  fEventRecord = tfs->make<TTree>("artEventRecord", "artEventRecord");
+  fEventRecord->Branch("run_number", &run_number, "run_number/i");
+  fEventRecord->Branch("sub_run_number", &sub_run_number, "sub_run_number/i");
+  fEventRecord->Branch("event_number", &event_number, "event_number/i");
+  fEventRecord->Branch("time_stamp_low", &time_stamp_low, "time_stamp_low/i");
+  fEventRecord->Branch("time_stamp_high", &time_stamp_high,
+                       "time_stamp_high/i");
+
   fSpillTrailerTree = tfs->make<TTree>("spillTrailer", "spillTrailer");
   fSpillTrailerTree->Branch("runNumber", &runNumber, "runNumber/i");
   fSpillTrailerTree->Branch("spillNumber", &spillNumber, "spillNumber/i");
   fSpillTrailerTree->Branch("timeStamp", &timeStamp, "timeStamp/i");
 
   fCaenV1740DataTree = tfs->make<TTree>("v1740", "v1740");
-  fCaenV1740DataTree->Branch("run", &runNumber, "run/i");
-  fCaenV1740DataTree->Branch("spill", &spillNumber, "spill/i");
+  fCaenV1740DataTree->Branch("run", &run_number, "run/i");
+  fCaenV1740DataTree->Branch("spill", &sub_run_number, "spill/i");
   fCaenV1740DataTree->Branch("fragment", &caen_fragment, "fragment/i");
   fCaenV1740DataTree->Branch("event_counter", &caen_event_counter,
                              "event_counter/i");
@@ -154,16 +170,16 @@ void DataQuality::beginJob()
     std::string branch_name = "channel_" + std::to_string(i);
     std::string leaf_list = "channel_" + std::to_string(i) + "[" +
                             std::to_string(V1740_N_SAMPLES) + "]/s";
-    //std::cout << "branch_name: " << branch_name << std::endl;
-    //std::cout << "leaf_list: " << leaf_list << std::endl;
+    //LOG_DEBUG("DataQuality") << "branch_name: " << branch_name;
+    //LOG_DEBUG("DataQuality") << "leaf_list: " << leaf_list;
     fCaenV1740DataTree->Branch(branch_name.c_str(),
                                caen_v1740_waveform[i].data(),
                                leaf_list.c_str());
   }
 
   fCaenV1751DataTree = tfs->make<TTree>("v1751", "v1751");
-  fCaenV1751DataTree->Branch("run", &runNumber, "run/i");
-  fCaenV1751DataTree->Branch("spill", &spillNumber, "spill/i");
+  fCaenV1751DataTree->Branch("run", &run_number, "run/i");
+  fCaenV1751DataTree->Branch("spill", &sub_run_number, "spill/i");
   fCaenV1751DataTree->Branch("fragment", &caen_fragment, "fragment/i");
   fCaenV1751DataTree->Branch("event_counter", &caen_event_counter,
                              "event_counter/i");
@@ -175,16 +191,16 @@ void DataQuality::beginJob()
     std::string branch_name = "channel_" + std::to_string(i);
     std::string leaf_list = "channel_" + std::to_string(i) + "[" +
                             std::to_string(V1751_N_SAMPLES) + "]/s";
-    //std::cout << "branch_name: " << branch_name << std::endl;
-    //std::cout << "leaf_list: " << leaf_list << std::endl;
+    //LOG_DEBUG("DataQuality") << "branch_name: " << branch_name;
+    //LOG_DEBUG("DataQuality") << "leaf_list: " << leaf_list;
     fCaenV1751DataTree->Branch(branch_name.c_str(),
                                caen_v1751_waveform[i].data(),
                                leaf_list.c_str());
   }
 
   fMwpcTdcDataTree = tfs->make<TTree>("mwpc", "mwpc");
-  fMwpcTdcDataTree->Branch("run", &runNumber, "run/i");
-  fMwpcTdcDataTree->Branch("spill", &spillNumber, "spill/i");
+  fMwpcTdcDataTree->Branch("run", &run_number, "run/i");
+  fMwpcTdcDataTree->Branch("spill", &sub_run_number, "spill/i");
   fMwpcTdcDataTree->Branch("trigger_counter", &mwpc_trigger_counter,
                            "trigger_counter/i");
   fMwpcTdcDataTree->Branch("controller_time_stamp",
@@ -201,8 +217,8 @@ void DataQuality::beginJob()
                            "hit_time_bin[number_hits]/s");
 
   fWutDataTree = tfs->make<TTree>("wut", "wut");
-  fWutDataTree->Branch("run", &runNumber, "run/i");
-  fWutDataTree->Branch("spill", &spillNumber, "spill/i");
+  fWutDataTree->Branch("run", &run_number, "run/i");
+  fWutDataTree->Branch("spill", &sub_run_number, "spill/i");
   fWutDataTree->Branch("time_header", &wut_time_header, "time_header/i");
   fWutDataTree->Branch("number_hits", &wut_number_hits, "number_hits/i");
   fWutDataTree->Branch("hit_channel", wut_hit_channel.data(),
@@ -232,27 +248,39 @@ void DataQuality::analyze(art::Event const & evt)
   const char * bytePtr = reinterpret_cast<const char *> (&*frag.dataBegin());
   LariatFragment * data = new LariatFragment((char *) bytePtr,
       frag.dataSize() * sizeof(unsigned long long));
-  std::cout << "Have data fragment "
-            << frag.dataSize() * sizeof(unsigned long long)
-            << std::endl;
+  mf::LogInfo("DataQuality")
+      << "Have data fragment " << frag.dataSize() * sizeof(unsigned long long);
   data->print();
   data->printSpillTrailer();
+
+  run_number = evt.run();
+  sub_run_number = evt.subRun();
+  event_number = evt.event();
+  time_stamp_low = evt.time().timeLow();
+  time_stamp_high = evt.time().timeHigh();
 
   LariatFragment::SpillTrailer & spillTrailer = data->spillTrailer;
   runNumber = spillTrailer.runNumber;
   spillNumber = spillTrailer.spillNumber;
   timeStamp = spillTrailer.timeStamp;
 
-  std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
-            << "; evt.event(): " << evt.event() << std::endl;
-  std::cout << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
-            << "; timeStamp: " << timeStamp << std::endl;
+  mf::LogInfo("DataQuality")
+      << "evt.run(): " << evt.run()
+      << "; evt.subRun(): " << evt.subRun()
+      << "; evt.event(): " << evt.event()
+      << "; evt.time().timeLow(): " << evt.time().timeLow()
+      << "; evt.time().timeHigh(): " << evt.time().timeHigh();
+
+  mf::LogInfo("DataQuality")
+      << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
+      << "; timeStamp: " << timeStamp;
 
   const size_t numberCaenFrags = data->caenFrags.size();
-  std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
+  mf::LogInfo("DataQuality")
+      << "Found " << numberCaenFrags << " CAEN fragments";
 
   if (numberCaenFrags > 0) {
-    std::cout << "Looking at CAEN fragments..." << std::endl;
+    mf::LogInfo("DataQuality") << "Looking at CAEN fragments...";
   }
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
@@ -265,9 +293,9 @@ void DataQuality::analyze(art::Event const & evt)
         board == 6 or board == 7) {
       //caenFrag.print();
 
-      //std::cout << "CAEN event counter: "
-      //          << caenFrag.header.eventCounter
-      //          << std::endl;
+      //LOG_DEBUG("DataQuality")
+      //    << "CAEN event counter: "
+      //    << caenFrag.header.eventCounter;
 
       caen_fragment = i;
       caen_event_counter = caenFrag.header.eventCounter;
@@ -289,9 +317,9 @@ void DataQuality::analyze(art::Event const & evt)
     else if (board == 8 or board == 9) {
       //caenFrag.print();
 
-      //std::cout << "CAEN event counter: "
-      //          << caenFrag.header.eventCounter
-      //          << std::endl;
+      //LOG_DEBUG("DataQuality")
+      //    << "CAEN event counter: "
+      //    << caenFrag.header.eventCounter;
 
       caen_fragment = i;
       caen_event_counter = caenFrag.header.eventCounter;
@@ -313,10 +341,11 @@ void DataQuality::analyze(art::Event const & evt)
   }
 
   const int numberTdcFrags = data->tdcFrags.size();
-  std::cout << "Found " << numberTdcFrags << " TDC fragments" << std::endl;
+  mf::LogInfo("DataQuality")
+      << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberTdcFrags > 0) {
-    std::cout << "Looking at TDC fragments..." << std::endl;
+    mf::LogInfo("DataQuality") << "Looking at TDC fragments...";
   }
 
   for (int i = 0; i < numberTdcFrags; ++i) {
@@ -326,14 +355,16 @@ void DataQuality::analyze(art::Event const & evt)
     std::vector< std::vector<TDCFragment::TdcEventData> > &
         tdcEvents = tdcFrag.tdcEvents;
 
-    //std::cout << "tdcEvents.size(): " << tdcEvents.size() << std::endl;
+    //LOG_DEBUG("DataQuality")
+    //    << "tdcEvents.size(): " << tdcEvents.size();
     //tdcFrag.print();
 
     for (size_t j = 0; j < tdcEvents.size(); ++j) {
 
       if (tdcFrag.controllerHeader.nTDCs != tdcEvents[j].size()) {
-        std::cout << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
-                  << " != " << tdcFrag.controllerHeader.nTDCs << std::endl;
+        mf::LogError("DataQuality")
+            << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
+            << " != " << tdcFrag.controllerHeader.nTDCs;
       }
 
       mwpc_tdc_number.clear();
@@ -348,10 +379,10 @@ void DataQuality::analyze(art::Event const & evt)
 
         mwpc_trigger_counter = tdcEventData.tdcEventHeader.triggerCounter;
 
-        //std::cout << "  triggerCounter: " << mwpc_trigger_counter << std::endl;
-        //std::cout << "    eventWordCount: "
-        //          << (uint32_t) tdcEventData.tdcEventHeader.eventWordCount
-        //          << std::endl;
+        //LOG_DEBUG("DataQuality")
+        //    << "  triggerCounter: " << mwpc_trigger_counter;
+        //LOG_DEBUG("DataQuality") << "    eventWordCount: "
+        //    << (uint32_t) tdcEventData.tdcEventHeader.eventWordCount;
 
         mwpc_controller_time_stamp = tdcEventData.tdcEventHeader.controllerTimeStamp;
         mwpc_tdc_time_stamp = tdcEventData.tdcEventHeader.tdcTimeStamp;
@@ -375,10 +406,11 @@ void DataQuality::analyze(art::Event const & evt)
   }
 
   const int numberWutFrags = data->wutFrags.size();
-  std::cout << "Found " << numberWutFrags << " WUT fragments" << std::endl;
+  mf::LogInfo("DataQuality")
+      << "Found " << numberWutFrags << " WUT fragments";
 
   if (numberWutFrags > 0) {
-    std::cout << "Looking at WUT fragments..." << std::endl;
+    mf::LogInfo("DataQuality") << "Looking at WUT fragments...";
   }
 
   for (int i = 0; i < numberWutFrags; ++i) {
@@ -406,6 +438,7 @@ void DataQuality::analyze(art::Event const & evt)
 
   }
 
+  fEventRecord->Fill();
   fSpillTrailerTree->Fill();
 
   return;  

@@ -1,7 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v01_00_07
-#parent	lariatsoft v0_00_01
+parent	lariatsoft v01_01_00
 defaultqual	e6
 
 # dependencies on external packages
@@ -9,7 +8,7 @@ product         version
 
 larsoft		v03_08_02
 LariatFilters   v01_02
-lariatfragments v01_01_01
+lariatfragments v01_02_00
 artdaq_core     v1_04_08
 LariatBeamFiles v01_00
 
@@ -18,14 +17,12 @@ end_product_list
   
 # e6  - with gcc 4.9.1 and -std=c++11
 qualifier	larsoft   LariatFilters	lariatfragments artdaq_core	LariatBeamFiles	notes
-e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-nq-
+e6:debug	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-nq-					
 e6:opt		e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-nq-
-e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-nq-
-e6:debug:nobeam	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-
-e6:opt:nobeam	e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-
-e6:prof:nobeam	e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-
-
-
+e6:prof		e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-nq-		
+e6:debug:nobeam	e6:debug  -nq-		e6:debug        e6:nu:s6:debug	-		
+e6:opt:nobeam	e6:opt	  -nq-		e6:opt		e6:nu:s6:opt	-		
+e6:prof:nobeam	e6:prof	  -nq-		e6:prof		e6:nu:s6:prof	-		
 
 end_qualifier_list
 

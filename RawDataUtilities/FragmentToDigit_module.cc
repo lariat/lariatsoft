@@ -16,20 +16,6 @@
 // [x] Add WUT
 // [x] Add MWPCs
 // [ ] Add SpillTrailer fragments
-//
-// [ ] Test with DigitReader module
-//     NOTE: Testing may be difficult to do because the files
-//           in /lariat/data/users/willhf/140925 do not have
-//           the spill/subrun number in them. Events with the
-//           same run and subrun numbers are seemingly treated
-//           as duplicates (and the second instance is
-//           ignored?).
-//           Might be a problem during the LArIATDAQ->ArtDAQ
-//           format conversion of the old files? New files
-//           written by ArtDAQ do not have to same problem. In
-//           any case, the latest PID/TOF plots CANNOT be
-//           reproduced with AuxDetDigits until this is fixed.
-//
 // [ ] Add helpful comments throughout code. This may never be
 //     checked off.
 //////////////////////////////////////////////////////////////
@@ -48,10 +34,11 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
 #include "artdaq-core/Data/Fragment.hh"
-#include "LariatFragment.h"
-#include "WUTFragment.h"
-#include "CAENFragment.h"
-#include "TDCFragment.h"
+
+#include "LArIATFragments/LariatFragment.h"
+#include "LArIATFragments/WUTFragment.h"
+#include "LArIATFragments/CAENFragment.h"
+#include "LArIATFragments/TDCFragment.h"
 
 #include "RawData/AuxDetDigit.h"
 
@@ -265,9 +252,9 @@ void FragmentToDigit::produce(art::Event & evt)
   const char * bytePtr = reinterpret_cast<const char *> (&*frag.dataBegin());
   LariatFragment * data = new LariatFragment((char *) bytePtr,
       frag.dataSize() * sizeof(unsigned long long));
-  std::cout << "Have data fragment "
-            << frag.dataSize() * sizeof(unsigned long long)
-            << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "Have data fragment "
+      << frag.dataSize() * sizeof(unsigned long long);
   data->print();
   data->printSpillTrailer();
 
@@ -278,16 +265,23 @@ void FragmentToDigit::produce(art::Event & evt)
 
   //art::EventNumber_t spillNumber = evt.event();
 
-  std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
-            << "; evt.event(): " << evt.event() << std::endl;
-  std::cout << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
-            << "; timeStamp: " << timeStamp << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "evt.run(): " << evt.run()
+      << "; evt.subRun(): " << evt.subRun()
+      << "; evt.event(): " << evt.event()
+      << "; evt.time().timeLow(): " << evt.time().timeLow()
+      << "; evt.time().timeHigh(): " << evt.time().timeHigh();
+
+  mf::LogInfo("FragmentToDigit")
+      << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
+      << "; timeStamp: " << timeStamp;
 
   const size_t numberCaenFrags = data->caenFrags.size();
-  std::cout << "Found " << numberCaenFrags << " CAEN fragments" << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberCaenFrags << " CAEN fragments";
 
   if (numberCaenFrags > 0) {
-    std::cout << "Looking at CAEN fragments..." << std::endl;
+    mf::LogInfo("FragmentToDigit") << "Looking at CAEN fragments...";
   }
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
@@ -297,8 +291,9 @@ void FragmentToDigit::produce(art::Event & evt)
     uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
 
     //caenFrag.print();
-    //std::cout << "CAEN event counter: " << caenFrag.header.eventCounter
-    //          << std::endl;
+    //LOG_DEBUG("FragmentToDigit")
+    //    << "CAEN event counter: "
+    //    << caenFrag.header.eventCounter;
 
     if (boardId == 7) {
       for (size_t j = 31; j < V1740_N_CHANNELS; ++j) {
@@ -351,15 +346,16 @@ void FragmentToDigit::produce(art::Event & evt)
   }
 
   const int numberWutFrags = data->wutFrags.size();
-  std::cout << "Found " << numberWutFrags << " WUT fragments" << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberWutFrags << " WUT fragments";
 
   if (numberWutFrags > 0) {
-    std::cout << "Looking at WUT fragments..." << std::endl;
+    mf::LogInfo("FragmentToDigit") << "Looking at WUT fragments...";
   }
 
   for (int i = 0; i < numberWutFrags; ++i) {
     WUTFragment & wutFrag = data->wutFrags[i];
-    wutFrag.print();
+    //wutFrag.print();
     uint32_t numberHits = wutFrag.header.nHits;
     std::vector<WUTFragment::WutHit> & hits = wutFrag.hits;
 
@@ -394,10 +390,11 @@ void FragmentToDigit::produce(art::Event & evt)
   }
 
   const int numberTdcFrags = data->tdcFrags.size();
-  std::cout << "Found " << numberTdcFrags << " TDC fragments" << std::endl;
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberTdcFrags > 0) {
-    std::cout << "Looking at TDC fragments..." << std::endl;
+    mf::LogInfo("FragmentToDigit") << "Looking at TDC fragments...";
   }
 
   for (int i = 0; i < numberTdcFrags; ++i) {
@@ -407,14 +404,16 @@ void FragmentToDigit::produce(art::Event & evt)
     std::vector< std::vector<TDCFragment::TdcEventData> > &
         tdcEvents = tdcFrag.tdcEvents;
 
-    //std::cout << "tdcEvents.size(): " << tdcEvents.size() << std::endl;
+    //LOG_DEBUG("FragmentToDigit")
+    //    << "tdcEvents.size(): " << tdcEvents.size();
     //tdcFrag.print();
 
     for (size_t j = 0; j < tdcEvents.size(); ++j) {
 
       if (tdcFrag.controllerHeader.nTDCs != tdcEvents[j].size()) {
-        std::cout << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
-                  << " != " << tdcFrag.controllerHeader.nTDCs << std::endl;
+        mf::LogError("FragmentToDigit")
+            << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
+            << " != " << tdcFrag.controllerHeader.nTDCs;
       }
 
       for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
@@ -467,6 +466,64 @@ void FragmentToDigit::produce(art::Event & evt)
 
   for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
     evt.put(std::move(mwpcTdcVecs[i].get()), mwpcTdcLabels[i]);
+  }
+
+  // Matching v1751, v1740, and TDC fragments
+  // CAEN triggerTimeTag must be multiplied by 0.008 to get microseconds since the start of spill
+  // TDC tdcTimeStamp must be divided by 106.208 to get microseconds since the start of spill
+  // I am currently calling triggers within 200 microseconds a match
+
+  size_t v1751FragNumber = 1;
+  size_t numberOf1740Matches = 0;
+  size_t numberOfTDCMatches = 0;
+  std::cout<<"Lets do some fragment timestamp matching so that we can group triggers..."<<std::endl;
+
+  for (size_t i = 0; i < numberCaenFrags; ++i) {
+
+    numberOf1740Matches = 0;
+    numberOfTDCMatches = 0;
+    CAENFragment & caenFrag = data->caenFrags[i];
+
+    if (caenFrag.header.boardId == 8) {
+
+      std::cout<<"v1751 fragment number "<<v1751FragNumber<<" at t="<<caenFrag.header.triggerTimeTag*0.008<<"ns"<<std::endl;
+
+      for (size_t k = 0; k < numberCaenFrags; ++k) {
+
+        CAENFragment & secondCaenFrag = data->caenFrags[k];
+
+        if (secondCaenFrag.header.boardId == 7 && abs(secondCaenFrag.header.triggerTimeTag*0.008 - caenFrag.header.triggerTimeTag*0.008)<200) {
+
+          numberOf1740Matches++;
+
+        }
+
+      }
+
+      std::cout<<" has "<<numberOf1740Matches<<" matching v1740 fragments "<<std::endl;
+
+      for (int j = 0; j < numberTdcFrags; ++j) {
+
+        TDCFragment & tdcFrag = data->tdcFrags[j];
+
+        for (size_t l = 0; l < tdcFrag.tdcEvents.size(); ++l) {
+
+        if (abs(tdcFrag.tdcEvents[l].at(0).tdcEventHeader.tdcTimeStamp/106.208 - caenFrag.header.triggerTimeTag*0.008)<200) {
+
+          numberOfTDCMatches++;
+
+        }
+
+        }
+
+      }
+
+      std::cout<<" and "<<numberOfTDCMatches<<" matching TDC fragments "<<std::endl;
+
+    v1751FragNumber++;
+
+    }
+
   }
 
   return;  
