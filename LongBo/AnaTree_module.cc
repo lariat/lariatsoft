@@ -31,6 +31,10 @@
 #include "Utilities/DetectorProperties.h"
 #include "Utilities/AssociationUtil.h"
 #include "RawData/ExternalTrigger.h"
+#include "RawData/RawDigit.h"
+#include "RawData/raw.h"
+#include "MCCheater/BackTracker.h"
+#include "Simulation/SimChannel.h"
 
 // ROOT includes
 #include "TTree.h"
@@ -94,9 +98,14 @@ private:
   double hit_ph[kMaxHits];
   double hit_tstart[kMaxHits];
   double hit_tend[kMaxHits];
-  int hit_mult[kMaxHits];
-  double hit_goodness[kMaxHits];
   int    hit_trkid[kMaxHits];
+  int    hit_pk[kMaxHits];
+  int    hit_t[kMaxHits];
+  int    hit_ch[kMaxHits];
+  int    hit_fwhh[kMaxHits];
+  double hit_rms[kMaxHits];
+  double hit_nelec[kMaxHits];
+  double hit_energy[kMaxHits];
 
   std::string fTrigModuleLabel;
   std::string fHitsModuleLabel;
@@ -127,6 +136,16 @@ void bo::AnaTree::analyze(art::Event const & evt)
   art::ServiceHandle<geo::Geometry> geom;
   art::ServiceHandle<util::LArProperties> larprop;
   art::ServiceHandle<util::DetectorProperties> detprop;
+  art::ServiceHandle<cheat::BackTracker> bt;
+
+//  for (size_t i = 0; i<geom->Nplanes(); ++i){
+//    for (size_t j = 0; j<geom->Plane(i).Nwires(); ++j){
+//      double xyzStart[3];
+//      double xyzEnd[3];
+//      geom->WireEndPoints(0,0,i,j,xyzStart,xyzEnd);
+//      std::cout<<i<<" "<<j<<" "<<xyzStart[0]<<" "<<xyzStart[1]<<" "<<xyzStart[2]<<" "<<xyzEnd[0]<<" "<<xyzEnd[1]<<" "<<xyzEnd[2]<<std::endl;
+//    }
+//  }
   
   run = evt.run();
   subrun = evt.subRun();
@@ -166,6 +185,12 @@ void bo::AnaTree::analyze(art::Event const & evt)
   art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
   art::FindMany<recob::Track>       fmtk(hitListHandle, evt, fTrackModuleLabel);
 
+  std::vector<const sim::SimChannel*> fSimChannels;
+  try{
+    evt.getView("largeant", fSimChannels);
+  }catch (art::Exception const&e){
+  }
+
   //track information
   ntracks_reco=tracklist.size();
   double larStart[3];
@@ -198,14 +223,12 @@ void bo::AnaTree::analyze(art::Event const & evt)
       trky[i][j] = spts[j]->XYZ()[1];
       trkz[i][j] = spts[j]->XYZ()[2];
     }
-    for (int j = 0; j<3; ++j){
+    for (int j = 0; j<2; ++j){
       try{
 	if (j==0)
 	  trkpitch[i][j] = tracklist[i]->PitchInView(geo::kU);
 	else if (j==1)
 	  trkpitch[i][j] = tracklist[i]->PitchInView(geo::kV);
-	else if (j==2)
-	  trkpitch[i][j] = tracklist[i]->PitchInView(geo::kZ);
       }
       catch( cet::exception &e){
 	mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
@@ -226,10 +249,73 @@ void bo::AnaTree::analyze(art::Event const & evt)
     hit_ph[i]      = hitlist[i]->Charge(true);
     hit_tstart[i]  = hitlist[i]->StartTime();
     hit_tend[i]    = hitlist[i]->EndTime();
-    hit_mult[i]    = hitlist[i]->Multiplicity();
-    hit_goodness[i]= hitlist[i]->GoodnessOfFit();
     if (fmtk.at(i).size()!=0){
       hit_trkid[i] = fmtk.at(i)[0]->ID();
+    }
+    if (hit_plane[i]==1){//collection plane
+      int dataSize = hitlist[i]->RawDigit()->Samples();
+      short ped = hitlist[i]->RawDigit()->GetPedestal();
+      std::vector<short> rawadc(dataSize);
+      raw::Uncompress(hitlist[i]->RawDigit()->fADC,rawadc,hitlist[i]->RawDigit()->Compression());
+      int t0 = hit_peakT[i] - 3*(hit_peakT[i]-hit_tstart[i]);
+      if (t0<0) t0 = 0;
+      int t1 = hit_peakT[i] + 3*(hit_peakT[i]-hit_tstart[i]);
+      if (t1>=dataSize) t1 = dataSize-1;
+      hit_pk[i] = -1;
+      hit_t[i] = -1;
+      for (int j = t0; j<=t1; ++j){
+	if (rawadc[j]-ped>hit_pk[i]){
+	  hit_pk[i] = rawadc[j]-ped;
+	  hit_t[i] = j;
+	}
+      }
+      hit_ch[i] = 0;
+      hit_fwhh[i] = 0;
+      double mean_t = 0;
+      double mean_t2 = 0;
+      for (int j = t0; j<=t1; ++j){
+	if (rawadc[j]-ped>=0.5*hit_pk[i]){
+	  ++hit_fwhh[i];
+	}
+	if (rawadc[j]-ped>=0.1*hit_pk[i]){
+	  hit_ch[i] += rawadc[j]-ped;
+	  mean_t += j*(rawadc[j]-ped);
+	  mean_t2 += j*j*(rawadc[j]-ped);
+	}
+      }
+      mean_t/=hit_ch[i];
+      mean_t2/=hit_ch[i];
+      hit_rms[i] = sqrt(mean_t2-mean_t*mean_t);
+      if (!evt.isRealData()){
+//	std::vector<sim::IDE> ides;	
+//	bt->HitToSimIDEs(hitlist[i], ides);
+	hit_nelec[i] = 0;
+	hit_energy[i] = 0;
+//	for (size_t j = 0; j<ides.size(); ++j){
+//	  hit_nelec[i] += ides[j].numElectrons;
+//	  hit_energy[i] += ides[j].energy;
+//	}
+	const sim::SimChannel* chan = 0;
+	for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
+	  if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) chan = fSimChannels[sc];
+	}
+	if (chan){
+	  const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = chan->TDCIDEMap();
+	  for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
+	    // loop over the vector of IDE objects.
+
+	    const std::vector<sim::IDE> idevec = (*mapitr).second;
+
+	    for(size_t iv = 0; iv < idevec.size(); ++iv){ 
+
+	      hit_nelec[i] += idevec[iv].numElectrons;
+	      hit_energy[i] += idevec[iv].energy;
+	    }
+	  }
+	}
+      }
+      //std::cout<<hit_wire[i]<<" "<<hit_peakT[i]<<" "<<hit_ph[i]<<" "<<hit_tend[i]-hit_tstart[i]<<" "<<hit_t[i]<<" "<<hit_pk[i]<<" "<<hit_ch[i]<<" "<<hit_fwhh[i]<<" "<<hit_rms[i]<<" "<<mean_t<<" "<<mean_t2<<std::endl;
+
     }
   }
   fTree->Fill();
@@ -275,9 +361,14 @@ void bo::AnaTree::beginJob()
   fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/D");
   fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/D");
   fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/D");
-  fTree->Branch("hit_mult",hit_mult,"hit_mult[nhits]/I");
-  fTree->Branch("hit_goodness",hit_goodness,"hit_goodness[nhits]/D");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
+  fTree->Branch("hit_pk",hit_pk,"hit_pk[nhits]/I");
+  fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
+  fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
+  fTree->Branch("hit_fwhh",hit_fwhh,"hit_fwhh[nhits]/I");
+  fTree->Branch("hit_rms",hit_rms,"hit_rms[nhits]/D");
+  fTree->Branch("hit_nelec",hit_nelec,"hit_nelec[nhits]/D");
+  fTree->Branch("hit_energy",hit_energy,"hit_energy[nhits]/D");
 }
 
 //void bo::AnaTree::reconfigure(fhicl::ParameterSet const & p)
@@ -329,8 +420,13 @@ void bo::AnaTree::ResetVars(){
     hit_trkid[i] = -99999;
     hit_tstart[i] = -99999;
     hit_tend[i] = -99999;
-    hit_mult[i] = -99999;
-    hit_goodness[i] = -99999;
+    hit_pk[i] = -99999;
+    hit_t[i] = -99999;
+    hit_ch[i] = -99999;
+    hit_fwhh[i] = -99999;
+    hit_rms[i] = -99999;
+    hit_nelec[i] = -99999;
+    hit_energy[i] = -99999;
   }
   
 }
