@@ -1,7 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v01_00_07
-#parent	lariatsoft v0_00_01
+parent	lariatsoft v01_01_00
 defaultqual	e6
 
 # dependencies on external packages
@@ -9,7 +8,7 @@ product         version
 
 larsoft		v03_08_02
 LariatFilters   v01_02
-lariatfragments v01_01_02
+lariatfragments v01_02_00
 artdaq_core     v1_04_08
 LariatBeamFiles v01_00
 
