@@ -55,9 +55,9 @@ namespace geo{
 
    // method returns the entry in the sorted AuxDetGeo vector so that the 
    // Geometry in turn can return that object
-   size_t                  NearestAuxDet         (TVector3 const& point)   const;
-   uint32_t                NearestSensitiveAuxDet(TVector3 const& point)   const;
-   uint32_t                NSensitiveAuxDet(std::string const& auxDetName) const;
+   size_t                   NearestAuxDet         (TVector3 const& point)   const;
+   size_t                   NearestSensitiveAuxDet(TVector3 const& point)   const;
+   size_t                   NSensitiveAuxDet(std::string const& auxDetName) const;
 
   private:
     
@@ -87,10 +87,10 @@ namespace geo{
                                                                           ///< in world coordinates
     std::vector<std::vector<float>>                      fAuxDetHalfExt;  ///< half width, height, and length of the sorted
                                                                           ///< auxiliary detectors in world coordinates
-    std::vector<std::vector<uint32_t>>                   fAuxDetChannels; ///< number of channels in each auxiliary detector
-    std::vector<std::vector<std::vector<float>>>         fADChanCenters;  ///< centers of the channels in the sorted auxiliary 
+    std::vector<std::vector<uint32_t>>                   fAuxDetSensitive;///< number of sensitive volumes in each auxiliary detector
+    std::vector<std::vector<std::vector<float>>>         fADSensCenters;  ///< centers of the channels in the sorted auxiliary 
                                                                           ///< detector in world coordinates
-    std::vector<std::vector<std::vector<float>>>         fADChanHalfExt;  ///< half width, height, and length of the channels 
+    std::vector<std::vector<std::vector<float>>>         fADSensHalfExt;  ///< half width, height, and length of the channels 
                                                                           ///< in the sorted auxiliary detectors in world coordinates
     geo::GeoObjectSorterLArIAT                           fSorter;         ///< class to sort geo objects
   };
