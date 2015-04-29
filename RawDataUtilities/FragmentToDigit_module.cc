@@ -15,6 +15,11 @@
 // [x] Add channels 32 to 64 of CAEN V1740 board 8
 // [x] Add WUT
 // [x] Add MWPCs
+// [ ] Add trigger associations (Brian)
+// [ ] Improve the matching algorithm (Johnny)
+// [ ] Add CAEN V1740 channels for boards 1-7 and channels 1 
+//     to 32 of board 8
+// [ ] Put Pawel's OpDetPulse modifications back in (Pawel)
 // [ ] Add SpillTrailer fragments
 // [ ] Add helpful comments throughout code. This may never be
 //     checked off.
@@ -79,6 +84,22 @@ public:
   void beginJob() override;
   void reconfigure(fhicl::ParameterSet const & p) override;
 
+  void matchFragments(uint32_t & Ntriggers,
+                      std::vector<size_t> & v1751InTrigger,
+                      std::vector<size_t> & v1740InTrigger,
+                      std::vector<size_t> & TDCInTrigger,
+                      LariatFragment * data);
+  void make1751Digits(int i, LariatFragment * data,
+                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
+                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec);
+  void make1740Digits(int i, LariatFragment * data,
+                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board8Vec);
+  void makeTDCDigits(int i, LariatFragment * data,
+                     std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
+                     std::string mwpcTdcLabels[16]);
+  void makeWUTDigits(LariatFragment * data,
+                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & wutVec);
+
 private:
 
   std::string fRawFragmentLabel;     ///< label for module producing artdaq fragments
@@ -108,6 +129,11 @@ private:
   uint32_t runNumber;
   uint32_t spillNumber;
   uint32_t timeStamp;
+
+  uint32_t Ntriggers;
+  std::vector<size_t> v1751InTrigger;
+  std::vector<size_t> v1740InTrigger;
+  std::vector<size_t> TDCInTrigger;
 
 };
 
@@ -263,8 +289,6 @@ void FragmentToDigit::produce(art::Event & evt)
   spillNumber = spillTrailer.spillNumber;
   timeStamp = spillTrailer.timeStamp;
 
-  //art::EventNumber_t spillNumber = evt.event();
-
   mf::LogInfo("FragmentToDigit")
       << "evt.run(): " << evt.run()
       << "; evt.subRun(): " << evt.subRun()
@@ -276,74 +300,256 @@ void FragmentToDigit::produce(art::Event & evt)
       << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
       << "; timeStamp: " << timeStamp;
 
+  FragmentToDigit::matchFragments(Ntriggers, v1751InTrigger, v1740InTrigger, TDCInTrigger, data);
+  std::cout<<"Ntriggers is: "<<Ntriggers<<std::endl;
+  std::cout<<"The size of v1751InTrigger is: "<<v1751InTrigger.size()<<std::endl;
+  std::cout<<"The size of v1740InTrigger is: "<<v1740InTrigger.size()<<std::endl;
+  std::cout<<"The size of TDCInTrigger is: "<<TDCInTrigger.size()<<std::endl;
+
+  for (size_t i = 0; i < Ntriggers; ++i) {
+
+    std::cout<<"Trigger "<<i<<" has a V1751 Fragment with index "<<v1751InTrigger[i]
+                            <<" and a V1740 Fragment with index "<<v1740InTrigger[i]
+                            <<", and a TDC Fragment with index "<<TDCInTrigger[i]<<std::endl;
+
+    if(v1751InTrigger[i]){FragmentToDigit::make1751Digits(v1751InTrigger[i], data, caenV1751Board1Vec, caenV1751Board2Vec);}
+    if(v1740InTrigger[i]){FragmentToDigit::make1740Digits(v1740InTrigger[i], data, caenV1740Board8Vec);}
+    if(TDCInTrigger[i]){FragmentToDigit::makeTDCDigits(TDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);}
+
+  }
+
+  FragmentToDigit::makeWUTDigits(data, wutVec);
+
+  evt.put(std::move(caenV1740Board8Vec), fCaenV1740Board8Label);
+  evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
+  evt.put(std::move(caenV1751Board2Vec), fCaenV1751Board2Label);
+
+  evt.put(std::move(wutVec), fWutLabel);
+
+  for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
+    evt.put(std::move(mwpcTdcVecs[i].get()), mwpcTdcLabels[i]);
+  }
+
+  return;  
+}
+
+// Matching v1751, v1740, and TDC fragments
+// CAEN triggerTimeTag must be multiplied by 0.008 to get microseconds since the start of spill
+// TDC tdcTimeStamp must be divided by 106.208 to get microseconds since the start of spill
+// I am currently calling triggers within 200 microseconds a match
+void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
+                                     std::vector<size_t> & v1751InTrigger,
+                                     std::vector<size_t> & v1740InTrigger,
+                                     std::vector<size_t> & TDCInTrigger,
+                                     LariatFragment * data)
+{
+
+  size_t v1751FragNumber = 1;
+  size_t numberOf1740Matches = 0;
+  size_t numberOfTDCMatches = 0;
+
+  std::cout<<"Lets do some fragment timestamp matching so that we can group triggers..."<<std::endl;
+
   const size_t numberCaenFrags = data->caenFrags.size();
   mf::LogInfo("FragmentToDigit")
       << "Found " << numberCaenFrags << " CAEN fragments";
 
+  const int numberTdcFrags = data->tdcFrags.size();
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberTdcFrags << " TDC fragments";
+
   if (numberCaenFrags > 0) {
-    mf::LogInfo("FragmentToDigit") << "Looking at CAEN fragments...";
+    mf::LogInfo("FragmentToDigit") << "Begin trigger matching against V1751 CAEN fragments...";
   }
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
+
+    numberOf1740Matches = 0;
+    numberOfTDCMatches = 0;
     CAENFragment & caenFrag = data->caenFrags[i];
 
-    uint32_t boardId = caenFrag.header.boardId;
-    uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
+    if (caenFrag.header.boardId == 8) {
 
-    //caenFrag.print();
-    //LOG_DEBUG("FragmentToDigit")
-    //    << "CAEN event counter: "
-    //    << caenFrag.header.eventCounter;
+      v1751InTrigger.push_back(i);
+      std::cout<<"v1751 fragment number "<<v1751FragNumber<<" at t="<<caenFrag.header.triggerTimeTag*0.008<<"ns"<<std::endl;
 
-    if (boardId == 7) {
-      for (size_t j = 31; j < V1740_N_CHANNELS; ++j) {
-        std::vector<short> caenFragWaveForm
-            (caenFrag.waveForms[j].data.begin(),
-             caenFrag.waveForms[j].data.end());
-        caenV1740Board8Vec->push_back(
-            raw::AuxDetDigit(
-                static_cast <unsigned short> (j),
-                caenFragWaveForm,
-                fCaenV1740Board8Label,
-                static_cast <unsigned long long> (triggerTimeTag)
-                )
-            );
+      for (size_t k = 0; k < numberCaenFrags; ++k) {
+
+        CAENFragment & secondCaenFrag = data->caenFrags[k];
+
+        if (secondCaenFrag.header.boardId == 7 && abs(secondCaenFrag.header.triggerTimeTag*0.008 - caenFrag.header.triggerTimeTag*0.008)<200) {
+
+          numberOf1740Matches++;
+          if(numberOf1740Matches==1){v1740InTrigger.push_back(k);}
+
+        }
+
       }
-    }
 
-    else if (boardId == 8) {
-      for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
-        std::vector<short> caenFragWaveForm
-            (caenFrag.waveForms[j].data.begin(),
-             caenFrag.waveForms[j].data.end());
-        caenV1751Board1Vec->push_back(
-            raw::AuxDetDigit(
-                static_cast <unsigned short> (j),
-                caenFragWaveForm,
-                fCaenV1751Board1Label,
-                static_cast <unsigned long long> (triggerTimeTag)
-                )
-            );
-      }
-    }
+      if(numberOf1740Matches==0){v1740InTrigger.push_back(0);}
+      std::cout<<" has "<<numberOf1740Matches<<" matching v1740 fragments "<<std::endl;
 
-    else if (boardId == 9) {
-      for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
-        std::vector<short> caenFragWaveForm
-            (caenFrag.waveForms[j].data.begin(),
-             caenFrag.waveForms[j].data.end());
-        caenV1751Board2Vec->push_back(
-            raw::AuxDetDigit(
-                static_cast <unsigned short> (j),
-                caenFragWaveForm,
-                fCaenV1751Board2Label,
-                static_cast <unsigned long long> (triggerTimeTag)
-                )
-            );
+
+      // There is always one TDC fragment, so I am no longer looping over TDC fragments.
+      // Different TDC triggers can be found by looping over TDC events
+
+      TDCFragment & tdcFrag = data->tdcFrags[0];
+
+      for (size_t l = 0; l < tdcFrag.tdcEvents.size(); ++l) {
+
+        if (abs(tdcFrag.tdcEvents[l].at(0).tdcEventHeader.tdcTimeStamp/106.208 - caenFrag.header.triggerTimeTag*0.008)<200) {
+
+          numberOfTDCMatches++;
+          if(numberOfTDCMatches==1){TDCInTrigger.push_back(l);}
+
+        }
+
       }
+
+      if(numberOfTDCMatches==0){TDCInTrigger.push_back(0);}
+      std::cout<<" and "<<numberOfTDCMatches<<" matching TDC fragments "<<std::endl;
+
+      v1751FragNumber++;
+
     }
 
   }
+
+  Ntriggers=v1751FragNumber-1;
+
+}
+
+void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
+                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
+                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec)
+{
+
+  CAENFragment & caenFrag = data->caenFrags[i];
+
+  uint32_t boardId = caenFrag.header.boardId;
+  uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
+
+  if (boardId == 8) {
+    for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
+      std::vector<short> caenFragWaveForm
+          (caenFrag.waveForms[j].data.begin(),
+           caenFrag.waveForms[j].data.end());
+      caenV1751Board1Vec->push_back(
+          raw::AuxDetDigit(
+              static_cast <unsigned short> (j),
+              caenFragWaveForm,
+              fCaenV1751Board1Label,
+              static_cast <unsigned long long> (triggerTimeTag)
+              )
+          );
+    }
+
+  }
+
+  else if (boardId == 9) {
+    for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
+      std::vector<short> caenFragWaveForm
+          (caenFrag.waveForms[j].data.begin(),
+           caenFrag.waveForms[j].data.end());
+      caenV1751Board2Vec->push_back(
+          raw::AuxDetDigit(
+              static_cast <unsigned short> (j),
+              caenFragWaveForm,
+              fCaenV1751Board2Label,
+              static_cast <unsigned long long> (triggerTimeTag)
+              )
+          );
+    }
+
+  }
+
+}
+
+void FragmentToDigit::make1740Digits(int i, LariatFragment * data,
+                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board8Vec)
+{
+
+  CAENFragment & caenFrag = data->caenFrags[i];
+
+  uint32_t boardId = caenFrag.header.boardId;
+  uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
+
+  if (boardId == 7) {
+    for (size_t j = 31; j < V1740_N_CHANNELS; ++j) {
+      std::vector<short> caenFragWaveForm
+          (caenFrag.waveForms[j].data.begin(),
+           caenFrag.waveForms[j].data.end());
+      caenV1740Board8Vec->push_back(
+          raw::AuxDetDigit(
+              static_cast <unsigned short> (j),
+              caenFragWaveForm,
+              fCaenV1740Board8Label,
+              static_cast <unsigned long long> (triggerTimeTag)
+              )
+          );
+    }
+
+  }
+
+}
+
+void FragmentToDigit::makeTDCDigits(int i, LariatFragment * data,
+                                    std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
+                                    std::string mwpcTdcLabels[16])
+{
+
+  TDCFragment & tdcFrag = data->tdcFrags[0];
+
+  std::vector< std::vector<TDCFragment::TdcEventData> > &
+      tdcEvents = tdcFrag.tdcEvents;
+
+  if (tdcFrag.controllerHeader.nTDCs != tdcEvents[i].size()) {
+    mf::LogError("FragmentToDigit")
+        << "*** Fatal nTDCs mismatch: " << tdcEvents[i].size()
+        << " != " << tdcFrag.controllerHeader.nTDCs;
+  }
+
+  for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
+       ++tdc_index) {
+    TDCFragment::TdcEventData tdcEventData = tdcEvents[i].at(tdc_index);
+
+    std::vector< std::vector<short> > hitsInChannel;
+
+    hitsInChannel.resize(TDCFragment::N_CHANNELS);
+    for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
+         ++channel) {
+      hitsInChannel[channel].reserve(TDCFragment::MAX_HITS);
+    }
+
+    uint32_t tdcTimeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp;
+
+    for (size_t hit_index = 0; hit_index < tdcEventData.tdcHits.size();
+         ++hit_index) {
+      TDCFragment::TdcHit & hit = tdcEventData.tdcHits[hit_index];
+      hitsInChannel[size_t (hit.channel)].push_back(short (hit.timeBin));
+    }
+
+    for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
+         ++channel) {
+
+      mwpcTdcVecs[tdc_index].get()->push_back(
+          raw::AuxDetDigit(
+              static_cast <unsigned short> (channel),
+              hitsInChannel[channel],
+              mwpcTdcLabels[tdc_index],
+              static_cast <unsigned long long> (tdcTimeStamp)
+              )
+          );
+
+    }
+
+  }
+
+}
+
+void FragmentToDigit::makeWUTDigits(LariatFragment * data,
+                                    std::unique_ptr< std::vector<raw::AuxDetDigit> > & wutVec)
+{
 
   const int numberWutFrags = data->wutFrags.size();
   mf::LogInfo("FragmentToDigit")
@@ -355,7 +561,6 @@ void FragmentToDigit::produce(art::Event & evt)
 
   for (int i = 0; i < numberWutFrags; ++i) {
     WUTFragment & wutFrag = data->wutFrags[i];
-    //wutFrag.print();
     uint32_t numberHits = wutFrag.header.nHits;
     std::vector<WUTFragment::WutHit> & hits = wutFrag.hits;
 
@@ -387,146 +592,9 @@ void FragmentToDigit::produce(art::Event & evt)
           );
 
     }
-  }
-
-  const int numberTdcFrags = data->tdcFrags.size();
-  mf::LogInfo("FragmentToDigit")
-      << "Found " << numberTdcFrags << " TDC fragments";
-
-  if (numberTdcFrags > 0) {
-    mf::LogInfo("FragmentToDigit") << "Looking at TDC fragments...";
-  }
-
-  for (int i = 0; i < numberTdcFrags; ++i) {
-
-    TDCFragment & tdcFrag = data->tdcFrags[i];
-
-    std::vector< std::vector<TDCFragment::TdcEventData> > &
-        tdcEvents = tdcFrag.tdcEvents;
-
-    //LOG_DEBUG("FragmentToDigit")
-    //    << "tdcEvents.size(): " << tdcEvents.size();
-    //tdcFrag.print();
-
-    for (size_t j = 0; j < tdcEvents.size(); ++j) {
-
-      if (tdcFrag.controllerHeader.nTDCs != tdcEvents[j].size()) {
-        mf::LogError("FragmentToDigit")
-            << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
-            << " != " << tdcFrag.controllerHeader.nTDCs;
-      }
-
-      for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
-           ++tdc_index) {
-        TDCFragment::TdcEventData tdcEventData = tdcEvents[j].at(tdc_index);
-
-        std::vector< std::vector<short> > hitsInChannel;
-
-        hitsInChannel.resize(TDCFragment::N_CHANNELS);
-        for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
-             ++channel) {
-          hitsInChannel[channel].reserve(TDCFragment::MAX_HITS);
-        }
-
-        //uint32_t triggerCounter = tdcEventData.tdcEventHeader.triggerCounter;
-        //uint16_t controllerTimeStamp =
-        //    tdcEventData.tdcEventHeader.controllerTimeStamp;
-
-        uint32_t tdcTimeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp;
-
-        for (size_t hit_index = 0; hit_index < tdcEventData.tdcHits.size();
-             ++hit_index) {
-          TDCFragment::TdcHit & hit = tdcEventData.tdcHits[hit_index];
-          hitsInChannel[size_t (hit.channel)].push_back(short (hit.timeBin));
-        }
-
-        for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
-             ++channel) {
-
-          mwpcTdcVecs[tdc_index].get()->push_back(
-              raw::AuxDetDigit(
-                  static_cast <unsigned short> (channel),
-                  hitsInChannel[channel],
-                  mwpcTdcLabels[tdc_index],
-                  static_cast <unsigned long long> (tdcTimeStamp)
-                  )
-              );
-
-        }
-
-      }
-    }
-  }
-
-  evt.put(std::move(caenV1740Board8Vec), fCaenV1740Board8Label);
-  evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
-  evt.put(std::move(caenV1751Board2Vec), fCaenV1751Board2Label);
-
-  evt.put(std::move(wutVec), fWutLabel);
-
-  for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
-    evt.put(std::move(mwpcTdcVecs[i].get()), mwpcTdcLabels[i]);
-  }
-
-  // Matching v1751, v1740, and TDC fragments
-  // CAEN triggerTimeTag must be multiplied by 0.008 to get microseconds since the start of spill
-  // TDC tdcTimeStamp must be divided by 106.208 to get microseconds since the start of spill
-  // I am currently calling triggers within 200 microseconds a match
-
-  size_t v1751FragNumber = 1;
-  size_t numberOf1740Matches = 0;
-  size_t numberOfTDCMatches = 0;
-  std::cout<<"Lets do some fragment timestamp matching so that we can group triggers..."<<std::endl;
-
-  for (size_t i = 0; i < numberCaenFrags; ++i) {
-
-    numberOf1740Matches = 0;
-    numberOfTDCMatches = 0;
-    CAENFragment & caenFrag = data->caenFrags[i];
-
-    if (caenFrag.header.boardId == 8) {
-
-      std::cout<<"v1751 fragment number "<<v1751FragNumber<<" at t="<<caenFrag.header.triggerTimeTag*0.008<<"ns"<<std::endl;
-
-      for (size_t k = 0; k < numberCaenFrags; ++k) {
-
-        CAENFragment & secondCaenFrag = data->caenFrags[k];
-
-        if (secondCaenFrag.header.boardId == 7 && abs(secondCaenFrag.header.triggerTimeTag*0.008 - caenFrag.header.triggerTimeTag*0.008)<200) {
-
-          numberOf1740Matches++;
-
-        }
-
-      }
-
-      std::cout<<" has "<<numberOf1740Matches<<" matching v1740 fragments "<<std::endl;
-
-      for (int j = 0; j < numberTdcFrags; ++j) {
-
-        TDCFragment & tdcFrag = data->tdcFrags[j];
-
-        for (size_t l = 0; l < tdcFrag.tdcEvents.size(); ++l) {
-
-        if (abs(tdcFrag.tdcEvents[l].at(0).tdcEventHeader.tdcTimeStamp/106.208 - caenFrag.header.triggerTimeTag*0.008)<200) {
-
-          numberOfTDCMatches++;
-
-        }
-
-        }
-
-      }
-
-      std::cout<<" and "<<numberOfTDCMatches<<" matching TDC fragments "<<std::endl;
-
-    v1751FragNumber++;
-
-    }
 
   }
 
-  return;  
 }
 
 DEFINE_ART_MODULE(FragmentToDigit)
