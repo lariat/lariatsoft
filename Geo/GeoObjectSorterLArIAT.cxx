@@ -8,7 +8,7 @@
 
 #include "Geo/GeoObjectSorterLArIAT.h"
 #include "Geometry/AuxDetGeo.h"
-#include "Geometry/AuxDetSensitiveGeo.h"
+//#include "Geometry/AuxDetSensitiveGeo.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
@@ -41,26 +41,26 @@ namespace geo{
 
   //----------------------------------------------------------------------------
   // Define sort order for cryostats in standard configuration
-  static bool sortAuxDetSensitiveLArIAT(const AuxDetSensitiveGeo* ad1, const AuxDetSensitiveGeo* ad2)
-  {
+  // static bool sortAuxDetSensitiveLArIAT(const AuxDetSensitiveGeo* ad1, const AuxDetSensitiveGeo* ad2)
+  // {
 
-    // sort using the center of the detector - primary ordering by z,
-    // then y, and x
-    double c1[3] = {0.};
-    double c2[3] = {0.};
-    ad1->GetCenter(c1);
-    ad2->GetCenter(c2);
+  //   // sort using the center of the detector - primary ordering by z,
+  //   // then y, and x
+  //   double c1[3] = {0.};
+  //   double c2[3] = {0.};
+  //   ad1->GetCenter(c1);
+  //   ad2->GetCenter(c2);
 
-    if(c1[2] != c2[2]){
-      return c1[2] < c2[2];
-    }
-    else if(c1[1] != c2[2]){
-      return c1[1] < c2[1];
-    }
+  //   if(c1[2] != c2[2]){
+  //     return c1[2] < c2[2];
+  //   }
+  //   else if(c1[1] != c2[2]){
+  //     return c1[1] < c2[1];
+  //   }
     
-    return c1[0] < c2[0];
+  //   return c1[0] < c2[0];
    
-  }
+  // }
 
   //----------------------------------------------------------------------------
   // Define sort order for cryostats in standard configuration
@@ -135,12 +135,12 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  void GeoObjectSorterLArIAT::SortAuxDetSensitive(std::vector<geo::AuxDetSensitiveGeo*> & adsgeo) const
-  {
-    std::sort(adsgeo.begin(), adsgeo.end(), sortAuxDetSensitiveLArIAT);
+  // void GeoObjectSorterLArIAT::SortAuxDetSensitive(std::vector<geo::AuxDetSensitiveGeo*> & adsgeo) const
+  // {
+  //   std::sort(adsgeo.begin(), adsgeo.end(), sortAuxDetSensitiveLArIAT);
     
-    return;
-  }
+  //   return;
+  // }
 
   //----------------------------------------------------------------------------
   void GeoObjectSorterLArIAT::SortCryostats(std::vector<geo::CryostatGeo*> & cgeo) const

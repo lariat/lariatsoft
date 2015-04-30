@@ -45,6 +45,8 @@
 #include "LArIATFragments/CAENFragment.h"
 #include "LArIATFragments/TDCFragment.h"
 
+#include "SimpleTypesAndConstants/RawTypes.h"
+#include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
 #include "RawData/OpDetPulse.h"
 #include "TTree.h"
@@ -89,6 +91,8 @@ public:
                       std::vector<size_t> & v1740InTrigger,
                       std::vector<size_t> & TDCInTrigger,
                       LariatFragment * data);
+  void makeTPCDigits (LariatFragment *data,
+		      std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits);
   void make1751Digits(int i, LariatFragment * data,
                       std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
                       std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec);
@@ -145,6 +149,9 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 //  : EDProducer(p)
 {
   this->reconfigure(p);
+  
+  produces< std::vector<raw::RawDigit> >();
+
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board8Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board1Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board2Label);
@@ -214,6 +221,8 @@ void FragmentToDigit::produce(art::Event & evt)
 
   art::Handle< std::vector<artdaq::Fragment> > fragments;
   evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
+
+  std::unique_ptr< std::vector<raw::RawDigit> > tpcDigitVec;
 
   std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board8Vec
       (new std::vector<raw::AuxDetDigit>);
@@ -312,6 +321,8 @@ void FragmentToDigit::produce(art::Event & evt)
       << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
       << "; timeStamp: " << timeStamp;
 
+  this->makeTPCDigits(data, tpcDigitVec);
+
   FragmentToDigit::matchFragments(Ntriggers, v1751InTrigger, v1740InTrigger, TDCInTrigger, data);
   std::cout<<"Ntriggers is: "<<Ntriggers<<std::endl;
   std::cout<<"The size of v1751InTrigger is: "<<v1751InTrigger.size()<<std::endl;
@@ -332,6 +343,7 @@ void FragmentToDigit::produce(art::Event & evt)
 
   FragmentToDigit::makeWUTDigits(data, wutVec);
 
+  evt.put(std::move(tpcDigitVec));
   evt.put(std::move(caenV1740Board8Vec), fCaenV1740Board8Label);
   evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
   evt.put(std::move(caenV1751Board2Vec), fCaenV1751Board2Label);
@@ -429,6 +441,40 @@ void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
 
   Ntriggers=v1751FragNumber-1;
 
+}
+
+void FragmentToDigit::makeTPCDigits(LariatFragment *data,
+				    std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits)
+{
+
+  std::vector<CAENFragment> const& caenFrags = data->caenFrags;
+
+  raw::ChannelID_t tpcChan = 0;
+  size_t maxChan = 64;
+
+  for(auto const& frag : caenFrags){
+    
+    // the TPC mapping has the readout going to boards 0-7 of
+    // the CAEN 1751, channels 0-63 of the boards 0-6, channels 0-31 of board 7
+    if(frag.header.boardId > 7) continue;
+    else{
+      if(frag.header.boardId < 7) maxChan = 64;
+      else maxChan = 32;
+      for(size_t chan = 0; chan < maxChan; ++chan){ 
+	if(chan > frag.waveForms.size() )
+	  throw cet::exception("FragmentToDigit") << "attempting to access channel "
+						  << chan << " from 1751 fragment with only "
+						  << frag.waveForms.size() << " channels";
+
+	tpcChan = (frag.header.boardId * 64) + chan;
+	std::vector<short> adc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
+	tpcDigits->push_back(raw::RawDigit(tpcChan, adc.size(), adc));
+      } // end loop to fill channels from this board
+    }// end if it is a TPC board      
+  }// end loop over caen fragments
+
+  return;
+  
 }
 
 void FragmentToDigit::make1751Digits(int i, LariatFragment * data,

@@ -12,9 +12,8 @@
 
 // LArSoft Includes
 #include "SimpleTypesAndConstants/geo_types.h"
-#include "Geometry/Geometry.h"
 #include "Geometry/AuxDetGeo.h"
-#include "Geometry/AuxDetSensitiveGeo.h"
+//#include "Geometry/AuxDetSensitiveGeo.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
@@ -162,27 +161,27 @@ namespace geo{
   std::vector<geo::WireID> ChannelMapLArIATAlg::ChannelToWire(uint32_t channel)  const
   {
     std::vector< geo::WireID > AllSegments; 
-    unsigned int wire  = 0;
+    //unsigned int wire  = 0;
     
     // first check if this channel ID is legal
     if(channel > fTopChannel)
       throw cet::exception("Geometry") << "ILLEGAL CHANNEL ID for channel " << channel << "\n";
     
     // then go find which plane, tpc and cryostat it is in from the information we stored earlier
-    geo::Geometry::plane_iterator iPlane;
-    geo::PlaneID id;
-    while( iPlane ){
+    // geo::Geometry::plane_iterator iPlane;
+    // geo::PlaneID id;
+    // while( iPlane ){
       
-      id = *iPlane;
-      if(channel < fFirstChannelInNextPlane[id.Cryostat][id.TPC][id.Plane]){
-	wire  = channel - fFirstChannelInThisPlane[id.Cryostat][id.TPC][id.Plane];
-	break;
-      }	    
-    }// end cryostat loop
+    //   id = *iPlane;
+    //   if(channel < fFirstChannelInNextPlane[id.Cryostat][id.TPC][id.Plane]){
+    // 	wire  = channel - fFirstChannelInThisPlane[id.Cryostat][id.TPC][id.Plane];
+    // 	break;
+    //   }	    
+    // }// end cryostat loop
 
-    geo::WireID CodeWire(id.Cryostat, id.TPC, id.Plane, wire);
+    // geo::WireID CodeWire(id.Cryostat, id.TPC, id.Plane, wire);
     
-    AllSegments.push_back(CodeWire);
+    // AllSegments.push_back(CodeWire);
 
     return AllSegments;
   }
