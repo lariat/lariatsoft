@@ -46,7 +46,7 @@
 #include "LArIATFragments/TDCFragment.h"
 
 #include "RawData/AuxDetDigit.h"
-
+#include "RawData/OpDetPulse.h"
 #include "TTree.h"
 
 #include <memory>
@@ -107,6 +107,8 @@ private:
   std::string fCaenV1740Board8Label;
   std::string fCaenV1751Board1Label;
   std::string fCaenV1751Board2Label;
+  std::string fCaenOpLabel1;
+  std::string fCaenOpLabel2;
   std::string fWutLabel;
   std::string fMwpcTdc01Label;
   std::string fMwpcTdc02Label;
@@ -135,6 +137,7 @@ private:
   std::vector<size_t> v1740InTrigger;
   std::vector<size_t> TDCInTrigger;
 
+  std::vector<std::vector<int>> fOpDetChID;
 };
 
 //------------------------------------------------------------------------------
@@ -162,6 +165,8 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
   produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc14Label);
   produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc15Label);
   produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc16Label);
+  produces< std::vector<raw::OpDetPulse> >(fCaenOpLabel1);
+  produces< std::vector<raw::OpDetPulse> >(fCaenOpLabel2);
 }
 
 //------------------------------------------------------------------------------
@@ -192,6 +197,9 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   fMwpcTdc14Label = p.get< std::string >("MwpcTdc14Label", "MwpcTdc14");
   fMwpcTdc15Label = p.get< std::string >("MwpcTdc15Label", "MwpcTdc15");
   fMwpcTdc16Label = p.get< std::string >("MwpcTdc16Label", "MwpcTdc16");
+  fOpDetChID = p.get< std::vector<std::vector<int>> >("pmt_channel_ids");
+  fCaenOpLabel1 = p.get< std::string >("OpDetBoardLabel1", "Caenv1751Optical1");
+  fCaenOpLabel2 = p.get< std::string >("OpDetBoardLabel2", "Caenv1751Optical2");
 }
 
 //------------------------------------------------------------------------------
@@ -249,6 +257,10 @@ void FragmentToDigit::produce(art::Event & evt)
       (new std::vector<raw::AuxDetDigit>);
   std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc16Vec
       (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr<std::vector< raw::OpDetPulse > >  OpDetVec1
+      (new std::vector<raw::OpDetPulse>);
+  std::unique_ptr<std::vector< raw::OpDetPulse > >  OpDetVec2
+      (new std::vector<raw::OpDetPulse>);
 
   // the following line is way too long
   std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > mwpcTdcVecs = {
@@ -592,7 +604,6 @@ void FragmentToDigit::makeWUTDigits(LariatFragment * data,
           );
 
     }
-
   }
 
 }

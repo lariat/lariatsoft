@@ -1,4 +1,6 @@
 
+include_directories( $ENV{NUTOOLS_INC} )
+
 art_make( BASENAME_ONLY
           MODULE_LIBRARIES Simulation
                         SummaryData
@@ -20,7 +22,7 @@ art_make( BASENAME_ONLY
                         ${CETLIB}
                         ${CLHEP}
                         ${ROOT_BASIC_LIB_LIST}
-			 ${ROOT_EVE_LIB_LIST}
+			${ROOT_EVE_LIB_LIST}
         )
 
 

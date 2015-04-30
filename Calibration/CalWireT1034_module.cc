@@ -39,6 +39,8 @@ extern "C" {
 #include "TFile.h"
 #include "TH2D.h"
 #include "TF1.h"
+#include "RecoBaseArt/WireCreator.h"
+#include "Utilities/AssociationUtil.h"
 
 ///creation of calibrated signals on wires
 namespace caldata {
@@ -84,8 +86,12 @@ namespace caldata {
   {
     fSpillName="";
     this->reconfigure(pset);
-    if(fSpillName.size()<1) produces< std::vector<recob::Wire> >();
-    else produces< std::vector<recob::Wire> >(fSpillName);
+    if(fSpillName.size()<1) {produces< std::vector<recob::Wire> >();
+     produces<art::Assns<raw::RawDigit, recob::Wire>>();
+    }
+    else { produces< std::vector<recob::Wire> >(fSpillName);
+          produces<art::Assns<raw::RawDigit, recob::Wire>>(fSpillName);
+    }
   }
 
   
@@ -150,7 +156,10 @@ namespace caldata {
     art::ServiceHandle<util::SignalShapingServiceT1034> sss;
     // make a collection of Wires
     std::unique_ptr<std::vector<recob::Wire> > wirecol(new std::vector<recob::Wire>);
-
+        // ... and an association set
+    std::unique_ptr<art::Assns<raw::RawDigit,recob::Wire> > WireDigitAssn
+      (new art::Assns<raw::RawDigit,recob::Wire>);
+ 
     
 
     // Read in the digit List object(s). 
@@ -210,7 +219,9 @@ namespace caldata {
         holder.resize(transformSize, 0.);
 
         // uncompress the data
-        raw::Uncompress(digitVec->fADC, rawadc, digitVec->Compression());
+       // raw::Uncompress(digitVec->fADC, rawadc, digitVec->Compression());
+        raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
+
 
         // loop over all adc values and subtract the pedestal
         float pdstl = digitVec->GetPedestal();
@@ -234,14 +245,30 @@ namespace caldata {
       // adaptive baseline subtraction
       if(fBaseSampleBins) SubtractBaseline(holder, fBaseSampleBins);
       // Make a single ROI that spans the entire data size
-      wirecol->emplace_back(holder,digitVec);
+     // wirecol->emplace_back(holder,digitVec);
+      wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
+
+     // add an association between the last object in wirecol
+     // (that we just inserted) and digitVec
+      if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
+         throw art::Exception(art::errors::InsertFailure)
+            << "Can't associate wire #" << (wirecol->size() - 1)
+             << " with raw digit #" << digitVec.key();
+          } // if failed to add association
+
+      
+      
     }
 
     if(wirecol->size() == 0)
       mf::LogWarning("CalWireT1034") << "No wires made for this event.";
     if(fSpillName.size()>0)
-      evt.put(std::move(wirecol), fSpillName);
-    else evt.put(std::move(wirecol));
+      { evt.put(std::move(wirecol), fSpillName);
+        evt.put(std::move(WireDigitAssn), fSpillName);
+      }
+    
+    else { evt.put(std::move(wirecol));
+           evt.put(std::move(WireDigitAssn), fSpillName); }
     delete chanFilt;
     return;
 

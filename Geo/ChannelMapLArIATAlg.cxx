@@ -6,15 +6,22 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "Geo/ChannelMapLArIATAlg.h"
+// ART Includes
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "messagefacility/MessageLogger/MessageLogger.h" 
+
+// LArSoft Includes
+#include "SimpleTypesAndConstants/geo_types.h"
+#include "Geometry/Geometry.h"
 #include "Geometry/AuxDetGeo.h"
+#include "Geometry/AuxDetSensitiveGeo.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
 #include "Geometry/WireGeo.h"
 
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "messagefacility/MessageLogger/MessageLogger.h" 
+// LArIATSoft
+#include "Geo/ChannelMapLArIATAlg.h"
 
 namespace geo{
 
@@ -155,9 +162,6 @@ namespace geo{
   std::vector<geo::WireID> ChannelMapLArIATAlg::ChannelToWire(uint32_t channel)  const
   {
     std::vector< geo::WireID > AllSegments; 
-    unsigned int cstat = 0;
-    unsigned int tpc   = 0;
-    unsigned int plane = 0;
     unsigned int wire  = 0;
     
     // first check if this channel ID is legal
@@ -165,26 +169,18 @@ namespace geo{
       throw cet::exception("Geometry") << "ILLEGAL CHANNEL ID for channel " << channel << "\n";
     
     // then go find which plane, tpc and cryostat it is in from the information we stored earlier
-    bool foundWid(false);
-    for(unsigned int csloop = 0; csloop != fNcryostat; ++csloop){
-      for(unsigned int tpcloop = 0; tpcloop != fNTPC[csloop]; ++tpcloop){
-	for(unsigned int planeloop = 0; planeloop != fFirstChannelInNextPlane[csloop][tpcloop].size(); ++planeloop){
-	  if(channel < fFirstChannelInNextPlane[csloop][tpcloop][planeloop]){
-	    cstat = csloop;
-	    tpc   = tpcloop;
-	    plane = planeloop;
-	    wire  = channel - fFirstChannelInThisPlane[cstat][tpcloop][planeloop];
-	    foundWid = true;
-	    break;
-	  }	    
-	  if(foundWid) break;
-	}// end plane loop
-	if(foundWid) break;
-      }// end tpc loop
-      if(foundWid) break;
+    geo::Geometry::plane_iterator iPlane;
+    geo::PlaneID id;
+    while( iPlane ){
+      
+      id = *iPlane;
+      if(channel < fFirstChannelInNextPlane[id.Cryostat][id.TPC][id.Plane]){
+	wire  = channel - fFirstChannelInThisPlane[id.Cryostat][id.TPC][id.Plane];
+	break;
+      }	    
     }// end cryostat loop
 
-    geo::WireID CodeWire(cstat, tpc, plane, wire);
+    geo::WireID CodeWire(id.Cryostat, id.TPC, id.Plane, wire);
     
     AllSegments.push_back(CodeWire);
 

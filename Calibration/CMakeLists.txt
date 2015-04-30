@@ -4,6 +4,7 @@ simple_plugin(CalWireT1034 "module"
                         Filters
 			RawData
 	                RecoBase
+                        RecoBaseArt
 		        SignalShapingServiceT1034_service
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
