@@ -17,7 +17,7 @@
 // [x] Add MWPCs
 // [ ] Add trigger associations (Brian)
 // [ ] Improve the matching algorithm (Johnny)
-// [ ] Add CAEN V1740 channels for boards 1-7 and channels 1 
+// [x] Add CAEN V1740 channels for boards 1-7 and channels 1 
 //     to 32 of board 8
 // [x] Put Pawel's OpDetPulse modifications back in (Pawel)
 // [ ] Add SpillTrailer fragments
@@ -486,6 +486,7 @@ void FragmentToDigit::makeTPCDigits(LariatFragment *data,
 	tpcChan = (frag.header.boardId * 64) + chan;
 	std::vector<short> const adc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
 	raw::RawDigit rd(tpcChan, adc.size(), adc);
+	rd.SetPedestal(2048);
 	tpcDigits->push_back(rd);
       } // end loop to fill channels from this board
     }// end if it is a TPC board      

@@ -12,6 +12,7 @@
 #include <set>
 #include <iostream>
 
+#include "SimpleTypesAndConstants/geo_types.h"
 #include "Geometry/ChannelMapAlg.h"
 #include "Geo/GeoObjectSorterLArIAT.h"
 #include "fhiclcpp/ParameterSet.h"

@@ -6,6 +6,8 @@ BEGIN_PROLOG
 
 lariat_colordrawingopt:                       @local::standard_colordrawingopt
 lariat_rawdrawingopt:                         @local::standard_rawdrawingopt
+lariat_rawdrawingopt.RawDataLabel:            FragmentToDigit
+lariat_rawdrawingopt.TotalTicks:              1536
 lariat_recodrawingopt:                        @local::standard_recodrawingopt
 lariat_analysisdrawingopt:                    @local::standard_analysisdrawingopt
 #{
@@ -47,7 +49,7 @@ lariat_disp:
  LArG4Parameters:                             @local::lariat_largeantparameters     
  LArVoxelCalculator:                          @local::lariat_larvoxelcalculator     
  InfoTransfer:		                      @local::lariat_infotransfer    
- TimeService:                  		       @local::lariat_timeservice
+ TimeService:                  		      @local::lariat_timeservice
 }                                                                                  
                                                                                    
                                                                                    
