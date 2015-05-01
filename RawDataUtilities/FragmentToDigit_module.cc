@@ -222,7 +222,7 @@ void FragmentToDigit::produce(art::Event & evt)
   art::Handle< std::vector<artdaq::Fragment> > fragments;
   evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
 
-  std::unique_ptr< std::vector<raw::RawDigit> > tpcDigitVec;
+  std::unique_ptr< std::vector<raw::RawDigit> > tpcDigitVec(new std::vector<raw::RawDigit>);
 
   std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board8Vec
       (new std::vector<raw::AuxDetDigit>);
@@ -417,6 +417,8 @@ void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
       // There is always one TDC fragment, so I am no longer looping over TDC fragments.
       // Different TDC triggers can be found by looping over TDC events
 
+      if( data->tdcFrags.size() < 1) continue;
+
       TDCFragment & tdcFrag = data->tdcFrags[0];
 
       for (size_t l = 0; l < tdcFrag.tdcEvents.size(); ++l) {
@@ -467,8 +469,9 @@ void FragmentToDigit::makeTPCDigits(LariatFragment *data,
 						  << frag.waveForms.size() << " channels";
 
 	tpcChan = (frag.header.boardId * 64) + chan;
-	std::vector<short> adc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
-	tpcDigits->push_back(raw::RawDigit(tpcChan, adc.size(), adc));
+	std::vector<short> const adc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
+	raw::RawDigit rd(tpcChan, adc.size(), adc);
+	tpcDigits->push_back(rd);
       } // end loop to fill channels from this board
     }// end if it is a TPC board      
   }// end loop over caen fragments
