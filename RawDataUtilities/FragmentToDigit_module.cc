@@ -19,7 +19,7 @@
 // [ ] Improve the matching algorithm (Johnny)
 // [ ] Add CAEN V1740 channels for boards 1-7 and channels 1 
 //     to 32 of board 8
-// [ ] Put Pawel's OpDetPulse modifications back in (Pawel)
+// [x] Put Pawel's OpDetPulse modifications back in (Pawel)
 // [ ] Add SpillTrailer fragments
 // [ ] Add helpful comments throughout code. This may never be
 //     checked off.
@@ -55,7 +55,7 @@
 #include <functional>
 #include <vector>
 #include <string>
-
+#include <algorithm>
 enum {
   V1740_N_CHANNELS = 64,
   V1740_N_SAMPLES = 1536,
@@ -95,7 +95,9 @@ public:
 		      std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits);
   void make1751Digits(int i, LariatFragment * data,
                       std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
-                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec);
+                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec,
+  std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec2,
+  std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec1);
   void make1740Digits(int i, LariatFragment * data,
                       std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board8Vec);
   void makeTDCDigits(int i, LariatFragment * data,
@@ -130,6 +132,7 @@ private:
   std::string fMwpcTdc14Label;
   std::string fMwpcTdc15Label;
   std::string fMwpcTdc16Label;
+	bool fPMTTest;
 
   // variables from the SpillTrailer fragments
   uint32_t runNumber;
@@ -207,6 +210,7 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   fOpDetChID = p.get< std::vector<std::vector<int>> >("pmt_channel_ids");
   fCaenOpLabel1 = p.get< std::string >("OpDetBoardLabel1", "Caenv1751Optical1");
   fCaenOpLabel2 = p.get< std::string >("OpDetBoardLabel2", "Caenv1751Optical2");
+  fPMTTest = p.get<bool> ("pmt_test");
 }
 
 //------------------------------------------------------------------------------
@@ -218,7 +222,9 @@ void FragmentToDigit::beginJob()
 //------------------------------------------------------------------------------
 void FragmentToDigit::produce(art::Event & evt)
 {
-
+for(unsigned int i=0;i<fOpDetChID.size();++i){
+	for(unsigned int j=0;j<fOpDetChID[i].size();++j)   mf::LogInfo("FragmentToDigit")<<"channels and boards for opdetpulses : board - channel "<<i<<" - "<<j<<" "<<fOpDetChID[i][j]<<std::endl;
+	}
   art::Handle< std::vector<artdaq::Fragment> > fragments;
   evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
 
@@ -329,15 +335,23 @@ void FragmentToDigit::produce(art::Event & evt)
   std::cout<<"The size of v1740InTrigger is: "<<v1740InTrigger.size()<<std::endl;
   std::cout<<"The size of TDCInTrigger is: "<<TDCInTrigger.size()<<std::endl;
 
+//produce wvforms for all triggers in selected channels in v1751 if PMTTest is set to true - skip matching for them
+if (fPMTTest){
+	for(size_t i=0;i<data->caenFrags.size();++i){
+	FragmentToDigit::make1751Digits(i, data, caenV1751Board1Vec, caenV1751Board2Vec, OpDetVec1, OpDetVec2);
+		}
+	}
+
   for (size_t i = 0; i < Ntriggers; ++i) {
 
-    std::cout<<"Trigger "<<i<<" has a V1751 Fragment with index "<<v1751InTrigger[i]
-                            <<" and a V1740 Fragment with index "<<v1740InTrigger[i]
-                            <<", and a TDC Fragment with index "<<TDCInTrigger[i]<<std::endl;
+    std::cout<<"Trigger "<<i<<" has a V1751 Fragment with index "<<v1751InTrigger[i]<<std::endl;
+                            std::cout<<" and a V1740 Fragment with index "<<v1740InTrigger[i]<<std::endl;
+                           if (TDCInTrigger.size()>0) std::cout<<", and a TDC Fragment with index "<<TDCInTrigger[i]<<std::endl;
 
-    if(v1751InTrigger[i]){FragmentToDigit::make1751Digits(v1751InTrigger[i], data, caenV1751Board1Vec, caenV1751Board2Vec);}
+
+    if(v1751InTrigger[i]){FragmentToDigit::make1751Digits(v1751InTrigger[i], data, caenV1751Board1Vec, caenV1751Board2Vec, OpDetVec1, OpDetVec2);}
     if(v1740InTrigger[i]){FragmentToDigit::make1740Digits(v1740InTrigger[i], data, caenV1740Board8Vec);}
-    if(TDCInTrigger[i]){FragmentToDigit::makeTDCDigits(TDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);}
+    if((TDCInTrigger.size()>0) && TDCInTrigger[i]){FragmentToDigit::makeTDCDigits(TDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);}
 
   }
 
@@ -347,7 +361,8 @@ void FragmentToDigit::produce(art::Event & evt)
   evt.put(std::move(caenV1740Board8Vec), fCaenV1740Board8Label);
   evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
   evt.put(std::move(caenV1751Board2Vec), fCaenV1751Board2Label);
-
+  evt.put(std::move(OpDetVec1), fCaenOpLabel1);
+  evt.put(std::move(OpDetVec2), fCaenOpLabel2);
   evt.put(std::move(wutVec), fWutLabel);
 
   for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
@@ -392,7 +407,7 @@ void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
     numberOfTDCMatches = 0;
     CAENFragment & caenFrag = data->caenFrags[i];
 
-    if (caenFrag.header.boardId == 8) {
+    if (caenFrag.header.boardId == 9) {
 
       v1751InTrigger.push_back(i);
       std::cout<<"v1751 fragment number "<<v1751FragNumber<<" at t="<<caenFrag.header.triggerTimeTag*0.008<<"ns"<<std::endl;
@@ -417,8 +432,8 @@ void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
       // There is always one TDC fragment, so I am no longer looping over TDC fragments.
       // Different TDC triggers can be found by looping over TDC events
 
-      if( data->tdcFrags.size() < 1) continue;
-
+      //if( data->tdcFrags.size() < 1) continue;
+if( data->tdcFrags.size() >0){
       TDCFragment & tdcFrag = data->tdcFrags[0];
 
       for (size_t l = 0; l < tdcFrag.tdcEvents.size(); ++l) {
@@ -434,9 +449,9 @@ void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
 
       if(numberOfTDCMatches==0){TDCInTrigger.push_back(0);}
       std::cout<<" and "<<numberOfTDCMatches<<" matching TDC fragments "<<std::endl;
-
+	}
       v1751FragNumber++;
-
+      std::cout<< "At i="<< i <<"  v1751FragNumber:"<<v1751FragNumber<<std::endl;
     }
 
   }
@@ -482,16 +497,19 @@ void FragmentToDigit::makeTPCDigits(LariatFragment *data,
 
 void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
                                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
-                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec)
+                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec,
+  std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec1,
+  std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec2)
 {
 
   CAENFragment & caenFrag = data->caenFrags[i];
 
   uint32_t boardId = caenFrag.header.boardId;
   uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
-
+  //  mf::LogInfo("FragmentToDigit") << "At index i="<< i <<"  called make1751Frags boardID : "<<boardId<<"size of wvform data ch 0 "<<caenFrag.waveForms[0].data.size()<<std::endl;
   if (boardId == 8) {
     for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
+  //  mf::LogInfo("FragmentToDigit") << "Writing auxdetdigits index i="<< i <<"  in make1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<<std::endl;
       std::vector<short> caenFragWaveForm
           (caenFrag.waveForms[j].data.begin(),
            caenFrag.waveForms[j].data.end());
@@ -503,12 +521,31 @@ void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
               static_cast <unsigned long long> (triggerTimeTag)
               )
           );
+	if(fOpDetChID[boardId].size()!=0){
+   // mf::LogInfo("FragmentToDigit") << " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
+			if(int(fOpDetChID[boardId].size())>int(j)){
+   // mf::LogInfo("FragmentToDigit") << "optical detector on CAEN board..."<<boardId<<" "<<fOpDetChID[boardId].size()<<std::endl;
+    mf::LogInfo("FragmentToDigit") << "Writing opdetpulses index i="<< i <<"  in make1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<< " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
+				if(fOpDetChID[boardId][j]==int(j)){
+        				OpDetVec1->push_back(
+            				raw::OpDetPulse(
+                			static_cast <unsigned short> (j),
+                			caenFragWaveForm,
+                			0,
+                			static_cast <unsigned int> (triggerTimeTag)
+                			)
+				);
+			}
+		}
+            
+	}
     }
 
   }
 
-  else if (boardId == 9) {
+  if (boardId == 9) {
     for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
+   // mf::LogInfo("FragmentToDigit") << "Writing auxdetdigits index i="<< i <<"  in make1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<<std::endl;
       std::vector<short> caenFragWaveForm
           (caenFrag.waveForms[j].data.begin(),
            caenFrag.waveForms[j].data.end());
@@ -520,6 +557,24 @@ void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
               static_cast <unsigned long long> (triggerTimeTag)
               )
           );
+	if(fOpDetChID[boardId].size()!=0){
+//std::cout<< " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
+			if(int(fOpDetChID[boardId].size())>int(j)){
+   // mf::LogInfo("FragmentToDigit") << "optical detector on CAEN board..."<<boardId<<" "<<fOpDetChID[boardId].size()<<std::endl;
+    mf::LogInfo("FragmentToDigit") << "Writing opdetpulses index i="<< i <<"  in make1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<< " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
+				if(fOpDetChID[boardId][j]==int(j)){
+        				OpDetVec2->push_back(
+            				raw::OpDetPulse(
+                			static_cast <unsigned short> (j),
+                			caenFragWaveForm,
+                			0,
+                			static_cast <unsigned int> (triggerTimeTag)
+                			)
+				);
+			}
+		}
+            
+	}
     }
 
   }
