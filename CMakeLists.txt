@@ -78,7 +78,7 @@ add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
 add_subdirectory(LArIATEventGenerator)
 add_subdirectory(RawDataUtilities)
-#add_subdirectory(LongBo)
+add_subdirectory(LongBo)
 add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
 

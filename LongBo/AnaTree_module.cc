@@ -18,6 +18,7 @@
 #include "art/Framework/Services/Optional/TFileService.h" 
 #include "art/Framework/Services/Optional/TFileDirectory.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h" 
+#include "cetlib/maybe_ref.h"
 
 // LArSoft includes
 #include "Geometry/Geometry.h"
@@ -182,8 +183,9 @@ void bo::AnaTree::analyze(art::Event const & evt)
     art::fill_ptr_vector(hitlist, hitListHandle);
 
 
+  art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
   art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
-  art::FindMany<recob::Track>       fmtk(hitListHandle, evt, fTrackModuleLabel);
+  art::FindMany<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
 
   std::vector<const sim::SimChannel*> fSimChannels;
   try{
@@ -239,83 +241,87 @@ void bo::AnaTree::analyze(art::Event const & evt)
 
   nhits = hitlist.size();
   for (size_t i = 0; i<hitlist.size(); ++i){
+    cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
     unsigned int channel = hitlist[i]->Channel();
     geo::WireID wireid = hitlist[i]->WireID();
     hit_plane[i]   = wireid.Plane;
     hit_wire[i]    = wireid.Wire;
     hit_channel[i] = channel;
     hit_peakT[i]   = hitlist[i]->PeakTime();
-    hit_charge[i]  = hitlist[i]->Charge();
-    hit_ph[i]      = hitlist[i]->Charge(true);
-    hit_tstart[i]  = hitlist[i]->StartTime();
-    hit_tend[i]    = hitlist[i]->EndTime();
+    hit_charge[i]  = hitlist[i]->Integral();
+    hit_ph[i]      = hitlist[i]->PeakAmplitude();
+    hit_tstart[i]  = hitlist[i]->StartTick();
+    hit_tend[i]    = hitlist[i]->EndTick();
     if (fmtk.at(i).size()!=0){
       hit_trkid[i] = fmtk.at(i)[0]->ID();
     }
     if (hit_plane[i]==1){//collection plane
-      int dataSize = hitlist[i]->RawDigit()->Samples();
-      short ped = hitlist[i]->RawDigit()->GetPedestal();
-      std::vector<short> rawadc(dataSize);
-      raw::Uncompress(hitlist[i]->RawDigit()->fADC,rawadc,hitlist[i]->RawDigit()->Compression());
-      int t0 = hit_peakT[i] - 3*(hit_peakT[i]-hit_tstart[i]);
-      if (t0<0) t0 = 0;
-      int t1 = hit_peakT[i] + 3*(hit_peakT[i]-hit_tstart[i]);
-      if (t1>=dataSize) t1 = dataSize-1;
-      hit_pk[i] = -1;
-      hit_t[i] = -1;
-      for (int j = t0; j<=t1; ++j){
-	if (rawadc[j]-ped>hit_pk[i]){
-	  hit_pk[i] = rawadc[j]-ped;
-	  hit_t[i] = j;
+      if( rdref.isValid() ){
+	raw::RawDigit const& rd(rdref.ref());
+	int dataSize = rd.Samples();
+	short ped = rd.GetPedestal();
+	std::vector<short> rawadc(dataSize);
+	raw::Uncompress(rd.ADCs(),rawadc,rd.Compression());
+	int t0 = hit_peakT[i] - 3*(hit_peakT[i]-hit_tstart[i]);
+	if (t0<0) t0 = 0;
+	int t1 = hit_peakT[i] + 3*(hit_peakT[i]-hit_tstart[i]);
+	if (t1>=dataSize) t1 = dataSize-1;
+	hit_pk[i] = -1;
+	hit_t[i] = -1;
+	for (int j = t0; j<=t1; ++j){
+	  if (rawadc[j]-ped>hit_pk[i]){
+	    hit_pk[i] = rawadc[j]-ped;
+	    hit_t[i] = j;
+	  }
 	}
-      }
-      hit_ch[i] = 0;
-      hit_fwhh[i] = 0;
-      double mean_t = 0;
-      double mean_t2 = 0;
-      for (int j = t0; j<=t1; ++j){
-	if (rawadc[j]-ped>=0.5*hit_pk[i]){
-	  ++hit_fwhh[i];
+	hit_ch[i] = 0;
+	hit_fwhh[i] = 0;
+	double mean_t = 0;
+	double mean_t2 = 0;
+	for (int j = t0; j<=t1; ++j){
+	  if (rawadc[j]-ped>=0.5*hit_pk[i]){
+	    ++hit_fwhh[i];
+	  }
+	  if (rawadc[j]-ped>=0.1*hit_pk[i]){
+	    hit_ch[i] += rawadc[j]-ped;
+	    mean_t += j*(rawadc[j]-ped);
+	    mean_t2 += j*j*(rawadc[j]-ped);
+	  }
 	}
-	if (rawadc[j]-ped>=0.1*hit_pk[i]){
-	  hit_ch[i] += rawadc[j]-ped;
-	  mean_t += j*(rawadc[j]-ped);
-	  mean_t2 += j*j*(rawadc[j]-ped);
-	}
-      }
-      mean_t/=hit_ch[i];
-      mean_t2/=hit_ch[i];
-      hit_rms[i] = sqrt(mean_t2-mean_t*mean_t);
-      if (!evt.isRealData()){
-//	std::vector<sim::IDE> ides;	
-//	bt->HitToSimIDEs(hitlist[i], ides);
-	hit_nelec[i] = 0;
-	hit_energy[i] = 0;
-//	for (size_t j = 0; j<ides.size(); ++j){
-//	  hit_nelec[i] += ides[j].numElectrons;
-//	  hit_energy[i] += ides[j].energy;
-//	}
-	const sim::SimChannel* chan = 0;
-	for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
-	  if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) chan = fSimChannels[sc];
-	}
-	if (chan){
-	  const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = chan->TDCIDEMap();
-	  for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
-	    // loop over the vector of IDE objects.
+	mean_t/=hit_ch[i];
+	mean_t2/=hit_ch[i];
+	hit_rms[i] = sqrt(mean_t2-mean_t*mean_t);
+	if (!evt.isRealData()){
+	  //	std::vector<sim::IDE> ides;	
+	  //	bt->HitToSimIDEs(hitlist[i], ides);
+	  hit_nelec[i] = 0;
+	  hit_energy[i] = 0;
+	  //	for (size_t j = 0; j<ides.size(); ++j){
+	  //	  hit_nelec[i] += ides[j].numElectrons;
+	  //	  hit_energy[i] += ides[j].energy;
+	  //	}
+	  const sim::SimChannel* chan = 0;
+	  for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
+	    if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) chan = fSimChannels[sc];
+	  }
+	  if (chan){
+	    const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = chan->TDCIDEMap();
+	    for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
+	      // loop over the vector of IDE objects.
+	      
+	      const std::vector<sim::IDE> idevec = (*mapitr).second;
+	      
+	      for(size_t iv = 0; iv < idevec.size(); ++iv){ 
 
-	    const std::vector<sim::IDE> idevec = (*mapitr).second;
-
-	    for(size_t iv = 0; iv < idevec.size(); ++iv){ 
-
-	      hit_nelec[i] += idevec[iv].numElectrons;
-	      hit_energy[i] += idevec[iv].energy;
+		hit_nelec[i] += idevec[iv].numElectrons;
+		hit_energy[i] += idevec[iv].energy;
+	      }
 	    }
 	  }
 	}
-      }
       //std::cout<<hit_wire[i]<<" "<<hit_peakT[i]<<" "<<hit_ph[i]<<" "<<hit_tend[i]-hit_tstart[i]<<" "<<hit_t[i]<<" "<<hit_pk[i]<<" "<<hit_ch[i]<<" "<<hit_fwhh[i]<<" "<<hit_rms[i]<<" "<<mean_t<<" "<<mean_t2<<std::endl;
 
+      } // if cet::maybe_ref is valid
     }
   }
   fTree->Fill();
