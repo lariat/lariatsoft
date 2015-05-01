@@ -8,7 +8,7 @@
 
 #include "Geo/GeoObjectSorterLArIAT.h"
 #include "Geometry/AuxDetGeo.h"
-#include "Geometry/AuxDetSensitiveGeo.h"
+//#include "Geometry/AuxDetSensitiveGeo.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
