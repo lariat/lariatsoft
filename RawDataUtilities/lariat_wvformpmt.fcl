@@ -1,0 +1,64 @@
+#include "Wvform_PMT_config.fcl"
+
+process_name: LariatProducer
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents:  100        # Number of events to create
+}
+
+physics:
+{
+
+ producers:
+ {
+
+ }
+ analyzers:
+ {
+lariatwvformpmt: @local::lariat_wvformpmt
+ }
+
+
+#define the output stream, there could be more than one if using filters 
+ stream1:  [ ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event, 
+ # #ie filters and producers
+ analyzeIt:  [  lariatwvformpmt ]
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+ # #ie analyzers and output streams.  these all run simultaneously
+ end_paths:     [analyzeIt]
+
+}
+physics.analyzers.lariatwvformpmt.NumberOfPMTs: 2
+physics.analyzers.lariatwvformpmt.InputModule:  "FragmentToDigit"
+physics.analyzers.lariatwvformpmt.InstanceName:"Caenv1751Optical2"
+
+physics.analyzers.lariatwvformpmt.fit_const: 0.0
+physics.analyzers.lariatwvformpmt.fit_expmult1: 1.0
+physics.analyzers.lariatwvformpmt.fit_expmult2: 1.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope1: 6.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope2: 1590.0
+physics.analyzers.lariatwvformpmt.fit_start: 2090.0
+physics.analyzers.lariatwvformpmt.fit_end: 15000.0
+
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "pmtwvform.root" #default file name, can override from command line with -o or --output
+   outputCommands: [ "keep *", "drop artdaq::Fragments_daq_*_Wrapper" ]
+ }
+}
+
+services:
+{
+  TFileService: { fileName: "wvforms.root" }
+#  message:      @local::standard_info
+}

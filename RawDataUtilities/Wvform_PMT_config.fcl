@@ -1,0 +1,20 @@
+BEGIN_PROLOG
+
+lariat_wvformpmt:
+{
+  module_type:            "WvformPMT"
+  InputModule:            "Caenv1751Optical2"
+  InstanceName:           "" 
+  NumberOfPMTs: 2
+	time_begin: 0.0 #start time of readout ns
+	time_end: 7168 #end time in ns
+	sample_freq: 1.0 #in GS/s
+	baseline_counts: 90 #how many time ticks to use to get average baseline at the beginning
+  fit_const: 0.0
+  fit_expmult1: 1.0
+  fit_expmult2: 1.0
+  fit_exp_slope1: 27.0
+  fit_exp_slope2: 1000.0
+}
+
+END_PROLOG
