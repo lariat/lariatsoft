@@ -10,17 +10,16 @@
 //////////////////////////////////////////////////////////////
 // TODO
 //////////////////////////////////////////////////////////////
+// [x] Add CAEN V1751 board 0
 // [x] Add CAEN V1751 board 1
-// [x] Add CAEN V1751 board 2
-// [x] Add channels 32 to 64 of CAEN V1740 board 8
+// [x] Add channels 31 to 63 of CAEN V1740 board 7
+// [x] Add CAEN V1740 channels for boards 0-6 and channels 0
+//     to 31 of board 7 to TPC RawDigits
 // [x] Add WUT
 // [x] Add MWPCs
-// [ ] Add trigger associations (Brian)
-// [ ] Improve the matching algorithm (Johnny)
-// [x] Add CAEN V1740 channels for boards 1-7 and channels 1 
-//     to 32 of board 8
 // [x] Put Pawel's OpDetPulse modifications back in (Pawel)
-// [ ] Add SpillTrailer fragments
+// [x] Add data block matching algorithm
+// [ ] Add trigger associations (Brian)
 // [ ] Add helpful comments throughout code. This may never be
 //     checked off.
 //////////////////////////////////////////////////////////////
@@ -49,13 +48,17 @@
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
 #include "RawData/OpDetPulse.h"
-#include "TTree.h"
+
+//#include "TTree.h"
+#include "TGraph.h"
+#include "TF1.h"
 
 #include <memory>
 #include <functional>
 #include <vector>
 #include <string>
 #include <algorithm>
+
 enum {
   V1740_N_CHANNELS = 64,
   V1740_N_SAMPLES = 1536,
@@ -64,6 +67,9 @@ enum {
   WUT_N_TDC_CHANNELS = 16,
   WUT_MAX_HITS = 128,
 };
+
+// ugly nested map for matching data blocks
+typedef std::map< std::string, std::map< std::string, std::map< unsigned int, std::vector<unsigned int> > > > match_map;
 
 class FragmentToDigit;
 
@@ -86,33 +92,85 @@ public:
   void beginJob() override;
   void reconfigure(fhicl::ParameterSet const & p) override;
 
-  void matchFragments(uint32_t & Ntriggers,
-                      std::vector<size_t> & v1751InTrigger,
-                      std::vector<size_t> & v1740InTrigger,
-                      std::vector<size_t> & TDCInTrigger,
-                      LariatFragment * data);
-  void makeTPCDigits (LariatFragment *data,
-		      std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits);
-  void make1751Digits(int i, LariatFragment * data,
-                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
-                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec,
-  std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec2,
-  std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec1);
-  void make1740Digits(int i, LariatFragment * data,
-                      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board8Vec);
-  void makeTDCDigits(int i, LariatFragment * data,
-                     std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
-                     std::string mwpcTdcLabels[16]);
-  void makeWUTDigits(LariatFragment * data,
-                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & wutVec);
+  void matchDataBlocks(LariatFragment * data);
+
+  void coarseMatch(
+      std::string deviceALabel,
+      std::string deviceBLabel,
+      double range[2],
+      std::map< std::string, std::map<unsigned int, double> > timeStamps,
+      match_map & matchMap);
+
+  void fineMatch(
+      std::string deviceALabel,
+      std::string deviceBLabel,
+      double range[2],
+      std::pair<double, double> fitParameters,
+      std::map< std::string, std::map<unsigned int, double> > timeStamps,
+      match_map & matchMap);
+
+  void printMatchMap(
+      std::string deviceALabel,
+      std::string deviceBLabel,
+      match_map matchMap);
+
+  double line(std::pair<double, double> parameters, double x);
+
+  std::pair<double, double> fitDrift(
+      std::string deviceALabel,
+      std::string deviceBLabel,
+      std::map< std::string, std::map<unsigned int, double> > timeStamps,
+      match_map matchMap,
+      std::string graphNamePrefix);
+
+  void matchFragments(
+      uint32_t & Ntriggers,
+      std::vector<size_t> & v1751InTrigger,
+      std::vector<size_t> & v1740InTrigger,
+      std::vector<size_t> & TDCInTrigger,
+      LariatFragment * data);
+
+  void makeTPCRawDigits(
+      LariatFragment *data,
+      std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits);
+  void makeCaenV1751AuxDetDigits(
+      int i, LariatFragment * data,
+      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board0Vec,
+      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
+      std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec2,
+      std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec1);
+  void makeCaenV1740AuxDetDigits(
+      int i,
+      LariatFragment * data,
+      std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board7Vec);
+  void makeTDCAuxDetDigits(
+      int i, LariatFragment * data,
+      std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
+      std::string mwpcTdcLabels[16]);
+  void makeWUTDigits(
+      LariatFragment * data,
+      std::unique_ptr< std::vector<raw::AuxDetDigit> > & wutVec);
 
 private:
 
+  art::ServiceHandle<art::TFileService> tfs;
+
+  //TGraph * fV1751V1740DriftPreliminary;
+  //TGraph * fV1751MwpcDriftPreliminary;
+  //TGraph * fV1740MwpcDriftPreliminary;
+
   std::string fRawFragmentLabel;     ///< label for module producing artdaq fragments
   std::string fRawFragmentInstance;  ///< instance label for artdaq fragments        
-  std::string fCaenV1740Board8Label;
+  std::string fCaenV1740Board0Label;
+  std::string fCaenV1740Board1Label;
+  std::string fCaenV1740Board2Label;
+  std::string fCaenV1740Board3Label;
+  std::string fCaenV1740Board4Label;
+  std::string fCaenV1740Board5Label;
+  std::string fCaenV1740Board6Label;
+  std::string fCaenV1740Board7Label;
+  std::string fCaenV1751Board0Label;
   std::string fCaenV1751Board1Label;
-  std::string fCaenV1751Board2Label;
   std::string fCaenOpLabel1;
   std::string fCaenOpLabel2;
   std::string fWutLabel;
@@ -132,7 +190,7 @@ private:
   std::string fMwpcTdc14Label;
   std::string fMwpcTdc15Label;
   std::string fMwpcTdc16Label;
-	bool fPMTTest;
+  bool fPMTTest;
 
   // variables from the SpillTrailer fragments
   uint32_t runNumber;
@@ -144,6 +202,11 @@ private:
   std::vector<size_t> v1740InTrigger;
   std::vector<size_t> TDCInTrigger;
 
+  // maps for matching fragments
+  std::map< std::string, std::map<unsigned int, double> > fFragTimeStamps;
+  match_map fPreliminaryMatches;
+  match_map fMatches;
+
   std::vector<std::vector<int>> fOpDetChID;
 };
 
@@ -152,12 +215,12 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 //  : EDProducer(p)
 {
   this->reconfigure(p);
-  
+
   produces< std::vector<raw::RawDigit> >();
 
-  produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board8Label);
+  produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board7Label);
+  produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board0Label);
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board1Label);
-  produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board2Label);
   produces< std::vector<raw::AuxDetDigit> >(fWutLabel);
   produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc01Label);
   produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc02Label);
@@ -184,12 +247,16 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 {
   fRawFragmentLabel = p.get< std::string >("RawFragmentLabel", "daq");
   fRawFragmentInstance = p.get< std::string >("RawFragmentInstance", "SPILL");
-  fCaenV1740Board8Label = p.get< std::string >("CaenV1740Board8Label",
-                                               "CaenV1740Board8");
-  fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label",
-                                               "CaenV1751Board1");
-  fCaenV1751Board2Label = p.get< std::string >("CaenV1751Board2Label",
-                                               "CaenV1751Board2");
+  fCaenV1740Board0Label = p.get< std::string >("CaenV1740Board0Label", "CaenV1740Board0");
+  fCaenV1740Board1Label = p.get< std::string >("CaenV1740Board1Label", "CaenV1740Board1");
+  fCaenV1740Board2Label = p.get< std::string >("CaenV1740Board2Label", "CaenV1740Board2");
+  fCaenV1740Board3Label = p.get< std::string >("CaenV1740Board3Label", "CaenV1740Board3");
+  fCaenV1740Board4Label = p.get< std::string >("CaenV1740Board4Label", "CaenV1740Board4");
+  fCaenV1740Board5Label = p.get< std::string >("CaenV1740Board5Label", "CaenV1740Board5");
+  fCaenV1740Board6Label = p.get< std::string >("CaenV1740Board6Label", "CaenV1740Board6");
+  fCaenV1740Board7Label = p.get< std::string >("CaenV1740Board7Label", "CaenV1740Board7");
+  fCaenV1751Board0Label = p.get< std::string >("CaenV1751Board0Label", "CaenV1751Board0");
+  fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label", "CaenV1751Board1");
   fWutLabel = p.get< std::string >("WutLabel", "Wut");
   fMwpcTdc01Label = p.get< std::string >("MwpcTdc01Label", "MwpcTdc01");
   fMwpcTdc02Label = p.get< std::string >("MwpcTdc02Label", "MwpcTdc02");
@@ -216,6 +283,12 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void FragmentToDigit::beginJob()
 {
+  //art::ServiceHandle<art::TFileService> tfs;
+
+  //fV1751V1740DriftPreliminary = tfs->make<TGraph>();
+  //fV1751MwpcDriftPreliminary  = tfs->make<TGraph>();
+  //fV1740MwpcDriftPreliminary  = tfs->make<TGraph>();
+
   return;
 }
 
@@ -230,11 +303,11 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
 
   std::unique_ptr< std::vector<raw::RawDigit> > tpcDigitVec(new std::vector<raw::RawDigit>);
 
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board8Vec
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board7Vec
+      (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board0Vec
       (new std::vector<raw::AuxDetDigit>);
   std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board1Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board2Vec
       (new std::vector<raw::AuxDetDigit>);
 
   std::unique_ptr< std::vector<raw::AuxDetDigit> > wutVec
@@ -327,18 +400,20 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
       << "runNumber: " << runNumber << "; spillNumber: " << spillNumber
       << "; timeStamp: " << timeStamp;
 
-  this->makeTPCDigits(data, tpcDigitVec);
+  this->makeTPCRawDigits(data, tpcDigitVec);
 
-  FragmentToDigit::matchFragments(Ntriggers, v1751InTrigger, v1740InTrigger, TDCInTrigger, data);
-  std::cout<<"Ntriggers is: "<<Ntriggers<<std::endl;
-  std::cout<<"The size of v1751InTrigger is: "<<v1751InTrigger.size()<<std::endl;
-  std::cout<<"The size of v1740InTrigger is: "<<v1740InTrigger.size()<<std::endl;
-  std::cout<<"The size of TDCInTrigger is: "<<TDCInTrigger.size()<<std::endl;
+  FragmentToDigit::matchDataBlocks(data);
+
+  //FragmentToDigit::matchFragments(Ntriggers, v1751InTrigger, v1740InTrigger, TDCInTrigger, data);
+  //std::cout<<"Ntriggers is: "<<Ntriggers<<std::endl;
+  //std::cout<<"The size of v1751InTrigger is: "<<v1751InTrigger.size()<<std::endl;
+  //std::cout<<"The size of v1740InTrigger is: "<<v1740InTrigger.size()<<std::endl;
+  //std::cout<<"The size of TDCInTrigger is: "<<TDCInTrigger.size()<<std::endl;
 
 //produce wvforms for all triggers in selected channels in v1751 if PMTTest is set to true - skip matching for them
 if (fPMTTest){
 	for(size_t i=0;i<data->caenFrags.size();++i){
-	FragmentToDigit::make1751Digits(i, data, caenV1751Board1Vec, caenV1751Board2Vec, OpDetVec1, OpDetVec2);
+	FragmentToDigit::makeCaenV1751AuxDetDigits(i, data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);
 		}
 	}
 
@@ -349,18 +424,18 @@ if (fPMTTest){
                            if (TDCInTrigger.size()>0) std::cout<<", and a TDC Fragment with index "<<TDCInTrigger[i]<<std::endl;
 
 
-    if(v1751InTrigger[i]){FragmentToDigit::make1751Digits(v1751InTrigger[i], data, caenV1751Board1Vec, caenV1751Board2Vec, OpDetVec1, OpDetVec2);}
-    if(v1740InTrigger[i]){FragmentToDigit::make1740Digits(v1740InTrigger[i], data, caenV1740Board8Vec);}
-    if((TDCInTrigger.size()>0) && TDCInTrigger[i]){FragmentToDigit::makeTDCDigits(TDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);}
+    if(v1751InTrigger[i]){FragmentToDigit::makeCaenV1751AuxDetDigits(v1751InTrigger[i], data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);}
+    if(v1740InTrigger[i]){FragmentToDigit::makeCaenV1740AuxDetDigits(v1740InTrigger[i], data, caenV1740Board7Vec);}
+    if((TDCInTrigger.size()>0) && TDCInTrigger[i]){FragmentToDigit::makeTDCAuxDetDigits(TDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);}
 
   }
 
   FragmentToDigit::makeWUTDigits(data, wutVec);
 
   evt.put(std::move(tpcDigitVec));
-  evt.put(std::move(caenV1740Board8Vec), fCaenV1740Board8Label);
+  evt.put(std::move(caenV1740Board7Vec), fCaenV1740Board7Label);
+  evt.put(std::move(caenV1751Board0Vec), fCaenV1751Board0Label);
   evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
-  evt.put(std::move(caenV1751Board2Vec), fCaenV1751Board2Label);
   evt.put(std::move(OpDetVec1), fCaenOpLabel1);
   evt.put(std::move(OpDetVec2), fCaenOpLabel2);
   evt.put(std::move(wutVec), fWutLabel);
@@ -370,6 +445,406 @@ if (fPMTTest){
   }
 
   return;  
+}
+
+void FragmentToDigit::matchDataBlocks(LariatFragment * data) {
+
+  //std::map< std::string, std::map<unsigned int, double> > fFragTimeStamps;
+
+  //////////////////////////////////////////////////////////////////////
+  // Some notes
+  //////////////////////////////////////////////////////////////////////
+  //
+  // There are multiple CAEN fragments and only one TDC fragment for
+  // each spill. Each TDC fragment holds multiple TDC events.
+  //
+  // Since there are multiple CAEN fragments and only one TDC fragment
+  // per spill, I will use the term "data block" to refer to a single
+  // CAEN fragment or a single TDC event.
+  //
+  // fFragTimeStamps will store the data block time stamps from all
+  // devices (except the WUT) to help with the matching.
+  //
+  // Here is some pseudocode on how to access the time stamps:
+  //
+  // for deviceLabel in devices:
+  //     for dataBlockIndex in dataBlocks:
+  //         dataBlockTimeStamp = fFragTimeStamps[deviceLabel][dataBlockIndex];
+  //
+  //////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ BEGIN: loop through the data blocks to get their time stamps
+  //          into fFragTimeStamps
+  //////////////////////////////////////////////////////////////////////
+
+  size_t numberCaenDataBlocks[10] = {};
+  size_t numberMwpcDataBlocks = 0;
+
+  std::string caenLabels[10] = {
+    fCaenV1740Board0Label,
+    fCaenV1740Board1Label,
+    fCaenV1740Board2Label,
+    fCaenV1740Board3Label,
+    fCaenV1740Board4Label,
+    fCaenV1740Board5Label,
+    fCaenV1740Board6Label,
+    fCaenV1740Board7Label,
+    fCaenV1751Board0Label,
+    fCaenV1751Board1Label
+  };
+
+  std::string mwpcTdcLabels[TDCFragment::MAX_TDCS] = {
+      fMwpcTdc01Label,
+      fMwpcTdc02Label,
+      fMwpcTdc03Label,
+      fMwpcTdc04Label,
+      fMwpcTdc05Label,
+      fMwpcTdc06Label,
+      fMwpcTdc07Label,
+      fMwpcTdc08Label,
+      fMwpcTdc09Label,
+      fMwpcTdc10Label,
+      fMwpcTdc11Label,
+      fMwpcTdc12Label,
+      fMwpcTdc13Label,
+      fMwpcTdc14Label,
+      fMwpcTdc15Label,
+      fMwpcTdc16Label
+  };
+
+  const size_t numberCaenFrags = data->caenFrags.size();
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberCaenFrags << " CAEN fragments";
+
+  if (numberCaenFrags > 0) {
+    mf::LogInfo("FragmentToDigit") << "Looking at CAEN fragments...";
+  }
+
+  for (size_t i = 0; i < numberCaenFrags; ++i) {
+    CAENFragment & caenFrag = data->caenFrags[i];
+    unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
+    std::string label = caenLabels[boardId];
+    unsigned int index = numberCaenDataBlocks[boardId];
+    // each CAEN Trigger Time Tag count is 8 ns
+    double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+    fFragTimeStamps[label][index] = timeStamp;
+    numberCaenDataBlocks[boardId] += 1;
+  }
+
+  const int numberTdcFrags = data->tdcFrags.size();
+  mf::LogInfo("FragmentToDigit")
+      << "Found " << numberTdcFrags << " TDC fragments";
+
+  if (numberTdcFrags > 0) {
+    mf::LogInfo("FragmentToDigit") << "Looking at TDC fragments...";
+  }
+
+  for (int i = 0; i < numberTdcFrags; ++i) {
+
+    TDCFragment & tdcFrag = data->tdcFrags[i];
+
+    std::vector< std::vector<TDCFragment::TdcEventData> > &
+        tdcEvents = tdcFrag.tdcEvents;
+
+    //LOG_DEBUG("FragmentToDigit")
+    //    << "tdcEvents.size(): " << tdcEvents.size();
+    //tdcFrag.print();
+
+    numberMwpcDataBlocks = tdcEvents.size();
+
+    for (size_t j = 0; j < tdcEvents.size(); ++j) {
+
+      if (tdcFrag.controllerHeader.nTDCs != tdcEvents[j].size()) {
+        mf::LogError("FragmentToDigit")
+            << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
+            << " != " << tdcFrag.controllerHeader.nTDCs;
+      }
+
+      LOG_DEBUG("FragmentToDigit") << "TDC event: " << j;
+
+      for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
+           ++tdc_index) {
+        TDCFragment::TdcEventData tdcEventData = tdcEvents[j].at(tdc_index);
+
+        uint16_t controllerTimeStamp = tdcEventData.tdcEventHeader.controllerTimeStamp;
+        uint32_t tdcTimeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp;
+        // each TDC Time Stamp count is 1/106.208 microseconds
+        double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // convert to microseconds
+
+        std::string label = mwpcTdcLabels[tdc_index];
+
+        LOG_DEBUG("FragmentToDigit") << "  TDC index: " << tdc_index;
+        LOG_DEBUG("FragmentToDigit") << "  Label: " << label;
+        LOG_DEBUG("FragmentToDigit") << "  TDC time stamp: " << tdcTimeStamp;
+        LOG_DEBUG("FragmentToDigit") << "  Controller time stamp: " << controllerTimeStamp;
+
+        fFragTimeStamps[label][j] = timeStamp;
+
+      }
+    }
+  }
+
+  // let's forget the WUT for now
+  //const int numberWutFrags = data->wutFrags.size();
+  //mf::LogInfo("FragmentToDigit")
+  //    << "Found " << numberWutFrags << " WUT fragments";
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ END: loop through the data blocks to get their time stamps
+  //        into fFragTimeStamps
+  //////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ BEGIN: loop through fFragTimeStamps to check that they are there
+  //////////////////////////////////////////////////////////////////////
+
+  for (size_t i = 0; i < 10; ++i) {
+    std::string label = caenLabels[i];
+    unsigned int indices = numberCaenDataBlocks[i];
+    LOG_DEBUG("FragmentToDigit") << "Board ID: " << i << ", number of data blocks: " << numberCaenDataBlocks[i];
+    LOG_DEBUG("FragmentToDigit") << "Label: " << label;
+    for (size_t j = 0; j < indices; ++j) {
+      LOG_DEBUG("FragmentToDigit") << "  Index: " << j;
+      LOG_DEBUG("FragmentToDigit") << "  Time stamp: " << fFragTimeStamps[label][j];
+    }
+  }
+
+  for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
+    std::string label = mwpcTdcLabels[i];
+    LOG_DEBUG("FragmentToDigit") << "TDC index: " << i << ", number of data blocks: " << numberMwpcDataBlocks;
+    LOG_DEBUG("FragmentToDigit") << "Label: " << label;
+    for (size_t j = 0; j < numberMwpcDataBlocks; ++j) {
+      LOG_DEBUG("FragmentToDigit") << "  Index: " << j;
+      LOG_DEBUG("FragmentToDigit") << "  Time stamp: " << fFragTimeStamps[label][j];
+    }
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ END: loop through fFragTimeStamps to check that they are there
+  //////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ BEGIN: intra V1740/V1751 matching
+  //////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////
+  // NOTE: The master clocks of the V1740s is boardId 0; the master
+  //       clock of the V1751s is boardId 8.
+  //////////////////////////////////////////////////////////////////////
+
+  // the difference in time stamps should be in between this range for a match; microseconds
+  double v1740IntraRange[2] = { -0.016, 0.016 };
+  double v1751IntraRange[2] = { -0.016, 0.016 };
+
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board1Label, v1740IntraRange, fFragTimeStamps, fMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board2Label, v1740IntraRange, fFragTimeStamps, fMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board3Label, v1740IntraRange, fFragTimeStamps, fMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board4Label, v1740IntraRange, fFragTimeStamps, fMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board5Label, v1740IntraRange, fFragTimeStamps, fMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board6Label, v1740IntraRange, fFragTimeStamps, fMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board7Label, v1740IntraRange, fFragTimeStamps, fMatches);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1751Board1Label, v1751IntraRange, fFragTimeStamps, fMatches);
+
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board1Label, fMatches);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board2Label, fMatches);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board3Label, fMatches);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board4Label, fMatches);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board5Label, fMatches);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board6Label, fMatches);
+  //printMatchMap(fCaenV1751Board0Label, fCaenV1751Board1Label, fMatches);
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ END: intra V1740/V1751 matching
+  //////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ BEGIN: coarse matching
+  //////////////////////////////////////////////////////////////////////
+
+  // the difference in time stamps should be in between this range for a match; microseconds
+  double v1751v1740InterRange[2] = { 2,   5 };
+  double v1751MwpcInterRange[2]  = { 0, 160 };
+  double v1740MwpcInterRange[2]  = { 0, 160 };
+
+  std::map< std::string, std::map< std::string, std::pair<double, double> > > fitParameters;
+
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board0Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1751Board0Label, fMwpcTdc01Label, v1751MwpcInterRange, fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1740Board0Label, fMwpcTdc01Label, v1740MwpcInterRange, fFragTimeStamps, fPreliminaryMatches);
+
+  //printMatchMap(fCaenV1751Board0Label, fCaenV1740Board0Label, fPreliminaryMatches);
+  //printMatchMap(fCaenV1751Board0Label, fMwpcTdc01Label, fPreliminaryMatches);
+  //printMatchMap(fCaenV1740Board0Label, fMwpcTdc01Label, fPreliminaryMatches);
+
+  fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board0Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label] = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label] = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ END: coarse matching
+  //////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ BEGIN: fine matching
+  //////////////////////////////////////////////////////////////////////
+
+  double v1751v1740InterEps[2] = { 1, 1 };
+  double v1751MwpcInterEps[2]  = { 1, 1 };
+  double v1740MwpcInterEps[2]  = { 1, 1 };
+
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board0Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label], fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1751Board0Label, fMwpcTdc01Label, v1751MwpcInterEps, fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label], fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1740Board0Label, fMwpcTdc01Label, v1740MwpcInterEps, fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], fFragTimeStamps, fMatches);
+
+  fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board0Label, fFragTimeStamps, fMatches, "fine_match");
+  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label] = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label, fFragTimeStamps, fMatches, "fine_match");
+  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label] = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label, fFragTimeStamps, fMatches, "fine_match");
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ END: fine matching
+  //////////////////////////////////////////////////////////////////////
+
+  return;
+}
+
+void FragmentToDigit::coarseMatch(
+    std::string deviceALabel,
+    std::string deviceBLabel,
+    double range[2],
+    std::map< std::string, std::map<unsigned int, double> > timeStamps,
+    match_map & matchMap) {
+
+  std::map< unsigned int, std::vector<unsigned int> > matchAB;
+
+  size_t numberADataBlocks = timeStamps[deviceALabel].size();
+  size_t numberBDataBlocks = timeStamps[deviceBLabel].size();
+
+  for (size_t a = 0; a < numberADataBlocks; ++a) {
+    double timeStampA = timeStamps[deviceALabel][a];
+    for (size_t b = 0; b < numberBDataBlocks; ++b) {
+      double timeStampB = timeStamps[deviceBLabel][b];
+      double difference = timeStampA - timeStampB;
+      if (range[0] <= difference and difference <= range[1]) {
+        matchAB[a].push_back(b);
+      }
+    }
+  }
+
+  matchMap[deviceALabel][deviceBLabel] = matchAB;
+
+  return;
+}
+
+void FragmentToDigit::fineMatch(
+    std::string deviceALabel,
+    std::string deviceBLabel,
+    double eps[2],
+    std::pair<double, double> fitParameters,
+    std::map< std::string, std::map<unsigned int, double> > timeStamps,
+    match_map & matchMap) {
+
+  std::map< unsigned int, std::vector<unsigned int> > matchAB;
+
+  size_t numberADataBlocks = timeStamps[deviceALabel].size();
+  size_t numberBDataBlocks = timeStamps[deviceBLabel].size();
+
+  for (size_t a = 0; a < numberADataBlocks; ++a) {
+    double timeStampA = timeStamps[deviceALabel][a];
+    for (size_t b = 0; b < numberBDataBlocks; ++b) {
+      double timeStampB = timeStamps[deviceBLabel][b];
+      double difference = timeStampA - timeStampB;
+      double y = line(fitParameters, timeStampA);
+      double yLow = y - eps[0];
+      double yHigh = y + eps[1];
+      if (yLow <= difference and difference <= yHigh) {
+        matchAB[a].push_back(b);
+      }
+    }
+  }
+
+  matchMap[deviceALabel][deviceBLabel] = matchAB;
+
+  return;
+}
+
+double FragmentToDigit::line(std::pair<double, double> parameters, double x) {
+  double intercept = parameters.first;
+  double slope = parameters.second;
+  return intercept + slope * x;
+}
+
+std::pair<double, double> FragmentToDigit::fitDrift(
+    std::string deviceALabel,
+    std::string deviceBLabel,
+    std::map< std::string, std::map<unsigned int, double> > timeStamps,
+    match_map matchMap,
+    std::string graphNamePrefix) {
+
+  std::vector<double> x;
+  std::vector<double> y;
+
+  std::vector<double> x_;
+  std::vector<double> y_;
+
+  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMap[deviceALabel][deviceBLabel];
+
+  LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel;
+  LOG_DEBUG("FragmentToDigit") << "  Matching index pair format: " << "(" << deviceALabel << ", " << deviceBLabel << ")";
+
+  for (auto const & itA : matchAB) {
+    LOG_DEBUG("FragmentToDigit") << "  Index: " << itA.first << "; number of matches: " << itA.second.size();
+    for (auto const & itB : itA.second) {
+      double timeStampA = timeStamps[deviceALabel][itA.first];
+      double timeStampB = timeStamps[deviceBLabel][itB];
+      double difference = timeStampA - timeStampB;
+      double reference = timeStampA;
+      LOG_DEBUG("FragmentToDigit") << "    (" << itA.first << ", " << itB << ")"
+                                         << "; difference: " << difference << " usec"
+                                         << "; reference: " << reference << " usec";
+      if (itA.second.size() == 1) {
+        x.push_back(reference);
+        y.push_back(difference);
+      }
+      else {
+        x_.push_back(reference);
+        y_.push_back(difference);
+      }
+    }
+  }
+
+  std::string graphName = graphNamePrefix + "_drift_" + deviceALabel + "_" + deviceBLabel;
+  std::string graphTitles = "; Time since beginning of spill (using " + deviceALabel + " clock) [#mus]; #Delta t between " + deviceALabel + " and " + deviceBLabel + " [#mus]";
+  TGraph * graph = tfs->make<TGraph>(x.size(), &x[0], &y[0]);
+  TF1 * f = tfs->make<TF1>("f", "pol1", 0, 30e6);
+  graph->Fit("f", "Q");
+  graph->SetMarkerStyle(20);
+  graph->SetTitle(graphTitles.c_str());
+  graph->Write(graphName.c_str());
+  LOG_DEBUG("FragmentToDigit") << "Fit parameters: intercept, "
+                                     << f->GetParameter(0) << " usec; slope, "
+                                     << f->GetParameter(1) << " usec/usec";
+
+  return std::make_pair<double, double>(f->GetParameter(0), f->GetParameter(1));
+}
+
+void FragmentToDigit::printMatchMap(
+    std::string deviceALabel,
+    std::string deviceBLabel,
+    match_map matchMap) {
+
+  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMap[deviceALabel][deviceBLabel];
+
+  LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel;
+  LOG_DEBUG("FragmentToDigit") << "  Matching index pair format: " << "(" << deviceALabel << ", " << deviceBLabel << ")";
+
+  for (auto const & itA : matchAB) {
+    for (auto const & itB : itA.second) {
+      mf::LogVerbatim("FragmentToDigit") << "  (" << itA.first << ", " << itB << ")";
+    }
+  }
+
+  return;
 }
 
 // Matching v1751, v1740, and TDC fragments
@@ -410,7 +885,7 @@ void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
     if (caenFrag.header.boardId == 9) {
 
       v1751InTrigger.push_back(i);
-      std::cout<<"v1751 fragment number "<<v1751FragNumber<<" at t="<<caenFrag.header.triggerTimeTag*0.008<<"ns"<<std::endl;
+      std::cout<<"v1751 fragment number "<<v1751FragNumber<<" at t="<<caenFrag.header.triggerTimeTag*0.008<<"us"<<std::endl;
 
       for (size_t k = 0; k < numberCaenFrags; ++k) {
 
@@ -460,7 +935,7 @@ if( data->tdcFrags.size() >0){
 
 }
 
-void FragmentToDigit::makeTPCDigits(LariatFragment *data,
+void FragmentToDigit::makeTPCRawDigits(LariatFragment *data,
 				    std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits)
 {
 
@@ -496,9 +971,9 @@ void FragmentToDigit::makeTPCDigits(LariatFragment *data,
   
 }
 
-void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
-                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
-                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board2Vec,
+void FragmentToDigit::makeCaenV1751AuxDetDigits(int i, LariatFragment * data,
+                                                std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board0Vec,
+                                                std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
   std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec1,
   std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec2)
 {
@@ -507,18 +982,18 @@ void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
 
   uint32_t boardId = caenFrag.header.boardId;
   uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
-  //  mf::LogInfo("FragmentToDigit") << "At index i="<< i <<"  called make1751Frags boardID : "<<boardId<<"size of wvform data ch 0 "<<caenFrag.waveForms[0].data.size()<<std::endl;
+  //  mf::LogInfo("FragmentToDigit") << "At index i="<< i <<"  called makeCaenV1751Frags boardID : "<<boardId<<"size of wvform data ch 0 "<<caenFrag.waveForms[0].data.size()<<std::endl;
   if (boardId == 8) {
     for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
-  //  mf::LogInfo("FragmentToDigit") << "Writing auxdetdigits index i="<< i <<"  in make1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<<std::endl;
+  //  mf::LogInfo("FragmentToDigit") << "Writing auxdetdigits index i="<< i <<"  in makeCaenV1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<<std::endl;
       std::vector<short> caenFragWaveForm
           (caenFrag.waveForms[j].data.begin(),
            caenFrag.waveForms[j].data.end());
-      caenV1751Board1Vec->push_back(
+      caenV1751Board0Vec->push_back(
           raw::AuxDetDigit(
               static_cast <unsigned short> (j),
               caenFragWaveForm,
-              fCaenV1751Board1Label,
+              fCaenV1751Board0Label,
               static_cast <unsigned long long> (triggerTimeTag)
               )
           );
@@ -526,7 +1001,7 @@ void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
    // mf::LogInfo("FragmentToDigit") << " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
 			if(int(fOpDetChID[boardId].size())>int(j)){
    // mf::LogInfo("FragmentToDigit") << "optical detector on CAEN board..."<<boardId<<" "<<fOpDetChID[boardId].size()<<std::endl;
-    mf::LogInfo("FragmentToDigit") << "Writing opdetpulses index i="<< i <<"  in make1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<< " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
+    mf::LogInfo("FragmentToDigit") << "Writing opdetpulses index i="<< i <<"  in makeCaenV1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<< " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
 				if(fOpDetChID[boardId][j]==int(j)){
         				OpDetVec1->push_back(
             				raw::OpDetPulse(
@@ -546,15 +1021,15 @@ void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
 
   if (boardId == 9) {
     for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
-   // mf::LogInfo("FragmentToDigit") << "Writing auxdetdigits index i="<< i <<"  in make1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<<std::endl;
+   // mf::LogInfo("FragmentToDigit") << "Writing auxdetdigits index i="<< i <<"  in makeCaenV1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<<std::endl;
       std::vector<short> caenFragWaveForm
           (caenFrag.waveForms[j].data.begin(),
            caenFrag.waveForms[j].data.end());
-      caenV1751Board2Vec->push_back(
+      caenV1751Board1Vec->push_back(
           raw::AuxDetDigit(
               static_cast <unsigned short> (j),
               caenFragWaveForm,
-              fCaenV1751Board2Label,
+              fCaenV1751Board1Label,
               static_cast <unsigned long long> (triggerTimeTag)
               )
           );
@@ -562,7 +1037,7 @@ void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
 //std::cout<< " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
 			if(int(fOpDetChID[boardId].size())>int(j)){
    // mf::LogInfo("FragmentToDigit") << "optical detector on CAEN board..."<<boardId<<" "<<fOpDetChID[boardId].size()<<std::endl;
-    mf::LogInfo("FragmentToDigit") << "Writing opdetpulses index i="<< i <<"  in make1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<< " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
+    mf::LogInfo("FragmentToDigit") << "Writing opdetpulses index i="<< i <<"  in makeCaenV1751Frags boardID : "<<boardId<<" channel "<<j<<"size of wvform data "<<caenFrag.waveForms[j].data.size()<< " fOpDetChID[boardId] size() "<<fOpDetChID[boardId].size()<< " boardId "<<boardId<<std::endl;
 				if(fOpDetChID[boardId][j]==int(j)){
         				OpDetVec2->push_back(
             				raw::OpDetPulse(
@@ -582,8 +1057,8 @@ void FragmentToDigit::make1751Digits(int i, LariatFragment * data,
 
 }
 
-void FragmentToDigit::make1740Digits(int i, LariatFragment * data,
-                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board8Vec)
+void FragmentToDigit::makeCaenV1740AuxDetDigits(int i, LariatFragment * data,
+                                     std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board7Vec)
 {
 
   CAENFragment & caenFrag = data->caenFrags[i];
@@ -596,11 +1071,11 @@ void FragmentToDigit::make1740Digits(int i, LariatFragment * data,
       std::vector<short> caenFragWaveForm
           (caenFrag.waveForms[j].data.begin(),
            caenFrag.waveForms[j].data.end());
-      caenV1740Board8Vec->push_back(
+      caenV1740Board7Vec->push_back(
           raw::AuxDetDigit(
               static_cast <unsigned short> (j),
               caenFragWaveForm,
-              fCaenV1740Board8Label,
+              fCaenV1740Board7Label,
               static_cast <unsigned long long> (triggerTimeTag)
               )
           );
@@ -610,7 +1085,7 @@ void FragmentToDigit::make1740Digits(int i, LariatFragment * data,
 
 }
 
-void FragmentToDigit::makeTDCDigits(int i, LariatFragment * data,
+void FragmentToDigit::makeTDCAuxDetDigits(int i, LariatFragment * data,
                                     std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
                                     std::string mwpcTdcLabels[16])
 {
