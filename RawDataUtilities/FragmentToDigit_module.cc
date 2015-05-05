@@ -141,7 +141,7 @@ public:
       int i,
       LariatFragment * data,
       std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board7Vec);
-  void makeTDCAuxDetDigits(
+  void makeMWPCTDCAuxDetDigits(
       int i, LariatFragment * data,
       std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
       std::string mwpcTdcLabels[16]);
@@ -424,7 +424,7 @@ if (fPMTTest){
 
     if(v1751InTrigger[i]){FragmentToDigit::makeCaenV1751AuxDetDigits(v1751InTrigger[i], data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);}
     if(v1740InTrigger[i]){FragmentToDigit::makeCaenV1740AuxDetDigits(v1740InTrigger[i], data, caenV1740Board7Vec);}
-    if((TDCInTrigger.size()>0) && TDCInTrigger[i]){FragmentToDigit::makeTDCAuxDetDigits(TDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);}
+    if((TDCInTrigger.size()>0) && TDCInTrigger[i]){FragmentToDigit::makeMWPCTDCAuxDetDigits(TDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);}
 
   }
 
@@ -1083,7 +1083,7 @@ void FragmentToDigit::makeCaenV1740AuxDetDigits(int i, LariatFragment * data,
 
 }
 
-void FragmentToDigit::makeTDCAuxDetDigits(int i, LariatFragment * data,
+void FragmentToDigit::makeMWPCTDCAuxDetDigits(int i, LariatFragment * data,
                                     std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
                                     std::string mwpcTdcLabels[16])
 {
