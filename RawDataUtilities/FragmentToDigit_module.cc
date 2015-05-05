@@ -214,6 +214,10 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 {
   this->reconfigure(p);
 
+  ///\todo At some point we want to store the POT for each run in the file
+
+  produces< sumdata::RunData, art::InRun >();
+
   produces< std::vector<raw::RawDigit> >();
 
   produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board7Label);
@@ -287,6 +291,20 @@ void FragmentToDigit::beginJob()
   //fV1751MwpcDriftPreliminary  = tfs->make<TGraph>();
   //fV1740MwpcDriftPreliminary  = tfs->make<TGraph>();
 
+  return;
+}
+
+//____________________________________________________________________________
+void FragmentToDigit::beginRun(art::Run& run)
+{
+  
+  // grab the geometry object to see what geometry we are using
+  art::ServiceHandle<geo::Geometry> geo;
+  
+  std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+  
+  run.put(std::move(runcol));
+  
   return;
 }
 
@@ -408,18 +426,18 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
   //std::cout<<"The size of v1740InTrigger is: "<<v1740InTrigger.size()<<std::endl;
   //std::cout<<"The size of TDCInTrigger is: "<<TDCInTrigger.size()<<std::endl;
 
-//produce wvforms for all triggers in selected channels in v1751 if PMTTest is set to true - skip matching for them
-if (fPMTTest){
-	for(size_t i=0;i<data->caenFrags.size();++i){
-	FragmentToDigit::makeCaenV1751AuxDetDigits(i, data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);
-		}
-	}
+  //produce wvforms for all triggers in selected channels in v1751 if PMTTest is set to true - skip matching for them
+  if (fPMTTest){
+    for(size_t i=0;i<data->caenFrags.size();++i){
+      FragmentToDigit::makeCaenV1751AuxDetDigits(i, data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);
+    }
+  }
 
   for (size_t i = 0; i < Ntriggers; ++i) {
 
-    std::cout<<"Trigger "<<i<<" has a V1751 Fragment with index "<<v1751InTrigger[i]<<std::endl;
-                            std::cout<<" and a V1740 Fragment with index "<<v1740InTrigger[i]<<std::endl;
-                           if (TDCInTrigger.size()>0) std::cout<<", and a TDC Fragment with index "<<TDCInTrigger[i]<<std::endl;
+    std::cout<<"Trigger "<<i<<" has a V1751 Fragment with index "<<v1751InTrigger[i]<<std::endl
+	     <<" and a V1740 Fragment with index "<<v1740InTrigger[i]<<std::endl;
+    if (TDCInTrigger.size()>0) std::cout<<", and a TDC Fragment with index "<<TDCInTrigger[i]<<std::endl;
 
 
     if(v1751InTrigger[i]){FragmentToDigit::makeCaenV1751AuxDetDigits(v1751InTrigger[i], data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);}
