@@ -27,7 +27,7 @@ simple_plugin(DigitReader "module"
 )
 simple_plugin(WvformPMT "module"
               RawData
-              LArIATFragments
+              LariatFragments
               ${ART_FRAMEWORK_CORE}
               ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -86,6 +86,8 @@ simple_plugin(LArIATFragmentDump "module"
 
 simple_plugin(FragmentToDigit "module"
               RawData
+	      SummaryData
+	      Geometry_service
               LariatFragments
               ${ART_FRAMEWORK_CORE}
               ${ART_FRAMEWORK_PRINCIPAL}

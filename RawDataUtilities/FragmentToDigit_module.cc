@@ -48,6 +48,8 @@
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
 #include "RawData/OpDetPulse.h"
+#include "SummaryData/RunData.h"
+#include "Geometry/Geometry.h"
 
 //#include "TTree.h"
 #include "TGraph.h"
@@ -89,7 +91,7 @@ public:
   // Selected optional functions.
   void beginJob() override;
   void reconfigure(fhicl::ParameterSet const & p) override;
-
+  void beginRun(art::Run &run);
   void matchDataBlocks(LariatFragment * data);
 
   void coarseMatch(
