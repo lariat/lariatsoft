@@ -1076,7 +1076,7 @@ void FragmentToDigit::makeMWPCTDCAuxDetDigits(int i, LariatFragment * data,
     mf::LogError("FragmentToDigit") << "*** Fatal nTDCs mismatch: " 
 				    << tdcEvents[i].size()
 				    << " != " << tdcFrag.controllerHeader.nTDCs
-				    <<" continuing";
+				    <<" return to calling function";
     return;
   }
 
