@@ -1046,9 +1046,8 @@ void FragmentToDigit::makeCaenV1740AuxDetDigits(int i, LariatFragment * data,
 
   if (boardId == 7) {
     for (size_t j = 31; j < V1740_N_CHANNELS; ++j) {
-      std::vector<short> caenFragWaveForm
-          (caenFrag.waveForms[j].data.begin(),
-           caenFrag.waveForms[j].data.end());
+      std::vector<short> caenFragWaveForm(caenFrag.waveForms[j].data.begin(),
+					  caenFrag.waveForms[j].data.end());
       caenV1740Board7Vec->push_back(raw::AuxDetDigit(static_cast <unsigned short> (j),
 						     caenFragWaveForm,
 						     fCaenV1740Board7Label,
