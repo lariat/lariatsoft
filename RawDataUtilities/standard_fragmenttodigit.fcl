@@ -1,4 +1,5 @@
 #include "FragmentToDigit_config.fcl"
+#include "services_lariat.fcl"
 
 process_name: LariatProducer
 
@@ -50,4 +51,5 @@ services:
 {
   TFileService: { fileName: "FragmentToDigit.root" }
 #  message:      @local::standard_info
+  @table::lariat_services
 }

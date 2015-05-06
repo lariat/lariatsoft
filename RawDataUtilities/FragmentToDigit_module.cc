@@ -185,7 +185,7 @@ private:
   uint32_t spillNumber;
   uint32_t timeStamp;
 
-  uint32_t Ntriggers;
+  uint32_t fNtriggers;
   std::vector<size_t> fv1751InTrigger;
   std::vector<size_t> fv1740InTrigger;
   std::vector<size_t> fTDCInTrigger;
@@ -200,7 +200,7 @@ private:
 
 //------------------------------------------------------------------------------
 FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
-//  : EDProducer(p)
+  : fNtriggers(0)
 {
   this->reconfigure(p);
 
@@ -410,7 +410,7 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
     }
   }
 
-  for (size_t i = 0; i < Ntriggers; ++i) {
+  for (size_t i = 0; i < fNtriggers; ++i) {
 
     mf::LogInfo("FragmentToDigit") << "Trigger " << i << " has a V1751 Fragment with index " << fv1751InTrigger[i] 
 				   <<"\n and a V1740 Fragment with index " << fv1740InTrigger[i];
@@ -799,8 +799,8 @@ std::pair<double, double> FragmentToDigit::fitDrift(std::string deviceALabel,
       double difference = timeStampA - timeStampB;
       double reference = timeStampA;
       LOG_DEBUG("FragmentToDigit") << "    (" << itA.first << ", " << itB << ")"
-                                         << "; difference: " << difference << " usec"
-                                         << "; reference: " << reference << " usec";
+				   << "; difference: " << difference << " usec"
+				   << "; reference: " << reference << " usec";
       if (itA.second.size() == 1) {
         x.push_back(reference);
         y.push_back(difference);
@@ -813,7 +813,10 @@ std::pair<double, double> FragmentToDigit::fitDrift(std::string deviceALabel,
   }
 
   std::string graphName = graphNamePrefix + "_drift_" + deviceALabel + "_" + deviceBLabel;
-  std::string graphTitles = "; Time since beginning of spill (using " + deviceALabel + " clock) [#mus]; #Delta t between " + deviceALabel + " and " + deviceBLabel + " [#mus]";
+  std::string graphTitles = ("; Time since beginning of spill (using " + deviceALabel 
+			     + " clock) [#mus]; #Delta t between "     + deviceALabel 
+			     + " and " + deviceBLabel + " [#mus]");
+
   TGraph * graph = tfs->make<TGraph>(x.size(), &x[0], &y[0]);
   TF1 * f = tfs->make<TF1>("f", "pol1", 0, 30e6);
   graph->Fit("f", "Q");
@@ -821,8 +824,8 @@ std::pair<double, double> FragmentToDigit::fitDrift(std::string deviceALabel,
   graph->SetTitle(graphTitles.c_str());
   graph->Write(graphName.c_str());
   LOG_DEBUG("FragmentToDigit") << "Fit parameters: intercept, "
-                                     << f->GetParameter(0) << " usec; slope, "
-                                     << f->GetParameter(1) << " usec/usec";
+			       << f->GetParameter(0) << " usec; slope, "
+			       << f->GetParameter(1) << " usec/usec";
 
   return std::make_pair<double, double>(f->GetParameter(0), f->GetParameter(1));
 }
@@ -852,7 +855,7 @@ void FragmentToDigit::printMatchMap(std::string deviceALabel,
 // CAEN triggerTimeTag must be multiplied by 0.008 to get microseconds since the start of spill
 // TDC tdcTimeStamp must be divided by 106.208 to get microseconds since the start of spill
 // I am currently calling triggers within 200 microseconds a match
-void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
+void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
                                      std::vector<size_t> & fv1751InTrigger,
                                      std::vector<size_t> & fv1740InTrigger,
                                      std::vector<size_t> & fTDCInTrigger,
@@ -922,13 +925,13 @@ void FragmentToDigit::matchFragments(uint32_t & Ntriggers,
 	if(numberOfTDCMatches == 0) fTDCInTrigger.push_back(0);
 	mf::LogInfo("FragmentToDigit") << " and " << numberOfTDCMatches << " matching TDC fragments ";
       }
-      v1751FragNumber++;
+      ++v1751FragNumber;
       mf::LogInfo("FragmentToDigit") << "At i=" << i << "  v1751FragNumber:" << v1751FragNumber;
     }
 
   }
 
-  Ntriggers=v1751FragNumber-1;
+  fNtriggers=v1751FragNumber-1;
 
 }
 
@@ -1060,47 +1063,42 @@ void FragmentToDigit::makeMWPCTDCAuxDetDigits(int i, LariatFragment * data,
       tdcEvents = tdcFrag.tdcEvents;
 
   if (tdcFrag.controllerHeader.nTDCs != tdcEvents[i].size()) {
-    mf::LogError("FragmentToDigit")
-        << "*** Fatal nTDCs mismatch: " << tdcEvents[i].size()
-        << " != " << tdcFrag.controllerHeader.nTDCs;
+    mf::LogError("FragmentToDigit") << "*** Fatal nTDCs mismatch: " 
+				    << tdcEvents[i].size()
+				    << " != " << tdcFrag.controllerHeader.nTDCs;
   }
 
-  for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
-       ++tdc_index) {
+  for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
     TDCFragment::TdcEventData tdcEventData = tdcEvents[i].at(tdc_index);
 
     std::vector< std::vector<short> > hitsInChannel;
 
     hitsInChannel.resize(TDCFragment::N_CHANNELS);
-    for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
-         ++channel) {
+    for (size_t channel = 0; channel < TDCFragment::N_CHANNELS; ++channel) {
       hitsInChannel[channel].reserve(TDCFragment::MAX_HITS);
     }
 
     uint32_t tdcTimeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp;
 
-    for (size_t hit_index = 0; hit_index < tdcEventData.tdcHits.size();
-         ++hit_index) {
+    for (size_t hit_index = 0; hit_index < tdcEventData.tdcHits.size(); ++hit_index) {
       TDCFragment::TdcHit & hit = tdcEventData.tdcHits[hit_index];
       hitsInChannel[size_t (hit.channel)].push_back(short (hit.timeBin));
     }
 
-    for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
-         ++channel) {
+    for (size_t channel = 0; channel < TDCFragment::N_CHANNELS; ++channel) {
 
-      mwpcTdcVecs[tdc_index].get()->push_back(
-          raw::AuxDetDigit(
-              static_cast <unsigned short> (channel),
-              hitsInChannel[channel],
-              mwpcTdcLabels[tdc_index],
-              static_cast <unsigned long long> (tdcTimeStamp)
-              )
-          );
+      mwpcTdcVecs[tdc_index].get()->push_back(raw::AuxDetDigit(static_cast <unsigned short> (channel),
+							       hitsInChannel[channel],
+							       mwpcTdcLabels[tdc_index],
+							       static_cast <unsigned long long> (tdcTimeStamp)
+							       )
+					      );
 
     }
 
   }
 
+  return;
 }
 
 //------------------------------------------------------------------------------
