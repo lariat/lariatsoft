@@ -289,11 +289,11 @@ void FragmentToDigit::beginRun(art::Run& run)
 {
   
   // grab the geometry object to see what geometry we are using
-  //art::ServiceHandle<geo::Geometry> geo;
+  art::ServiceHandle<geo::Geometry> geo;
   
-  //std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+  std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
   
-  //run.put(std::move(runcol));
+  run.put(std::move(runcol));
   
   return;
 }
