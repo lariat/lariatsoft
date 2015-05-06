@@ -402,9 +402,9 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
   this->makeTPCRawDigits(data, tpcDigitVec);
 
   //this->matchDataBlocks(data);
-  this->matchFragments(Ntriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
+  this->matchFragments(fNtriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
 
-  std::cout<<"Ntriggers is: "<<Ntriggers<<std::endl;
+  std::cout<<"Ntriggers is: "<<fNtriggers<<std::endl;
 
   std::cout<<"The size of v1751InTrigger is: "<<fv1751InTrigger.size()<<std::endl;
 
