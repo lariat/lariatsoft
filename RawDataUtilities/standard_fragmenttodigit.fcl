@@ -1,6 +1,8 @@
 #include "FragmentToDigit_config.fcl"
-
+#include "services_lariat.fcl"
 process_name: LariatProducer
+
+
 
 #source is now a root file
 source:
@@ -50,4 +52,5 @@ services:
 {
   TFileService: { fileName: "FragmentToDigit.root" }
 #  message:      @local::standard_info
+user:         @local::lariat_services
 }
