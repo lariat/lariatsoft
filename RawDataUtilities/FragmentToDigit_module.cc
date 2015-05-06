@@ -289,11 +289,11 @@ void FragmentToDigit::beginRun(art::Run& run)
 {
   
   // grab the geometry object to see what geometry we are using
-  art::ServiceHandle<geo::Geometry> geo;
+  //art::ServiceHandle<geo::Geometry> geo;
   
-  std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
+  //std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
   
-  run.put(std::move(runcol));
+  //run.put(std::move(runcol));
   
   return;
 }
@@ -401,7 +401,16 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
 
   this->makeTPCRawDigits(data, tpcDigitVec);
 
-  this->matchDataBlocks(data);
+  //this->matchDataBlocks(data);
+  this->matchFragments(Ntriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
+
+  std::cout<<"Ntriggers is: "<<Ntriggers<<std::endl;
+
+  std::cout<<"The size of v1751InTrigger is: "<<fv1751InTrigger.size()<<std::endl;
+
+  std::cout<<"The size of v1740InTrigger is: "<<fv1740InTrigger.size()<<std::endl;
+
+  std::cout<<"The size of TDCInTrigger is: "<<fTDCInTrigger.size()<<std::endl;
 
   //produce wvforms for all triggers in selected channels in v1751 if PMTTest is set to true - skip matching for them
   if (fPMTTest){
@@ -553,7 +562,8 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
       if (tdcFrag.controllerHeader.nTDCs != tdcEvents[j].size()) {
         mf::LogError("FragmentToDigit") << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
-					<< " != " << tdcFrag.controllerHeader.nTDCs;
+				<< " != " << tdcFrag.controllerHeader.nTDCs<< " "<< j;
+	continue;
       }
 
       LOG_DEBUG("FragmentToDigit") << "TDC event: " << j;
@@ -1053,7 +1063,7 @@ void FragmentToDigit::makeMWPCTDCAuxDetDigits(int i, LariatFragment * data,
 					      std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
 					      std::string mwpcTdcLabels[16])
 {
-
+bool mismatch =false;
   TDCFragment & tdcFrag = data->tdcFrags[0];
 
   std::vector< std::vector<TDCFragment::TdcEventData> > &
@@ -1062,44 +1072,46 @@ void FragmentToDigit::makeMWPCTDCAuxDetDigits(int i, LariatFragment * data,
   if (tdcFrag.controllerHeader.nTDCs != tdcEvents[i].size()) {
     mf::LogError("FragmentToDigit")
         << "*** Fatal nTDCs mismatch: " << tdcEvents[i].size()
-        << " != " << tdcFrag.controllerHeader.nTDCs;
+        << " != " << tdcFrag.controllerHeader.nTDCs<<" continuing";
+		mismatch=true;
   }
+	if(!mismatch){
+  	for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
+  	     ++tdc_index) {
+  	  TDCFragment::TdcEventData tdcEventData = tdcEvents[i].at(tdc_index);
 
-  for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS;
-       ++tdc_index) {
-    TDCFragment::TdcEventData tdcEventData = tdcEvents[i].at(tdc_index);
+  	  std::vector< std::vector<short> > hitsInChannel;
 
-    std::vector< std::vector<short> > hitsInChannel;
+  	  hitsInChannel.resize(TDCFragment::N_CHANNELS);
+  	  for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
+  	       ++channel) {
+  	    hitsInChannel[channel].reserve(TDCFragment::MAX_HITS);
+  	  }
 
-    hitsInChannel.resize(TDCFragment::N_CHANNELS);
-    for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
-         ++channel) {
-      hitsInChannel[channel].reserve(TDCFragment::MAX_HITS);
-    }
+  	  uint32_t tdcTimeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp;
 
-    uint32_t tdcTimeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp;
+  	  for (size_t hit_index = 0; hit_index < tdcEventData.tdcHits.size();
+  	       ++hit_index) {
+  	    TDCFragment::TdcHit & hit = tdcEventData.tdcHits[hit_index];
+  	    hitsInChannel[size_t (hit.channel)].push_back(short (hit.timeBin));
+  	  }
 
-    for (size_t hit_index = 0; hit_index < tdcEventData.tdcHits.size();
-         ++hit_index) {
-      TDCFragment::TdcHit & hit = tdcEventData.tdcHits[hit_index];
-      hitsInChannel[size_t (hit.channel)].push_back(short (hit.timeBin));
-    }
+  	  for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
+  	       ++channel) {
 
-    for (size_t channel = 0; channel < TDCFragment::N_CHANNELS;
-         ++channel) {
+  	    mwpcTdcVecs[tdc_index].get()->push_back(
+  	        raw::AuxDetDigit(
+  	            static_cast <unsigned short> (channel),
+  	            hitsInChannel[channel],
+  	            mwpcTdcLabels[tdc_index],
+  	            static_cast <unsigned long long> (tdcTimeStamp)
+  	            )
+  	        );
 
-      mwpcTdcVecs[tdc_index].get()->push_back(
-          raw::AuxDetDigit(
-              static_cast <unsigned short> (channel),
-              hitsInChannel[channel],
-              mwpcTdcLabels[tdc_index],
-              static_cast <unsigned long long> (tdcTimeStamp)
-              )
-          );
+  	  }
 
-    }
-
-  }
+  	}
+	}
 
 }
 
