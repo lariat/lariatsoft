@@ -1118,12 +1118,10 @@ void FragmentToDigit::makeWUTDigits(LariatFragment * data,
 {
 
   const int numberWutFrags = data->wutFrags.size();
-  mf::LogInfo("FragmentToDigit")
-      << "Found " << numberWutFrags << " WUT fragments";
+  mf::LogInfo("FragmentToDigit") << "Found " << numberWutFrags << " WUT fragments";
 
-  if (numberWutFrags > 0) {
+  if (numberWutFrags > 0)
     mf::LogInfo("FragmentToDigit") << "Looking at WUT fragments...";
-  }
 
   for (int i = 0; i < numberWutFrags; ++i) {
     WUTFragment & wutFrag = data->wutFrags[i];
