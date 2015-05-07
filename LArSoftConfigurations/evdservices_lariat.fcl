@@ -7,7 +7,7 @@ BEGIN_PROLOG
 lariat_colordrawingopt:                       @local::standard_colordrawingopt
 lariat_rawdrawingopt:                         @local::standard_rawdrawingopt
 lariat_rawdrawingopt.RawDataLabel:            FragmentToDigit
-lariat_rawdrawingopt.TotalTicks:              1536
+lariat_rawdrawingopt.TotalTicks:              3072
 lariat_recodrawingopt:                        @local::standard_recodrawingopt
 lariat_analysisdrawingopt:                    @local::standard_analysisdrawingopt
 #{
