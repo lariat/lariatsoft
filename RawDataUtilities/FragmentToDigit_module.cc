@@ -126,8 +126,17 @@ public:
 		      std::vector<size_t> & fTDCInTrigger,
 		      LariatFragment*       data);
 
-  void makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
-			std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits);
+  void makeTPCRawDigits      (std::vector<CAENFragment>     const& caenFrags,
+			      std::vector<raw::RawDigit>         & tpcDigits);
+  void makeOpDetPulses       (std::vector<CAENFragment>     const& caenFrags,
+			      std::vector<raw::OpDetPulse>       & opDetPulse);
+  void makeMuonRangeAuxDigits(std::vector<CAENFragment>     const& caenFrags,
+			      std::vector<raw::AuxDetDigit>      & mrAuxDigits);
+  void makeTOFDigits         (std::vector<CAENFragment>     const& caenFrags,
+			      std::vector<raw::AuxDetDigit>      & tofAuxDigits);
+  void makeAeroGelDigits     (std::vector<CAENFragment>     const& caenFrags,
+			      std::vector<raw::AuxDetDigit>      & agAuxDigits);
+
   void makeCaenV1751AuxDetDigits(int i, 
 				 LariatFragment*                                    data,
 				 std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board0Vec,
@@ -309,52 +318,30 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
 
   std::unique_ptr< std::vector<raw::RawDigit> > tpcDigitVec(new std::vector<raw::RawDigit>);
 
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board7Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board0Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board1Vec
-      (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board7Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board0Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board1Vec(new std::vector<raw::AuxDetDigit>);
 
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > wutVec
-      (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > wutVec(new std::vector<raw::AuxDetDigit>);
 
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc01Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc02Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc03Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc04Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc05Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc06Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc07Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc08Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc09Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc10Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc11Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc12Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc13Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc14Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc15Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc16Vec
-      (new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr<std::vector< raw::OpDetPulse > >  OpDetVec1
-      (new std::vector<raw::OpDetPulse>);
-  std::unique_ptr<std::vector< raw::OpDetPulse > >  OpDetVec2
-      (new std::vector<raw::OpDetPulse>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc01Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc02Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc03Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc04Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc05Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc06Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc07Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc08Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc09Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc10Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc11Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc12Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc13Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc14Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc15Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc16Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr<std::vector< raw::OpDetPulse > > OpDetVec1(new std::vector<raw::OpDetPulse>);
+  std::unique_ptr<std::vector< raw::OpDetPulse > > OpDetVec2(new std::vector<raw::OpDetPulse>);
 
   // the following line is way too long
   std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > mwpcTdcVecs = {
@@ -399,18 +386,13 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
 				 << "\nrunNumber: " << runNumber << "; spillNumber: " << spillNumber
 				 << "; timeStamp: " << timeStamp;
 
-  this->makeTPCRawDigits(data, tpcDigitVec);
-
   //this->matchDataBlocks(data);
   this->matchFragments(fNtriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
 
-  std::cout<<"Ntriggers is: "<<fNtriggers<<std::endl;
-
-  std::cout<<"The size of v1751InTrigger is: "<<fv1751InTrigger.size()<<std::endl;
-
-  std::cout<<"The size of v1740InTrigger is: "<<fv1740InTrigger.size()<<std::endl;
-
-  std::cout<<"The size of TDCInTrigger is: "<<fTDCInTrigger.size()<<std::endl;
+  LOG_INFO("FragmentToDigit") << "Ntriggers is: " << fNtriggers 
+			      << "\nThe size of v1751InTrigger is: " << fv1751InTrigger.size()
+			      << "\nThe size of v1740InTrigger is: " << fv1740InTrigger.size()
+			      << "\nThe size of TDCInTrigger is:   " << fTDCInTrigger.size();
 
   //produce wvforms for all triggers in selected channels in v1751 if PMTTest is set to true - skip matching for them
   if (fPMTTest){
@@ -1175,5 +1157,46 @@ void FragmentToDigit::makeWUTDigits(LariatFragment * data,
 
   return;
 }
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment>  const& caenFrags,
+				       std::vector<raw::RawDigit>      & tpcDigits)
+{
+
+  return;
+}
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::makeOpDetPulses(std::vector<CAENFragment>    const& caenFrags,
+				      std::vector<raw::OpDetPulse>      & opDetPulse)
+{
+
+  return;
+}
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::makeMuonRangeAuxDigits(std::vector<CAENFragment>     const& caenFrags,
+					     std::vector<raw::AuxDetDigit>      & mrAuxDigits)
+{
+
+  return;
+}
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::makeTOFDigits(std::vector<CAENFragment>     const& caenFrags,
+				    std::vector<raw::AuxDetDigit>      & tofAuxDigits)
+{
+
+  return;
+}
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::makeAeroGelDigits(std::vector<CAENFragment>     const& caenFrags,
+					std::vector<raw::AuxDetDigit>      & agAuxDigits)
+{
+
+  return;
+}
+
 
 DEFINE_ART_MODULE(FragmentToDigit)
