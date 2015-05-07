@@ -235,9 +235,9 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
   produces< std::vector<raw::Trigger>     >();
   produces< std::vector<raw::AuxDetDigit> >();
   produces< std::vector<raw::OpDetPulse>  >();
-  produces< art::Assns<raw::Trigger, raw::RawDigit>    >();
-  produces< art::Assns<raw::Trigger, raw::AuxDetDigit> >();
-  produces< art::Assns<raw::Trigger, raw::OpDetPulse>  >();
+  // produces< art::Assns<raw::Trigger, raw::RawDigit>    >();
+  // produces< art::Assns<raw::Trigger, raw::AuxDetDigit> >();
+  // produces< art::Assns<raw::Trigger, raw::OpDetPulse>  >();
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
 
 
@@ -353,9 +353,9 @@ void FragmentToDigit::produce(art::Event & evt)
   std::unique_ptr< std::vector<raw::AuxDetDigit> > auxDetVec  (new std::vector<raw::AuxDetDigit>);
   std::unique_ptr< std::vector<raw::OpDetPulse>  > opDetVec   (new std::vector<raw::OpDetPulse >);
 
-  std::unique_ptr< art::Assns<raw::Trigger, raw::RawDigit>    > tdRDAssns(new art::Assns<raw::Trigger, raw::RawDigit>   );
-  std::unique_ptr< art::Assns<raw::Trigger, raw::AuxDetDigit> > tdADAssns(new art::Assns<raw::Trigger, raw::AuxDetDigit>);
-  std::unique_ptr< art::Assns<raw::Trigger, raw::OpDetPulse>  > tdOPAssns(new art::Assns<raw::Trigger, raw::OpDetPulse> );
+  // std::unique_ptr< art::Assns<raw::Trigger, raw::RawDigit>    > tdRDAssns(new art::Assns<raw::Trigger, raw::RawDigit>   );
+  // std::unique_ptr< art::Assns<raw::Trigger, raw::AuxDetDigit> > tdADAssns(new art::Assns<raw::Trigger, raw::AuxDetDigit>);
+  // std::unique_ptr< art::Assns<raw::Trigger, raw::OpDetPulse>  > tdOPAssns(new art::Assns<raw::Trigger, raw::OpDetPulse> );
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
 
   art::Handle< std::vector<artdaq::Fragment> > fragments;
@@ -403,11 +403,14 @@ void FragmentToDigit::produce(art::Event & evt)
   std::vector<raw::RawDigit>    	 rawDigits;	 
   std::vector<raw::OpDetPulse>   	 opPulses;	 
   uint32_t                       	 trigBits   = 0;
-  size_t                         	 startAssns = 0;
-  size_t                         	 endAssns   = 0;
+  // size_t                         	 startAssns = 0;
+  // size_t                         	 endAssns   = 0;
   double                                 eventTime  = 1.*evt.time().timeHigh() + 1.*evt.time().timeLow();
 
+  // remove the next two lines of code when we verify that the trigger 
+  // matching also includes the TPC data
   this->makeTPCRawDigits(data->caenFrags, rawDigits);
+  for(auto rd : rawDigits) rawDigitVec->push_back(rd);
 
   for(size_t i = 0; i < fNtriggers; ++i) {
 
@@ -448,19 +451,18 @@ void FragmentToDigit::produce(art::Event & evt)
     // uncomment the next line when we are sure that the fragments
     // are matched for the TPC data as well
     // this->makeTPCRawDigits(caenFrags, rawDigits);
-    startAssns = rawDigitVec->size();
+    //startAssns = rawDigitVec->size();
     //for(auto rd : rawDigits) rawDigitVec->push_back(rd);
-    endAssns = rawDigitVec->size();
-    util::CreateAssn(*this, evt, *triggerVec, *rawDigitVec, *tdRDAssns, startAssns, endAssns);
+    //endAssns = rawDigitVec->size();
+    //util::CreateAssn(*this, evt, *triggerVec, *rawDigitVec, *tdRDAssns, startAssns, endAssns);
 
     if(fPMTTest){
       this->makeOpDetPulses(caenFrags, opPulses);
 
-      startAssns = opDetVec->size();
+      //startAssns = opDetVec->size();
       for(auto op : opPulses) opDetVec->push_back(op);
-      endAssns = opDetVec->size();
-
-      util::CreateAssn(*this, evt, *triggerVec, *opDetVec, *tdOPAssns, startAssns, endAssns);
+      //endAssns = opDetVec->size();
+      //util::CreateAssn(*this, evt, *triggerVec, *opDetVec, *tdOPAssns, startAssns, endAssns);
     }
 
     // putting all the AuxDetDigits from the different detectors into a single
@@ -471,10 +473,10 @@ void FragmentToDigit::produce(art::Event & evt)
     this->makeTOFDigits      (caenFrags, auxDigits);
     this->makeAeroGelDigits  (caenFrags, auxDigits);
 
-    startAssns = auxDetVec->size();
+    //startAssns = auxDetVec->size();
     for(auto ad : auxDigits) auxDetVec->push_back(ad);
-    endAssns = auxDetVec->size();
-    util::CreateAssn(*this, evt, *triggerVec, *auxDetVec, *tdADAssns, startAssns, endAssns);
+    //endAssns = auxDetVec->size();
+    //util::CreateAssn(*this, evt, *triggerVec, *auxDetVec, *tdADAssns, startAssns, endAssns);
   }
 
   this->makeWUTDigits(data, auxDetVec);
@@ -483,9 +485,9 @@ void FragmentToDigit::produce(art::Event & evt)
   evt.put(std::move(rawDigitVec));
   evt.put(std::move(auxDetVec));
   evt.put(std::move(opDetVec));
-  evt.put(std::move(tdRDAssns));
-  evt.put(std::move(tdADAssns));
-  evt.put(std::move(tdOPAssns));
+  // evt.put(std::move(tdRDAssns));
+  // evt.put(std::move(tdADAssns));
+  // evt.put(std::move(tdOPAssns));
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
 
 
