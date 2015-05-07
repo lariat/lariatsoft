@@ -121,9 +121,9 @@ public:
 				     std::string graphNamePrefix);
 
   void matchFragments(uint32_t            & Ntriggers,
-		      std::vector<size_t> & v1751InTrigger,
-		      std::vector<size_t> & v1740InTrigger,
-		      std::vector<size_t> & TDCInTrigger,
+		      std::vector<size_t> & fv1751InTrigger,
+		      std::vector<size_t> & fv1740InTrigger,
+		      std::vector<size_t> & fTDCInTrigger,
 		      LariatFragment*       data);
 
   void makeTPCRawDigits(LariatFragment *data,
@@ -402,9 +402,9 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
   this->makeTPCRawDigits(data, tpcDigitVec);
 
   //this->matchDataBlocks(data);
-  this->matchFragments(Ntriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
+  this->matchFragments(fNtriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
 
-  std::cout<<"Ntriggers is: "<<Ntriggers<<std::endl;
+  std::cout<<"Ntriggers is: "<<fNtriggers<<std::endl;
 
   std::cout<<"The size of v1751InTrigger is: "<<fv1751InTrigger.size()<<std::endl;
 
@@ -450,6 +450,10 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
   for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
     evt.put(std::move(mwpcTdcVecs[i].get()), mwpcTdcLabels[i]);
   }
+
+  fv1751InTrigger.clear();
+  fv1740InTrigger.clear();
+  fTDCInTrigger.clear();
 
   return;  
 }

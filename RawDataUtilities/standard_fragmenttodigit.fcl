@@ -42,7 +42,7 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:    "standard_reco2.root" #default file name, can override from command line with -o or --output
+   fileName:    "standard_reco.root" #default file name, can override from command line with -o or --output
    outputCommands: [ "keep *", "drop artdaq::Fragments_daq_*_Wrapper" ]
  }
 }

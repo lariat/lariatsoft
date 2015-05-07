@@ -60,9 +60,9 @@ public:
 
 private:
 
-  std::string fCaenV1740Board8Label;
+  std::string fCaenV1740Board7Label;
+  std::string fCaenV1751Board0Label;
   std::string fCaenV1751Board1Label;
-  std::string fCaenV1751Board2Label;
 
   TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments 
   TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments 
@@ -84,12 +84,12 @@ DigitReader::DigitReader(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void DigitReader::reconfigure(fhicl::ParameterSet const & p)
 {
-  fCaenV1740Board8Label = p.get< std::string >("CaenV1740Board8Label",
-                                               "CaenV1740Board8");
+  fCaenV1740Board7Label = p.get< std::string >("CaenV1740Board7Label",
+                                               "CaenV1740Board7");
+  fCaenV1751Board0Label = p.get< std::string >("CaenV1751Board0Label",
+                                               "CaenV1751Board0");
   fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label",
                                                "CaenV1751Board1");
-  fCaenV1751Board2Label = p.get< std::string >("CaenV1751Board2Label",
-                                               "CaenV1751Board2");
 }
 
 //------------------------------------------------------------------------------
@@ -141,19 +141,19 @@ void DigitReader::beginJob()
 void DigitReader::analyze(art::Event const & evt)
 {
 
+  art::Handle< std::vector<raw::AuxDetDigit> > CaenV1751Board0Handle;
+  evt.getByLabel("FragmentToDigit", fCaenV1751Board0Label, CaenV1751Board0Handle);
   art::Handle< std::vector<raw::AuxDetDigit> > CaenV1751Board1Handle;
   evt.getByLabel("FragmentToDigit", fCaenV1751Board1Label, CaenV1751Board1Handle);
-  art::Handle< std::vector<raw::AuxDetDigit> > CaenV1751Board2Handle;
-  evt.getByLabel("FragmentToDigit", fCaenV1751Board2Label, CaenV1751Board2Handle);
-  art::Handle< std::vector<raw::AuxDetDigit> > CaenV1740Board8Handle;
-  evt.getByLabel("FragmentToDigit", fCaenV1740Board8Label, CaenV1740Board8Handle);
+  art::Handle< std::vector<raw::AuxDetDigit> > CaenV1740Board7Handle;
+  evt.getByLabel("FragmentToDigit", fCaenV1740Board7Label, CaenV1740Board7Handle);
 
   std::cout << "evt.run(): " << evt.run() << "; evt.subRun(): " << evt.subRun()
             << "; evt.event(): " << evt.event() << std::endl;
 
-  for (size_t i = 0; i < CaenV1740Board8Handle->size(); ++i) {
+  for (size_t i = 0; i < CaenV1740Board7Handle->size(); ++i) {
 
-    art::Ptr<raw::AuxDetDigit> digitVec(CaenV1740Board8Handle, i);
+    art::Ptr<raw::AuxDetDigit> digitVec(CaenV1740Board7Handle, i);
     caen_trigger_time_tag=digitVec->TimeStamp();
 
     for (size_t j = 0; j < V1740_N_CHANNELS; ++j) {
@@ -168,9 +168,9 @@ void DigitReader::analyze(art::Event const & evt)
 
   }
 
-  for (size_t i = 0; i < CaenV1751Board1Handle->size(); ++i) {
+  for (size_t i = 0; i < CaenV1751Board0Handle->size(); ++i) {
 
-    art::Ptr<raw::AuxDetDigit> digitVec(CaenV1751Board1Handle, i);
+    art::Ptr<raw::AuxDetDigit> digitVec(CaenV1751Board0Handle, i);
     caen_trigger_time_tag=digitVec->TimeStamp();
 
     for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
@@ -192,7 +192,7 @@ void DigitReader::analyze(art::Event const & evt)
   //std::cout << "evt.event(): " << evt.event() << std::endl;
 
   art::Handle< std::vector<raw::AuxDetDigit> > digitVecHandle;
-  evt.getByLabel("FragmentToDigit", fCaenV1751Board1Label, digitVecHandle);
+  evt.getByLabel("FragmentToDigit", fCaenV1751Board0Label, digitVecHandle);
   std::cout << "digitVecHandle Size is: " << digitVecHandle->size() << std::endl;
 
   for (size_t i = 0; i < digitVecHandle->size(); ++i) {
