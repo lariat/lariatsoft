@@ -48,8 +48,10 @@
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
 #include "RawData/OpDetPulse.h"
+#include "RawData/TriggerData.h"
 #include "SummaryData/RunData.h"
 #include "Geometry/Geometry.h"
+#include "Utilities/AssociationUtil.h"
 
 //#include "TTree.h"
 #include "TGraph.h"
@@ -126,16 +128,23 @@ public:
 		      std::vector<size_t> & fTDCInTrigger,
 		      LariatFragment*       data);
 
-  void makeTPCRawDigits      (std::vector<CAENFragment>     const& caenFrags,
-			      std::vector<raw::RawDigit>         & tpcDigits);
-  void makeOpDetPulses       (std::vector<CAENFragment>     const& caenFrags,
-			      std::vector<raw::OpDetPulse>       & opDetPulse);
-  void makeMuonRangeAuxDigits(std::vector<CAENFragment>     const& caenFrags,
-			      std::vector<raw::AuxDetDigit>      & mrAuxDigits);
-  void makeTOFDigits         (std::vector<CAENFragment>     const& caenFrags,
-			      std::vector<raw::AuxDetDigit>      & tofAuxDigits);
-  void makeAeroGelDigits     (std::vector<CAENFragment>     const& caenFrags,
-			      std::vector<raw::AuxDetDigit>      & agAuxDigits);
+  void makeTPCRawDigits          (std::vector<CAENFragment>     const& caenFrags,	
+			     	  std::vector<raw::RawDigit>         & tpcDigits);	
+  void makeOpDetPulses       	 (std::vector<CAENFragment>     const& caenFrags,	
+			     	  std::vector<raw::OpDetPulse>       & opDetPulse);	
+  void makeMuonRangeDigits	 (std::vector<CAENFragment>     const& caenFrags,	
+			     	  std::vector<raw::AuxDetDigit>      & mrAuxDigits);
+  void makeTOFDigits         	 (std::vector<CAENFragment>     const& caenFrags,	
+			     	  std::vector<raw::AuxDetDigit>      & tofAuxDigits);
+  void makeAeroGelDigits     	 (std::vector<CAENFragment>     const& caenFrags,	
+			     	  std::vector<raw::AuxDetDigit>      & agAuxDigits);
+  void caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,
+				  std::vector<raw::AuxDetDigit>      & auxDetDigits,
+				  uint32_t                      const& boardId,
+				  std::set<uint32_t>            const& boardChans,
+				  uint32_t                      const& chanOffset
+				  std::string                   const& detName);
+
 
   void makeCaenV1751AuxDetDigits(int i, 
 				 LariatFragment*                                    data,
@@ -217,30 +226,36 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
 
   produces< sumdata::RunData, art::InRun >();
 
-  produces< std::vector<raw::RawDigit> >();
+  produces< std::vector<raw::TriggerData> >();
+  produces< std::vector<raw::RawDigit>    >();
+  produces< std::vector<raw::AuxDetDigit> >();
+  produces< std::vector<raw::OpDetPulse>  >();
+  produces< art::Assns<raw::TriggerData, raw::RawDigit>    >();
+  produces< art::Assns<raw::TriggerData, raw::AuxDetDigit> >();
+  produces< art::Assns<raw::TriggerData, raw::OpDetPulse>  >();
 
-  produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board7Label);
-  produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board0Label);
-  produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board1Label);
-  produces< std::vector<raw::AuxDetDigit> >(fWutLabel);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc01Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc02Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc03Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc04Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc05Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc06Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc07Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc08Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc09Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc10Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc11Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc12Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc13Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc14Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc15Label);
-  produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc16Label);
-  produces< std::vector<raw::OpDetPulse> >(fCaenOpLabel1);
-  produces< std::vector<raw::OpDetPulse> >(fCaenOpLabel2);
+  // produces< std::vector<raw::AuxDetDigit> >(fCaenV1740Board7Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board0Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fCaenV1751Board1Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fWutLabel);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc01Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc02Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc03Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc04Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc05Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc06Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc07Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc08Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc09Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc10Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc11Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc12Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc13Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc14Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc15Label);
+  // produces< std::vector<raw::AuxDetDigit> >(fMwpcTdc16Label);
+  // produces< std::vector<raw::OpDetPulse> >(fCaenOpLabel1);
+  // produces< std::vector<raw::OpDetPulse> >(fCaenOpLabel2);
 }
 
 //------------------------------------------------------------------------------
@@ -248,37 +263,46 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 {
   fRawFragmentLabel = p.get< std::string >("RawFragmentLabel", "daq");
   fRawFragmentInstance = p.get< std::string >("RawFragmentInstance", "SPILL");
-  fCaenV1740Board0Label = p.get< std::string >("CaenV1740Board0Label", "CaenV1740Board0");
-  fCaenV1740Board1Label = p.get< std::string >("CaenV1740Board1Label", "CaenV1740Board1");
-  fCaenV1740Board2Label = p.get< std::string >("CaenV1740Board2Label", "CaenV1740Board2");
-  fCaenV1740Board3Label = p.get< std::string >("CaenV1740Board3Label", "CaenV1740Board3");
-  fCaenV1740Board4Label = p.get< std::string >("CaenV1740Board4Label", "CaenV1740Board4");
-  fCaenV1740Board5Label = p.get< std::string >("CaenV1740Board5Label", "CaenV1740Board5");
-  fCaenV1740Board6Label = p.get< std::string >("CaenV1740Board6Label", "CaenV1740Board6");
-  fCaenV1740Board7Label = p.get< std::string >("CaenV1740Board7Label", "CaenV1740Board7");
-  fCaenV1751Board0Label = p.get< std::string >("CaenV1751Board0Label", "CaenV1751Board0");
-  fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label", "CaenV1751Board1");
-  fWutLabel = p.get< std::string >("WutLabel", "Wut");
-  fMwpcTdc01Label = p.get< std::string >("MwpcTdc01Label", "MwpcTdc01");
-  fMwpcTdc02Label = p.get< std::string >("MwpcTdc02Label", "MwpcTdc02");
-  fMwpcTdc03Label = p.get< std::string >("MwpcTdc03Label", "MwpcTdc03");
-  fMwpcTdc04Label = p.get< std::string >("MwpcTdc04Label", "MwpcTdc04");
-  fMwpcTdc05Label = p.get< std::string >("MwpcTdc05Label", "MwpcTdc05");
-  fMwpcTdc06Label = p.get< std::string >("MwpcTdc06Label", "MwpcTdc06");
-  fMwpcTdc07Label = p.get< std::string >("MwpcTdc07Label", "MwpcTdc07");
-  fMwpcTdc08Label = p.get< std::string >("MwpcTdc08Label", "MwpcTdc08");
-  fMwpcTdc09Label = p.get< std::string >("MwpcTdc09Label", "MwpcTdc09");
-  fMwpcTdc10Label = p.get< std::string >("MwpcTdc10Label", "MwpcTdc10");
-  fMwpcTdc11Label = p.get< std::string >("MwpcTdc11Label", "MwpcTdc11");
-  fMwpcTdc12Label = p.get< std::string >("MwpcTdc12Label", "MwpcTdc12");
-  fMwpcTdc13Label = p.get< std::string >("MwpcTdc13Label", "MwpcTdc13");
-  fMwpcTdc14Label = p.get< std::string >("MwpcTdc14Label", "MwpcTdc14");
-  fMwpcTdc15Label = p.get< std::string >("MwpcTdc15Label", "MwpcTdc15");
-  fMwpcTdc16Label = p.get< std::string >("MwpcTdc16Label", "MwpcTdc16");
-  fOpDetChID = p.get< std::vector<std::vector<int>> >("pmt_channel_ids");
-  fCaenOpLabel1 = p.get< std::string >("OpDetBoardLabel1", "Caenv1751Optical1");
-  fCaenOpLabel2 = p.get< std::string >("OpDetBoardLabel2", "Caenv1751Optical2");
+  // fCaenV1740Board0Label = p.get< std::string >("CaenV1740Board0Label", "CaenV1740Board0");
+  // fCaenV1740Board1Label = p.get< std::string >("CaenV1740Board1Label", "CaenV1740Board1");
+  // fCaenV1740Board2Label = p.get< std::string >("CaenV1740Board2Label", "CaenV1740Board2");
+  // fCaenV1740Board3Label = p.get< std::string >("CaenV1740Board3Label", "CaenV1740Board3");
+  // fCaenV1740Board4Label = p.get< std::string >("CaenV1740Board4Label", "CaenV1740Board4");
+  // fCaenV1740Board5Label = p.get< std::string >("CaenV1740Board5Label", "CaenV1740Board5");
+  // fCaenV1740Board6Label = p.get< std::string >("CaenV1740Board6Label", "CaenV1740Board6");
+  // fCaenV1740Board7Label = p.get< std::string >("CaenV1740Board7Label", "CaenV1740Board7");
+  // fCaenV1751Board0Label = p.get< std::string >("CaenV1751Board0Label", "CaenV1751Board0");
+  // fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label", "CaenV1751Board1");
+  // fWutLabel = p.get< std::string >("WutLabel", "Wut");
+  // fMwpcTdc01Label = p.get< std::string >("MwpcTdc01Label", "MwpcTdc01");
+  // fMwpcTdc02Label = p.get< std::string >("MwpcTdc02Label", "MwpcTdc02");
+  // fMwpcTdc03Label = p.get< std::string >("MwpcTdc03Label", "MwpcTdc03");
+  // fMwpcTdc04Label = p.get< std::string >("MwpcTdc04Label", "MwpcTdc04");
+  // fMwpcTdc05Label = p.get< std::string >("MwpcTdc05Label", "MwpcTdc05");
+  // fMwpcTdc06Label = p.get< std::string >("MwpcTdc06Label", "MwpcTdc06");
+  // fMwpcTdc07Label = p.get< std::string >("MwpcTdc07Label", "MwpcTdc07");
+  // fMwpcTdc08Label = p.get< std::string >("MwpcTdc08Label", "MwpcTdc08");
+  // fMwpcTdc09Label = p.get< std::string >("MwpcTdc09Label", "MwpcTdc09");
+  // fMwpcTdc10Label = p.get< std::string >("MwpcTdc10Label", "MwpcTdc10");
+  // fMwpcTdc11Label = p.get< std::string >("MwpcTdc11Label", "MwpcTdc11");
+  // fMwpcTdc12Label = p.get< std::string >("MwpcTdc12Label", "MwpcTdc12");
+  // fMwpcTdc13Label = p.get< std::string >("MwpcTdc13Label", "MwpcTdc13");
+  // fMwpcTdc14Label = p.get< std::string >("MwpcTdc14Label", "MwpcTdc14");
+  // fMwpcTdc15Label = p.get< std::string >("MwpcTdc15Label", "MwpcTdc15");
+  // fMwpcTdc16Label = p.get< std::string >("MwpcTdc16Label", "MwpcTdc16");
+  // fCaenOpLabel1   = p.get< std::string >("OpDetBoardLabel1", "Caenv1751Optical1");
+  // fCaenOpLabel2   = p.get< std::string >("OpDetBoardLabel2", "Caenv1751Optical2");
+
+  fOpDetChID      = p.get< std::vector<std::vector<int>> >("pmt_channel_ids");
   fPMTTest = p.get<bool> ("pmt_test");
+
+  for(size_t i = 0; i < fOpDetChID.size(); ++i){
+    for(size_t j = 0; j < fOpDetChID[i].size(); ++j)   
+      mf::LogInfo("FragmentToDigit") << "channels and boards for opdetpulses : board - channel "
+				     << i << " - " << j << " " << fOpDetChID[i][j];
+  }
+
+
 }
 
 //------------------------------------------------------------------------------
@@ -310,53 +334,57 @@ void FragmentToDigit::beginRun(art::Run& run)
 //------------------------------------------------------------------------------
 void FragmentToDigit::produce(art::Event & evt)
 {
-for(unsigned int i=0;i<fOpDetChID.size();++i){
-	for(unsigned int j=0;j<fOpDetChID[i].size();++j)   mf::LogInfo("FragmentToDigit")<<"channels and boards for opdetpulses : board - channel "<<i<<" - "<<j<<" "<<fOpDetChID[i][j]<<std::endl;
-	}
   art::Handle< std::vector<artdaq::Fragment> > fragments;
   evt.getByLabel(fRawFragmentLabel, fRawFragmentInstance, fragments);
 
-  std::unique_ptr< std::vector<raw::RawDigit> > tpcDigitVec(new std::vector<raw::RawDigit>);
+  std::unique_ptr< std::vector<raw::TriggerData> > triggerVec (new std::vector<raw::TriggerData>);
+  std::unique_ptr< std::vector<raw::RawDigit>    > rawDigitVec(new std::vector<raw::RawDigit   >);
+  std::unique_ptr< std::vector<raw::AuxDetDigit> > auxDetVec  (new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< std::vector<raw::OpDetPulse>  > opDetVec   (new std::vector<raw::OpDetPulse >);
 
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board7Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board0Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board1Vec(new std::vector<raw::AuxDetDigit>);
+  std::unique_ptr< art::Assns<raw::TriggerData, raw::RawDigit>    > tdRDAssns(new art::Assns<raw::TriggerData, raw::RawDigit>   );
+  std::unique_ptr< art::Assns<raw::TriggerData, raw::AuxDetDigit> > tdADAssns(new art::Assns<raw::TriggerData, raw::AuxDetDigit>);
+  std::unique_ptr< art::Assns<raw::TriggerData, raw::OpDetPulse>  > tdOPAssns(new art::Assns<raw::TriggerData, raw::OpDetPulse> );
 
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > wutVec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1740Board7Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board0Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > caenV1751Board1Vec(new std::vector<raw::AuxDetDigit>);
 
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc01Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc02Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc03Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc04Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc05Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc06Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc07Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc08Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc09Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc10Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc11Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc12Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc13Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc14Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc15Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc16Vec(new std::vector<raw::AuxDetDigit>);
-  std::unique_ptr<std::vector< raw::OpDetPulse > > OpDetVec1(new std::vector<raw::OpDetPulse>);
-  std::unique_ptr<std::vector< raw::OpDetPulse > > OpDetVec2(new std::vector<raw::OpDetPulse>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > wutVec(new std::vector<raw::AuxDetDigit>);
 
-  // the following line is way too long
-  std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > mwpcTdcVecs = {
-    mwpcTdc01Vec, mwpcTdc02Vec, mwpcTdc03Vec, mwpcTdc04Vec,
-    mwpcTdc05Vec, mwpcTdc06Vec, mwpcTdc07Vec, mwpcTdc08Vec,
-    mwpcTdc09Vec, mwpcTdc10Vec, mwpcTdc11Vec, mwpcTdc12Vec,
-    mwpcTdc13Vec, mwpcTdc14Vec, mwpcTdc15Vec, mwpcTdc16Vec
-  };
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc01Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc02Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc03Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc04Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc05Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc06Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc07Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc08Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc09Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc10Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc11Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc12Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc13Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc14Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc15Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr< std::vector<raw::AuxDetDigit> > mwpcTdc16Vec(new std::vector<raw::AuxDetDigit>);
+  // std::unique_ptr<std::vector< raw::OpDetPulse > > OpDetVec1(new std::vector<raw::OpDetPulse>);
+  // std::unique_ptr<std::vector< raw::OpDetPulse > > OpDetVec2(new std::vector<raw::OpDetPulse>);
 
-  std::string mwpcTdcLabels[16] = {
-      fMwpcTdc01Label, fMwpcTdc02Label, fMwpcTdc03Label, fMwpcTdc04Label,
-      fMwpcTdc05Label, fMwpcTdc06Label, fMwpcTdc07Label, fMwpcTdc08Label,
-      fMwpcTdc09Label, fMwpcTdc10Label, fMwpcTdc11Label, fMwpcTdc12Label,
-      fMwpcTdc13Label, fMwpcTdc14Label, fMwpcTdc15Label, fMwpcTdc16Label
-      };
+  // // the following line is way too long
+  // std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > mwpcTdcVecs = {
+  //   mwpcTdc01Vec, mwpcTdc02Vec, mwpcTdc03Vec, mwpcTdc04Vec,
+  //   mwpcTdc05Vec, mwpcTdc06Vec, mwpcTdc07Vec, mwpcTdc08Vec,
+  //   mwpcTdc09Vec, mwpcTdc10Vec, mwpcTdc11Vec, mwpcTdc12Vec,
+  //   mwpcTdc13Vec, mwpcTdc14Vec, mwpcTdc15Vec, mwpcTdc16Vec
+  // };
+
+  // std::string mwpcTdcLabels[16] = {
+  //     fMwpcTdc01Label, fMwpcTdc02Label, fMwpcTdc03Label, fMwpcTdc04Label,
+  //     fMwpcTdc05Label, fMwpcTdc06Label, fMwpcTdc07Label, fMwpcTdc08Label,
+  //     fMwpcTdc09Label, fMwpcTdc10Label, fMwpcTdc11Label, fMwpcTdc12Label,
+  //     fMwpcTdc13Label, fMwpcTdc14Label, fMwpcTdc15Label, fMwpcTdc16Label
+  //     };
 
   if ( !fragments.isValid() )
       throw cet::exception("FragmentToDigit") << "artdaq::Fragment handle is not valid, bail";
@@ -395,43 +423,110 @@ for(unsigned int i=0;i<fOpDetChID.size();++i){
 			      << "\nThe size of TDCInTrigger is:   " << fTDCInTrigger.size();
 
   //produce wvforms for all triggers in selected channels in v1751 if PMTTest is set to true - skip matching for them
-  if (fPMTTest){
-    for(size_t i=0;i<data->caenFrags.size();++i){
-      this->makeCaenV1751AuxDetDigits(i, data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);
-    }
-  }
+  // if (fPMTTest){
+  //   for(size_t i=0;i<data->caenFrags.size();++i){
+  //     this->makeCaenV1751AuxDetDigits(i, data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);
+  //   }
+  // }
 
-  for (size_t i = 0; i < fNtriggers; ++i) {
+  std::vector<CAENFragment>      caenFrags;
+  std::vector<raw::AuxDetDigits> auxDigits;
+  std::vector<raw::RawDigits>    rawDigits;
+  std::vector<raw::OpDetPulse>   opPulses;
+  uint32_t                       trigBits   = 0;
+  size_t                         startAssns = 0;
+  size_t                         endAssns   = 0;
+  for(size_t i = 0; i < fNtriggers; ++i) {
 
-    mf::LogInfo("FragmentToDigit") << "Trigger " << i << " has a V1751 Fragment with index " << fv1751InTrigger[i] 
+    caenFrags.clear()
+    auxDigits.clear();
+    rawDigits.clear();
+    opPulses .clear();
+
+    mf::LogInfo("FragmentToDigit") << "Trigger " << i 
+				   << " has a V1751 Fragment with index "  << fv1751InTrigger[i] 
 				   <<"\n and a V1740 Fragment with index " << fv1740InTrigger[i];
-    if (fTDCInTrigger.size()>0) mf::LogInfo("FragmentToDigit") << ", and a TDC Fragment with index " << fTDCInTrigger[i];
 
+    // put a trigger object in the output vector
 
-    if(fv1751InTrigger[i])
-      this->makeCaenV1751AuxDetDigits(fv1751InTrigger[i], data, caenV1751Board0Vec, caenV1751Board1Vec, OpDetVec1, OpDetVec2);
+    if(fTDCInTrigger.size() > 0) 
+      mf::LogInfo("FragmentToDigit") << ", and a TDC Fragment with index " << fTDCInTrigger[i];
 
-    if(fv1740InTrigger[i])
-      this->makeCaenV1740AuxDetDigits(fv1740InTrigger[i], data, caenV1740Board7Vec);
+    if(fv1751InTrigger[i]){
+      // this->makeCaenV1751AuxDetDigits(fv1751InTrigger[i], data, 
+      // 				      caenV1751Board0Vec, caenV1751Board1Vec, 
+      // 				      OpDetVec1, OpDetVec2);
 
-    if(fTDCInTrigger.size() > 0 && fTDCInTrigger[i])
-      this->makeMWPCTDCAuxDetDigits(fTDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);
+      caenFrags.push_back(data->caenFrags[fv1751InTrigger[i]]);
+    }
+    if(fv1740InTrigger[i]){
+      //this->makeCaenV1740AuxDetDigits(fv1740InTrigger[i], data, caenV1740Board7Vec);
+      caenFrags.push_back(date->caenFrags[fv1740InTrigger[i]]);
+    }
+
+    if(fTDCInTrigger.size() > 0 && fTDCInTrigger[i]){
+      //this->makeMWPCTDCAuxDetDigits(fTDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);
+    }
+
+    // need to set the trigger bits
+    triggerVec->push_back(raw::Trigger(i, caenFrags.front().header.triggerTimeTag, evt.time(), trigBits));
+
+    // make each association type as you go putting the digits into the vectors
+
+    // uncomment the next line when we are sure that the fragments
+    // are matched for the TPC data as well
+    // this->makeTPCRawDigits(caenFrags, rawDigits);
+
+    // putting all the AuxDetDigits from the different detectors into a single
+    // vector in the event record.  They can be separated out by the detector
+    // name data member of the AuxDetDigit later.  Doing it this way makes 
+    // creating the associations easier.
+    this->makeMuonRangeDigits(caenFrags, auxDigits);
+    this->makeTOFDigits      (caenFrags, auxDigits);
+    this->makeAeroGelDigits  (caenFrags, auxDigits);
+
+    if(fPMTTest){
+      this->makeOpDetPulses(caenFrags, opPulses);
+
+      startAssns = opDetVec->size();
+      for(auto op : opPulses) opDetVec->push_back(op);
+      endAssns = opDetVec->size();
+
+      util::CreateAssn(*this, evt, *triggerVec, *opDetVec, *tdOPAssns, startAssns, endAssns);
+    }
+
+    startAssns = auxDetVec->size();
+    for(auto ad : auxDigits) auxDetVec->push_back(ad);
+    endAssns = auxDetVec->size();
+    util::CreateAssn(*this, evt, *triggerVec, *auxDetVec, *tdADAssns, startAssns, endAssns);
+
+    startAssns = rawDigitVec->size();
+    //for(auto rd : rawDigits) rawDigitVec->push_back(rd);
+    endAssns = rawDigitVec->size();
+    util::CreateAssn(*this, evt, *triggerVec, *rawDigitVec, *tdRDAssns, startAssns, endAssns);
 
   }
 
   this->makeWUTDigits(data, wutVec);
 
-  evt.put(std::move(tpcDigitVec));
-  evt.put(std::move(caenV1740Board7Vec), fCaenV1740Board7Label);
-  evt.put(std::move(caenV1751Board0Vec), fCaenV1751Board0Label);
-  evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
-  evt.put(std::move(OpDetVec1), fCaenOpLabel1);
-  evt.put(std::move(OpDetVec2), fCaenOpLabel2);
-  evt.put(std::move(wutVec), fWutLabel);
+  evt.put(std::move(triggerVec));
+  evt.put(std::move(rawDigitVec));
+  evt.put(std::move(auxDetVec));
+  evt.put(std::move(opDetVec));
+  evt.put(std::move(tdRDAssns));
+  evt.put(std::move(tdADAssns));
+  evt.put(std::move(tdOPAssns));
 
-  for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
-    evt.put(std::move(mwpcTdcVecs[i].get()), mwpcTdcLabels[i]);
-  }
+  // evt.put(std::move(caenV1740Board7Vec), fCaenV1740Board7Label);
+  // evt.put(std::move(caenV1751Board0Vec), fCaenV1751Board0Label);
+  // evt.put(std::move(caenV1751Board1Vec), fCaenV1751Board1Label);
+  // evt.put(std::move(OpDetVec1), fCaenOpLabel1);
+  // evt.put(std::move(OpDetVec2), fCaenOpLabel2);
+  // evt.put(std::move(wutVec), fWutLabel);
+
+  // for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
+  //   evt.put(std::move(mwpcTdcVecs[i].get()), mwpcTdcLabels[i]);
+  // }
 
   fv1751InTrigger.clear();
   fv1740InTrigger.clear();
@@ -933,7 +1028,7 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
 
 //------------------------------------------------------------------------------
 void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
-				       std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits)
+				       std::vector<raw::RawDigit>     & tpcDigits)
 {
 
   raw::ChannelID_t tpcChan = 0;
@@ -998,14 +1093,26 @@ void FragmentToDigit::makeCaenV1751AuxDetDigits(int i, LariatFragment * data,
   uint32_t triggerTimeTag = caenFrag.header.triggerTimeTag;
   for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
     std::vector<short> caenFragWaveForm(caenFrag.waveForms[j].data.begin(), caenFrag.waveForms[j].data.end());
-    caenV1751Board0Vec->push_back(raw::AuxDetDigit(static_cast <unsigned short> (j),
-						   caenFragWaveForm,
-						   fCaenV1751Board0Label,
-						   static_cast <unsigned long long> (triggerTimeTag)
-						   )
-				  );
+   
+    if(boardId == 8)
+      caenV1751Board0Vec->push_back(raw::AuxDetDigit(static_cast <unsigned short> (j),
+						     caenFragWaveForm,
+						     fCaenV1751Board0Label,
+						     static_cast <unsigned long long> (triggerTimeTag)
+						     )
+				    );
+    else if(boardId == 9)
+      caenV1751Board1Vec->push_back(raw::AuxDetDigit(static_cast <unsigned short> (j),
+						     caenFragWaveForm,
+						     fCaenV1751Board1Label,
+						     static_cast <unsigned long long> (triggerTimeTag)
+						     )
+				    );
+    
 
     if(fOpDetChID[boardId].size() != 0){
+      // the following if statement makes no sense.  Why would we expect the size of the 
+      // vector for a given set of channels on a board to be greater than j????
       if(fOpDetChID[boardId].size() > j){
 	mf::LogInfo("FragmentToDigit") << "Writing opdetpulses index i=" << i 
 				       << " in makeCaenV1751Frags boardID : " << boardId 
@@ -1013,6 +1120,8 @@ void FragmentToDigit::makeCaenV1751AuxDetDigits(int i, LariatFragment * data,
 				       << " size of wvform data " << caenFrag.waveForms[j].data.size()
 				       << " fOpDetChID[boardId] size() " << fOpDetChID[boardId].size() 
 				       << " boardId " << boardId;
+	// this if statement is also suspect - what happens when there are fewer than j 
+	// entries in the vector of channels referenced by fOpDetChId[boardId]????
 	if(fOpDetChID[boardId][j] == int(j)){
 	  if(boardId == 8)
 	    OpDetVec1->push_back(raw::OpDetPulse(static_cast <unsigned short> (j),
@@ -1159,25 +1268,113 @@ void FragmentToDigit::makeWUTDigits(LariatFragment * data,
 }
 
 //------------------------------------------------------------------------------
-void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment>  const& caenFrags,
-				       std::vector<raw::RawDigit>      & tpcDigits)
-{
-
-  return;
-}
-
-//------------------------------------------------------------------------------
 void FragmentToDigit::makeOpDetPulses(std::vector<CAENFragment>    const& caenFrags,
 				      std::vector<raw::OpDetPulse>      & opDetPulse)
 {
+  // loop over the caenFrags
+  uint32_t boardId        = 0;
+  uint32_t triggerTimeTag = 0;
+  for(auto const& caenFrag : caenFrags){
+
+    boardId        = caenFrag.header.boardId;
+    triggerTimeTag = caenFrag.header.triggerTimeTag;
+    
+    if(fOpDetChID[boardId].size() > 0){
+
+      // loop over the channels on this board connected to optical detectors
+      for(auto ch : fOpDetChId[boardId]){
+
+	// check that the current channel, ch, is a valid one for grabbing a waveform
+	if(ch > caenFrag.waveForms.size() )
+	  throw cet::exception("FragmentToDigit") << "requested channel, " << ch 
+						  << " from board "        << boardId
+						  << " is beyond the scope of the waveform vector";
+
+	std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
+   
+	mf::LogInfo("FragmentToDigit") << "Writing opdetpulses " 
+				       << " boardID : " << boardId 
+				       << " channel " << ch 
+				       << " size of wvform data " << waveForm.size()
+				       << " fOpDetChID[boardId] size() " << fOpDetChID[boardId].size();
+
+	opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (ch),
+					     caenFragWaveForm,
+					     0,
+					     static_cast <unsigned int> (triggerTimeTag)
+					     )
+			     );
+
+      } // end loop over channels on this board
+    } // end if this board has optical channels on it
+  } // end loop over fragments
 
   return;
 }
 
 //------------------------------------------------------------------------------
-void FragmentToDigit::makeMuonRangeAuxDigits(std::vector<CAENFragment>     const& caenFrags,
-					     std::vector<raw::AuxDetDigit>      & mrAuxDigits)
+// boardId is the ID of the board we want to grab the digits from
+// boardChans holds the channels on that board that we care about for this
+// set of digits we want to make
+// chanOffset is the value we subtract from the board channel so that the 
+// digits have the right channel range for the desired auxiliary detector (ie 
+// channel 0 of the muon range stack is not necessarily on channel 0 of the 
+// caen board)
+// detName is the name of the detector
+void FragmentToDigit::caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,
+						 std::vector<raw::AuxDetDigit>      & auxDetDigits,
+						 uint32_t                      const& boardId,
+						 std::set<uint32_t>            const& boardChans,
+						 uint32_t                      const& chanOffset
+						 std::string                   const& detName)
 {
+  // loop over the fragments and grab the one corresponding to this board ID
+  for(auto const& frag : caenFrags){
+
+    if(frag.header.boardId != boardId) continue;
+
+    // loop over the channels in the set
+    for( auto const& ch : boardChans){
+      
+      // check that ch is larger than chanOffset
+      if(ch < chanOffset)
+	throw cet::exception("FragmentToDigit") << "requested channel, " << ch
+						<< " is smaller than the requested offest "
+						<< chanOffset;
+
+      // check that there is a waveform for the chosen channel
+      if(ch > caenFrag.waveForms.size() )
+	throw cet::exception("FragmentToDigit") << "requested channel, " << ch 
+						<< " from board "        << boardId
+						<< " is beyond the scope of the waveform vector";
+      
+      std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
+	
+      // place the AuxDetDigit in the vector
+      auxDetDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short> (ch - chanOffset),
+					      waveForm,
+					      detName,
+					      static_cast<unsigned long long>(caenFrag.header.triggerTimeTag))
+			     );
+
+    } // end loop over channels on the board
+  } // end loop over fragments
+  
+  return;
+}
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::makeMuonRangeDigits(std::vector<CAENFragment>     const& caenFrags,
+					  std::vector<raw::AuxDetDigit>      & mrAuxDigits)
+{
+  // The Muon Range Stack channels are all on the V1740 board in slot 7
+  // The channels are 32 <= ch < 48
+  uint32_t boardId = 7;
+  uint32_t chanOff = 32;
+  std::set<uint32_t> boardChans;
+  for(uint32_t bc = chanOff; bc < 48; ++bc) boardChans.insert(bc);
+
+  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, bc, chanOff, "MuonRangeStack");
 
   return;
 }
@@ -1186,6 +1383,13 @@ void FragmentToDigit::makeMuonRangeAuxDigits(std::vector<CAENFragment>     const
 void FragmentToDigit::makeTOFDigits(std::vector<CAENFragment>     const& caenFrags,
 				    std::vector<raw::AuxDetDigit>      & tofAuxDigits)
 {
+  // TOF inputs are all sent to board 8
+  uint32_t boardId = 8;
+  uint32_t chanOff = 0;
+  std::set<uint32_t> boardChans;
+  for(uint32_t bc = chanOff; bc < 4; ++bc) boardChans.insert(bc);
+
+  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, bc, chanOff, "TOF");
 
   return;
 }
@@ -1194,6 +1398,13 @@ void FragmentToDigit::makeTOFDigits(std::vector<CAENFragment>     const& caenFra
 void FragmentToDigit::makeAeroGelDigits(std::vector<CAENFragment>     const& caenFrags,
 					std::vector<raw::AuxDetDigit>      & agAuxDigits)
 {
+  // Aerogel inputs are all sent to board 8
+  uint32_t boardId = 8;
+  uint32_t chanOff = 4;
+  std::set<uint32_t> boardChans;
+  for(uint32_t bc = chanOff; bc < 8; ++bc) boardChans.insert(bc);
+
+  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, bc, chanOff, "AeroGel");
 
   return;
 }
