@@ -126,7 +126,7 @@ public:
 		      std::vector<size_t> & fTDCInTrigger,
 		      LariatFragment*       data);
 
-  void makeTPCRawDigits(LariatFragment *data,
+  void makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
 			std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits);
   void makeCaenV1751AuxDetDigits(int i, 
 				 LariatFragment*                                    data,
@@ -950,22 +950,31 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
 }
 
 //------------------------------------------------------------------------------
-void FragmentToDigit::makeTPCRawDigits(LariatFragment *data,
+void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
 				       std::unique_ptr< std::vector<raw::RawDigit> > & tpcDigits)
 {
 
-  std::vector<CAENFragment> const& caenFrags = data->caenFrags;
-
   raw::ChannelID_t tpcChan = 0;
   size_t maxChan = 64;
+  size_t boardId = 0;
 
+  // make a list of the starting wire number for each board channel 0
+  size_t startWireInd[8] = {239, 175, 111, 47,   0,   0,   0, 0 };
+  size_t startWireCol[8] = {0,   0,   0,   239, 223, 159, 95, 31};
+ 
   for(auto const& frag : caenFrags){
     
     // the TPC mapping has the readout going to boards 0-7 of
     // the CAEN 1751, channels 0-63 of the boards 0-6, channels 0-31 of board 7
-    if(frag.header.boardId > 7) continue;
+    // To make things hard, we decided to count the wires down instead of up
+    // Board 0 channel 0  --> wire 239 of the induction plane
+    // Board 3 channel 48 --> wire 0   of the induction plane
+    // Board 3 channel 49 --> wire 239 of the collection plane
+    // Board 7 channel 32 --> wire 0   of the collection plane
+    boardId = frag.header.boardId;
+    if(boardId > 7) continue;
     else{
-      if(frag.header.boardId < 7) maxChan = 64;
+      if(boardId < 7) maxChan = 64;
       else maxChan = 32;
       for(size_t chan = 0; chan < maxChan; ++chan){ 
 	if(chan > frag.waveForms.size() )
@@ -973,7 +982,14 @@ void FragmentToDigit::makeTPCRawDigits(LariatFragment *data,
 						  << chan << " from 1751 fragment with only "
 						  << frag.waveForms.size() << " channels";
 
-	tpcChan = (frag.header.boardId * 64) + chan;
+	// get TPC channel for the induction plane
+	if( boardId < 3 || (boardId == 3 && chan < 48) )
+	  tpcChan = startWireInd[boardId] - chan;
+
+	// get TPC Channel for the collection plane
+	if( boardId > 3 || (boardId == 3 && chan > 47) )
+	  tpcChan = 240 + startWireCol[boardId] - chan;
+
 	std::vector<short> const adc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
 	raw::RawDigit rd(tpcChan, adc.size(), adc);
 	rd.SetPedestal(2048);
