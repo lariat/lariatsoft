@@ -62,6 +62,7 @@
 #include <vector>
 #include <string>
 #include <algorithm>
+#include <initializer_list>
 
 enum {
   V1740_N_CHANNELS = 64,
@@ -144,6 +145,8 @@ public:
 				  std::set<uint32_t>            const& boardChans,
 				  uint32_t                      const& chanOffset
 				  std::string                   const& detName);
+  void makeMWPCDigits            (std::vector<TDCFragment::TdcEventData> const& tdcFrags,
+				  std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
 
 
   void makeCaenV1751AuxDetDigits(int i, 
@@ -396,8 +399,8 @@ void FragmentToDigit::produce(art::Event & evt)
 
   const char * bytePtr = reinterpret_cast<const char *> (&*frag.dataBegin());
   LariatFragment * data = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(unsigned long long));
-  mf::LogInfo("FragmentToDigit")<< "Have data fragment "
-				<< frag.dataSize() * sizeof(unsigned long long);
+  mf::LogInfo("FragmentToDigit") << "Have data fragment "
+				 << frag.dataSize() * sizeof(unsigned long long);
   data->print();
   data->printSpillTrailer();
 
@@ -429,16 +432,19 @@ void FragmentToDigit::produce(art::Event & evt)
   //   }
   // }
 
-  std::vector<CAENFragment>      caenFrags;
-  std::vector<raw::AuxDetDigits> auxDigits;
-  std::vector<raw::RawDigits>    rawDigits;
-  std::vector<raw::OpDetPulse>   opPulses;
-  uint32_t                       trigBits   = 0;
-  size_t                         startAssns = 0;
-  size_t                         endAssns   = 0;
+  std::vector<CAENFragment>              caenFrags;
+  std::vector<TDCFragment::TdcEventData> tdcEvData;
+  std::vector<raw::AuxDetDigits>         auxDigits;	
+  std::vector<raw::RawDigits>    	 rawDigits;	
+  std::vector<raw::OpDetPulse>   	 opPulses;	
+  uint32_t                       	 trigBits   = 0;
+  size_t                         	 startAssns = 0;
+  size_t                         	 endAssns   = 0;
+
   for(size_t i = 0; i < fNtriggers; ++i) {
 
     caenFrags.clear()
+    tdcEvData.clear()
     auxDigits.clear();
     rawDigits.clear();
     opPulses .clear();
@@ -461,11 +467,12 @@ void FragmentToDigit::produce(art::Event & evt)
     }
     if(fv1740InTrigger[i]){
       //this->makeCaenV1740AuxDetDigits(fv1740InTrigger[i], data, caenV1740Board7Vec);
-      caenFrags.push_back(date->caenFrags[fv1740InTrigger[i]]);
+      caenFrags.push_back(data->caenFrags[fv1740InTrigger[i]]);
     }
 
     if(fTDCInTrigger.size() > 0 && fTDCInTrigger[i]){
       //this->makeMWPCTDCAuxDetDigits(fTDCInTrigger[i], data, mwpcTdcVecs, mwpcTdcLabels);
+      tdcEvData.push_back(data->tdcFrags[0].tdcEvents[fTDCInTrigger[i]]);
     }
 
     // need to set the trigger bits
@@ -476,14 +483,10 @@ void FragmentToDigit::produce(art::Event & evt)
     // uncomment the next line when we are sure that the fragments
     // are matched for the TPC data as well
     // this->makeTPCRawDigits(caenFrags, rawDigits);
-
-    // putting all the AuxDetDigits from the different detectors into a single
-    // vector in the event record.  They can be separated out by the detector
-    // name data member of the AuxDetDigit later.  Doing it this way makes 
-    // creating the associations easier.
-    this->makeMuonRangeDigits(caenFrags, auxDigits);
-    this->makeTOFDigits      (caenFrags, auxDigits);
-    this->makeAeroGelDigits  (caenFrags, auxDigits);
+    startAssns = rawDigitVec->size();
+    //for(auto rd : rawDigits) rawDigitVec->push_back(rd);
+    endAssns = rawDigitVec->size();
+    util::CreateAssn(*this, evt, *triggerVec, *rawDigitVec, *tdRDAssns, startAssns, endAssns);
 
     if(fPMTTest){
       this->makeOpDetPulses(caenFrags, opPulses);
@@ -495,16 +498,19 @@ void FragmentToDigit::produce(art::Event & evt)
       util::CreateAssn(*this, evt, *triggerVec, *opDetVec, *tdOPAssns, startAssns, endAssns);
     }
 
+    // putting all the AuxDetDigits from the different detectors into a single
+    // vector in the event record.  They can be separated out by the detector
+    // name data member of the AuxDetDigit later.  Doing it this way makes 
+    // creating the associations easier.
+    this->makeMuonRangeDigits(caenFrags, auxDigits);
+    this->makeTOFDigits      (caenFrags, auxDigits);
+    this->makeAeroGelDigits  (caenFrags, auxDigits);
+    this->makeMWPCDigits     (tdcEvData,  auxDigits);
+
     startAssns = auxDetVec->size();
     for(auto ad : auxDigits) auxDetVec->push_back(ad);
     endAssns = auxDetVec->size();
     util::CreateAssn(*this, evt, *triggerVec, *auxDetVec, *tdADAssns, startAssns, endAssns);
-
-    startAssns = rawDigitVec->size();
-    //for(auto rd : rawDigits) rawDigitVec->push_back(rd);
-    endAssns = rawDigitVec->size();
-    util::CreateAssn(*this, evt, *triggerVec, *rawDigitVec, *tdRDAssns, startAssns, endAssns);
-
   }
 
   this->makeWUTDigits(data, wutVec);
@@ -1169,6 +1175,76 @@ void FragmentToDigit::makeCaenV1740AuxDetDigits(int i, LariatFragment * data,
 
   }
 
+}
+
+//------------------------------------------------------------------------------
+// not sure about this, but guessing that the controllerNumber in the TdcEventHeader
+// tells us which MWPC we are looking at.  There are 4 TdcEventData objects per MWPC
+// in the fragment.  Will assume that the channels number sequentially
+// set the name of the detector in the AuxDetDigit to be of the form
+// MWPCXX where XX is the controller Number
+void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> const& tdcEventData,
+				     std::vector<raw::AuxDetDigit>               & mwpcAuxDigits)
+{
+
+  uint32_t mwpcNum      = 0;
+  uint32_t mwpcChan     = 0;
+
+  auto names = {"MWPC0", "MWPC1", "MWPC2", "MWPC3"};
+  std::vector<std::string> detNames(names);
+
+  // vector to hold the channels for a single MWPC
+  std::vector< std::vector< std::vector<short> > > hitsInChannel;
+  hitsInChannel.resize(TDCFragment::MAX_CHAMBERS);
+  for(size_t cham = 0; cham < hitsInChannel.size(); ++cham){
+    hitsInChannel[cham].resize(TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER);
+    for(size_t chan = 0; chan < hitsInChannel[cham].size(); ++chan)
+      hitsInChannel[cham][chan].resize(TDCFragment::MAX_HITS, 0);
+  }
+
+  // vector to hold the timeStamps for each channel in the MWPC
+  std::vector< std::vector<unsigned long long> > timeStamps;
+  timeStamps.resize(TDCFragment::MAX_CHAMBERS);
+  for(size_t cham = 0; cham < timeStamps.size(); ++cham) 
+    timeStamps[cham].resize(TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER, 0);
+    
+  // if the size of the number of TDCs from the fragment does not match the 
+  // number of the tdcEvents, then continue to the next one without doing anything
+  if (tdcFrag.controllerHeader.nTDCs != tdcEventData.size()) {
+    mf::LogError("FragmentToDigit") << "*** Fatal nTDCs mismatch: " 
+				    << tdcEventData.size()
+				    << " != " << tdcFrag.controllerHeader.nTDCs
+				    << " return without doing anything";
+    return;
+  }
+  
+  for(auto const& tdced : tdcEventData){ 
+
+    // determine the detector name
+    mwpcNum  = tdced.tdcEventheader.controllerNumber; 	      
+    mwpcChan = tdced.tdcEventHeader.tdcNumber*TDCFragment::N_CHANNELS;
+
+    for(auto const& hit : tdced.tdcHits){
+      hitsInChannel[mwpcNum][mwpcChan + size_t (hit.channel)].push_back(short (hit.timeBin));
+      timeStamps   [mwpcNum][mwpcChan + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
+    }
+      
+  } // end loop over tdcEventData
+
+  // now make the AuxDetDigits for this fragment
+  for(size_t cham = 0; cham < TDCFragment::MAX_CHAMBERS; ++cham){
+    for(size_t chan = 0; chan < TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER; ++chan){
+      
+      mwpcAuxDigits.push_back(raw::AuxDetDigit(static_cast <unsigned short> (chan),
+					       hitsInChannel[cham][chan],
+					       detNames[cham],
+					       static_cast <unsigned long long> (timeStamps[cham][chan]))
+			      );
+      
+    }
+  } // end loops to create AuxDetDigits
+
+  return;
 }
 
 //------------------------------------------------------------------------------
