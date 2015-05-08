@@ -1,0 +1,24 @@
+<!--  Include art::Wrapper lines for objects that we would like to put  -->
+<!--  into the event -->
+<!--  Include the non-wrapper lines for all objects on the art::Wrapper --> 
+<!--  lines and for all objects that are data members of those objects.-->
+ 
+<lcgdict>
+
+ <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>    >"/>
+ <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit> >"/>
+ <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>  >"/>
+
+ <class name="std::pair< art::Ptr<raw::RawDigit>,    art::Ptr<raw::Trigger> >"/>
+ <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<raw::Trigger> >"/>
+ <class name="std::pair< art::Ptr<raw::OpDetPulse>,  art::Ptr<raw::Trigger> >"/>
+
+ <class name="art::Assns<raw::Trigger, raw::RawDigit,    void>" />
+ <class name="art::Assns<raw::Trigger, raw::AuxDetDigit, void>" />
+ <class name="art::Assns<raw::Trigger, raw::OpDetPulse,  void>" />
+
+ <class name="art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,    void> >"/>
+ <class name="art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit, void> >"/>
+ <class name="art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,  void> >"/>
+    
+</lcgdict>
