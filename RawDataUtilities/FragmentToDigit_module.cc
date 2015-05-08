@@ -1171,15 +1171,14 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
   // 14  LARSCINT | Coincidence of Hamamatsu and ETL PMTs (discriminated)
   // 15  MuRS     | Any coincidence of two planes.  Each plane is the OR of the discriminated pulses of 4 paddles.  
 
-  // I am going to guess that each tic in the waveform can represent a different trigger.  In that case
-  // we need to know the time of the trigger we are setting so as to grab the right location from the 
-  // waveform.  I am also guessing that a value > 0 in the waveform says the trigger did not fire, and 
-  // 0 says it did. Waiting on confirmation from Bill B.
+  // Each waveform corresponds to a single trigger channel.  If the (pedestal subtracted?) value of any ADC
+  // in a waveform is less than 0, then the trigger for that channel fired
 
   std::bitset<16> triggerBits;
 
-  size_t minChan = 48;
-  size_t maxChan = 64;
+  size_t minChan  = 48;
+  size_t maxChan  = 64;
+  float  pedestal = 0.;
   for(auto const& frag : caenFrags){
 
     if(frag.header.boardId != 7) continue;
@@ -1191,10 +1190,10 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
 						  << frag.waveForms.size() << " channels";
 
 	std::vector<short> const trig(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
-	
-	if(trig.size() > 0)
-	  if(trig[0] > 0) triggerBits.set(chan - minChan);
-
+	pedestal = this->findPedestal(trig);
+	for(auto const& data : trig){
+	  if(data < pedestal) triggerBits.set(chan - minChan);
+	}
       } // end loop over channels on the board
   }
 
