@@ -19,7 +19,9 @@
 // [x] Add MWPCs
 // [x] Put Pawel's OpDetPulse modifications back in (Pawel)
 // [x] Add data block matching algorithm
-// [ ] Add trigger associations (Brian)
+// [x] Add trigger associations (Brian)
+// [ ] Set the trigger bits correctly (Brian)
+// [x] Determine the pedestals for the RawDigits 
 // [ ] Add helpful comments throughout code. This may never be
 //     checked off.
 //////////////////////////////////////////////////////////////
@@ -130,25 +132,26 @@ public:
 		      std::vector<size_t> & fTDCInTrigger,
 		      LariatFragment*       data);
 
-  uint32_t triggerBits           (std::vector<CAENFragment>     const& caenFrags);				  
-  void makeTPCRawDigits          (std::vector<CAENFragment>     const& caenFrags,	
-			     	  std::vector<raw::RawDigit>         & tpcDigits);	
-  void makeOpDetPulses       	 (std::vector<CAENFragment>     const& caenFrags,	
-			     	  std::vector<raw::OpDetPulse>       & opDetPulse);	
-  void makeMuonRangeDigits	 (std::vector<CAENFragment>     const& caenFrags,	
-			     	  std::vector<raw::AuxDetDigit>      & mrAuxDigits);
-  void makeTOFDigits         	 (std::vector<CAENFragment>     const& caenFrags,	
-			     	  std::vector<raw::AuxDetDigit>      & tofAuxDigits);
-  void makeAeroGelDigits     	 (std::vector<CAENFragment>     const& caenFrags,	
-			     	  std::vector<raw::AuxDetDigit>      & agAuxDigits);
-  void caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,
-				  std::vector<raw::AuxDetDigit>      & auxDetDigits,
-				  uint32_t                      const& boardId,
-				  std::set<uint32_t>            const& boardChans,
-				  uint32_t                      const& chanOffset,
-				  std::string                   const& detName);
-  void makeMWPCDigits            (std::vector<TDCFragment::TdcEventData> const& tdcFrags,
-				  std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
+  uint32_t triggerBits               (std::vector<CAENFragment>     const& caenFrags);   				  
+  void     makeTPCRawDigits          (std::vector<CAENFragment>     const& caenFrags,    	
+			     	      std::vector<raw::RawDigit>         & tpcDigits);   	
+  float    findPedestal              (const std::vector<short>           & adcVec);	     
+  void     makeOpDetPulses           (std::vector<CAENFragment>     const& caenFrags,    	       
+       	   			      std::vector<raw::OpDetPulse>       & opDetPulse);  	       
+  void 	   makeMuonRangeDigits	     (std::vector<CAENFragment>     const& caenFrags,    	       
+				      std::vector<raw::AuxDetDigit>      & mrAuxDigits); 	       
+  void 	   makeTOFDigits             (std::vector<CAENFragment>     const& caenFrags,    	       
+				      std::vector<raw::AuxDetDigit>      & tofAuxDigits);	       
+  void 	   makeAeroGelDigits         (std::vector<CAENFragment>     const& caenFrags,    	       
+				      std::vector<raw::AuxDetDigit>      & agAuxDigits); 	       
+  void 	   caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,	       
+				      std::vector<raw::AuxDetDigit>      & auxDetDigits,	       
+				      uint32_t                      const& boardId,		       
+				      std::set<uint32_t>            const& boardChans,	       
+				      uint32_t                      const& chanOffset,	       
+				      std::string                   const& detName);	       
+  void 	   makeMWPCDigits            (std::vector<TDCFragment::TdcEventData> const& tdcFrags,      
+				      std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
 
   void LinFitUnweighted(const std::vector<double>& x,
 			const std::vector<double>& y,
@@ -688,10 +691,10 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   };
 
   const size_t numberCaenFrags = data->caenFrags.size();
-  LOG_VERBATIM("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
+  LOG_DEBUG("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
 
   if (numberCaenFrags > 0) 
-    LOG_VERBATIM("FragmentToDigit") << "Looking at CAEN fragments...";
+    LOG_DEBUG("FragmentToDigit") << "Looking at CAEN fragments...";
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
     CAENFragment & caenFrag = data->caenFrags[i];
@@ -705,10 +708,10 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   }
 
   const int numberTdcFrags = data->tdcFrags.size();
-  LOG_VERBATIM("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
+  LOG_DEBUG("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberTdcFrags > 0) 
-    LOG_VERBATIM("FragmentToDigit") << "Looking at TDC fragments...";
+    LOG_DEBUG("FragmentToDigit") << "Looking at TDC fragments...";
   
 
   for (int i = 0; i < numberTdcFrags; ++i) {
@@ -756,7 +759,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
   // let's forget the WUT for now
   //const int numberWutFrags = data->wutFrags.size();
-  //LOG_VERBATIM("FragmentToDigit")
+  //LOG_DEBUG("FragmentToDigit")
   //    << "Found " << numberWutFrags << " WUT fragments";
 
   //////////////////////////////////////////////////////////////////////
@@ -1047,13 +1050,13 @@ void FragmentToDigit::printMatchMap(std::string const& deviceALabel,
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMap[deviceALabel][deviceBLabel];
 
-  LOG_VERBATIM("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel
+  LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel
 			       << "\n Matching index pair format: " << "(" 
 			       << deviceALabel << ", " << deviceBLabel << ")";
 
   for (auto const & itA : matchAB) {
     for (auto const & itB : itA.second) {
-      LOG_VERBATIM("FragmentToDigit") << "  (" << itA.first << ", " << itB << ")";
+      LOG_DEBUG("FragmentToDigit") << "  (" << itA.first << ", " << itB << ")";
     }
   }
 
@@ -1076,16 +1079,16 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
   size_t numberOf1740Matches = 0;
   size_t numberOfTDCMatches = 0;
 
-  LOG_VERBATIM("FragmentToDigit") << "Lets do some fragment timestamp matching so that we can group triggers...";
+  LOG_DEBUG("FragmentToDigit") << "Lets do some fragment timestamp matching so that we can group triggers...";
 
   const size_t numberCaenFrags = data->caenFrags.size();
-  LOG_VERBATIM("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
+  LOG_DEBUG("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
 
   const int numberTdcFrags = data->tdcFrags.size();
-  LOG_VERBATIM("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
+  LOG_DEBUG("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberCaenFrags > 0)
-    LOG_VERBATIM("FragmentToDigit") << "Begin trigger matching against V1751 CAEN fragments...";
+    LOG_DEBUG("FragmentToDigit") << "Begin trigger matching against V1751 CAEN fragments...";
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
 
@@ -1096,7 +1099,7 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
     if (caenFrag.header.boardId == 9) {
 
       fv1751InTrigger.push_back(i);
-      LOG_VERBATIM("FragmentToDigit") << "v1751 fragment number "<< v1751FragNumber 
+      LOG_DEBUG("FragmentToDigit") << "v1751 fragment number "<< v1751FragNumber 
 				     << " at t=" << caenFrag.header.triggerTimeTag*0.008 << "us";
 
       for (size_t k = 0; k < numberCaenFrags; ++k) {
@@ -1113,7 +1116,7 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
       }
 
       if(numberOf1740Matches == 0) fv1740InTrigger.push_back(0);
-      LOG_VERBATIM("FragmentToDigit") << " has " << numberOf1740Matches << " matching v1740 fragments ";
+      LOG_DEBUG("FragmentToDigit") << " has " << numberOf1740Matches << " matching v1740 fragments ";
 
 
       // There is always one TDC fragment, so I am no longer looping over TDC fragments.
@@ -1133,10 +1136,10 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
 	}//end loop over tdcEvents
 
 	if(numberOfTDCMatches == 0) fTDCInTrigger.push_back(0);
-	LOG_VERBATIM("FragmentToDigit") << " and " << numberOfTDCMatches << " matching TDC fragments ";
+	LOG_DEBUG("FragmentToDigit") << " and " << numberOfTDCMatches << " matching TDC fragments ";
       }
       ++v1751FragNumber;
-      LOG_VERBATIM("FragmentToDigit") << "At i=" << i << "  v1751FragNumber:" << v1751FragNumber;
+      LOG_DEBUG("FragmentToDigit") << "At i=" << i << "  v1751FragNumber:" << v1751FragNumber;
     }
 
   }
@@ -1202,7 +1205,6 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
 void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
 				       std::vector<raw::RawDigit>     & tpcDigits)
 {
-
   raw::ChannelID_t tpcChan = 0;
   size_t maxChan = 64;
   size_t boardId = 0;
@@ -1234,14 +1236,15 @@ void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrag
 	// get TPC channel for the induction plane
 	if( boardId < 3 || (boardId == 3 && chan < 48) )
 	  tpcChan = startWireInd[boardId] - chan;
-
 	// get TPC Channel for the collection plane
-	if( boardId > 3 || (boardId == 3 && chan > 47) )
+	else if( boardId > 3)
 	  tpcChan = 240 + startWireCol[boardId] - chan;
+	else if(boardId == 3 && chan > 47)
+	  tpcChan = 240 + startWireCol[boardId] - chan + 48;
 
 	std::vector<short> const adc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
 	raw::RawDigit rd(tpcChan, adc.size(), adc);
-	rd.SetPedestal(2048);
+	rd.SetPedestal(this->findPedestal(adc));
 	tpcDigits.push_back(rd);
       } // end loop to fill channels from this board
     }// end if it is a TPC board      
@@ -1249,6 +1252,21 @@ void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrag
 
   return;
   
+}
+
+//------------------------------------------------------------------------------
+float FragmentToDigit::findPedestal(const std::vector<short> & adcVec)
+{
+  // do nothing if there are no values in the vector
+  if(adcVec.size() < 1) return 0.;
+
+  // for now try taking the simple mean of the values in the 
+  // vector and return that as the pedestal
+  float mean = 0.;
+  for(auto const& adc : adcVec) mean += adc;
+  mean /= 1.*adcVec.size();
+
+  return mean;
 }
 
 //------------------------------------------------------------------------------
