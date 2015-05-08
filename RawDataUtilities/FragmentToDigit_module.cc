@@ -63,6 +63,7 @@
 #include <string>
 #include <algorithm>
 #include <initializer_list>
+#include <bitset>
 
 enum {
   V1740_N_CHANNELS = 64,
@@ -129,8 +130,7 @@ public:
 		      std::vector<size_t> & fTDCInTrigger,
 		      LariatFragment*       data);
 
-  void findTriggerCAENFragments  (std::vector<CAENFragment>          & caenFrags);
-
+  uint32_t triggerBits           (std::vector<CAENFragment>     const& caenFrags);				  
   void makeTPCRawDigits          (std::vector<CAENFragment>     const& caenFrags,	
 			     	  std::vector<raw::RawDigit>         & tpcDigits);	
   void makeOpDetPulses       	 (std::vector<CAENFragment>     const& caenFrags,	
@@ -290,35 +290,35 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   }
 
   //-----UNCOMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
-  // fWutLabel = p.get< std::string >("WutLabel", "Wut");
-  // fCaenV1740Board0Label = p.get< std::string >("CaenV1740Board0Label", "CaenV1740Board0");
-  // fCaenV1740Board1Label = p.get< std::string >("CaenV1740Board1Label", "CaenV1740Board1");
-  // fCaenV1740Board2Label = p.get< std::string >("CaenV1740Board2Label", "CaenV1740Board2");
-  // fCaenV1740Board3Label = p.get< std::string >("CaenV1740Board3Label", "CaenV1740Board3");
-  // fCaenV1740Board4Label = p.get< std::string >("CaenV1740Board4Label", "CaenV1740Board4");
-  // fCaenV1740Board5Label = p.get< std::string >("CaenV1740Board5Label", "CaenV1740Board5");
-  // fCaenV1740Board6Label = p.get< std::string >("CaenV1740Board6Label", "CaenV1740Board6");
-  // fCaenV1740Board7Label = p.get< std::string >("CaenV1740Board7Label", "CaenV1740Board7");
-  // fCaenV1751Board0Label = p.get< std::string >("CaenV1751Board0Label", "CaenV1751Board0");
-  // fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label", "CaenV1751Board1");
-  // fMwpcTdc01Label = p.get< std::string >("MwpcTdc01Label", "MwpcTdc01");
-  // fMwpcTdc02Label = p.get< std::string >("MwpcTdc02Label", "MwpcTdc02");
-  // fMwpcTdc03Label = p.get< std::string >("MwpcTdc03Label", "MwpcTdc03");
-  // fMwpcTdc04Label = p.get< std::string >("MwpcTdc04Label", "MwpcTdc04");
-  // fMwpcTdc05Label = p.get< std::string >("MwpcTdc05Label", "MwpcTdc05");
-  // fMwpcTdc06Label = p.get< std::string >("MwpcTdc06Label", "MwpcTdc06");
-  // fMwpcTdc07Label = p.get< std::string >("MwpcTdc07Label", "MwpcTdc07");
-  // fMwpcTdc08Label = p.get< std::string >("MwpcTdc08Label", "MwpcTdc08");
-  // fMwpcTdc09Label = p.get< std::string >("MwpcTdc09Label", "MwpcTdc09");
-  // fMwpcTdc10Label = p.get< std::string >("MwpcTdc10Label", "MwpcTdc10");
-  // fMwpcTdc11Label = p.get< std::string >("MwpcTdc11Label", "MwpcTdc11");
-  // fMwpcTdc12Label = p.get< std::string >("MwpcTdc12Label", "MwpcTdc12");
-  // fMwpcTdc13Label = p.get< std::string >("MwpcTdc13Label", "MwpcTdc13");
-  // fMwpcTdc14Label = p.get< std::string >("MwpcTdc14Label", "MwpcTdc14");
-  // fMwpcTdc15Label = p.get< std::string >("MwpcTdc15Label", "MwpcTdc15");
-  // fMwpcTdc16Label = p.get< std::string >("MwpcTdc16Label", "MwpcTdc16");
-  // fCaenOpLabel1   = p.get< std::string >("OpDetBoardLabel1", "Caenv1751Optical1");
-  // fCaenOpLabel2   = p.get< std::string >("OpDetBoardLabel2", "Caenv1751Optical2");
+  fWutLabel             = p.get< std::string >("WutLabel",             "Wut"              );
+  fCaenV1740Board0Label = p.get< std::string >("CaenV1740Board0Label", "CaenV1740Board0"  );
+  fCaenV1740Board1Label = p.get< std::string >("CaenV1740Board1Label", "CaenV1740Board1"  );
+  fCaenV1740Board2Label = p.get< std::string >("CaenV1740Board2Label", "CaenV1740Board2"  );
+  fCaenV1740Board3Label = p.get< std::string >("CaenV1740Board3Label", "CaenV1740Board3"  );
+  fCaenV1740Board4Label = p.get< std::string >("CaenV1740Board4Label", "CaenV1740Board4"  );
+  fCaenV1740Board5Label = p.get< std::string >("CaenV1740Board5Label", "CaenV1740Board5"  );
+  fCaenV1740Board6Label = p.get< std::string >("CaenV1740Board6Label", "CaenV1740Board6"  );
+  fCaenV1740Board7Label = p.get< std::string >("CaenV1740Board7Label", "CaenV1740Board7"  );
+  fCaenV1751Board0Label = p.get< std::string >("CaenV1751Board0Label", "CaenV1751Board0"  );
+  fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label", "CaenV1751Board1"  );
+  fMwpcTdc01Label       = p.get< std::string >("MwpcTdc01Label",       "MwpcTdc01"        );
+  fMwpcTdc02Label	= p.get< std::string >("MwpcTdc02Label",       "MwpcTdc02"	  );
+  fMwpcTdc03Label	= p.get< std::string >("MwpcTdc03Label",       "MwpcTdc03"	  );
+  fMwpcTdc04Label	= p.get< std::string >("MwpcTdc04Label",       "MwpcTdc04"	  );
+  fMwpcTdc05Label	= p.get< std::string >("MwpcTdc05Label",       "MwpcTdc05"	  );
+  fMwpcTdc06Label	= p.get< std::string >("MwpcTdc06Label",       "MwpcTdc06"	  );
+  fMwpcTdc07Label	= p.get< std::string >("MwpcTdc07Label",       "MwpcTdc07"	  );
+  fMwpcTdc08Label	= p.get< std::string >("MwpcTdc08Label",       "MwpcTdc08"	  );
+  fMwpcTdc09Label	= p.get< std::string >("MwpcTdc09Label",       "MwpcTdc09"	  );
+  fMwpcTdc10Label	= p.get< std::string >("MwpcTdc10Label",       "MwpcTdc10"	  );
+  fMwpcTdc11Label	= p.get< std::string >("MwpcTdc11Label",       "MwpcTdc11"	  );
+  fMwpcTdc12Label	= p.get< std::string >("MwpcTdc12Label",       "MwpcTdc12"	  );
+  fMwpcTdc13Label	= p.get< std::string >("MwpcTdc13Label",       "MwpcTdc13"	  );
+  fMwpcTdc14Label	= p.get< std::string >("MwpcTdc14Label",       "MwpcTdc14"	  );
+  fMwpcTdc15Label	= p.get< std::string >("MwpcTdc15Label",       "MwpcTdc15"	  );
+  fMwpcTdc16Label	= p.get< std::string >("MwpcTdc16Label",       "MwpcTdc16"	  );
+  fCaenOpLabel1         = p.get< std::string >("OpDetBoardLabel1",     "Caenv1751Optical1");
+  fCaenOpLabel2         = p.get< std::string >("OpDetBoardLabel2",     "Caenv1751Optical2");
   //-----UNCOMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
 
   return;
@@ -397,7 +397,7 @@ void FragmentToDigit::produce(art::Event & evt)
 
   this->matchDataBlocks(data);
   this->matchFragments(fNtriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
-  this->printMatchMap(fCaenV1740Board0Label, fCaenV1740Board1Label, fMatches);
+  //this->printMatchMap(fCaenV1740Board0Label, fCaenV1740Board1Label, fMatches);
 
   LOG_INFO("FragmentToDigit") << "Ntriggers is: " << fNtriggers 
 			      << "\nThe size of v1751InTrigger is: " << fv1751InTrigger.size()
@@ -409,7 +409,6 @@ void FragmentToDigit::produce(art::Event & evt)
   std::vector<raw::AuxDetDigit>          auxDigits;	 
   std::vector<raw::RawDigit>    	 rawDigits;	 
   std::vector<raw::OpDetPulse>   	 opPulses;	 
-  uint32_t                       	 trigBits   = 0;
   // size_t                         	 startAssns = 0;
   // size_t                         	 endAssns   = 0;
   double                                 eventTime  = 1.*evt.time().timeHigh() + 1.*evt.time().timeLow();
@@ -450,8 +449,7 @@ void FragmentToDigit::produce(art::Event & evt)
     }
 
     // put a trigger object in the output vector
-    // still need to set the trigger bits
-    triggerVec->push_back(raw::Trigger(i, caenFrags.front().header.triggerTimeTag, eventTime, trigBits));
+    triggerVec->push_back(raw::Trigger(i, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
 
     // make each association type as you go putting the digits into the vectors
 
@@ -845,21 +843,28 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   coarseMatch(fCaenV1751Board0Label, fCaenV1740Board0Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
   coarseMatch(fCaenV1751Board0Label, fMwpcTdc01Label,       v1751MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
   coarseMatch(fCaenV1740Board0Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
-  coarseMatch(fCaenV1740Board1Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
-  coarseMatch(fCaenV1740Board2Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
-  coarseMatch(fCaenV1740Board3Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
-  coarseMatch(fCaenV1740Board4Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
-  coarseMatch(fCaenV1740Board5Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
-  coarseMatch(fCaenV1740Board6Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
-  coarseMatch(fCaenV1740Board7Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board1Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board2Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board3Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board4Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board5Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board6Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board7Label, v1751v1740InterRange, fFragTimeStamps, fPreliminaryMatches);
 
   //printMatchMap(fCaenV1751Board0Label, fCaenV1740Board0Label, fPreliminaryMatches);
   //printMatchMap(fCaenV1751Board0Label, fMwpcTdc01Label, fPreliminaryMatches);
   //printMatchMap(fCaenV1740Board0Label, fMwpcTdc01Label, fPreliminaryMatches);
 
   fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board0Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
-  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label] = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
-  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label] = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label,       fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label,       fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fCaenV1740Board1Label] = fitDrift(fCaenV1740Board0Label, fCaenV1740Board1Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fCaenV1740Board2Label] = fitDrift(fCaenV1740Board0Label, fCaenV1740Board2Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fCaenV1740Board3Label] = fitDrift(fCaenV1740Board0Label, fCaenV1740Board3Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fCaenV1740Board4Label] = fitDrift(fCaenV1740Board0Label, fCaenV1740Board4Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fCaenV1740Board5Label] = fitDrift(fCaenV1740Board0Label, fCaenV1740Board5Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fCaenV1740Board6Label] = fitDrift(fCaenV1740Board0Label, fCaenV1740Board6Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
+  fitParameters[fCaenV1740Board0Label][fCaenV1740Board7Label] = fitDrift(fCaenV1740Board0Label, fCaenV1740Board7Label, fFragTimeStamps, fPreliminaryMatches, "coarse_match");
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: coarse matching
@@ -876,17 +881,17 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   fineMatch(fCaenV1751Board0Label, fCaenV1740Board0Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label], fFragTimeStamps, fMatches);
   fineMatch(fCaenV1751Board0Label, fMwpcTdc01Label,       v1751MwpcInterEps,  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label],       fFragTimeStamps, fMatches);
   fineMatch(fCaenV1740Board0Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   fFragTimeStamps, fMatches);
-  fineMatch(fCaenV1740Board1Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   fFragTimeStamps, fMatches);
-  fineMatch(fCaenV1740Board2Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   fFragTimeStamps, fMatches);
-  fineMatch(fCaenV1740Board3Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   fFragTimeStamps, fMatches);
-  fineMatch(fCaenV1740Board4Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   fFragTimeStamps, fMatches);
-  fineMatch(fCaenV1740Board5Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   fFragTimeStamps, fMatches);
-  fineMatch(fCaenV1740Board6Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   fFragTimeStamps, fMatches);
-  fineMatch(fCaenV1740Board7Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1740Board0Label, fCaenV1740Board1Label, v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fCaenV1740Board1Label], fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1740Board0Label, fCaenV1740Board2Label, v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fCaenV1740Board2Label], fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1740Board0Label, fCaenV1740Board3Label, v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fCaenV1740Board3Label], fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1740Board0Label, fCaenV1740Board4Label, v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fCaenV1740Board4Label], fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1740Board0Label, fCaenV1740Board5Label, v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fCaenV1740Board5Label], fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1740Board0Label, fCaenV1740Board6Label, v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fCaenV1740Board6Label], fFragTimeStamps, fMatches);
+  fineMatch(fCaenV1740Board0Label, fCaenV1740Board7Label, v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fCaenV1740Board7Label], fFragTimeStamps, fMatches);
 
   fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board0Label, fFragTimeStamps, fMatches, "fine_match");
-  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label] = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label, fFragTimeStamps, fMatches, "fine_match");
-  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label] = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label, fFragTimeStamps, fMatches, "fine_match");
+  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label,       fFragTimeStamps, fMatches, "fine_match");
+  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label,       fFragTimeStamps, fMatches, "fine_match");
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: fine matching
@@ -1143,6 +1148,59 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
 }
 
 //------------------------------------------------------------------------------
+uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags)
+{
+
+  // the trigger bits are piped into the V1740 board in slot 7, inputs 48 to 63
+  // these are example connections as of May 04, 2015
+  // 0   WC1      | OR of 2 X view TDCs ANDed with OR of 2 Y
+  // 1   WC2      | "                                      " 
+  // 2   WC3      | "                                      " 
+  // 3   WC4      | "                                      " 
+  // 4   BEAMON   | Spill gate : STARTs on $21, STOPs on $36 (cable says $26 but Bill says $36)
+  // 5   USTOF    | OR of 4 PMTs
+  // 6   DSTOF    | OR of 2 PMTs
+  // 7   PUNCH    | OR of 2 X view paddles ANDed with OR of 2 Y
+  // 8   HALO     | OR of 2 PMTs
+  // 9   PULSER   |
+  // 10  COSMICON | Cosmic gate : STARTs on $36, STOPs on $00 (not optimal, would like to stop before $00)
+  // 11  COSMIC   | the trigger signal from the cosmic rack
+  // 12  SC1 CFD  |
+  // 13  MICHEL   | Coincidence of two light flashes in TPC (LARSCINT) occurring within a 5us time window
+  // 14  LARSCINT | Coincidence of Hamamatsu and ETL PMTs (discriminated)
+  // 15  MuRS     | Any coincidence of two planes.  Each plane is the OR of the discriminated pulses of 4 paddles.  
+
+  // I am going to guess that each tic in the waveform can represent a different trigger.  In that case
+  // we need to know the time of the trigger we are setting so as to grab the right location from the 
+  // waveform.  I am also guessing that a value > 0 in the waveform says the trigger did not fire, and 
+  // 0 says it did. Waiting on confirmation from Bill B.
+
+  std::bitset<16> triggerBits;
+
+  size_t minChan = 48;
+  size_t maxChan = 64;
+  for(auto const& frag : caenFrags){
+
+    if(frag.header.boardId != 7) continue;
+
+      for(size_t chan = minChan; chan < maxChan; ++chan){ 
+	if(chan > frag.waveForms.size() )
+	  throw cet::exception("FragmentToDigit") << "attempting to access channel "
+						  << chan << " from 1740 fragment with only "
+						  << frag.waveForms.size() << " channels";
+
+	std::vector<short> const trig(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
+	
+	if(trig.size() > 0)
+	  if(trig[0] > 0) triggerBits.set(chan - minChan);
+
+      } // end loop over channels on the board
+  }
+
+  return triggerBits.to_ulong();
+}  
+
+//------------------------------------------------------------------------------
 void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
 				       std::vector<raw::RawDigit>     & tpcDigits)
 {
@@ -1172,7 +1230,7 @@ void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrag
       for(size_t chan = 0; chan < maxChan; ++chan){ 
 	if(chan > frag.waveForms.size() )
 	  throw cet::exception("FragmentToDigit") << "attempting to access channel "
-						  << chan << " from 1751 fragment with only "
+						  << chan << " from 1740 fragment with only "
 						  << frag.waveForms.size() << " channels";
 
 	// get TPC channel for the induction plane
