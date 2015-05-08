@@ -97,31 +97,31 @@ public:
   void beginRun(art::Run &run);
   void matchDataBlocks(LariatFragment * data);
 
-  void coarseMatch(std::string deviceALabel,
-		   std::string deviceBLabel,
-		   double      range[2],
+  void coarseMatch(std::string const& deviceALabel,
+		   std::string const& deviceBLabel,
+		   double             range[2],
 		   std::map< std::string, std::map<unsigned int, double> > timeStamps,
-		   match_map & matchMap);
+		   match_map        & matchMap);
 
-  void fineMatch(std::string deviceALabel,
-		 std::string deviceBLabel,
-		 double      range[2],
-		 std::pair<double, double> fitParameters,
+  void fineMatch(std::string               const& deviceALabel,
+		 std::string 		   const& deviceBLabel,
+		 double      		          range[2],    
+		 std::pair<double, double> const& fitParameters,
 		 std::map< std::string, std::map<unsigned int, double> > timeStamps,
-		 match_map & matchMap);
+		 match_map                      & matchMap);
 
-  void printMatchMap(std::string deviceALabel,
-		     std::string deviceBLabel,
-		     match_map matchMap);
+  void printMatchMap(std::string const& deviceALabel,
+		     std::string const& deviceBLabel,
+		     match_map        & matchMap);
 
-  double line(std::pair<double, double> parameters, 
-	      double                    x);
+  double line(std::pair<double, double> const& parameters, 
+	      double                    const& x);
 
-  std::pair<double, double> fitDrift(std::string deviceALabel,
-				     std::string deviceBLabel,
+  std::pair<double, double> fitDrift(std::string const& deviceALabel,
+				     std::string const& deviceBLabel,
 				     std::map< std::string, std::map<unsigned int, double> > timeStamps,
-				     match_map   matchMap,
-				     std::string graphNamePrefix);
+				     match_map        & matchMap,
+				     std::string const& graphNamePrefix);
 
   void matchFragments(uint32_t            & Ntriggers,
 		      std::vector<size_t> & fv1751InTrigger,
@@ -150,6 +150,9 @@ public:
   void makeMWPCDigits            (std::vector<TDCFragment::TdcEventData> const& tdcFrags,
 				  std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
 
+  void LinFitUnweighted(const std::vector<double>& x,
+			const std::vector<double>& y,
+			double& m, double& c);
 
   void makeCaenV1751AuxDetDigits(int i, 
 				 LariatFragment*                                    data,
@@ -282,8 +285,8 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 
   for(size_t i = 0; i < fOpDetChID.size(); ++i){
     for(size_t j = 0; j < fOpDetChID[i].size(); ++j)   
-      mf::LogInfo("FragmentToDigit") << "channels and boards for opdetpulses : board - channel "
-				     << i << " - " << j << " " << fOpDetChID[i][j];
+      LOG_VERBATIM("FragmentToDigit") << "channels and boards for opdetpulses : board - channel "
+				      << i << " - " << j << " " << fOpDetChID[i][j];
   }
 
   //-----UNCOMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
@@ -392,9 +395,8 @@ void FragmentToDigit::produce(art::Event & evt)
 				 << "\nrunNumber: " << runNumber << "; spillNumber: " << spillNumber
 				 << "; timeStamp: " << timeStamp;
 
-  //this->matchDataBlocks(data);
+  this->matchDataBlocks(data);
   this->matchFragments(fNtriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
-
   this->printMatchMap(fCaenV1740Board0Label, fCaenV1740Board1Label, fMatches);
 
   LOG_INFO("FragmentToDigit") << "Ntriggers is: " << fNtriggers 
@@ -587,6 +589,40 @@ void FragmentToDigit::produce(art::Event & evt)
   return;  
 }
 
+//......................................................................
+void FragmentToDigit::LinFitUnweighted(const std::vector<double>& x,
+				       const std::vector<double>& y,
+				       double& m, double& c)
+{
+  // Before going ahead, make sure we have sensible arrays
+  if(x.size() != y.size())
+    throw cet::exception("FragmentToDigit") << "cannot do linear fit, vectors are different sizes "
+					    << "x: " << x.size() << " y: " << y.size();
+  if(x.size() < 2)
+    throw cet::exception("FragmentToDigit") << "cannot do linear fit, not enough points "
+					    << "x: " << x.size() << " y: " << y.size();
+  
+  // Accumulate the sums for the fit
+  double Sx  = 0;
+  double Sy  = 0;
+  double Sxy = 0;
+  double Sy2 = 0;
+  double Sx2 = 0;
+  const unsigned int I = x.size();
+  for(unsigned int i = 0; i < I; ++i) {
+    Sx  += x[i];
+    Sy  += y[i];
+    Sx2 += x[i]*x[i];
+    Sxy += x[i]*y[i];
+    Sy2 += y[i]*y[i];
+  }
+  const double d = I*Sx2 - Sx*Sx;
+  m = (I*Sxy  - Sx*Sy)/d;
+  c = (Sy*Sx2 - Sx*Sxy)/d;
+  
+  return;
+}
+
 //-----------------------------------------------------------------------------------
 void FragmentToDigit::matchDataBlocks(LariatFragment * data) 
 {
@@ -656,10 +692,10 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   };
 
   const size_t numberCaenFrags = data->caenFrags.size();
-  mf::LogInfo("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
+  LOG_VERBATIM("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
 
   if (numberCaenFrags > 0) 
-    mf::LogInfo("FragmentToDigit") << "Looking at CAEN fragments...";
+    LOG_VERBATIM("FragmentToDigit") << "Looking at CAEN fragments...";
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
     CAENFragment & caenFrag = data->caenFrags[i];
@@ -673,10 +709,10 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   }
 
   const int numberTdcFrags = data->tdcFrags.size();
-  mf::LogInfo("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
+  LOG_VERBATIM("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberTdcFrags > 0) 
-    mf::LogInfo("FragmentToDigit") << "Looking at TDC fragments...";
+    LOG_VERBATIM("FragmentToDigit") << "Looking at TDC fragments...";
   
 
   for (int i = 0; i < numberTdcFrags; ++i) {
@@ -724,7 +760,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
   // let's forget the WUT for now
   //const int numberWutFrags = data->wutFrags.size();
-  //mf::LogInfo("FragmentToDigit")
+  //LOG_VERBATIM("FragmentToDigit")
   //    << "Found " << numberWutFrags << " WUT fragments";
 
   //////////////////////////////////////////////////////////////////////
@@ -860,11 +896,11 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 }
 
 //-----------------------------------------------------------------------------------
-void FragmentToDigit::coarseMatch(std::string deviceALabel,
-				  std::string deviceBLabel,
-				  double range[2],
+void FragmentToDigit::coarseMatch(std::string const& deviceALabel,
+				  std::string const& deviceBLabel,
+				  double             range[2],
 				  std::map< std::string, std::map<unsigned int, double> > timeStamps,
-				  match_map & matchMap) 
+				  match_map        & matchMap) 
 {
   
   std::map< unsigned int, std::vector<unsigned int> > matchAB;
@@ -889,12 +925,12 @@ void FragmentToDigit::coarseMatch(std::string deviceALabel,
 }
 
 //-----------------------------------------------------------------------------------
-void FragmentToDigit::fineMatch(std::string deviceALabel,
-				std::string deviceBLabel,
-				double eps[2],
-				std::pair<double, double> fitParameters,
+void FragmentToDigit::fineMatch(std::string               const& deviceALabel,
+				std::string 		  const& deviceBLabel,
+				double      		         eps[2],      
+				std::pair<double, double> const& fitParameters,
 				std::map< std::string, std::map<unsigned int, double> > timeStamps,
-				match_map & matchMap) 
+				match_map                      & matchMap) 
 {
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB;
@@ -922,7 +958,8 @@ void FragmentToDigit::fineMatch(std::string deviceALabel,
 }
 
 //-----------------------------------------------------------------------------------
-double FragmentToDigit::line(std::pair<double, double> parameters, double x) 
+double FragmentToDigit::line(std::pair<double, double> const& parameters, 
+			     double                    const& x) 
 {
   double intercept = parameters.first;
   double slope = parameters.second;
@@ -930,11 +967,11 @@ double FragmentToDigit::line(std::pair<double, double> parameters, double x)
 }
 
 //-----------------------------------------------------------------------------------
-std::pair<double, double> FragmentToDigit::fitDrift(std::string deviceALabel,
-						    std::string deviceBLabel,
+std::pair<double, double> FragmentToDigit::fitDrift(std::string const& deviceALabel,
+						    std::string const& deviceBLabel,
 						    std::map< std::string, std::map<unsigned int, double> > timeStamps,
-						    match_map matchMap,
-						    std::string graphNamePrefix) 
+						    match_map        & matchMap,
+						    std::string const& graphNamePrefix) 
 {
 
   std::vector<double> x;
@@ -969,28 +1006,40 @@ std::pair<double, double> FragmentToDigit::fitDrift(std::string deviceALabel,
     }
   }
 
-  std::string graphName = graphNamePrefix + "_drift_" + deviceALabel + "_" + deviceBLabel;
-  std::string graphTitles = ("; Time since beginning of spill (using " + deviceALabel 
-			     + " clock) [#mus]; #Delta t between "     + deviceALabel 
-			     + " and " + deviceBLabel + " [#mus]");
+  // std::string graphName = graphNamePrefix + "_drift_" + deviceALabel + "_" + deviceBLabel;
+  // std::string graphTitles = ("; Time since beginning of spill (using " + deviceALabel 
+  // 			     + " clock) [#mus]; #Delta t between "     + deviceALabel 
+  // 			     + " and " + deviceBLabel + " [#mus]");
 
-  TGraph * graph = tfs->make<TGraph>(x.size(), &x[0], &y[0]);
-  TF1 * f = tfs->make<TF1>("f", "pol1", 0, 30e6);
-  graph->Fit("f", "Q");
-  graph->SetMarkerStyle(20);
-  graph->SetTitle(graphTitles.c_str());
-  graph->Write(graphName.c_str());
-  LOG_DEBUG("FragmentToDigit") << "Fit parameters: intercept, "
-			       << f->GetParameter(0) << " usec; slope, "
-			       << f->GetParameter(1) << " usec/usec";
+  // TGraph * graph = tfs->make<TGraph>(x.size(), &x[0], &y[0]);
+  // TF1 * f = tfs->make<TF1>("f", "pol1", 0, 30e6);
+  // graph->Fit("f", "Q");
+  // graph->SetMarkerStyle(20);
+  // graph->SetTitle(graphTitles.c_str());
+  // graph->Write(graphName.c_str());
+  // LOG_DEBUG("FragmentToDigit") << "Fit parameters: intercept, "
+  // 			       << f->GetParameter(0) << " usec; slope, "
+  // 			       << f->GetParameter(1) << " usec/usec";
 
-  return std::make_pair<double, double>(f->GetParameter(0), f->GetParameter(1));
+  // return std::make_pair<double, double>(f->GetParameter(0), f->GetParameter(1));
+  
+  std::pair<double, double> intSlp(0.,0.);
+
+  try{
+    this->LinFitUnweighted(x, y, intSlp.second, intSlp.first);
+  }
+  catch(cet::exception &e){
+    LOG_WARNING("FragmentToDigit") << "caught exception:\n" << e
+				   << "\n returning intercept = 0 and slope = 0";
+  }
+
+  return intSlp;
 }
 
 //------------------------------------------------------------------------------
-void FragmentToDigit::printMatchMap(std::string deviceALabel,
-				    std::string deviceBLabel,
-				    match_map matchMap) 
+void FragmentToDigit::printMatchMap(std::string const& deviceALabel,
+				    std::string const& deviceBLabel,
+				    match_map        & matchMap) 
 {
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMap[deviceALabel][deviceBLabel];
@@ -1024,16 +1073,16 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
   size_t numberOf1740Matches = 0;
   size_t numberOfTDCMatches = 0;
 
-  mf::LogInfo("FragmentToDigit") << "Lets do some fragment timestamp matching so that we can group triggers...";
+  LOG_VERBATIM("FragmentToDigit") << "Lets do some fragment timestamp matching so that we can group triggers...";
 
   const size_t numberCaenFrags = data->caenFrags.size();
-  mf::LogInfo("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
+  LOG_VERBATIM("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
 
   const int numberTdcFrags = data->tdcFrags.size();
-  mf::LogInfo("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
+  LOG_VERBATIM("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberCaenFrags > 0)
-    mf::LogInfo("FragmentToDigit") << "Begin trigger matching against V1751 CAEN fragments...";
+    LOG_VERBATIM("FragmentToDigit") << "Begin trigger matching against V1751 CAEN fragments...";
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
 
@@ -1044,7 +1093,7 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
     if (caenFrag.header.boardId == 9) {
 
       fv1751InTrigger.push_back(i);
-      mf::LogInfo("FragmentToDigit") << "v1751 fragment number "<< v1751FragNumber 
+      LOG_VERBATIM("FragmentToDigit") << "v1751 fragment number "<< v1751FragNumber 
 				     << " at t=" << caenFrag.header.triggerTimeTag*0.008 << "us";
 
       for (size_t k = 0; k < numberCaenFrags; ++k) {
@@ -1061,7 +1110,7 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
       }
 
       if(numberOf1740Matches == 0) fv1740InTrigger.push_back(0);
-      mf::LogInfo("FragmentToDigit") << " has " << numberOf1740Matches << " matching v1740 fragments ";
+      LOG_VERBATIM("FragmentToDigit") << " has " << numberOf1740Matches << " matching v1740 fragments ";
 
 
       // There is always one TDC fragment, so I am no longer looping over TDC fragments.
@@ -1081,10 +1130,10 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
 	}//end loop over tdcEvents
 
 	if(numberOfTDCMatches == 0) fTDCInTrigger.push_back(0);
-	mf::LogInfo("FragmentToDigit") << " and " << numberOfTDCMatches << " matching TDC fragments ";
+	LOG_VERBATIM("FragmentToDigit") << " and " << numberOfTDCMatches << " matching TDC fragments ";
       }
       ++v1751FragNumber;
-      mf::LogInfo("FragmentToDigit") << "At i=" << i << "  v1751FragNumber:" << v1751FragNumber;
+      LOG_VERBATIM("FragmentToDigit") << "At i=" << i << "  v1751FragNumber:" << v1751FragNumber;
     }
 
   }
@@ -1349,10 +1398,10 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
   std::map<uint8_t, size_t> tdcToStartWire;
   std::map<uint8_t, size_t> tdcToChamber;
   for(uint8_t tdc = 1; tdc < 17; ++tdc){
-    if(tdc < 5)       tdcToDetName[tdc] = 0;
-    else if(tdc < 9)  tdcToDetName[tdc] = 1;
-    else if(tdc < 13) tdcToDetName[tdc] = 2;
-    else              tdcToDetName[tdc] = 3;
+    if(tdc < 5)       tdcToChamber[tdc] = 0;
+    else if(tdc < 9)  tdcToChamber[tdc] = 1;
+    else if(tdc < 13) tdcToChamber[tdc] = 2;
+    else              tdcToChamber[tdc] = 3;
 
     if     (tdc == 1 || tdc == 5 || tdc == 9  || tdc == 13) tdcToStartWire[tdc] = 0;
     else if(tdc == 2 || tdc == 6 || tdc == 10 || tdc == 14) tdcToStartWire[tdc] = 64;
@@ -1385,15 +1434,15 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
 
     // determine the chamber and start wire
     auto switr = tdcToStartWire.find(tdced.tdcEventHeader.tdcNumber);
-    auto dnitr = tdcToChamber.find(tdced.tdcEventHeader.tdcNumber);
+    auto chitr = tdcToChamber.find(tdced.tdcEventHeader.tdcNumber);
 
-    if( dnitr == tdcToChamber.end() || switr == tdcToDetName.end() )
-      throw cet::exception("FragmentToDigit") << "TDC number " << tdced.tdcEventHeader.tdcHeader
+    if( chitr == tdcToChamber.end() || switr == tdcToStartWire.end() )
+      throw cet::exception("FragmentToDigit") << "TDC number " << tdced.tdcEventHeader.tdcNumber
 					      << " is not present in map to chamber number or start wire";
 
     for(auto const& hit : tdced.tdcHits){
-      hitsInChannel[dnitr->first][*switr + size_t (hit.channel)].push_back(short (hit.timeBin));
-      timeStamps   [dnitr->first][*switr + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
+      hitsInChannel[chitr->second][switr->second + size_t (hit.channel)].push_back(short (hit.timeBin));
+      timeStamps   [chitr->second][switr->second + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
     }
       
   } // end loop over tdcEventData
