@@ -485,8 +485,6 @@ void FragmentToDigit::produce(art::Event & evt)
     util::CreateAssn(*this, evt, *triggerVec, *auxDetVec, *tdADAssns, startAssns, endAssns);
   }
 
-  this->makeWUTDigits(data, auxDetVec);
-
   evt.put(std::move(triggerVec));
   evt.put(std::move(rawDigitVec));
   evt.put(std::move(auxDetVec));
