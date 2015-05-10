@@ -378,7 +378,7 @@ void FragmentToDigit::produce(art::Event & evt)
 
   const char * bytePtr = reinterpret_cast<const char *> (&*frag.dataBegin());
   LariatFragment * data = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(unsigned long long));
-  mf::LogInfo("FragmentToDigit") << "Have data fragment "
+  LOG_VERBATIM("FragmentToDigit") << "Have data fragment "
 				 << frag.dataSize() * sizeof(unsigned long long);
   data->print();
   data->printSpillTrailer();
@@ -388,7 +388,7 @@ void FragmentToDigit::produce(art::Event & evt)
   spillNumber = spillTrailer.spillNumber;
   timeStamp   = spillTrailer.timeStamp;
 
-  mf::LogInfo("FragmentToDigit") << "evt.run(): " << evt.run()
+  LOG_VERBATIM("FragmentToDigit") << "evt.run(): " << evt.run()
 				 << "; evt.subRun(): " << evt.subRun()
 				 << "; evt.event(): " << evt.event()
 				 << "; evt.time().timeLow(): " << evt.time().timeLow()
@@ -426,12 +426,12 @@ void FragmentToDigit::produce(art::Event & evt)
     rawDigits.clear();
     opPulses .clear();
 
-    mf::LogInfo("FragmentToDigit") << "Trigger " << i 
+    LOG_VERBATIM("FragmentToDigit") << "Trigger " << i 
 				   << " has a V1751 Fragment with index "  << fv1751InTrigger[i] 
 				   <<"\n and a V1740 Fragment with index " << fv1740InTrigger[i];
 
     if(fTDCInTrigger.size() > 0) 
-      mf::LogInfo("FragmentToDigit") << ", and a TDC Fragment with index " << fTDCInTrigger[i];
+      LOG_VERBATIM("FragmentToDigit") << ", and a TDC Fragment with index " << fTDCInTrigger[i];
 
     if(fv1751InTrigger[i]) caenFrags.push_back(data->caenFrags[fv1751InTrigger[i]]);
     if(fv1740InTrigger[i]) caenFrags.push_back(data->caenFrags[fv1740InTrigger[i]]);
@@ -546,12 +546,12 @@ void FragmentToDigit::produce(art::Event & evt)
   // }
 
   // for(size_t i = 0; i < fNtriggers; ++i) {
-  //   mf::LogInfo("FragmentToDigit") << "Trigger " << i 
+  //   LOG_VERBATIM("FragmentToDigit") << "Trigger " << i 
   // 				   << " has a V1751 Fragment with index "  << fv1751InTrigger[i] 
   // 				   <<"\n and a V1740 Fragment with index " << fv1740InTrigger[i];
 
   //   if(fTDCInTrigger.size() > 0) 
-  //     mf::LogInfo("FragmentToDigit") << ", and a TDC Fragment with index " << fTDCInTrigger[i];
+  //     LOG_VERBATIM("FragmentToDigit") << ", and a TDC Fragment with index " << fTDCInTrigger[i];
 
   //   if(fv1751InTrigger[i]){
   //     this->makeCaenV1751AuxDetDigits(fv1751InTrigger[i], data, 
@@ -1293,7 +1293,7 @@ void FragmentToDigit::makeOpDetPulses(std::vector<CAENFragment>    const& caenFr
 
 	std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
    
-	mf::LogInfo("FragmentToDigit") << "Writing opdetpulses " 
+	LOG_VERBATIM("FragmentToDigit") << "Writing opdetpulses " 
 				       << " boardID : " << boardId 
 				       << " channel " << ch 
 				       << " size of wvform data " << waveForm.size()
@@ -1537,6 +1537,50 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
 }
 
 //------------------------------------------------------------------------------
+void FragmentToDigit::makeWUTDigits(LariatFragment * data,
+                                    std::unique_ptr< std::vector<raw::AuxDetDigit> > & wutVec)
+{
+
+  const int numberWutFrags = data->wutFrags.size();
+  LOG_VERBATIM("FragmentToDigit") << "Found " << numberWutFrags << " WUT fragments";
+
+  if (numberWutFrags > 0)
+    LOG_VERBATIM("FragmentToDigit") << "Looking at WUT fragments...";
+
+  for (int i = 0; i < numberWutFrags; ++i) {
+    WUTFragment & wutFrag = data->wutFrags[i];
+    uint32_t numberHits = wutFrag.header.nHits;
+    std::vector<WUTFragment::WutHit> & hits = wutFrag.hits;
+
+    std::vector< std::vector<short> > hitsInChannel;
+
+    hitsInChannel.resize(WUT_N_TDC_CHANNELS);
+    for (size_t channel = 0; channel < WUT_N_TDC_CHANNELS; ++channel)
+      hitsInChannel[channel].reserve(WUT_MAX_HITS);
+    
+    uint32_t timeHeader = wutFrag.header.timeHeader;
+
+    for (size_t j = 0; j < numberHits; ++j) {
+      WUTFragment::WutHit & hit = hits[j];
+      hitsInChannel[size_t (hit.channel)].push_back(short (hit.timeBin));
+    }
+
+    for (size_t channel = 0; channel < WUT_N_TDC_CHANNELS; ++channel) {
+
+      wutVec->push_back(raw::AuxDetDigit(static_cast <unsigned short> (channel),
+					 hitsInChannel[channel],
+					 fWutLabel,
+					 static_cast <unsigned long long> (timeHeader)
+					 )
+			);
+      
+    }
+  }// end loop over WUT fragments
+
+  return;
+}
+
+//------------------------------------------------------------------------------
 void FragmentToDigit::makeMWPCTDCAuxDetDigits(int i, LariatFragment * data,
 					      std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
 					      std::string mwpcTdcLabels[16])
@@ -1589,51 +1633,6 @@ void FragmentToDigit::makeMWPCTDCAuxDetDigits(int i, LariatFragment * data,
 }
 
 //------------------------------------------------------------------------------
-void FragmentToDigit::makeWUTDigits(LariatFragment * data,
-                                    std::unique_ptr< std::vector<raw::AuxDetDigit> > & wutVec)
-{
-
-  const int numberWutFrags = data->wutFrags.size();
-  mf::LogInfo("FragmentToDigit") << "Found " << numberWutFrags << " WUT fragments";
-
-  if (numberWutFrags > 0)
-    mf::LogInfo("FragmentToDigit") << "Looking at WUT fragments...";
-
-  for (int i = 0; i < numberWutFrags; ++i) {
-    WUTFragment & wutFrag = data->wutFrags[i];
-    uint32_t numberHits = wutFrag.header.nHits;
-    std::vector<WUTFragment::WutHit> & hits = wutFrag.hits;
-
-    std::vector< std::vector<short> > hitsInChannel;
-
-    hitsInChannel.resize(WUT_N_TDC_CHANNELS);
-    for (size_t channel = 0; channel < WUT_N_TDC_CHANNELS; ++channel)
-      hitsInChannel[channel].reserve(WUT_MAX_HITS);
-    
-    uint32_t timeHeader = wutFrag.header.timeHeader;
-
-    for (size_t j = 0; j < numberHits; ++j) {
-      WUTFragment::WutHit & hit = hits[j];
-      hitsInChannel[size_t (hit.channel)].push_back(short (hit.timeBin));
-    }
-
-    for (size_t channel = 0; channel < WUT_N_TDC_CHANNELS; ++channel) {
-
-      wutVec->push_back(raw::AuxDetDigit(static_cast <unsigned short> (channel),
-					 hitsInChannel[channel],
-					 fWutLabel,
-					 static_cast <unsigned long long> (timeHeader)
-					 )
-			);
-      
-    }
-  }// end loop over WUT fragments
-
-  return;
-}
-
-
-//------------------------------------------------------------------------------
 void FragmentToDigit::makeCaenV1751AuxDetDigits(int i, LariatFragment * data,
                                                 std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board0Vec,
                                                 std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
@@ -1668,7 +1667,7 @@ void FragmentToDigit::makeCaenV1751AuxDetDigits(int i, LariatFragment * data,
       // the following if statement makes no sense.  Why would we expect the size of the 
       // vector for a given set of channels on a board to be greater than j????
       if(fOpDetChID[boardId].size() > j){
-	mf::LogInfo("FragmentToDigit") << "Writing opdetpulses index i=" << i 
+	LOG_VERBATIM("FragmentToDigit") << "Writing opdetpulses index i=" << i 
 				       << " in makeCaenV1751Frags boardID : " << boardId 
 				       << " channel " << j 
 				       << " size of wvform data " << caenFrag.waveForms[j].data.size()
