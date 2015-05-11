@@ -1360,14 +1360,14 @@ lunit="cm"/>
    aunit="deg"
    lunit="cm"/> 
   <tube name="PMTEtlBase"
-   rmax="(2.56)"
+   rmax="(2.54)"
    rmin="0.0"
    z="12.5"
    deltaphi="360"
    aunit="deg"
    lunit="cm"/>
   <tube name="PMTEtlC"
-   rmax="(2.56)"
+   rmax="(2.54)"
    rmin="0.0"
    z="0.96"
    deltaphi="360"
@@ -1376,7 +1376,7 @@ lunit="cm"/>
 
 
   <tube name="PMTEtlRim"
-   rmax="(2.56)"
+   rmax="(2.54)"
    rmin="2.46"
    z="0.3"
    deltaphi="360"
@@ -1384,7 +1384,7 @@ lunit="cm"/>
    lunit="cm"/> 
 
   <tube name="PMTEtlWindow"
-   rmax="(2.56)"
+   rmax="(2.54)"
    rmin="0.0"
    z="1.0"
    deltaphi="360"
@@ -1392,7 +1392,7 @@ lunit="cm"/>
    lunit="cm"/> 
 
   <tube name="PMTHmmBase"
-   rmax="(2.56)"
+   rmax="(2.54)"
    rmin="0.0"
    z="12.5"
    deltaphi="360"
@@ -1400,14 +1400,14 @@ lunit="cm"/>
    lunit="cm"/> 
 
   <tube name="PMTHmmBottom"
-   rmax="(3.84)"
+   rmax="(3.81)"
    rmin="0.0"
    z="2.0"
    deltaphi="360"
    aunit="deg"
    lunit="cm"/> 
   <tube name="PMTHmmC"
-   rmax="(3.84)"
+   rmax="(3.81)"
    rmin="0.0"
    z="0.96"
    deltaphi="360"
@@ -1415,7 +1415,7 @@ lunit="cm"/>
    lunit="cm"/> 
 
   <tube name="PMTHmmWindow"
-   rmax="(3.84)"
+   rmax="(3.81)"
    rmin="0.0"
    z="1.0"
    deltaphi="360"
@@ -1423,16 +1423,16 @@ lunit="cm"/>
    lunit="cm"/> 
 
   <ellipsoid name="PMTHmmWindow_e"
-   ax="(3.84)"
-   by="(3.84)"
+   ax="(3.81)"
+   by="(3.81)"
    cz="1.0"
    zcut2="0.0"
 
    lunit="cm"/> 
 
   <ellipsoid name="PMTEtlWindow_e"
-   ax="(2.56)"
-   by="(2.56)"
+   ax="(2.54)"
+   by="(2.54)"
    cz="1.0"
    zcut2="0.0"
 
