@@ -9,6 +9,17 @@ include_directories( $ENV{LARSIM_INC}           	       )
 include_directories( $ENV{POSTGRESQL_INC}       	       )
 
 art_make(BASENAME_ONLY
+         LIBRARY_NAME     RawDataUtilities
+	 LIB_LIBRARIES    RawData
+			  ${ART_FRAMEWORK_CORE}
+			  ${ART_FRAMEWORK_PRINCIPAL}
+			  ${ART_PERSISTENCY_COMMON}
+			  ${ART_PERSISTENCY_PROVENANCE}
+			  ${ART_UTILITIES}
+			  ${MF_MESSAGELOGGER}
+			  ${MF_UTILITIES}
+			  ${CETLIB}
+			  ${ROOT_BASIC_LIB_LIST}
          DICT_LIBRARIES   RawData
          MODULE_LIBRARIES RawData
 	                  SummaryData

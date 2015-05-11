@@ -1386,9 +1386,14 @@ void FragmentToDigit::makeTOFDigits(std::vector<CAENFragment>     const& caenFra
   uint32_t boardId = 8;
   uint32_t chanOff = 0;
   std::set<uint32_t> boardChans;
-  for(uint32_t bc = chanOff; bc < 4; ++bc) boardChans.insert(bc);
 
-  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOF");
+  for(uint32_t bc = chanOff; bc < 2; ++bc) boardChans.insert(bc);
+  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOFUS");
+  
+  boardChans.clear();
+  chanOff = 2;
+  for(uint32_t bc = chanOff; bc < 4; ++bc) boardChans.insert(bc);
+  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOFDS");
 
   return;
 }
@@ -1401,9 +1406,15 @@ void FragmentToDigit::makeAeroGelDigits(std::vector<CAENFragment>     const& cae
   uint32_t boardId = 8;
   uint32_t chanOff = 4;
   std::set<uint32_t> boardChans;
-  for(uint32_t bc = chanOff; bc < 8; ++bc) boardChans.insert(bc);
 
-  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGel");
+  // Call this for each AeroGel counter
+  for(uint32_t bc = chanOff; bc < 6; ++bc) boardChans.insert(bc);
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelUS");
+
+  boardChans.clear();
+  chanOff = 6;
+  for(uint32_t bc = chanOff; bc < 8; ++bc) boardChans.insert(bc);
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelDS");
 
   return;
 }
