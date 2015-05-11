@@ -115,18 +115,18 @@ namespace rdu{
 								      std::vector< art::PtrVector<raw::AuxDetDigit> > const& trigDigVec) const;
 
 
-    art::PtrVector<raw::Trigger>                    fTriggers;
-    std::vector< art::PtrVector<raw::RawDigit>    > fTriggerRawDigits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerUpStreamTOFDigits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerDownStreamTOFDigits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerUpStreamAGDigits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerDownStreamAGDigits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC1Digits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC2Digits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC3Digits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC4Digits;
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMuonRangeDigits;
-    std::vector< art::PtrVector<raw::OpDetPulse>  > fTriggerOpDetPulses;
+    art::PtrVector<raw::Trigger>                    fTriggers;                   /// vector of triggers for the event
+    std::vector< art::PtrVector<raw::RawDigit>    > fTriggerRawDigits;           /// vector mapping trigger index to collection of RawDigits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerUpStreamTOFDigits;   /// vector mapping trigger index to collection of Upstream TOF digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerDownStreamTOFDigits; /// vector mapping trigger index to collection of Downstream TOF digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerUpStreamAGDigits;    /// vector mapping trigger index to collection of Upstream Aerogel digits	
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerDownStreamAGDigits;	 /// vector mapping trigger index to collection of Downstream Aerogel digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC1Digits;         /// vector mapping trigger index to collection of MWPC1 digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC2Digits;         /// vector mapping trigger index to collection of MWPC1 digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC3Digits;         /// vector mapping trigger index to collection of MWPC1 digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC4Digits;         /// vector mapping trigger index to collection of MWPC1 digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMuonRangeDigits;     /// vector mapping trigger index to collection of Muon Range Stack digits
+    std::vector< art::PtrVector<raw::OpDetPulse>  > fTriggerOpDetPulses;         /// vector mapping trigger index to collection of OpDetPulses
  
   };   
 
