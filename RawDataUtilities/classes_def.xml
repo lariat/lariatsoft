@@ -5,20 +5,27 @@
  
 <lcgdict>
 
- <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>    >"/>
- <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit> >"/>
- <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>  >"/>
+  <class name="V1495Fragment" ClassVersion="10" >
+   <version ClassVersion="10" checksum="446312906"/>
+  </class>
 
- <class name="std::pair< art::Ptr<raw::RawDigit>,    art::Ptr<raw::Trigger> >"/>
- <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<raw::Trigger> >"/>
- <class name="std::pair< art::Ptr<raw::OpDetPulse>,  art::Ptr<raw::Trigger> >"/>
+  <class name="std::vector<V1495Fragment>"          	      />
+  <class name="art::Wrapper< std::vector<V1495Fragment> >"    />
 
- <class name="art::Assns<raw::Trigger, raw::RawDigit,    void>" />
- <class name="art::Assns<raw::Trigger, raw::AuxDetDigit, void>" />
- <class name="art::Assns<raw::Trigger, raw::OpDetPulse,  void>" />
-
- <class name="art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,    void> >"/>
- <class name="art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit, void> >"/>
- <class name="art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,  void> >"/>
-    
+  <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>    >"/>
+  <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit> >"/>
+  <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>  >"/>
+  
+  <class name="std::pair< art::Ptr<raw::RawDigit>,    art::Ptr<raw::Trigger> >"/>
+  <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<raw::Trigger> >"/>
+  <class name="std::pair< art::Ptr<raw::OpDetPulse>,  art::Ptr<raw::Trigger> >"/>
+  
+  <class name="art::Assns<raw::Trigger, raw::RawDigit,    void>" />
+  <class name="art::Assns<raw::Trigger, raw::AuxDetDigit, void>" />
+  <class name="art::Assns<raw::Trigger, raw::OpDetPulse,  void>" />
+  
+  <class name="art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,    void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit, void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,  void> >"/>
+  
 </lcgdict>

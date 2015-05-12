@@ -1,11 +1,17 @@
 #include "art/Persistency/Common/Wrapper.h"
 #include "art/Persistency/Common/Assns.h"
 #include "art/Persistency/Common/Ptr.h"
+#include "art/Persistency/Common/PtrVector.h"
+
+#include "LArIATFragments/V1495Fragment.h"
 
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
 #include "RawData/OpDetPulse.h"
 #include "RawData/TriggerData.h"
+
+template class std::vector<V1495Fragment>;
+template class art::Wrapper< std::vector<V1495Fragment> >;
 
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>    >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit> >;

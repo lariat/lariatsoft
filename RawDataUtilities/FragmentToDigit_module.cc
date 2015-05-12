@@ -45,6 +45,7 @@
 #include "LArIATFragments/WUTFragment.h"
 #include "LArIATFragments/CAENFragment.h"
 #include "LArIATFragments/TDCFragment.h"
+#include "LArIATFragments/V1495Fragment.h"
 
 #include "SimpleTypesAndConstants/RawTypes.h"
 #include "RawData/RawDigit.h"
@@ -239,7 +240,6 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
   produces< sumdata::RunData, art::InRun >();
 
   produces< std::vector<raw::RawDigit>    >();
-
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
   produces< std::vector<raw::Trigger>     >();
   produces< std::vector<raw::AuxDetDigit> >();
@@ -247,8 +247,8 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
   produces< art::Assns<raw::Trigger, raw::RawDigit>    >();
   produces< art::Assns<raw::Trigger, raw::AuxDetDigit> >();
   produces< art::Assns<raw::Trigger, raw::OpDetPulse>  >();
+  produces< std::vector<V1495Fragment> >();
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
-
 
 
   //-----UNCOMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
@@ -354,15 +354,17 @@ void FragmentToDigit::beginRun(art::Run& run)
 //------------------------------------------------------------------------------
 void FragmentToDigit::produce(art::Event & evt)
 {
+  std::unique_ptr< std::vector<raw::RawDigit>    > rawDigitVec(new std::vector<raw::RawDigit   >);
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
   std::unique_ptr< std::vector<raw::Trigger>     > triggerVec (new std::vector<raw::Trigger    >);
-  std::unique_ptr< std::vector<raw::RawDigit>    > rawDigitVec(new std::vector<raw::RawDigit   >);
   std::unique_ptr< std::vector<raw::AuxDetDigit> > auxDetVec  (new std::vector<raw::AuxDetDigit>);
   std::unique_ptr< std::vector<raw::OpDetPulse>  > opDetVec   (new std::vector<raw::OpDetPulse >);
 
   std::unique_ptr< art::Assns<raw::Trigger, raw::RawDigit>    > tdRDAssns(new art::Assns<raw::Trigger, raw::RawDigit>   );
   std::unique_ptr< art::Assns<raw::Trigger, raw::AuxDetDigit> > tdADAssns(new art::Assns<raw::Trigger, raw::AuxDetDigit>);
   std::unique_ptr< art::Assns<raw::Trigger, raw::OpDetPulse>  > tdOPAssns(new art::Assns<raw::Trigger, raw::OpDetPulse> );
+
+  std::unique_ptr< std::vector<V1495Fragment> > v1495Fragments(new std::vector<V1495Fragment>);
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
 
   art::Handle< std::vector<artdaq::Fragment> > fragments;
@@ -387,6 +389,9 @@ void FragmentToDigit::produce(art::Event & evt)
   runNumber = spillTrailer.runNumber;
   spillNumber = spillTrailer.spillNumber;
   timeStamp   = spillTrailer.timeStamp;
+
+  // copy the V1495Fragments from LariatFragment to the data product
+  for(auto v1495frag : data->v1495Frags) v1495Fragments->push_back(v1495frag);
 
   LOG_VERBATIM("FragmentToDigit") << "evt.run(): " << evt.run()
 				 << "; evt.subRun(): " << evt.subRun()
@@ -492,6 +497,7 @@ void FragmentToDigit::produce(art::Event & evt)
   evt.put(std::move(tdRDAssns));
   evt.put(std::move(tdADAssns));
   evt.put(std::move(tdOPAssns));
+  evt.put(std::move(v1495Fragments));
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
 
 

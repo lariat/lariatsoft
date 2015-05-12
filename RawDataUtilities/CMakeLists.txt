@@ -21,6 +21,7 @@ art_make(BASENAME_ONLY
 			  ${CETLIB}
 			  ${ROOT_BASIC_LIB_LIST}
          DICT_LIBRARIES   RawData
+	                  LariatFragments
          MODULE_LIBRARIES RawData
 	                  SummaryData
 			  Geometry_service
