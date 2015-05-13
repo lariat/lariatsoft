@@ -4,7 +4,7 @@ BEGIN_PROLOG
 
 lariat_calroi:
 {
- module_type:        "CalWireROI"
+ module_type:        "CalWireROIT1034"
  DigitModuleLabel:   "daq"
  Threshold: [ 3, 3, 3 ] # abs(threshold) for finding a Region Of Interest
  MinWid:              4 # min width (time bins) for a ROI
