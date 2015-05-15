@@ -76,7 +76,7 @@ enum {
 };
 
 // ugly nested map for matching data blocks
-typedef std::map< std::string, std::map< std::string, std::map< unsigned int, std::vector<unsigned int> > > > match_map;
+typedef std::map< std::string, std::map< std::string, std::vector< std::map< unsigned int, std::vector<unsigned int> > > > > match_maps;
 
 class FragmentToDigit;
 
@@ -102,30 +102,30 @@ public:
   void matchDataBlocks(LariatFragment * data);
 
   void coarseMatch(std::string const& deviceALabel,
-		   std::string const& deviceBLabel,
-		   double             range[2],
-		   std::map< std::string, std::map<unsigned int, double> > timeStamps,
-		   match_map        & matchMap);
+                   std::string const& deviceBLabel,
+                   double             range[2],
+                   std::map< std::string, std::map<unsigned int, double> > timeStamps,
+                   match_maps       & matchMaps);
 
-  void fineMatch(std::string               const& deviceALabel,
-		 std::string 		   const& deviceBLabel,
-		 double      		          range[2],    
-		 std::pair<double, double> const& fitParameters,
-		 std::map< std::string, std::map<unsigned int, double> > timeStamps,
-		 match_map                      & matchMap);
+  void fineMatch(std::string const& deviceALabel,
+                 std::string const& deviceBLabel,
+                 double             range[2],    
+                 std::pair<double, double> const& fitParameters,
+                 std::map< std::string, std::map<unsigned int, double> > timeStamps,
+                 match_maps       & matchMaps);
 
   void printMatchMap(std::string const& deviceALabel,
-		     std::string const& deviceBLabel,
-		     match_map        & matchMap);
+                     std::string const& deviceBLabel,
+                     match_maps       & matchMaps);
 
   double line(std::pair<double, double> const& parameters, 
-	      double                    const& x);
+              double                    const& x);
 
   std::pair<double, double> fitDrift(std::string const& deviceALabel,
-				     std::string const& deviceBLabel,
-				     std::map< std::string, std::map<unsigned int, double> > timeStamps,
-				     match_map        & matchMap,
-				     std::string const& graphNamePrefix);
+                                     std::string const& deviceBLabel,
+                                     std::map< std::string, std::map<unsigned int, double> > timeStamps,
+                                     match_maps       & matchMaps,
+                                     std::string const& graphNamePrefix);
 
   void matchFragments(uint32_t            & Ntriggers,
 		      std::vector<size_t> & fv1751InTrigger,
@@ -299,21 +299,21 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   fCaenV1751Board0Label = p.get< std::string >("CaenV1751Board0Label", "CaenV1751Board0"  );
   fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label", "CaenV1751Board1"  );
   fMwpcTdc01Label       = p.get< std::string >("MwpcTdc01Label",       "MwpcTdc01"        );
-  fMwpcTdc02Label	= p.get< std::string >("MwpcTdc02Label",       "MwpcTdc02"	  );
-  fMwpcTdc03Label	= p.get< std::string >("MwpcTdc03Label",       "MwpcTdc03"	  );
-  fMwpcTdc04Label	= p.get< std::string >("MwpcTdc04Label",       "MwpcTdc04"	  );
-  fMwpcTdc05Label	= p.get< std::string >("MwpcTdc05Label",       "MwpcTdc05"	  );
-  fMwpcTdc06Label	= p.get< std::string >("MwpcTdc06Label",       "MwpcTdc06"	  );
-  fMwpcTdc07Label	= p.get< std::string >("MwpcTdc07Label",       "MwpcTdc07"	  );
-  fMwpcTdc08Label	= p.get< std::string >("MwpcTdc08Label",       "MwpcTdc08"	  );
-  fMwpcTdc09Label	= p.get< std::string >("MwpcTdc09Label",       "MwpcTdc09"	  );
-  fMwpcTdc10Label	= p.get< std::string >("MwpcTdc10Label",       "MwpcTdc10"	  );
-  fMwpcTdc11Label	= p.get< std::string >("MwpcTdc11Label",       "MwpcTdc11"	  );
-  fMwpcTdc12Label	= p.get< std::string >("MwpcTdc12Label",       "MwpcTdc12"	  );
-  fMwpcTdc13Label	= p.get< std::string >("MwpcTdc13Label",       "MwpcTdc13"	  );
-  fMwpcTdc14Label	= p.get< std::string >("MwpcTdc14Label",       "MwpcTdc14"	  );
-  fMwpcTdc15Label	= p.get< std::string >("MwpcTdc15Label",       "MwpcTdc15"	  );
-  fMwpcTdc16Label	= p.get< std::string >("MwpcTdc16Label",       "MwpcTdc16"	  );
+  fMwpcTdc02Label       = p.get< std::string >("MwpcTdc02Label",       "MwpcTdc02"	  );
+  fMwpcTdc03Label       = p.get< std::string >("MwpcTdc03Label",       "MwpcTdc03"	  );
+  fMwpcTdc04Label       = p.get< std::string >("MwpcTdc04Label",       "MwpcTdc04"	  );
+  fMwpcTdc05Label       = p.get< std::string >("MwpcTdc05Label",       "MwpcTdc05"	  );
+  fMwpcTdc06Label       = p.get< std::string >("MwpcTdc06Label",       "MwpcTdc06"	  );
+  fMwpcTdc07Label       = p.get< std::string >("MwpcTdc07Label",       "MwpcTdc07"	  );
+  fMwpcTdc08Label       = p.get< std::string >("MwpcTdc08Label",       "MwpcTdc08"	  );
+  fMwpcTdc09Label       = p.get< std::string >("MwpcTdc09Label",       "MwpcTdc09"	  );
+  fMwpcTdc10Label       = p.get< std::string >("MwpcTdc10Label",       "MwpcTdc10"	  );
+  fMwpcTdc11Label       = p.get< std::string >("MwpcTdc11Label",       "MwpcTdc11"	  );
+  fMwpcTdc12Label       = p.get< std::string >("MwpcTdc12Label",       "MwpcTdc12"	  );
+  fMwpcTdc13Label       = p.get< std::string >("MwpcTdc13Label",       "MwpcTdc13"	  );
+  fMwpcTdc14Label       = p.get< std::string >("MwpcTdc14Label",       "MwpcTdc14"	  );
+  fMwpcTdc15Label       = p.get< std::string >("MwpcTdc15Label",       "MwpcTdc15"	  );
+  fMwpcTdc16Label       = p.get< std::string >("MwpcTdc16Label",       "MwpcTdc16"	  );
   fCaenOpLabel1         = p.get< std::string >("OpDetBoardLabel1",     "Caenv1751Optical1");
   fCaenOpLabel2         = p.get< std::string >("OpDetBoardLabel2",     "Caenv1751Optical2");
 
@@ -323,26 +323,20 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void FragmentToDigit::beginJob()
 {
-  //art::ServiceHandle<art::TFileService> tfs;
-
-  //fV1751V1740DriftPreliminary = tfs->make<TGraph>();
-  //fV1751MwpcDriftPreliminary  = tfs->make<TGraph>();
-  //fV1740MwpcDriftPreliminary  = tfs->make<TGraph>();
-
   return;
 }
 
 //____________________________________________________________________________
 void FragmentToDigit::beginRun(art::Run& run)
 {
-  
+
   // grab the geometry object to see what geometry we are using
   art::ServiceHandle<geo::Geometry> geo;
-  
+
   std::unique_ptr<sumdata::RunData> runcol(new sumdata::RunData(geo->DetectorName()));
-  
+
   run.put(std::move(runcol));
-  
+
   return;
 }
 
@@ -398,7 +392,6 @@ void FragmentToDigit::produce(art::Event & evt)
 
   this->matchDataBlocks(data);
   this->matchFragments(fNtriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
-  //this->printMatchMap(fCaenV1740Board0Label, fCaenV1740Board1Label, matchMap1);
 
   LOG_INFO("FragmentToDigit") << "Ntriggers is: " << fNtriggers 
 			      << "\nThe size of v1751InTrigger is: " << fv1751InTrigger.size()
@@ -627,9 +620,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
   // maps for matching fragments
   std::map< std::string, std::map<unsigned int, double> > dataBlockTimeStamps;
-  match_map preliminaryMatchMap;
-  match_map matchMap1;
-  match_map matchMap2;
+  match_maps matchMaps;
 
   //////////////////////////////////////////////////////////////////////
   // Some notes
@@ -808,25 +799,25 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //////////////////////////////////////////////////////////////////////
 
   // the difference in time stamps should be in between this range for a match; microseconds
-  double v1740IntraRange[2] = { -0.016, 0.016 };
-  double v1751IntraRange[2] = { -0.016, 0.016 };
+  double v1740IntraRange[2] = { -0.032, 0.032 };
+  double v1751IntraRange[2] = { -0.032, 0.032 };
 
-  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board1Label, v1740IntraRange, dataBlockTimeStamps, matchMap1);
-  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board2Label, v1740IntraRange, dataBlockTimeStamps, matchMap1);
-  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board3Label, v1740IntraRange, dataBlockTimeStamps, matchMap1);
-  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board4Label, v1740IntraRange, dataBlockTimeStamps, matchMap1);
-  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board5Label, v1740IntraRange, dataBlockTimeStamps, matchMap1);
-  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board6Label, v1740IntraRange, dataBlockTimeStamps, matchMap1);
-  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board7Label, v1740IntraRange, dataBlockTimeStamps, matchMap1);
-  coarseMatch(fCaenV1751Board0Label, fCaenV1751Board1Label, v1751IntraRange, dataBlockTimeStamps, matchMap1);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board1Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board2Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board3Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board4Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board5Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board6Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1740Board0Label, fCaenV1740Board7Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1751Board1Label, v1751IntraRange, dataBlockTimeStamps, matchMaps);
 
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board1Label, matchMap1);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board2Label, matchMap1);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board3Label, matchMap1);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board4Label, matchMap1);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board5Label, matchMap1);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board6Label, matchMap1);
-  //printMatchMap(fCaenV1751Board0Label, fCaenV1751Board1Label, matchMap1);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board1Label, matchMaps);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board2Label, matchMaps);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board3Label, matchMaps);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board4Label, matchMaps);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board5Label, matchMaps);
+  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board6Label, matchMaps);
+  //printMatchMap(fCaenV1751Board0Label, fCaenV1751Board1Label, matchMaps);
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: intra V1740/V1751 matching
@@ -841,35 +832,36 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   double v1751MwpcInterRange[2]  = { 0, 160 };
   double v1740MwpcInterRange[2]  = { 0, 160 };
 
-  std::map< std::string, std::map< std::string, std::pair<double, double> > > fitParameters;
+  std::map< std::string, std::map< std::string, std::vector< std::pair<double, double> > > > fitParamsMaps;
+  std::map< std::string, std::map< std::string, std::pair<double, double> > > fitParams;
 
-  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board0Label, v1751v1740InterRange, dataBlockTimeStamps, preliminaryMatchMap);
-  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board1Label, v1751v1740InterRange, dataBlockTimeStamps, preliminaryMatchMap);
-  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board2Label, v1751v1740InterRange, dataBlockTimeStamps, preliminaryMatchMap);
-  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board3Label, v1751v1740InterRange, dataBlockTimeStamps, preliminaryMatchMap);
-  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board4Label, v1751v1740InterRange, dataBlockTimeStamps, preliminaryMatchMap);
-  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board5Label, v1751v1740InterRange, dataBlockTimeStamps, preliminaryMatchMap);
-  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board6Label, v1751v1740InterRange, dataBlockTimeStamps, preliminaryMatchMap);
-  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board7Label, v1751v1740InterRange, dataBlockTimeStamps, preliminaryMatchMap);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board0Label, v1751v1740InterRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board1Label, v1751v1740InterRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board2Label, v1751v1740InterRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board3Label, v1751v1740InterRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board4Label, v1751v1740InterRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board5Label, v1751v1740InterRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board6Label, v1751v1740InterRange, dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1751Board0Label, fCaenV1740Board7Label, v1751v1740InterRange, dataBlockTimeStamps, matchMaps);
 
-  coarseMatch(fCaenV1751Board0Label, fMwpcTdc01Label,       v1751MwpcInterRange,  dataBlockTimeStamps, preliminaryMatchMap);
-  coarseMatch(fCaenV1740Board0Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  dataBlockTimeStamps, preliminaryMatchMap);
+  coarseMatch(fCaenV1751Board0Label, fMwpcTdc01Label,       v1751MwpcInterRange,  dataBlockTimeStamps, matchMaps);
+  coarseMatch(fCaenV1740Board0Label, fMwpcTdc01Label, 	    v1740MwpcInterRange,  dataBlockTimeStamps, matchMaps);
 
-  //printMatchMap(fCaenV1751Board0Label, fCaenV1740Board0Label, preliminaryMatchMap);
-  //printMatchMap(fCaenV1751Board0Label, fMwpcTdc01Label, preliminaryMatchMap);
-  //printMatchMap(fCaenV1740Board0Label, fMwpcTdc01Label, preliminaryMatchMap);
+  //printMatchMap(fCaenV1751Board0Label, fCaenV1740Board0Label, matchMaps);
+  //printMatchMap(fCaenV1751Board0Label, fMwpcTdc01Label, matchMaps);
+  //printMatchMap(fCaenV1740Board0Label, fMwpcTdc01Label, matchMaps);
 
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board0Label, dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board1Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board1Label, dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board2Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board2Label, dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board3Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board3Label, dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board4Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board4Label, dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board5Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board5Label, dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board6Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board6Label, dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board7Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board7Label, dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board0Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board0Label, dataBlockTimeStamps, matchMaps, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board1Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board1Label, dataBlockTimeStamps, matchMaps, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board2Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board2Label, dataBlockTimeStamps, matchMaps, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board3Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board3Label, dataBlockTimeStamps, matchMaps, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board4Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board4Label, dataBlockTimeStamps, matchMaps, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board5Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board5Label, dataBlockTimeStamps, matchMaps, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board6Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board6Label, dataBlockTimeStamps, matchMaps, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board7Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board7Label, dataBlockTimeStamps, matchMaps, "coarse_match");
 
-  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
-  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, preliminaryMatchMap, "coarse_match");
+  fitParams[fCaenV1751Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMaps, "coarse_match");
+  fitParams[fCaenV1740Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMaps, "coarse_match");
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: coarse matching
@@ -883,21 +875,21 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   double v1751MwpcInterEps[2]  = { 1, 1 };
   double v1740MwpcInterEps[2]  = { 1, 1 };
 
-  fineMatch(fCaenV1751Board0Label, fCaenV1740Board0Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label], dataBlockTimeStamps, matchMap1);
-  fineMatch(fCaenV1751Board0Label, fCaenV1740Board1Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board1Label], dataBlockTimeStamps, matchMap1);
-  fineMatch(fCaenV1751Board0Label, fCaenV1740Board2Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board2Label], dataBlockTimeStamps, matchMap1);
-  fineMatch(fCaenV1751Board0Label, fCaenV1740Board3Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board3Label], dataBlockTimeStamps, matchMap1);
-  fineMatch(fCaenV1751Board0Label, fCaenV1740Board4Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board4Label], dataBlockTimeStamps, matchMap1);
-  fineMatch(fCaenV1751Board0Label, fCaenV1740Board5Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board5Label], dataBlockTimeStamps, matchMap1);
-  fineMatch(fCaenV1751Board0Label, fCaenV1740Board6Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board6Label], dataBlockTimeStamps, matchMap1);
-  fineMatch(fCaenV1751Board0Label, fCaenV1740Board7Label, v1751v1740InterEps, fitParameters[fCaenV1751Board0Label][fCaenV1740Board7Label], dataBlockTimeStamps, matchMap1);
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board0Label, v1751v1740InterEps, fitParams[fCaenV1751Board0Label][fCaenV1740Board0Label], dataBlockTimeStamps, matchMaps);
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board1Label, v1751v1740InterEps, fitParams[fCaenV1751Board0Label][fCaenV1740Board1Label], dataBlockTimeStamps, matchMaps);
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board2Label, v1751v1740InterEps, fitParams[fCaenV1751Board0Label][fCaenV1740Board2Label], dataBlockTimeStamps, matchMaps);
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board3Label, v1751v1740InterEps, fitParams[fCaenV1751Board0Label][fCaenV1740Board3Label], dataBlockTimeStamps, matchMaps);
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board4Label, v1751v1740InterEps, fitParams[fCaenV1751Board0Label][fCaenV1740Board4Label], dataBlockTimeStamps, matchMaps);
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board5Label, v1751v1740InterEps, fitParams[fCaenV1751Board0Label][fCaenV1740Board5Label], dataBlockTimeStamps, matchMaps);
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board6Label, v1751v1740InterEps, fitParams[fCaenV1751Board0Label][fCaenV1740Board6Label], dataBlockTimeStamps, matchMaps);
+  fineMatch(fCaenV1751Board0Label, fCaenV1740Board7Label, v1751v1740InterEps, fitParams[fCaenV1751Board0Label][fCaenV1740Board7Label], dataBlockTimeStamps, matchMaps);
 
-  fineMatch(fCaenV1751Board0Label, fMwpcTdc01Label,       v1751MwpcInterEps,  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label],       dataBlockTimeStamps, matchMap1);
-  fineMatch(fCaenV1740Board0Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label], 	   dataBlockTimeStamps, matchMap1);
+  fineMatch(fCaenV1751Board0Label, fMwpcTdc01Label,       v1751MwpcInterEps,  fitParams[fCaenV1751Board0Label][fMwpcTdc01Label],       dataBlockTimeStamps, matchMaps);
+  fineMatch(fCaenV1740Board0Label, fMwpcTdc01Label, 	  v1740MwpcInterEps,  fitParams[fCaenV1740Board0Label][fMwpcTdc01Label], 	   dataBlockTimeStamps, matchMaps);
 
-  fitParameters[fCaenV1751Board0Label][fCaenV1740Board0Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board0Label, dataBlockTimeStamps, matchMap1, "fine_match");
-  fitParameters[fCaenV1751Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMap1, "fine_match");
-  fitParameters[fCaenV1740Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMap1, "fine_match");
+  fitParams[fCaenV1751Board0Label][fCaenV1740Board0Label] = fitDrift(fCaenV1751Board0Label, fCaenV1740Board0Label, dataBlockTimeStamps, matchMaps, "fine_match");
+  fitParams[fCaenV1751Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1751Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMaps, "fine_match");
+  fitParams[fCaenV1740Board0Label][fMwpcTdc01Label]       = fitDrift(fCaenV1740Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMaps, "fine_match");
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: fine matching
@@ -908,12 +900,12 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
 //-----------------------------------------------------------------------------------
 void FragmentToDigit::coarseMatch(std::string const& deviceALabel,
-				  std::string const& deviceBLabel,
-				  double             range[2],
-				  std::map< std::string, std::map<unsigned int, double> > timeStamps,
-				  match_map        & matchMap) 
+                                  std::string const& deviceBLabel,
+                                  double             range[2],      
+                                  std::map< std::string, std::map<unsigned int, double> > timeStamps,
+                                  match_maps       & matchMaps) 
 {
-  
+
   std::map< unsigned int, std::vector<unsigned int> > matchAB;
 
   size_t numberADataBlocks = timeStamps[deviceALabel].size();
@@ -930,18 +922,18 @@ void FragmentToDigit::coarseMatch(std::string const& deviceALabel,
     }
   }
 
-  matchMap[deviceALabel][deviceBLabel] = matchAB;
+  matchMaps[deviceALabel][deviceBLabel].push_back(matchAB);
 
   return;
 }
 
 //-----------------------------------------------------------------------------------
-void FragmentToDigit::fineMatch(std::string               const& deviceALabel,
-				std::string 		  const& deviceBLabel,
-				double      		         eps[2],      
-				std::pair<double, double> const& fitParameters,
-				std::map< std::string, std::map<unsigned int, double> > timeStamps,
-				match_map                      & matchMap) 
+void FragmentToDigit::fineMatch(std::string const& deviceALabel,
+                                std::string const& deviceBLabel,
+                                double             eps[2],      
+                                std::pair<double, double> const& fitParameters,
+                                std::map< std::string, std::map<unsigned int, double> > timeStamps,
+                                match_maps       & matchMaps) 
 {
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB;
@@ -963,14 +955,14 @@ void FragmentToDigit::fineMatch(std::string               const& deviceALabel,
     }
   }
 
-  matchMap[deviceALabel][deviceBLabel] = matchAB;
+  matchMaps[deviceALabel][deviceBLabel].push_back(matchAB);
 
   return;
 }
 
 //-----------------------------------------------------------------------------------
 double FragmentToDigit::line(std::pair<double, double> const& parameters, 
-			     double                    const& x) 
+                             double                    const& x) 
 {
   double intercept = parameters.first;
   double slope = parameters.second;
@@ -979,10 +971,10 @@ double FragmentToDigit::line(std::pair<double, double> const& parameters,
 
 //-----------------------------------------------------------------------------------
 std::pair<double, double> FragmentToDigit::fitDrift(std::string const& deviceALabel,
-						    std::string const& deviceBLabel,
-						    std::map< std::string, std::map<unsigned int, double> > timeStamps,
-						    match_map        & matchMap,
-						    std::string const& graphNamePrefix) 
+                                                    std::string const& deviceBLabel,
+                                                    std::map< std::string, std::map<unsigned int, double> > timeStamps,
+                                                    match_maps       & matchMaps,
+                                                    std::string const& graphNamePrefix) 
 {
 
   std::vector<double> x;
@@ -991,7 +983,7 @@ std::pair<double, double> FragmentToDigit::fitDrift(std::string const& deviceALa
   std::vector<double> x_;
   std::vector<double> y_;
 
-  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMap[deviceALabel][deviceBLabel];
+  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMaps[deviceALabel][deviceBLabel].back();
 
   LOG_VERBATIM("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel;
   LOG_VERBATIM("FragmentToDigit") << "  Matching index pair format: " << "(" << deviceALabel << ", " << deviceBLabel << ")";
@@ -1004,8 +996,8 @@ std::pair<double, double> FragmentToDigit::fitDrift(std::string const& deviceALa
       double difference = timeStampA - timeStampB;
       double reference = timeStampA;
       LOG_VERBATIM("FragmentToDigit") << "    (" << itA.first << ", " << itB << ")"
-				   << "; difference: " << difference << " usec"
-				   << "; reference: " << reference << " usec";
+                                      << "; difference: " << difference << " usec"
+                                      << "; reference: " << reference << " usec";
       if (itA.second.size() == 1) {
         x.push_back(reference);
         y.push_back(difference);
@@ -1061,15 +1053,15 @@ std::pair<double, double> FragmentToDigit::fitDrift(std::string const& deviceALa
 
 //------------------------------------------------------------------------------
 void FragmentToDigit::printMatchMap(std::string const& deviceALabel,
-				    std::string const& deviceBLabel,
-				    match_map        & matchMap) 
+                                    std::string const& deviceBLabel,
+                                    match_maps       & matchMaps) 
 {
 
-  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMap[deviceALabel][deviceBLabel];
+  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMaps[deviceALabel][deviceBLabel].back();
 
   LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel
-			       << "\n Matching index pair format: " << "(" 
-			       << deviceALabel << ", " << deviceBLabel << ")";
+                               << "\n Matching index pair format: " << "(" 
+                               << deviceALabel << ", " << deviceBLabel << ")";
 
   for (auto const & itA : matchAB) {
     for (auto const & itB : itA.second) {
