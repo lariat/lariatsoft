@@ -226,6 +226,9 @@ private:
   uint32_t spillNumber;
   uint32_t timeStamp;
 
+  // number of fit iterations before stopping
+  size_t fMaxNumberFitIterations = 5;
+
   uint32_t fNtriggers;
   std::vector<size_t> fv1751InTrigger;
   std::vector<size_t> fv1740InTrigger;
@@ -602,7 +605,7 @@ void FragmentToDigit::LinFitUnweighted(const std::vector<double>& x,
   if(x.size() < 2)
     throw cet::exception("FragmentToDigit") << "cannot do linear fit, not enough points "
 					    << "x: " << x.size() << " y: " << y.size();
-  
+
   // Accumulate the sums for the fit
   double Sx  = 0;
   double Sy  = 0;
@@ -620,7 +623,7 @@ void FragmentToDigit::LinFitUnweighted(const std::vector<double>& x,
   const double d = I*Sx2 - Sx*Sx;
   m = (I*Sxy  - Sx*Sy)/d;
   c = (Sy*Sx2 - Sx*Sxy)/d;
-  
+
   return;
 }
 
@@ -850,8 +853,6 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   double v1751MwpcInterEps[2]  = { 1, 1 };
   double v1740MwpcInterEps[2]  = { 1, 1 };
 
-  //size_t fMaxNumberFitIterations = 5;
-
   fit_params_maps fitParamsMaps;
 
   this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board0Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
@@ -862,8 +863,8 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board5Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
   this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board6Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
   this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board7Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fMwpcTdc01Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751MwpcInterRange, v1751MwpcInterEps);
-  this->matchFitIter(fCaenV1740Board0Label, fMwpcTdc01Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1740MwpcInterRange, v1740MwpcInterEps);
+  this->matchFitIter(fCaenV1751Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751MwpcInterRange,  v1751MwpcInterEps);
+  this->matchFitIter(fCaenV1740Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMaps, fitParamsMaps, v1740MwpcInterRange,  v1740MwpcInterEps);
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: matching
@@ -962,19 +963,19 @@ void FragmentToDigit::fitDrift(std::string const& deviceALabel,
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMaps[deviceALabel][deviceBLabel].back();
 
-  LOG_VERBATIM("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel;
-  LOG_VERBATIM("FragmentToDigit") << "  Matching index pair format: " << "(" << deviceALabel << ", " << deviceBLabel << ")";
+  LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel;
+  LOG_DEBUG("FragmentToDigit") << "  Matching index pair format: " << "(" << deviceALabel << ", " << deviceBLabel << ")";
 
   for (auto const & itA : matchAB) {
-    LOG_VERBATIM("FragmentToDigit") << "  Index: " << itA.first << "; number of matches: " << itA.second.size();
+    LOG_DEBUG("FragmentToDigit") << "  Index: " << itA.first << "; number of matches: " << itA.second.size();
     for (auto const & itB : itA.second) {
       double timeStampA = timeStamps[deviceALabel][itA.first];
       double timeStampB = timeStamps[deviceBLabel][itB];
       double difference = timeStampA - timeStampB;
       double reference = timeStampA;
-      LOG_VERBATIM("FragmentToDigit") << "    (" << itA.first << ", " << itB << ")"
-                                      << "; difference: " << difference << " usec"
-                                      << "; reference: " << reference << " usec";
+      LOG_DEBUG("FragmentToDigit") << "    (" << itA.first << ", " << itB << ")"
+                                   << "; difference: " << difference << " usec"
+                                   << "; reference: " << reference << " usec";
       if (itA.second.size() == 1) {
         x.push_back(reference);
         y.push_back(difference);
@@ -986,15 +987,15 @@ void FragmentToDigit::fitDrift(std::string const& deviceALabel,
     }
   }
 
-  std::pair<double, double> intSlp(0.,0.);
+  std::pair<double, double> intSlp(0., 0.);
 
-  try {
-    this->LinFitUnweighted(x, y, intSlp.second, intSlp.first);
-  }
-  catch (cet::exception &e) {
-    LOG_WARNING("FragmentToDigit") << "caught exception:\n" << e
-                                   << "\n returning intercept = 0 and slope = 0";
-  }
+  // try {
+  //   this->LinFitUnweighted(x, y, intSlp.second, intSlp.first);
+  // }
+  // catch (cet::exception &e) {
+  //   LOG_WARNING("FragmentToDigit") << "caught exception:\n" << e
+  //                                  << "\n returning intercept = 0 and slope = 0";
+  // }
 
   // return intSlp;
 
@@ -1004,15 +1005,13 @@ void FragmentToDigit::fitDrift(std::string const& deviceALabel,
   			     + " and " + deviceBLabel + " [#mus]");
 
   TGraph * graph = tfs->make<TGraph>(x.size(), &x[0], &y[0]);
-  // TF1 * f = tfs->make<TF1>("f", "pol1", 0, 30e6);
-  // graph->Fit("f", "Q");
 
   try {
     TF1 * f = tfs->make<TF1>("f", "pol1", 0, 30e6);
     graph->Fit("f", "Q");
-    LOG_VERBATIM("FragmentToDigit") << "Fit parameters: intercept, "
-                                    << f->GetParameter(0) << " usec; slope, "
-                                    << f->GetParameter(1) << " usec/usec";
+    LOG_DEBUG("FragmentToDigit") << "Fit parameters: intercept, "
+                                 << f->GetParameter(0) << " usec; slope, "
+                                 << f->GetParameter(1) << " usec/usec";
     intSlp.first = f->GetParameter(0);
     intSlp.second = f->GetParameter(1);
   }
@@ -1042,10 +1041,31 @@ void FragmentToDigit::matchFitIter(std::string const& deviceALabel,
                                    double             fineEps[2])
 {
 
+  LOG_DEBUG("FragmentToDigit") << "matchFitIter -- "
+                               << "deviceA: " << deviceALabel << "; deviceB: " << deviceBLabel;
+
   this->coarseMatch(deviceALabel, deviceBLabel, coarseRange, timeStamps, matchMaps);
   this->fitDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "coarse_match");
-  this->fineMatch(deviceALabel, deviceBLabel, fineEps, fitParametersMaps, timeStamps, matchMaps);
-  this->fitDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "fine_match");
+
+  std::pair<double, double> fitParameters = fitParametersMaps[deviceALabel][deviceBLabel].back();
+  LOG_DEBUG("FragmentToDigit") << "  intercept: " << fitParameters.first << "; slope: " << fitParameters.second;
+
+  for (size_t i = 0; i < fMaxNumberFitIterations; ++i) {
+
+    this->fineMatch(deviceALabel, deviceBLabel, fineEps, fitParametersMaps, timeStamps, matchMaps);
+    this->fitDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "fine_match_" + std::to_string(i));
+
+    fitParameters = fitParametersMaps[deviceALabel][deviceBLabel].back();
+    LOG_DEBUG("FragmentToDigit") << "  intercept: " << fitParameters.first << "; slope: " << fitParameters.second;
+
+    std::pair<double, double> prevFitParameters = fitParametersMaps[deviceALabel][deviceBLabel].end()[-2];
+
+    if (fitParameters == prevFitParameters) {
+      LOG_DEBUG("FragmentToDigit") << "  Fit parameters did not change!";
+      break;
+    }
+
+  }
 
   return;
 }
