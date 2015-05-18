@@ -29,6 +29,7 @@ extern "C" {
 #include "cetlib/exception.h"
 #include "cetlib/search_path.h"
 #include "Utilities/SignalShapingServiceT1034.h"
+#include "RawDataUtilities/TriggerDigitUtility.h"
 #include "Geometry/Geometry.h"
 #include "Filters/ChannelFilter.h"
 #include "RawData/RawDigit.h"
@@ -86,12 +87,9 @@ namespace caldata {
   {
     fSpillName="";
     this->reconfigure(pset);
-    if(fSpillName.size()<1) {produces< std::vector<recob::Wire> >();
-     produces<art::Assns<raw::RawDigit, recob::Wire>>();
-    }
-    else { produces< std::vector<recob::Wire> >(fSpillName);
-          produces<art::Assns<raw::RawDigit, recob::Wire>>(fSpillName);
-    }
+    produces< std::vector<recob::Wire> >();
+    produces<art::Assns<raw::RawDigit, recob::Wire>>();
+    produces<art::Assns<raw::Trigger, recob::Wire>>();
   }
 
   
@@ -108,7 +106,7 @@ namespace caldata {
 
   {
 
-    fDigitModuleLabel = p.get< std::string >("DigitModuleLabel", "daq");
+    fDigitModuleLabel = p.get< std::string >("DigitModuleLabel", "FragmentToDigit");  //***
     fPostsample       = p.get< int >        ("PostsampleBins");
     fBaseSampleBins   = p.get< int >        ("BaseSampleBins");
     fBaseVarCut       = p.get< int >        ("BaseVarCut");
@@ -157,118 +155,116 @@ namespace caldata {
     // make a collection of Wires
     std::unique_ptr<std::vector<recob::Wire> > wirecol(new std::vector<recob::Wire>);
         // ... and an association set
-    std::unique_ptr<art::Assns<raw::RawDigit,recob::Wire> > WireDigitAssn
-      (new art::Assns<raw::RawDigit,recob::Wire>);
- 
-    
+    std::unique_ptr<art::Assns<raw::RawDigit,recob::Wire> > WireDigitAssn(new art::Assns<raw::RawDigit,recob::Wire>);    
+    std::unique_ptr<art::Assns<raw::Trigger, recob::Wire> > TrigWireAssn(new art::Assns<raw::Trigger,recob::Wire>);
 
-    // Read in the digit List object(s). 
-    art::Handle< std::vector<raw::RawDigit> > digitVecHandle;
-    if(fSpillName.size()>0) evt.getByLabel(fDigitModuleLabel, fSpillName, digitVecHandle);
-    else evt.getByLabel(fDigitModuleLabel, digitVecHandle);
-    if (!digitVecHandle->size())  return;
-    mf::LogInfo("CalWireT1034") << "CalWireT1034:: digitVecHandle size is " << digitVecHandle->size();
-
-    // Use the handle to get a particular (0th) element of collection.
-    art::Ptr<raw::RawDigit> digitVec0(digitVecHandle, 0);
-
-        
-
-    unsigned int dataSize = digitVec0->Samples(); //size of raw data vectors
-    if( (unsigned int)transformSize < dataSize){
-      mf::LogWarning("CalWireT1034")<<"FFT size (" << transformSize << ") "
-                                         << "is smaller than the data size (" << dataSize << ") "
-                                         << "\nResizing the FFT now...";
-
-      fFFT->ReinitializeFFT(dataSize,fFFT->FFTOptions(),fFFT->FFTFitBins());
-      transformSize = fFFT->FFTSize();
-      mf::LogWarning("CalWireT1034")<<"FFT size is now (" << transformSize << ") "
-                                         << "and should be larger than the data size (" << dataSize << ")";
-
-    }
-
-    mf::LogInfo("CalWireT1034") << "Data size is " << dataSize << " and transform size is " << transformSize;
-
-    if(fBaseSampleBins > 0 && dataSize % fBaseSampleBins != 0) {
-      mf::LogError("CalWireT1034")<<"Set BaseSampleBins modulo dataSize= "<<dataSize;
-    }
+    rdu::TriggerDigitUtility tdu(evt, fDigitModuleLabel);  
 
     uint32_t     channel(0); // channel number
     unsigned int bin(0);     // time bin loop variable
-
-    
 
     filter::ChannelFilter *chanFilt = new filter::ChannelFilter();  
     std::vector<float> holder;                // holds signal data
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
     std::vector<TComplex> freqHolder(transformSize+1); // temporary frequency data
 
-    
+    unsigned int dataSize=0;
+    float pdstl=0.0;
+    float average=0.0;    
 
-    // loop over all wires    
+    for (size_t t=0; t<tdu.NTriggers(); ++t)
+    {
+       art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];
 
-    wirecol->reserve(digitVecHandle->size());
-    for(size_t rdIter = 0; rdIter < digitVecHandle->size(); ++rdIter){ // ++ move
-      holder.clear();
-    // get the reference to the current raw::RawDigit
-      art::Ptr<raw::RawDigit> digitVec(digitVecHandle, rdIter);
-      channel = digitVec->Channel();
-      // skip bad channels
-      if(!chanFilt->BadChannel(channel)) {
-        // resize and pad with zeros
-        holder.resize(transformSize, 0.);
+       art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(t);
 
-        // uncompress the data
-       // raw::Uncompress(digitVec->fADC, rawadc, digitVec->Compression());
-        raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
+       dataSize = rdvec[0]->Samples(); //size of raw data vectors
 
+       if( (unsigned int)transformSize < dataSize && t < 1)
+       {
+          mf::LogWarning("CalWireT1034")<<"FFT size (" << transformSize << ") "
+                                        << "is smaller than the data size (" << dataSize << ") "
+                                        << "\nResizing the FFT now...";
 
-        // loop over all adc values and subtract the pedestal
-        float pdstl = digitVec->GetPedestal();
+         fFFT->ReinitializeFFT(dataSize,fFFT->FFTOptions(),fFFT->FFTFitBins());
+         transformSize = fFFT->FFTSize();
+         mf::LogWarning("CalWireT1034")<<"FFT size is now (" << transformSize << ") "
+                                         << "and should be larger than the data size (" << dataSize << ")";
 
-        for(bin = 0; bin < dataSize; ++bin) 
-          holder[bin]=(rawadc[bin]-pdstl);
-        // Do deconvolution.
-        sss->Deconvolute(channel, holder);
-      } // end if not a bad channel 
+       }
 
-      holder.resize(dataSize,1e-5);
-      //This restores the DC component to signal removed by the deconvolution.
-      if(fPostsample) {
-        float average=0.0;
-        for(bin=0; bin < (unsigned short)fPostsample; ++bin) 
-          average += holder[holder.size()-1+bin];
-        average = average / (float)fPostsample;
-        for(bin = 0; bin < holder.size(); ++bin) holder[bin]-=average;
-      }  
+       mf::LogInfo("CalWireT1034") << "Data size is " << dataSize << " and transform size is " << transformSize;
 
-      // adaptive baseline subtraction
-      if(fBaseSampleBins) SubtractBaseline(holder, fBaseSampleBins);
-      // Make a single ROI that spans the entire data size
-     // wirecol->emplace_back(holder,digitVec);
-      wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
+       if(fBaseSampleBins > 0 && dataSize % fBaseSampleBins != 0) 
+       {
+          mf::LogError("CalWireT1034")<<"Set BaseSampleBins modulo dataSize= "<<dataSize;
+       }
 
-     // add an association between the last object in wirecol
-     // (that we just inserted) and digitVec
-      if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
-         throw art::Exception(art::errors::InsertFailure)
-            << "Can't associate wire #" << (wirecol->size() - 1)
-             << " with raw digit #" << digitVec.key();
-          } // if failed to add association
+       channel = 0;
+       bin     = 0;
 
-      
-      
-    }
+       // loop over all wires    
+
+       wirecol->reserve(rdvec.size());
+       for(size_t rdItr = 0; rdItr < rdvec.size(); ++rdItr) // ++ move
+       {
+          holder.clear();
+          channel = rdvec[rdItr]->Channel();
+          // skip bad channels
+          if(!chanFilt->BadChannel(channel)) 
+          {
+             // resize and pad with zeros
+             holder.resize(transformSize, 0.);
+
+             // uncompress the data
+             raw::Uncompress(rdvec[rdItr]->ADCs(), rawadc, rdvec[rdItr]->Compression());
+
+             // loop over all adc values and subtract the pedestal
+             pdstl = rdvec[rdItr]->GetPedestal();
+
+             for(bin = 0; bin < dataSize; ++bin) holder[bin]=(rawadc[bin]-pdstl);
+
+             // Do deconvolution.
+             sss->Deconvolute(channel, holder);
+          } // end if not a bad channel 
+
+          holder.resize(dataSize,1e-5);
+          //This restores the DC component to signal removed by the deconvolution.
+          if(fPostsample) 
+          {
+             average=0.0;
+             for(bin=0; bin < (unsigned short)fPostsample; ++bin) average += holder[holder.size()-1+bin];
+             average = average / (float)fPostsample;
+             for(bin = 0; bin < holder.size(); ++bin) holder[bin]-=average;
+          }  
+
+          // adaptive baseline subtraction
+          if(fBaseSampleBins) SubtractBaseline(holder, fBaseSampleBins);
+          // Make a single ROI that spans the entire data size
+          wirecol->push_back(recob::WireCreator(holder,*rdvec[rdItr]).move());
+
+          // add an association between the last object in wirecol
+          // (that we just inserted) and digitVec
+          if (!util::CreateAssn(*this, evt, *wirecol, rdvec[rdItr], *WireDigitAssn)) 
+          {
+             throw art::Exception(art::errors::InsertFailure) << "Can't associate wire #" << (wirecol->size() - 1)
+                                                              << " with raw digit #" << rdvec[rdItr].key();
+          } // if failed to add association      
+          if (!util::CreateAssn(*this, evt, *wirecol, trig, *TrigWireAssn)) 
+          {
+             throw art::Exception(art::errors::InsertFailure) << "Can't associate wire #" << (wirecol->size() - 1)
+                                                              << " with Trigger #" << trig.key();
+          } // if failed to add association      
+       }
+    }  
 
     if(wirecol->size() == 0)
       mf::LogWarning("CalWireT1034") << "No wires made for this event.";
-    if(fSpillName.size()>0)
-      { evt.put(std::move(wirecol), fSpillName);
-        evt.put(std::move(WireDigitAssn), fSpillName);
-      }
     
-    else { evt.put(std::move(wirecol));
-           evt.put(std::move(WireDigitAssn), fSpillName); }
+    evt.put(std::move(wirecol));
+    evt.put(std::move(WireDigitAssn));
+    evt.put(std::move(TrigWireAssn));
+
     delete chanFilt;
     return;
 
