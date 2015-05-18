@@ -1,9 +1,6 @@
 include_directories( $ENV{LARRECO_DIR}/include )
 
 art_make( BASENAME_ONLY
-          LIB_LIBRARIES Geometry
-                        RecoBase
-                        ClusterRecoUtil
           MODULE_LIBRARIES RecoAlg
                         Cluster3DAlgs
                         ClusterRecoUtil

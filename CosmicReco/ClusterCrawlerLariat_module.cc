@@ -36,14 +36,14 @@
 #include "RecoBase/Cluster.h"
 #include "RecoBase/Wire.h"
 #include "RecoBase/Hit.h"
-#include "RecoBase/EndPoint2D.h"
-#include "RecoBaseArt/HitCreator.h" // recob::HitCollectionAssociator
+// #include "RecoBase/EndPoint2D.h"
+// #include "RecoBaseArt/HitCreator.h" // recob::HitCollectionAssociator
 #include "RecoBase/Vertex.h"
 #include "Utilities/AssociationUtil.h"
 #include "RecoAlg/CCHitFinderAlg.h"
 #include "RecoAlg/ClusterCrawlerAlg.h"
-#include "RecoAlg/ClusterRecoUtil/StandardClusterParamsAlg.h"
-#include "RecoAlg/ClusterParamsImportWrapper.h"
+// #include "RecoAlg/ClusterRecoUtil/StandardClusterParamsAlg.h"
+// #include "RecoAlg/ClusterParamsImportWrapper.h"
 
 
 namespace cluster {
@@ -61,19 +61,24 @@ class cluster::ClusterCrawlerLariat : public art::EDProducer {
     void beginJob();
 
   private:
-    hit::CCHitFinderAlg fCCHFAlg; // define CCHitFinderAlg object
-    ClusterCrawlerAlg fCCAlg; // define ClusterCrawlerAlg object
-    std::string fCalDataModuleLabel; ///< label of module producing input wires
-    std::string fDigitModuleLabel;  ///< module that made digits                 //***
-                                                       ///< constants
-//    void ClusterCrawlerLariat::Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, std::vector<recob::Cluster> & clus, std::vector< std::vector<recob::Hit> > & clusToHits,  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex);
+    hit::CCHitFinderAlg    fCCHFAlg;            ///< define CCHitFinderAlg object
+    cluster::ClusterCrawlerAlg fCCAlg;              ///< define ClusterCrawlerAlg object
+    std::string            fCalDataModuleLabel; ///< label of module producing input wires
+    std::string            fDigitModuleLabel;   ///< module that made digits                 //***
+                                                       
+  void Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
+		  std::vector<recob::Cluster> & clus, 
+		  std::vector< std::vector<recob::Hit> > & clusToHits,  
+		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex);
 
 };
 
 
 namespace cluster {
 
-    ClusterCrawlerLariat::ClusterCrawlerLariat(fhicl::ParameterSet const& pset)
+  ClusterCrawlerLariat::ClusterCrawlerLariat(fhicl::ParameterSet const& pset)
+    : fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
+    , fCCAlg  (pset.get< fhicl::ParameterSet >("ClusterCrawlerAlg"))
   {
     mf::LogWarning("ClusterCrawlerLariat") <<
       "\nClusterCrawlerLariat module has been deprecated and will be removed."
@@ -81,11 +86,6 @@ namespace cluster {
       
     
     this->reconfigure(pset);
-    
-    // let HitCollectionAssociator declare that we are going to produce
-    // hits and associations with wires and raw digits
-    // (with no particular product label)
-    recob::HitCollectionAssociator::declare_products(*this);
     
     produces< std::vector<recob::Cluster> >();  
     produces< std::vector<recob::Vertex> >();
@@ -148,8 +148,8 @@ namespace cluster {
        for(unsigned int ic = 0; ic < clus.size(); ++ic) 
        {  
           clusters->push_back(clus[ic]);
-          size_t startHitIdx = hits.size();
-          size_t startVtxIdx = vertices.size();
+          size_t startHitIdx = hits->size();
+          size_t startVtxIdx = vertices->size();
           for(size_t h = 0; h < clusToHits[ic].size(); ++h)
 	     hits->push_back(clusToHits[ic][h]);
           for(size_t v = 0; v< clusToVertex[ic].size(); ++v)
@@ -213,7 +213,10 @@ namespace cluster {
 /////***************************************************************/////
 /////////////////////////////////////////////////////////////////////////
 
- void ClusterCrawlerLariat::Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, std::vector<recob::Cluster> & clus, std::vector< std::vector<recob::Hit> > & clusToHits,  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex)
+ void ClusterCrawlerLariat::Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
+				       std::vector<recob::Cluster> & clus, 
+				       std::vector< std::vector<recob::Hit> > & clusToHits,  
+				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertex)
  {  
 
 //example of a std::map
