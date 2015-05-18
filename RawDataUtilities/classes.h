@@ -10,8 +10,13 @@
 #include "RawData/OpDetPulse.h"
 #include "RawData/TriggerData.h"
 
-template class std::vector<V1495Fragment>;
-template class art::Wrapper< std::vector<V1495Fragment> >;
+
+/* template class std::vector<V1495Fragment>; */
+/* template class std::vector<V1495ChannelData>; */
+/* template class std::vector<V1495TriggerPatternData>; */
+/* template class art::Wrapper< std::vector<V1495Fragment>           >; */
+/* template class art::Wrapper< std::vector<V1495ChannelData>	  >; */
+/* template class art::Wrapper< std::vector<V1495TriggerPatternData> >; */
 
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>    >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit> >;

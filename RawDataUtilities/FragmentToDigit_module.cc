@@ -247,7 +247,7 @@ FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
   produces< art::Assns<raw::Trigger, raw::RawDigit>    >();
   produces< art::Assns<raw::Trigger, raw::AuxDetDigit> >();
   produces< art::Assns<raw::Trigger, raw::OpDetPulse>  >();
-  produces< std::vector<V1495Fragment> >();
+  //produces< std::vector<V1495Fragment> >();
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
 
 
@@ -497,7 +497,7 @@ void FragmentToDigit::produce(art::Event & evt)
   evt.put(std::move(tdRDAssns));
   evt.put(std::move(tdADAssns));
   evt.put(std::move(tdOPAssns));
-  evt.put(std::move(v1495Fragments));
+  // evt.put(std::move(v1495Fragments));
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
 
 

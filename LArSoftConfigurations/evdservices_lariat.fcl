@@ -5,6 +5,8 @@
 BEGIN_PROLOG
 
 lariat_colordrawingopt:                       @local::standard_colordrawingopt
+lariat_colordrawingopt.RawQLow:               [-10.]
+lariat_colordrawingopt.RawQHigh:              [ 50.]
 lariat_rawdrawingopt:                         @local::standard_rawdrawingopt
 lariat_rawdrawingopt.RawDataLabel:            FragmentToDigit
 lariat_rawdrawingopt.TotalTicks:              3072
