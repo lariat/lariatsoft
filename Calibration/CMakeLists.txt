@@ -3,6 +3,7 @@ simple_plugin(CalWireT1034 "module"
 			Utilities
                         Filters
 			RawData
+	                RawDataUtilities
 	                RecoBase
                         RecoBaseArt
 		        SignalShapingServiceT1034_service

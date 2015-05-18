@@ -81,6 +81,7 @@ add_subdirectory(RawDataUtilities)
 add_subdirectory(LongBo)
 add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
+add_subdirectory(CosmicReco)
 
 # ups - table and config files
 add_subdirectory(ups)
