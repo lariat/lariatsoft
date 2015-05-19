@@ -122,8 +122,8 @@ public:
   double line(std::pair<double, double> const& parameters, 
               double                    const& x);
 
-  double driftCorrection(std::pair<double, double> const& parameters,
-                         double                    const& x);
+  double clockDriftCorr(std::pair<double, double> const& parameters,
+                        double                    const& x);
 
   void fitDrift(std::string const& deviceALabel,
                 std::string const& deviceBLabel,
@@ -898,7 +898,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
     //if (boardId != 8 and boardId != 9) {
       fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
-      double correctedTimeStamp = this->driftCorrection(fitParams, timeStamp);
+      double correctedTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
 
       LOG_VERBATIM("FragmentToDigit") << "\n  label:              " << label
                                       << "\n  timeStamp:          " << timeStamp
@@ -987,8 +987,8 @@ double FragmentToDigit::line(std::pair<double, double> const& parameters,
 }
 
 //-----------------------------------------------------------------------------------
-double FragmentToDigit::driftCorrection(std::pair<double, double> const& parameters, 
-                                        double                    const& x) 
+double FragmentToDigit::clockDriftCorr(std::pair<double, double> const& parameters, 
+                                       double                    const& x) 
 {
   double intercept = parameters.first;
   double slope = parameters.second;
