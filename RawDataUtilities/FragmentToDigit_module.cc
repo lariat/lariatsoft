@@ -122,6 +122,9 @@ public:
   double line(std::pair<double, double> const& parameters, 
               double                    const& x);
 
+  double driftCorrection(std::pair<double, double> const& parameters,
+                         double                    const& x);
+
   void fitDrift(std::string const& deviceALabel,
                 std::string const& deviceBLabel,
                 std::map< std::string, std::map<unsigned int, double> > timeStamps,
@@ -290,7 +293,7 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 {
   fRawFragmentLabel = p.get< std::string >("RawFragmentLabel", "daq");
   fRawFragmentInstance = p.get< std::string >("RawFragmentInstance", "SPILL");
-  
+
   fOpDetChID      = p.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
   fPMTTest = p.get<bool> ("pmt_test");
 
@@ -631,6 +634,9 @@ void FragmentToDigit::LinFitUnweighted(const std::vector<double>& x,
 void FragmentToDigit::matchDataBlocks(LariatFragment * data) 
 {
 
+  //std::map< int, std::vector<CAENFragment> > triggerToCaenDataBlocks;
+  //std::map< int, std::vector< std::vector<TDCFragment::TDCEventData> > > triggerToTdcDataBlocks;
+
   // maps for matching fragments
   std::map< std::string, std::map<unsigned int, double> > dataBlockTimeStamps;
   match_maps matchMaps;
@@ -870,6 +876,40 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //@\ END: matching
   //////////////////////////////////////////////////////////////////////
 
+  //////////////////////////////////////////////////////////////////////
+  //@\ BEGIN: clock drift correction
+  //////////////////////////////////////////////////////////////////////
+
+  fitParamsMaps[fCaenV1751Board0Label][fCaenV1751Board0Label].push_back(std::make_pair<double, double>(0, 0));
+  fitParamsMaps[fCaenV1751Board0Label][fCaenV1751Board1Label].push_back(std::make_pair<double, double>(0, 0));
+
+  for (size_t i = 0; i < numberCaenFrags; ++i) {
+    CAENFragment & caenFrag = data->caenFrags[i];
+    unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
+    std::string label = caenLabels[boardId];
+
+    // each CAEN Trigger Time Tag count is 8 ns
+    double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+
+    LOG_VERBATIM("FragmentToDigit") << "\n  boardId:   " << boardId
+                                    << "\n  timeStamp: " << timeStamp;
+
+    std::pair<double, double> fitParams(0, 0);
+
+    //if (boardId != 8 and boardId != 9) {
+      fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+      double correctedTimeStamp = this->driftCorrection(fitParams, timeStamp);
+
+      LOG_VERBATIM("FragmentToDigit") << "\n  label:              " << label
+                                      << "\n  timeStamp:          " << timeStamp
+                                      << "\n  correctedTimeStamp: " << correctedTimeStamp;
+    //}
+  }
+
+  //////////////////////////////////////////////////////////////////////
+  //@\ END: clock drift correction
+  //////////////////////////////////////////////////////////////////////
+
   return;
 }
 
@@ -923,7 +963,7 @@ void FragmentToDigit::fineMatch(std::string const& deviceALabel,
     for (size_t b = 0; b < numberBDataBlocks; ++b) {
       double timeStampB = timeStamps[deviceBLabel][b];
       double difference = timeStampA - timeStampB;
-      double y = line(fitParameters, timeStampA);
+      double y = this->line(fitParameters, timeStampA);
       double yLow = y - eps[0];
       double yHigh = y + eps[1];
       if (yLow <= difference and difference <= yHigh) {
@@ -944,6 +984,15 @@ double FragmentToDigit::line(std::pair<double, double> const& parameters,
   double intercept = parameters.first;
   double slope = parameters.second;
   return intercept + slope * x;
+}
+
+//-----------------------------------------------------------------------------------
+double FragmentToDigit::driftCorrection(std::pair<double, double> const& parameters, 
+                                        double                    const& x) 
+{
+  double intercept = parameters.first;
+  double slope = parameters.second;
+  return (intercept + x) / (1 - slope);
 }
 
 //-----------------------------------------------------------------------------------
