@@ -155,6 +155,8 @@ public:
 				      std::vector<raw::AuxDetDigit>      & tofAuxDigits);	       
   void 	   makeAeroGelDigits         (std::vector<CAENFragment>     const& caenFrags,    	       
 				      std::vector<raw::AuxDetDigit>      & agAuxDigits); 	       
+  void 	   makeTriggerDigits         (std::vector<CAENFragment>     const& caenFrags,    	       
+				      std::vector<raw::AuxDetDigit>      & trAuxDigits); 	       
   void 	   caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,	       
 				      std::vector<raw::AuxDetDigit>      & auxDetDigits,	       
 				      uint32_t                      const& boardId,		       
@@ -484,6 +486,7 @@ void FragmentToDigit::produce(art::Event & evt)
     this->makeMuonRangeDigits(caenFrags, auxDigits);
     this->makeTOFDigits      (caenFrags, auxDigits);
     this->makeAeroGelDigits  (caenFrags, auxDigits);
+    this->makeTriggerDigits  (caenFrags, auxDigits);
 
     startAssns = auxDetVec->size();
     for(auto ad : auxDigits) auxDetVec->push_back(ad);
@@ -1445,6 +1448,43 @@ void FragmentToDigit::makeAeroGelDigits(std::vector<CAENFragment>     const& cae
   chanOff = 6;
   for(uint32_t bc = chanOff; bc < 8; ++bc) boardChans.insert(bc);
   this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelDS");
+
+  return;
+}
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::makeTriggerDigits(std::vector<CAENFragment>     const& caenFrags,
+					std::vector<raw::AuxDetDigit>      & trAuxDigits)
+{
+  // The trigger waveforms all come on board 7, channels 48-63
+  uint32_t boardId = 7;
+  uint32_t chanOff = 48;
+  uint32_t maxChan = 64;
+  std::set<uint32_t> boardChans;
+  std::vector<std::string> trigNames;
+  trigNames.push_back("WC1");
+  trigNames.push_back("WC2");    
+  trigNames.push_back("WC3");      
+  trigNames.push_back("WC4");    
+  trigNames.push_back("BEAMON"); 
+  trigNames.push_back("USTOF");  
+  trigNames.push_back("DSTOF");    
+  trigNames.push_back("PUNCH");  
+  trigNames.push_back("HALO");   
+  trigNames.push_back("PULSER"); 
+  trigNames.push_back("COSMICON"); 
+  trigNames.push_back("COSMIC"); 
+  trigNames.push_back("PILEUP"); 
+  trigNames.push_back("MICHEL"); 
+  trigNames.push_back("LARSCINT"); 
+  trigNames.push_back("MuRS");
+
+  // Call this for each AeroGel counter
+  for(uint32_t tc = 0; tc < maxChan - chanOff; ++tc){
+    boardChans.clear();
+    boardChans.insert(chanOff + tc);
+    this->caenFragmentToAuxDetDigits(caenFrags, trAuxDigits, boardId, boardChans, chanOff, trigNames[tc]);
+  }
 
   return;
 }
