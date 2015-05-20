@@ -234,6 +234,10 @@ private:
   // number of fit iterations before stopping
   size_t fMaxNumberFitIterations = 5;
 
+  // maps trigger ID to vector of data blocks
+  std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks;
+  std::map< int, std::vector< std::vector<TDCFragment::TdcEventData> > > fTriggerToTDCDataBlocks;
+
   uint32_t fNtriggers;
   std::vector<size_t> fv1751InTrigger;
   std::vector<size_t> fv1740InTrigger;
@@ -883,6 +887,8 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //@\ BEGIN: clock drift correction
   //////////////////////////////////////////////////////////////////////
 
+  int triggerID = 0;
+
   size_t numberMatchedCaenDataBlocks[10] = {};
   size_t numberMatchedMwpcDataBlocks = 0;
 
@@ -933,30 +939,30 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
         CAENFragment & caenFrag = data->caenFrags[j];
         unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
 
-        if (boardId != 0) {
+        std::string label = caenLabels[boardId];
 
-          std::string label = caenLabels[boardId];
+        // each CAEN Trigger Time Tag count is 8 ns
+        double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
 
-          // each CAEN Trigger Time Tag count is 8 ns
-          double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+        std::pair<double, double> fitParams(0, 0);
 
-          std::pair<double, double> fitParams(0, 0);
+        fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+        double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
 
-          fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
-          double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
+        if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
 
-          if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
+          LOG_VERBATIM("FragmentToDigit") << "\n    boardId:       " << boardId
+                                          << "\n    label:         " << label
+                                          << "\n    timeStamp:     " << timeStamp
+                                          << "\n    corrTimeStamp: " << corrTimeStamp;
 
-            LOG_VERBATIM("FragmentToDigit") << "\n    boardId:       " << boardId
-                                            << "\n    label:         " << label
-                                            << "\n    timeStamp:     " << timeStamp
-                                            << "\n    corrTimeStamp: " << corrTimeStamp;
+          // add CAEN data block to trigger ID map
+          fTriggerToCAENDataBlocks[triggerID].push_back(caenFrag);
 
-            numberMatchedCaenDataBlocks[boardId] += 1;
+          numberMatchedCaenDataBlocks[boardId] += 1;
 
-          } // if corrected timestamp falls in range
+        } // if corrected timestamp falls in range
 
-        } // if boardId != 0
       } // end loop over CAENFragments
 
       for (int j = 0; j < numberTdcFrags; ++j) {
@@ -1013,11 +1019,11 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
               double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // microseconds
               double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
 
-                LOG_VERBATIM("FragmentToDigit") //<< "\n    tdc_index:     " << tdc_index
-                                                << "\n    tdcNumber:     " << tdcNumber
-                                                << "\n    label:         " << label
-                                                << "\n    timeStamp:     " << timeStamp
-                                                << "\n    corrTimeStamp: " << corrTimeStamp;
+              LOG_VERBATIM("FragmentToDigit") //<< "\n    tdc_index:     " << tdc_index
+                                              << "\n    tdcNumber:     " << tdcNumber
+                                              << "\n    label:         " << label
+                                              << "\n    timeStamp:     " << timeStamp
+                                              << "\n    corrTimeStamp: " << corrTimeStamp;
 
               if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
 
@@ -1026,12 +1032,17 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
             LOG_VERBATIM("FragmentToDigit") << "\n    numberTdcMatch:     " << numberTdcMatch;
 
+            // add MWPC TDC data block to trigger ID map
+            fTriggerToTDCDataBlocks[triggerID].push_back(tdcEvents[k]);
+
             numberMatchedMwpcDataBlocks += 1;
 
           } // if number of TDC matches is greater than 0
 
         } // end loop over TDCEvents
       } // end loop over TDCFragments
+
+      triggerID += 1;
 
     } // if boardId == 0
   } // end loop over CAENFragments
