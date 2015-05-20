@@ -68,8 +68,10 @@ class cluster::ClusterCrawlerLariat : public art::EDProducer {
                                                        
   void Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
 		  std::vector<recob::Cluster> & clus, 
-		  std::vector< std::vector<recob::Hit> > & clusToHits,  
-		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex);
+		  std::vector< std::vector<recob::Hit> > & clusToHits,
+		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex, 
+		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertexBgn,
+		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertexEnd);
 
 };
 
@@ -89,11 +91,12 @@ namespace cluster {
     
     produces< std::vector<recob::Cluster> >();  
     produces< std::vector<recob::Vertex> >();
-    produces< art::Assns<recob::Cluster, recob::Hit> >();
-    produces< art::Assns<recob::Cluster, recob::Vertex, unsigned short> >();
-    produces< art::Assns<raw::Trigger, recob::Hit>>(); //***
-    produces< art::Assns<raw::Trigger, recob::Vertex>>(); //***
-    produces< art::Assns<raw::Trigger, recob::Cluster>>(); //***
+    produces< art::Assns<recob::Wire,    recob::Hit>     >();
+    produces< art::Assns<recob::Cluster, recob::Hit>     >();
+    produces< art::Assns<recob::Cluster, recob::Vertex>  >();
+    produces< art::Assns<raw::Trigger,   recob::Hit>     >(); //***
+    produces< art::Assns<raw::Trigger,   recob::Vertex>  >(); //***
+    produces< art::Assns<raw::Trigger,   recob::Cluster> >(); //***
   }
 
   ClusterCrawlerLariat::~ClusterCrawlerLariat()
@@ -114,25 +117,32 @@ namespace cluster {
   
   void ClusterCrawlerLariat::produce(art::Event & evt)
   {
-    std::unique_ptr<art::Assns<recob::Cluster, recob::Hit> > hc_assn(new art::Assns<recob::Cluster, recob::Hit>);
-    std::unique_ptr<art::Assns<recob::Cluster, recob::Vertex, unsigned short>> cv_assn(new art::Assns<recob::Cluster, recob::Vertex, unsigned short>);
+    std::unique_ptr<art::Assns<recob::Wire,    recob::Hit>                     > wh_assn( new art::Assns<recob::Wire,    recob::Hit>                      );
+    std::unique_ptr<art::Assns<recob::Cluster, recob::Hit>                     > hc_assn( new art::Assns<recob::Cluster, recob::Hit>                      );
+    std::unique_ptr<art::Assns<recob::Cluster, recob::Vertex, unsigned short>  > cv_assn( new art::Assns<recob::Cluster, recob::Vertex, unsigned short>   );
+    std::unique_ptr<art::Assns<raw::Trigger,   recob::Hit>                     > th_assn( new art::Assns<raw::Trigger,   recob::Hit>                      );         //***
+    std::unique_ptr<art::Assns<raw::Trigger,   recob::Vertex>                  > tv_assn( new art::Assns<raw::Trigger,   recob::Vertex>                   );   //***
+    std::unique_ptr<art::Assns<raw::Trigger,   recob::Cluster>                 > tc_assn( new art::Assns<raw::Trigger,   recob::Cluster>                  ); //***
 
-    std::unique_ptr<art::Assns<raw::Trigger, recob::Hit> > th_assn(new art::Assns<raw::Trigger, recob::Hit>);         //***
-    std::unique_ptr<art::Assns<raw::Trigger, recob::Vertex> > tv_assn(new art::Assns<raw::Trigger, recob::Vertex>);   //***
-    std::unique_ptr<art::Assns<raw::Trigger, recob::Cluster> > tc_assn(new art::Assns<raw::Trigger, recob::Cluster>); //***
-    std::unique_ptr<std::vector<recob::Hit>> hits (new std::vector<recob::Hit>);
-    std::unique_ptr<std::vector<recob::Cluster>> clusters(new std::vector<recob::Cluster>);
-    std::unique_ptr<std::vector<recob::Vertex>> vertices(new std::vector<recob::Vertex>);
+    std::unique_ptr<std::vector<recob::Hit>      > hits    (new std::vector<recob::Hit>);
+    std::unique_ptr<std::vector<recob::Cluster>  > clusters(new std::vector<recob::Cluster>);
+    std::unique_ptr<std::vector<recob::Vertex>   > vertices(new std::vector<recob::Vertex>);
+    std::unique_ptr<std::vector<recob::Vertex>   > verticesBgn(new std::vector<recob::Vertex>);
+    std::unique_ptr<std::vector<recob::Vertex>   > verticesEnd(new std::vector<recob::Vertex>);
   
     art::ServiceHandle<geo::Geometry> geo;
     rdu::TriggerDigitUtility tdu(evt, fDigitModuleLabel);                 //***
 
     art::FindManyP<recob::Wire> fmpw(tdu.EventTriggersPtr(), evt, fCalDataModuleLabel);
+//    art::FindMany<recob::Wire> fmpw(tdu.EventTriggersPtr(), evt, fCalDataModuleLabel);  //Ask Brian
 
-    std::vector< art::Ptr<recob::Wire> > wireVec;
-    std::vector< std::vector<recob::Hit> > clusToHits;
-    std::vector<recob::Cluster> clus;
+    std::vector< art::Ptr<recob::Wire>           > wireVec;
+//    std::vector< recob::Wire                     > wireVec;                             //ask Brian
+    std::vector< std::vector<recob::Hit>         > clusToHits;
+    std::vector< recob::Cluster                  > clus;
     std::map< size_t, std::vector<recob::Vertex> > clusToVertex;
+    std::map< size_t, std::vector<recob::Vertex> > clusToVertexBgn;
+    std::map< size_t, std::vector<recob::Vertex> > clusToVertexEnd;
 
     for (size_t t=0; t<tdu.NTriggers(); ++t)                              //***
     {
@@ -141,35 +151,70 @@ namespace cluster {
        // fetch the wires needed by CCHitFinder
 
        wireVec.clear(); //***
-       wireVec = fmpw.at(t);
+       wireVec = fmpw.at(t);  // Ask Brian
 
-       ClusterCrawlerLariat::Clustering(wireVec, clus, clusToHits, clusToVertex);
+       ClusterCrawlerLariat::Clustering(wireVec, clus, clusToHits, clusToVertex, clusToVertexBgn, clusToVertexEnd);
 
        for(unsigned int ic = 0; ic < clus.size(); ++ic) 
        {  
           clusters->push_back(clus[ic]);
           size_t startHitIdx = hits->size();
-          size_t startVtxIdx = vertices->size();
           for(size_t h = 0; h < clusToHits[ic].size(); ++h)
 	     hits->push_back(clusToHits[ic][h]);
-          for(size_t v = 0; v< clusToVertex[ic].size(); ++v)
-   	     vertices->push_back(clusToVertex[ic][v]);
           size_t endHitIdx = hits->size();
-          size_t endVtxIdx = vertices->size();
-   
+
+          for(size_t v = 0; v< clusToVertex[ic].size(); ++v)
+          {
+   	     vertices->push_back(clusToVertex[ic][v]);
+          }
+
+          // make the cluster - vertices association
+          for(size_t v = 0; v< clusToVertexBgn[ic].size(); ++v)
+          {
+   	     verticesBgn->push_back(clusToVertexBgn[ic][v]);
+/*             if(!util::CreateAssn(*this, evt, *clusters, *verticesBgn, *cv_assn, verticesBgn->size()-1, verticesBgn->size(), ic))
+             {
+                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate vertex "<< verticesBgn->size()-1 << " with cluster "<<ic;
+             } // exception*/
+             if(!util::CreateAssnD(*this, evt, *cv_assn, ic, verticesBgn->size()-1, 0))
+             {
+              throw art::Exception(art::errors::InsertFailure) << "Failed to associate metadata for cluster " 
+	                                                       << ic << " with vertex " << verticesBgn->size()-1;
+             } // exception
+          }
+
+          for(size_t v = 0; v< clusToVertexEnd[ic].size(); ++v)
+          {
+   	     verticesEnd->push_back(clusToVertexEnd[ic][v]);
+/*             if(!util::CreateAssn(*this, evt, *clusters, *verticesEnd, *cv_assn, verticesEnd->size()-1, verticesEnd->size(), ic))
+             {
+                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate vertex "<< verticesEnd->size()-1 << " with cluster "<<ic;
+             } // exception*/
+             if(!util::CreateAssnD(*this, evt, *cv_assn, ic, verticesEnd->size()-1, 1))  // Ask brian whether order matters
+             {
+              throw art::Exception(art::errors::InsertFailure) << "Failed to associate metadata for cluster " 
+	                                                       << ic << " with vertex " << verticesEnd->size()-1;
+             } // exception
+          }
+
           // make the cluster - hit association
-          if(!util::CreateAssn(*this, evt, clusters, hits, *hc_assn, startHitIdx, endHitIdx, ic))
+          if(!util::CreateAssn(*this, evt, *clusters, *hits, *hc_assn, startHitIdx, endHitIdx, ic))
           {
              throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<<" with cluster "<<ic;
           } // exception
 
-          // make the cluster - vertex association
-          if(!util::CreateAssn(*this, evt, clusters, vertices, *cv_assn, startVtxIdx, endVtxIdx, ic))
-          {
-             throw art::Exception(art::errors::InsertFailure) <<"Failed to associate vertex "<< " with cluster "<<ic;
-          } // exception
        } // Loop over clusters
 
+/*       // make the wire - hit association
+       for(size_t h = 0; h < hits->size(); ++h)
+       {
+          if(!util::CreateAssn(*this, evt, *hits, trig, *wh_assn, h))
+          {
+            throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with trigger "<<trig.key();
+          } // exception
+       }
+*/
+       // make the trigger - cluster association
        for(size_t c = 0; c < clusters->size(); ++c)
        {
           if(!util::CreateAssn(*this, evt, *clusters, trig, *tc_assn, c))
@@ -178,6 +223,7 @@ namespace cluster {
           } // exception
        }
 
+       // make the trigger - hit association
        for(size_t h = 0; h < hits->size(); ++h)
        {
           if(!util::CreateAssn(*this, evt, *hits, trig, *th_assn, h))
@@ -186,6 +232,7 @@ namespace cluster {
           } // exception
        }
 
+       // make the trigger - vertex association
        for(size_t v = 0; v < vertices->size(); ++v)
        {
           if(!util::CreateAssn(*this, evt, *vertices, trig, *tv_assn, v))
@@ -198,9 +245,9 @@ namespace cluster {
 
     // move the hit collection and the associations into the event:
     evt.put(std::move(hits)); 
-    evt.put(std::move(clus));   
+    evt.put(std::move(clusters));  
+    evt.put(std::move(vertices)); //ask Brian 
     evt.put(std::move(hc_assn));
-    evt.put(std::move(vertices));
     evt.put(std::move(cv_assn));   
     evt.put(std::move(th_assn));  
     evt.put(std::move(tc_assn)); 
@@ -215,8 +262,10 @@ namespace cluster {
 
  void ClusterCrawlerLariat::Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
 				       std::vector<recob::Cluster> & clus, 
-				       std::vector< std::vector<recob::Hit> > & clusToHits,  
-				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertex)
+				       std::vector< std::vector<recob::Hit> > & clusToHits,
+				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertex,  
+				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertexBgn,
+				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertexEnd)
  {  
 
 //example of a std::map
@@ -228,10 +277,13 @@ namespace cluster {
     clusToHits.clear();
     clus.clear();
     clusToVertex.clear();
+    clusToVertexBgn.clear();
+    clusToVertexEnd.clear();
 
     // fetch the wires needed by CCHitFinder
     // find hits in all planes
     fCCHFAlg.RunCCHitFinder(*wireVec);
+//    fCCHFAlg.RunCCHitFinder(wireVec);
     
     // extract the result of the algorithm (it's moved)
     std::vector<recob::Hit> FirstHits = fCCHFAlg.YieldHits();
@@ -247,13 +299,17 @@ namespace cluster {
     
     std::vector<ClusterCrawlerAlg::ClusterStore> const& tcl = fCCAlg.GetClusters();
 
+    // make 3D vertices
+    std::vector<ClusterCrawlerAlg::Vtx3Store> const& Vertx = fCCAlg.GetVertices();
+
     // make the clusters and associations
     float sumChg=0.0; 
     float sumADC=0.0;
-    unsigned int clstr.ID = 0;
+    unsigned int vtxIndex = 0;
     unsigned int nclhits = 0;
     unsigned short plane = 0;
-    clusToHits.resize(tcl.size);
+    double xyz[3] = {0, 0, 0};
+    clusToHits.resize(tcl.size());
     for(unsigned int icl = 0; icl < tcl.size(); ++icl) 
     {
 //       FinalHits.clear();
@@ -268,7 +324,7 @@ namespace cluster {
        // correct the hit indices to refer to the valid hits that were just added
        for(unsigned int itt = 0; itt < nclhits; ++itt) 
        {  
-          clusToHits[icl].push_back(allHits->at(clstr.tclhits[itt]));
+          clusToHits[icl].push_back(allHits.at(clstr.tclhits[itt]));
           sumChg += clusToHits[icl].back().Integral();
           sumADC += clusToHits[icl].back().SummedADC();
        } // itt
@@ -306,10 +362,9 @@ namespace cluster {
        // make the cluster - endpoint associations
        if(clstr.BeginVtx >= 0) 
        {
-          end = 0;
           // See if this endpoint is associated with a 3D vertex
           vtxIndex = 0;
-          for(ClusterCrawlerAlg::Vtx3Store const& vtx3: Vertices) 
+          for(ClusterCrawlerAlg::Vtx3Store const& vtx3: Vertx) 
           {  
              // ignore incomplete vertices
              if(vtx3.Ptr2D[0] < 0) continue;
@@ -320,17 +375,17 @@ namespace cluster {
                 xyz[0] = vtx3.X;
                 xyz[1] = vtx3.Y;
                 xyz[2] = vtx3.Z;
-                map[icl].emplace_back(xyz, vtxIndex);
+                clusToVertexBgn[icl].emplace_back(xyz, vtxIndex);
+                clusToVertex[icl].emplace_back(xyz, vtxIndex);
                 ++vtxIndex;
              } // vertex match
           } // 3D vertices
        } // clstr.BeginVtx >= 0
        if(clstr.EndVtx >= 0) 
        {  
-          end = 1;
           // See if this endpoint is associated with a 3D vertex
            vtxIndex = 0;
-          for(ClusterCrawlerAlg::Vtx3Store const& vtx3: Vertices) 
+          for(ClusterCrawlerAlg::Vtx3Store const& vtx3: Vertx) 
           {
              // ignore incomplete vertices
              if(vtx3.Ptr2D[0] < 0) continue;
@@ -341,7 +396,8 @@ namespace cluster {
                 xyz[0] = vtx3.X;
                 xyz[1] = vtx3.Y;
                 xyz[2] = vtx3.Z;
-                map[icl].emplace_back(xyz, vtxIndex);
+                clusToVertexEnd[icl].emplace_back(xyz, vtxIndex);
+                clusToVertex[icl].emplace_back(xyz, vtxIndex);
                 ++vtxIndex;
              } // vertex match
           } // 3D vertices
