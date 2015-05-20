@@ -125,12 +125,12 @@ public:
   double clockDriftCorr(std::pair<double, double> const& parameters,
                         double                    const& x);
 
-  void fitDrift(std::string const& deviceALabel,
-                std::string const& deviceBLabel,
-                std::map< std::string, std::map<unsigned int, double> > timeStamps,
-                match_maps       & matchMaps,
-                fit_params_maps  & fitParametersMaps,
-                std::string const& graphNamePrefix);
+  void fitClockDrift(std::string const& deviceALabel,
+                     std::string const& deviceBLabel,
+                     std::map< std::string, std::map<unsigned int, double> > timeStamps,
+                     match_maps       & matchMaps,
+                     fit_params_maps  & fitParametersMaps,
+                     std::string const& graphNamePrefix);
 
   void matchFitIter(std::string const& deviceALabel,
                     std::string const& deviceBLabel,
@@ -883,35 +883,100 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //@\ BEGIN: clock drift correction
   //////////////////////////////////////////////////////////////////////
 
+  size_t numberMatchedCaenDataBlocks[10] = {};
+  //size_t numberMatchedMwpcDataBlocks = 0;
+
   fitParamsMaps[fCaenV1751Board0Label][fCaenV1751Board0Label].push_back(std::make_pair<double, double>(0, 0));
   fitParamsMaps[fCaenV1751Board0Label][fCaenV1751Board1Label].push_back(std::make_pair<double, double>(0, 0));
 
+  // this shouldn't be hard-coded, but there is no way to get
+  // the decimation factor of the sample rate from the CAENFragment
+  double v1740SampleTime = 0.128;  // microseconds
+
   for (size_t i = 0; i < numberCaenFrags; ++i) {
-    CAENFragment & caenFrag = data->caenFrags[i];
-    unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
-    std::string label = caenLabels[boardId];
+    CAENFragment & caenFrag_ = data->caenFrags[i];
+    unsigned int boardId_ = static_cast <unsigned int> (caenFrag_.header.boardId);
 
-    // each CAEN Trigger Time Tag count is 8 ns
-    double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+    if (boardId_ == 0) {
 
-    LOG_VERBATIM("FragmentToDigit") << "\n  boardId:   " << boardId
-                                    << "\n  timeStamp: " << timeStamp;
+      std::string label_ = caenLabels[boardId_];
+      size_t numberSamples_ = static_cast <size_t> (caenFrag_.header.nSamples);
+      double recordLength_ = numberSamples_ * v1740SampleTime;  // microseconds
 
-    std::pair<double, double> fitParams(0, 0);
+      // each CAEN Trigger Time Tag count is 8 ns
+      double timeStamp_ = caenFrag_.header.triggerTimeTag * 0.008;  // convert to microseconds
 
-    //if (boardId != 8 and boardId != 9) {
-      fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
-      double correctedTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
+      std::pair<double, double> fitParams_(0, 0);
 
-      LOG_VERBATIM("FragmentToDigit") << "\n  label:              " << label
-                                      << "\n  timeStamp:          " << timeStamp
-                                      << "\n  correctedTimeStamp: " << correctedTimeStamp;
-    //}
-  }
+      fitParams_ = fitParamsMaps[fCaenV1751Board0Label][label_].back();
+      double corrTimeStamp_ = this->clockDriftCorr(fitParams_, timeStamp_);
+
+      double timeThresholdLow = corrTimeStamp_ - 0.032;
+      double timeThresholdHigh = corrTimeStamp_ + recordLength_;
+
+      LOG_VERBATIM("FragmentToDigit") << "\n  boardId_:       " << boardId_
+                                      << "\n  timeStamp_:     " << timeStamp_
+                                      << "\n  numberSamples_: " << numberSamples_
+                                      << "\n  recordLength_:  " << recordLength_;
+
+      LOG_VERBATIM("FragmentToDigit") << "\n  label_:         " << label_
+                                      << "\n  timeStamp_:     " << timeStamp_
+                                      << "\n  corrTimeStamp_: " << corrTimeStamp_;
+
+      LOG_VERBATIM("FragmentToDigit") << "\n  timeThresholdLow:  " << timeThresholdLow
+                                      << "\n  timeThresholdHigh: " << timeThresholdHigh;
+
+      numberMatchedCaenDataBlocks[boardId_] += 1;
+
+      for (size_t j = 0; j < numberCaenFrags; ++j) {
+
+        CAENFragment & caenFrag = data->caenFrags[j];
+        unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
+
+        if (boardId != 0) {
+
+          std::string label = caenLabels[boardId];
+
+          // each CAEN Trigger Time Tag count is 8 ns
+          double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+
+          std::pair<double, double> fitParams(0, 0);
+
+          fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+          double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
+
+          if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
+
+            LOG_VERBATIM("FragmentToDigit") << "\n    boardId:   " << boardId
+                                            << "\n    timeStamp: " << timeStamp;
+
+            LOG_VERBATIM("FragmentToDigit") << "\n    label:         " << label
+                                            << "\n    timeStamp:     " << timeStamp
+                                            << "\n    corrTimeStamp: " << corrTimeStamp;
+
+            numberMatchedCaenDataBlocks[boardId] += 1;
+
+          }
+
+        } // if boardId != 0
+      } // end loop over CAENFragments
+
+    } // if boardId == 0
+  } // end loop over CAENFragments
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: clock drift correction
   //////////////////////////////////////////////////////////////////////
+
+  // print matching summary
+
+  LOG_VERBATIM("FragmentToDigit") << "\n";
+  for (size_t i = 0; i < 10; ++i) {
+    LOG_VERBATIM("FragmentToDigit") << "    boardId " << i << " matches: "
+                                    << numberMatchedCaenDataBlocks[i] << " / "
+                                    << numberCaenDataBlocks[i];
+  }
+  LOG_VERBATIM("FragmentToDigit") << "\n";
 
   return;
 }
@@ -999,12 +1064,12 @@ double FragmentToDigit::clockDriftCorr(std::pair<double, double> const& paramete
 }
 
 //-----------------------------------------------------------------------------------
-void FragmentToDigit::fitDrift(std::string const& deviceALabel,
-                               std::string const& deviceBLabel,
-                               std::map< std::string, std::map<unsigned int, double> > timeStamps,
-                               match_maps       & matchMaps,
-                               fit_params_maps  & fitParametersMaps,
-                               std::string const& graphNamePrefix) 
+void FragmentToDigit::fitClockDrift(std::string const& deviceALabel,
+                                    std::string const& deviceBLabel,
+                                    std::map< std::string, std::map<unsigned int, double> > timeStamps,
+                                    match_maps       & matchMaps,
+                                    fit_params_maps  & fitParametersMaps,
+                                    std::string const& graphNamePrefix) 
 {
 
   std::vector<double> x;
@@ -1097,7 +1162,7 @@ void FragmentToDigit::matchFitIter(std::string const& deviceALabel,
                                << "deviceA: " << deviceALabel << "; deviceB: " << deviceBLabel;
 
   this->coarseMatch(deviceALabel, deviceBLabel, coarseRange, timeStamps, matchMaps);
-  this->fitDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "coarse_match");
+  this->fitClockDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "coarse_match");
 
   std::pair<double, double> fitParameters = fitParametersMaps[deviceALabel][deviceBLabel].back();
   LOG_DEBUG("FragmentToDigit") << "  intercept: " << fitParameters.first << "; slope: " << fitParameters.second;
@@ -1105,7 +1170,7 @@ void FragmentToDigit::matchFitIter(std::string const& deviceALabel,
   for (size_t i = 0; i < fMaxNumberFitIterations; ++i) {
 
     this->fineMatch(deviceALabel, deviceBLabel, fineEps, fitParametersMaps, timeStamps, matchMaps);
-    this->fitDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "fine_match_" + std::to_string(i));
+    this->fitClockDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "fine_match_" + std::to_string(i));
 
     fitParameters = fitParametersMaps[deviceALabel][deviceBLabel].back();
     LOG_DEBUG("FragmentToDigit") << "  intercept: " << fitParameters.first << "; slope: " << fitParameters.second;
