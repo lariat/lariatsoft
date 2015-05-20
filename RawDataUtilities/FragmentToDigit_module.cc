@@ -932,8 +932,6 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
       LOG_VERBATIM("FragmentToDigit") << "\n  timeThresholdLow:  " << timeThresholdLow
                                       << "\n  timeThresholdHigh: " << timeThresholdHigh;
 
-      numberMatchedCaenDataBlocks[boardId_] += 1;
-
       for (size_t j = 0; j < numberCaenFrags; ++j) {
 
         CAENFragment & caenFrag = data->caenFrags[j];
