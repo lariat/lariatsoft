@@ -884,7 +884,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //////////////////////////////////////////////////////////////////////
 
   size_t numberMatchedCaenDataBlocks[10] = {};
-  //size_t numberMatchedMwpcDataBlocks = 0;
+  size_t numberMatchedMwpcDataBlocks = 0;
 
   fitParamsMaps[fCaenV1751Board0Label][fCaenV1751Board0Label].push_back(std::make_pair<double, double>(0, 0));
   fitParamsMaps[fCaenV1751Board0Label][fCaenV1751Board1Label].push_back(std::make_pair<double, double>(0, 0));
@@ -947,19 +947,91 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
           if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
 
-            LOG_VERBATIM("FragmentToDigit") << "\n    boardId:   " << boardId
-                                            << "\n    timeStamp: " << timeStamp;
-
-            LOG_VERBATIM("FragmentToDigit") << "\n    label:         " << label
+            LOG_VERBATIM("FragmentToDigit") << "\n    boardId:       " << boardId
+                                            << "\n    label:         " << label
                                             << "\n    timeStamp:     " << timeStamp
                                             << "\n    corrTimeStamp: " << corrTimeStamp;
 
             numberMatchedCaenDataBlocks[boardId] += 1;
 
-          }
+          } // if corrected timestamp falls in range
 
         } // if boardId != 0
       } // end loop over CAENFragments
+
+      for (int j = 0; j < numberTdcFrags; ++j) {
+
+        TDCFragment & tdcFrag = data->tdcFrags[j];
+
+        std::vector< std::vector<TDCFragment::TdcEventData> > &tdcEvents = tdcFrag.tdcEvents;
+
+        //LOG_DEBUG("FragmentToDigit")
+        //    << "tdcEvents.size(): " << tdcEvents.size();
+        //tdcFrag.print();
+
+        std::string label = fMwpcTdc01Label;
+        std::pair<double, double> fitParams(0, 0);
+        fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+
+        for (size_t k = 0; k < tdcEvents.size(); ++k) {
+
+          if (tdcFrag.controllerHeader.nTDCs != tdcEvents[k].size()) {
+            mf::LogError("FragmentToDigit") << "*** Fatal nTDCs mismatch: " << tdcEvents[k].size()
+                << " != " << tdcFrag.controllerHeader.nTDCs<< " "<< k;
+            continue;
+          }
+
+          //LOG_DEBUG("FragmentToDigit") << "TDC event: " << k;
+
+          // Loop over TDCs to count the number of TDC timestamps that fall within range.
+          // If that number is greater than 0, we consider this TDC event a match. We are
+          // doing this to work around the mismatches of the TDC time bits.
+
+          size_t numberTdcMatch = 0;
+
+          for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
+            TDCFragment::TdcEventData tdcEventData = tdcEvents[k].at(tdc_index);
+
+            // each TDC Time Stamp count is 1/106.208 microseconds
+            double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // microseconds
+            double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
+
+            if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
+              numberTdcMatch += 1;
+            } // if corrected TDC timestamp falls within range
+
+          } // end loop over TDCs
+
+          // if at least one TDC timestamp falls within range
+          if (numberTdcMatch > 0) {
+
+            for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
+              TDCFragment::TdcEventData tdcEventData = tdcEvents[k].at(tdc_index);
+
+              unsigned int tdcNumber = static_cast <unsigned int> (tdcEventData.tdcEventHeader.tdcNumber);
+              // each TDC Time Stamp count is 1/106.208 microseconds
+              double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // microseconds
+              double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
+
+                LOG_VERBATIM("FragmentToDigit") //<< "\n    tdc_index:     " << tdc_index
+                                                << "\n    tdcNumber:     " << tdcNumber
+                                                << "\n    label:         " << label
+                                                << "\n    timeStamp:     " << timeStamp
+                                                << "\n    corrTimeStamp: " << corrTimeStamp;
+
+              if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
+
+              } // if corrected timestamp falls in range
+            } // end loop over TDCs
+
+            LOG_VERBATIM("FragmentToDigit") << "\n    numberTdcMatch:     " << numberTdcMatch;
+
+            numberMatchedMwpcDataBlocks += 1;
+
+          } // if number of TDC matches is greater than 0
+
+        } // end loop over TDCEvents
+      } // end loop over TDCFragments
 
     } // if boardId == 0
   } // end loop over CAENFragments
@@ -976,6 +1048,9 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
                                     << numberMatchedCaenDataBlocks[i] << " / "
                                     << numberCaenDataBlocks[i];
   }
+  LOG_VERBATIM("FragmentToDigit") << "\n    MWPC matches: "
+                                  << numberMatchedMwpcDataBlocks << " / "
+                                  << numberMwpcDataBlocks;
   LOG_VERBATIM("FragmentToDigit") << "\n";
 
   return;
