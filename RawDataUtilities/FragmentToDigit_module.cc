@@ -235,8 +235,8 @@ private:
   size_t fMaxNumberFitIterations = 5;
 
   // maps trigger ID to vector of data blocks
-  std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks;
-  std::map< int, std::vector< std::vector<TDCFragment::TdcEventData> > > fTriggerToTDCDataBlocks;
+  std::map< int, std::vector<CAENFragment *> > fTriggerToCAENDataBlocks;
+  std::map< int, std::vector< std::vector<TDCFragment::TdcEventData> *> > fTriggerToTDCDataBlocks;
 
   uint32_t fNtriggers;
   std::vector<size_t> fv1751InTrigger;
@@ -641,9 +641,6 @@ void FragmentToDigit::LinFitUnweighted(const std::vector<double>& x,
 void FragmentToDigit::matchDataBlocks(LariatFragment * data) 
 {
 
-  //std::map< int, std::vector<CAENFragment> > triggerToCaenDataBlocks;
-  //std::map< int, std::vector< std::vector<TDCFragment::TDCEventData> > > triggerToTdcDataBlocks;
-
   // maps for matching fragments
   std::map< std::string, std::map<unsigned int, double> > dataBlockTimeStamps;
   match_maps matchMaps;
@@ -727,13 +724,13 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
     numberCaenDataBlocks[boardId] += 1;
   }
 
-  const int numberTdcFrags = data->tdcFrags.size();
+  const size_t numberTdcFrags = data->tdcFrags.size();
   LOG_VERBATIM("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberTdcFrags > 0) 
     LOG_VERBATIM("FragmentToDigit") << "Looking at TDC fragments...";
 
-  for (int i = 0; i < numberTdcFrags; ++i) {
+  for (size_t i = 0; i < numberTdcFrags; ++i) {
 
     TDCFragment & tdcFrag = data->tdcFrags[i];
 
@@ -884,7 +881,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //////////////////////////////////////////////////////////////////////
 
   //////////////////////////////////////////////////////////////////////
-  //@\ BEGIN: clock drift correction
+  //@\ BEGIN: add to trigger ID to data block map
   //////////////////////////////////////////////////////////////////////
 
   int triggerID = 0;
@@ -898,155 +895,261 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   // this shouldn't be hard-coded, but there is no way to get
   // the decimation factor of the sample rate from the CAENFragment
   double v1740SampleTime = 0.128;  // microseconds
+  double v1751SampleTime = 0.001;  // microseconds
+  size_t numberV1740Samples = 0;
+  size_t numberV1751Samples = 0;
 
   for (size_t i = 0; i < numberCaenFrags; ++i) {
-    CAENFragment & caenFrag_ = data->caenFrags[i];
-    unsigned int boardId_ = static_cast <unsigned int> (caenFrag_.header.boardId);
+    CAENFragment & caenFrag = data->caenFrags[i];
+    unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
+    if (boardId == 0) {
+      numberV1740Samples = static_cast <size_t> (caenFrag.header.nSamples);
+    }
+    if (boardId == 8) {
+      numberV1751Samples = static_cast <size_t> (caenFrag.header.nSamples);
+    }
+    if (numberV1740Samples > 0 and numberV1751Samples > 0) break;
+  }
 
-    if (boardId_ == 0) {
+  // vector of corrected timestamps to data block indices:
+  //[
+  //  timestamp0, [ caenBoardID, caenFragmentIndex0 ],
+  //  timestamp1, [ caenBoardID, caenFragmentIndex1 ],
+  //  timestamp3, [      mwpcID,     tdcEventIndex0 ],
+  //  timestamp4, [ caenBoardID, caenFragmentIndex2 ],
+  //  timestamp5, [      mwpcID,     tdcEventIndex1 ],
+  //  ...
+  //]
+  std::vector< std::pair<double, std::pair<int, int> > > timeStampToDataBlockIndices;
 
-      std::string label_ = caenLabels[boardId_];
-      size_t numberSamples_ = static_cast <size_t> (caenFrag_.header.nSamples);
-      double recordLength_ = numberSamples_ * v1740SampleTime;  // microseconds
+  // correct CAENFragment timestamp and add corrected timestamp and index to vector
+  for (size_t i = 0; i < numberCaenFrags; ++i) {
+    CAENFragment & caenFrag = data->caenFrags[i];
+    unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
 
-      // each CAEN Trigger Time Tag count is 8 ns
-      double timeStamp_ = caenFrag_.header.triggerTimeTag * 0.008;  // convert to microseconds
+    std::string label = caenLabels[boardId];
 
-      std::pair<double, double> fitParams_(0, 0);
+    // each CAEN Trigger Time Tag count is 8 ns
+    double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
 
-      fitParams_ = fitParamsMaps[fCaenV1751Board0Label][label_].back();
-      double corrTimeStamp_ = this->clockDriftCorr(fitParams_, timeStamp_);
+    std::pair<double, double> fitParams(0, 0);
 
-      double timeThresholdLow = corrTimeStamp_ - 0.032;
-      double timeThresholdHigh = corrTimeStamp_ + recordLength_;
+    fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+    double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
 
-      LOG_VERBATIM("FragmentToDigit") << "\n  boardId_:       " << boardId_
-                                      << "\n  timeStamp_:     " << timeStamp_
-                                      << "\n  numberSamples_: " << numberSamples_
-                                      << "\n  recordLength_:  " << recordLength_;
+    LOG_VERBATIM("FragmentToDigit") << "\n  label:         " << label
+                                    << "\n  timeStamp:     " << timeStamp
+                                    << "\n  corrTimeStamp: " << corrTimeStamp;
 
-      LOG_VERBATIM("FragmentToDigit") << "\n  label_:         " << label_
-                                      << "\n  timeStamp_:     " << timeStamp_
-                                      << "\n  corrTimeStamp_: " << corrTimeStamp_;
+    std::pair<int, int> dataBlockIndex(boardId, i);
 
-      LOG_VERBATIM("FragmentToDigit") << "\n  timeThresholdLow:  " << timeThresholdLow
-                                      << "\n  timeThresholdHigh: " << timeThresholdHigh;
+    timeStampToDataBlockIndices.push_back(std::make_pair(corrTimeStamp, dataBlockIndex));
 
-      for (size_t j = 0; j < numberCaenFrags; ++j) {
+  }
 
-        CAENFragment & caenFrag = data->caenFrags[j];
-        unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
+  // correct TDCEvent timestamp and add corrected timestamp and index to vector
+  for (size_t i = 0; i < numberTdcFrags; ++i) {
 
-        std::string label = caenLabels[boardId];
+    TDCFragment & tdcFrag = data->tdcFrags[i];
 
-        // each CAEN Trigger Time Tag count is 8 ns
-        double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+    std::vector< std::vector<TDCFragment::TdcEventData> > &tdcEvents = tdcFrag.tdcEvents;
 
-        std::pair<double, double> fitParams(0, 0);
+    //LOG_DEBUG("FragmentToDigit")
+    //    << "tdcEvents.size(): " << tdcEvents.size();
+    //tdcFrag.print();
 
-        fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+    std::string label = fMwpcTdc01Label;
+    std::pair<double, double> fitParams(0, 0);
+    fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+
+    for (size_t j = 0; j < tdcEvents.size(); ++j) {
+
+      if (tdcFrag.controllerHeader.nTDCs != tdcEvents[j].size()) {
+        mf::LogError("FragmentToDigit") << "*** Fatal nTDCs mismatch: " << tdcEvents[j].size()
+            << " != " << tdcFrag.controllerHeader.nTDCs<< " "<< j;
+        continue;
+      }
+
+      //LOG_DEBUG("FragmentToDigit") << "TDC event: " << j;
+
+      // Loop over TDCs to count the number of TDC timestamps that fall within range.
+      // If that number is greater than 0, we consider this TDC event a match. We are
+      // doing this to work around the mismatches of the TDC time bits.
+
+      std::map<double, unsigned int> timeStampCounts;
+
+      for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
+        TDCFragment::TdcEventData tdcEventData = tdcEvents[j].at(tdc_index);
+
+        // each TDC Time Stamp count is 1/106.208 microseconds
+        double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // microseconds
         double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
 
-        if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
+        timeStampCounts[corrTimeStamp] += 1;
 
-          LOG_VERBATIM("FragmentToDigit") << "\n    boardId:       " << boardId
-                                          << "\n    label:         " << label
-                                          << "\n    timeStamp:     " << timeStamp
-                                          << "\n    corrTimeStamp: " << corrTimeStamp;
+      } // end loop over TDCs
 
-          // add CAEN data block to trigger ID map
-          fTriggerToCAENDataBlocks[triggerID].push_back(caenFrag);
+      unsigned int counts = 0;
+      double corrTimeStamp = 0;
 
-          numberMatchedCaenDataBlocks[boardId] += 1;
+      for (auto const& k : timeStampCounts) {
+        LOG_DEBUG("FragmentToDigit") << "timestamp: " << k.first
+                                        << "\ncounts: " << k.second;
+        if (k.second > counts) {
+          corrTimeStamp = k.first;
+          counts = k.second;
+        }
+      }
 
-        } // if corrected timestamp falls in range
+      std::pair<int, int> dataBlockIndex(10, j);
 
-      } // end loop over CAENFragments
+      timeStampToDataBlockIndices.push_back(std::make_pair(corrTimeStamp, dataBlockIndex));
 
-      for (int j = 0; j < numberTdcFrags; ++j) {
+    } // end loop over TDCEvents
+  } // end loop over TDCFragments
 
-        TDCFragment & tdcFrag = data->tdcFrags[j];
+  //LOG_VERBATIM("FragmentToDigit") << "Unsorted timestamps:";
+  //for (auto const& i : timeStampToDataBlockIndices) {
+  //  LOG_VERBATIM("FragmentToDigit") << "  timestamp: " << i.first;
+  //}
 
-        std::vector< std::vector<TDCFragment::TdcEventData> > &tdcEvents = tdcFrag.tdcEvents;
+  //std::sort(timeStampToDataBlockIndices.begin(), timeStampToDataBlockIndices.end());
 
-        //LOG_DEBUG("FragmentToDigit")
-        //    << "tdcEvents.size(): " << tdcEvents.size();
-        //tdcFrag.print();
+  //LOG_VERBATIM("FragmentToDigit") << "Sorted timestamps:";
 
-        std::string label = fMwpcTdc01Label;
-        std::pair<double, double> fitParams(0, 0);
-        fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+  //for (auto const& i : timeStampToDataBlockIndices) {
+  //  LOG_VERBATIM("FragmentToDigit") << "  timestamp: " << i.first;
+  //  //LOG_VERBATIM("FragmentToDigit") << "    index: (" << i.second.first << ", " << i.second.second << ")";
+  //}
 
-        for (size_t k = 0; k < tdcEvents.size(); ++k) {
+  std::vector<int> tstdbi_;  // master bookkeeper of already matched data blocks
 
-          if (tdcFrag.controllerHeader.nTDCs != tdcEvents[k].size()) {
-            mf::LogError("FragmentToDigit") << "*** Fatal nTDCs mismatch: " << tdcEvents[k].size()
-                << " != " << tdcFrag.controllerHeader.nTDCs<< " "<< k;
-            continue;
-          }
+  LOG_VERBATIM("FragmentToDigit") << "Sorted timestamps:";
+  for (size_t i = 0; i < timeStampToDataBlockIndices.size(); ++i) {
 
-          //LOG_DEBUG("FragmentToDigit") << "TDC event: " << k;
+    if (std::find(tstdbi_.begin(), tstdbi_.end(), i) != tstdbi_.end()) continue;
 
-          // Loop over TDCs to count the number of TDC timestamps that fall within range.
-          // If that number is greater than 0, we consider this TDC event a match. We are
-          // doing this to work around the mismatches of the TDC time bits.
+    double baseTimeStamp = timeStampToDataBlockIndices[i].first;
+    std::pair<int, int> baseIndexPair = timeStampToDataBlockIndices[i].second;
 
-          size_t numberTdcMatch = 0;
+    LOG_VERBATIM("FragmentToDigit") << "  baseTimeStamp:    " << baseTimeStamp;
+    LOG_VERBATIM("FragmentToDigit") << "    baseIndexPair: (" << baseIndexPair.first << ", " << baseIndexPair.second << ")";
 
-          for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
-            TDCFragment::TdcEventData tdcEventData = tdcEvents[k].at(tdc_index);
+    double timeThresholdLow = baseTimeStamp - 0.032;
+    double timeThresholdHigh = baseTimeStamp + 0.032;
 
-            // each TDC Time Stamp count is 1/106.208 microseconds
-            double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // microseconds
-            double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
+    std::vector<int> selectedIndices;  // local bookkeeper  of selected data blocks
 
-            if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
-              numberTdcMatch += 1;
-            } // if corrected TDC timestamp falls within range
+    for (size_t j = 0; j < timeStampToDataBlockIndices.size(); ++j) {
 
-          } // end loop over TDCs
+      if (std::find(tstdbi_.begin(), tstdbi_.end(), j) != tstdbi_.end()) continue;
 
-          // if at least one TDC timestamp falls within range
-          if (numberTdcMatch > 0) {
+      double timeStamp = timeStampToDataBlockIndices[j].first;
+      std::pair<int, int> indexPair = timeStampToDataBlockIndices[j].second;
 
-            for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
-              TDCFragment::TdcEventData tdcEventData = tdcEvents[k].at(tdc_index);
+      if (timeThresholdLow <= timeStamp and timeStamp <= timeThresholdHigh) {
+        LOG_VERBATIM("FragmentToDigit") << "    timeStamp:   " << timeStamp;
+        LOG_VERBATIM("FragmentToDigit") << "      indexPair: (" << indexPair.first << ", " << indexPair.second << ")";
 
-              unsigned int tdcNumber = static_cast <unsigned int> (tdcEventData.tdcEventHeader.tdcNumber);
-              // each TDC Time Stamp count is 1/106.208 microseconds
-              double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // microseconds
-              double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
+        selectedIndices.push_back(j);  // add to local bookkeeper of selected data blocks
+        tstdbi_.push_back(j);          // add to master bookkeeper of already matched data blocks
+      } // if timestamp falls within range
 
-              LOG_VERBATIM("FragmentToDigit") //<< "\n    tdc_index:     " << tdc_index
-                                              << "\n    tdcNumber:     " << tdcNumber
-                                              << "\n    label:         " << label
-                                              << "\n    timeStamp:     " << timeStamp
-                                              << "\n    corrTimeStamp: " << corrTimeStamp;
+    } // for each data block
 
-              if (timeThresholdLow <= corrTimeStamp and corrTimeStamp <= timeThresholdHigh) {
+    // now loop over the selected data blocks for this trigger ID
+    // and see if we can add more data blocks that occur during
+    // the readout windows of the CAEN V1740s and V1751s
+    for (size_t j = 0; j < selectedIndices.size(); ++j) {
+      int index = selectedIndices[j];
+      std::pair<int, int> indexPair = timeStampToDataBlockIndices[index].second;
+      int deviceID = indexPair.first;
 
-              } // if corrected timestamp falls in range
-            } // end loop over TDCs
+      LOG_VERBATIM("FragmentToDigit") << "  index: " << index;
 
-            LOG_VERBATIM("FragmentToDigit") << "\n    numberTdcMatch:     " << numberTdcMatch;
+      if (deviceID == 0) { // look for CAEN V1740 data blocks
 
-            // add MWPC TDC data block to trigger ID map
-            fTriggerToTDCDataBlocks[triggerID].push_back(tdcEvents[k]);
+        double timeStamp_ = timeStampToDataBlockIndices[index].first;
+        double recordLength = numberV1740Samples * v1740SampleTime;  // microseconds
 
-            numberMatchedMwpcDataBlocks += 1;
+        double timeThresholdLow = timeStamp_ - 0.032;                // microseconds
+        double timeThresholdHigh = timeStamp_ + recordLength;        // microseconds
 
-          } // if number of TDC matches is greater than 0
+        for (size_t k = 0; k < timeStampToDataBlockIndices.size(); ++k) {
 
-        } // end loop over TDCEvents
-      } // end loop over TDCFragments
+          if (std::find(tstdbi_.begin(), tstdbi_.end(), k) != tstdbi_.end()) continue;
 
-      triggerID += 1;
+          double timeStamp = timeStampToDataBlockIndices[k].first;
 
-    } // if boardId == 0
-  } // end loop over CAENFragments
+          if (timeThresholdLow <= timeStamp and timeStamp <= timeThresholdHigh) {
+            selectedIndices.push_back(k);  // add to local bookkeeper of selected data blocks
+            tstdbi_.push_back(k);          // add to master bookkeeper of already matched data blocks
+          } // if timestamp falls within range
+
+        } // for each data block
+
+      } // if CAEN board id is 0
+
+      if (deviceID == 8) { // look for CAEN V1751 data blocks
+
+        double timeStamp_ = timeStampToDataBlockIndices[index].first;
+        double recordLength = numberV1751Samples * v1751SampleTime;  // microseconds
+
+        double timeThresholdLow = timeStamp_ - 0.032;                // microseconds
+        double timeThresholdHigh = timeStamp_ + recordLength;        // microseconds
+
+        for (size_t k = 0; k < timeStampToDataBlockIndices.size(); ++k) {
+
+          if (std::find(tstdbi_.begin(), tstdbi_.end(), k) != tstdbi_.end()) continue;
+
+          double timeStamp = timeStampToDataBlockIndices[k].first;
+
+          if (timeThresholdLow <= timeStamp and timeStamp <= timeThresholdHigh) {
+            selectedIndices.push_back(k);  // add to local bookkeeper of selected data blocks
+            tstdbi_.push_back(k);          // add to master bookkeeper of already matched data blocks
+          } // if timestamp falls within range
+
+        } // for each data block
+
+      } // if CAEN board id is 8
+
+    } // end loop over selected data blocks
+
+    // now that we have our final list of selected data blocks for this
+    // trigger ID, let's add them to the trigger ID to data block maps
+    for (size_t j = 0; j < selectedIndices.size(); ++j) {
+      int index = selectedIndices[j];
+      std::pair<int, int> indexPair = timeStampToDataBlockIndices[index].second;
+      int deviceID = indexPair.first;
+      int idx = indexPair.second;
+
+      if (deviceID < 10) {
+        CAENFragment & caenFrag = data->caenFrags[idx];
+        unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
+        fTriggerToCAENDataBlocks[triggerID].push_back(&caenFrag);
+        numberMatchedCaenDataBlocks[boardId] += 1;
+      }
+
+      else if (deviceID == 10) {
+        if (numberTdcFrags > 0) {
+          TDCFragment & tdcFrag = data->tdcFrags[0];
+          std::vector< std::vector<TDCFragment::TdcEventData> > &tdcEvents = tdcFrag.tdcEvents;
+          fTriggerToTDCDataBlocks[triggerID].push_back(&tdcEvents[idx]);
+          numberMatchedMwpcDataBlocks += 1;
+        }
+      }
+
+    } // end loop over selected data blocks
+
+    triggerID += 1;
+
+  } // for each data block
+
+  LOG_VERBATIM("FragmentToDigit") << "  timeStampToDataBlockIndices.size(): " << timeStampToDataBlockIndices.size();
+  LOG_VERBATIM("FragmentToDigit") << "  tstdbi_.size(): " << tstdbi_.size();
 
   //////////////////////////////////////////////////////////////////////
-  //@\ END: clock drift correction
+  //@\ END: add to trigger ID to data block map
   //////////////////////////////////////////////////////////////////////
 
   // print matching summary
@@ -1313,7 +1416,7 @@ void FragmentToDigit::matchFragments(uint32_t & fNtriggers,
   const size_t numberCaenFrags = data->caenFrags.size();
   LOG_DEBUG("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
 
-  const int numberTdcFrags = data->tdcFrags.size();
+  const size_t numberTdcFrags = data->tdcFrags.size();
   LOG_DEBUG("FragmentToDigit") << "Found " << numberTdcFrags << " TDC fragments";
 
   if (numberCaenFrags > 0)
