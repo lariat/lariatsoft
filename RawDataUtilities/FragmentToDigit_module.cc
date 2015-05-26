@@ -431,11 +431,6 @@ void FragmentToDigit::produce(art::Event & evt)
   size_t                         	 endAssns   = 0;
   double                                 eventTime  = 1.*evt.time().timeHigh() + 1.*evt.time().timeLow();
 
-  // remove the next two lines of code when we verify that the trigger 
-  // matching also includes the TPC data
-  this->makeTPCRawDigits(data->caenFrags, rawDigits);
-  for(auto rd : rawDigits) rawDigitVec->push_back(rd);
-
   for(size_t i = 0; i < fNtriggers; ++i) {
 
     caenFrags.clear();
@@ -443,41 +438,36 @@ void FragmentToDigit::produce(art::Event & evt)
     rawDigits.clear();
     opPulses .clear();
 
-    LOG_VERBATIM("FragmentToDigit") << "Trigger " << i 
-				   << " has a V1751 Fragment with index "  << fv1751InTrigger[i] 
-				   <<"\n and a V1740 Fragment with index " << fv1740InTrigger[i];
-
-    if(fTDCInTrigger.size() > 0) 
-      LOG_VERBATIM("FragmentToDigit") << ", and a TDC Fragment with index " << fTDCInTrigger[i];
-
-    if(fv1751InTrigger[i]) caenFrags.push_back(data->caenFrags[fv1751InTrigger[i]]);
-    if(fv1740InTrigger[i]) caenFrags.push_back(data->caenFrags[fv1740InTrigger[i]]);
-
-    if(fTDCInTrigger.size() > 0 && fTDCInTrigger[i]){
-      // if the size of the number of TDCs from the fragment does not match the 
-      // number of the tdcEvents, then continue to the next one without doing anything
-      if (data->tdcFrags[0].controllerHeader.nTDCs != data->tdcFrags[0].tdcEvents[fTDCInTrigger[i]].size()) {
-	mf::LogError("FragmentToDigit") << "*** Fatal nTDCs mismatch: " 
-					<< data->tdcFrags[0].tdcEvents[fTDCInTrigger[i]].size()
-					<< " != " << data->tdcFrags[0].controllerHeader.nTDCs
-					<< " cannot make MWPC digits";
-      }
-      else
-	this->makeMWPCDigits(data->tdcFrags[0].tdcEvents[fTDCInTrigger[i]],  auxDigits);
+    // get the caen fragments for this trigger
+    if(fTriggerToCAENDataBlocks.count(i) > 0 ){
+      auto trigToCAEN = fTriggerToCAENDataBlocks.find(i);
+      
+      for(auto c : trigToCAEN->second) caenFrags.push_back(*c);
     }
+    else
+      LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for trigger " << i
+				     << " that may be OK, so continue";
+
+    // get the TDC fragments for this trigger
+    if(fTriggerToCAENDataBlocks.count(i) > 0 ){
+      auto trigToTDC = fTriggerToTDCDataBlocks.find(i);
+
+      for(auto tdc : trigToTDC->second) this->makeMWPCDigits(*tdc,  auxDigits);
+    }
+    else
+      LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for trigger " << i
+				     << " that may be OK, so continue";
 
     // put a trigger object in the output vector
     triggerVec->push_back(raw::Trigger(i, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
 
     // make each association type as you go putting the digits into the vectors
 
-    // uncomment the next line when we are sure that the fragments
-    // are matched for the TPC data as well
-    // this->makeTPCRawDigits(caenFrags, rawDigits);
-    //startAssns = rawDigitVec->size();
-    //for(auto rd : rawDigits) rawDigitVec->push_back(rd);
-    //endAssns = rawDigitVec->size();
-    //util::CreateAssn(*this, evt, *triggerVec, *rawDigitVec, *tdRDAssns, startAssns, endAssns);
+    this->makeTPCRawDigits(caenFrags, rawDigits);
+    startAssns = rawDigitVec->size();
+    for(auto rd : rawDigits) rawDigitVec->push_back(rd);
+    endAssns = rawDigitVec->size();
+    util::CreateAssn(*this, evt, *triggerVec, *rawDigitVec, *tdRDAssns, startAssns, endAssns);
 
     if(fPMTTest){
       this->makeOpDetPulses(caenFrags, opPulses);
