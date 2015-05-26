@@ -76,8 +76,10 @@ enum {
 };
 
 // ugly nested maps for matching data blocks
-typedef std::map< std::string, std::map< std::string, std::vector< std::map< unsigned int, std::vector<unsigned int> > > > > match_maps;
-typedef std::map< std::string, std::map< std::string, std::vector< std::pair<double, double> > > > fit_params_maps;
+//typedef std::map< std::string, std::map< std::string, std::vector< std::map< unsigned int, std::vector<unsigned int> > > > > match_maps;
+//typedef std::map< std::string, std::map< std::string, std::vector< std::pair<double, double> > > > fit_params_maps;
+typedef std::map< int, std::map< int, std::vector< std::map< unsigned int, std::vector<unsigned int> > > > > match_maps;
+typedef std::map< int, std::map< int, std::vector< std::pair<double, double> > > > fit_params_maps;
 
 class FragmentToDigit;
 
@@ -102,22 +104,22 @@ public:
   void beginRun(art::Run &run);
   void matchDataBlocks(LariatFragment * data);
 
-  void coarseMatch(std::string const& deviceALabel,
-                   std::string const& deviceBLabel,
-                   double             range[2],
-                   std::map< std::string, std::map<unsigned int, double> > timeStamps,
-                   match_maps       & matchMaps);
+  void coarseMatch(int   const& deviceAID,
+                   int   const& deviceBID,
+                   double       range[2],
+                   std::map< int, std::map<unsigned int, double> > timeStamps,
+                   match_maps & matchMaps);
 
-  void fineMatch(std::string const& deviceALabel,
-                 std::string const& deviceBLabel,
-                 double             range[2],    
-                 fit_params_maps    fitParametersMaps,
-                 std::map< std::string, std::map<unsigned int, double> > timeStamps,
-                 match_maps       & matchMaps);
+  void fineMatch(int      const& deviceAID,
+                 int      const& deviceBID,
+                 double          range[2],    
+                 fit_params_maps fitParametersMaps,
+                 std::map< int, std::map<unsigned int, double> > timeStamps,
+                 match_maps    & matchMaps);
 
-  void printMatchMap(std::string const& deviceALabel,
-                     std::string const& deviceBLabel,
-                     match_maps       & matchMaps);
+  void printMatchMap(int   const& deviceAID,
+                     int   const& deviceBID,
+                     match_maps & matchMaps);
 
   double line(std::pair<double, double> const& parameters, 
               double                    const& x);
@@ -125,20 +127,20 @@ public:
   double clockDriftCorr(std::pair<double, double> const& parameters,
                         double                    const& x);
 
-  void fitClockDrift(std::string const& deviceALabel,
-                     std::string const& deviceBLabel,
-                     std::map< std::string, std::map<unsigned int, double> > timeStamps,
+  void fitClockDrift(int         const& deviceAID,
+                     int         const& deviceBID,
+                     std::map< int, std::map<unsigned int, double> > timeStamps,
                      match_maps       & matchMaps,
                      fit_params_maps  & fitParametersMaps,
                      std::string const& graphNamePrefix);
 
-  void matchFitIter(std::string const& deviceALabel,
-                    std::string const& deviceBLabel,
-                    std::map< std::string, std::map<unsigned int, double> > timeStamps,
-                    match_maps       & matchMaps,
-                    fit_params_maps  & fitParametersMaps,
-                    double             coarseRange[2],
-                    double             fineEps[2]);
+  void matchFitIter(int        const& deviceAID,
+                    int        const& deviceBID,
+                    std::map< int, std::map<unsigned int, double> > timeStamps,
+                    match_maps      & matchMaps,
+                    fit_params_maps & fitParametersMaps,
+                    double            coarseRange[2],
+                    double            fineEps[2]);
 
   void matchFragments(uint32_t            & Ntriggers,
 		      std::vector<size_t> & fv1751InTrigger,
@@ -642,7 +644,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 {
 
   // maps for matching fragments
-  std::map< std::string, std::map<unsigned int, double> > dataBlockTimeStamps;
+  std::map< int, std::map<unsigned int, double> > dataBlockTimeStamps;
   match_maps matchMaps;
 
   //////////////////////////////////////////////////////////////////////
@@ -661,10 +663,28 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //
   // Here is some pseudocode on how to access the time stamps:
   //
-  // for deviceLabel in devices:
+  // for deviceID in devices:
   //     for dataBlockIndex in dataBlocks:
-  //         dataBlockTimeStamp = dataBlockTimeStamps[deviceLabel][dataBlockIndex];
+  //         dataBlockTimeStamp = dataBlockTimeStamps[deviceID][dataBlockIndex];
   //
+  //////////////////////////////////////////////////////////////////////
+
+  //////////////////////////////////////////////////////////////////////
+  // Device ID key
+  //////////////////////////////////////////////////////////////////////
+  //  Device ID  Device
+  //  ---------  ------
+  //  0          CAEN boardId 0, V1740 board 0
+  //  1          CAEN boardId 1, V1740 board 1
+  //  2          CAEN boardId 2, V1740 board 2
+  //  3          CAEN boardId 3, V1740 board 3
+  //  4          CAEN boardId 4, V1740 board 4
+  //  5          CAEN boardId 5, V1740 board 5
+  //  6          CAEN boardId 6, V1740 board 6
+  //  7          CAEN boardId 7, V1740 board 7
+  //  8          CAEN boardId 8, V1751 board 0
+  //  9          CAEN boardId 9, V1751 board 1
+  //  10         Multi-wire proportional chambers, 16 TDCs
   //////////////////////////////////////////////////////////////////////
 
   //////////////////////////////////////////////////////////////////////
@@ -675,38 +695,6 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   size_t numberCaenDataBlocks[10] = {};
   size_t numberMwpcDataBlocks = 0;
 
-  std::string caenLabels[10] = {
-    fCaenV1740Board0Label,
-    fCaenV1740Board1Label,
-    fCaenV1740Board2Label,
-    fCaenV1740Board3Label,
-    fCaenV1740Board4Label,
-    fCaenV1740Board5Label,
-    fCaenV1740Board6Label,
-    fCaenV1740Board7Label,
-    fCaenV1751Board0Label,
-    fCaenV1751Board1Label
-  };
-
-  std::string mwpcTdcLabels[TDCFragment::MAX_TDCS] = {
-      fMwpcTdc01Label,
-      fMwpcTdc02Label,
-      fMwpcTdc03Label,
-      fMwpcTdc04Label,
-      fMwpcTdc05Label,
-      fMwpcTdc06Label,
-      fMwpcTdc07Label,
-      fMwpcTdc08Label,
-      fMwpcTdc09Label,
-      fMwpcTdc10Label,
-      fMwpcTdc11Label,
-      fMwpcTdc12Label,
-      fMwpcTdc13Label,
-      fMwpcTdc14Label,
-      fMwpcTdc15Label,
-      fMwpcTdc16Label
-  };
-
   const size_t numberCaenFrags = data->caenFrags.size();
   LOG_VERBATIM("FragmentToDigit") << "Found " << numberCaenFrags << " CAEN fragments";
 
@@ -716,11 +704,11 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   for (size_t i = 0; i < numberCaenFrags; ++i) {
     CAENFragment & caenFrag = data->caenFrags[i];
     unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
-    std::string label = caenLabels[boardId];
     unsigned int index = numberCaenDataBlocks[boardId];
+    int deviceID = boardId;
     // each CAEN Trigger Time Tag count is 8 ns
     double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
-    dataBlockTimeStamps[label][index] = timeStamp;
+    dataBlockTimeStamps[deviceID][index] = timeStamp;
     numberCaenDataBlocks[boardId] += 1;
   }
 
@@ -760,14 +748,13 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
         // each TDC Time Stamp count is 1/106.208 microseconds
         double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // convert to microseconds
 
-        std::string label = mwpcTdcLabels[tdc_index];
+        int deviceID = 10;
 
         LOG_DEBUG("FragmentToDigit") << "  TDC index: " << tdc_index;
-        LOG_DEBUG("FragmentToDigit") << "  Label: " << label;
         LOG_DEBUG("FragmentToDigit") << "  TDC time stamp: " << tdcTimeStamp;
         LOG_DEBUG("FragmentToDigit") << "  Controller time stamp: " << controllerTimeStamp;
 
-        dataBlockTimeStamps[label][j] = timeStamp;
+        dataBlockTimeStamps[deviceID][j] = timeStamp;
 
       }
     }
@@ -788,23 +775,23 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //////////////////////////////////////////////////////////////////////
 
   for (size_t i = 0; i < 10; ++i) {
-    std::string label = caenLabels[i];
+    int deviceID = i;
     unsigned int indices = numberCaenDataBlocks[i];
     LOG_DEBUG("FragmentToDigit") << "Board ID: " << i << ", number of data blocks: " << numberCaenDataBlocks[i];
-    LOG_DEBUG("FragmentToDigit") << "Label: " << label;
+    LOG_DEBUG("FragmentToDigit") << "Device ID: " << deviceID;
     for (size_t j = 0; j < indices; ++j) {
       LOG_DEBUG("FragmentToDigit") << "  Index: " << j;
-      LOG_DEBUG("FragmentToDigit") << "  Time stamp: " << dataBlockTimeStamps[label][j];
+      LOG_DEBUG("FragmentToDigit") << "  Time stamp: " << dataBlockTimeStamps[deviceID][j];
     }
   }
 
   for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
-    std::string label = mwpcTdcLabels[i];
+    int deviceID = 10;
     LOG_DEBUG("FragmentToDigit") << "TDC index: " << i << ", number of data blocks: " << numberMwpcDataBlocks;
-    LOG_DEBUG("FragmentToDigit") << "Label: " << label;
+    LOG_DEBUG("FragmentToDigit") << "Device ID: " << deviceID;
     for (size_t j = 0; j < numberMwpcDataBlocks; ++j) {
       LOG_DEBUG("FragmentToDigit") << "  Index: " << j;
-      LOG_DEBUG("FragmentToDigit") << "  Time stamp: " << dataBlockTimeStamps[label][j];
+      LOG_DEBUG("FragmentToDigit") << "  Time stamp: " << dataBlockTimeStamps[deviceID][j];
     }
   }
 
@@ -825,22 +812,23 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   double v1740IntraRange[2] = { -0.032, 0.032 };
   double v1751IntraRange[2] = { -0.032, 0.032 };
 
-  this->coarseMatch(fCaenV1740Board0Label, fCaenV1740Board1Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
-  this->coarseMatch(fCaenV1740Board0Label, fCaenV1740Board2Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
-  this->coarseMatch(fCaenV1740Board0Label, fCaenV1740Board3Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
-  this->coarseMatch(fCaenV1740Board0Label, fCaenV1740Board4Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
-  this->coarseMatch(fCaenV1740Board0Label, fCaenV1740Board5Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
-  this->coarseMatch(fCaenV1740Board0Label, fCaenV1740Board6Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
-  this->coarseMatch(fCaenV1740Board0Label, fCaenV1740Board7Label, v1740IntraRange, dataBlockTimeStamps, matchMaps);
-  this->coarseMatch(fCaenV1751Board0Label, fCaenV1751Board1Label, v1751IntraRange, dataBlockTimeStamps, matchMaps);
+  this->coarseMatch(0, 1, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  this->coarseMatch(0, 2, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  this->coarseMatch(0, 3, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  this->coarseMatch(0, 4, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  this->coarseMatch(0, 5, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  this->coarseMatch(0, 6, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  this->coarseMatch(0, 7, v1740IntraRange, dataBlockTimeStamps, matchMaps);
+  this->coarseMatch(8, 9, v1751IntraRange, dataBlockTimeStamps, matchMaps);
 
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board1Label, matchMaps);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board2Label, matchMaps);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board3Label, matchMaps);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board4Label, matchMaps);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board5Label, matchMaps);
-  //printMatchMap(fCaenV1740Board0Label, fCaenV1740Board6Label, matchMaps);
-  //printMatchMap(fCaenV1751Board0Label, fCaenV1751Board1Label, matchMaps);
+  //printMatchMap(0, 1, matchMaps);
+  //printMatchMap(0, 2, matchMaps);
+  //printMatchMap(0, 3, matchMaps);
+  //printMatchMap(0, 4, matchMaps);
+  //printMatchMap(0, 5, matchMaps);
+  //printMatchMap(0, 6, matchMaps);
+  //printMatchMap(0, 7, matchMaps);
+  //printMatchMap(8, 9, matchMaps);
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: intra V1740/V1751 matching
@@ -865,16 +853,16 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
   fit_params_maps fitParamsMaps;
 
-  this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board0Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board1Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board2Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board3Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board4Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board5Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board6Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fCaenV1740Board7Label, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(fCaenV1751Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751MwpcInterRange,  v1751MwpcInterEps);
-  this->matchFitIter(fCaenV1740Board0Label, fMwpcTdc01Label,       dataBlockTimeStamps, matchMaps, fitParamsMaps, v1740MwpcInterRange,  v1740MwpcInterEps);
+  this->matchFitIter(8,  0, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8,  1, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8,  2, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8,  3, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8,  4, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8,  5, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8,  6, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8,  7, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8, 10, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751MwpcInterRange,  v1751MwpcInterEps);
+  this->matchFitIter(0, 10, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1740MwpcInterRange,  v1740MwpcInterEps);
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: matching
@@ -889,8 +877,8 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   size_t numberMatchedCaenDataBlocks[10] = {};
   size_t numberMatchedMwpcDataBlocks = 0;
 
-  fitParamsMaps[fCaenV1751Board0Label][fCaenV1751Board0Label].push_back(std::make_pair<double, double>(0, 0));
-  fitParamsMaps[fCaenV1751Board0Label][fCaenV1751Board1Label].push_back(std::make_pair<double, double>(0, 0));
+  fitParamsMaps[8][8].push_back(std::make_pair<double, double>(0, 0));
+  fitParamsMaps[8][9].push_back(std::make_pair<double, double>(0, 0));
 
   // this shouldn't be hard-coded, but there is no way to get
   // the decimation factor of the sample rate from the CAENFragment
@@ -926,18 +914,17 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   for (size_t i = 0; i < numberCaenFrags; ++i) {
     CAENFragment & caenFrag = data->caenFrags[i];
     unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
-
-    std::string label = caenLabels[boardId];
+    int deviceID = boardId;
 
     // each CAEN Trigger Time Tag count is 8 ns
     double timeStamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
 
     std::pair<double, double> fitParams(0, 0);
 
-    fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+    fitParams = fitParamsMaps[8][deviceID].back();
     double corrTimeStamp = this->clockDriftCorr(fitParams, timeStamp);
 
-    LOG_VERBATIM("FragmentToDigit") << "\n  label:         " << label
+    LOG_VERBATIM("FragmentToDigit") << "\n  deviceID:      " << deviceID
                                     << "\n  timeStamp:     " << timeStamp
                                     << "\n  corrTimeStamp: " << corrTimeStamp;
 
@@ -958,9 +945,9 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
     //    << "tdcEvents.size(): " << tdcEvents.size();
     //tdcFrag.print();
 
-    std::string label = fMwpcTdc01Label;
+    int deviceID = 10;
     std::pair<double, double> fitParams(0, 0);
-    fitParams = fitParamsMaps[fCaenV1751Board0Label][label].back();
+    fitParams = fitParamsMaps[8][deviceID].back();
 
     for (size_t j = 0; j < tdcEvents.size(); ++j) {
 
@@ -1169,22 +1156,22 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 }
 
 //-----------------------------------------------------------------------------------
-void FragmentToDigit::coarseMatch(std::string const& deviceALabel,
-                                  std::string const& deviceBLabel,
-                                  double             range[2],      
-                                  std::map< std::string, std::map<unsigned int, double> > timeStamps,
-                                  match_maps       & matchMaps) 
+void FragmentToDigit::coarseMatch(int   const& deviceAID,
+                                  int   const& deviceBID,
+                                  double       range[2],      
+                                  std::map< int, std::map<unsigned int, double> > timeStamps,
+                                  match_maps & matchMaps) 
 {
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB;
 
-  size_t numberADataBlocks = timeStamps[deviceALabel].size();
-  size_t numberBDataBlocks = timeStamps[deviceBLabel].size();
+  size_t numberADataBlocks = timeStamps[deviceAID].size();
+  size_t numberBDataBlocks = timeStamps[deviceBID].size();
 
   for (size_t a = 0; a < numberADataBlocks; ++a) {
-    double timeStampA = timeStamps[deviceALabel][a];
+    double timeStampA = timeStamps[deviceAID][a];
     for (size_t b = 0; b < numberBDataBlocks; ++b) {
-      double timeStampB = timeStamps[deviceBLabel][b];
+      double timeStampB = timeStamps[deviceBID][b];
       double difference = timeStampA - timeStampB;
       if (range[0] <= difference and difference <= range[1]) {
         matchAB[a].push_back(b);
@@ -1192,31 +1179,31 @@ void FragmentToDigit::coarseMatch(std::string const& deviceALabel,
     }
   }
 
-  matchMaps[deviceALabel][deviceBLabel].push_back(matchAB);
+  matchMaps[deviceAID][deviceBID].push_back(matchAB);
 
   return;
 }
 
 //-----------------------------------------------------------------------------------
-void FragmentToDigit::fineMatch(std::string const& deviceALabel,
-                                std::string const& deviceBLabel,
+void FragmentToDigit::fineMatch(int      const& deviceAID,
+                                int      const& deviceBID,
                                 double             eps[2],      
-                                fit_params_maps    fitParametersMaps,
-                                std::map< std::string, std::map<unsigned int, double> > timeStamps,
-                                match_maps       & matchMaps) 
+                                fit_params_maps fitParametersMaps,
+                                std::map< int, std::map<unsigned int, double> > timeStamps,
+                                match_maps    & matchMaps) 
 {
 
-  std::pair<double, double> fitParameters = fitParametersMaps[deviceALabel][deviceBLabel].back();
+  std::pair<double, double> fitParameters = fitParametersMaps[deviceAID][deviceBID].back();
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB;
 
-  size_t numberADataBlocks = timeStamps[deviceALabel].size();
-  size_t numberBDataBlocks = timeStamps[deviceBLabel].size();
+  size_t numberADataBlocks = timeStamps[deviceAID].size();
+  size_t numberBDataBlocks = timeStamps[deviceBID].size();
 
   for (size_t a = 0; a < numberADataBlocks; ++a) {
-    double timeStampA = timeStamps[deviceALabel][a];
+    double timeStampA = timeStamps[deviceAID][a];
     for (size_t b = 0; b < numberBDataBlocks; ++b) {
-      double timeStampB = timeStamps[deviceBLabel][b];
+      double timeStampB = timeStamps[deviceBID][b];
       double difference = timeStampA - timeStampB;
       double y = this->line(fitParameters, timeStampA);
       double yLow = y - eps[0];
@@ -1227,7 +1214,7 @@ void FragmentToDigit::fineMatch(std::string const& deviceALabel,
     }
   }
 
-  matchMaps[deviceALabel][deviceBLabel].push_back(matchAB);
+  matchMaps[deviceAID][deviceBID].push_back(matchAB);
 
   return;
 }
@@ -1251,9 +1238,9 @@ double FragmentToDigit::clockDriftCorr(std::pair<double, double> const& paramete
 }
 
 //-----------------------------------------------------------------------------------
-void FragmentToDigit::fitClockDrift(std::string const& deviceALabel,
-                                    std::string const& deviceBLabel,
-                                    std::map< std::string, std::map<unsigned int, double> > timeStamps,
+void FragmentToDigit::fitClockDrift(int         const& deviceAID,
+                                    int         const& deviceBID,
+                                    std::map< int, std::map<unsigned int, double> > timeStamps,
                                     match_maps       & matchMaps,
                                     fit_params_maps  & fitParametersMaps,
                                     std::string const& graphNamePrefix) 
@@ -1265,16 +1252,16 @@ void FragmentToDigit::fitClockDrift(std::string const& deviceALabel,
   std::vector<double> x_;
   std::vector<double> y_;
 
-  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMaps[deviceALabel][deviceBLabel].back();
+  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMaps[deviceAID][deviceBID].back();
 
-  LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel;
-  LOG_DEBUG("FragmentToDigit") << "  Matching index pair format: " << "(" << deviceALabel << ", " << deviceBLabel << ")";
+  LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceAID << " and " << deviceBID;
+  LOG_DEBUG("FragmentToDigit") << "  Matching index pair format: " << "(" << deviceAID << ", " << deviceBID << ")";
 
   for (auto const & itA : matchAB) {
     LOG_DEBUG("FragmentToDigit") << "  Index: " << itA.first << "; number of matches: " << itA.second.size();
     for (auto const & itB : itA.second) {
-      double timeStampA = timeStamps[deviceALabel][itA.first];
-      double timeStampB = timeStamps[deviceBLabel][itB];
+      double timeStampA = timeStamps[deviceAID][itA.first];
+      double timeStampB = timeStamps[deviceBID][itB];
       double difference = timeStampA - timeStampB;
       double reference = timeStampA;
       LOG_DEBUG("FragmentToDigit") << "    (" << itA.first << ", " << itB << ")"
@@ -1303,10 +1290,14 @@ void FragmentToDigit::fitClockDrift(std::string const& deviceALabel,
 
   // return intSlp;
 
-  std::string graphName = graphNamePrefix + "_drift_" + deviceALabel + "_" + deviceBLabel;
-  std::string graphTitles = ("; Time since beginning of spill (using " + deviceALabel 
-  			     + " clock) [#mus]; #Delta t between "     + deviceALabel 
-  			     + " and " + deviceBLabel + " [#mus]");
+  std::string graphName = graphNamePrefix + "_drift_" + std::to_string(deviceAID) + "_" + std::to_string(deviceBID);
+  std::string graphTitles = ("; Time since beginning of spill (using deviceID " +
+                             std::to_string(deviceAID) +
+  			                 " clock) [#mus]; #Delta t between device ID " +
+                             std::to_string(deviceAID) +
+  			                 " and device ID " +
+                             std::to_string(deviceBID) +
+                             " [#mus]");
 
   TGraph * graph = tfs->make<TGraph>(x.size(), &x[0], &y[0]);
 
@@ -1330,39 +1321,39 @@ void FragmentToDigit::fitClockDrift(std::string const& deviceALabel,
   graph->Write(graphName.c_str());
   // return std::make_pair<double, double>(f->GetParameter(0), f->GetParameter(1));
 
-  fitParametersMaps[deviceALabel][deviceBLabel].push_back(intSlp);
+  fitParametersMaps[deviceAID][deviceBID].push_back(intSlp);
 
   return;
 }
 
 //------------------------------------------------------------------------------
-void FragmentToDigit::matchFitIter(std::string const& deviceALabel,
-                                   std::string const& deviceBLabel,
-                                   std::map< std::string, std::map<unsigned int, double> > timeStamps,
-                                   match_maps       & matchMaps,
-                                   fit_params_maps  & fitParametersMaps,
-                                   double             coarseRange[2],
-                                   double             fineEps[2])
+void FragmentToDigit::matchFitIter(int        const& deviceAID,
+                                   int        const& deviceBID,
+                                   std::map< int, std::map<unsigned int, double> > timeStamps,
+                                   match_maps      & matchMaps,
+                                   fit_params_maps & fitParametersMaps,
+                                   double            coarseRange[2],
+                                   double            fineEps[2])
 {
 
   LOG_DEBUG("FragmentToDigit") << "matchFitIter -- "
-                               << "deviceA: " << deviceALabel << "; deviceB: " << deviceBLabel;
+                               << "deviceA: " << deviceAID << "; deviceB: " << deviceBID;
 
-  this->coarseMatch(deviceALabel, deviceBLabel, coarseRange, timeStamps, matchMaps);
-  this->fitClockDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "coarse_match");
+  this->coarseMatch(deviceAID, deviceBID, coarseRange, timeStamps, matchMaps);
+  this->fitClockDrift(deviceAID, deviceBID, timeStamps, matchMaps, fitParametersMaps, "coarse_match");
 
-  std::pair<double, double> fitParameters = fitParametersMaps[deviceALabel][deviceBLabel].back();
+  std::pair<double, double> fitParameters = fitParametersMaps[deviceAID][deviceBID].back();
   LOG_DEBUG("FragmentToDigit") << "  intercept: " << fitParameters.first << "; slope: " << fitParameters.second;
 
   for (size_t i = 0; i < fMaxNumberFitIterations; ++i) {
 
-    this->fineMatch(deviceALabel, deviceBLabel, fineEps, fitParametersMaps, timeStamps, matchMaps);
-    this->fitClockDrift(deviceALabel, deviceBLabel, timeStamps, matchMaps, fitParametersMaps, "fine_match_" + std::to_string(i));
+    this->fineMatch(deviceAID, deviceBID, fineEps, fitParametersMaps, timeStamps, matchMaps);
+    this->fitClockDrift(deviceAID, deviceBID, timeStamps, matchMaps, fitParametersMaps, "fine_match_" + std::to_string(i));
 
-    fitParameters = fitParametersMaps[deviceALabel][deviceBLabel].back();
+    fitParameters = fitParametersMaps[deviceAID][deviceBID].back();
     LOG_DEBUG("FragmentToDigit") << "  intercept: " << fitParameters.first << "; slope: " << fitParameters.second;
 
-    std::pair<double, double> prevFitParameters = fitParametersMaps[deviceALabel][deviceBLabel].end()[-2];
+    std::pair<double, double> prevFitParameters = fitParametersMaps[deviceAID][deviceBID].end()[-2];
 
     if (fitParameters == prevFitParameters) {
       LOG_DEBUG("FragmentToDigit") << "  Fit parameters did not change!";
@@ -1375,16 +1366,17 @@ void FragmentToDigit::matchFitIter(std::string const& deviceALabel,
 }
 
 //------------------------------------------------------------------------------
-void FragmentToDigit::printMatchMap(std::string const& deviceALabel,
-                                    std::string const& deviceBLabel,
-                                    match_maps       & matchMaps) 
+void FragmentToDigit::printMatchMap(int   const& deviceAID,
+                                    int   const& deviceBID,
+                                    match_maps & matchMaps) 
 {
 
-  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMaps[deviceALabel][deviceBLabel].back();
+  std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMaps[deviceAID][deviceBID].back();
 
-  LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceALabel << " and " << deviceBLabel
-                               << "\n Matching index pair format: " << "(" 
-                               << deviceALabel << ", " << deviceBLabel << ")";
+  LOG_DEBUG("FragmentToDigit") << "Matches between " << deviceAID << " and " << deviceBID
+                               << "\n Matching index pair format: "
+                               << "(deviceA " << deviceAID
+                               << ", deviceB " << deviceBID << ")";
 
   for (auto const & itA : matchAB) {
     for (auto const & itB : itA.second) {
