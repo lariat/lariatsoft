@@ -415,12 +415,12 @@ void FragmentToDigit::produce(art::Event & evt)
 				 << "; timeStamp: " << timeStamp;
 
   this->matchDataBlocks(data);
-  this->matchFragments(fNtriggers, fv1751InTrigger, fv1740InTrigger, fTDCInTrigger, data);
 
-  LOG_INFO("FragmentToDigit") << "Ntriggers is: " << fNtriggers 
-			      << "\nThe size of v1751InTrigger is: " << fv1751InTrigger.size()
-			      << "\nThe size of v1740InTrigger is: " << fv1740InTrigger.size()
-			      << "\nThe size of TDCInTrigger is:   " << fTDCInTrigger.size();
+  // make a set of the different trigger numbers, ie the keys in the fTriggerToCAENDataBlocks
+  // and fTriggerToTDCDataBlocks maps
+  std::set<int> trigNums;
+  for(auto itr : fTriggerToCAENDataBlocks) trigNums.insert(itr.first);
+  for(auto itr : fTriggerToTDCDataBlocks)  trigNums.insert(itr.first);
 
   //-----COMMENT BETWEEN LINES TO RECOVER PREVIOUS FUNCTIONALITY----------------//
   std::vector<CAENFragment>              caenFrags;	 
@@ -431,35 +431,34 @@ void FragmentToDigit::produce(art::Event & evt)
   size_t                         	 endAssns   = 0;
   double                                 eventTime  = 1.*evt.time().timeHigh() + 1.*evt.time().timeLow();
 
-  for(size_t i = 0; i < fNtriggers; ++i) {
+  for(auto trigNum : trigNums){
 
     caenFrags.clear();
     auxDigits.clear();
     rawDigits.clear();
     opPulses .clear();
 
-    // get the caen fragments for this trigger
-    if(fTriggerToCAENDataBlocks.count(i) > 0 ){
-      auto trigToCAEN = fTriggerToCAENDataBlocks.find(i);
-      
+    if(fTriggerToCAENDataBlocks.count(trigNum) > 0 ){
+      auto trigToCAEN = fTriggerToCAENDataBlocks.find(trigNum);
+
       for(auto c : trigToCAEN->second) caenFrags.push_back(c);
     }
     else
-      LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for trigger " << i
+      LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for trigger " << trigNum
 				     << " that may be OK, so continue";
 
     // get the TDC fragments for this trigger
-    if(fTriggerToCAENDataBlocks.count(i) > 0 ){
-      auto trigToTDC = fTriggerToTDCDataBlocks.find(i);
+    if(fTriggerToTDCDataBlocks.count(trigNum) > 0 ){
+      auto trigToTDC = fTriggerToTDCDataBlocks.find(trigNum);
 
       for(auto tdc : trigToTDC->second) this->makeMWPCDigits(tdc,  auxDigits);
     }
     else
-      LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for trigger " << i
+      LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for trigger " << trigNum
 				     << " that may be OK, so continue";
 
     // put a trigger object in the output vector
-    triggerVec->push_back(raw::Trigger(i, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
+    triggerVec->push_back(raw::Trigger(trigNum, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
 
     // make each association type as you go putting the digits into the vectors
 
@@ -471,7 +470,6 @@ void FragmentToDigit::produce(art::Event & evt)
 
     if(fPMTTest){
       this->makeOpDetPulses(caenFrags, opPulses);
-
       startAssns = opDetVec->size();
       for(auto op : opPulses) opDetVec->push_back(op);
       endAssns = opDetVec->size();
