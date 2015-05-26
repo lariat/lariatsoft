@@ -114,6 +114,9 @@ std::vector <double> baseline;
 std::vector <double> res;
 std::vector <double> ims;
 int fEvents;
+int pmt1;
+std::vector<std::vector<unsigned int>> fOpDetChID;
+std::vector<unsigned int> PMTsInRun;
 art::ServiceHandle<art::TFileService> tfs;
 
 };
@@ -145,7 +148,7 @@ WvformPMT::WvformPMT(fhicl::ParameterSet const & p)
     fInstanceName = p.get<std::string>("InstanceName");
  
 
-
+   fOpDetChID = p.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
    fNumberOfPMTs = p.get<int>("NumberOfPMTs",2);
    fBaselineCounts = p.get<int>("baseline_counts",90);
    fFitConst = p.get<double>("fit_const",0.0);
@@ -173,8 +176,20 @@ void WvformPMT::beginJob()
 {
 
 	fEvents=0;
-	bins.resize(fNumberOfPMTs);
-        for(int c=0;c<fNumberOfPMTs;c++) {
+	pmt1=0;
+	PMTsInRun.clear();
+	for(auto chid: fOpDetChID){
+		if(int(chid.size())>0){
+			pmt1+=chid.size();
+			for(auto ch: chid){
+				PMTsInRun.push_back(ch);
+			}
+		}
+	}
+		
+	bins.resize(pmt1);
+	baseline.resize(pmt1);
+        for(int c=0;c<pmt1;c++) {
             sprintf(fHistName, "OpDet_%i_AvPulse", c);
 
 	    avhist[c]= tfs->make<TH1D>(fHistName, ";t (ns);", 
@@ -224,11 +239,17 @@ void WvformPMT::analyze(art::Event const & evt)
 	std::cout<<" wvform size "<<WaveformHandle->size()<<std::endl;
     std::vector<std::string> histnames;
 
-    for(unsigned int i = 0; i < WaveformHandle->size(); ++i){
+    for(unsigned int i = 0; i < WaveformHandle->size(); ++i){ 
 			art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle, i);
 			raw::OpDetPulse ThePulse = *ThePulsePtr;
 			for(int j =0;j<int(ThePulse.Waveform().size());j++){
-				if(int(j)<int(bins[int(ThePulse.OpChannel())].size())) bins[int(ThePulse.OpChannel())].at(j)=bins[int(ThePulse.OpChannel())].at(j)+(double) ThePulse.Waveform()[j];
+				int channel=0;
+				for(auto ch1 :PMTsInRun){
+
+					if (int(ThePulse.OpChannel())==int(ch1)) break;
+					channel++;
+				}
+				if(int(j)<int(bins[channel].size())) bins[channel].at(j)=bins[channel].at(j)+(double) ThePulse.Waveform()[j];
   		 }
 
 
@@ -241,9 +262,9 @@ void WvformPMT::analyze(art::Event const & evt)
 void WvformPMT::endJob()
 {
 
-baseline.resize(int(fNumberOfPMTs));
 
-for(int c=0;c<fNumberOfPMTs;c++) {
+
+for(int c=0;c<pmt1;c++) {
 	fitexp2 = new TF1("exp2",twoexp,0,15000,7);
 	for(int j =0;j<fBaselineCounts;j++) baseline.at(c)=baseline.at(c)+double(bins[c].at(j));
 	baseline.at(c)=baseline.at(c)/fBaselineCounts;

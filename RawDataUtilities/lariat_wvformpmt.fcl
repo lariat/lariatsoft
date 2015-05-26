@@ -34,6 +34,8 @@ lariatwvformpmt: @local::lariat_wvformpmt
  end_paths:     [analyzeIt]
 
 }
+
+physics.analyzers.lariatwvformpmt.pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,4]]#set the channels with TPC PMTs in this mask - here ch 0 and 1 on board nr 9 (starting from 0)
 physics.analyzers.lariatwvformpmt.NumberOfPMTs: 2
 physics.analyzers.lariatwvformpmt.InputModule:  "FragmentToDigit"
 physics.analyzers.lariatwvformpmt.InstanceName:""

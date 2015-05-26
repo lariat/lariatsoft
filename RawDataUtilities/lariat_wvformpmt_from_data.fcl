@@ -37,10 +37,10 @@ LariatProducer: [FragmentToDigit]
 
 }
 
-physics.producers.FragmentToDigit.pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1]]#set the channels with TPC PMTs in this mask - here ch 0 and 1 on board nr 9 (starting from 0)
+physics.producers.FragmentToDigit.pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,4]]#set the channels with TPC PMTs in this mask - here ch 0 and 1 on board nr 9 (starting from 0)
 physics.producers.FragmentToDigit.pmt_test:true
 
-
+physics.analyzers.lariatwvformpmt.pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,4]]#set the channels with TPC PMTs in this mask - here ch 0 and 1 on board nr 9 (starting from 0) 
 physics.analyzers.lariatwvformpmt.NumberOfPMTs: 2
 physics.analyzers.lariatwvformpmt.InputModule:  "FragmentToDigit"
 physics.analyzers.lariatwvformpmt.InstanceName:""
@@ -64,14 +64,14 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:    "pmtwvform2.root" #default file name, can override from command line with -o or --output
+   fileName:    "pmtwvform0.root" #default file name, can override from command line with -o or --output
    outputCommands: [ "keep *", "drop artdaq::Fragments_daq_*_Wrapper" ]
  }
 }
 
 services:
 {
-  TFileService: { fileName: "wvforms_run2.root" }
+  TFileService: { fileName: "wvforms_run0.root" }
 #  message:      @local::standard_info
   @table::lariat_services
 }
