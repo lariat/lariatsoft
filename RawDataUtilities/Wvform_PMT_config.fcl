@@ -10,6 +10,7 @@ lariat_wvformpmt:
 	time_end: 7168 #end time in ns
 	sample_freq: 1.0 #in GS/s
 	baseline_counts: 90 #how many time ticks to use to get average baseline at the beginning
+	pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,4]]
   fit_const: 0.0
   fit_expmult1: 1.0
   fit_expmult2: 1.0
