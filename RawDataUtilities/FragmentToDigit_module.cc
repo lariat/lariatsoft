@@ -237,8 +237,8 @@ private:
   size_t fMaxNumberFitIterations = 5;
 
   // maps trigger ID to vector of data blocks
-  std::map< int, std::vector<CAENFragment *> > fTriggerToCAENDataBlocks;
-  std::map< int, std::vector< std::vector<TDCFragment::TdcEventData> *> > fTriggerToTDCDataBlocks;
+  std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks;
+  std::map< int, std::vector< std::vector<TDCFragment::TdcEventData> > > fTriggerToTDCDataBlocks;
 
   uint32_t fNtriggers;
   std::vector<size_t> fv1751InTrigger;
@@ -442,7 +442,7 @@ void FragmentToDigit::produce(art::Event & evt)
     if(fTriggerToCAENDataBlocks.count(i) > 0 ){
       auto trigToCAEN = fTriggerToCAENDataBlocks.find(i);
       
-      for(auto c : trigToCAEN->second) caenFrags.push_back(*c);
+      for(auto c : trigToCAEN->second) caenFrags.push_back(c);
     }
     else
       LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for trigger " << i
@@ -452,7 +452,7 @@ void FragmentToDigit::produce(art::Event & evt)
     if(fTriggerToCAENDataBlocks.count(i) > 0 ){
       auto trigToTDC = fTriggerToTDCDataBlocks.find(i);
 
-      for(auto tdc : trigToTDC->second) this->makeMWPCDigits(*tdc,  auxDigits);
+      for(auto tdc : trigToTDC->second) this->makeMWPCDigits(tdc,  auxDigits);
     }
     else
       LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for trigger " << i
@@ -1103,7 +1103,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
       if (deviceID < 10) {
         CAENFragment & caenFrag = data->caenFrags[idx];
         unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
-        fTriggerToCAENDataBlocks[triggerID].push_back(&caenFrag);
+        fTriggerToCAENDataBlocks[triggerID].push_back(caenFrag);
         numberMatchedCaenDataBlocks[boardId] += 1;
       }
 
@@ -1111,7 +1111,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
         if (numberTdcFrags > 0) {
           TDCFragment & tdcFrag = data->tdcFrags[0];
           std::vector< std::vector<TDCFragment::TdcEventData> > &tdcEvents = tdcFrag.tdcEvents;
-          fTriggerToTDCDataBlocks[triggerID].push_back(&tdcEvents[idx]);
+          fTriggerToTDCDataBlocks[triggerID].push_back(tdcEvents[idx]);
           numberMatchedMwpcDataBlocks += 1;
         }
       }
