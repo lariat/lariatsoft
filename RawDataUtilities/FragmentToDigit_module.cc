@@ -176,7 +176,6 @@ private:
   art::ServiceHandle<art::TFileService>      tfs;                      ///< handle to the TFileService
   std::string                                fRawFragmentLabel;        ///< label for module producing artdaq fragments
   std::string 				     fRawFragmentInstance;     ///< instance label for artdaq fragments        
-  bool                                       fPMTTest;                 ///< flag to turn on creation of OpDetPulses
   size_t                                     fMaxNumberFitIterations;  ///< number of fit iterations before stopping
   std::vector<std::vector<unsigned int> >    fOpDetChID;               ///< channels on boards used for PMTs and SiPMs
   std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks; ///< map trigger ID to vector of CAEN blocks
@@ -264,7 +263,6 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   fRawFragmentLabel       = p.get< std::string >("RawFragmentLabel",       "daq"  );
   fRawFragmentInstance    = p.get< std::string >("RawFragmentInstance",    "SPILL");
   fMaxNumberFitIterations = p.get< int         >("MaxNumberFitIterations", 5      );
-  fPMTTest                = p.get< bool        >("pmt_test"                       );
   fOpDetChID              = p.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
 
   for(size_t i = 0; i < fOpDetChID.size(); ++i){
@@ -429,13 +427,11 @@ void FragmentToDigit::produce(art::Event & evt)
     endAssns = rawDigitVec->size();
     util::CreateAssn(*this, evt, *triggerVec, *rawDigitVec, *tdRDAssns, startAssns, endAssns);
 
-    if(fPMTTest){
-      this->makeOpDetPulses(caenFrags, opPulses);
-      startAssns = opDetVec->size();
-      for(auto op : opPulses) opDetVec->push_back(op);
-      endAssns = opDetVec->size();
-      util::CreateAssn(*this, evt, *triggerVec, *opDetVec, *tdOPAssns, startAssns, endAssns);
-    }
+    this->makeOpDetPulses(caenFrags, opPulses);
+    startAssns = opDetVec->size();
+    for(auto op : opPulses) opDetVec->push_back(op);
+    endAssns = opDetVec->size();
+    util::CreateAssn(*this, evt, *triggerVec, *opDetVec, *tdOPAssns, startAssns, endAssns);
 
     // putting all the AuxDetDigits from the different detectors into a single
     // vector in the event record.  They can be separated out by the detector
