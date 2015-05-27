@@ -85,6 +85,9 @@ add_subdirectory(LongBo)
 add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
 
+# tests
+add_subdirectory(test)
+
 # ups - table and config files
 add_subdirectory(ups)
 
