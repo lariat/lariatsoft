@@ -103,6 +103,12 @@ namespace rdu{
     art::PtrVector<raw::AuxDetDigit>   const& TriggerMWPC3DigitsPtr(size_t const& t) 	    	 const;
     art::PtrVector<raw::AuxDetDigit>   const& TriggerMWPC4DigitsPtr(size_t const& t) 	    	 const;
 
+    std::vector<const raw::AuxDetDigit*>      EventTriggerWaveForms()                            const;
+    art::PtrVector<raw::AuxDetDigit>          EventTriggerWaveFormsPtr()                         const;
+    std::vector<const raw::AuxDetDigit*>      TriggerTriggerWaveForms   (size_t const& t)        const;
+    art::PtrVector<raw::AuxDetDigit>   const& TriggerTriggerWaveFormsPtr(size_t const& t)        const;
+    
+
   private:
 
     // The following methods work for any of the AuxDetDigit/Trigger vectors below and allow us
@@ -126,8 +132,8 @@ namespace rdu{
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC3Digits;         /// vector mapping trigger index to collection of MWPC1 digits
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC4Digits;         /// vector mapping trigger index to collection of MWPC1 digits
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMuonRangeDigits;     /// vector mapping trigger index to collection of Muon Range Stack digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerTriggerWaveForms;    /// vector mapping trigger index to collection of trigger waveforms
     std::vector< art::PtrVector<raw::OpDetPulse>  > fTriggerOpDetPulses;         /// vector mapping trigger index to collection of OpDetPulses
- 
   };   
 
 }// end namespace

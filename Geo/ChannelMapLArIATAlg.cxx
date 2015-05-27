@@ -147,6 +147,17 @@ namespace geo{
 
     LOG_DEBUG("ChannelMapLArIAT") << "# of channels is " << fNchannels;
 
+    // make vector of the AuxDet names
+    fAuxDetNames.clear();
+    fAuxDetNames.push_back("MuonRangeStack");
+    fAuxDetNames.push_back("TOFUS");
+    fAuxDetNames.push_back("TOFDS");
+    fAuxDetNames.push_back("AeroGelUS");
+    fAuxDetNames.push_back("AeroGelDS");
+    fAuxDetNames.push_back("MWPC1");
+    fAuxDetNames.push_back("MWPC2");
+    fAuxDetNames.push_back("MWPC3");
+    fAuxDetNames.push_back("MWPC4");    
 
     return;
   }
