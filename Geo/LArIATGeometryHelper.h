@@ -14,19 +14,7 @@
 
 #include "Geometry/ExptGeoHelperInterface.h"
 
-#include <memory>
-#include <vector>
-
-// Forward declarations
-//
-class TString;
-
-namespace geo
-{
-  class ChannelMapAlg;
-  class CryostatGeo;
-  class ExptGeoHelperInterface;
-}
+#include <memory> // std::shared_ptr<>
 
 // Declaration
 //
@@ -37,32 +25,29 @@ namespace lariatgeo
   public:
   
     LArIATGeometryHelper(fhicl::ParameterSet const & pset, 
-			 art::ActivityRegistry &reg );
-    ~LArIATGeometryHelper() throw();
+			 art::ActivityRegistry &);
 
-    // Public interface for ExptGeoHelperInterface (for reference purposes)
-    //
-    // Configure and initialize the channel map.
-    //
-    // void  ConfigureChannelMapAlg( const TString & detectorName, 
-    //                               fhicl::ParameterSet const & sortingParam,
-    //                               std::vector<geo::CryostatGeo*> & c );
-    //
-    // Returns null pointer if the initialization failed
-    // NOTE:  the sub-class owns the ChannelMapAlg object
-    //
-    // std::shared_ptr<const geo::ChannelMapAlg> & GetChannelMapAlg() const;
+    /*
+      Public interface for ExptGeoHelperInterface (for reference purposes)
+      
+      Configure, initialize and return the channel map:
+      
+      void ConfigureChannelMapAlg
+        (fhicl::ParameterSet const& sortingParameters, geo::GeometryCore* geom);
+      
+      Returns null pointer if the initialization failed:
+      
+      ChannelMapAlgPtr_t GetChannelMapAlg() const;
+    */
   
   private:
     
-    void  doConfigureChannelMapAlg(const TString & detectorName,
-				   fhicl::ParameterSet const & sortingParam,
-				   std::vector<geo::CryostatGeo*> & c,
-                                   std::vector<geo::AuxDetGeo*>   & ad ) override;
-    std::shared_ptr<const geo::ChannelMapAlg> doGetChannelMapAlg() const override;
+    virtual void doConfigureChannelMapAlg
+      (fhicl::ParameterSet const& sortingParameters, geo::GeometryCore* geom)
+      override;
+    virtual ChannelMapAlgPtr_t doGetChannelMapAlg() const override;
     
-    fhicl::ParameterSet   const&        fPset;       ///< configuration parameter set
-    art::ActivityRegistry      &        fReg;        ///< activity registry
+    fhicl::ParameterSet                 fPset;       ///< copy of configuration parameter set
     std::shared_ptr<geo::ChannelMapAlg> fChannelMap; ///< channel map
   
   };

@@ -1,0 +1,96 @@
+#
+# Geometry test module on LArIAT detector geometry
+# 
+# Version: 1.0
+#
+
+#include "geometry_lariat.fcl"
+
+process_name: testGeo
+
+services: {
+  
+  Geometry:               @local::lariat_geo
+  ExptGeoHelperInterface: @local::lariat_geometry_helper
+  
+  message: {
+    destinations: {
+      LogDebugFile: { 
+        type:       "file"
+        filename:   "geometry_lariat.txt"
+        append:     false
+        threshold:  "INFO"
+        categories:{
+          default:      { limit: 0 }
+          GeometryTest: { limit: -1 }
+        }
+      }
+      LogStandardOut: {
+        type:       "cout"
+        threshold:  "INFO"
+        categories:{
+          default:{ limit: -1 }
+          RecoBaseDefaultCtor: { limit: 0 }
+          AnaBaseDefaultCtor:  { limit: 0 }
+          GeometryBadInputPoint: { limit: 5 timespan: 1000}
+        }
+      }
+      LogStandardError: {
+        type:       "cerr"
+        threshold:  "ERROR"
+        categories:{
+          default:{ }
+        }
+      }
+    }
+  }
+}
+
+source: {
+  module_type: EmptyEvent
+  maxEvents:   1       # Number of events to create
+}
+
+outputs: { }
+
+physics: {
+
+  analyzers: {
+    geotest: {
+      module_type: "GeometryTest"
+      PrintWires:  true
+      
+      # wire pitch for planes #0 and #1
+      ExpectedWirePitch: [ 0.4, 0.4 ]
+      # plane pitch  #0 -> #1)
+      ExpectedPlanePitches: [ 0.4 ]
+      
+      # ArgoNeuT mapping currently does not always raise an exception
+      DisableWireBoundaryCheck: true
+      
+      # Disabled tests:
+      # - WirePitch fails, exposing the non-constant wire pitch
+      # - NearestWire fails because NearestWireID() assumes constant wire pitch
+      # - WireIntersection fails because its expectation relies on NearestWireID()
+      RunTests: [
+        "Cryostat",
+        "ChannelToWire",
+        "FindPlaneCenters",
+        "Projection",
+      #  "NearestWire",
+      #  "WireIntersection",
+      #  "WirePitch",
+        "PlanePitch",
+        "Stepping"
+      ]
+    }
+  }
+
+  ana:           [ geotest ]
+
+  trigger_paths: [ ]
+  end_paths:     [ ana ]
+}
+
+# Uncomment if you want to check for overlaps
+# physics.analyzers.geotest.CheckForOverlaps: true 

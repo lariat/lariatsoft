@@ -10,8 +10,8 @@
 
 #include <vector>
 #include <set>
-#include <iostream>
 
+#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "SimpleTypesAndConstants/geo_types.h"
 #include "Geometry/ChannelMapAlg.h"
 #include "Geo/GeoObjectSorterLArIAT.h"
@@ -26,45 +26,60 @@ namespace geo{
   public:
 
     ChannelMapLArIATAlg(fhicl::ParameterSet const& p);
-    ~ChannelMapLArIATAlg();
     
-    void                     Initialize( std::vector<geo::CryostatGeo*> & cgeo, 
-					 std::vector<geo::AuxDetGeo*>   & adgeo );
+    void                     Initialize( GeometryData_t& geodata ) override;
     void                     Uninitialize();
-    std::vector<WireID>      ChannelToWire(uint32_t channel)           const;
-    uint32_t                 Nchannels()                               const;
+    
+    std::vector<WireID>      ChannelToWire(raw::ChannelID_t channel)           const;
+    unsigned int             Nchannels()                               const;
+    //@{
+    virtual double WireCoordinate
+      (double YPos, double ZPos, geo::PlaneID const& planeID) const override;
+    virtual double WireCoordinate(double YPos, double ZPos,
+                                 unsigned int PlaneNo,
+                                 unsigned int TPCNo,
+                                 unsigned int cstat) const
+      { return WireCoordinate(YPos, ZPos, geo::PlaneID(cstat, TPCNo, PlaneNo)); }
+    //@}
+    
+    //@{
+    virtual WireID NearestWireID
+      (const TVector3& worldPos, geo::PlaneID const& planeID) const override;
+    virtual WireID NearestWireID(const TVector3& worldPos,
+                                 unsigned int    PlaneNo,
+                                 unsigned int    TPCNo,
+                                 unsigned int    cstat) const override
+      { return NearestWireID(worldPos, geo::PlaneID(cstat, TPCNo, PlaneNo)); }
+    //@}
+    
+    //@{
+    virtual raw::ChannelID_t PlaneWireToChannel
+      (geo::WireID const& wireID) const override;
+    virtual raw::ChannelID_t PlaneWireToChannel(unsigned int plane,
+                                                unsigned int wire,
+                                                unsigned int tpc,
+                                                unsigned int cstat) const override
+      { return PlaneWireToChannel(geo::WireID(cstat, tpc, plane, wire)); }
+    //@}
 
-    double                   WireCoordinate(double YPos, double ZPos,
-					    unsigned int    PlaneNo,
-					    unsigned int    TPCNo,
-					    unsigned int    cstat)     const;
-
-    WireID                   NearestWireID(const TVector3& worldPos,
-					   unsigned int    PlaneNo,
-					   unsigned int    TPCNo,
-					   unsigned int    cstat)      const;
-    uint32_t                 PlaneWireToChannel(unsigned int plane,
-						unsigned int wire,
-						unsigned int tpc,
-						unsigned int cstat)    const;
-   View_t                    View( uint32_t const channel )            const;
-   SigType_t                 SignalType( uint32_t const channel )      const;
+   View_t                    View( raw::ChannelID_t const channel )            const;
+   SigType_t                 SignalType( raw::ChannelID_t const channel )      const;
    std::set<View_t>  const&  Views()                                   const;
    std::set<PlaneID> const&  PlaneIDs()                                const;
 
    // methods for the auxiliary detectors
-
+/*
    // method returns the entry in the sorted AuxDetGeo vector so that the 
    // Geometry in turn can return that object
-   size_t                   NearestAuxDet         (TVector3 const& point)   const;
-   size_t                   NearestSensitiveAuxDet(TVector3 const& point)   const;
-   size_t                   NSensitiveAuxDet(std::string const& auxDetName) const;
-
+   virtual size_t            NearestAuxDet         (TVector3 const& point)   const override;
+   virtual size_t            NearestSensitiveAuxDet(TVector3 const& point)   const override;
+   virtual size_t            NSensitiveAuxDet(std::string const& auxDetName) const override;
+*/
   private:
     
     unsigned int                                         fNcryostat;      ///< number of cryostats in the detector
-    uint32_t                                             fNchannels;      ///< number of channels in the detector
-    uint32_t                                             fTopChannel;     ///< book keeping highest channel #
+    unsigned int                                         fNchannels;      ///< number of channels in the detector
+    raw::ChannelID_t                                     fTopChannel;     ///< book keeping highest channel #
     std::vector<unsigned int>                            fNTPC;           ///< number of TPCs in each cryostat
     std::set<View_t>                                     fViews;          ///< vector of the views present in the detector
     std::set<PlaneID>                                    fPlaneIDs;       ///< vector of the PlaneIDs present in the detector
