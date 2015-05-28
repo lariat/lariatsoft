@@ -7,10 +7,11 @@
 
 #include "Geo/LArIATGeometryHelper.h"
 #include "Geometry/ChannelMapAlg.h"
+#include "Geometry/GeometryCore.h"
 
 #include "Geo/ChannelMapLArIATAlg.h"
 
-#include "TString.h"
+#include <memory> // std::make_shared()
 
 
 namespace lariatgeo
@@ -18,36 +19,28 @@ namespace lariatgeo
 
   //------------------------------------------------------------------------
   LArIATGeometryHelper::LArIATGeometryHelper(fhicl::ParameterSet const& pset, 
-					     art::ActivityRegistry    & reg )
+					     art::ActivityRegistry    &)
   : fPset(pset)
-  , fReg(reg)
   , fChannelMap()
   {}
 
   //------------------------------------------------------------------------
-  LArIATGeometryHelper::~LArIATGeometryHelper() throw()
-  {}  
-  
-  //------------------------------------------------------------------------
-  void LArIATGeometryHelper::doConfigureChannelMapAlg(const TString                  & detectorName,
-						      fhicl::ParameterSet      const & sortingParam,
-						      std::vector<geo::CryostatGeo*> & c, 
-						      std::vector<geo::AuxDetGeo*>   & ad  )
+  void LArIATGeometryHelper::doConfigureChannelMapAlg
+    (fhicl::ParameterSet const& sortingParameters, geo::GeometryCore* geom)
   {
-    fChannelMap = nullptr;
-    
-    fChannelMap = std::shared_ptr<geo::ChannelMapAlg>(new geo::ChannelMapLArIATAlg(sortingParam));
-    if(fChannelMap) fChannelMap->Initialize(c,ad);
+    fChannelMap = std::make_shared<geo::ChannelMapLArIATAlg>(sortingParameters);
+    if(fChannelMap) geom->ApplyChannelMap(fChannelMap);
 
     return;
   }
   
   //------------------------------------------------------------------------
-  std::shared_ptr<const geo::ChannelMapAlg> LArIATGeometryHelper::doGetChannelMapAlg() const
+  LArIATGeometryHelper::ChannelMapAlgPtr_t
+  LArIATGeometryHelper::doGetChannelMapAlg() const
   {
     return fChannelMap;
   }
-
+  
 }
 
 DEFINE_ART_SERVICE_INTERFACE_IMPL(lariatgeo::LArIATGeometryHelper, geo::ExptGeoHelperInterface)
