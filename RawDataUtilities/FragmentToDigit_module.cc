@@ -391,9 +391,13 @@ void FragmentToDigit::produce(art::Event & evt)
   size_t                         	 startAssns = 0;
   size_t                         	 endAssns   = 0;
   double                                 eventTime  = 1.*evt.time().timeHigh() + 1.*evt.time().timeLow();
+  bool                                   caenDataPresent = true;
+  bool                                   tdcDataPresent  = true;
 
   for(auto trigNum : trigNums){
 
+    caenDataPresent = false;
+    tdcDataPresent  = false;
     caenFrags.clear();
     auxDigits.clear();
     rawDigits.clear();
@@ -403,6 +407,9 @@ void FragmentToDigit::produce(art::Event & evt)
       auto trigToCAEN = fTriggerToCAENDataBlocks.find(trigNum);
 
       for(auto c : trigToCAEN->second) caenFrags.push_back(c);
+      
+      triggerVec->push_back(raw::Trigger(trigNum, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
+      caenDataPresent = true;
     }
     else
       LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for trigger " << trigNum
@@ -413,16 +420,28 @@ void FragmentToDigit::produce(art::Event & evt)
       auto trigToTDC = fTriggerToTDCDataBlocks.find(trigNum);
 
       for(auto tdc : trigToTDC->second) this->makeMWPCDigits(tdc,  auxDigits);
+
+      tdcDataPresent = true;
+      if(!caenDataPresent){
+	auto tdc = trigToTDC->second.front();
+	triggerVec->push_back(raw::Trigger(trigNum, tdc.front().tdcEventHeader.tdcTimeStamp, 
+					   eventTime, this->triggerBits(caenFrags)));
+      }
     }
     else
       LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for trigger " << trigNum
 				     << " that may be OK, so continue";
 
     // put a trigger object in the output vector
-    triggerVec->push_back(raw::Trigger(trigNum, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
+    if(!caenDataPresent && !tdcDataPresent){
+      LOG_WARNING("FragmentToDigit") << "There are no CAEN or TDC Fragments for trigger " << trigNum
+				     << " so there is nothing to put into the event record; "
+				     << " continue to the next trigger";
+      continue;
+    }
+      
 
     // make each association type as you go putting the digits into the vectors
-
     this->makeTPCRawDigits(caenFrags, rawDigits);
     startAssns = rawDigitVec->size();
     for(auto rd : rawDigits) rawDigitVec->push_back(rd);
