@@ -155,8 +155,9 @@ namespace geo{
     // now sort the AuxDetGeo objects and map them to names of the detectors
     // Each raw::AuxDetDigit knows the name of the detector it came from and its
     // channel - sometimes channel maps to sensitive volume and some times it doesn't
-    fSorter.SortAuxDets(adgeo);
-    for(auto a : adgeo) a->SortSubVolumes(fSorter);
+    fSorter.SortAuxDets(adgeo);    
+    //\todo: Uncomment the following line with larsoft v04_09_01
+    //for(auto a : adgeo) a->SortSubVolumes(fSorter);
 
     // map the AuxDetGeo names to their position in the sorted vector
     // Each TOF  detector has 2   channels, and 1  sensitive volume
@@ -211,15 +212,11 @@ namespace geo{
 						      << adgeo[a]->NSensitiveVolume();
 
 	// the sorting should have sorted them by plane going from bottom to top in a plane
-	
-	
+	// and that is what we want.
+	for(size_t sv = 0; sv < 16; ++sv) fADChannelToSensitiveGeo[a].push_back(sv);	
       }
 
-    }
-
-    for(auto nitr : fADNameToGeo){
-
-      
+    } // loop over the AuxDetGeo objects
 
     return;
   }
