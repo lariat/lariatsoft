@@ -67,14 +67,6 @@ namespace geo{
    std::set<View_t>  const&  Views()                                   const;
    std::set<PlaneID> const&  PlaneIDs()                                const;
 
-   // methods for the auxiliary detectors
-/*
-   // method returns the entry in the sorted AuxDetGeo vector so that the 
-   // Geometry in turn can return that object
-   virtual size_t            NearestAuxDet         (TVector3 const& point)   const override;
-   virtual size_t            NearestSensitiveAuxDet(TVector3 const& point)   const override;
-   virtual size_t            NSensitiveAuxDet(std::string const& auxDetName) const override;
-*/
   private:
     
     unsigned int                                         fNcryostat;      ///< number of cryostats in the detector
