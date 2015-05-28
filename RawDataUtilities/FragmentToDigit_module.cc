@@ -695,9 +695,9 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
   // the difference in time stamps should be in between this range for a match; microseconds
   // these variables should probably be placed in the .fcl file
-  double v1751v1740InterRange[2] = { 2,   5 };
-  double v1751MwpcInterRange[2]  = { 0, 160 };
-  double v1740MwpcInterRange[2]  = { 0, 160 };
+  double v1751v1740InterRange[2] = { -500, 500 };
+  double v1751MwpcInterRange[2]  = {    0, 160 };
+  double v1740MwpcInterRange[2]  = {    0, 160 };
 
   // acceptance range from fitted line to allow a match; microseconds
   // these variables should probably be placed in the .fcl file
