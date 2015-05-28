@@ -83,16 +83,6 @@ namespace geo{
                                                                           ///< in the heirachy
     std::vector<std::vector<std::vector<unsigned int>>>  fWiresPerPlane;  ///< The number of wires in this plane 
                                                                           ///< in the heirachy
-    std::vector<std::string>                             fAuxDetNames;    ///< names of the sorted auxiliary detectors
-    std::vector<std::vector<float>>                      fAuxDetCenters;  ///< centers of the sorted auxiliary detectors
-                                                                          ///< in world coordinates
-    std::vector<std::vector<float>>                      fAuxDetHalfExt;  ///< half width, height, and length of the sorted
-                                                                          ///< auxiliary detectors in world coordinates
-    std::vector<std::vector<uint32_t>>                   fAuxDetSensitive;///< number of sensitive volumes in each auxiliary detector
-    std::vector<std::vector<std::vector<float>>>         fADSensCenters;  ///< centers of the channels in the sorted auxiliary 
-                                                                          ///< detector in world coordinates
-    std::vector<std::vector<std::vector<float>>>         fADSensHalfExt;  ///< half width, height, and length of the channels 
-                                                                          ///< in the sorted auxiliary detectors in world coordinates
     geo::GeoObjectSorterLArIAT                           fSorter;         ///< class to sort geo objects
   };
 

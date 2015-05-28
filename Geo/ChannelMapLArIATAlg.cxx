@@ -42,8 +42,8 @@ namespace geo{
     
     mf::LogInfo("ChannelMapLArIATAlg") << "Initializing LArIAT ChannelMap...";
 
+    // First sort the LArTPC related geometry objects and get their channel mapping
     fSorter.SortCryostats(cgeo);
-    fSorter.SortAuxDets(adgeo);
     for(size_t c = 0; c < cgeo.size(); ++c) 
       cgeo[c]->SortSubVolumes(fSorter);
     
@@ -147,17 +147,22 @@ namespace geo{
 
     LOG_DEBUG("ChannelMapLArIAT") << "# of channels is " << fNchannels;
 
-    // make vector of the AuxDet names
-    fAuxDetNames.clear();
-    fAuxDetNames.push_back("MuonRangeStack");
-    fAuxDetNames.push_back("TOFUS");
-    fAuxDetNames.push_back("TOFDS");
-    fAuxDetNames.push_back("AeroGelUS");
-    fAuxDetNames.push_back("AeroGelDS");
-    fAuxDetNames.push_back("MWPC1");
-    fAuxDetNames.push_back("MWPC2");
-    fAuxDetNames.push_back("MWPC3");
-    fAuxDetNames.push_back("MWPC4");    
+    // now sort the AuxDetGeo objects and map them to names of the detectors
+    // Each raw::AuxDetDigit knows the name of the detector it came from and its
+    // channel - sometimes channel maps to sensitive volume and some times it doesn't
+    fSorter.SortAuxDets(adgeo);
+
+    // map the AuxDetGeo names to their position in the sorted vector
+    fADNameToGeo.clear();
+    fADNameToGeo["TOFUS"]          = ;
+    fADNameToGeo["MWPC1"]          = ;
+    fADNameToGeo["MWPC2"]          = ;
+    fADNameToGeo["MWPC3"]          = ;
+    fADNameToGeo["AeroGelUS"]      = ;
+    fADNameToGeo["AeroGelDS"]      = ;
+    fADNameToGeo["TOFDS"]          = ;
+    fADNameToGeo["MWPC4"]          = ;    
+    fADNameToGeo["MuonRangeStack"] = ;
 
     return;
   }
