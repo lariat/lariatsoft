@@ -5,6 +5,7 @@ simple_plugin(CalWireT1034 "module"
 			RawData
 	                RecoBase
                         RecoBaseArt
+			RawDataUtilities
 		        SignalShapingServiceT1034_service
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
@@ -31,6 +32,7 @@ simple_plugin(CalWireROIT1034 "module"
 			RawData
 	                RecoBase
                         RecoBaseArt
+			RawDataUtilities
 		        SignalShapingServiceT1034_service
                         ${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}

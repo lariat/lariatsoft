@@ -218,9 +218,9 @@ void CalWireT1034::produce(art::Event& evt)
     // ##############################
     for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
     	{
-	std::cout<<"========================="<<std::endl;
-	std::cout<<"    Trigger Number = "<<trig<<std::endl;
-	std::cout<<"========================="<<std::endl;
+	//std::cout<<"========================="<<std::endl;
+	//std::cout<<"    Trigger Number = "<<trig<<std::endl;
+	//std::cout<<"========================="<<std::endl;
 	
 	// === Getting the pointer for this trigger ===
 	art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
@@ -270,7 +270,7 @@ void CalWireT1034::produce(art::Event& evt)
 	// ###########################
         for(size_t rdItr = 0; rdItr < rdvec.size(); ++rdItr)
 	   { 
-	   std::cout<<"Looping over wire # "<<rdItr<<std::endl;
+	   //std::cout<<"Looping over wire # "<<rdItr<<std::endl;
 	   
            holder.clear();
 	   

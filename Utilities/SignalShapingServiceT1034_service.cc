@@ -37,7 +37,7 @@ util::SignalShapingServiceT1034::~SignalShapingServiceT1034()
 void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pset)
 {
   // Reset initialization flag.
-
+  
   fInit = false;
 
   // Reset kernels.
@@ -136,7 +136,6 @@ util::SignalShapingServiceT1034::SignalShaping(unsigned int channel) const
     init();
 
   // Figure out plane type.
-
   art::ServiceHandle<geo::Geometry> geom;
   //geo::SigType_t sigtype = geom->SignalType(channel);
 
@@ -147,12 +146,23 @@ util::SignalShapingServiceT1034::SignalShaping(unsigned int channel) const
 
   geo::SigType_t sigtype = geom->SignalType(channel);
   if (sigtype == geo::kInduction)
+     {
       return fIndVSignalShaping;
+      
+      
+     }
   else if (sigtype == geo::kCollection)
+      {
       return fColSignalShaping;
+      }
   else
+    {
+    std::cout<<"I've got a problem"<<std::endl;
+    std::cout<<std::endl;
     throw cet::exception("SignalShapingServiceT1034")<< "can't determine"
-                                                          << " SignalType\n";  
+                                                          << " SignalType\n";
+							  
+    }  
   
 //   if(view == geo::kU)
 //     
@@ -161,6 +171,7 @@ util::SignalShapingServiceT1034::SignalShaping(unsigned int channel) const
 //   else if(view == geo::kZ)
 //     return fColSignalShaping;
   
+
   return fColSignalShaping;
 }
 
@@ -173,7 +184,7 @@ void util::SignalShapingServiceT1034::init()
 {
   if(!fInit) {
     fInit = true;
-
+    
     // Do microboone-specific configuration of SignalShaping by providing
     // microboone response and filter functions.
 
@@ -197,10 +208,11 @@ void util::SignalShapingServiceT1034::init()
     SetFilters();
 
     // Configure deconvolution kernels.
-
+    
+    
     fColSignalShaping.AddFilterFunction(fColFilter);
+    
     fColSignalShaping.CalculateDeconvKernel();
-
     fIndVSignalShaping.AddFilterFunction(fIndVFilter);
     fIndVSignalShaping.CalculateDeconvKernel();
   }
@@ -213,6 +225,7 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
 {
   // Get services.
 
+    
   art::ServiceHandle<geo::Geometry> geo;
   art::ServiceHandle<util::DetectorProperties> detprop;
   art::ServiceHandle<util::LArProperties> larp;
@@ -243,6 +256,8 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
 
     art::ServiceHandle<util::LArFFT> fft;
     int signalSize = fft->FFTSize();
+    //signalSize = 3072;
+    
  //   std::vector<double> ramp(signalSize);
     // TComplex kernBin;
     // int size = signalSize/2;
@@ -257,7 +272,8 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     
     // Hardcoding. Bad. Temporary hopefully.
   //  fIndVFieldFunc->SetParameter(4,fIndVFieldFunc->GetParameter(4)*signalSize);
-
+     
+     
     for(int i = 0; i < signalSize; i++) {
      //ramp[i]=;
       fColFieldResponse[i]=fColFieldFunc->Eval(i);
@@ -351,7 +367,7 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
 void util::SignalShapingServiceT1034::SetElectResponse()
 {
   // Get services.
-
+  
   art::ServiceHandle<geo::Geometry> geo;
   art::ServiceHandle<util::DetectorProperties> detprop;
   art::ServiceHandle<util::LArFFT> fft;
@@ -428,7 +444,7 @@ void util::SignalShapingServiceT1034::SetElectResponse()
 void util::SignalShapingServiceT1034::SetFilters()
 {
   // Get services.
-
+  
   art::ServiceHandle<util::DetectorProperties> detprop;
   art::ServiceHandle<util::LArFFT> fft;
 
