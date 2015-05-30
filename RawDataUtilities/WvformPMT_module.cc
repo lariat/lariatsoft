@@ -109,6 +109,7 @@ private:
   TH1D * avhist_raw [5];
   TH1D * avhist_fft [5];
   TH1D * fft_scaled [5];
+int PMTWvformCount[5];
 std::vector<std::vector <double>> bins;
 std::vector <double> baseline;
 std::vector <double> res;
@@ -149,7 +150,7 @@ WvformPMT::WvformPMT(fhicl::ParameterSet const & p)
  
 
    fOpDetChID = p.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
-   fNumberOfPMTs = p.get<int>("NumberOfPMTs",2);
+   fNumberOfPMTs = p.get<int>("NumberOfPMTs",5);
    fBaselineCounts = p.get<int>("baseline_counts",90);
    fFitConst = p.get<double>("fit_const",0.0);
    fExpM1 = p.get<double>("fit_expmult1",1.0);
@@ -186,10 +187,10 @@ void WvformPMT::beginJob()
 			}
 		}
 	}
-		
-	bins.resize(pmt1);
-	baseline.resize(pmt1);
-        for(int c=0;c<pmt1;c++) {
+	for(int i=0;i <fNumberOfPMTs;++i) PMTWvformCount[i]=0;//zeroing pmt wvform count	
+	bins.resize(fNumberOfPMTs);
+	baseline.resize(fNumberOfPMTs);
+        for(int c=0;c<fNumberOfPMTs;++c) {
             sprintf(fHistName, "OpDet_%i_AvPulse", c);
 
 	    avhist[c]= tfs->make<TH1D>(fHistName, ";t (ns);", 
@@ -230,7 +231,7 @@ void WvformPMT::beginJob()
 //------------------------------------------------------------------------------
 void WvformPMT::analyze(art::Event const & evt)
 {
-	fEvents++;
+	++fEvents;
 
     art::Handle< std::vector< raw::OpDetPulse > > WaveformHandle;
 
@@ -240,18 +241,15 @@ void WvformPMT::analyze(art::Event const & evt)
     std::vector<std::string> histnames;
 
     for(unsigned int i = 0; i < WaveformHandle->size(); ++i){ 
+
 			art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle, i);
 			raw::OpDetPulse ThePulse = *ThePulsePtr;
-			for(int j =0;j<int(ThePulse.Waveform().size());j++){
-				int channel=0;
-				for(auto ch1 :PMTsInRun){
+			for(int j =0;j<int(ThePulse.Waveform().size());++j){
 
-					if (int(ThePulse.OpChannel())==int(ch1)) break;
-					channel++;
-				}
-				if(int(j)<int(bins[channel].size())) bins[channel].at(j)=bins[channel].at(j)+(double) ThePulse.Waveform()[j];
+				if(int(j)<int(bins[int(ThePulse.OpChannel())].size())) bins[int(ThePulse.OpChannel())].at(j)=bins[int(ThePulse.OpChannel())].at(j)+(double) ThePulse.Waveform()[j];
   		 }
-
+	PMTWvformCount[int(ThePulse.OpChannel())]=PMTWvformCount[int(ThePulse.OpChannel())]+1;
+	std::cout<<"pmt "<<int(ThePulse.OpChannel())<<" "<<PMTWvformCount[int(ThePulse.OpChannel())]<<std::endl;
 
 
     }
@@ -264,22 +262,22 @@ void WvformPMT::endJob()
 
 
 
-for(int c=0;c<pmt1;c++) {
+for(int c=0;c<fNumberOfPMTs;++c) {
 	fitexp2 = new TF1("exp2",twoexp,0,15000,7);
 	for(int j =0;j<fBaselineCounts;j++) baseline.at(c)=baseline.at(c)+double(bins[c].at(j));
 	baseline.at(c)=baseline.at(c)/fBaselineCounts;
-	for(int j =0;j<int(avhist[c]->GetNbinsX());j++) {
-			if (int(j)<int(bins[c].size())) avhist[c]->SetBinContent(j,(-double(bins[c].at(j))+baseline.at(c)+50.)/fEvents);
-			if (int(j)<int(bins[c].size())) avhist_raw[c]->SetBinContent(j,(double(bins[c].at(j))/fEvents));
+	for(int j =0;j<int(avhist[c]->GetNbinsX());++j) {
+			if (PMTWvformCount[c]!=0 && int(j)<int(bins[c].size())) avhist[c]->SetBinContent(j,(-double(bins[c].at(j))+baseline.at(c))/PMTWvformCount[c]);
+			if (PMTWvformCount[c]!=0 && int(j)<int(bins[c].size())) avhist_raw[c]->SetBinContent(j,(double(bins[c].at(j))/PMTWvformCount[c]));
 		}
-		//scaling e.g http://en.wikipedia.org/wiki/Short-time_Fourier_transform, fft from root example
+		//scaling e.g http://en.wikipedia.org/wiki/Short-time_Fourier_transform, fftÂ from root example
   		double scaling_fft=double(fSampleFreq*1000000000)/double(fSamples);
 		TH1* temp_hist=NULL;
 		temp_hist=avhist[c]->FFT(temp_hist,"MAG");
 		TVirtualFFT *fft = TVirtualFFT::GetCurrentTransform();
 		double re1=0.;
 		double im1=0.;
-		for (int it=0; it<(fSamples/2+1); it++){
+		for (int it=0; it<(fSamples/2+1); ++it){
 			fft->GetPointComplex(it, re1, im1);
 			avhist_fft[c]->SetBinContent(it,temp_hist->GetBinContent(it));
 			fft_scaled[c]->SetBinContent(it,scaling_fft*temp_hist->GetBinContent(it));
@@ -309,3 +307,4 @@ for(int c=0;c<pmt1;c++) {
 }
 
 DEFINE_ART_MODULE(WvformPMT)
+
