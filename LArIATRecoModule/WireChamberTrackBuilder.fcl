@@ -1,0 +1,33 @@
+#include "services_lariat.fcl"
+
+process_name: WireChamberTrackBuilder
+
+services:
+{
+  TFileService: { fileName: "WireChamberTrackBuilder_histo.root" }
+  message:      @local::standard_info
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1 
+  # fileNames: ["input.root"]
+}
+
+outputs: {}
+
+physics:
+{
+  producers:
+  {
+    WireChamberTrackBuilder:
+    {
+      module_type: WireChamberTrackBuilder
+    }
+  }
+  analysis:  [ WireChamberTrackBuilder ]
+  end_paths: [ analysis ]
+}
+
+physics.producers.WireChamberTrackBuilder.TriggerUtility: "FragmentToDigit"
