@@ -1,4 +1,5 @@
 #include "services_lariat.fcl"
+#include "lariat_reco_algs.fcl"
 
 process_name: WireChamberTrackBuilder
 
@@ -23,7 +24,8 @@ physics:
   {
     WireChamberTrackBuilder:
     {
-      module_type: WireChamberTrackBuilder
+      module_type:         WireChamberTrackBuilder
+      WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
     }
   }
   analysis:  [ WireChamberTrackBuilder ]
