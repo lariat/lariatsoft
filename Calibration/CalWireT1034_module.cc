@@ -239,7 +239,7 @@ void CalWireT1034::produce(art::Event& evt)
 	// =======================================================================================
 	// === Put in protection in case the transform size is less than the number of samples ===
 	// =======================================================================================
-	if ( (unsigned int)transformSize < dataSize && trig < 1)
+	if ( (unsigned int)transformSize < dataSize /*&& trig < 1*/)
 	   {
 	   mf::LogWarning("CalWireT1034")<<"FFT size (" << transformSize << ") "
            << "is smaller than the data size (" << dataSize << ") "
@@ -301,7 +301,18 @@ void CalWireT1034::produce(art::Event& evt)
 	      // =================================
 	      // === Perform the Deconvolution ===
 	      // =================================
+	      
+	      /*std::cout<<std::endl;
+	      std::cout<<"Getting Ready to Deconvolute a wire"<<std::endl;
+	      std::cout<<std::endl;*/
+	      
               sss->Deconvolute(channel, holder);
+	      
+	      /*std::cout<<std::endl;
+	      std::cout<<std::endl;
+	      std::cout<<"Done Deconvolution of a wire"<<std::endl;
+	      std::cout<<std::endl;
+	      std::cout<<std::endl;*/
 
               } // end if not a bad channel 
           
