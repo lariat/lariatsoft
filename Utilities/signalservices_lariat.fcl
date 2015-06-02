@@ -6,16 +6,16 @@ lariat_signalshapingservice:
 {
   ADCTicksPerPCAtLowestASICGainSetting: 25172.1 #ADC/pC
   #ASICGain: Options: (4.7, 7.8, 14, 25). Default: 7.8
-  ASICGainInMVPerFC:                    7.8     #mV/fC
+  ASICGainInMVPerFC:                    14     #mV/fC (Maybe 25)
   
-  FieldBins:        75
-  Col3DCorrection:  2.5
-  Ind3DCorrection:  1.5
+  FieldBins:        75		#<----N Bins for field response
+  Col3DCorrection:  2.8         #<----Default set to 2.5
+  Ind3DCorrection:  1.8        #<----Default set to 1.5
   #ColFieldRespAmp:  0.0354
   ColFieldRespAmp:  1.0
   #IndVFieldRespAmp:  0.018
   IndVFieldRespAmp:  1.0
-  ShapeTimeConst:  [ 1.4, 0.5 ] #Gain and Peaking time (microseconds)
+  ShapeTimeConst:  [14, 2.0]#[ 1.4, 0.5 ] #Gain and Peaking time (microseconds)
 
   # For IndFilter and ColFilter, frequency (x) is measured in
   # cycles/microsecond.  The conversion to frequency bin depends on FFT size
@@ -29,14 +29,14 @@ lariat_signalshapingservice:
   # ColFilterParams: [ 79258.0, 0.0, 0.1875, 1.5 ]
   ColFilterParams: [ 0.0792580, 0.0, 0.1875, 1.5 ]
   
-  GetFilterFromHisto:   true  
+  GetFilterFromHisto:   false  
 
   FilterFunctionFname:  "LArIAT_filter.root"
  # FilterHistoName:	"noisefilter_%d"       
   FilterHistoName:	"fft_filter_0_0_%d_av"       
   
 
-  UseFunctionFieldShape: true 
+  UseFunctionFieldShape: false 
   UseSimpleFieldShape: false
 
   IndVFieldShape: "[0]*(1.0+[3]*tanh(x-[4]))*([4]-x)*exp(-0.5*((x-[4])/[2])^2.0)"
