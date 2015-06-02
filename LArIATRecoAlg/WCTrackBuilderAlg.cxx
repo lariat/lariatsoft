@@ -134,8 +134,6 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 					   int trigger_number,
 					   int track_count)
 {
-  std::cout << "Tracks starting to be reconstructed" << std::endl;
-
   fVerbose = verbose;
   
   //Initialize hit/cluster time/channel buffers that are only defined for one trigger value
@@ -168,14 +166,14 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   //If there is, then move on with the function 
   
   //Sanity check
-  //    std::cout << "Good hit check: ";
-  // for( int iWC = 0; iWC < 4 ; ++iWC ){
-  //  for (int iAx = 0; iAx < 2 ; ++iAx ){
-  //	if( good_hits.at(iWC).at(iAx).hits.size() > 0 ) std::cout << good_hits.at(iWC).at(iAx).hits.size();
-  //	else std::cout << "0";
-  //  }
-  // }
-  //    std::cout << std::endl;
+  std::cout << "Good hit check: ";
+  for( int iWC = 0; iWC < 4 ; ++iWC ){
+    for (int iAx = 0; iAx < 2 ; ++iAx ){
+      if( good_hits.at(iWC).at(iAx).hits.size() > 0 ) std::cout << good_hits.at(iWC).at(iAx).hits.size();
+      else std::cout << "0";
+    }
+  }
+  std::cout << std::endl;
   
   
   bool skip = shouldSkipTrigger(good_hits,reco_pz_array);
@@ -191,6 +189,9 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   //At this point, we should have a list of good hits with at least one good hit in X,Y for each WC.
   //Now find all possible combinations of these hits that could form a track, sans consideration
   //of the kinks or end displacements (for now)
+
+
+
   buildTracksFromHits(good_hits,reco_pz_array,reco_pz_list,y_kink_list,x_dist_list,y_dist_list,z_dist_list,track_count);
   
 
@@ -248,11 +249,11 @@ void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
 
   
 
-  std::cout << "Atan DS/US: " << atan_x_ds << "," << atan_x_us << std::endl;
+  //  std::cout << "Atan DS/US: " << atan_x_ds << "," << atan_x_us << std::endl;
 
   
   reco_pz = (fabs(fB_field_tesla) * l_eff * mm_to_m * GeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us)));
-  std::cout << "reco_pz inner: " << reco_pz << std::endl;
+  // std::cout << "reco_pz inner: " << reco_pz << std::endl;
   y_kink = atan_y_us - atan_y_ds;
 
   float pos_us[3] = {0.0,0.0,0.0};
@@ -372,7 +373,7 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  //Previously track_p_extrap_dists
 		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array);
 		  
-		  std::cout << "Reco_pz: " << reco_pz << std::endl;
+		  //		  std::cout << "Reco_pz: " << reco_pz << std::endl;
 
 		  //Storing the momentum in the buffer that will be
 		  //pushed back into the final reco_pz_array for this trigger
@@ -414,7 +415,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   bool skip = false;
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
-      if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){
+      if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){
 	skip = true;
 	break;
       }
@@ -422,7 +423,9 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   }
   
   if( skip == true ){
-    std::cout << "skipping this trigger." << std::endl;
+    if( fVerbose ){
+      std::cout << "skipping this trigger." << std::endl;
+    }
     //Clear the hit lists for each WC/axis
     for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
       for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
@@ -470,7 +473,9 @@ void WCTrackBuilderAlg::findGoodHits( std::vector<std::vector<float> > cluster_t
     }
   }
   
-  std::cout << "Number of good hits in each wire plane: ";
+  if( fVerbose ){
+    std::cout << "Number of good hits in each wire plane: ";
+  }
   for( int iWC = 0; iWC < 4 ; ++iWC ){
     for (int iAx = 0; iAx < 2 ; ++iAx ){
       std::cout << good_hits.at(iWC).at(iAx).hits.size() << ", ";
@@ -596,7 +601,6 @@ void WCTrackBuilderAlg::run_DBSCAN( int trigger_number,
   
   //Cluster counter
   int cluster_counter = 0;
-  std::cout << "# hits: " << scaled_hits.hits.size() << std::endl;
   for( size_t iSH = 0; iSH < scaled_hits.hits.size(); ++iSH ){
     //If hit has been visited, ignore it
     if( scaled_hits.hits.at(iSH).isVisited == true ){ continue; }

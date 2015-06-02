@@ -17,6 +17,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include <iostream>
+#include <fstream>
 #include <TH1F.h>
 #include <vector>
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -65,6 +66,13 @@ public:
 				std::vector<double> x_dist_list,
 				std::vector<double> y_dist_list,
 				std::vector<double> z_dist_list );
+  void convertDigitsToVectors( std::vector<const raw::AuxDetDigit*> the_digits_1,
+			       std::vector<const raw::AuxDetDigit*> the_digits_2,
+			       std::vector<const raw::AuxDetDigit*> the_digits_3,
+			       std::vector<const raw::AuxDetDigit*> the_digits_4,
+			       std::vector<int> & tdc_number_vect,
+			       std::vector<float> & hit_channel_vect,
+			       std::vector<float> & hit_time_bin_vect );
     
 
 private:
@@ -77,6 +85,7 @@ private:
 
   //Hardware constants
   int fNumber_wire_chambers;
+  int fNumber_wires_per_tdc;
  
   //Misc
   bool verbose;
@@ -99,6 +108,7 @@ WireChamberTrackBuilder::WireChamberTrackBuilder(fhicl::ParameterSet const & pse
 // Initialize member data here.
 {  
   fNumber_wire_chambers = 4;  
+  fNumber_wires_per_tdc = 64;
   verbose = false;
   
 
@@ -137,7 +147,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
   std::vector<double> z_dist_list;
   std::vector<std::vector<WCHitList> > good_hits; //Two vectors: WC#, axis. - Will be cleared for each trigger
 
-  //Initializing the good hit arrays to a default state
+  //Initializing the good hit arrays to a default state - these clear for every trigger
   //Have 2-dimensional array of hitlists:
   //1st Dim: WC
   //2nd Dim: Axis
@@ -146,14 +156,16 @@ void WireChamberTrackBuilder::produce(art::Event & e)
   for( int iAx = 0; iAx < 2; ++iAx ){ hitListAxis.push_back(hitList); }
   for( int iWC = 0; iWC < fNumber_wire_chambers; ++iWC ){ good_hits.push_back(hitListAxis); }
 
-  
- 
+   
   // ##############################
   // ### Loop over the triggers ###
   // ##############################
   int good_trigger_counter = 0;
   for( size_t iTrig = 0; iTrig < tdu.NTriggers(); ++iTrig ){
     std::vector<const raw::AuxDetDigit*> WireChamber1Digits = tdu.TriggerMWPC1Digits(iTrig);
+    std::vector<const raw::AuxDetDigit*> WireChamber2Digits = tdu.TriggerMWPC2Digits(iTrig);
+    std::vector<const raw::AuxDetDigit*> WireChamber3Digits = tdu.TriggerMWPC3Digits(iTrig);
+    std::vector<const raw::AuxDetDigit*> WireChamber4Digits = tdu.TriggerMWPC4Digits(iTrig);
     
     // ##################################################################################
     // ###                                                                            ###
@@ -167,18 +179,56 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     //Debug printing
     if( verbose ){ std::cout << std::endl; std::cout << "OOOOOOOOOOOOOOOOOOO TRIGGER " << iTrig << " READOUT OOOOOOOOOOOOOOOOOOOOOOO" << std::endl;
     }
+    std::cout << std::endl; std::cout << "OOOOOOOOOOOOOOOOOOO TRIGGER " << iTrig << " READOUT OOOOOOOOOOOOOOOOOOOOOOO" << std::endl;
+    
 
-   
-    //PUT HITFINDING/CONVERSION ALG HERE    
-
-    //BY THE END, SHOULD HAVE (FOR A GIVEN TRIGGER):
+    //Convert the current form of the WC info to the desired form
     std::vector<int> tdc_number_vect;
     std::vector<float> hit_channel_vect;
     std::vector<float> hit_time_bin_vect;
 
+    convertDigitsToVectors( WireChamber1Digits,
+			    WireChamber2Digits,
+			    WireChamber3Digits,
+			    WireChamber4Digits,
+			    tdc_number_vect,
+			    hit_channel_vect,
+			    hit_time_bin_vect );
 
-    //PUT TRACK MOMENTUM RECO ALG HERE
-    std::cout << "Test run." << std::endl;
+
+
+
+
+
+    /*
+    //Getting the dqm data for testing the module
+    int tdc_num = 0;
+    float channel = 0;
+    float time_bin = 0;
+    size_t trig_counter = 0;
+    ifstream myfile;
+    myfile.open("run_005103_spill_0014.txt");
+    while(1){
+      myfile >> tdc_num >> channel >> time_bin;
+      if(!myfile.good()){ break; }
+      if( tdc_num == 9999 ){ 
+	trig_counter++;
+	continue;
+      }
+      if( trig_counter == iTrig ){
+	tdc_number_vect.push_back(tdc_num);
+	hit_channel_vect.push_back(channel);
+	hit_time_bin_vect.push_back(time_bin);
+      }
+    }
+    myfile.close();
+
+    */    
+    
+   
+    //PUT HITFINDING/CONVERSION ALG HERE    
+
+        //PUT TRACK MOMENTUM RECO ALG HERE
 
     fWCTrackBuilderAlg.reconstructTracks(tdc_number_vect,
 					 hit_channel_vect,
@@ -203,12 +253,12 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 			  x_dist_list,
 			  y_dist_list,
 			  z_dist_list);
-			 
 
 
 
 
 }
+
 
 void WireChamberTrackBuilder::beginJob()
 {
@@ -216,9 +266,9 @@ void WireChamberTrackBuilder::beginJob()
   art::ServiceHandle<art::TFileService> tfs;
   fReco_Pz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum in XZ plane", 180, 0, 1800);
   fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",100,-5,5);
-  fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",120,60,60);
-  fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",120,60,60);
-  fZ_Dist = tfs->make<TH1F>("Z_Dist","Z distance between US/DS tracks at midplane (mm)",120,60,60);
+  fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",120,-60,60);
+  fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",120,-60,60);
+  fZ_Dist = tfs->make<TH1F>("Z_Dist","Z distance between US/DS tracks at midplane (mm)",120,-60,60);
   
   fReco_Pz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
   fReco_Pz->GetYaxis()->SetTitle("Tracks per 10 MeV");
@@ -290,17 +340,84 @@ void WireChamberTrackBuilder::plotTheTrackInformation( std::vector<double> reco_
     fY_Dist->Fill(y_dist_list.at(iTrack));
     fZ_Dist->Fill(z_dist_list.at(iTrack));
   }
-		   
+		  
+}
 
+//Temporary - meant to deal with inconvenient data format of digits
+void WireChamberTrackBuilder::convertDigitsToVectors( std::vector<const raw::AuxDetDigit*> the_digits_1,
+						      std::vector<const raw::AuxDetDigit*> the_digits_2,
+						      std::vector<const raw::AuxDetDigit*> the_digits_3,
+						      std::vector<const raw::AuxDetDigit*> the_digits_4,
+						      std::vector<int> & tdc_number_vect,
+						      std::vector<float> & hit_channel_vect,
+						      std::vector<float> & hit_time_bin_vect )
+{
+  
+  std::cout << "Digits' sizes, 1:2:3:4: " << the_digits_1.size() << ":" << the_digits_2.size() << ":"  << the_digits_3.size() << ":" << the_digits_4.size() << std::endl;
 
+  //Loop through digits for WC1
+  for( size_t iDigit = 0; iDigit < the_digits_1.size() ; ++iDigit ){
+    const raw::AuxDetDigit* a_digit = the_digits_1.at(iDigit);
+    for( size_t iHit = 0; iHit < a_digit->NADC() ; ++iHit ){
+      if( a_digit->ADC(iHit) != 0 ){
+	std::cout << "(TDC,channel,time): (" << int(a_digit->Channel()/fNumber_wires_per_tdc)+1 << "," << a_digit->Channel() % 64 << "," << a_digit->ADC(iHit)<< ")" << std::endl;
+	hit_time_bin_vect.push_back(a_digit->ADC(iHit));
+	tdc_number_vect.push_back(int(a_digit->Channel()/fNumber_wires_per_tdc)+1);
+	hit_channel_vect.push_back(a_digit->Channel() % 64);
+      }
+    }
+  }
 
+  //Loop through digits for WC2
+  for( size_t iDigit = 0; iDigit < the_digits_2.size() ; ++iDigit ){
+    const raw::AuxDetDigit* a_digit = the_digits_2.at(iDigit);
+    for( size_t iHit = 0; iHit < a_digit->NADC() ; ++iHit ){
+      if( a_digit->ADC(iHit) != 0 ){
+	std::cout << "(TDC,channel,time): (" << a_digit->Channel()/fNumber_wires_per_tdc + 5 << "," << a_digit->Channel() % 64 << "," << a_digit->ADC(iHit)<< "), --> a_digit->Channel(): " << a_digit->Channel() << ", fNumber_wires...: " << fNumber_wires_per_tdc << std::endl;
+	hit_time_bin_vect.push_back(a_digit->ADC(iHit));
+	tdc_number_vect.push_back(int(a_digit->Channel()/fNumber_wires_per_tdc)+5);
+	hit_channel_vect.push_back(a_digit->Channel() % 64);
+      }
+    }
+  }
 
+  //Loop through digits
+  for( size_t iDigit = 0; iDigit < the_digits_3.size() ; ++iDigit ){
+    const raw::AuxDetDigit* a_digit = the_digits_3.at(iDigit);
+    for( size_t iHit = 0; iHit < a_digit->NADC() ; ++iHit ){
+      if( a_digit->ADC(iHit) != 0 ){
+	std::cout << "(TDC,channel,time): (" << int(a_digit->Channel()/fNumber_wires_per_tdc)+9 << "," << a_digit->Channel() % 64 << "," << a_digit->ADC(iHit)<< ")" << std::endl;
+	hit_time_bin_vect.push_back(a_digit->ADC(iHit));
+	tdc_number_vect.push_back(int(a_digit->Channel()/fNumber_wires_per_tdc)+9);
+	hit_channel_vect.push_back(a_digit->Channel() % 64);
+      }
+    }
+  }
 
-
-
+  //Loop through digits
+  for( size_t iDigit = 0; iDigit < the_digits_4.size() ; ++iDigit ){
+    const raw::AuxDetDigit* a_digit = the_digits_4.at(iDigit);
+    for( size_t iHit = 0; iHit < a_digit->NADC() ; ++iHit ){
+      if( a_digit->ADC(iHit) != 0 ){
+	std::cout << "(TDC,channel,time): (" << int(a_digit->Channel()/fNumber_wires_per_tdc)+13 << "," << a_digit->Channel() % 64 << "," << a_digit->ADC(iHit)<< ")" << std::endl;
+	hit_time_bin_vect.push_back(a_digit->ADC(iHit));
+	tdc_number_vect.push_back(int(a_digit->Channel()/fNumber_wires_per_tdc)+13);
+	hit_channel_vect.push_back(a_digit->Channel() % 64);
+      }
+    }
+  }
 
 
 }
+	
+
+
+
+
+
+
+
+
 
 
 DEFINE_ART_MODULE(WireChamberTrackBuilder)
