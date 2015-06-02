@@ -59,6 +59,7 @@
 //#include "TTree.h"
 #include "TGraph.h"
 #include "TF1.h"
+#include "TH2F.h"
 
 #include <memory>
 #include <functional>
@@ -181,7 +182,9 @@ private:
   std::vector<std::vector<unsigned int> >    fOpDetChID;               ///< channels on boards used for PMTs and SiPMs
   std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks; ///< map trigger ID to vector of CAEN blocks
   std::map< int, std::vector<TDCDataBlock> > fTriggerToTDCDataBlocks;  ///< map trigger ID to vector of TDC blocks
-
+  TH2F * FragCountsSameTrigger_1751vsTDC_NoTPC;
+  TH2F * FragCountsSameTrigger_1751vsTDC_WithTPC;
+  TH2F * FragCountsSameTrigger_1751vsTDC_ExtraTPC;
 
   //----The commented out methods and data members below are deprecated----
   // void matchFragments(uint32_t            & Ntriggers,
@@ -309,6 +312,11 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void FragmentToDigit::beginJob()
 {
+
+  FragCountsSameTrigger_1751vsTDC_NoTPC   = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_NoTPC"   ,"FragCountsSameTrigger_1751vsTDC_NoTPC; Number TDC Data Blocks; Number v1751 Data Blocks"   ,6,-0.5,5.5,6,-0.5,5.5);
+  FragCountsSameTrigger_1751vsTDC_WithTPC = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_WithTPC" ,"FragCountsSameTrigger_1751vsTDC_WithTPC; Number TDC Data Blocks; Number v1751 Data Blocks" ,6,-0.5,5.5,6,-0.5,5.5);
+  FragCountsSameTrigger_1751vsTDC_ExtraTPC= tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_ExtraTPC","FragCountsSameTrigger_1751vsTDC_ExtraTPC; Number TDC Data Blocks; Number v1751 Data Blocks",6,-0.5,5.5,6,-0.5,5.5);
+ 
   return;
 }
 
@@ -1010,12 +1018,16 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 	  ++WChamDataBlockCount;
         }//if numberTdcFrags > 0
       }//if deviceID == 10
-      //jmsj
     } // end loop over selected data blocks
 
     LOG_VERBATIM("FragmentToDigit") << "  Trig: " << triggerID << " T/P/W:  " << v1740DataBlockCount <<"/"<<v1751DataBlockCount<<"/"<<WChamDataBlockCount;
 
-    triggerID += 1;
+    if (v1740DataBlockCount == 0)
+      FragCountsSameTrigger_1751vsTDC_NoTPC    ->Fill(WChamDataBlockCount, v1740DataBlockCount);
+    else if (v1740DataBlockCount == 1)
+      FragCountsSameTrigger_1751vsTDC_WithTPC  ->Fill(WChamDataBlockCount, v1740DataBlockCount);
+    else if (v1740DataBlockCount > 1)
+      FragCountsSameTrigger_1751vsTDC_ExtraTPC ->Fill(WChamDataBlockCount, v1740DataBlockCount);
     
   } // for each data block
 
