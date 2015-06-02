@@ -106,7 +106,7 @@ void lrm::MyNewMod::produce(art::Event & e)
      //art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
      
      // ### Getting a vector of Wire Chamber 1 Digits ###
-     std::vector<const raw::AuxDetDigit*> WireChamber1Digi = tdu.TriggerMWPC1Digits(trig);
+     std::vector<const raw::AuxDetDigit*> WireChamber1Digi = tdu.TriggerMWPC3Digits(trig);
      
      std::cout<<"Size of WC1Digi = "<<WireChamber1Digi.size()<<std::endl;
      fWC1Size->Fill(WireChamber1Digi.size());
@@ -116,20 +116,20 @@ void lrm::MyNewMod::produce(art::Event & e)
         {
 	//std::cout<<"WireChamber1Digi Channel Number = "<<WireChamber1Digi.at(wc1)->Channel()<<std::endl;
 	///std::cout<<"WireChamber1Digi TDC = "<<WireChamber1Digi.at(wc1)->NADC()<<std::endl;
-	
+	  std::cout << "NADCs:" << WireChamber1Digi.at(wc1)->NADC() << std::endl;	
 	// ### Looping over all the TDC hits (annoyingly called ADC's) ###
 	for (size_t i =0; i < WireChamber1Digi.at(wc1)->NADC(); ++i)
 	   {
-	
+
 	   // ### Skipping any TDC hits (which returns the time tick) that is zero ###
 	   if(WireChamber1Digi.at(wc1)->ADC(i) == 0){continue;}
-	    
-	      
+	   
+	   
 	   //### Clustering over X Plane ###
 	   if(WireChamber1Digi.at(wc1)->Channel() < 128) //<---(Channels 0 - 127 are the X Plane)
 	      {
 	      // Get wire and time pairs, cluster with dBScan (or whatever), save the good hits
-	      
+		
 	      fWC1XPlaneADC->Fill(WireChamber1Digi.at(wc1)->ADC(i));
 	      }//<---End X Plane
 	   
