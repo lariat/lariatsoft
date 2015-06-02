@@ -1406,11 +1406,11 @@ void FragmentToDigit::makeOpDetPulses(std::vector<CAENFragment>    const& caenFr
 
 	std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
    
-	LOG_VERBATIM("FragmentToDigit") << "Writing opdetpulses " 
-				       << " boardID : " << boardId 
-				       << " channel " << ch 
-				       << " size of wvform data " << waveForm.size()
-				       << " fOpDetChID[boardId] size() " << fOpDetChID[boardId].size();
+	// LOG_VERBATIM("FragmentToDigit") << "Writing opdetpulses " 
+	// 			       << " boardID : " << boardId 
+	// 			       << " channel " << ch 
+	// 			       << " size of wvform data " << waveForm.size()
+	// 			       << " fOpDetChID[boardId] size() " << fOpDetChID[boardId].size();
 
 	opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (ch),
 					     waveForm,
@@ -1629,9 +1629,9 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
 {
 
   // make the map of TDC number to detector name and tdc to starting channel
-  std::map<uint8_t, size_t> tdcToStartWire;
-  std::map<uint8_t, size_t> tdcToChamber;
-  for(uint8_t tdc = 1; tdc < 17; ++tdc){
+  std::map<size_t, size_t> tdcToStartWire;
+  std::map<size_t, size_t> tdcToChamber;
+  for(size_t tdc = 1; tdc < 17; ++tdc){
     if(tdc < 5)       tdcToChamber[tdc] = 0;
     else if(tdc < 9)  tdcToChamber[tdc] = 1;
     else if(tdc < 13) tdcToChamber[tdc] = 2;
@@ -1642,6 +1642,14 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
     else if(tdc == 3 || tdc == 7 || tdc == 11 || tdc == 15) tdcToStartWire[tdc] = 128;
     else if(tdc == 4 || tdc == 8 || tdc == 12 || tdc == 16) tdcToStartWire[tdc] = 192;
   }
+
+  // LOG_VERBATIM("FragmentToDigit") << "test tdc maps\n";
+  // for(auto chitr : tdcToChamber){
+  //   auto switr = tdcToStartWire.find(chitr.first);
+  //   LOG_VERBATIM("FragmetToDigit") << "chamber is "     << chitr.second 
+  // 				   << " tdc is "        << chitr.first
+  // 				   << " start wire is " << switr->second;
+  // }
 
   std::vector<std::string> detNames(4);
   detNames[0] = "MWPC1";
@@ -1664,6 +1672,8 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
   for(size_t cham = 0; cham < timeStamps.size(); ++cham) 
     timeStamps[cham].resize(TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER, 0);
       
+  // LOG_VERBATIM("FragmentToDigit") << "there are " << tdcEventData.size() << " tdcEventData objects in the vector";
+
   for(auto const& tdced : tdcEventData){ 
 
     // determine the chamber and start wire
@@ -1674,9 +1684,26 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
       throw cet::exception("FragmentToDigit") << "TDC number " << tdced.tdcEventHeader.tdcNumber
 					      << " is not present in map to chamber number or start wire";
 
+    // LOG_VERBATIM("FragmentToDigit") << "there are " << tdced.tdcHits.size() << " tdc hit objects in the vector for chamber "
+    // 				    << chitr->second << " on tdc " << chitr->first << " start wire " << switr->second;
+    
     for(auto const& hit : tdced.tdcHits){
-      hitsInChannel[chitr->second][switr->second + size_t (hit.channel)].push_back(short (hit.timeBin));
+      if(chitr->second >= TDCFragment::MAX_CHAMBERS || 
+	 switr->second + (size_t)hit.channel >= TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER
+	 )
+	throw cet::exception("FragmentToDigit") << "Chamber is " << chitr->second << "/" << TDCFragment::MAX_CHAMBERS
+						<< " hit channel is " << (size_t)hit.channel
+						<< " first wire in tdc is " << switr->second << "/" 
+						<< TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER;
+
+      hitsInChannel[chitr->second][switr->second + size_t (hit.channel)][size_t (hit.timeBin)] = 1;
       timeStamps   [chitr->second][switr->second + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
+
+      // LOG_VERBATIM("FragmentToDigit") << hitsInChannel[chitr->second][switr->second + size_t (hit.channel)][size_t (hit.timeBin)] << " " 
+      // 				      << (size_t)hit.channel << " " << switr->second << " " << (size_t)hit.timeBin << "\t" 
+      // 				      << timeStamps[chitr->second][switr->second + size_t (hit.channel)] << " " 
+      // 				      << tdced.tdcEventHeader.tdcTimeStamp;
+	
     }
       
   } // end loop over tdcEventData
@@ -1690,8 +1717,9 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
 					       detNames[cham],
 					       static_cast <unsigned long long> (timeStamps[cham][chan]))
 			      );
-      
+
     }
+    
   } // end loops to create AuxDetDigits
 
   return;
