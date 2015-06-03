@@ -1025,11 +1025,11 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
     LOG_VERBATIM("FragmentToDigit") << "  Trig: " << triggerID << " T/P/W:  " << v1740DataBlockCount <<"/"<<v1751DataBlockCount<<"/"<<WChamDataBlockCount;
 
     if (v1740DataBlockCount == 0)
-      FragCountsSameTrigger_1751vsTDC_NoTPC    ->Fill(WChamDataBlockCount, v1740DataBlockCount);
+      FragCountsSameTrigger_1751vsTDC_NoTPC    ->Fill(WChamDataBlockCount, v1751DataBlockCount);
     else if (v1740DataBlockCount == 1)
-      FragCountsSameTrigger_1751vsTDC_WithTPC  ->Fill(WChamDataBlockCount, v1740DataBlockCount);
+      FragCountsSameTrigger_1751vsTDC_WithTPC  ->Fill(WChamDataBlockCount, v1751DataBlockCount);
     else if (v1740DataBlockCount > 1)
-      FragCountsSameTrigger_1751vsTDC_ExtraTPC ->Fill(WChamDataBlockCount, v1740DataBlockCount);
+      FragCountsSameTrigger_1751vsTDC_ExtraTPC ->Fill(WChamDataBlockCount, v1751DataBlockCount);
     
   } // for each data block
 
