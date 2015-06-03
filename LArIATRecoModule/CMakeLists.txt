@@ -2,9 +2,11 @@
 art_make(BASENAME_ONLY
          MODULE_LIBRARIES RawData
 	                  SummaryData
+			  Geometry
 			  Geometry_service
 			  RawDataUtilities
 			  RecoBase
+			  RecoBaseArt
 			  ${ART_FRAMEWORK_CORE}
 			  ${ART_FRAMEWORK_PRINCIPAL}
 			  ${ART_FRAMEWORK_SERVICES_REGISTRY}
