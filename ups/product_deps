@@ -14,7 +14,7 @@ larsoft		v04_09_00
 LariatFilters   v01_02
 lariatfragments v01_03_00
 artdaq_core     v1_04_11
-LariatBeamFiles v01_00
+LariatBeamFiles v01_00 - optional
 
 cetbuildtools   v4_09_02 - only_for_build
 end_product_list

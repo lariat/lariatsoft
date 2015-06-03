@@ -22,6 +22,10 @@ util::SignalShapingServiceT1034::SignalShapingServiceT1034(const fhicl::Paramete
 								    art::ActivityRegistry& /* reg */) 
   : fInit(false)
 {
+  
+  //std::cout<<std::endl;
+  //std::cout<<"Constructor"<<std::endl;
+  //std::cout<<std::endl;
   reconfigure(pset);
 }
 
@@ -29,7 +33,11 @@ util::SignalShapingServiceT1034::SignalShapingServiceT1034(const fhicl::Paramete
 //----------------------------------------------------------------------
 // Destructor.
 util::SignalShapingServiceT1034::~SignalShapingServiceT1034()
-{}
+{
+//std::cout<<std::endl;
+//std::cout<<"Destructor"<<std::endl;
+//std::cout<<std::endl;
+}
 
 
 //----------------------------------------------------------------------
@@ -37,7 +45,11 @@ util::SignalShapingServiceT1034::~SignalShapingServiceT1034()
 void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pset)
 {
   // Reset initialization flag.
-
+  
+  //std::cout<<std::endl;
+  //std::cout<<"Reconfigure"<<std::endl;
+  //std::cout<<std::endl;
+  
   fInit = false;
 
   // Reset kernels.
@@ -49,6 +61,10 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
 
   fADCTicksPerPCAtLowestASICGainSetting = pset.get<double>("ADCTicksPerPCAtLowestASICGainSetting");
   fASICGainInMVPerFC = pset.get<double>("ASICGainInMVPerFC");
+  
+  // #############################################
+  // ### Number of bins for the field response ###
+  // #############################################
   fNFieldBins = pset.get<int>("FieldBins");
   fCol3DCorrection = pset.get<double>("Col3DCorrection");
   fInd3DCorrection = pset.get<double>("Ind3DCorrection");
@@ -132,35 +148,40 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
 const util::SignalShaping&
 util::SignalShapingServiceT1034::SignalShaping(unsigned int channel) const
 {
+
+  //std::cout<<std::endl;
+  //std::cout<<"SignalShaping"<<std::endl;
+  //std::cout<<std::endl;
   if(!fInit)
     init();
 
   // Figure out plane type.
-
   art::ServiceHandle<geo::Geometry> geom;
-  //geo::SigType_t sigtype = geom->SignalType(channel);
-
-  // we need to distiguish the U and V planes
-  //geo::View_t view = geom->View(channel);
 
   // Return appropriate shaper.
 
   geo::SigType_t sigtype = geom->SignalType(channel);
   if (sigtype == geo::kInduction)
+     {
       return fIndVSignalShaping;
+      
+      
+     }
   else if (sigtype == geo::kCollection)
+      {
       return fColSignalShaping;
+      }
   else
+    {
+    std::cout<<"I've got a problem"<<std::endl;
+    std::cout<<std::endl;
     throw cet::exception("SignalShapingServiceT1034")<< "can't determine"
-                                                          << " SignalType\n";  
+                                                          << " SignalType\n";
+							  
+    }  
+
   
-//   if(view == geo::kU)
-//     
-//   else if(view == geo::kV)
-    
-//   else if(view == geo::kZ)
-//     return fColSignalShaping;
-  
+
   return fColSignalShaping;
 }
 
@@ -171,9 +192,14 @@ util::SignalShapingServiceT1034::SignalShaping(unsigned int channel) const
 // All public methods should ensure that this method is called as necessary.
 void util::SignalShapingServiceT1034::init()
 {
+
+  //std::cout<<std::endl;
+  //std::cout<<"Initalization"<<std::endl;
+  //std::cout<<std::endl;
+  
   if(!fInit) {
     fInit = true;
-
+    
     // Do microboone-specific configuration of SignalShaping by providing
     // microboone response and filter functions.
 
@@ -197,10 +223,11 @@ void util::SignalShapingServiceT1034::init()
     SetFilters();
 
     // Configure deconvolution kernels.
-
+    
+    
     fColSignalShaping.AddFilterFunction(fColFilter);
+    
     fColSignalShaping.CalculateDeconvKernel();
-
     fIndVSignalShaping.AddFilterFunction(fIndVFilter);
     fIndVSignalShaping.CalculateDeconvKernel();
   }
@@ -208,17 +235,34 @@ void util::SignalShapingServiceT1034::init()
 
 
 //----------------------------------------------------------------------
-// Calculate microboone field response.
+// Calculate LArIAT field response.
+//----------------------------------------------------------------------
 void util::SignalShapingServiceT1034::SetFieldResponse()
 {
   // Get services.
 
+  //std::cout<<std::endl;
+  //std::cout<<"SetFieldResponse"<<std::endl;
+  //std::cout<<std::endl;
+  
+  // #############################
+  // ### Load Geometry Service ###
+  // ############################# 
   art::ServiceHandle<geo::Geometry> geo;
+  
+  // ################################
+  // ### Load Detector Properties ###
+  // ################################
   art::ServiceHandle<util::DetectorProperties> detprop;
+  
+  // ####################################
+  // ### Load Liquid Argon Properties ###
+  // ####################################
   art::ServiceHandle<util::LArProperties> larp;
 
-  // Get plane pitch.
- 
+  // #################################
+  // ### Determine the plane pitch ###
+  // #################################
   double xyz1[3] = {0.};
   double xyz2[3] = {0.};
   double xyzl[3] = {0.};
@@ -226,11 +270,15 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
   geo->Plane(0).LocalToWorld(xyzl, xyz1);
   geo->Plane(1).LocalToWorld(xyzl, xyz2);
 
-  // this assumes all planes are equidistant from each other,
-  // probably not a bad assumption
+  // ### this assumes all planes are equidistant from each other, ###
+  // ###             probably not a bad assumption                ###
   double pitch = xyz2[0] - xyz1[0]; ///in cm
-
+  
+  // ############################################################
+  // ### Resizing the Collection and Induction Field response ###
+  // ############################################################
   fColFieldResponse.resize(fNFieldBins, 0.);
+  std::cout<<"fColFieldResponse.size() = "<<fColFieldResponse.size()<<std::endl;
   fIndVFieldResponse.resize(fNFieldBins, 0.);
 
   // set the response for the collection plane first
@@ -238,87 +286,121 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
 
   double driftvelocity=larp->DriftVelocity()/1000.;  
   double integral = 0.;
-  ////////////////////////////////////////////////////
-  if(fUseFunctionFieldShape) {
-
-    art::ServiceHandle<util::LArFFT> fft;
-    int signalSize = fft->FFTSize();
- //   std::vector<double> ramp(signalSize);
-    // TComplex kernBin;
-    // int size = signalSize/2;
-    // int bin=0;
-    //std::vector<TComplex> freqSig(size+1);
- //   std::vector<double> bipolar(signalSize);    
+  
+  // #################################################################
+  // ### If we are going to use the function field shape then this ###
+  // ###     variable must have been set true in the fcl file      ###
+  // #################################################################
+  if(fUseFunctionFieldShape) 
+     {
+     // ### Get the FFT service ###
+     art::ServiceHandle<util::LArFFT> fft;
+     // ### Set the size of the FFT, this should be some power 2^n such 
+     // ### that the size is greater than the readout window (for LAriAT 3072)
+     int signalSize = fft->FFTSize();
     
+    std::cout<<"signalSize = "<<signalSize<<std::endl;  
+    
+    // ### Resize the Field Response vector to the new signal size ###
     fColFieldResponse.resize(signalSize, 0.);
     fIndVFieldResponse.resize(signalSize, 0.);
-    
-  
-    
-    // Hardcoding. Bad. Temporary hopefully.
-  //  fIndVFieldFunc->SetParameter(4,fIndVFieldFunc->GetParameter(4)*signalSize);
-
-    for(int i = 0; i < signalSize; i++) {
-     //ramp[i]=;
-      fColFieldResponse[i]=fColFieldFunc->Eval(i);
-      integral += fColFieldResponse[i];
-      // rampc->Fill(i,ramp[i]);
-      //bipolar[i]=
-      fIndVFieldResponse[i]=fIndVFieldFunc->Eval(i);
-      // bipol->Fill(i,bipolar[i]);
-    }
+         
+    // #################################################################	 
+    // ### Evaluate the Collection/Induction Field Response Function ###
+    // ################################################################# 
+    for(int i = 0; i < signalSize; i++) 
+       {
+       //ramp[i]=;
      
-    for(int i = 0; i < signalSize; ++i){
-      fColFieldResponse[i] *= fColFieldRespAmp/integral;
-    }
+       fColFieldResponse[i]=fColFieldFunc->Eval(i);
+       //std::cout<<"fColFieldResponse[i] = "<<fColFieldResponse[i]<<std::endl;
+      
+       integral += fColFieldResponse[i];
+
+       fIndVFieldResponse[i]=fIndVFieldFunc->Eval(i);
+       //std::cout<<"fIndVFieldResponse[i] = "<<fIndVFieldResponse[i]<<std::endl;
+       }//<---End i loop
+     
+    // ##########################################################################################
+    // ### What does this do? I can't tell why you would do this so I comment it out (JAsaadi)###
+    // ##########################################################################################
+    for(int i = 0; i < signalSize; ++i)
+       {
+       fColFieldResponse[i] *= fColFieldRespAmp/integral;
+       //std::cout<<"fColFieldResponse[i] = "<<fColFieldResponse[i]<<std::endl;
+       
+       }
       
     //this might be not necessary if the function definition is not defined in the middle of the signal range  
    // fft->ShiftData(fIndVFieldResponse,signalSize/2.0);
 
-  } else if (fUseSimpleFieldShape) {
-   
-    mf::LogInfo("SignalShapingServiceT1034") << " using try-2 hard-coded field shapes " ;
+     }//<---End Using Function Field Shape 
+    
+    // #################################################################################
+    // ### Instead of using a function you can always just define a vector of points ###
+    // #################################################################################
+    else if (fUseSimpleFieldShape) 
+       {
+       
+       // ### Send a message that you are using the hard coded field shapes ###
+       mf::LogInfo("SignalShapingServiceT1034") << " using try-2 hard-coded field shapes " ;
+       
+       // ########################
+       // ### Collection Plane ###
+       // ########################
+       const int nbincPlane = 16;
+       double cPlaneResponse[nbincPlane] = 
+       {0,               0,               0,   0.02620087336,   0.02620087336, 
+        0.04366812227,    0.1310043668,    0.1659388646,    0.1397379913,    0.3711790393, 
+        0.06550218341,    0.0480349345,  -0.01310043668, -0.004366812227,               0, 
+        0
+       };
+       
+       // ----------------------------------------------
+       // --- Again the weird normalization (JAsaadi)---
+       // ----------------------------------------------
+       for(int i = 1; i < nbincPlane; ++i)
+         {
+         fColFieldResponse[i] = cPlaneResponse[i];
+         integral += fColFieldResponse[i];
+         }
 
-    const int nbincPlane = 16;
-    double cPlaneResponse[nbincPlane] = {
-      0,               0,               0,   0.02620087336,   0.02620087336, 
-      0.04366812227,    0.1310043668,    0.1659388646,    0.1397379913,    0.3711790393, 
-      0.06550218341,    0.0480349345,  -0.01310043668, -0.004366812227,               0, 
-      0
-    };
+       for(int i = 0; i < nbincPlane; ++i)
+         {
+         //fColFieldResponse[i] *= fColFieldRespAmp/integral;
+         fColFieldResponse[i] /= integral;
+         }
 
-    for(int i = 1; i < nbincPlane; ++i){
-      fColFieldResponse[i] = cPlaneResponse[i];
-      integral += fColFieldResponse[i];
-    }
+       // #######################
+       // ### Induction Plane ###
+       // #######################
+       const int nbinvPlane = 20;
+       double vPlaneResponse[nbinvPlane] = 
+       {0,               0,   0.01090909091,   0.01090909091,   0.01090909091, 
+        0.02181818182,   0.03272727273,    0.7636363636,     2.018181818,            2.04, 
+        1.090909091,     -1.03861518,    -1.757656458,    -1.757656458,    -1.118508655, 
+        -0.2396804261,  -0.07989347537, -0.007989347537,               0,               0
+       };
+       // ----------------------------------------------
+       // --- Again the weird normalization (JAsaadi)---
+       // ----------------------------------------------
+       for (int i = 0; i < nbinvPlane; ++i) 
+         {
+         //fIndVFieldResponse[i] = vPlaneResponse[i]*fIndVFieldRespAmp/(nbiniOld);
+         fIndVFieldResponse[i] = vPlaneResponse[i]/integral;
+         }
 
-    for(int i = 0; i < nbincPlane; ++i){
-      //fColFieldResponse[i] *= fColFieldRespAmp/integral;
-      fColFieldResponse[i] /= integral;
-    }
-
-    //const int nbiniOld = 6;
-  
-
-   
-    const int nbinvPlane = 20;
-    double vPlaneResponse[nbinvPlane] = {
-      0,               0,   0.01090909091,   0.01090909091,   0.01090909091, 
-      0.02181818182,   0.03272727273,    0.7636363636,     2.018181818,            2.04, 
-      1.090909091,     -1.03861518,    -1.757656458,    -1.757656458,    -1.118508655, 
-      -0.2396804261,  -0.07989347537, -0.007989347537,               0,               0
-    };
-
-    for (int i = 0; i < nbinvPlane; ++i) {
-      //fIndVFieldResponse[i] = vPlaneResponse[i]*fIndVFieldRespAmp/(nbiniOld);
-      fIndVFieldResponse[i] = vPlaneResponse[i]/integral;
-    }
-
-   } else {
+       }
+    // ##################################################################
+    // ### If you want to use the simple field shaping parameters and ###
+    // ###     you set all the other things to false you get this     ###
+    // ##################################################################
+    else {
 
     //////////////////////////////////////////////////
     mf::LogInfo("SignalShapingServiceT1034") << " using the old field shape " ;
-    int nbinc = TMath::Nint(fCol3DCorrection*(std::abs(pitch))/(driftvelocity*detprop->SamplingRate())); ///number of bins //KP
+    //int nbinc = TMath::Nint(fCol3DCorrection*(std::abs(pitch))/(driftvelocity*detprop->SamplingRate())); ///number of bins //KP
+    int nbinc = TMath::Nint(fCol3DCorrection*(std::abs(pitch))/(driftvelocity*128)); ///number of bins //KP
     
     double integral = 0.;
     for(int i = 1; i < nbinc; ++i){
@@ -332,7 +414,8 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
 
     // now the induction plane
     
-    int nbini = TMath::Nint(fInd3DCorrection*(std::abs(pitch))/(driftvelocity*detprop->SamplingRate()));//KP
+    //int nbini = TMath::Nint(fInd3DCorrection*(std::abs(pitch))/(driftvelocity*detprop->SamplingRate()));//KP
+    int nbini = TMath::Nint(fInd3DCorrection*(std::abs(pitch))/(driftvelocity*128));//KP
    
 
     for(int i = 0; i < nbini; ++i){
@@ -350,8 +433,12 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
 // Calculate microboone field response.
 void util::SignalShapingServiceT1034::SetElectResponse()
 {
+  //std::cout<<std::endl;
+  //std::cout<<"SetElectResponse"<<std::endl;
+  //std::cout<<std::endl;
+  
   // Get services.
-
+  
   art::ServiceHandle<geo::Geometry> geo;
   art::ServiceHandle<util::DetectorProperties> detprop;
   art::ServiceHandle<util::LArFFT> fft;
@@ -385,7 +472,8 @@ void util::SignalShapingServiceT1034::SetElectResponse()
   for(int i = 0; i < nticks; ++i){
 
     //convert time to microseconds, to match fElectResponse[i] definition
-    time[i] = (1.*i)*detprop->SamplingRate()*1e-3; 
+    //time[i] = (1.*i)*detprop->SamplingRate()*1e-3; 
+    time[i] = (1.*i)*128*1e-3;
     fElectResponse[i] = 
       4.31054*exp(-2.94809*time[i]/To)*Ao - 2.6202*exp(-2.82833*time[i]/To)*cos(1.19361*time[i]/To)*Ao
       -2.6202*exp(-2.82833*time[i]/To)*cos(1.19361*time[i]/To)*cos(2.38722*time[i]/To)*Ao
@@ -427,12 +515,19 @@ void util::SignalShapingServiceT1034::SetElectResponse()
 // Calculate microboone filter functions.
 void util::SignalShapingServiceT1034::SetFilters()
 {
+  
+  //std::cout<<std::endl;
+  //std::cout<<"SetFilters"<<std::endl;
+  //std::cout<<std::endl;
   // Get services.
-
+  
   art::ServiceHandle<util::DetectorProperties> detprop;
   art::ServiceHandle<util::LArFFT> fft;
 
-  double ts = detprop->SamplingRate();
+  //double ts = detprop->SamplingRate();
+  double ts = 128;
+  
+  //std::cout<<"ts = "<<ts<<std::endl;
   int n = fft->FFTSize() / 2;
 
   // Calculate collection filter.
@@ -445,7 +540,8 @@ void util::SignalShapingServiceT1034::SetFilters()
   fColFilterFunc->SetRange(0, double(n));
 
   for(int i=0; i<=n; ++i) {
-    double freq = 500. * i / (ts * n);      // Cycles / microsecond.
+    //double freq = 500. * i / (ts * n);      // Cycles / microsecond.
+    double freq = 1250. * i / (ts * n);      // Cycles / microsecond.
     double f = fColFilterFunc->Eval(freq);
     fColFilter[i] = TComplex(f, 0.);
   }
@@ -457,7 +553,9 @@ void util::SignalShapingServiceT1034::SetFilters()
    fIndVFilterFunc->SetRange(0, double(n));
 
   for(int i=0; i<=n; ++i) {
-    double freq = 500. * i / (ts * n);      // Cycles / microsecond.
+    //double freq = 350. * i / (ts * n);      // Cycles / microsecond.
+    //double freq = 500. * i / (ts * n);      // Cycles / microsecond.
+    double freq = 1000. * i / (ts * n);      // Cycles / microsecond.
     double f = fIndVFilterFunc->Eval(freq);
     fIndVFilter[i] = TComplex(f, 0.);
     }

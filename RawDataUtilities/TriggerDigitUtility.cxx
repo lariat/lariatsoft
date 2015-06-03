@@ -145,8 +145,10 @@ namespace rdu{
   std::vector<const raw::RawDigit*> TriggerDigitUtility::EventRawDigits() const
   {
     std::vector<const raw::RawDigit*> rdvec;
-
     for(auto rdpv : fTriggerRawDigits){
+    std::cout<<std::endl;
+    std::cout<<"rdpv.size() = "<<rdpv.size()<<std::endl;
+    std::cout<<std::endl;
       for(size_t r = 0; r < rdpv.size(); ++r) rdvec.push_back(rdpv[r].get());
     }
 
@@ -176,18 +178,27 @@ namespace rdu{
 						  << " triggers in this event";
 
     for(size_t r = 0; r < fTriggerRawDigits[t].size(); ++r) rdvec.push_back(fTriggerRawDigits[t][r].get());
-
+    std::cout<<"rdvec.size() = "<<rdvec.size()<<std::endl;
     return rdvec;
   }
 			   	 
   //----------------------------------------------------------------------------
   art::PtrVector<raw::RawDigit> const& TriggerDigitUtility::TriggerRawDigitsPtr(size_t const& t) const
   {
+  
+    art::PtrVector<raw::RawDigit> rdPtrVec; 
+    
     if(t > fTriggerRawDigits.size()) 
       throw cet::exception("TriggerDigitUtility") << "requested raw digits from trigger "
 						  << t << " but only " << fTriggerRawDigits.size()
 						  << " triggers in this event";
     return fTriggerRawDigits[t];
+    
+    //Edit JAsaadi
+    /*for(size_t r = 0; r < fTriggerRawDigits[t].size(); ++r) rdPtrVec.push_back(fTriggerRawDigits[r].get());
+    std::cout<<"rdPtrVec.size() = "<<rdPtrVec.size()<<std::endl;
+    return rdPtrVec;*/
+    
   }
 
   //----------------------------------------------------------------------------
