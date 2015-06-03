@@ -65,7 +65,11 @@ public:
 				std::vector<double> y_kink_list,
 				std::vector<double> x_dist_list,
 				std::vector<double> y_dist_list,
-				std::vector<double> z_dist_list );
+				std::vector<double> z_dist_list,
+				std::vector<double> x_face_list,
+				std::vector<double> y_face_list,
+				std::vector<double> theta_list,
+				std::vector<double> phi_list );
   void convertDigitsToVectors( std::vector<const raw::AuxDetDigit*> the_digits_1,
 			       std::vector<const raw::AuxDetDigit*> the_digits_2,
 			       std::vector<const raw::AuxDetDigit*> the_digits_3,
@@ -96,7 +100,10 @@ private:
   TH1F* fX_Dist;
   TH1F* fY_Dist;
   TH1F* fZ_Dist;
-  
+  TH1F* fX_Face_Dist;
+  TH1F* fY_Face_Dist;
+  TH1F* fTheta_Dist;
+  TH1F* fPhi_Dist;
 
 
 };
@@ -145,6 +152,11 @@ void WireChamberTrackBuilder::produce(art::Event & e)
   std::vector<double> x_dist_list;
   std::vector<double> y_dist_list;
   std::vector<double> z_dist_list;
+  std::vector<double> x_face_list;
+  std::vector<double> y_face_list;
+  std::vector<double> theta_list;
+  std::vector<double> phi_list;
+  
   std::vector<std::vector<WCHitList> > good_hits; //Two vectors: WC#, axis. - Will be cleared for each trigger
 
   //Initializing the good hit arrays to a default state - these clear for every trigger
@@ -187,6 +199,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     std::vector<float> hit_channel_vect;
     std::vector<float> hit_time_bin_vect;
 
+    /*
     convertDigitsToVectors( WireChamber1Digits,
 			    WireChamber2Digits,
 			    WireChamber3Digits,
@@ -194,13 +207,13 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 			    tdc_number_vect,
 			    hit_channel_vect,
 			    hit_time_bin_vect );
+    */
 
 
 
 
 
 
-    /*
     //Getting the dqm data for testing the module
     int tdc_num = 0;
     float channel = 0;
@@ -223,7 +236,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     }
     myfile.close();
 
-    */    
+
     
    
     //PUT HITFINDING/CONVERSION ALG HERE    
@@ -239,6 +252,10 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 					 x_dist_list,
 					 y_dist_list,
 					 z_dist_list,
+					 x_face_list,
+					 y_face_list,
+					 theta_list,
+					 phi_list,
 					 good_hits,
 					 verbose,
 					 good_trigger_counter,
@@ -252,9 +269,11 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 			  y_kink_list,
 			  x_dist_list,
 			  y_dist_list,
-			  z_dist_list);
-
-
+			  z_dist_list,
+			  x_face_list,
+			  y_face_list,
+			  theta_list,
+			  phi_list );
 
 
 }
@@ -269,7 +288,11 @@ void WireChamberTrackBuilder::beginJob()
   fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",120,-60,60);
   fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",120,-60,60);
   fZ_Dist = tfs->make<TH1F>("Z_Dist","Z distance between US/DS tracks at midplane (mm)",120,-60,60);
-  
+  fX_Face_Dist = tfs->make<TH1F>("X_Face_Dist","X Location of Track's TPC Entry (mm)",200,-400,400);
+  fY_Face_Dist = tfs->make<TH1F>("Y_Face_Dist","Y Location of Track's TPC Entry (mm)",200,-400,400);
+  fTheta_Dist = tfs->make<TH1F>("Theta_Dist","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
+  fPhi_Dist = tfs->make<TH1F>("Phi_Dist","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
+
   fReco_Pz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
   fReco_Pz->GetYaxis()->SetTitle("Tracks per 10 MeV");
 
@@ -330,7 +353,11 @@ void WireChamberTrackBuilder::plotTheTrackInformation( std::vector<double> reco_
 						       std::vector<double> y_kink_list,
 						       std::vector<double> x_dist_list,
 						       std::vector<double> y_dist_list,
-						       std::vector<double> z_dist_list )
+						       std::vector<double> z_dist_list,
+						       std::vector<double> x_face_list,
+						       std::vector<double> y_face_list,
+						       std::vector<double> theta_list,
+						       std::vector<double> phi_list )
 {
   //Loop through the tracks and fill
   for( size_t iTrack = 0; iTrack < reco_pz_list.size(); ++iTrack ){
@@ -339,6 +366,10 @@ void WireChamberTrackBuilder::plotTheTrackInformation( std::vector<double> reco_
     fX_Dist->Fill(x_dist_list.at(iTrack));
     fY_Dist->Fill(y_dist_list.at(iTrack));
     fZ_Dist->Fill(z_dist_list.at(iTrack));
+    fX_Face_Dist->Fill(x_face_list.at(iTrack));
+    fY_Face_Dist->Fill(y_face_list.at(iTrack));
+    fTheta_Dist->Fill(theta_list.at(iTrack));
+    fPhi_Dist->Fill(phi_list.at(iTrack));
   }
 		  
 }

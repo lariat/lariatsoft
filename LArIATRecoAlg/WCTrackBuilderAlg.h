@@ -56,20 +56,26 @@ class WCTrackBuilderAlg{
   
   void firstFunction();
   
+  
   void reconstructTracks( std::vector<int> tdc_number_vect,
-			  std::vector<float> hit_channel_vect,
-			  std::vector<float> hit_time_bin_vect,
-			  std::vector<std::vector<double> > & reco_pz_array,
-			  std::vector<double> & reco_pz_list,               
-			  std::vector<double> & y_kink_list,
-			  std::vector<double> & x_dist_list,
-			  std::vector<double> & y_dist_list,
-			  std::vector<double> & z_dist_list,
-			  std::vector<std::vector<WCHitList> > & good_hits,
-			  bool verbose,
-			  int & good_trigger_counter,
-			  int trigger_number,
-			  int track_count);
+					     std::vector<float> hit_channel_vect,
+					     std::vector<float> hit_time_bin_vect,
+					     std::vector<std::vector<double> > & reco_pz_array,
+					     std::vector<double> & reco_pz_list,               
+					     std::vector<double> & y_kink_list,
+					     std::vector<double> & x_dist_list,
+					     std::vector<double> & y_dist_list,
+					     std::vector<double> & z_dist_list,
+					     std::vector<double> & x_face_list,
+					     std::vector<double> & y_face_list,
+					     std::vector<double> & incoming_theta_list,
+					     std::vector<double> & incoming_phi_list,
+					     std::vector<std::vector<WCHitList> > & good_hits,
+					     bool verbose,
+					     int & good_trigger_counter,
+					     int trigger_number,
+					     int track_count);
+
 
   void getTrackMom_Kink_End(WCHitList track,
 					       float & reco_pz,
@@ -81,14 +87,18 @@ class WCTrackBuilderAlg{
 						float (&pos_us)[3],
 						float (&pos_ds)[3]);
   
-  void buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
-					      std::vector<std::vector<double> > & reco_pz_array,
-					      std::vector<double> & reco_pz_list,
-					      std::vector<double> & y_kink_list,
-					      std::vector<double> & x_dist_list,
-					      std::vector<double> & y_dist_list,
-					      std::vector<double> & z_dist_list,
-					      int & track_count );
+void buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
+					    std::vector<std::vector<double> > & reco_pz_array,
+					    std::vector<double> & reco_pz_list,
+					    std::vector<double> & y_kink_list,
+					    std::vector<double> & x_dist_list,
+					    std::vector<double> & y_dist_list,
+					    std::vector<double> & z_dist_list,
+					    int & track_count,
+					    std::vector<double> & x_on_tpc_face_list,
+					    std::vector<double> & y_on_tpc_face_list,
+					    std::vector<double> & incoming_theta_list,
+					    std::vector<double> & incoming_phi_list);
 
   bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
 					      std::vector<std::vector<double> > & reco_pz_array);
@@ -157,7 +167,15 @@ void initializeBuffers( std::vector<std::vector<float> > & hit_time_buffer,
 					   std::vector<std::vector<float> > & cluster_time_buffer,
 					   std::vector<std::vector<float> > & cluster_wire_buffer );
 
-
+ void findTrackOnTPCInfo(WCHitList track,
+			 float &x,
+			 float &y,
+			 float &theta,
+			 float &phi);
+ 
+ void transformWCHits( float (&WC3_point)[3],
+		       float (&WC4_point)[3]);
+ 
   
 
 
@@ -224,6 +242,13 @@ void initializeBuffers( std::vector<std::vector<float> > & hit_time_buffer,
   float mid_plane_z;
   float mid_plane_slope_xz;
   float mid_plane_z_int_xz;
+
+  float center_of_tpc[3];
+  float half_length_of_tpc;
+  float euler_phi;
+  float euler_theta;
+  float euler_psi;
+
 
   //Misc
   float fB_field_tesla;

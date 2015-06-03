@@ -93,6 +93,13 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   mid_plane_slope_xz = tan(8.0*3.141592654/180);
   mid_plane_z_int_xz = mid_plane_z - mid_plane_slope_xz * mid_plane_x;
 
+  center_of_tpc[0] = -1200;  //First appx
+  center_of_tpc[1] = 0;
+  center_of_tpc[2] = 8500;
+  half_length_of_tpc = 450; //mm	      
+  euler_phi = -90.0*3.141592654/180; //ra
+  euler_theta = -3*3.141592654/180; //rad
+  euler_psi = 90.0*3.141592654/180; //rad
 }
 
 //--------------------------------------------------------------  
@@ -128,6 +135,10 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 					   std::vector<double> & x_dist_list,
 					   std::vector<double> & y_dist_list,
 					   std::vector<double> & z_dist_list,
+					   std::vector<double> & x_face_list,
+					   std::vector<double> & y_face_list,
+					   std::vector<double> & incoming_theta_list,
+					   std::vector<double> & incoming_phi_list,
 					   std::vector<std::vector<WCHitList> > & good_hits,
 					   bool verbose,
 					   int & good_trigger_counter,
@@ -157,7 +168,7 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   //Finding the hits to be used in momentum reconstruction
   //Note here that only one hit may be accepted from a cluster. The idea is that a particle passing through the MWPC causes noise
   //that is spatially and temporally clustered around the initial hit of the particle. 
-  //In addition, if sufficiently close together, two or more good hits can be averaged
+   //In addition, if sufficiently close together, two or more good hits can be averaged
   
   findGoodHits(cluster_time_buffer,cluster_wire_buffer,good_hits);
   
@@ -192,7 +203,19 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 
 
 
-  buildTracksFromHits(good_hits,reco_pz_array,reco_pz_list,y_kink_list,x_dist_list,y_dist_list,z_dist_list,track_count);
+  buildTracksFromHits(good_hits,
+		      reco_pz_array,
+		      reco_pz_list,
+		      y_kink_list,
+		      x_dist_list,
+		      y_dist_list,
+		      z_dist_list,
+		      track_count,
+		      x_face_list,
+		      y_face_list,
+		      incoming_theta_list,
+		      incoming_phi_list);
+
   
 
   
@@ -334,7 +357,12 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 					    std::vector<double> & x_dist_list,
 					    std::vector<double> & y_dist_list,
 					    std::vector<double> & z_dist_list,
-					    int & track_count )
+					    int & track_count,
+					    std::vector<double> & x_on_tpc_face_list,
+					    std::vector<double> & y_on_tpc_face_list,
+					    std::vector<double> & incoming_theta_list,
+					    std::vector<double> & incoming_phi_list)
+					    
 					   
 {
   //Reconstructed momentum buffer for storing pz for all combinations in this trigger
@@ -369,12 +397,19 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  float reco_pz = 0;
 		  float y_kink = 0;
 		  float dist_array[3] = {0,0,0};
+		  float x_on_tpc_face = 0;
+		  float y_on_tpc_face = 0;
+		  float incoming_theta = 0;
+		  float incoming_phi = 0;
+		  
+
 		  
 		  //Previously track_p_extrap_dists
 		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array);
-		  
-		  //		  std::cout << "Reco_pz: " << reco_pz << std::endl;
 
+		  //Get things like x/y on the tpc face, theta, phi for track
+		  findTrackOnTPCInfo(track,x_on_tpc_face,y_on_tpc_face,incoming_theta,incoming_phi);		
+		  
 		  //Storing the momentum in the buffer that will be
 		  //pushed back into the final reco_pz_array for this trigger
 		  reco_pz_buffer.push_back(reco_pz);
@@ -385,6 +420,10 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  x_dist_list.push_back(dist_array[0]);
 		  y_dist_list.push_back(dist_array[1]);
 		  z_dist_list.push_back(dist_array[2]);
+		  x_on_tpc_face_list.push_back(x_on_tpc_face);
+		  y_on_tpc_face_list.push_back(y_on_tpc_face);
+		  incoming_theta_list.push_back(incoming_theta);
+		  incoming_phi_list.push_back(incoming_phi);
 		  track_count_this_trigger++;
 		  track_count++;
 		}
@@ -415,7 +454,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   bool skip = false;
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
-      if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){
+      if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){
 	skip = true;
 	break;
       }
@@ -863,4 +902,75 @@ void WCTrackBuilderAlg::initializeBuffers( std::vector<std::vector<float> > & hi
 }
 
 
+
+
+//=====================================================================
+void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, float &theta, float &phi )
+{
+  
+  //Get position vectors of the points on WC3 and WC4
+  float WC3_point[3] = { x_cntr_3 + track.hits.at(4).wire*float(cos(3.141592654/180*(3.0))),
+			   y_cntr_3 + track.hits.at(5).wire,
+			   z_cntr_3 + track.hits.at(4).wire*float(sin(3.141592654/180*(3.0))) };
+  float WC4_point[3] = { x_cntr_4 + track.hits.at(6).wire*float(cos(3.141592654/180*(3.0))),
+			   y_cntr_4 + track.hits.at(7).wire,
+			   z_cntr_4 + track.hits.at(6).wire*float(sin(3.141592654/180*(3.0))) };
+
+  std::cout << "Pre: WC3: (" << WC3_point[0] << "," << WC3_point[1] << "," << WC3_point[2] << ")" << " ----> WC4: " <<
+    "(" << WC4_point[0] << "," << WC4_point[1] << "," << WC4_point[2] << ")" << std::endl;
+
+
+  transformWCHits(WC3_point,WC4_point);
+
+  std::cout << "Post: WC3: (" << WC3_point[0] << "," << WC3_point[1] << "," << WC3_point[2] << ")" << " ----> WC4: " <<
+    "(" << WC4_point[0] << "," << WC4_point[1] << "," << WC4_point[2] << ")" << std::endl;
+
+  //Now have hit vectors in the frame of the TPC. Now we recreate the second track and find its
+  //intersection with the upstream plane of the TPC. In this new frame, the upstream plane is just
+  //Z = -450 mm. So we parametrize the track with t and find at which t Z = -450. We then use that
+  //to get X and Y intercepts.
+  
+  float parameter_t = (-1*half_length_of_tpc-WC3_point[2])/(WC4_point[2]-WC3_point[2]);
+  float x_at_US_plane = (WC3_point[0])+parameter_t*(WC4_point[0]-WC3_point[0]);
+  float y_at_US_plane = (WC3_point[1])+parameter_t*(WC4_point[1]-WC3_point[1]);
+  
+  x = x_at_US_plane;
+  y = y_at_US_plane;
+  float r = pow(pow(x-WC4_point[0],2)+pow(y-WC4_point[1],2),0.5);
+  std::cout << "r: " << r << ", denom: " << -1*half_length_of_tpc-WC4_point[2] << ", x_face: " << x << ", WC4_point[2]: " << WC4_point[0] << ", WC3Point[0]: " << WC3_point[0] << std::endl;
+  theta = atan(r/(-1*half_length_of_tpc-WC4_point[2]));
+
+  //Calculating phi
+  float dY = WC4_point[1]-WC3_point[1];
+  float dX = WC4_point[0]-WC3_point[0];
+  if( dY > 0 && dX > 0 ){ phi = atan(dY/dX); }
+  else if( dY > 0 && dX < 0 ){ phi = atan(dY/dX)+3.141592654; }
+  else if( dY < 0 && dX < 0 ){ phi = atan(dY/dX)+3.141592654; }
+  else if( dY < 0 && dX > 0 ){ phi = atan(dY/dX)+6.28318; }
+  else if( dY == 0 && dX == 0 ){ phi = 0; }//defined by convention
+  else if( dY == 0 ){
+    if( dX > 0 ){ phi = 0; }
+    else{ phi = 3.141592654; }
+  }
+  else if( dX == 0 ){
+    if( dY > 0 ){ phi = 3.141592654/2; }
+    else{ phi = 3.141592654*3/2; }
+  }
+  else{ std::cout << "One should never reach here." << std::endl; }
+  
+
+}
+  
+//=====================================================================
+//Transform these into the coordinate system of the TPC
+void WCTrackBuilderAlg::transformWCHits( float (&WC3_point)[3],
+		      float (&WC4_point)[3])
+{
+  //First transformation: a translation by the location of the TPC
+  for( int iDim = 0; iDim < 3; ++iDim ){
+    WC3_point[iDim] = WC3_point[iDim] - center_of_tpc[iDim];
+    WC4_point[iDim] = WC4_point[iDim] - center_of_tpc[iDim];
+  }
+   
+}
 
