@@ -1005,8 +1005,8 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
         unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
         fTriggerToCAENDataBlocks[triggerID].push_back(caenFrag);
         numberMatchedCaenDataBlocks[boardId] += 1;
-	if (deviceID == 0) ++v1740DataBlockCount; //Also need to check for the other v1740s somehow
-	if (deviceID == 8) ++v1751DataBlockCount; //Also need to check for the other v17451 somehow
+        if (deviceID == 0) ++v1740DataBlockCount; //Also need to check for the other v1740s somehow
+        if (deviceID == 8) ++v1751DataBlockCount; //Also need to check for the other v17451 somehow
       }
 
       else if (deviceID == 10) {
@@ -1015,10 +1015,12 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
           std::vector< std::vector<TDCFragment::TdcEventData> > &tdcEvents = tdcFrag.tdcEvents;
           fTriggerToTDCDataBlocks[triggerID].push_back(tdcEvents[idx]);
           numberMatchedMwpcDataBlocks += 1;
-	  ++WChamDataBlockCount;
+          ++WChamDataBlockCount;
         }//if numberTdcFrags > 0
       }//if deviceID == 10
     } // end loop over selected data blocks
+
+    triggerID += 1;
 
     LOG_VERBATIM("FragmentToDigit") << "  Trig: " << triggerID << " T/P/W:  " << v1740DataBlockCount <<"/"<<v1751DataBlockCount<<"/"<<WChamDataBlockCount;
 
