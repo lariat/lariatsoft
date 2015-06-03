@@ -92,7 +92,7 @@ private:
   int fNumber_wires_per_tdc;
  
   //Misc
-  bool verbose;
+  bool fVerbose;
 
   //Histograms for plotting
   TH1F* fReco_Pz;
@@ -116,9 +116,7 @@ WireChamberTrackBuilder::WireChamberTrackBuilder(fhicl::ParameterSet const & pse
 {  
   fNumber_wire_chambers = 4;  
   fNumber_wires_per_tdc = 64;
-  verbose = false;
-  
-
+  fVerbose = false;
   // Call appropriate produces<>() functions here.
   
 
@@ -189,7 +187,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     // ##################################################################################
 
     //Debug printing
-    if( verbose ){ std::cout << std::endl; std::cout << "OOOOOOOOOOOOOOOOOOO TRIGGER " << iTrig << " READOUT OOOOOOOOOOOOOOOOOOOOOOO" << std::endl;
+    if( fVerbose ){ std::cout << std::endl; std::cout << "OOOOOOOOOOOOOOOOOOO TRIGGER " << iTrig << " READOUT OOOOOOOOOOOOOOOOOOOOOOO" << std::endl;
     }
     std::cout << std::endl; std::cout << "OOOOOOOOOOOOOOOOOOO TRIGGER " << iTrig << " READOUT OOOOOOOOOOOOOOOOOOOOOOO" << std::endl;
     
@@ -211,10 +209,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 
 
 
-
-
-
-    //Getting the dqm data for testing the module
+    //Getting the dqm data for testing the module - temporarily read in from file
     int tdc_num = 0;
     float channel = 0;
     float time_bin = 0;
@@ -236,13 +231,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     }
     myfile.close();
 
-
-    
-   
-    //PUT HITFINDING/CONVERSION ALG HERE    
-
-        //PUT TRACK MOMENTUM RECO ALG HERE
-
+    //Do the track reconstruction
     fWCTrackBuilderAlg.reconstructTracks(tdc_number_vect,
 					 hit_channel_vect,
 					 hit_time_bin_vect,
@@ -257,7 +246,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 					 theta_list,
 					 phi_list,
 					 good_hits,
-					 verbose,
+					 fVerbose,
 					 good_trigger_counter,
 					 iTrig,
 					 track_count);

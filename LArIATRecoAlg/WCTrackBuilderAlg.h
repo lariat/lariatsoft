@@ -199,55 +199,54 @@ void initializeBuffers( std::vector<std::vector<float> > & hit_time_buffer,
   /////////////////////////////////
 
   // constants and survey data for position reconstruction
-  float delta_z_us;
-  float delta_z_ds;
-  float l_eff;
-  float mm_to_m;
-  float GeV_to_MeV;
+  float fDelta_z_us;
+  float fDelta_z_ds;
+  float fL_eff;
+  float fmm_to_m;
+  float fGeV_to_MeV;
 
   // center (cntr) of multi-wire proportional chambers
-  float x_cntr_1;
-  float y_cntr_1;
-  float z_cntr_1;
-  float x_cntr_2;
-  float y_cntr_2;
-  float z_cntr_2;
-  float x_cntr_3;
-  float y_cntr_3;
-  float z_cntr_3;
-  float x_cntr_4;
-  float y_cntr_4;
-  float z_cntr_4;
+  float fX_cntr_1;
+  float fY_cntr_1;
+  float fZ_cntr_1;
+  float fX_cntr_2;
+  float fY_cntr_2;
+  float fZ_cntr_2;
+  float fX_cntr_3;
+  float fY_cntr_3;
+  float fZ_cntr_3;
+  float fX_cntr_4;
+  float fY_cntr_4;
+  float fZ_cntr_4;
 
   // derive some useful geometric/al constants
   // upstream (us) leg center line projected onto xz-plane
-  float cntr_slope_xz_us;
-  float cntr_z_int_xz_us_1;
-  float cntr_z_int_xz_us_2;
-  float cntr_z_int_xz_us;
+  float fCntr_slope_xz_us;
+  float fCntr_z_int_xz_us_1;
+  float fCntr_z_int_xz_us_2;
+  float fCntr_z_int_xz_us;
 
   // downstream (ds) leg center line projected onto xz-plane
-  float cntr_slope_xz_ds;
-  float cntr_z_int_xz_ds_3;
-  float cntr_z_int_xz_ds_4;
-  float cntr_z_int_xz_ds;
+  float fCntr_slope_xz_ds;
+  float fCntr_z_int_xz_ds_3;
+  float fCntr_z_int_xz_ds_4;
+  float fCntr_z_int_xz_ds;
 
   // mid-plane
   // includes intersection point of upstream and downstream
   // center lines above and taken to be at 8 y-degrees from the
   // xy-plane
-  float mid_plane_x;
-  float mid_plane_z_us;
-  float mid_plane_z_ds;
-  float mid_plane_z;
-  float mid_plane_slope_xz;
-  float mid_plane_z_int_xz;
 
-  float center_of_tpc[3];
-  float half_length_of_tpc;
-  float euler_phi;
-  float euler_theta;
-  float euler_psi;
+  
+  float fMid_plane_x;
+  float fMid_plane_z_us;
+  float fMid_plane_z_ds;
+  float fMid_plane_z;
+  float fMid_plane_slope_xz;
+  float fMid_plane_z_int_xz;
+
+  float fCenter_of_tpc[3];
+  float fHalf_z_length_of_tpc;
 
 
   //Misc

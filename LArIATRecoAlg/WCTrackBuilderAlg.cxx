@@ -42,64 +42,61 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   fGoodHitAveragingEps = 2.0;
 
   //Survey constants
-  delta_z_us = 1551.15;  // millimeters
-  delta_z_ds = 1570.06;  // millimeters
-  l_eff = 1145.34706;  // the effective magnetic length of the
-  mm_to_m = 0.001;
-  GeV_to_MeV = 1000.0;
+  fDelta_z_us = 1551.15;  // millimeters
+  fDelta_z_ds = 1570.06;  // millimeters
+  fL_eff = 1145.34706;  // the effective magnetic length of the
+  fmm_to_m = 0.001;
+  fGeV_to_MeV = 1000.0;
   
   // center (cntr) of multi-wire proportional chambers
-  x_cntr_1 = -392.33;
-  y_cntr_1 = 0.0;
-  z_cntr_1 = 1683.59;
-  x_cntr_2 = -738.35;
-  y_cntr_2 = 0.0;
-  z_cntr_2 = 3195.65;
-  x_cntr_3 = -1019.89;
-  y_cntr_3 = 0.0;
-  z_cntr_3 = 5183.07;
-  x_cntr_4 = -1146.64;
-  y_cntr_4 = 0.0;
-  z_cntr_4 = 7587.99;
+  fX_cntr_1 = -392.33;
+  fY_cntr_1 = 0.0;
+  fZ_cntr_1 = 1683.59;
+  fX_cntr_2 = -738.35;
+  fY_cntr_2 = 0.0;
+  fZ_cntr_2 = 3195.65;
+  fX_cntr_3 = -1019.89;
+  fY_cntr_3 = 0.0;
+  fZ_cntr_3 = 5183.07;
+  fX_cntr_4 = -1146.64;
+  fY_cntr_4 = 0.0;
+  fZ_cntr_4 = 7587.99;
   
   // rough guess beginning 2015.02: moved WC4 33" along the 3deg beam.
   // x = -1146.64 mm = -1102.77 mm - sin(3 deg)*33"
   // z =  7587.99 mm =  6750.94 mm + cos(3 deg)*33"
-  // Positions from 2014 runs: (x_cntr_4, y_cntr_4, z_cntr_4) = (-1102.77, 0.0, 6750.94)
+  // Positions from 2014 runs: (fX_cntr_4, fY_cntr_4, fZ_cntr_4) = (-1102.77, 0.0, 6750.94)
   
   // derive some useful geometric/al constants
   
   // upstream (us) leg center line projected onto xz-plane
-  cntr_slope_xz_us = (z_cntr_2 - z_cntr_1)/(x_cntr_2 - x_cntr_1);
-  cntr_z_int_xz_us_1 = z_cntr_1 - (cntr_slope_xz_us * x_cntr_1);
-  cntr_z_int_xz_us_2 = z_cntr_2 - (cntr_slope_xz_us * x_cntr_2);
-  cntr_z_int_xz_us = (cntr_z_int_xz_us_1 + cntr_z_int_xz_us_2) / 2.0;
+  fCntr_slope_xz_us = (fZ_cntr_2 - fZ_cntr_1)/(fX_cntr_2 - fX_cntr_1);
+  fCntr_z_int_xz_us_1 = fZ_cntr_1 - (fCntr_slope_xz_us * fX_cntr_1);
+  fCntr_z_int_xz_us_2 = fZ_cntr_2 - (fCntr_slope_xz_us * fX_cntr_2);
+  fCntr_z_int_xz_us = (fCntr_z_int_xz_us_1 + fCntr_z_int_xz_us_2) / 2.0;
   
   // downstream (ds) leg center line projected onto xz-plane
-  cntr_slope_xz_ds = (z_cntr_4 - z_cntr_3)/(x_cntr_4 - x_cntr_3);
-  cntr_z_int_xz_ds_3 = z_cntr_3 - (cntr_slope_xz_ds * x_cntr_3);
-  cntr_z_int_xz_ds_4 = z_cntr_4 - (cntr_slope_xz_ds * x_cntr_4);
-  cntr_z_int_xz_ds = (cntr_z_int_xz_ds_3 + cntr_z_int_xz_ds_4) / 2.0;
+  fCntr_slope_xz_ds = (fZ_cntr_4 - fZ_cntr_3)/(fX_cntr_4 - fX_cntr_3);
+  fCntr_z_int_xz_ds_3 = fZ_cntr_3 - (fCntr_slope_xz_ds * fX_cntr_3);
+  fCntr_z_int_xz_ds_4 = fZ_cntr_4 - (fCntr_slope_xz_ds * fX_cntr_4);
+  fCntr_z_int_xz_ds = (fCntr_z_int_xz_ds_3 + fCntr_z_int_xz_ds_4) / 2.0;
   
   // mid-plane
   // includes intersection point of upstream and downstream
   // center lines above and taken to be at 8 y-degrees from the
   // xy-plane
-  mid_plane_x = -1.0 * (cntr_z_int_xz_ds - cntr_z_int_xz_us) / (cntr_slope_xz_ds - cntr_slope_xz_us);
+  fMid_plane_x = -1.0 * (fCntr_z_int_xz_ds - fCntr_z_int_xz_us) / (fCntr_slope_xz_ds - fCntr_slope_xz_us);
   
-  mid_plane_z_us = cntr_z_int_xz_us + cntr_slope_xz_us * mid_plane_x;
-  mid_plane_z_ds = cntr_z_int_xz_ds + cntr_slope_xz_ds * mid_plane_x;
-  mid_plane_z = (mid_plane_z_us + mid_plane_z_ds) / 2.0;
-  mid_plane_slope_xz = tan(8.0*3.141592654/180);
-  mid_plane_z_int_xz = mid_plane_z - mid_plane_slope_xz * mid_plane_x;
+  fMid_plane_z_us = fCntr_z_int_xz_us + fCntr_slope_xz_us * fMid_plane_x;
+  fMid_plane_z_ds = fCntr_z_int_xz_ds + fCntr_slope_xz_ds * fMid_plane_x;
+  fMid_plane_z = (fMid_plane_z_us + fMid_plane_z_ds) / 2.0;
+  fMid_plane_slope_xz = tan(8.0*3.141592654/180);
+  fMid_plane_z_int_xz = fMid_plane_z - fMid_plane_slope_xz * fMid_plane_x;
 
-  center_of_tpc[0] = -1200;  //First appx
-  center_of_tpc[1] = 0;
-  center_of_tpc[2] = 8500;
-  half_length_of_tpc = 450; //mm	      
-  euler_phi = -90.0*3.141592654/180; //ra
-  euler_theta = -3*3.141592654/180; //rad
-  euler_psi = 90.0*3.141592654/180; //rad
+  fCenter_of_tpc[0] = -1200;  //First appx
+  fCenter_of_tpc[1] = 0;
+  fCenter_of_tpc[2] = 8500;
+  fHalf_z_length_of_tpc = 450; //mm	      
 }
 
 //--------------------------------------------------------------  
@@ -264,18 +261,18 @@ void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
   float delta_x_ds = wire_x[3] - wire_x[2];
   float delta_y_ds = wire_y[3] - wire_y[2];
 
-  float atan_x_us = atan(delta_x_us / delta_z_us);
-  float atan_x_ds = atan(delta_x_ds / delta_z_ds);
+  float atan_x_us = atan(delta_x_us / fDelta_z_us);
+  float atan_x_ds = atan(delta_x_ds / fDelta_z_ds);
 
-  float atan_y_us = atan(delta_y_us / delta_z_us);
-  float atan_y_ds = atan(delta_y_ds / delta_z_ds);
+  float atan_y_us = atan(delta_y_us / fDelta_z_us);
+  float atan_y_ds = atan(delta_y_ds / fDelta_z_ds);
 
   
 
   //  std::cout << "Atan DS/US: " << atan_x_ds << "," << atan_x_us << std::endl;
 
   
-  reco_pz = (fabs(fB_field_tesla) * l_eff * mm_to_m * GeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us)));
+  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us)));
   // std::cout << "reco_pz inner: " << reco_pz << std::endl;
   y_kink = atan_y_us - atan_y_ds;
 
@@ -296,18 +293,18 @@ void WCTrackBuilderAlg::midPlaneExtrapolation(std::vector<float> x_wires,
 					      float (&pos_ds)[3])
 {
   // correct x and z for rotation of MWPCs about the vertical
-  float x[4] = { x_cntr_1 + x_wires[0] * float(cos(3.141592654/180*(13.0))),
-		   x_cntr_2 + x_wires[1] * float(cos(3.141592654/180*(13.0))),
-		   x_cntr_3 + x_wires[2] * float(cos(3.141592654/180*(3.0))),
-		   x_cntr_4 + x_wires[3] * float(cos(3.141592654/180*(3.0))) };
-  float y[4] = { y_cntr_1 + y_wires[0],
-		   y_cntr_2 + y_wires[1],
-		   y_cntr_3 + y_wires[2],
-		   y_cntr_4 + y_wires[3] };
-  float z[4] = { z_cntr_1 + x_wires[0] * float(sin(3.141592654/180*(13.0))),
-		   z_cntr_2 + x_wires[1] * float(sin(3.141592654/180*(13.0))),
-		   z_cntr_3 + x_wires[2] * float(sin(3.141592654/180*(3.0))),
-		   z_cntr_4 + x_wires[3] * float(sin(3.141592654/180*(3.0))) };
+  float x[4] = { fX_cntr_1 + x_wires[0] * float(cos(3.141592654/180*(13.0))),
+		   fX_cntr_2 + x_wires[1] * float(cos(3.141592654/180*(13.0))),
+		   fX_cntr_3 + x_wires[2] * float(cos(3.141592654/180*(3.0))),
+		   fX_cntr_4 + x_wires[3] * float(cos(3.141592654/180*(3.0))) };
+  float y[4] = { fY_cntr_1 + y_wires[0],
+		   fY_cntr_2 + y_wires[1],
+		   fY_cntr_3 + y_wires[2],
+		   fY_cntr_4 + y_wires[3] };
+  float z[4] = { fZ_cntr_1 + x_wires[0] * float(sin(3.141592654/180*(13.0))),
+		   fZ_cntr_2 + x_wires[1] * float(sin(3.141592654/180*(13.0))),
+		   fZ_cntr_3 + x_wires[2] * float(sin(3.141592654/180*(3.0))),
+		   fZ_cntr_4 + x_wires[3] * float(sin(3.141592654/180*(3.0))) };
   
   // upstream (us) leg, extrapolating forward to mid-plane
   float slope_xz_us = (z[1] - z[0])/(x[1] - x[0]);
@@ -315,8 +312,8 @@ void WCTrackBuilderAlg::midPlaneExtrapolation(std::vector<float> x_wires,
   float z_int_xz_us_2 = z[1] - slope_xz_us * x[1];
   float z_int_xz_us = (z_int_xz_us_1 + z_int_xz_us_2) / 2.0;
 
-  float x_us = (z_int_xz_us - mid_plane_z_int_xz) / (mid_plane_slope_xz - slope_xz_us);
-  float z_us = mid_plane_z_int_xz + mid_plane_slope_xz * x_us;
+  float x_us = (z_int_xz_us - fMid_plane_z_int_xz) / (fMid_plane_slope_xz - slope_xz_us);
+  float z_us = fMid_plane_z_int_xz + fMid_plane_slope_xz * x_us;
 
   float slope_yz_us = (y[1] - y[0]) / (z[1] - z[0]);
   float z_int_yz_us_1 = y[0] - slope_yz_us * z[0];
@@ -331,8 +328,8 @@ void WCTrackBuilderAlg::midPlaneExtrapolation(std::vector<float> x_wires,
   float z_int_xz_ds_2 = z[3] - slope_xz_ds * x[3];
   float z_int_xz_ds = (z_int_xz_ds_1 + z_int_xz_ds_2) / 2.0;
     
-  float x_ds = (z_int_xz_ds - mid_plane_z_int_xz) / (mid_plane_slope_xz - slope_xz_ds);
-  float z_ds = mid_plane_z_int_xz + mid_plane_slope_xz * x_ds;
+  float x_ds = (z_int_xz_ds - fMid_plane_z_int_xz) / (fMid_plane_slope_xz - slope_xz_ds);
+  float z_ds = fMid_plane_z_int_xz + fMid_plane_slope_xz * x_ds;
 
   float slope_yz_ds = (y[3] - y[2])/(z[3] - z[2]);
   float z_int_yz_ds_1 = y[2] - slope_yz_ds*z[2];
@@ -909,12 +906,12 @@ void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, 
 {
   
   //Get position vectors of the points on WC3 and WC4
-  float WC3_point[3] = { x_cntr_3 + track.hits.at(4).wire*float(cos(3.141592654/180*(3.0))),
-			   y_cntr_3 + track.hits.at(5).wire,
-			   z_cntr_3 + track.hits.at(4).wire*float(sin(3.141592654/180*(3.0))) };
-  float WC4_point[3] = { x_cntr_4 + track.hits.at(6).wire*float(cos(3.141592654/180*(3.0))),
-			   y_cntr_4 + track.hits.at(7).wire,
-			   z_cntr_4 + track.hits.at(6).wire*float(sin(3.141592654/180*(3.0))) };
+  float WC3_point[3] = { fX_cntr_3 + track.hits.at(4).wire*float(cos(3.141592654/180*(3.0))),
+			   fY_cntr_3 + track.hits.at(5).wire,
+			   fZ_cntr_3 + track.hits.at(4).wire*float(sin(3.141592654/180*(3.0))) };
+  float WC4_point[3] = { fX_cntr_4 + track.hits.at(6).wire*float(cos(3.141592654/180*(3.0))),
+			   fY_cntr_4 + track.hits.at(7).wire,
+			   fZ_cntr_4 + track.hits.at(6).wire*float(sin(3.141592654/180*(3.0))) };
 
   std::cout << "Pre: WC3: (" << WC3_point[0] << "," << WC3_point[1] << "," << WC3_point[2] << ")" << " ----> WC4: " <<
     "(" << WC4_point[0] << "," << WC4_point[1] << "," << WC4_point[2] << ")" << std::endl;
@@ -930,15 +927,15 @@ void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, 
   //Z = -450 mm. So we parametrize the track with t and find at which t Z = -450. We then use that
   //to get X and Y intercepts.
   
-  float parameter_t = (-1*half_length_of_tpc-WC3_point[2])/(WC4_point[2]-WC3_point[2]);
+  float parameter_t = (-1*fHalf_z_length_of_tpc-WC3_point[2])/(WC4_point[2]-WC3_point[2]);
   float x_at_US_plane = (WC3_point[0])+parameter_t*(WC4_point[0]-WC3_point[0]);
   float y_at_US_plane = (WC3_point[1])+parameter_t*(WC4_point[1]-WC3_point[1]);
   
   x = x_at_US_plane;
   y = y_at_US_plane;
   float r = pow(pow(x-WC4_point[0],2)+pow(y-WC4_point[1],2),0.5);
-  std::cout << "r: " << r << ", denom: " << -1*half_length_of_tpc-WC4_point[2] << ", x_face: " << x << ", WC4_point[2]: " << WC4_point[0] << ", WC3Point[0]: " << WC3_point[0] << std::endl;
-  theta = atan(r/(-1*half_length_of_tpc-WC4_point[2]));
+  std::cout << "r: " << r << ", denom: " << -1*fHalf_z_length_of_tpc-WC4_point[2] << ", x_face: " << x << ", WC4_point[2]: " << WC4_point[0] << ", WC3Point[0]: " << WC3_point[0] << std::endl;
+  theta = atan(r/(-1*fHalf_z_length_of_tpc-WC4_point[2]));
 
   //Calculating phi
   float dY = WC4_point[1]-WC3_point[1];
@@ -968,8 +965,8 @@ void WCTrackBuilderAlg::transformWCHits( float (&WC3_point)[3],
 {
   //First transformation: a translation by the location of the TPC
   for( int iDim = 0; iDim < 3; ++iDim ){
-    WC3_point[iDim] = WC3_point[iDim] - center_of_tpc[iDim];
-    WC4_point[iDim] = WC4_point[iDim] - center_of_tpc[iDim];
+    WC3_point[iDim] = WC3_point[iDim] - fCenter_of_tpc[iDim];
+    WC4_point[iDim] = WC4_point[iDim] - fCenter_of_tpc[iDim];
   }
    
 }
