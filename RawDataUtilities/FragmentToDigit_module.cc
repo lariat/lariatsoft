@@ -101,6 +101,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
+  void endJob() override;
   void reconfigure(fhicl::ParameterSet const & p) override;
   void beginRun(art::Run &run);
   void matchDataBlocks(LariatFragment * data);
@@ -166,10 +167,13 @@ public:
   void 	   makeMWPCDigits            (std::vector<TDCFragment::TdcEventData> const& tdcFrags,      
 				      std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
 
-  void LinFitUnweighted(const std::vector<double>& x,
-			const std::vector<double>& y,
-			double& m, double& c);
+  void     LinFitUnweighted(const std::vector<double>& x,
+			    const std::vector<double>& y,
+			    double& m, double& c);
 
+  void     InitializeMWPCContainers();
+  void     CleanUpMWPCContainers();
+  
 
 private:
 
@@ -180,7 +184,9 @@ private:
   std::vector<std::vector<unsigned int> >    fOpDetChID;               ///< channels on boards used for PMTs and SiPMs
   std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks; ///< map trigger ID to vector of CAEN blocks
   std::map< int, std::vector<TDCDataBlock> > fTriggerToTDCDataBlocks;  ///< map trigger ID to vector of TDC blocks
-
+  std::map<size_t, size_t>                   fTDCToStartWire;          ///< map TDCs to first wire attached to TDC
+  std::map<size_t, size_t>                   fTDCToChamber;            ///< map TDCs to the chamber they are attached
+  std::vector<std::string>                   fMWPCNames;               ///< vector to hold detector names of the MWPCs
 
   //----The commented out methods and data members below are deprecated----
   // void matchFragments(uint32_t            & Ntriggers,
@@ -307,6 +313,16 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void FragmentToDigit::beginJob()
 {
+  this->InitializeMWPCContainers();
+
+  return;
+}
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::endJob()
+{
+  this->CleanUpMWPCContainers();
+
   return;
 }
 
@@ -475,6 +491,10 @@ void FragmentToDigit::produce(art::Event & evt)
   evt.put(std::move(tdADAssns));
   evt.put(std::move(tdOPAssns));
   // evt.put(std::move(v1495Fragments));
+
+  delete data;
+  fTriggerToCAENDataBlocks.clear();
+  fTriggerToTDCDataBlocks .clear();
 
   return;  
 }
@@ -1572,8 +1592,6 @@ void FragmentToDigit::makeTriggerDigits(std::vector<CAENFragment>     const& cae
 }
 
 //------------------------------------------------------------------------------
-// set the name of the detector in the AuxDetDigit to be of the form
-// MWPCXX where XX is the controller Number
 // The map below indicates how each TDC maps to each Wire Chamber
 // channel            wires
 //   0   |-----------| 1
@@ -1624,63 +1642,69 @@ void FragmentToDigit::makeTriggerDigits(std::vector<CAENFragment>     const& cae
 // wires 1         128
 //
 // take the convention that vertical wire numbers start at channel 128
+void FragmentToDigit::InitializeMWPCContainers()
+{
+  this->CleanUpMWPCContainers();
+
+  // make the map of TDC number to detector name and tdc to starting channel
+  for(size_t tdc = 1; tdc < 17; ++tdc){
+    if(tdc < 5)       fTDCToChamber[tdc] = 0;
+    else if(tdc < 9)  fTDCToChamber[tdc] = 1;
+    else if(tdc < 13) fTDCToChamber[tdc] = 2;
+    else              fTDCToChamber[tdc] = 3;
+
+    if     (tdc == 1 || tdc == 5 || tdc == 9  || tdc == 13) fTDCToStartWire[tdc] = 0;
+    else if(tdc == 2 || tdc == 6 || tdc == 10 || tdc == 14) fTDCToStartWire[tdc] = 64;
+    else if(tdc == 3 || tdc == 7 || tdc == 11 || tdc == 15) fTDCToStartWire[tdc] = 128;
+    else if(tdc == 4 || tdc == 8 || tdc == 12 || tdc == 16) fTDCToStartWire[tdc] = 192;
+  }
+
+  fMWPCNames.resize(4);
+  fMWPCNames[0] = "MWPC1";
+  fMWPCNames[1] = "MWPC2";
+  fMWPCNames[2] = "MWPC3";
+  fMWPCNames[3] = "MWPC4";
+
+  return;
+}
+
+//------------------------------------------------------------------------------
+void FragmentToDigit::CleanUpMWPCContainers()
+{
+  fMWPCNames           .clear();
+  fTDCToStartWire      .clear();   
+  fTDCToChamber        .clear();
+
+  return;
+}
+
+//------------------------------------------------------------------------------
+// set the name of the detector in the AuxDetDigit to be of the form
+// MWPCXX where XX is the controller Number
 void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> const& tdcEventData,
 				     std::vector<raw::AuxDetDigit>               & mwpcAuxDigits)
 {
 
-  // make the map of TDC number to detector name and tdc to starting channel
-  std::map<size_t, size_t> tdcToStartWire;
-  std::map<size_t, size_t> tdcToChamber;
-  for(size_t tdc = 1; tdc < 17; ++tdc){
-    if(tdc < 5)       tdcToChamber[tdc] = 0;
-    else if(tdc < 9)  tdcToChamber[tdc] = 1;
-    else if(tdc < 13) tdcToChamber[tdc] = 2;
-    else              tdcToChamber[tdc] = 3;
-
-    if     (tdc == 1 || tdc == 5 || tdc == 9  || tdc == 13) tdcToStartWire[tdc] = 0;
-    else if(tdc == 2 || tdc == 6 || tdc == 10 || tdc == 14) tdcToStartWire[tdc] = 64;
-    else if(tdc == 3 || tdc == 7 || tdc == 11 || tdc == 15) tdcToStartWire[tdc] = 128;
-    else if(tdc == 4 || tdc == 8 || tdc == 12 || tdc == 16) tdcToStartWire[tdc] = 192;
-  }
-
-  // LOG_VERBATIM("FragmentToDigit") << "test tdc maps\n";
-  // for(auto chitr : tdcToChamber){
-  //   auto switr = tdcToStartWire.find(chitr.first);
-  //   LOG_VERBATIM("FragmetToDigit") << "chamber is "     << chitr.second 
-  // 				   << " tdc is "        << chitr.first
-  // 				   << " start wire is " << switr->second;
-  // }
-
-  std::vector<std::string> detNames(4);
-  detNames[0] = "MWPC1";
-  detNames[1] = "MWPC2";
-  detNames[2] = "MWPC3";
-  detNames[3] = "MWPC4";
+  size_t channelsPerChamber = TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER;
+  size_t hitsPerChannel     = TDCFragment::MAX_HITS;
+  size_t hitsPerChamber     = channelsPerChamber * hitsPerChannel;
 
   // vector to hold the channels for a single MWPC
-  std::vector< std::vector< std::vector<short> > > hitsInChannel;
-  hitsInChannel.resize(TDCFragment::MAX_CHAMBERS);
-  for(size_t cham = 0; cham < hitsInChannel.size(); ++cham){
-    hitsInChannel[cham].resize(TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER);
-    for(size_t chan = 0; chan < hitsInChannel[cham].size(); ++chan)
-      hitsInChannel[cham][chan].resize(TDCFragment::MAX_HITS, 0);
-  }
+  std::vector<short> chamberHits(TDCFragment::MAX_CHAMBERS * hitsPerChamber, 0);
+  std::vector<short> channelHits;
 
   // vector to hold the timeStamps for each channel in the MWPC
-  std::vector< std::vector<unsigned long long> > timeStamps;
-  timeStamps.resize(TDCFragment::MAX_CHAMBERS);
-  for(size_t cham = 0; cham < timeStamps.size(); ++cham) 
-    timeStamps[cham].resize(TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER, 0);
-      
+  std::vector<unsigned long long> chamberTimeStamps(TDCFragment::MAX_CHAMBERS * channelsPerChamber, 0);
+
   // LOG_VERBATIM("FragmentToDigit") << "there are " << tdcEventData.size() << " tdcEventData objects in the vector";
 
   for(auto const& tdced : tdcEventData){ 
 
     // determine the chamber and start wire
-    auto switr = tdcToStartWire.find(tdced.tdcEventHeader.tdcNumber);
-    auto chitr = tdcToChamber.find(tdced.tdcEventHeader.tdcNumber);
+    auto switr = fTDCToStartWire.find(tdced.tdcEventHeader.tdcNumber);
+    auto chitr = fTDCToChamber.find(tdced.tdcEventHeader.tdcNumber);
 
-    if( chitr == tdcToChamber.end() || switr == tdcToStartWire.end() )
+    if( chitr == fTDCToChamber.end() || switr == fTDCToStartWire.end() )
       throw cet::exception("FragmentToDigit") << "TDC number " << tdced.tdcEventHeader.tdcNumber
 					      << " is not present in map to chamber number or start wire";
 
@@ -1689,15 +1713,15 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
     
     for(auto const& hit : tdced.tdcHits){
       if(chitr->second >= TDCFragment::MAX_CHAMBERS || 
-	 switr->second + (size_t)hit.channel >= TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER
+	 switr->second + (size_t)hit.channel >= channelsPerChamber
 	 )
 	throw cet::exception("FragmentToDigit") << "Chamber is " << chitr->second << "/" << TDCFragment::MAX_CHAMBERS
 						<< " hit channel is " << (size_t)hit.channel
 						<< " first wire in tdc is " << switr->second << "/" 
-						<< TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER;
+						<< channelsPerChamber;
 
-      hitsInChannel[chitr->second][switr->second + size_t (hit.channel)][size_t (hit.timeBin)] = 1;
-      timeStamps   [chitr->second][switr->second + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
+      chamberHits      [chitr->second * hitsPerChamber + (switr->second + size_t (hit.channel))*hitsPerChannel + size_t (hit.timeBin)] = 1;
+      chamberTimeStamps[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
 
       // LOG_VERBATIM("FragmentToDigit") << hitsInChannel[chitr->second][switr->second + size_t (hit.channel)][size_t (hit.timeBin)] << " " 
       // 				      << (size_t)hit.channel << " " << switr->second << " " << (size_t)hit.timeBin << "\t" 
@@ -1710,12 +1734,16 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
 
   // now make the AuxDetDigits for this fragment
   for(size_t cham = 0; cham < TDCFragment::MAX_CHAMBERS; ++cham){
-    for(size_t chan = 0; chan < TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER; ++chan){
+    for(size_t chan = 0; chan < channelsPerChamber; ++chan){
       
+      // get the hits for this particular channel
+      channelHits.clear(); channelHits.resize(TDCFragment::MAX_HITS, 0);
+      for(size_t ch = 0; ch < channelHits.size(); ++ch) channelHits[ch] = chamberHits[cham*hitsPerChamber + chan*hitsPerChannel + ch];
+
       mwpcAuxDigits.push_back(raw::AuxDetDigit(static_cast <unsigned short> (chan),
-					       hitsInChannel[cham][chan],
-					       detNames[cham],
-					       static_cast <unsigned long long> (timeStamps[cham][chan]))
+					       channelHits,
+					       fMWPCNames[cham],
+					       static_cast <unsigned long long> (chamberTimeStamps[cham*channelsPerChamber + chan]))
 			      );
 
     }
