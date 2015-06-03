@@ -59,6 +59,7 @@
 //#include "TTree.h"
 #include "TGraph.h"
 #include "TF1.h"
+#include "TH2F.h"
 
 #include <memory>
 #include <functional>
@@ -187,6 +188,9 @@ private:
   std::map<size_t, size_t>                   fTDCToStartWire;          ///< map TDCs to first wire attached to TDC
   std::map<size_t, size_t>                   fTDCToChamber;            ///< map TDCs to the chamber they are attached
   std::vector<std::string>                   fMWPCNames;               ///< vector to hold detector names of the MWPCs
+  TH2F * FragCountsSameTrigger_1751vsTDC_NoTPC;
+  TH2F * FragCountsSameTrigger_1751vsTDC_WithTPC;
+  TH2F * FragCountsSameTrigger_1751vsTDC_ExtraTPC;
 
   //----The commented out methods and data members below are deprecated----
   // void matchFragments(uint32_t            & Ntriggers,
@@ -314,6 +318,10 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 void FragmentToDigit::beginJob()
 {
   this->InitializeMWPCContainers();
+
+  FragCountsSameTrigger_1751vsTDC_NoTPC   = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_NoTPC"   ,"FragCountsSameTrigger_1751vsTDC_NoTPC; Number TDC Data Blocks; Number v1751 Data Blocks"   ,6,-0.5,5.5,6,-0.5,5.5);
+  FragCountsSameTrigger_1751vsTDC_WithTPC = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_WithTPC" ,"FragCountsSameTrigger_1751vsTDC_WithTPC; Number TDC Data Blocks; Number v1751 Data Blocks" ,6,-0.5,5.5,6,-0.5,5.5);
+  FragCountsSameTrigger_1751vsTDC_ExtraTPC= tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_ExtraTPC","FragCountsSameTrigger_1751vsTDC_ExtraTPC; Number TDC Data Blocks; Number v1751 Data Blocks",6,-0.5,5.5,6,-0.5,5.5);
 
   return;
 }
@@ -996,6 +1004,10 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
     } // end loop over selected data blocks
 
+    int v1740DataBlockCount = 0;
+    int v1751DataBlockCount = 0;
+    int WChamDataBlockCount = 0;
+
     // now that we have our final list of selected data blocks for this
     // trigger ID, let's add them to the trigger ID to data block maps
     for (size_t j = 0; j < selectedIndices.size(); ++j) {
@@ -1009,21 +1021,32 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
         unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
         fTriggerToCAENDataBlocks[triggerID].push_back(caenFrag);
         numberMatchedCaenDataBlocks[boardId] += 1;
+        if (deviceID == 0) ++v1740DataBlockCount; //Also need to check for the other v1740s somehow
+        if (deviceID == 8) ++v1751DataBlockCount; //Also need to check for the other v17451 somehow
       }
 
       else if (deviceID == 10) {
         if (numberTdcFrags > 0) {
-          TDCFragment & tdcFrag = data->tdcFrags[0];
+          TDCFragment & tdcFrag = data->tdcFrags[0]; //The first and only spill's worth of TDC data.
           std::vector< std::vector<TDCFragment::TdcEventData> > &tdcEvents = tdcFrag.tdcEvents;
           fTriggerToTDCDataBlocks[triggerID].push_back(tdcEvents[idx]);
           numberMatchedMwpcDataBlocks += 1;
-        }
-      }
-
+          ++WChamDataBlockCount;
+        }//if numberTdcFrags > 0
+      }//if deviceID == 10
     } // end loop over selected data blocks
 
     triggerID += 1;
 
+    LOG_VERBATIM("FragmentToDigit") << "  Trig: " << triggerID << " T/P/W:  " << v1740DataBlockCount <<"/"<<v1751DataBlockCount<<"/"<<WChamDataBlockCount;
+
+    if (v1740DataBlockCount == 0)
+      FragCountsSameTrigger_1751vsTDC_NoTPC    ->Fill(WChamDataBlockCount, v1751DataBlockCount);
+    else if (v1740DataBlockCount == 1)
+      FragCountsSameTrigger_1751vsTDC_WithTPC  ->Fill(WChamDataBlockCount, v1751DataBlockCount);
+    else if (v1740DataBlockCount > 1)
+      FragCountsSameTrigger_1751vsTDC_ExtraTPC ->Fill(WChamDataBlockCount, v1751DataBlockCount);
+    
   } // for each data block
 
   LOG_VERBATIM("FragmentToDigit") << "  timeStampToDataBlockIndices.size(): " << timeStampToDataBlockIndices.size();
@@ -1045,6 +1068,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
                                   << numberMatchedMwpcDataBlocks << " / "
                                   << numberMwpcDataBlocks;
   LOG_VERBATIM("FragmentToDigit") << "\n";
+  
 
   return;
 }

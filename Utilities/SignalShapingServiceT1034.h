@@ -118,7 +118,7 @@ namespace util {
     util::SignalShaping fIndVSignalShaping;
     util::SignalShaping fColSignalShaping;
 
-    // Field response.
+    // Field response vectors.
 
     
     std::vector<double> fIndVFieldResponse;
