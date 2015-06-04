@@ -88,6 +88,7 @@ namespace rdu{
 	else if(detName.find("MWPC2")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
 	else if(detName.find("MWPC3")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
 	else if(detName.find("MWPC4")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
+	else if(detName.find("Halo")           != std::string::npos) fTriggerHaloDigits[t]         .push_back(addp);
 	else if(detName.find("WC1")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);
 	else if(detName.find("WC2")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);   
 	else if(detName.find("WC3")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);
@@ -516,6 +517,30 @@ namespace rdu{
   art::PtrVector<raw::AuxDetDigit> const& TriggerDigitUtility::TriggerMWPC4DigitsPtr(size_t const& t) const
   {
     return this->TriggerAuxDetDigitsPtr(t, fTriggerMWPC4Digits);
+  }
+
+  //----------------------------------------------------------------------------
+  std::vector<const raw::AuxDetDigit*> TriggerDigitUtility::EventHaloDigits() const
+  {
+    return this->EventAuxDetDigits(fTriggerHaloDigits);
+  }
+
+  //----------------------------------------------------------------------------
+  art::PtrVector<raw::AuxDetDigit> TriggerDigitUtility::EventHaloDigitsPtr() const
+  {
+    return this->EventAuxDetDigitsPtr(fTriggerHaloDigits);
+  }
+                     
+  //----------------------------------------------------------------------------
+  std::vector<const raw::AuxDetDigit*> TriggerDigitUtility::TriggerHaloDigits(size_t const& t) const
+  {
+    return this->TriggerAuxDetDigits(t, fTriggerHaloDigits);
+  }
+
+  //----------------------------------------------------------------------------
+  art::PtrVector<raw::AuxDetDigit> const& TriggerDigitUtility::TriggerHaloDigitsPtr(size_t const& t) const
+  {
+    return this->TriggerAuxDetDigitsPtr(t, fTriggerHaloDigits);
   }
 
   //----------------------------------------------------------------------------
