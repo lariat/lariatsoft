@@ -136,11 +136,12 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 					   std::vector<double> & y_face_list,
 					   std::vector<double> & incoming_theta_list,
 					   std::vector<double> & incoming_phi_list,
+					   std::vector<WCHitList> & trigger_final_tracks,
 					   std::vector<std::vector<WCHitList> > & good_hits,
 					   bool verbose,
 					   int & good_trigger_counter,
 					   int trigger_number,
-					   int track_count)
+					   int & track_count)
 {
   fVerbose = verbose;
   
@@ -155,18 +156,13 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   //Fill the buffers with the hit times and wires for this trigger value
   fillTimeAndWireBuffers( tdc_number_vect, hit_time_buffer, hit_wire_buffer, hit_time_bin_vect, hit_channel_vect );
   
-  //GOOD TO HERE
-  
   //Create a vector of clusters with DBSCAN, where each entry into cluster_time_buffer/cluster_wire_buffer is a different cluster
   createClusters( trigger_number, hit_time_buffer, hit_wire_buffer, cluster_time_buffer, cluster_wire_buffer );
-  
-  //GOOD TO HERE, MOST LIKELY
   
   //Finding the hits to be used in momentum reconstruction
   //Note here that only one hit may be accepted from a cluster. The idea is that a particle passing through the MWPC causes noise
   //that is spatially and temporally clustered around the initial hit of the particle. 
-   //In addition, if sufficiently close together, two or more good hits can be averaged
-  
+  //In addition, if sufficiently close together, two or more good hits can be averaged  
   findGoodHits(cluster_time_buffer,cluster_wire_buffer,good_hits);
   
   //Determine if one should skip this trigger based on whether there is at least one good hit in each wire chamber and axis
@@ -211,7 +207,8 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 		      x_face_list,
 		      y_face_list,
 		      incoming_theta_list,
-		      incoming_phi_list);
+		      incoming_phi_list,
+		      trigger_final_tracks);
 
   
 
@@ -358,15 +355,14 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 					    std::vector<double> & x_on_tpc_face_list,
 					    std::vector<double> & y_on_tpc_face_list,
 					    std::vector<double> & incoming_theta_list,
-					    std::vector<double> & incoming_phi_list)
+					    std::vector<double> & incoming_phi_list,
+					    std::vector<WCHitList> & track_list)
 					    
 					   
 {
   //Reconstructed momentum buffer for storing pz for all combinations in this trigger
   std::vector<double> reco_pz_buffer;
   int track_count_this_trigger = 0;
-
-  std::vector<WCHitList> track_list;
 
   //Loop through all combinations of tracks
   for( size_t iHit0 = 0; iHit0 < good_hits.at(0).at(0).hits.size(); ++iHit0 ){
@@ -388,7 +384,7 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  track.hits.push_back(good_hits.at(2).at(1).hits.at(iHit5));
 		  track.hits.push_back(good_hits.at(3).at(0).hits.at(iHit6));
 		  track.hits.push_back(good_hits.at(3).at(1).hits.at(iHit7));
-		  track_list.push_back(track);
+
 
 		  //Track reco info
 		  float reco_pz = 0;
@@ -406,6 +402,23 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 
 		  //Get things like x/y on the tpc face, theta, phi for track
 		  findTrackOnTPCInfo(track,x_on_tpc_face,y_on_tpc_face,incoming_theta,incoming_phi);		
+
+		  ////////////////////////////////////////////////////////////////////////////////////////////////
+		  //                                                                                            //
+		  // If you want to cut on quality of track, put a conditional here and use                     //
+		  // the values of y_kink, x/y/z distance, etc. to do the cut. Using this, you                  //
+		  // can decide whether to push back the track list (holds all of the hits for that             //
+		  // track) and the lists of interesting track quantities (momenta, x/y face, theta/phi, etc.). //
+		  //                                                                                            //
+		  // The lists are filled for all triggers, but don't worry - the module using the              //
+		  // reconstructTracks function has a way of identifying which tracks come from each trigger.   //
+		  //                                                                                            //
+		  ////////////////////////////////////////////////////////////////////////////////////////////////
+		  
+
+
+		  //
+		  track_list.push_back(track);
 		  
 		  //Storing the momentum in the buffer that will be
 		  //pushed back into the final reco_pz_array for this trigger

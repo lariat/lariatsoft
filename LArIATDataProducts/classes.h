@@ -30,6 +30,7 @@
 #include "RawData/ExternalTrigger.h"
 #include "RawData/TriggerData.h"
 #include "RawData/OpDetWaveform.h"
+#include "WCTrack.h"
 
 //
 // Only include objects that we would like to be able to put into the event.
@@ -47,8 +48,8 @@ template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::WCTrack> >  
 template class std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::Trigger> >    ;
 template class std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::AuxDetDigit> >;
 
-template class art::Assns<raw::Trigger,     ldp::WCTrack,      void> >; 
-template class art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void> >;
+template class art::Assns<raw::Trigger,     ldp::WCTrack,      void>; 
+template class art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>;
 
 template class art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >;

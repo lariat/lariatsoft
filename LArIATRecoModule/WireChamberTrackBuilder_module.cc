@@ -23,14 +23,15 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "Utilities/AssociationUtil.h"
 
 //LArIAT Things
 #include "RawDataUtilities/TriggerDigitUtility.h"
 #include "LArIATRecoAlg/WCTrackBuilderAlg.h"
-
+#include "LArIATDataProducts/WCTrack.h"
 
 #include <memory>
-
+#include <utility>
 
 class WireChamberTrackBuilder;
 
@@ -77,6 +78,10 @@ public:
 			       std::vector<int> & tdc_number_vect,
 			       std::vector<float> & hit_channel_vect,
 			       std::vector<float> & hit_time_bin_vect );
+  void createVectorsFromHitLists(WCHitList final_track,
+				 std::vector<int> & WC_axis_vect,
+				 std::vector<float> & hit_wire_vect,
+				 std::vector<float> & hit_time_vect);
     
 
 private:
@@ -119,6 +124,9 @@ WireChamberTrackBuilder::WireChamberTrackBuilder(fhicl::ParameterSet const & pse
   fVerbose = false;
   // Call appropriate produces<>() functions here.
   
+  produces<std::vector<ldp::WCTrack> >();
+  produces<art::Assns<raw::Trigger, ldp::WCTrack> >();
+  
 
 }
 
@@ -127,11 +135,13 @@ void WireChamberTrackBuilder::produce(art::Event & e)
   // Implementation of required member function here.
 
   //Creating the WireChamberTrack collection
-  // std::unique_ptr<std::vector<recob::WireChamberTrack> > WCTrackCol(new std::vector<recob::WireChamberTrack> );
+  //  std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );
 
   //Creating an association between the WireChamberTrack collection and the trigger
-  //  std::unique_ptr<art::Assns<raw::Trigger, recob::WireChamberTrack> > TriggerWCTrackAssn(new art::Assns<raw::Trigger, recob::WireChamberTrack>);
+  std::unique_ptr<art::Assns<raw::Trigger, ldp::WCTrack> > TriggerWCTrackAssn(new art::Assns<raw::Trigger, ldp::WCTrack>);
   
+  //Creating the Track Collection
+  std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
 
   // ###########################################
   // ### Grab the trigger data utility (tdu) ###
@@ -140,7 +150,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
   //Bad way to do this...
   fTriggerUtility = "FragmentToDigit";
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);
-
+  
 
   //Track information variables
   int track_count = 0;
@@ -154,7 +164,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
   std::vector<double> y_face_list;
   std::vector<double> theta_list;
   std::vector<double> phi_list;
-  
+  std::vector<WCHitList> final_tracks;  
   std::vector<std::vector<WCHitList> > good_hits; //Two vectors: WC#, axis. - Will be cleared for each trigger
 
   //Initializing the good hit arrays to a default state - these clear for every trigger
@@ -170,22 +180,21 @@ void WireChamberTrackBuilder::produce(art::Event & e)
   // ##############################
   // ### Loop over the triggers ###
   // ##############################
+
+  //Getting the trigger objects
+  art::PtrVector<raw::Trigger> const& EventTriggersPtr = tdu.EventTriggersPtr();
   int good_trigger_counter = 0;
   for( size_t iTrig = 0; iTrig < tdu.NTriggers(); ++iTrig ){
-    std::vector<const raw::AuxDetDigit*> WireChamber1Digits = tdu.TriggerMWPC1Digits(iTrig);
-    std::vector<const raw::AuxDetDigit*> WireChamber2Digits = tdu.TriggerMWPC2Digits(iTrig);
-    std::vector<const raw::AuxDetDigit*> WireChamber3Digits = tdu.TriggerMWPC3Digits(iTrig);
-    std::vector<const raw::AuxDetDigit*> WireChamber4Digits = tdu.TriggerMWPC4Digits(iTrig);
     
-    // ##################################################################################
-    // ###                                                                            ###
-    // ###   First, we must perform hitfinding on the WC wires. This is done in the   ###
-    // ###   initial loop over the digits for this trigger. This spits out a set of   ###
-    // ###   hit times and hit channels that is then passed into the track momentum   ###
-    // ###   reconstruction algorithm after the loop.                                 ###
-    // ###                                                                            ###
-    // ##################################################################################
+    //Getting the trigger object
+    art::Ptr<raw::Trigger> theTrigger = EventTriggersPtr.at(iTrig);
 
+    //Getting the wire chamber information
+    art::PtrVector<raw::AuxDetDigit> WireChamber1Digits = tdu.TriggerMWPC1DigitsPtr(iTrig);
+    art::PtrVector<raw::AuxDetDigit> WireChamber2Digits = tdu.TriggerMWPC2DigitsPtr(iTrig);
+    art::PtrVector<raw::AuxDetDigit> WireChamber3Digits = tdu.TriggerMWPC3DigitsPtr(iTrig);
+    art::PtrVector<raw::AuxDetDigit> WireChamber4Digits = tdu.TriggerMWPC4DigitsPtr(iTrig);
+    
     //Debug printing
     if( fVerbose ){ std::cout << std::endl; std::cout << "OOOOOOOOOOOOOOOOOOO TRIGGER " << iTrig << " READOUT OOOOOOOOOOOOOOOOOOOOOOO" << std::endl;
     }
@@ -208,7 +217,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     */
 
 
-
+    
     //Getting the dqm data for testing the module - temporarily read in from file
     int tdc_num = 0;
     float channel = 0;
@@ -231,7 +240,9 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     }
     myfile.close();
 
+
     //Do the track reconstruction
+    int track_count_pre = track_count;
     fWCTrackBuilderAlg.reconstructTracks(tdc_number_vect,
 					 hit_channel_vect,
 					 hit_time_bin_vect,
@@ -245,12 +256,41 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 					 y_face_list,
 					 theta_list,
 					 phi_list,
+					 final_tracks,
 					 good_hits,
 					 fVerbose,
 					 good_trigger_counter,
 					 iTrig,
 					 track_count);
-    
+
+    std::cout << "Number of tracks created: " << track_count-track_count_pre << std::endl;
+
+    //Pick out the tracks created under this current trigger and fill WCTrack objects with info
+    for( int iNewTrack = 0; iNewTrack < track_count-track_count_pre; ++iNewTrack ){
+      std::vector<int> WC_axis_vect;
+      std::vector<float> hit_wire_vect;
+      std::vector<float> hit_time_vect;
+      createVectorsFromHitLists(final_tracks.at(final_tracks.size()-1-iNewTrack),
+				WC_axis_vect,
+				hit_wire_vect,
+				hit_time_vect);
+      ldp::WCTrack the_track(reco_pz_list.at(reco_pz_list.size()-1-iNewTrack),
+			     y_kink_list.at(y_kink_list.size()-1-iNewTrack),
+			     x_dist_list.at(x_dist_list.size()-1-iNewTrack),
+			     y_dist_list.at(y_dist_list.size()-1-iNewTrack),
+			     z_dist_list.at(z_dist_list.size()-1-iNewTrack),
+			     x_face_list.at(x_face_list.size()-1-iNewTrack),
+			     y_face_list.at(y_face_list.size()-1-iNewTrack),
+			     theta_list.at(theta_list.size()-1-iNewTrack),
+			     phi_list.at(phi_list.size()-1-iNewTrack),
+			     WC_axis_vect,
+			     hit_wire_vect,
+			     hit_time_vect);
+      (*WCTrackCol).push_back( the_track );
+      util::CreateAssn(*this, e, *(WCTrackCol.get()), theTrigger, *(TriggerWCTrackAssn.get()));
+    }
+    //Create the associations between the trigger object and the WCTrack collection
+    //    util::CreateAssn(*this, e, *(WCTrackColTrigger), *(theTrigger), *(TriggerWCTrackAssn.get()));
   }
   
   //Plot the reconstructed momentum, y_kink, and delta X, Y, Z
@@ -264,7 +304,20 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 			  theta_list,
 			  phi_list );
 
+  //  fillWCTrackObjects(
 
+}
+
+void WireChamberTrackBuilder::createVectorsFromHitLists(WCHitList final_track,
+							std::vector<int> & WC_axis_vect,
+							std::vector<float> & hit_wire_vect,
+							std::vector<float> & hit_time_vect)
+{
+  for( size_t iHit = 0; iHit < final_track.hits.size() ; ++iHit ){
+    WC_axis_vect.push_back(iHit);                                      //Look at how hits are pushed into the tracks in buildTracksFromHits (alg)
+    hit_wire_vect.push_back(final_track.hits.at(iHit).wire);
+    hit_time_vect.push_back(final_track.hits.at(iHit).time);
+  }
 }
 
 

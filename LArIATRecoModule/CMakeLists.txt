@@ -1,6 +1,7 @@
 
 art_make(BASENAME_ONLY
          MODULE_LIBRARIES LArIATRecoAlg
+	 		  LArIATDataProducts
 	 		  RawData
 	                  SummaryData
 			  Geometry

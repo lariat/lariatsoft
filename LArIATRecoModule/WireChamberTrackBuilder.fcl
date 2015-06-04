@@ -1,12 +1,14 @@
 #include "services_lariat.fcl"
 #include "lariat_reco_algs.fcl"
 
+
 process_name: WireChamberTrackBuilder
 
 services:
 {
   TFileService: { fileName: "WireChamberTrackBuilder_histo.root" }
   message:      @local::standard_info
+  user:         @local::lariat_services
 }
 
 source:
@@ -16,7 +18,18 @@ source:
   # fileNames: ["input.root"]
 }
 
-outputs: {}
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:      "eventWithWCTracks.root"
+ }
+
+}
+
+
 
 physics:
 {
@@ -29,7 +42,9 @@ physics:
     }
   }
   analysis:  [ WireChamberTrackBuilder ]
-  end_paths: [ analysis ]
+  stream1:   [ out1 ]		       
+  end_paths: [ analysis, stream1 ]
 }
 
 physics.producers.WireChamberTrackBuilder.TriggerUtility: "FragmentToDigit"
+

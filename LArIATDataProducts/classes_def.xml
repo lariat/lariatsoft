@@ -6,19 +6,21 @@
 
 
 <lcgdict>
- <class name="ldp::WCTrack       " ClassVersion="10"           >
+ <class name="ldp::WCTrack" ClassVersion="10"                                      >
+  <version ClassVersion="10" checksum="4212739596"                                />
  </class>
- <class name="std::vector<ldp::WCTrack>       "                />
- <class name="art::Wrapper< ldp::WCTrack                      >"/>
+ <class name="std::vector<ldp::WCTrack>"                                          />
+ <class name="art::Wrapper<ldp::WCTrack>"                                         />
+ <class name="art::Wrapper<std::vector<ldp::WCTrack> >"                           />
 
- <class name="std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::WCTrack> >    "/>
- <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::WCTrack> >    "/>
+ <class name="std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::WCTrack> >"    />
+ <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::WCTrack> >"    />
   
- <class name="std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::Trigger> >    "/>
+ <class name="std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::Trigger> >"    />
  <class name="std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::AuxDetDigit> >"/>
   
- <class name="art::Assns<raw::Trigger,     ldp::WCTrack,      void>" />
- <class name="art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>" />
+ <class name="art::Assns<raw::Trigger,     ldp::WCTrack,      void>"              />
+ <class name="art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>"              />
  
  <class name="art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >"/>
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >"/>

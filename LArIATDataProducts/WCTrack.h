@@ -1,54 +1,74 @@
 ////////////////////////////////////////////////////////////////////////
-// $Id: AuxDetDigit.h,v 1.15 2010/03/26 20:06:04 brebel Exp $
+// $Id: WCTrack.h,v 1.00 2015/06/03 16:04:20 linehan3 Exp $
 //
-// Definition of basic digits for auxiliary detectors
+// Definition of wire chamber track object
 //
-// brebel@fnal.gov
+// rlinehan@stanford.edu
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef RAWDATA_AUXDETDIGIT_H
-#define RAWDATA_AUXDETDIGIT_H
+#ifndef LARIATDATAPRODUCTS_WCTRACK_H
+#define LARIATDATAPRODUCTS_WCTRACK_H
 
 #include <vector>
 #include <iosfwd>
 #include <string>
 
+
 ///Raw data description
-namespace raw {
+namespace ldp {
   
-  class AuxDetDigit {
+  class WCTrack {
 
   public:
-    AuxDetDigit(); // Default constructor
+    WCTrack(); // Default constructor
     
   private:
-
-    std::vector<short> fADC;        ///< vector of adc counts
-    unsigned short     fChannel;    ///< channel in the readout
-    std::string        fAuxDetName; ///< name of the detector
-    unsigned long long fTimeStamp;  ///< timestamp, upper 32 bits
-                                    ///< for the seconds since 1970
-                                    ///< lower 32 for nanoseconds
+    
+    float fMomentum;                    //Reconstructed momentum in the XZ plane (coord system origin is at secondary target)
+    float fYKink;                       //Angle difference between upstream and downstream tracks
+    float fDeltaDist[3];                //Distance between upstream and downstream track ends
+    float fXYFace[2];                   //X and Y position of the track on the upstream face of the TPC
+    float fTheta;                       //Theta defined from the Z axis of the TPC
+    float fPhi;                         //Phi defined counterclockwise from the X axis of the TPC
+    
+    //These are indexed by hit: each
+    //hit is represented by the same
+    //index in all three.
+    std::vector<int> fWCAxis;           //Defined from 0 to 7, so that 1X = 0, 1Y = 1, 2X = 2, 2Y = 3, and so on...
+    std::vector<float> fHitWire;        
+    std::vector<float> fHitTime;
     
 #ifndef __GCCXML__
 
-static_assert(sizeof(unsigned long long)==8,"unsigned long long is not 8 bytes");
-
   public:
-    
-    AuxDetDigit(unsigned short     channel,
-		std::vector<short> adclist,
-		std::string        name="UknownAuxDet",
-		unsigned long long           timeStamp=UINT64_MAX);
-    
-    
+
+    WCTrack( float momentum,
+	     float yKink,
+	     float xDist,
+	     float yDist,
+	     float zDist,
+	     float xFace,
+	     float yFace,
+	     float theta,
+	     float phi,
+	     std::vector<int> wcAxisVect,
+	     std::vector<float> hitWireVect,
+	     std::vector<float> hitTimeVect );
+	     
     // Get Methods
-    size_t             NADC()        const;
-    short              ADC(size_t i) const;
-    unsigned short     Channel()     const;
-    std::string const& AuxDetName()  const;
-    unsigned long long TimeStamp()   const;
+
+    float               Momentum()                      const;
+    float               YKink()                         const;
+    float               DeltaDist(size_t i)             const;
+    float               XYFace(size_t i)                const;
+    float               Theta()                         const;
+    float               Phi()                           const;
+    int                 WCAxis(size_t iHit)             const;
+    float               HitWire(size_t iHit)            const;
+    float               HitTime(size_t iHit)            const;
+    size_t              NHits()                         const;
+    
 
 #endif
   };
@@ -56,13 +76,14 @@ static_assert(sizeof(unsigned long long)==8,"unsigned long long is not 8 bytes")
 
 #ifndef __GCCXML__
 
-inline size_t             raw::AuxDetDigit::NADC()       const { return fADC.size(); }
-inline unsigned short     raw::AuxDetDigit::Channel()    const { return fChannel;    }
-inline std::string const& raw::AuxDetDigit::AuxDetName() const { return fAuxDetName; }
-inline unsigned long long raw::AuxDetDigit::TimeStamp()  const { return fTimeStamp;  }
+inline float  ldp::WCTrack::Momentum() const { return fMomentum;      }
+inline float  ldp::WCTrack::YKink()    const { return fYKink;         }
+inline float  ldp::WCTrack::Theta()    const { return fTheta;         }
+inline float  ldp::WCTrack::Phi()      const { return fPhi;           }
+inline size_t ldp::WCTrack::NHits()    const { return fWCAxis.size(); }
 
 #endif
 
-#endif // RAWDATA_AUXDETDIGIT_H
+#endif // LARIATDATAPRODUCTS_WCTRACK_H
 
 ////////////////////////////////////////////////////////////////////////

@@ -58,23 +58,24 @@ class WCTrackBuilderAlg{
   
   
   void reconstructTracks( std::vector<int> tdc_number_vect,
-					     std::vector<float> hit_channel_vect,
-					     std::vector<float> hit_time_bin_vect,
-					     std::vector<std::vector<double> > & reco_pz_array,
-					     std::vector<double> & reco_pz_list,               
-					     std::vector<double> & y_kink_list,
-					     std::vector<double> & x_dist_list,
-					     std::vector<double> & y_dist_list,
-					     std::vector<double> & z_dist_list,
-					     std::vector<double> & x_face_list,
-					     std::vector<double> & y_face_list,
-					     std::vector<double> & incoming_theta_list,
-					     std::vector<double> & incoming_phi_list,
-					     std::vector<std::vector<WCHitList> > & good_hits,
-					     bool verbose,
-					     int & good_trigger_counter,
-					     int trigger_number,
-					     int track_count);
+			  std::vector<float> hit_channel_vect,
+			  std::vector<float> hit_time_bin_vect,
+			  std::vector<std::vector<double> > & reco_pz_array,
+			  std::vector<double> & reco_pz_list,               
+			  std::vector<double> & y_kink_list,
+			  std::vector<double> & x_dist_list,
+			  std::vector<double> & y_dist_list,
+			  std::vector<double> & z_dist_list,
+			  std::vector<double> & x_face_list,
+			  std::vector<double> & y_face_list,
+			  std::vector<double> & incoming_theta_list,
+			  std::vector<double> & incoming_phi_list,
+			  std::vector<WCHitList> & trigger_final_tracks,
+			  std::vector<std::vector<WCHitList> > & good_hits,
+			  bool verbose,
+			  int & good_trigger_counter,
+			  int trigger_number,
+			  int & track_count);
 
 
   void getTrackMom_Kink_End(WCHitList track,
@@ -87,18 +88,19 @@ class WCTrackBuilderAlg{
 						float (&pos_us)[3],
 						float (&pos_ds)[3]);
   
-void buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
-					    std::vector<std::vector<double> > & reco_pz_array,
-					    std::vector<double> & reco_pz_list,
-					    std::vector<double> & y_kink_list,
-					    std::vector<double> & x_dist_list,
-					    std::vector<double> & y_dist_list,
-					    std::vector<double> & z_dist_list,
-					    int & track_count,
-					    std::vector<double> & x_on_tpc_face_list,
-					    std::vector<double> & y_on_tpc_face_list,
-					    std::vector<double> & incoming_theta_list,
-					    std::vector<double> & incoming_phi_list);
+  void buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
+			   std::vector<std::vector<double> > & reco_pz_array,
+			   std::vector<double> & reco_pz_list,
+			   std::vector<double> & y_kink_list,
+			   std::vector<double> & x_dist_list,
+			   std::vector<double> & y_dist_list,
+			   std::vector<double> & z_dist_list,
+			   int & track_count,
+			   std::vector<double> & x_on_tpc_face_list,
+			   std::vector<double> & y_on_tpc_face_list,
+			   std::vector<double> & incoming_theta_list,
+			   std::vector<double> & incoming_phi_list,
+			   std::vector<WCHitList> & track_list);
 
   bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
 					      std::vector<std::vector<double> > & reco_pz_array);
