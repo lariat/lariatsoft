@@ -464,7 +464,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   bool skip = false;
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
-      if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){
+      if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
 	skip = true;
 	break;
       }
@@ -597,9 +597,6 @@ void WCTrackBuilderAlg::createClusters( int trigger_number,
     if( scaled_hits.hits.size() != 0 )
       run_DBSCAN( trigger_number, iWCAx, scaled_hits,cluster_list);
     
-    //SHOULD BE GOOD UP TO THIS POINT
-    
- 
     //Loop through clusters and see if they are too big (pancake-like cross-talk)
     for( size_t iClust = 0; iClust < cluster_list.size(); ++iClust ){
       if( cluster_list.at(iClust).hits.size() > max_hits ){ continue; }

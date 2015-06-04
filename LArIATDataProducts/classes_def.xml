@@ -18,13 +18,14 @@
   
  <class name="std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::Trigger> >"    />
  <class name="std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::AuxDetDigit> >"/>
-  
+
+ <class name="art::Assns<ldp::WCTrack,     raw::Trigger,      void>"              />
  <class name="art::Assns<raw::Trigger,     ldp::WCTrack,      void>"              />
  <class name="art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>"              />
  
  <class name="art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >"/>
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >"/>
-
+ <class name="art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >"/>
 
 
 </lcgdict>

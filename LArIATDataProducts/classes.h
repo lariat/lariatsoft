@@ -48,8 +48,10 @@ template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::WCTrack> >  
 template class std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::Trigger> >    ;
 template class std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::AuxDetDigit> >;
 
+template class art::Assns<ldp::WCTrack,     raw::Trigger,      void>; 
 template class art::Assns<raw::Trigger,     ldp::WCTrack,      void>; 
 template class art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>;
 
 template class art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >;
+template class art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >;
