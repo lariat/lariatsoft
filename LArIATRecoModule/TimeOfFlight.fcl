@@ -1,0 +1,33 @@
+#include "services_lariat.fcl"
+
+process_name: TimeOfFlight
+
+services:
+{
+  TFileService: { fileName: "TimeOfFlight_histo.root" }
+  message:      @local::standard_info
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1 
+  # fileNames: ["input.root"]
+}
+
+outputs: {}
+
+physics:
+{
+  producers:
+  {
+    TimeOfFlight:
+    {
+      module_type: TimeOfFlight
+    }
+  }
+  analysis:  [ TimeOfFlight ]
+  end_paths: [ analysis ]
+}
+
+physics.producers.TimeOfFlight.TriggerUtility: "FragmentToDigit"
