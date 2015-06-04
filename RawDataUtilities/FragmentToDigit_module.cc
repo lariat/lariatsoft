@@ -1710,12 +1710,9 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
 {
 
   size_t channelsPerChamber = TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER;
-  size_t hitsPerChannel     = TDCFragment::MAX_HITS;
-  size_t hitsPerChamber     = channelsPerChamber * hitsPerChannel;
 
   // vector to hold the channels for a single MWPC
-  std::vector<short> chamberHits(TDCFragment::MAX_CHAMBERS * hitsPerChamber, 0);
-  std::vector<short> channelHits;
+  std::vector<std::vector<short> > chamberHits(TDCFragment::MAX_CHAMBERS * channelsPerChamber);
 
   // vector to hold the timeStamps for each channel in the MWPC
   std::vector<unsigned long long> chamberTimeStamps(TDCFragment::MAX_CHAMBERS * channelsPerChamber, 0);
@@ -1744,12 +1741,12 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
 						<< " first wire in tdc is " << switr->second << "/" 
 						<< channelsPerChamber;
 
-      chamberHits      [chitr->second * hitsPerChamber + (switr->second + size_t (hit.channel))*hitsPerChannel + size_t (hit.timeBin)] = 1;
+      chamberHits      [chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)].push_back(hit.timeBin);
       chamberTimeStamps[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
 
-      // LOG_VERBATIM("FragmentToDigit") << hitsInChannel[chitr->second][switr->second + size_t (hit.channel)][size_t (hit.timeBin)] << " " 
+      // LOG_VERBATIM("FragmentToDigit") << chamberHits[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)].size() << " " 
       // 				      << (size_t)hit.channel << " " << switr->second << " " << (size_t)hit.timeBin << "\t" 
-      // 				      << timeStamps[chitr->second][switr->second + size_t (hit.channel)] << " " 
+      // 				      << chamberTimeStamps[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)] << " " 
       // 				      << tdced.tdcEventHeader.tdcTimeStamp;
 	
     }
@@ -1760,12 +1757,8 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
   for(size_t cham = 0; cham < TDCFragment::MAX_CHAMBERS; ++cham){
     for(size_t chan = 0; chan < channelsPerChamber; ++chan){
       
-      // get the hits for this particular channel
-      channelHits.clear(); channelHits.resize(TDCFragment::MAX_HITS, 0);
-      for(size_t ch = 0; ch < channelHits.size(); ++ch) channelHits[ch] = chamberHits[cham*hitsPerChamber + chan*hitsPerChannel + ch];
-
       mwpcAuxDigits.push_back(raw::AuxDetDigit(static_cast <unsigned short> (chan),
-					       channelHits,
+					       chamberHits[cham*channelsPerChamber + chan],
 					       fMWPCNames[cham],
 					       static_cast <unsigned long long> (chamberTimeStamps[cham*channelsPerChamber + chan]))
 			      );
