@@ -18,9 +18,11 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include <iostream>
 #include <TH1F.h>
+#include <vector>
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "Utilities/AssociationUtil.h"
 // ### LArIAT Things ###
 #include "RawDataUtilities/TriggerDigitUtility.h"
 
@@ -65,7 +67,9 @@ public:
 private:
   
   std::string fTriggerUtility; //<---Label for the module producing the triggers
-
+ 
+  TH1F* tof_counts;
+  TH1F* ustof_histo;
   // Declare member data here.
 
 };
@@ -125,7 +129,16 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 	for(size_t ust_hit = 0; ust_hit < ustof_hits.size(); ++ust_hit) {
 	  short differ = dstof_hits[dst_hit] - ustof_hits[ust_hit];
 	  if(differ > 20 and differ < 100) {
+	    
+	    //If the Dstof-ustof difference is in the range we expect for beam particles, collect the tof
 	    tof.insert(tof.end(), dstof_hits[dst_hit]-ustof_hits[ust_hit]);
+	    
+	    //Fill a debug histo with tofs
+	    tof_counts->Fill(dstof_hits[dst_hit]-ustof_hits[ust_hit]);
+	    
+	    //Fill a debug histo with hit time (referred to time header) for good ustof hits
+	    // good ustof hits = hits which match with dstof and are linked to beam particles
+	    ustof_histo->Fill(ustof_hits[ust_hit]);
 	  }
 	}
       }
@@ -224,7 +237,10 @@ void lrm::TimeOfFlight::beginJob()
 {
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
- 
+  tof_counts = tfs->make<TH1F>("tof_counts","tof_counts", 100, 0., 100.);
+  ustof_histo  = tfs->make<TH1F>("ustof_histo", "ustof_histo", 14336, 0., 14336.);
+  tof_counts->GetXaxis()->SetTitle("ToF (ns)");
+  tof_counts->GetYaxis()->SetTitle("N counts");
 }
 
 void lrm::TimeOfFlight::beginRun(art::Run & r)
