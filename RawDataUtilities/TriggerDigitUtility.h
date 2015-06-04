@@ -143,8 +143,6 @@ namespace rdu{
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerTriggerWaveForms;    /// vector mapping trigger index to collection of trigger waveforms
     std::vector< art::PtrVector<raw::OpDetPulse>  > fTriggerOpDetPulses;         /// vector mapping trigger index to collection of OpDetPulses
 
-    // Trigger index & channel boolean map indicating which detectors were on
-    std::vector< std::vector<bool> >                fTriggerOnMap;               // vector of vector of bools, indicates whether trigger channel was ON for trigger N
   };   
 
 }// end namespace

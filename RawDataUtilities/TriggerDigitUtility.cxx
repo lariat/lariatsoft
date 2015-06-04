@@ -64,7 +64,6 @@ namespace rdu{
     fTriggerMWPC4Digits        .resize(numTrigs);
     fTriggerTriggerWaveForms   .resize(numTrigs);
     fTriggerOpDetPulses        .resize(numTrigs);
-    fTriggerOnMap              .resize(numTrigs);
 
 
     for(size_t t = 0; t < numTrigs; ++t){
