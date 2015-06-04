@@ -64,6 +64,8 @@ namespace rdu{
     fTriggerMWPC4Digits        .resize(numTrigs);
     fTriggerTriggerWaveForms   .resize(numTrigs);
     fTriggerOpDetPulses        .resize(numTrigs);
+    fTriggerOnMap              .resize(numTrigs);
+
 
     for(size_t t = 0; t < numTrigs; ++t){
 
@@ -85,9 +87,9 @@ namespace rdu{
 	else if(detName.find("AeroGelDS")      != std::string::npos) fTriggerDownStreamAGDigits[t] .push_back(addp);
 	else if(detName.find("MuonRangeStack") != std::string::npos) fTriggerMuonRangeDigits[t]    .push_back(addp);
 	else if(detName.find("MWPC1")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
-	else if(detName.find("MWPC2")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
-	else if(detName.find("MWPC3")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
-	else if(detName.find("MWPC4")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
+	else if(detName.find("MWPC2")          != std::string::npos) fTriggerMWPC2Digits[t]        .push_back(addp);
+	else if(detName.find("MWPC3")          != std::string::npos) fTriggerMWPC3Digits[t]        .push_back(addp);
+	else if(detName.find("MWPC4")          != std::string::npos) fTriggerMWPC4Digits[t]        .push_back(addp);
 	else if(detName.find("WC1")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);
 	else if(detName.find("WC2")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);   
 	else if(detName.find("WC3")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);

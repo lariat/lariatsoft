@@ -1331,6 +1331,8 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
   // Each waveform corresponds to a single trigger channel.  If the (pedestal subtracted?) value of any ADC
   // in a waveform is less than 0, then the trigger for that channel fired
 
+  //Need database eventually to set this correctly for different data-taking periods.
+
   std::bitset<16> triggerBits;
 
   size_t minChan  = 48;
