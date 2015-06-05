@@ -1778,6 +1778,8 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
   // now make the AuxDetDigits for this fragment
   for(size_t cham = 0; cham < TDCFragment::MAX_CHAMBERS; ++cham){
     for(size_t chan = 0; chan < channelsPerChamber; ++chan){
+
+      if(chamberHits[cham*channelsPerChamber + chan].size() < 1) continue;
       
       mwpcAuxDigits.push_back(raw::AuxDetDigit(static_cast <unsigned short> (chan),
 					       chamberHits[cham*channelsPerChamber + chan],
