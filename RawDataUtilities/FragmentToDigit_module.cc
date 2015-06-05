@@ -157,6 +157,8 @@ public:
 				      std::vector<raw::AuxDetDigit>      & tofAuxDigits);	       
   void 	   makeAeroGelDigits         (std::vector<CAENFragment>     const& caenFrags,    	       
 				      std::vector<raw::AuxDetDigit>      & agAuxDigits); 	       
+  void 	   makeHaloDigits            (std::vector<CAENFragment>     const& caenFrags,    	       
+				      std::vector<raw::AuxDetDigit>      & hAuxDigits); 	       
   void 	   makeTriggerDigits         (std::vector<CAENFragment>     const& caenFrags,    	       
 				      std::vector<raw::AuxDetDigit>      & trAuxDigits); 	       
   void 	   caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,	       
@@ -483,6 +485,7 @@ void FragmentToDigit::produce(art::Event & evt)
     this->makeMuonRangeDigits(caenFrags, auxDigits);
     this->makeTOFDigits      (caenFrags, auxDigits);
     this->makeAeroGelDigits  (caenFrags, auxDigits);
+    this->makeHaloDigits     (caenFrags, auxDigits);
     this->makeTriggerDigits  (caenFrags, auxDigits);
 
     startAssns = auxDetVec->size();
@@ -1331,6 +1334,8 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
   // Each waveform corresponds to a single trigger channel.  If the (pedestal subtracted?) value of any ADC
   // in a waveform is less than 0, then the trigger for that channel fired
 
+  //Need database eventually to set this correctly for different data-taking periods.
+
   std::bitset<16> triggerBits;
 
   size_t minChan  = 48;
@@ -1579,6 +1584,23 @@ void FragmentToDigit::makeAeroGelDigits(std::vector<CAENFragment>     const& cae
 }
 
 //------------------------------------------------------------------------------
+// Halo paddles are currently (Jun 4, 2015) attached to board 9, channels 5 and 6
+void FragmentToDigit::makeHaloDigits(std::vector<CAENFragment>     const& caenFrags,
+				     std::vector<raw::AuxDetDigit>      & hAuxDigits)
+{
+  // Halo inputs are all sent to board 8
+  uint32_t boardId = 9;
+  uint32_t chanOff = 5;
+  uint32_t maxChan = 7;
+  std::set<uint32_t> boardChans;
+
+  for(uint32_t bc = chanOff; bc < maxChan; ++bc) boardChans.insert(bc);
+  this->caenFragmentToAuxDetDigits(caenFrags, hAuxDigits, boardId, boardChans, chanOff, "Halo");
+
+  return;
+}
+
+//------------------------------------------------------------------------------
 void FragmentToDigit::makeTriggerDigits(std::vector<CAENFragment>     const& caenFrags,
 					std::vector<raw::AuxDetDigit>      & trAuxDigits)
 {
@@ -1756,6 +1778,8 @@ void FragmentToDigit::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> cons
   // now make the AuxDetDigits for this fragment
   for(size_t cham = 0; cham < TDCFragment::MAX_CHAMBERS; ++cham){
     for(size_t chan = 0; chan < channelsPerChamber; ++chan){
+
+      if(chamberHits[cham*channelsPerChamber + chan].size() < 1) continue;
       
       mwpcAuxDigits.push_back(raw::AuxDetDigit(static_cast <unsigned short> (chan),
 					       chamberHits[cham*channelsPerChamber + chan],

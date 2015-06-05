@@ -93,7 +93,7 @@ void lrm::MyNewMod::produce(art::Event & e)
   
   // ### This is a crap way to pass a string.....FIX ME!!!! ####
   fTriggerUtility = "FragmentToDigit";
-  rdu::TriggerDigitUtility tdu(e, fTriggerUtility);
+  rdu::TriggerDigitUtility tdu(e, fTriggerUtility);  //input event and name of whatever created our digits
     
     
   // ##############################
@@ -107,6 +107,7 @@ void lrm::MyNewMod::produce(art::Event & e)
      
      // ### Getting a vector of Wire Chamber 1 Digits ###
      std::vector<const raw::AuxDetDigit*> WireChamber1Digi = tdu.TriggerMWPC1Digits(trig);
+     // art::PtrVector<raw::AuxDetDigit> WireChamber1Digi = tdu.TriggerWMPC1DigitsPtr(trig); //if you want to use more correct pointer instead
      
      std::cout<<"Size of WC1Digi = "<<WireChamber1Digi.size()<<std::endl;
      fWC1Size->Fill(WireChamber1Digi.size());
@@ -117,24 +118,26 @@ void lrm::MyNewMod::produce(art::Event & e)
 	//std::cout<<"WireChamber1Digi Channel Number = "<<WireChamber1Digi.at(wc1)->Channel()<<std::endl;
 	///std::cout<<"WireChamber1Digi TDC = "<<WireChamber1Digi.at(wc1)->NADC()<<std::endl;
 	
+	  auto wcDigit = WireChamber1Digi[wc1];
+
 	// ### Looping over all the TDC hits (annoyingly called ADC's) ###
-	for (size_t i =0; i < WireChamber1Digi.at(wc1)->NADC(); ++i)
+	for (size_t i =0; i < wcDigit->NADC(); ++i)
 	   {
 	
 	   // ### Skipping any TDC hits (which returns the time tick) that is zero ###
-	   if(WireChamber1Digi.at(wc1)->ADC(i) == 0){continue;}
+	   if(wcDigit->ADC(i) == 0){continue;}
 	    
 	      
 	   //### Clustering over X Plane ###
-	   if(WireChamber1Digi.at(wc1)->Channel() < 128) //<---(Channels 0 - 127 are the X Plane)
+	   if(wcDigit->Channel() < 128) //<---(Channels 0 - 127 are the X Plane)
 	      {
 	      // Get wire and time pairs, cluster with dBScan (or whatever), save the good hits
 	      
-	      fWC1XPlaneADC->Fill(WireChamber1Digi.at(wc1)->ADC(i));
+	      fWC1XPlaneADC->Fill(wcDigit->ADC(i));
 	      }//<---End X Plane
 	   
 	   // ### Clustering over the Y Plane ###
-	   if(WireChamber1Digi.at(wc1)->Channel() > 127) //<---(Channels 128 - 255 are the Y Plane)
+	   if(wcDigit->Channel() > 127) //<---(Channels 128 - 255 are the Y Plane)
 	      {
 	      
 	       // Get wire and time pairs, cluster with dBScan (or whatever), save the good hits
