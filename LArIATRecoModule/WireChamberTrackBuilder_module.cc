@@ -189,10 +189,6 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     
     //Getting the trigger object
     art::Ptr<raw::Trigger> theTrigger = (EventTriggersPtr.at(iTrig));
-    //    (*TriggerCol).push_back(theTrigger);
-
-    //Creating the Track Vector object for this trigger
-    //    art::PtrVector<ldp::WCTrack> WCTrackColTrigger;
     
     //Getting the wire chamber information
     art::PtrVector<raw::AuxDetDigit> WireChamber1Digits = tdu.TriggerMWPC1DigitsPtr(iTrig);
@@ -210,7 +206,8 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     std::vector<int> tdc_number_vect;
     std::vector<float> hit_channel_vect;
     std::vector<float> hit_time_bin_vect;
-    /*
+
+    /*    
     convertDigitsToVectors( WireChamber1Digits,
 			    WireChamber2Digits,
 			    WireChamber3Digits,
@@ -218,10 +215,10 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 			    tdc_number_vect,
 			    hit_channel_vect,
 			    hit_time_bin_vect );
-    */
+    */    
 
 
-
+    
     //Getting the dqm data for testing the module - temporarily read in from file
     int tdc_num = 0;
     float channel = 0;
@@ -441,12 +438,12 @@ void WireChamberTrackBuilder::convertDigitsToVectors( art::PtrVector<raw::AuxDet
   for( size_t iDigit = 0; iDigit < the_digits_1.size() ; ++iDigit ){
     raw::AuxDetDigit a_digit = *(the_digits_1.at(iDigit));
     for( size_t iHit = 0; iHit < a_digit.NADC() ; ++iHit ){
-      if( a_digit.ADC(iHit) != 0 ){
-	std::cout << "(TDC,channel,time): (" << int(a_digit.Channel()/fNumber_wires_per_tdc)+1 << "," << a_digit.Channel() % 64 << "," << a_digit.ADC(iHit)<< ")" << std::endl;
-	hit_time_bin_vect.push_back(a_digit.ADC(iHit));
-	tdc_number_vect.push_back(int(a_digit.Channel()/fNumber_wires_per_tdc)+1);
-	hit_channel_vect.push_back(a_digit.Channel() % 64);
-      }
+      // if( a_digit.ADC(iHit) != 0 ){
+      std::cout << "(TDC,channel,time): (" << int(a_digit.Channel()/fNumber_wires_per_tdc)+1 << "," << a_digit.Channel() % 64 << "," << a_digit.ADC(iHit)<< ")" << std::endl;
+      hit_time_bin_vect.push_back(a_digit.ADC(iHit));
+      tdc_number_vect.push_back(int(a_digit.Channel()/fNumber_wires_per_tdc)+1);
+      hit_channel_vect.push_back(a_digit.Channel() % 64);
+      //}
     }
   }
 

@@ -464,7 +464,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   bool skip = false;
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
-      if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
+      if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
 	skip = true;
 	break;
       }
