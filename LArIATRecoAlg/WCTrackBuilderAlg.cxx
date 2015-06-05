@@ -41,6 +41,9 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   fWire_scaling = 1.0/64.0;  
   fGoodHitAveragingEps = 2.0;
 
+  fDBSCANEpsilon = 1.0/16.0;
+  fDBSCANMinHits = 1;
+
   //Survey constants
   fDelta_z_us = 1551.15;  // millimeters
   fDelta_z_ds = 1570.06;  // millimeters
@@ -93,10 +96,11 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   fMid_plane_slope_xz = tan(8.0*3.141592654/180);
   fMid_plane_z_int_xz = fMid_plane_z - fMid_plane_slope_xz * fMid_plane_x;
 
-  fCenter_of_tpc[0] = -1200;  //First appx
-  fCenter_of_tpc[1] = 0;
-  fCenter_of_tpc[2] = 8500;
-  fHalf_z_length_of_tpc = 450; //mm	      
+  fCenter_of_tpc[0] = -1200;  //First appx  <---------------------- SET TPC POSITION HERE !!!!!
+  fCenter_of_tpc[1] = 0; //                 <---------------------- SET TPC POSITION HERE !!!!!
+  fCenter_of_tpc[2] = 8500;//               <---------------------- SET TPC POSITION HERE !!!!!  
+  fHalf_z_length_of_tpc = 450; //mm    
+  fHalf_x_length_of_tpc = 235; //mm
 }
 
 //--------------------------------------------------------------  
@@ -115,9 +119,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 //--------------------------------------------------------------
 void WCTrackBuilderAlg::firstFunction()
 {
-
-  std::cout << "First function called." << std::endl;
-
+  
 }
 
 
@@ -150,6 +152,7 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   std::vector<std::vector<float> > hit_wire_buffer;
   std::vector<std::vector<float> > cluster_time_buffer;
   std::vector<std::vector<float> > cluster_wire_buffer;
+
   //Create a set of buffers with 1st-Dim length of 8 (for 8 wire chamber axes: 1X, 1Y, 2X, 2Y, etc.)
   initializeBuffers( hit_time_buffer, hit_wire_buffer, cluster_time_buffer, cluster_wire_buffer );
   
@@ -168,7 +171,8 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   //Determine if one should skip this trigger based on whether there is at least one good hit in each wire chamber and axis
   //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer
   //If there is, then move on with the function 
-  
+
+  /*  
   //Sanity check
   std::cout << "Good hit check: ";
   for( int iWC = 0; iWC < 4 ; ++iWC ){
@@ -178,8 +182,13 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
     }
   }
   std::cout << std::endl;
+  */  
+
   
-  
+  //Determine if one should skip this trigger based on whether there is exactly one good hit in each wire chamber and axis
+  //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer.
+  //If there is, then move on with the function.
+  //This can be modified to permit more than one good hit in each wire chamber axis - see comments in function
   bool skip = shouldSkipTrigger(good_hits,reco_pz_array);
   if( fVerbose ){
     if( skip == false ){ 
@@ -192,10 +201,9 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   
   //At this point, we should have a list of good hits with at least one good hit in X,Y for each WC.
   //Now find all possible combinations of these hits that could form a track, sans consideration
-  //of the kinks or end displacements (for now)
-
-
-
+  //of the kinks or end displacements (for now). For the "exactly one" condition set in the above
+  //step, this won't matter, but if you want to set the condition to "at least one hit in each WC axis,
+  //this will give many combinations.
   buildTracksFromHits(good_hits,
 		      reco_pz_array,
 		      reco_pz_list,
@@ -209,13 +217,6 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 		      incoming_theta_list,
 		      incoming_phi_list,
 		      trigger_final_tracks);
-
-  
-
-  
-  
-
-
 }
 
 
@@ -244,17 +245,10 @@ void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
       }   
   }
   
-  //print out tracks
-  //  for( size_t iHit = 0; iHit < track.hits.size() ; ++iHit ){
-  //  std::cout << "Hit: " << iHit << ", Hit wire: " << track.hits.at(iHit).wire << std::endl;
-  // }
-    
-  for( size_t iPlane = 0; iPlane < wire_x.size() ; ++iPlane ){
-    //    std::cout << "Wire_x: " << wire_x.at(iPlane) << std::endl;
-  }
-
+  //Calculate angles to be used in momentum reco
   float delta_x_us = wire_x[1] - wire_x[0];
   float delta_y_us = wire_y[1] - wire_y[0];
+
   float delta_x_ds = wire_x[3] - wire_x[2];
   float delta_y_ds = wire_y[3] - wire_y[2];
 
@@ -264,15 +258,11 @@ void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
   float atan_y_us = atan(delta_y_us / fDelta_z_us);
   float atan_y_ds = atan(delta_y_ds / fDelta_z_ds);
 
-  
-
-  //  std::cout << "Atan DS/US: " << atan_x_ds << "," << atan_x_us << std::endl;
-
-  
+  //Calculate momentum and y_kink
   reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us)));
-  // std::cout << "reco_pz inner: " << reco_pz << std::endl;
   y_kink = atan_y_us - atan_y_ds;
 
+  //Calculate the X/Y/Y Track End Distances
   float pos_us[3] = {0.0,0.0,0.0};
   float pos_ds[3] = {0.0,0.0,0.0};
   midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds);
@@ -374,7 +364,7 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 	      for( size_t iHit6 = 0; iHit6 < good_hits.at(3).at(0).hits.size(); ++iHit6 ){
 		for( size_t iHit7 = 0; iHit7 < good_hits.at(3).at(1).hits.size(); ++iHit7 ){
 
-		  
+		  //Push back a track
 		  WCHitList track;
 		  track.hits.push_back(good_hits.at(0).at(0).hits.at(iHit0));
 		  track.hits.push_back(good_hits.at(0).at(1).hits.at(iHit1));
@@ -394,9 +384,7 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  float y_on_tpc_face = 0;
 		  float incoming_theta = 0;
 		  float incoming_phi = 0;
-		  
-
-		  
+		  		  
 		  //Previously track_p_extrap_dists
 		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array);
 
@@ -410,23 +398,25 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  // can decide whether to push back the track list (holds all of the hits for that             //
 		  // track) and the lists of interesting track quantities (momenta, x/y face, theta/phi, etc.). //
 		  //                                                                                            //
-		  // The lists are filled for all triggers, but don't worry - the module using the              //
+		  // The lists are updated to include all triggers, but don't worry - the module using the      //
 		  // reconstructTracks function has a way of identifying which tracks come from each trigger.   //
 		  //                                                                                            //
 		  ////////////////////////////////////////////////////////////////////////////////////////////////
 		  
+		  //Convert x on tpc face to convention
+		  x_on_tpc_face = x_on_tpc_face+fHalf_x_length_of_tpc;
 
-
-		  //
+		  //Add the track to the track list
 		  track_list.push_back(track);
 		  
 		  //Storing the momentum in the buffer that will be
 		  //pushed back into the final reco_pz_array for this trigger
+		  //POSSIBLY IRRELEVANT NOW - MAY NEED TO TRIM THIS IF HAVE TIME, BUT IT DOESN'T INTERFERE
 		  reco_pz_buffer.push_back(reco_pz);
 		  
 		  //Filling full info lists
 		  reco_pz_list.push_back(reco_pz);
-		  y_kink_list.push_back(y_kink*180.0/3.1415926);
+		  y_kink_list.push_back(y_kink);
 		  x_dist_list.push_back(dist_array[0]);
 		  y_dist_list.push_back(dist_array[1]);
 		  z_dist_list.push_back(dist_array[2]);
@@ -445,7 +435,7 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
     }
   }
 
-  //Fill the array with the found tracks' reconstructed momenta
+  //Fill the array with the found tracks' reconstructed momenta //AGAIN, OBSOLETE, BUT IT DOESN'T HURT ANYTHING TECHNICALLY
   reco_pz_array.push_back(reco_pz_buffer);
   
   //Clear the hit lists for each WC/axis
@@ -523,15 +513,14 @@ void WCTrackBuilderAlg::findGoodHits( std::vector<std::vector<float> > cluster_t
   }
   
   if( fVerbose ){
-    std::cout << "Number of good hits in each wire plane: ";
-  }
-  for( int iWC = 0; iWC < 4 ; ++iWC ){
-    for (int iAx = 0; iAx < 2 ; ++iAx ){
-      std::cout << good_hits.at(iWC).at(iAx).hits.size() << ", ";
+    std::cout << "Number of good hits in each wire plane: "; 
+    for( int iWC = 0; iWC < 4 ; ++iWC ){
+      for (int iAx = 0; iAx < 2 ; ++iAx ){
+	std::cout << good_hits.at(iWC).at(iAx).hits.size() << ", ";
+      }
     }
+    std::cout << std::endl;
   }
-  std::cout << std::endl;
-  
 }
 
 //=====================================================================
@@ -639,8 +628,8 @@ void WCTrackBuilderAlg::run_DBSCAN( int trigger_number,
 				    std::vector<WCHitList> & cluster_list )
 {
   //Parameters for algorithim
-  float epsilon = 1.0/16.0;
-  size_t min_hits = 1;
+  float epsilon = fDBSCANEpsilon;
+  size_t min_hits = fDBSCANMinHits;
 
   //Create matrix of neighborhoods of hits, given epsilon
   std::vector<WCHitList> neighborhood_matrix = createNeighborhoodMatrix( scaled_hits, epsilon );
@@ -673,19 +662,10 @@ void WCTrackBuilderAlg::run_DBSCAN( int trigger_number,
    }
    for( size_t iSH = 0; iSH < scaled_hits.hits.size(); ++iSH ){
      if( scaled_hits.hits.at(iSH).cluster_index == -1 ){ 
-       //   std::cout << "Hit belongs to noise cluster." << std::endl;
        continue;
      }   
      cluster_list.at(scaled_hits.hits.at(iSH).cluster_index).hits.push_back(scaled_hits.hits.at(iSH));
    }
-  //  std::cout << "number of clusters: " << cluster_list.size() << ", number of hits: " << scaled_hits.hits.size() << std::endl;
-
-  //Plot hits and clusters in root (happens for each trigger)
-   //plotHitsAndClustersInRootFile(trigger_number,WCAx_number,scaled_hits,cluster_list);
-  
-  
-
-				 
 }
 
 //=====================================================================
@@ -709,47 +689,6 @@ std::vector<WCHitList> WCTrackBuilderAlg::createNeighborhoodMatrix( WCHitList sc
   return neighborhoods_vector;
 }
 
-
-/*
-//=====================================================================
-//Plotting the hits and clusters formed in a root file
-void WCTrackBuilderAlg::plotHitsAndClustersInRootFile( int trigger_number,
-				    int WCAx_number,
-				    WCHitList scaled_hits,
-				    std::vector<WCHitList> cluster_list )
-{
-  //Open a new root file
-  TFile * hit_cluster_file = new TFile("/lariat/app/users/linehan3/Summer_2015/DQM_Transfer/hit_cluster_file.root","UPDATE");
-  char name[40];
-  char name2[40];
-  sprintf(name,"hit_hist_Trig%d_WCAx%d",trigger_number,WCAx_number);
-  TH2F * hit_2D_hist = new TH2F(name,name,128,-1,1,1280,0,1);
-  sprintf(name2,"clust_hist_Trig%d_WCAx%d",trigger_number,WCAx_number);
-  TH2F * cluster_2D_hist = new TH2F(name2,name2,128,-1,1,1280,0,1);
-  
-  //Loop through hits and fill hit histo
-  for( size_t iHit = 0; iHit < scaled_hits.hits.size() ; ++iHit ){
-    //    std::cout << "Scaled Wire: " << scaled_hits.hits.at(iHit).wire << ", Scaled Time: " << scaled_hits.hits.at(iHit).time << std::endl;
-    hit_2D_hist->SetBinContent((scaled_hits.hits.at(iHit).wire*64+64),(scaled_hits.hits.at(iHit).time*1280),1);
-  }
-
-  //Loop through clusters and fill cluster histo with different color for each cluster
-  for( size_t iClust = 0; iClust < cluster_list.size() ; ++iClust ){
-    for( size_t iHit = 0; iHit < cluster_list.at(iClust).hits.size() ; ++iHit ){
-      cluster_2D_hist->SetBinContent((cluster_list.at(iClust).hits.at(iHit).wire*64+64),(cluster_list.at(iClust).hits.at(iHit).time*1280),iClust+1);
-    }
-  }
-
-  hit_2D_hist->Write();
-  cluster_2D_hist->Write();
-  hit_cluster_file->Write();
-  hit_cluster_file->Close();
-
-
-
-}
-*/
-
 //=====================================================================
 //DBSCAN function - once a cluster is seeded, reach out from it and find
 //other hits that are also in this cluster
@@ -768,8 +707,6 @@ void WCTrackBuilderAlg::expandCluster( std::vector<WCHitList> neighborhood_matri
       //Need to do each setting for the neighbor hit and the scaled hits cluster (scaled hits retains all info)
       neighbor_hits.hits.at(iNB).isVisited = true;
       scaled_hits.hits.at(neighbor_hits.hits.at(iNB).hit_index).isVisited = true;
-      
-
       WCHitList next_neighbors = regionQuery( neighborhood_matrix, neighbor_hits.hits.at(iNB), scaled_hits, epsilon );
       //If there are enough next-neighbors for this neighbor, append the neighbor hits list
       if( next_neighbors.hits.size() >= min_hits ){
@@ -923,31 +860,21 @@ void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, 
 			   fY_cntr_4 + track.hits.at(7).wire,
 			   fZ_cntr_4 + track.hits.at(6).wire*float(sin(3.141592654/180*(3.0))) };
 
-  std::cout << "Pre: WC3: (" << WC3_point[0] << "," << WC3_point[1] << "," << WC3_point[2] << ")" << " ----> WC4: " <<
-    "(" << WC4_point[0] << "," << WC4_point[1] << "," << WC4_point[2] << ")" << std::endl;
-
-
   transformWCHits(WC3_point,WC4_point);
-
-  std::cout << "Post: WC3: (" << WC3_point[0] << "," << WC3_point[1] << "," << WC3_point[2] << ")" << " ----> WC4: " <<
-    "(" << WC4_point[0] << "," << WC4_point[1] << "," << WC4_point[2] << ")" << std::endl;
 
   //Now have hit vectors in the frame of the TPC. Now we recreate the second track and find its
   //intersection with the upstream plane of the TPC. In this new frame, the upstream plane is just
   //Z = -450 mm. So we parametrize the track with t and find at which t Z = -450. We then use that
-  //to get X and Y intercepts.
-  
+  //to get X and Y intercepts.  
   float parameter_t = (-1*fHalf_z_length_of_tpc-WC3_point[2])/(WC4_point[2]-WC3_point[2]);
   float x_at_US_plane = (WC3_point[0])+parameter_t*(WC4_point[0]-WC3_point[0]);
-  float y_at_US_plane = (WC3_point[1])+parameter_t*(WC4_point[1]-WC3_point[1]);
-  
+  float y_at_US_plane = (WC3_point[1])+parameter_t*(WC4_point[1]-WC3_point[1]);  
   x = x_at_US_plane;
   y = y_at_US_plane;
   float r = pow(pow(x-WC4_point[0],2)+pow(y-WC4_point[1],2),0.5);
-  std::cout << "r: " << r << ", denom: " << -1*fHalf_z_length_of_tpc-WC4_point[2] << ", x_face: " << x << ", WC4_point[2]: " << WC4_point[0] << ", WC3Point[0]: " << WC3_point[0] << std::endl;
   theta = atan(r/(-1*fHalf_z_length_of_tpc-WC4_point[2]));
 
-  //Calculating phi
+  //Calculating phi (degeneracy elimination for the atan function)
   float dY = WC4_point[1]-WC3_point[1];
   float dX = WC4_point[0]-WC3_point[0];
   if( dY > 0 && dX > 0 ){ phi = atan(dY/dX); }

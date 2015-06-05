@@ -134,12 +134,7 @@ class WCTrackBuilderAlg{
 
   std::vector<WCHitList> createNeighborhoodMatrix( WCHitList scaled_hits,
 								      float epsilon );
-  /*
-  void plotHitsAndClustersInRootFile( int trigger_number,
-							 int WCAx_number,
-							 WCHitList scaled_hits,
-							 std::vector<WCHitList> cluster_list );
-  */
+
   void expandCluster( std::vector<WCHitList> neighborhood_matrix,
 					 WCHit the_hit,
 					 WCHitList & scaled_hits,
@@ -193,7 +188,8 @@ void initializeBuffers( std::vector<std::vector<float> > & hit_time_buffer,
   double fTime_bin_scaling;
   double fWire_scaling;
   double fGoodHitAveragingEps;
-  
+  float  fDBSCANEpsilon;
+  int    fDBSCANMinHits;
  
 
   /////////////////////////////////
@@ -247,8 +243,9 @@ void initializeBuffers( std::vector<std::vector<float> > & hit_time_buffer,
   float fMid_plane_slope_xz;
   float fMid_plane_z_int_xz;
 
-  float fCenter_of_tpc[3];
+  float fCenter_of_tpc[3];  //<------------------- CENTER OF TPC HERE !!!!!!!!
   float fHalf_z_length_of_tpc;
+  float fHalf_x_length_of_tpc;
 
 
   //Misc
