@@ -93,7 +93,7 @@ void lrm::MyNewMod::produce(art::Event & e)
   
   // ### This is a crap way to pass a string.....FIX ME!!!! ####
   fTriggerUtility = "FragmentToDigit";
-  rdu::TriggerDigitUtility tdu(e, fTriggerUtility);
+  rdu::TriggerDigitUtility tdu(e, fTriggerUtility);  //input event and name of whatever created our digits
     
     
   // ##############################
@@ -106,7 +106,8 @@ void lrm::MyNewMod::produce(art::Event & e)
      //art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
      
      // ### Getting a vector of Wire Chamber 1 Digits ###
-     std::vector<const raw::AuxDetDigit*> WireChamber1Digi = tdu.TriggerMWPC3Digits(trig);
+     std::vector<const raw::AuxDetDigit*> WireChamber1Digi = tdu.TriggerMWPC1Digits(trig);
+     // art::PtrVector<raw::AuxDetDigit> WireChamber1Digi = tdu.TriggerWMPC1DigitsPtr(trig); //if you want to use more correct pointer instead
      
      std::cout<<"Size of WC1Digi = "<<WireChamber1Digi.size()<<std::endl;
      fWC1Size->Fill(WireChamber1Digi.size());

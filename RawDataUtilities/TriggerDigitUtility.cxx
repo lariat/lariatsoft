@@ -65,6 +65,7 @@ namespace rdu{
     fTriggerTriggerWaveForms   .resize(numTrigs);
     fTriggerOpDetPulses        .resize(numTrigs);
 
+
     for(size_t t = 0; t < numTrigs; ++t){
 
       fTriggers.push_back(art::Ptr<raw::Trigger>(trigHandle, t));
@@ -85,9 +86,10 @@ namespace rdu{
 	else if(detName.find("AeroGelDS")      != std::string::npos) fTriggerDownStreamAGDigits[t] .push_back(addp);
 	else if(detName.find("MuonRangeStack") != std::string::npos) fTriggerMuonRangeDigits[t]    .push_back(addp);
 	else if(detName.find("MWPC1")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
-	else if(detName.find("MWPC2")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
-	else if(detName.find("MWPC3")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
-	else if(detName.find("MWPC4")          != std::string::npos) fTriggerMWPC1Digits[t]        .push_back(addp);
+	else if(detName.find("MWPC2")          != std::string::npos) fTriggerMWPC2Digits[t]        .push_back(addp);
+	else if(detName.find("MWPC3")          != std::string::npos) fTriggerMWPC3Digits[t]        .push_back(addp);
+	else if(detName.find("MWPC4")          != std::string::npos) fTriggerMWPC4Digits[t]        .push_back(addp);
+	else if(detName.find("Halo")           != std::string::npos) fTriggerHaloDigits[t]         .push_back(addp);
 	else if(detName.find("WC1")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);
 	else if(detName.find("WC2")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);   
 	else if(detName.find("WC3")            != std::string::npos) fTriggerTriggerWaveForms[t]   .push_back(addp);
@@ -516,6 +518,30 @@ namespace rdu{
   art::PtrVector<raw::AuxDetDigit> const& TriggerDigitUtility::TriggerMWPC4DigitsPtr(size_t const& t) const
   {
     return this->TriggerAuxDetDigitsPtr(t, fTriggerMWPC4Digits);
+  }
+
+  //----------------------------------------------------------------------------
+  std::vector<const raw::AuxDetDigit*> TriggerDigitUtility::EventHaloDigits() const
+  {
+    return this->EventAuxDetDigits(fTriggerHaloDigits);
+  }
+
+  //----------------------------------------------------------------------------
+  art::PtrVector<raw::AuxDetDigit> TriggerDigitUtility::EventHaloDigitsPtr() const
+  {
+    return this->EventAuxDetDigitsPtr(fTriggerHaloDigits);
+  }
+                     
+  //----------------------------------------------------------------------------
+  std::vector<const raw::AuxDetDigit*> TriggerDigitUtility::TriggerHaloDigits(size_t const& t) const
+  {
+    return this->TriggerAuxDetDigits(t, fTriggerHaloDigits);
+  }
+
+  //----------------------------------------------------------------------------
+  art::PtrVector<raw::AuxDetDigit> const& TriggerDigitUtility::TriggerHaloDigitsPtr(size_t const& t) const
+  {
+    return this->TriggerAuxDetDigitsPtr(t, fTriggerHaloDigits);
   }
 
   //----------------------------------------------------------------------------
