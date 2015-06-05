@@ -62,6 +62,7 @@ namespace rdu{
     fTriggerMWPC2Digits        .resize(numTrigs);
     fTriggerMWPC3Digits        .resize(numTrigs);
     fTriggerMWPC4Digits        .resize(numTrigs);
+    fTriggerHaloDigits         .resize(numTrigs);
     fTriggerTriggerWaveForms   .resize(numTrigs);
     fTriggerOpDetPulses        .resize(numTrigs);
 
