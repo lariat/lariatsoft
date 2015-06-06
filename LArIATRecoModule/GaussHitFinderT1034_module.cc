@@ -51,8 +51,9 @@
 #include "Geometry/PlaneGeo.h"
 #include "RecoBase/Wire.h"
 #include "RecoBase/Hit.h"
-#include "RecoBaseArt/HitCreator.h"
+//#include "RecoBaseArt/HitCreator.h"
 #include "Utilities/DetectorProperties.h"
+#include "Utilities/AssociationUtil.h"
 
 // ROOT Includes
 #include "TGraphErrors.h"
@@ -143,10 +144,11 @@ GausHitFinder::GausHitFinder(fhicl::ParameterSet const& pset)
   // let HitCollectionCreator declare that we are going to produce
   // hits and associations with wires and raw digits
   // (with no particular product label)
-  recob::HitCollectionCreator::declare_products(*this);
+  //recob::HitCollectionCreator::declare_products(*this);
+  produces< std::vector<recob::Hit> >();
   
   // ### Produce an association between hits and Triggers ###
-  //produces<art::Assns<raw::Trigger, recob::Hit>>();
+  produces<art::Assns<raw::Trigger, recob::Hit>>();
   
 } // GausHitFinder::GausHitFinder()
 
@@ -279,25 +281,20 @@ void GausHitFinder::produce(art::Event& evt)
    // ###############################################
    // ### Making a ptr vector to put on the event ###
    // ###############################################
-   // this contains the hit collection
-   // and its associations to wires and raw digits
-   recob::HitCollectionCreator hcol(*this, evt);
+   std::unique_ptr<std::vector<recob::Hit> > hcol(new std::vector<recob::Hit>);
    
    // ##########################################
    // ### Reading in the Wire List object(s) ###
-   // ##########################################
-   //art::Handle< std::vector<recob::Wire> > wireVecHandle;
-   //evt.getByLabel(fCalDataModuleLabel,wireVecHandle);
-   
+   // ##########################################   
    std::vector< art::Ptr<recob::Wire> >wireVecHandle;
    
-   
+   // Signal Type (Collection or Induction)
+   geo::SigType_t sigType;
      
    // #################################################
    // ### Making an association of Triggers to Hits ###
    // #################################################
-   
-   //std::unique_ptr<art::Assns<raw::Trigger, recob::Hit> > TrigHitAssn(new art::Assns<raw::Trigger,recob::Hit>);
+   std::unique_ptr<art::Assns<raw::Trigger, recob::Hit> > TrigHitAssn(new art::Assns<raw::Trigger,recob::Hit>);
    
    // Channel Number
    raw::ChannelID_t channel = raw::InvalidChannelID;
@@ -313,7 +310,7 @@ void GausHitFinder::produce(art::Event& evt)
    //art::FindManyP<raw::RawDigit> RawDigits
      //(wireVecHandle, evt, fCalDataModuleLabel);
    
-   std::cout<<"RawDigits(tdu.EventTriggersPtr(), evt, fTriggerUtility);"<<std::endl;  
+   //std::cout<<"RawDigits(tdu.EventTriggersPtr(), evt, fTriggerUtility);"<<std::endl;  
    
    art::FindManyP<raw::RawDigit> RawDigits(tdu.EventTriggersPtr(), evt, fTriggerUtility);
    art::FindManyP<recob::Wire>   CalWireDigits(tdu.EventTriggersPtr(), evt, fCalDataModuleLabel);
@@ -323,12 +320,12 @@ void GausHitFinder::produce(art::Event& evt)
    // ##############################
    for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
       {
-      std::cout<<"trigger number = "<<trig<<std::endl;
+      //std::cout<<"trigger number = "<<trig<<std::endl;
       // === Getting the pointer for this trigger ===
-      //art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
+      art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
       
       wireVecHandle = CalWireDigits.at(trig);
-      std::cout<<"wireVecHandle.size()"<<wireVecHandle.size()<<std::endl;
+      //std::cout<<"wireVecHandle.size()"<<wireVecHandle.size()<<std::endl;
       //##############################
       //### Looping over the wires ###
       //############################## 
@@ -364,10 +361,12 @@ void GausHitFinder::produce(art::Event& evt)
          // ####################################
          //art::Ptr<recob::Wire> wire(wireVecHandle[wireIter], wireIter);
 	 art::Ptr<recob::Wire> wire = wireVecHandle[wireIter];
+	 
          std::vector< art::Ptr<raw::RawDigit> > rawdigits = RawDigits.at(trig);
       
          // --- Setting Channel Number and Signal type ---
          channel = wireVecHandle[wireIter]->Channel();
+	 sigType = geom->SignalType(channel);
          // ----------------------------------------------------------
          // -- Setting the appropriate signal widths and thresholds --
          // --    for the right plane.      --
@@ -689,44 +688,62 @@ void GausHitFinder::produce(art::Event& evt)
 	    std::vector<geo::WireID> wids = geom->ChannelToWire(channel);
 	    // for now, just take the first option returned from ChannelToWire
 	    geo::WireID wid = wids[0];
-	 
+	    geo::View_t view = wire->View();
+	    
+	    raw::TDCtick_t ST = startT;
+	    
+	    raw::TDCtick_t ET = endT;
 	    // ### Recording each hit in the pulse ###
 	    for(size_t dd = 0; dd < MeanPosition.size(); dd++)
 	       {
-		 recob::HitCreator hit(
-		   *wire,            // wire reference
-		   wid,              // wire ID
-		   startT,           // start_tick TODO check
-		   endT,             // end_tick TODO check
-		   RMS[dd],          // rms
-		   MeanPosition[dd], // peak_time
-		   MeanPosError[dd], // sigma_peak_time
-		   Amp[dd],          // peak_amplitude
-		   AmpError[dd],     // sigma_peak_amplitude
-		   Charge[dd],       // hit_integral
-		   ChargeError[dd],  // hit_sigma_integral
-		   SumADC[dd],       // summedADC FIXME
-		   NumOfHits[dd],    // multiplicity
-		   dd,               // local_index TODO check that the order is correct
-		   FitGoodness[dd],  // goodness_of_fit
-		   FitNDF[dd]        // dof
+		 recob::Hit hit(
+		   channel, 		//raw::ChannelID_t        channel
+		   ST,	    		//raw::TDCtick_t          start_tick
+		   ET,			//raw::TDCtick_t          end_tick
+		   MeanPosition[dd],	//float                   peak_time
+		   MeanPosError[dd],	//float                   sigma_peak_time
+		   RMS[dd],
+		   Amp[dd],
+		   AmpError[dd],
+		   SumADC[dd],
+		   Charge[dd],
+		   ChargeError[dd],
+		   NumOfHits[dd],
+		   dd,
+		   FitGoodness[dd],
+		   FitNDF[dd] ,
+		   view,
+		   sigType,
+		   wid
 		   );
 		 
-		 hcol.emplace_back(hit.move(), wire, rawdigits[wireIter]);
+		 //hcol.emplace_back(hit.move(), wire, rawdigits[wireIter]);
+		 hcol->push_back(hit);
 	       }
 	    
 	    }//<---End num loop
 	 
 
          }//<---End looping over all the wires
+      // ######################################################
+      // ### Creating association between hits and triggers ###
+      // ######################################################
+      for(size_t h = 0; h < hcol->size(); ++h)
+         {
+	 if(!util::CreateAssn(*this, evt, *hcol, trigger, *TrigHitAssn, h))
+	 {throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with trigger "<<trigger.key();} // exception
+
+         }//<---End h loop
+	    
       }//<---End loop over trigger
 
 //==================================================================================================  
 // End of the event  
    
    // move the hit collection and the associations into the event
-   hcol.put_into(evt);
-  
+   //hcol.put_into(evt);
+   evt.put(std::move(hcol));
+   evt.put(std::move(TrigHitAssn));
 
 
 
@@ -750,7 +767,7 @@ void hit::GausHitFinder::FitGaussians(std::vector<float> SignalVector, std::vect
    // ### If size < 0 then set the size to zero ###
    // #############################################
    if(EndTime - StartTime < 0){size = 0;}
-   
+   //std::cout<<"size = "<<size<<std::endl;
    // --- TH1D HitSignal ---
    TH1F hitSignal("hitSignal","",std::max(size,1),StartTime,EndTime);
    hitSignal.Sumw2();
@@ -789,6 +806,7 @@ void hit::GausHitFinder::FitGaussians(std::vector<float> SignalVector, std::vect
    for(int bb = 0; bb < nGauss; bb++)
       {
       amplitude = SignalVector[PeakTime[bb]];
+      //std::cout<<"fitWidth = "<<fitWidth<<", amplitude = "<<SignalVector[PeakTime[bb]]<<std::endl;
       Gaus.SetParameter(3*bb,amplitude);
       Gaus.SetParameter(1+(3*bb), PeakTime[bb]);
       Gaus.SetParameter(2+(3*bb), fitWidth);
@@ -805,6 +823,7 @@ void hit::GausHitFinder::FitGaussians(std::vector<float> SignalVector, std::vect
    //hitSignal.Fit(&Gaus,"QNRWB","", StartTime, EndTime);
    //hitGraph.Fit(&Gaus,"QNB","",StartTime, EndTime);
    
+   //std::cout<<"StartTime = "<<StartTime<<" , EndTime = "<<EndTime<<std::endl;
    try
       { hitSignal.Fit(&Gaus,"QNRWB","", StartTime, EndTime);}
    catch(...)
@@ -886,7 +905,9 @@ void hit::GausHitFinder::ReFitGaussians(std::vector<float> ReSignalVector, std::
       if(bb<mGauss -1){TrialPeak = RePeakTime[bb];}
       else{TrialPeak = RePeakTime[0]+(bb*5);}
       
+      if(TrialPeak > ReEndTime){TrialPeak = ReEndTime -1;}
       amplitude2 = 0.5* ReSignalVector[TrialPeak];
+      //std::cout<<"fitWidth = "<<fitWidth<<", amplitude2 = "<<ReSignalVector[TrialPeak]<<std::endl;
       Gaus2.SetParameter(3*bb,amplitude2);
       Gaus2.SetParameter(1+(3*bb), TrialPeak);
       Gaus2.SetParameter(2+(3*bb), fitWidth);
@@ -901,7 +922,7 @@ void hit::GausHitFinder::ReFitGaussians(std::vector<float> ReSignalVector, std::
    // ####################################################
    //hitSignal2.Fit(&Gaus2,"QNRWIB","", ReStartTime, ReEndTime);
    //hitSignal2.Fit(&Gaus2,"QNRWB","", ReStartTime, ReEndTime);
-   
+   //std::cout<<"ReStartTime = "<<ReStartTime<<" , ReEndTime = "<<ReEndTime<<std::endl;
    try
       { hitSignal2.Fit(&Gaus2,"QNRW","", ReStartTime, ReEndTime);}
       
