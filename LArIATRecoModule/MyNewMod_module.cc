@@ -117,13 +117,12 @@ void lrm::MyNewMod::produce(art::Event & e)
         {
 	//std::cout<<"WireChamber1Digi Channel Number = "<<WireChamber1Digi.at(wc1)->Channel()<<std::endl;
 	///std::cout<<"WireChamber1Digi TDC = "<<WireChamber1Digi.at(wc1)->NADC()<<std::endl;
-	
 	  auto wcDigit = WireChamber1Digi[wc1];
 
 	// ### Looping over all the TDC hits (annoyingly called ADC's) ###
 	for (size_t i =0; i < wcDigit->NADC(); ++i)
 	   {
-	
+
 	   // ### Skipping any TDC hits (which returns the time tick) that is zero ###
 	   if(wcDigit->ADC(i) == 0){continue;}
 	    
@@ -132,7 +131,6 @@ void lrm::MyNewMod::produce(art::Event & e)
 	   if(wcDigit->Channel() < 128) //<---(Channels 0 - 127 are the X Plane)
 	      {
 	      // Get wire and time pairs, cluster with dBScan (or whatever), save the good hits
-	      
 	      fWC1XPlaneADC->Fill(wcDigit->ADC(i));
 	      }//<---End X Plane
 	   

@@ -79,12 +79,15 @@ add_subdirectory(JobConfigurations)
 add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
+add_subdirectory(LArIATDataProducts)
+add_subdirectory(LArIATRecoAlg)
 add_subdirectory(LArIATRecoModule)
 add_subdirectory(LArIATEventGenerator)
 add_subdirectory(RawDataUtilities)
 add_subdirectory(LongBo)
 add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
+
 
 # tests
 add_subdirectory(test)
