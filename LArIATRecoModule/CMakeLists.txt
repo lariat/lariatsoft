@@ -1,6 +1,14 @@
 
 art_make(BASENAME_ONLY
+         LIB_LIBRARIES Geometry
+                       RecoBase
+                       ClusterRecoUtil
+
          MODULE_LIBRARIES RawData
+	                  RecoAlg
+	                  ClusterRecoUtil
+                          ClusterFinder
+			  Filters
 	                  SummaryData
 			  Geometry
 			  Geometry_service

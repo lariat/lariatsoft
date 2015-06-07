@@ -1,0 +1,17 @@
+#include "clusteralgorithms.fcl"
+
+BEGIN_PROLOG
+
+lariat_dbcluster:
+
+{
+ module_type:     "DBClusterT1034"
+ HitsModuleLabel: "gaushit"
+ TriggerUtility:  "FragmentToDigit"
+ DBScanAlg:       @local::standard_dbscanalg
+
+}
+
+
+
+END_PROLOG
