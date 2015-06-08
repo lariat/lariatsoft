@@ -24,6 +24,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include <iostream>
+#include <fstream>
 #include <TH1F.h>
 #include <vector>
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -91,12 +92,18 @@ lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
   this->reconfigure(p);  // Elena's addition
 
   // Call appropriate produces<>() functions here.
+
+  // produces<std::vector<rdu::TOF> >();
+  // produces<art::Assns<raw::Trigger, rdu::TOF> >();
+
 }
 
 void lrm::TimeOfFlight::produce(art::Event & e)
 {
+
   // Gets the trigger data 
-  // ### This is a crap way to pass a string.....FIX ME!!!! ####
+
+  // Apperantly the bad way to do this
   //  fTriggerUtility = "FragmentToDigit"; // I don't think this line is necessary // Elena's addition
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);    
 
@@ -106,15 +113,15 @@ void lrm::TimeOfFlight::produce(art::Event & e)
   // Loops over the triggers
   for(size_t trig = 0; trig < tdu.NTriggers(); ++trig) {
     
-    std::cout<<" fTriggerTime "<<triggerVect[trig]->TriggerTime() << std::endl;
-    std::cout<< "fBeamGateTime " << triggerVect[trig]->BeamGateTime() << std::endl;
-    
+    //    std::cout<<" fTriggerTime "<<triggerVect[trig]->TriggerTime() << std::endl;
+    //    std::cout<< "fBeamGateTime " << triggerVect[trig]->BeamGateTime() << std::endl;
+
     // Gets the data for the paddles
     std::vector<const raw::AuxDetDigit*> ust_wv = tdu.TriggerUpStreamTOFDigits(trig);
     std::vector<const raw::AuxDetDigit*> dst_wv = tdu.TriggerDownStreamTOFDigits(trig);
 
-    if(ust_wv.size() == 2) {
-    // Converting the information into vectors ... might not be a good thing
+    if(ust_wv.size() == 2) { // Sometimes event has 0 PMTs, I don't know why
+    // Converting the information into vectors, might not be the right approach to this
       std::vector<short> ust_v0;
       std::vector<short> ust_v1;
       std::vector<short> dst_v0;
@@ -127,7 +134,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
       }
     
       std::vector<short> ustof1_hits = find_hits(ust_v0);
-      std::vector<short> ustof2_hits = find_hits(ust_v1); // Faults here
+      std::vector<short> ustof2_hits = find_hits(ust_v1);
 
       std::vector<short> ustof_hits = match_hits(ustof1_hits, ustof2_hits);
 
@@ -178,14 +185,11 @@ std::vector<short> lrm::TimeOfFlight::find_hits(std::vector<short> wv) {
     gradient = float(wv.at(i)-wv.at(i-2))/2;
     
     if(gradient < threshold && rising_edge == false) {
-
       hits.insert(hits.end(),i);
-
       rising_edge = true;
     }
 
     if(gradient > abs(threshold) && rising_edge == true) {
-
       rising_edge = false;
     }
 
