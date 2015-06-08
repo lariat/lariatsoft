@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////
 // TO DO:
 ////////////////////////////////////////////////////////////////////////
-// [ ] Add TOF calculation
+// [X] Add TOF calculation
 // [ ] Add time stamp relative to trigger (? triggerS ?)
 // [ ] Add time stamp to trigger (? triggerS ?) association
 // [ ] Add .root appropriate for producers
