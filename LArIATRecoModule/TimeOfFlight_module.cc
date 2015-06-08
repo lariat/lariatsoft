@@ -6,6 +6,13 @@
 // Generated at Fri May 29 10:13:48 2015 by Daniel Smith using artmod
 // from cetpkgsupport v1_08_05.
 ////////////////////////////////////////////////////////////////////////
+// TO DO:
+////////////////////////////////////////////////////////////////////////
+// [ ] Add TOF calculation
+// [ ] Add time stamp relative to trigger (? triggerS ?)
+// [ ] Add time stamp to trigger (? triggerS ?) association
+// [ ] Add .root appropriate for producers
+////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -67,7 +74,7 @@ public:
 private:
   
   std::string fTriggerUtility; //<---Label for the module producing the triggers
- 
+
   TH1F* tof_counts;
   TH1F* ustof_histo;
   // Declare member data here.
@@ -79,7 +86,7 @@ lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
 {
-
+  this->reconfigure(p);  // Elena's addition
 
   // Call appropriate produces<>() functions here.
 }
@@ -88,7 +95,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 {
   // Gets the trigger data 
   // ### This is a crap way to pass a string.....FIX ME!!!! ####
-  fTriggerUtility = "FragmentToDigit";
+  //  fTriggerUtility = "FragmentToDigit"; // I don't think this line is necessary // Elena's addition
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);    
 
   std::vector<short> tof;
@@ -118,8 +125,8 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 
       std::vector<short> ustof_hits = match_hits(ustof1_hits, ustof2_hits);
 
-      std::vector<short> dstof1_hits = find_hits(ust_v0);
-      std::vector<short> dstof2_hits = find_hits(ust_v1);
+      std::vector<short> dstof1_hits = find_hits(dst_v0);
+      std::vector<short> dstof2_hits = find_hits(dst_v1);
 
       std::vector<short> dstof_hits = match_hits(dstof1_hits, dstof2_hits);
 
@@ -237,8 +244,8 @@ void lrm::TimeOfFlight::beginJob()
 {
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
-  tof_counts = tfs->make<TH1F>("tof_counts","tof_counts", 100, 0., 100.);
-  ustof_histo  = tfs->make<TH1F>("ustof_histo", "ustof_histo", 14336, 0., 14336.);
+  tof_counts  = tfs->make<TH1F>("tof_counts" , "tof_counts" ,   100, 0.,   100.);
+  ustof_histo = tfs->make<TH1F>("ustof_histo", "ustof_histo", 14336, 0., 14336.);
   tof_counts->GetXaxis()->SetTitle("ToF (ns)");
   tof_counts->GetYaxis()->SetTitle("N counts");
 }
