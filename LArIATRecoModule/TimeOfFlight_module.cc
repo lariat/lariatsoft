@@ -32,6 +32,8 @@
 #include "Utilities/AssociationUtil.h"
 // ### LArIAT Things ###
 #include "RawDataUtilities/TriggerDigitUtility.h"
+#include "RawData/TriggerData.h"
+
 
 #include <memory>
 
@@ -99,9 +101,12 @@ void lrm::TimeOfFlight::produce(art::Event & e)
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);    
 
   std::vector<short> tof;
+  std::vector<const raw::Trigger*> triggerVect = tdu.EventTriggers();
+
 
   // Loops over the triggers
   for(size_t trig = 0; trig < tdu.NTriggers(); ++trig) {
+    //    std::cout<<""<<triggerVect[trig]->;
  
     // Gets the data for the paddles
     std::vector<const raw::AuxDetDigit*> ust_wv = tdu.TriggerUpStreamTOFDigits(trig);
@@ -151,7 +156,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
       }
       
       for(size_t x = 0; x < tof.size(); ++x) { 
-	std::cout << tof[x] << " ";
+	std::cout<<" TOF" << tof[x] << " ";
       }
 
       // At this point, we have the hits for a given trigger stored in tof
@@ -232,7 +237,7 @@ std::vector<short> lrm::TimeOfFlight::match_hits(std::vector<short> hits1, std::
   }
   
   for(size_t x = 0; x < matched_hits.size(); ++x) {
-    std::cout << matched_hits[x] << ", ";
+    std::cout<<" matched hits " << matched_hits[x] << ", ";
   }
 
   // Reversed because the python script reverses it
