@@ -103,11 +103,12 @@ void lrm::TimeOfFlight::produce(art::Event & e)
   std::vector<short> tof;
   std::vector<const raw::Trigger*> triggerVect = tdu.EventTriggers();
 
-
   // Loops over the triggers
   for(size_t trig = 0; trig < tdu.NTriggers(); ++trig) {
-    //    std::cout<<""<<triggerVect[trig]->;
- 
+    
+    std::cout<<" fTriggerTime "<<triggerVect[trig]->TriggerTime() << std::endl;
+    std::cout<< "fBeamGateTime " << triggerVect[trig]->BeamGateTime() << std::endl;
+    
     // Gets the data for the paddles
     std::vector<const raw::AuxDetDigit*> ust_wv = tdu.TriggerUpStreamTOFDigits(trig);
     std::vector<const raw::AuxDetDigit*> dst_wv = tdu.TriggerDownStreamTOFDigits(trig);
@@ -143,10 +144,10 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 	  if(differ > 20 and differ < 100) {
 	    
 	    //If the Dstof-ustof difference is in the range we expect for beam particles, collect the tof
-	    tof.insert(tof.end(), dstof_hits[dst_hit]-ustof_hits[ust_hit]);
+	    tof.insert(tof.end(), differ);
 	    
 	    //Fill a debug histo with tofs
-	    tof_counts->Fill(dstof_hits[dst_hit]-ustof_hits[ust_hit]);
+	    tof_counts->Fill(differ);
 	    
 	    //Fill a debug histo with hit time (referred to time header) for good ustof hits
 	    // good ustof hits = hits which match with dstof and are linked to beam particles
@@ -155,9 +156,10 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 	}
       }
       
+      /*
       for(size_t x = 0; x < tof.size(); ++x) { 
 	std::cout<<" TOF" << tof[x] << " ";
-      }
+	} */
 
       // At this point, we have the hits for a given trigger stored in tof
     }
@@ -167,22 +169,22 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 
 std::vector<short> lrm::TimeOfFlight::find_hits(std::vector<short> wv) {
   float threshold = -40;
-  std::vector<float> gradient;
+  float gradient;
   std::vector<short> hits;
   
   bool rising_edge = false;
 
   for(unsigned short i = 2; i < wv.size(); ++i) {
-    gradient.insert(gradient.end(),float(wv.at(i-2)-wv.at(i))/2);
+    gradient = float(wv.at(i)-wv.at(i-2))/2;
     
-    if(gradient.back() < threshold && rising_edge == false) {
+    if(gradient < threshold && rising_edge == false) {
 
       hits.insert(hits.end(),i);
 
       rising_edge = true;
     }
 
-    if(gradient.back() > abs(threshold) && rising_edge == true) {
+    if(gradient > abs(threshold) && rising_edge == true) {
 
       rising_edge = false;
     }
@@ -191,10 +193,9 @@ std::vector<short> lrm::TimeOfFlight::find_hits(std::vector<short> wv) {
   
   if(hits.size() == 0) { hits.insert(hits.end(), 0); }
 
-  /*
-  for(size_t h = 0; h < hits.size(); ++h) {
-    std::cout << hits[h] << ", ";
-    } */
+  /* for(size_t h = 0; h < hits.size(); ++h) {
+     std::cout << hits[h] << ", ";
+     } */
   
   return hits;
 
@@ -236,12 +237,10 @@ std::vector<short> lrm::TimeOfFlight::match_hits(std::vector<short> hits1, std::
     }
   }
   
-  for(size_t x = 0; x < matched_hits.size(); ++x) {
-    std::cout<<" matched hits " << matched_hits[x] << ", ";
-  }
+  /* for(size_t x = 0; x < matched_hits.size(); ++x) {
+     std::cout<<" matched hits " << matched_hits[x] << ", ";
+     } */
 
-  // Reversed because the python script reverses it
-  std::reverse(matched_hits.begin(),matched_hits.end());
   return matched_hits;
 }
 
