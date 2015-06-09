@@ -9,7 +9,7 @@
 // TO DO:
 ////////////////////////////////////////////////////////////////////////
 // [X] Add TOF calculation
-// [ ] Add time stamp relative to trigger (? triggerS ?)
+// [X] Add time stamp relative to trigger (? triggerS ?)
 // [ ] Add time stamp to trigger (? triggerS ?) association
 // [ ] Add .root appropriate for producers
 ////////////////////////////////////////////////////////////////////////
@@ -34,7 +34,7 @@
 // ### LArIAT Things ###
 #include "RawDataUtilities/TriggerDigitUtility.h"
 #include "RawData/TriggerData.h"
-
+#include "LArIATDataProducts/TOF.h"
 
 #include <memory>
 
@@ -80,7 +80,7 @@ private:
 
   TH1F* tof_counts;
   TH1F* ustof_histo;
-  // Declare member data here.
+  TH1F* timestamp_histo;
 
 };
 
@@ -93,8 +93,8 @@ lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
 
   // Call appropriate produces<>() functions here.
 
-  // produces<std::vector<rdu::TOF> >();
-  // produces<art::Assns<raw::Trigger, rdu::TOF> >();
+  //  produces<std::vector<ldp::TOF> >();
+  //  produces<art::Assns<raw::Trigger, ldp::TOF> >();
 
 }
 
@@ -108,13 +108,15 @@ void lrm::TimeOfFlight::produce(art::Event & e)
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);    
 
   std::vector<short> tof;
-  std::vector<const raw::Trigger*> triggerVect = tdu.EventTriggers();
+  std::vector<double> timeToSpillUst;
+  //  std::vector<const raw::Trigger*> triggerVect = tdu.EventTriggers();
 
   // Loops over the triggers
   for(size_t trig = 0; trig < tdu.NTriggers(); ++trig) {
     
-    //    std::cout<<" fTriggerTime "<<triggerVect[trig]->TriggerTime() << std::endl;
-    //    std::cout<< "fBeamGateTime " << triggerVect[trig]->BeamGateTime() << std::endl;
+    //    std::cout<<" fTriggerTime "<<int(triggerVect[trig]->TriggerTime()) << std::endl;
+    //    std::cout<< "fBeamGateTime " << int(triggerVect[trig]->BeamGateTime()) << std::endl;
+    //    std::cout<<"TTT " << ust_wv.at(0)->TimeStamp() << std::endl;
 
     // Gets the data for the paddles
     std::vector<const raw::AuxDetDigit*> ust_wv = tdu.TriggerUpStreamTOFDigits(trig);
@@ -137,7 +139,18 @@ void lrm::TimeOfFlight::produce(art::Event & e)
       std::vector<short> ustof2_hits = find_hits(ust_v1);
 
       std::vector<short> ustof_hits = match_hits(ustof1_hits, ustof2_hits);
-
+      
+      // Adds the time stamp for each upstream hit to the spill
+      // ust_wv.at(0)->TimeStamp() gives the TTT (Trigger Time Tag) since a spill
+      //    each tick of the TTT is in 8 ns
+      // Then add the upstream hit to that number to get out final number
+      for(size_t i = 0; i < ustof_hits.size(); ++i) {
+	double theAnswer = (ust_wv.at(0)->TimeStamp()*8)+ustof_hits[i];
+	//	std::cout << theAnswer << std::endl;
+	timeToSpillUst.insert(timeToSpillUst.end(), theAnswer);
+	timestamp_histo->Fill(theAnswer);
+      }
+      
       std::vector<short> dstof1_hits = find_hits(dst_v0);
       std::vector<short> dstof2_hits = find_hits(dst_v1);
 
@@ -253,7 +266,8 @@ void lrm::TimeOfFlight::beginJob()
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
   tof_counts  = tfs->make<TH1F>("tof_counts" , "tof_counts" ,   100, 0.,   100.);
-  ustof_histo = tfs->make<TH1F>("ustof_histo", "ustof_histo", 14336, 0., 14336.);
+  timestamp_histo = tfs->make<TH1F>("timestamp_histo", "timestamp_histo", 10000, 0., 9000000000.);
+  ustof_histo = tfs->make<TH1F>("ustof_histo", "ustof_histo", 14000, 0., 14000.);
   tof_counts->GetXaxis()->SetTitle("ToF (ns)");
   tof_counts->GetYaxis()->SetTitle("N counts");
 }
