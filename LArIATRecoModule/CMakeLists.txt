@@ -1,7 +1,14 @@
-
 art_make(BASENAME_ONLY
+         
+	 LIB_LIBRARIES Geometry
+	               ClusterRecoUtil
+		       RecoBase
          MODULE_LIBRARIES LArIATRecoAlg
 	 		  LArIATDataProducts
+			  Filters
+			  ClusterFinder
+			  ClusterRecoUtil
+			  RecoAlg
 	 		  RawData
 	                  SummaryData
 			  Geometry
@@ -23,8 +30,8 @@ art_make(BASENAME_ONLY
 			  ${CETLIB}
 			  ${CLHEP}
 			  ${ROOT_BASIC_LIB_LIST}
-)
 
+)
 
 install_headers()
 install_fhicl()

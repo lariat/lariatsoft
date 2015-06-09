@@ -1,6 +1,7 @@
 
 art_make( LIBRARY_NAME  LArIATRecoAlg
 	  LIB_LIBRARIES Utilities
+	                Geometry
 	  		${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}

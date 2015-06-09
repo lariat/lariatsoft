@@ -16,16 +16,14 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "CLHEP/Units/SystemOfUnits.h"
 
-#include "WCTrackBuilderAlg.h"
+// LArIAT includes
+#include "LArIATRecoAlg/WCTrackBuilderAlg.h"
 
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
-
-
-
-
 
 //--------------------------------------------------------------
 //Constructor
@@ -33,38 +31,6 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
     
-  fNumber_tdcs = 16;
-  fNumber_wire_chambers = 4;
-  fB_field_tesla = 0.35;
-
-  fTime_bin_scaling = 1.0/1280.0;
-  fWire_scaling = 1.0/64.0;  
-  fGoodHitAveragingEps = 2.0;
-
-  fDBSCANEpsilon = 1.0/16.0;
-  fDBSCANMinHits = 1;
-
-  //Survey constants
-  fDelta_z_us = 1551.15;  // millimeters
-  fDelta_z_ds = 1570.06;  // millimeters
-  fL_eff = 1145.34706;  // the effective magnetic length of the
-  fmm_to_m = 0.001;
-  fGeV_to_MeV = 1000.0;
-  
-  // center (cntr) of multi-wire proportional chambers
-  fX_cntr_1 = -392.33;
-  fY_cntr_1 = 0.0;
-  fZ_cntr_1 = 1683.59;
-  fX_cntr_2 = -738.35;
-  fY_cntr_2 = 0.0;
-  fZ_cntr_2 = 3195.65;
-  fX_cntr_3 = -1019.89;
-  fY_cntr_3 = 0.0;
-  fZ_cntr_3 = 5183.07;
-  fX_cntr_4 = -1146.64;
-  fY_cntr_4 = 0.0;
-  fZ_cntr_4 = 7587.99;
-  
   // rough guess beginning 2015.02: moved WC4 33" along the 3deg beam.
   // x = -1146.64 mm = -1102.77 mm - sin(3 deg)*33"
   // z =  7587.99 mm =  6750.94 mm + cos(3 deg)*33"
@@ -96,11 +62,19 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   fMid_plane_slope_xz = tan(8.0*3.141592654/180);
   fMid_plane_z_int_xz = fMid_plane_z - fMid_plane_slope_xz * fMid_plane_x;
 
-  fCenter_of_tpc[0] = -1200;  //First appx  <---------------------- SET TPC POSITION HERE !!!!!
-  fCenter_of_tpc[1] = 0; //                 <---------------------- SET TPC POSITION HERE !!!!!
-  fCenter_of_tpc[2] = 8500;//               <---------------------- SET TPC POSITION HERE !!!!!  
-  fHalf_z_length_of_tpc = 450; //mm    
-  fHalf_x_length_of_tpc = 235; //mm
+  // Use the Geometry service to get positions and lengths
+  // of the TPC
+  auto tpcGeo = fGeo->begin_TPC_id().get();
+  double tpcLocalCenter[3] = {0.};
+  tpcGeo->LocalToWorld(tpcLocalCenter, fCenter_of_tpc);
+
+  // put the center of the TPC in world coordinates into mm
+  for(int i = 0; i < 3; ++i) fCenter_of_tpc[i] *= CLHEP::cm;
+
+  // get the active half width and length of the TPC in mm, geometry
+  // returns the values in cm, so have to multiply by CLHEP::cm
+  fHalf_z_length_of_tpc = 0.5*tpcGeo->ActiveLength() * CLHEP::cm;
+  fHalf_x_length_of_tpc = tpcGeo->ActiveHalfWidth()  * CLHEP::cm;
 }
 
 //--------------------------------------------------------------  
@@ -113,7 +87,40 @@ WCTrackBuilderAlg::~WCTrackBuilderAlg()
 //--------------------------------------------------------------
 void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
+  fNumber_tdcs          = pset.get<int   >("NumberTDCs",         16         );
+  fNumber_wire_chambers = pset.get<int   >("NumberWireChambers", 4          );
+  fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.35       );
+
+  fTime_bin_scaling     = pset.get<double>("TimeBinScaling",      1.0/1280.0);
+  fWire_scaling         = pset.get<double>("WireScaling",         1.0/64.0  ); 
+  fGoodHitAveragingEps 	= pset.get<double>("GotHitAveragingEps",  2.0       );
+
+  fDBSCANEpsilon        = pset.get<float >("DBSCANEpsilon",       1.0/16.0  );
+  fDBSCANMinHits        = pset.get<int   >("DBSCANMinHits",       1         );
+
+  //Survey constants
+  fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );   
+  fDelta_z_ds 		= pset.get<float >("DeltaZds",   	  1570.06   );   
+  fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
+  fmm_to_m    		= pset.get<float >("MMtoM",        	  0.001     );	
+  fGeV_to_MeV 		= pset.get<float >("GeVToMeV",    	  1000.0    );   
   
+  // center (cntr) of multi-wire proportional chambers
+  ///\todo: Switch to using a service to get these values when available
+  fX_cntr_1             = pset.get<float >("XCntr1",              -392.33   ); 
+  fY_cntr_1 		= pset.get<float >("YCntr1",              0.0       );     	   
+  fZ_cntr_1 		= pset.get<float >("ZCntr1", 		  1683.59   ); 
+  fX_cntr_2 		= pset.get<float >("XCntr2", 		  -738.35   ); 
+  fY_cntr_2 		= pset.get<float >("YCntr2", 	   	  0.0       );     
+  fZ_cntr_2 		= pset.get<float >("ZCntr2", 		  3195.65   ); 
+  fX_cntr_3 		= pset.get<float >("XCntr3", 		  -1019.89  );
+  fY_cntr_3 		= pset.get<float >("YCntr3", 	   	  0.0       );     
+  fZ_cntr_3 		= pset.get<float >("ZCntr3", 		  5183.07   ); 
+  fX_cntr_4 		= pset.get<float >("XCntr4", 		  -1146.64  );
+  fY_cntr_4 		= pset.get<float >("YCntr4", 	   	  0.0       );     
+  fZ_cntr_4 		= pset.get<float >("ZCntr4", 		  7587.99   ); 
+  
+  return;
 }
 
 //--------------------------------------------------------------
