@@ -41,7 +41,7 @@ physics:
 
  #trigger_paths is a keyword and contains the paths that modify the art::event,
  # #ie filters and producers
- #trigger_paths: [LariatProducer]
+ #trigger_paths: [LariatProducer] #DO WE NEED THIS??? 
 
  #end_paths is a keyword and contains the paths that do not modify the art::Event,                                                                                            
  # #ie analyzers and output streams.  these all run simultaneously 
