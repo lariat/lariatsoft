@@ -15,7 +15,14 @@ source:
   # fileNames: ["input.root"]
 }
 
-outputs: {}
+outputs: 
+{
+ #out1:
+ # {
+ #   module_type: RootOutput
+ #   fileName:    "tofProduceObj.root" #default file name, can override from command line with -o or --output
+ #  } # This part of the .fcl is not working right now, the only way of getting a .root output with the objects is by -o fileName.root
+}
 
 physics:
 {
@@ -29,5 +36,8 @@ physics:
   analysis:  [ TimeOfFlight ]
   end_paths: [ analysis ]
 }
+
+
+
 
 physics.producers.TimeOfFlight.TriggerUtility: "FragmentToDigit"

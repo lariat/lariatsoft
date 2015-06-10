@@ -34,7 +34,7 @@
 // ### LArIAT Things ###
 #include "RawDataUtilities/TriggerDigitUtility.h"
 #include "RawData/TriggerData.h"
-#include "LArIATDataProducts/TOF.h"
+//#include "LArIATDataProducts/TOF.h"
 
 #include <memory>
 
@@ -89,7 +89,8 @@ lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
 {
-  this->reconfigure(p);  // Elena's addition
+  this->reconfigure(p);  
+  produces<std::vector<short> >();
 
   // Call appropriate produces<>() functions here.
 
@@ -107,6 +108,8 @@ void lrm::TimeOfFlight::produce(art::Event & e)
   //  fTriggerUtility = "FragmentToDigit"; // I don't think this line is necessary // Elena's addition
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);    
 
+  std::unique_ptr<std::vector<short> > my_tof_ptr (new std::vector<short>);
+  //  <short> Toff;
   std::vector<short> tof;
   std::vector<double> timeToSpillUst;
   //  std::vector<const raw::Trigger*> triggerVect = tdu.EventTriggers();
@@ -168,7 +171,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 	    
 	    //Fill a debug histo with tofs
 	    tof_counts->Fill(differ);
-	    
+	    my_tof_ptr->push_back(differ);
 	    //Fill a debug histo with hit time (referred to time header) for good ustof hits
 	    // good ustof hits = hits which match with dstof and are linked to beam particles
 	    ustof_histo->Fill(ustof_hits[ust_hit]);
@@ -185,6 +188,8 @@ void lrm::TimeOfFlight::produce(art::Event & e)
     }
   }
 
+  e.put(std::move(my_tof_ptr));
+  return;
 }
 
 std::vector<short> lrm::TimeOfFlight::find_hits(std::vector<short> wv) {
