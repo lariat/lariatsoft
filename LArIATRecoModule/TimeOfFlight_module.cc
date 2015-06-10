@@ -188,7 +188,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
     }
   }
 
-  e.put(std::move(my_tof_ptr));
+  //  e.put(std::move(my_tof_ptr));
   return;
 }
 
