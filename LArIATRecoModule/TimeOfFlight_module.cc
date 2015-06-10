@@ -28,6 +28,7 @@
 #include <TH1F.h>
 #include <vector>
 #include <memory>
+#include <utility>
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
@@ -87,12 +88,11 @@ lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
 {
   this->reconfigure(p);  
 
-  produces<std::vector<short> >();
-
   // Call appropriate produces<>() functions here.
 
-  //  produces<std::vector<ldp::TOF> >();
-  //  produces<art::Assns<raw::Trigger, ldp::TOF> >();
+  produces<std::vector<ldp::TOF> >();
+  produces<art::Assns<raw::Trigger, ldp::TOF> >();
+  //  produces<std::vector<short> >();
 
 }
 
@@ -103,8 +103,13 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);    
 
-  std::unique_ptr<std::vector<short> > my_tof_ptr (new std::vector<short>);
-  //  std::vector<const raw::Trigger*> triggerVect = tdu.EventTriggers();
+  std::unique_ptr<art::Assns<raw::Trigger, ldp::TOF> > TriggerTOFAssn(new art::Assns<raw::Trigger, ldp::TOF>);
+  
+  std::unique_ptr<std::vector<ldp::TOF> > TOFCol(new std::vector<ldp::TOF> );
+
+  //  std::unique_ptr<std::vector<short> > my_tof_ptr (new std::vector<short>);
+
+  art::PtrVector<raw::Trigger> const& EventTriggersPtr = tdu.EventTriggersPtr();
 
   // Loops over the triggers
   for(size_t trig = 0; trig < tdu.NTriggers(); ++trig) {
@@ -112,6 +117,9 @@ void lrm::TimeOfFlight::produce(art::Event & e)
     //    std::cout<<" fTriggerTime "<<int(triggerVect[trig]->TriggerTime()) << std::endl;
     //    std::cout<< "fBeamGateTime " << int(triggerVect[trig]->BeamGateTime()) << std::endl;
     //    std::cout<<"TTT " << ust_wv.at(0)->TimeStamp() << std::endl;
+
+    // Getting a new trigger
+    art::Ptr<raw::Trigger> theTrigger = (EventTriggersPtr.at(trig));
 
     // Gets the digits for the upstream and downstream paddles
     std::vector<const raw::AuxDetDigit*> ust_wv = tdu.TriggerUpStreamTOFDigits(trig);
@@ -122,7 +130,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
       
       // Variables of our object
       std::vector<short> tof;
-      std::vector<double> timeToSpillDst;
+      std::vector<long> timeToSpillDst;
 
       // Converts the digits into vectors - might be the wrong approach for this
       std::vector<short> ust_v0;
@@ -166,13 +174,13 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 	    timeToSpillDst.insert(timeToSpillDst.end(), theAnswer);
 
 	    // LArSoft Magic
-	    my_tof_ptr->push_back(differ);
+	    // my_tof_ptr->push_back(differ);
       
-	    //Fills debug histos with tof, timestamp, and hit time (time header)
+	    // Fills debug histos with tof, timestamp, and hit time (time header)
 	    tof_counts->Fill(differ);
 	    timestamp_histo->Fill(theAnswer);
-	    ustof_histo->Fill(ustof_hits[ust_hit]); // only ust_hits that matched with dst hits
-	    
+	    ustof_histo->Fill(ustof_hits[ust_hit]); // only ust_hits that matched with dst hits   
+
 	  }
 	}
       }
@@ -183,10 +191,16 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 	} */
 
       // At this point, we have the hits for a given trigger stored in tof
+      // Attempting to do some larsoft magic
+      ldp::TOF please(tof, timeToSpillDst);
+      (*TOFCol).push_back( please );
+      util::CreateAssn(*this, e, *(TOFCol.get()), theTrigger, *(TriggerTOFAssn.get()));
+    
     }
   }
 
-  e.put(std::move(my_tof_ptr));
+  e.put(std::move(TriggerTOFAssn));
+  e.put(std::move(TOFCol));
   return;
 }
 
