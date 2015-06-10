@@ -18,21 +18,32 @@ namespace ldp {
   class TOF {
 
   public:
-    TOF(); // Default constructor
+    TOF();    // Default constructor
+    ~TOF(){}; // Default destructor
     
   private:
     std::vector<short> fTOF;
-    std::vector<long> fTimeStamp;
+    std::vector<long>  fTimeStamp;
     
 #ifndef __GCCXML__
 
   public:
-  TOF( std::vector<short> TOF, std::vector<long> TimeStamp ):
-    fTOF(TOF), fTimeStamp(TimeStamp) {}
-    // Get Methods
 
-    short SingleTOF(size_t iHit) const;
-    long TimeStamp(size_t iHit) const;
+    //  TOF( std::vector<short> TOF, std::vector<long> TimeStamp ):
+    //fTOF(TOF), fTimeStamp(TimeStamp) {}
+    
+    TOF( std::vector<short> TOF, std::vector<long> TimeStamp ) { 
+      fTOF = TOF;
+      fTimeStamp = TimeStamp;
+    }
+
+    // Get Methods
+    short  SingleTOF(size_t iHit) const;
+    long   TimeStamp(size_t iHit) const;
+    // Set Methods
+    void   SetSingleTOF(std::vector<short> value) {fTOF       = value;};
+    void   SetTimeStamp(std::vector<long>  value) {fTimeStamp = value;};
+    
     size_t NTOF() const;
 
 #endif
