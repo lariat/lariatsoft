@@ -10,8 +10,8 @@
 ////////////////////////////////////////////////////////////////////////
 // [X] Add TOF calculation
 // [X] Add time stamp relative to trigger (? triggerS ?)
-// [ ] Add time stamp to trigger (? triggerS ?) association
-// [ ] Add .root appropriate for producers
+// [X] Add time stamp to trigger (? triggerS ?) association
+// [X] Add object appropriate for a producer
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDProducer.h"
@@ -92,15 +92,11 @@ lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
 
   produces<std::vector<ldp::TOF> >();
   produces<art::Assns<raw::Trigger, ldp::TOF> >();
-  //  produces<std::vector<short> >();
 
 }
 
 void lrm::TimeOfFlight::produce(art::Event & e)
 {
-  // I don't think the following line is necessary // Elena's addition
-  //  fTriggerUtility = "FragmentToDigit"; 
-
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);    
 
   std::unique_ptr<art::Assns<raw::Trigger, ldp::TOF> > TriggerTOFAssn(new art::Assns<raw::Trigger, ldp::TOF>);
