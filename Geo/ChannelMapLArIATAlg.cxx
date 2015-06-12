@@ -11,6 +11,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 
 // LArSoft Includes
+#include "Geometry/GeometryCore.h"
 #include "Geometry/AuxDetGeo.h"
 #include "Geometry/AuxDetSensitiveGeo.h"
 #include "Geometry/CryostatGeo.h"
@@ -21,6 +22,10 @@
 // LArIATSoft
 #include "Geo/ChannelMapLArIATAlg.h"
 
+// C++ standard library
+#include <ostream> // std::endl
+
+
 namespace geo{
 
   //----------------------------------------------------------------------------
@@ -30,14 +35,14 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  ChannelMapLArIATAlg::~ChannelMapLArIATAlg()
+  void ChannelMapLArIATAlg::Initialize( GeometryData_t& geodata )
   {
-  }
-
-  //----------------------------------------------------------------------------
-  void ChannelMapLArIATAlg::Initialize( std::vector<geo::CryostatGeo*> & cgeo, 
-					std::vector<geo::AuxDetGeo*>   & adgeo )
-  {
+    // start over:
+    Uninitialize();
+    
+    std::vector<geo::CryostatGeo*>& cgeo = geodata.cryostats;
+    std::vector<geo::AuxDetGeo*>  & adgeo = geodata.auxDets;
+    
     fNcryostat = cgeo.size();
     
     mf::LogInfo("ChannelMapLArIATAlg") << "Initializing LArIAT ChannelMap...";
@@ -147,6 +152,17 @@ namespace geo{
 
     LOG_DEBUG("ChannelMapLArIAT") << "# of channels is " << fNchannels;
 
+    // make vector of the AuxDet names
+    fAuxDetNames.clear();
+    fAuxDetNames.push_back("MuonRangeStack");
+    fAuxDetNames.push_back("TOFUS");
+    fAuxDetNames.push_back("TOFDS");
+    fAuxDetNames.push_back("AeroGelUS");
+    fAuxDetNames.push_back("AeroGelDS");
+    fAuxDetNames.push_back("MWPC1");
+    fAuxDetNames.push_back("MWPC2");
+    fAuxDetNames.push_back("MWPC3");
+    fAuxDetNames.push_back("MWPC4");    
 
     return;
   }
@@ -157,7 +173,7 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  std::vector<geo::WireID> ChannelMapLArIATAlg::ChannelToWire(uint32_t channel)  const
+  std::vector<geo::WireID> ChannelMapLArIATAlg::ChannelToWire(raw::ChannelID_t channel)  const
   {
     std::vector< geo::WireID > AllSegments; 
     unsigned int wire  = 0;
@@ -182,32 +198,27 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  uint32_t ChannelMapLArIATAlg::Nchannels() const
+  unsigned int ChannelMapLArIATAlg::Nchannels() const
   {
     return fNchannels;
   }
 
   //----------------------------------------------------------------------------
-  double ChannelMapLArIATAlg::WireCoordinate(double       YPos, 
-					     double       ZPos,
-					     unsigned int PlaneNo,
-					     unsigned int TPCNo,
-					     unsigned int cstat) const
+  double ChannelMapLArIATAlg::WireCoordinate
+    (double YPos, double ZPos, geo::PlaneID const& planeID) const
   {
     // Returns the wire number corresponding to a (Y,Z) position in PlaneNo 
     // with float precision.
     // B. Baller August 2014
-    return YPos*fOrthVectorsY[cstat][TPCNo][PlaneNo] 
-	 + ZPos*fOrthVectorsZ[cstat][TPCNo][PlaneNo]      
-	 - fFirstWireProj[cstat][TPCNo][PlaneNo];
+    return YPos*AccessElement(fOrthVectorsY, planeID) 
+         + ZPos*AccessElement(fOrthVectorsZ, planeID)
+         - AccessElement(fFirstWireProj, planeID);
   }
 
   
   //----------------------------------------------------------------------------
-  WireID ChannelMapLArIATAlg::NearestWireID(const TVector3& worldPos,
-					    unsigned int    PlaneNo,
-					    unsigned int    TPCNo,
-					    unsigned int    cstat) const
+  WireID ChannelMapLArIATAlg::NearestWireID
+    (const TVector3& worldPos, geo::PlaneID const& planeID) const
   {
 
     // This part is the actual calculation of the nearest wire number, where we assume
@@ -215,18 +226,18 @@ namespace geo{
     
     // add 0.5 to have the correct rounding
     int NearestWireNumber = int
-      (0.5 + WireCoordinate(worldPos.Y(), worldPos.Z(), PlaneNo, TPCNo, cstat));
+      (0.5 + WireCoordinate(worldPos.Y(), worldPos.Z(), planeID));
     
     // If we are outside of the wireplane range, throw an exception
     // (this response maintains consistency with the previous
     // implementation based on geometry lookup)
     if(NearestWireNumber < 0 ||
-       NearestWireNumber >= fWireCounts[cstat][TPCNo][PlaneNo])
+       NearestWireNumber >= AccessElement(fWireCounts, planeID))
     {
       int wireNumber = NearestWireNumber; // save for the output
       
       if(NearestWireNumber < 0 ) NearestWireNumber = 0;
-      else                       NearestWireNumber = fWireCounts[cstat][TPCNo][PlaneNo] - 1;
+      else                       NearestWireNumber = AccessElement(fWireCounts, planeID) - 1;
       
       throw InvalidWireIDError("Geometry", wireNumber, NearestWireNumber)
         << "Can't Find Nearest Wire for position (" 
@@ -235,8 +246,7 @@ namespace geo{
         << " (capped from " << NearestWireNumber << ")\n";
     }
 
-    WireID wid(cstat, PlaneNo, TPCNo, (unsigned int)NearestWireNumber);
-    return wid;
+    return geo::WireID(planeID, (geo::WireID::WireID_t) NearestWireNumber);
 
   }
   
@@ -253,35 +263,33 @@ namespace geo{
   //           Plane2 { Wire1     | 6
   //                    Wire2     v 7
   //
-  uint32_t ChannelMapLArIATAlg::PlaneWireToChannel(unsigned int plane,
-						   unsigned int wire,
-						   unsigned int tpc,
-						   unsigned int cstat) const
+  raw::ChannelID_t ChannelMapLArIATAlg::PlaneWireToChannel
+    (geo::WireID const& wireID) const
   {
     // This is the actual lookup part - first make sure coordinates are legal
-    if(tpc   < fNTPC[cstat] &&
-       plane < fWiresPerPlane[cstat][tpc].size() &&
-       wire  < fWiresPerPlane[cstat][tpc][plane] ){
+    if(wireID.TPC   < fNTPC[wireID.Cryostat] &&
+       wireID.Plane < fWiresPerPlane[wireID.Cryostat][wireID.TPC].size() &&
+       wireID.Wire  < AccessElement(fWiresPerPlane, wireID)){
       // if the channel has legal coordinates, its ID is given by the wire
-      // number above the number of wires in lower planes, tpcs and cryostats
-      return fPlaneBaselines[cstat][tpc][plane] + wire;
+      // number above the number of wires in lower planes, tpcs and cryostats;
+      // wireID is used here as PlaneID
+      return AccessElement(fPlaneBaselines, wireID) + wireID.Wire;
     }
     else{  
       // if the coordinates were bad, throw an exception
-      throw cet::exception("ChannelMapLArIATAlg") << "NO CHANNEL FOUND for cryostat,tpc,plane,wire: "
-						    << cstat << "," << tpc << "," << plane << "," << wire;
+      throw cet::exception("ChannelMapLArIATAlg") << "NO CHANNEL FOUND for " << std::string(wireID);
     }
     
-    // made it here, that shouldn't happen, return UINT_MAX
+    // made it here, that shouldn't happen, return raw::InvalidChannelID
     mf::LogWarning("ChannelMapLArIATAlg") << "should not be at the point in the function, returning "
-					    << "UINT_MAX";
-    return UINT_MAX;
+					    << "invalid channel";
+    return raw::InvalidChannelID;
 
   }
 
 
   //----------------------------------------------------------------------------
-  SigType_t ChannelMapLArIATAlg::SignalType(uint32_t const channel) const
+  SigType_t ChannelMapLArIATAlg::SignalType(raw::ChannelID_t const channel) const
   {
 
     // still assume one cryostat for now -- faster
@@ -308,7 +316,7 @@ namespace geo{
 
 
   //----------------------------------------------------------------------------
-  View_t ChannelMapLArIATAlg::View(uint32_t const channel) const
+  View_t ChannelMapLArIATAlg::View(raw::ChannelID_t const channel) const
   {
 
     // still assume one cryostat for now -- faster

@@ -7,41 +7,64 @@
 // from cetpkgsupport v1_02_00.
 ////////////////////////////////////////////////////////////////////////
 
-#include "art/Framework/Core/EDProducer.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
-#include "art/Utilities/InputTag.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Core/FindOneP.h"
-
+// ####################
+// ### C++ Includes ###
+// ####################
+#include <string>
 #include <vector>
+#include <utility> // std::pair<>
+#include <memory> // std::unique_ptr<>
+#include <iomanip>
 #include <algorithm> // std::max()
 #include <functional> // std::mem_fn()
-#include <memory> // std::move
-#include <utility> // std::pair<>, std::unique_ptr<>
 #include <limits> // std::numeric_limits<>
 
-//LArSoft includes
+// ##########################
+// ### Framework includes ###
+// ##########################
+#include "fhiclcpp/ParameterSet.h" 
+#include "messagefacility/MessageLogger/MessageLogger.h" 
+#include "art/Framework/Core/ModuleMacros.h" 
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Principal/Event.h" 
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
+#include "art/Framework/Principal/Handle.h" 
+#include "art/Persistency/Common/Ptr.h" 
+#include "art/Persistency/Common/PtrVector.h" 
+#include "art/Framework/Services/Registry/ServiceHandle.h" 
+#include "art/Framework/Services/Optional/TFileService.h" 
+#include "art/Framework/Core/FindOneP.h"
+#include "art/Utilities/Exception.h"
+#include "art/Utilities/InputTag.h"
+
+// ########################
+// ### LArSoft Includes ###
+// ########################
 #include "SimpleTypesAndConstants/geo_types.h"
 #include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "Geometry/Geometry.h"
 #include "Geometry/CryostatGeo.h"
 #include "Geometry/TPCGeo.h"
 #include "Geometry/PlaneGeo.h"
+#include "Filters/ChannelFilter.h"
+#include "RawDataUtilities/TriggerDigitUtility.h" 
 #include "RawData/RawDigit.h"
-#include "RawDataUtilities/TriggerDigitUtility.h"   //***
-#include "RecoBase/Cluster.h"
+#include "RawData/raw.h"
 #include "RecoBase/Wire.h"
 #include "RecoBase/Hit.h"
-// #include "RecoBase/EndPoint2D.h"
-// #include "RecoBaseArt/HitCreator.h" // recob::HitCollectionAssociator
+#include "RecoBase/Cluster.h"
 #include "RecoBase/Vertex.h"
-#include "Utilities/AssociationUtil.h"
 #include "RecoAlg/CCHitFinderAlg.h"
 #include "RecoAlg/ClusterCrawlerAlg.h"
+#include "Utilities/AssociationUtil.h"
+#include "TComplex.h"
+#include "TFile.h"
+#include "TH2D.h"
+#include "TF1.h"
+
+// #include "RecoBase/EndPoint2D.h"
+// #include "RecoBaseArt/HitCreator.h" // recob::HitCollectionAssociator
 // #include "RecoAlg/ClusterRecoUtil/StandardClusterParamsAlg.h"
 // #include "RecoAlg/ClusterParamsImportWrapper.h"
 

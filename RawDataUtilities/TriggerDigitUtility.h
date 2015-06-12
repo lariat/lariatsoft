@@ -103,6 +103,19 @@ namespace rdu{
     art::PtrVector<raw::AuxDetDigit>   const& TriggerMWPC3DigitsPtr(size_t const& t) 	    	 const;
     art::PtrVector<raw::AuxDetDigit>   const& TriggerMWPC4DigitsPtr(size_t const& t) 	    	 const;
 
+    // Methods for accessing AuxDetDigits from the Halo Counters
+    std::vector<const raw::AuxDetDigit*>      EventHaloDigits()       		                 const; 				 
+    art::PtrVector<raw::AuxDetDigit>          EventHaloDigitsPtr()   		                 const;                  
+    std::vector<const raw::AuxDetDigit*>      TriggerHaloDigits                (size_t const& t) const;
+    art::PtrVector<raw::AuxDetDigit>   const& TriggerHaloDigitsPtr             (size_t const& t) const;
+
+    // Methods for accessing AuxDetDigits from the trigger wave forms
+    std::vector<const raw::AuxDetDigit*>      EventTriggerWaveForms()                            const;
+    art::PtrVector<raw::AuxDetDigit>          EventTriggerWaveFormsPtr()                         const;
+    std::vector<const raw::AuxDetDigit*>      TriggerTriggerWaveForms   (size_t const& t)        const;
+    art::PtrVector<raw::AuxDetDigit>   const& TriggerTriggerWaveFormsPtr(size_t const& t)        const;
+    
+
   private:
 
     // The following methods work for any of the AuxDetDigit/Trigger vectors below and allow us
@@ -122,12 +135,14 @@ namespace rdu{
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerUpStreamAGDigits;    /// vector mapping trigger index to collection of Upstream Aerogel digits	
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerDownStreamAGDigits;	 /// vector mapping trigger index to collection of Downstream Aerogel digits
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC1Digits;         /// vector mapping trigger index to collection of MWPC1 digits
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC2Digits;         /// vector mapping trigger index to collection of MWPC1 digits
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC3Digits;         /// vector mapping trigger index to collection of MWPC1 digits
-    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC4Digits;         /// vector mapping trigger index to collection of MWPC1 digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC2Digits;         /// vector mapping trigger index to collection of MWPC2 digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC3Digits;         /// vector mapping trigger index to collection of MWPC3 digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMWPC4Digits;         /// vector mapping trigger index to collection of MWPC4 digits
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerMuonRangeDigits;     /// vector mapping trigger index to collection of Muon Range Stack digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerHaloDigits;          /// vector mapping trigger index to collection of halo digits
+    std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerTriggerWaveForms;    /// vector mapping trigger index to collection of trigger waveforms
     std::vector< art::PtrVector<raw::OpDetPulse>  > fTriggerOpDetPulses;         /// vector mapping trigger index to collection of OpDetPulses
- 
+
   };   
 
 }// end namespace

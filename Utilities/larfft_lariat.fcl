@@ -3,6 +3,6 @@
 BEGIN_PROLOG
 
 lariat_larfft:         @local::standard_larfft
-#lariat_larfft.FitBins: 5
+lariat_larfft.FFTSize: 6144
 
 END_PROLOG

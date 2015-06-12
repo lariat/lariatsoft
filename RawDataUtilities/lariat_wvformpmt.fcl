@@ -1,5 +1,5 @@
 #include "Wvform_PMT_config.fcl"
-
+#include "services_lariat.fcl"
 process_name: LariatProducer
 
 #source is now a root file
@@ -34,17 +34,26 @@ lariatwvformpmt: @local::lariat_wvformpmt
  end_paths:     [analyzeIt]
 
 }
+
+physics.analyzers.lariatwvformpmt.pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,4]]#set the channels with TPC PMTs in this mask - here ch 0 and 1 on board nr 9 (starting from 0)
 physics.analyzers.lariatwvformpmt.NumberOfPMTs: 2
 physics.analyzers.lariatwvformpmt.InputModule:  "FragmentToDigit"
-physics.analyzers.lariatwvformpmt.InstanceName:"Caenv1751Optical2"
+physics.analyzers.lariatwvformpmt.InstanceName:""
 
-physics.analyzers.lariatwvformpmt.fit_const: 0.0
+physics.analyzers.lariatwvformpmt.fit_const: 1.0
 physics.analyzers.lariatwvformpmt.fit_expmult1: 1.0
 physics.analyzers.lariatwvformpmt.fit_expmult2: 1.0
-physics.analyzers.lariatwvformpmt.fit_exp_slope1: 6.0
-physics.analyzers.lariatwvformpmt.fit_exp_slope2: 1590.0
-physics.analyzers.lariatwvformpmt.fit_start: 2090.0
-physics.analyzers.lariatwvformpmt.fit_end: 15000.0
+physics.analyzers.lariatwvformpmt.fit_expmult3: 1.0
+physics.analyzers.lariatwvformpmt.fit_expmult4: 1.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope1: 15.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope1low: 1.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope1high: 20.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope2: 50.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope2low: 40.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope2high: 60.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope3: 1000.0
+physics.analyzers.lariatwvformpmt.fit_start: 1250.0
+physics.analyzers.lariatwvformpmt.fit_end: 5000.0
 
 
 outputs:
@@ -61,4 +70,5 @@ services:
 {
   TFileService: { fileName: "wvforms.root" }
 #  message:      @local::standard_info
+  @table::lariat_services
 }

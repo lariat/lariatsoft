@@ -1,5 +1,6 @@
 #include "Wvform_PMT_config.fcl"
 #include "FragmentToDigit_config.fcl"
+#include "services_lariat.fcl"
 process_name: LariatProducer
 
 #source is now a root file
@@ -32,25 +33,30 @@ LariatProducer: [FragmentToDigit]
 
  #end_paths is a keyword and contains the paths that do not modify the art::Event, 
  # #ie analyzers and output streams.  these all run simultaneously
- end_paths:     [analyzeIt]
+ end_paths:     [analyzeIt,stream1]
 
 }
 
-physics.producers.FragmentToDigit.pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1]]#set the channels with TPC PMTs in this mask - here ch 0 and 1 on board nr 9 (starting from 0)
-physics.producers.FragmentToDigit.pmt_test:false
+physics.producers.FragmentToDigit.pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,4]]#set the channels with TPC PMTs in this mask - here ch 0 and 1 on board nr 9 (starting from 0)
+physics.producers.FragmentToDigit.pmt_test:true
 
-
+physics.analyzers.lariatwvformpmt.pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,4]]#set the channels with TPC PMTs in this mask - here ch 0 and 1 on board nr 9 (starting from 0) 
 physics.analyzers.lariatwvformpmt.NumberOfPMTs: 2
 physics.analyzers.lariatwvformpmt.InputModule:  "FragmentToDigit"
-physics.analyzers.lariatwvformpmt.InstanceName:"Caenv1751Optical2"
+physics.analyzers.lariatwvformpmt.InstanceName:""
 
-physics.analyzers.lariatwvformpmt.fit_const: 0.0
+physics.analyzers.lariatwvformpmt.fit_const: 1.0
 physics.analyzers.lariatwvformpmt.fit_expmult1: 1.0
 physics.analyzers.lariatwvformpmt.fit_expmult2: 1.0
-physics.analyzers.lariatwvformpmt.fit_exp_slope1: 6.0
-physics.analyzers.lariatwvformpmt.fit_exp_slope2: 1590.0
-physics.analyzers.lariatwvformpmt.fit_start: 1200.0
-physics.analyzers.lariatwvformpmt.fit_end: 2000.0
+physics.analyzers.lariatwvformpmt.fit_expmult3: 1.0
+physics.analyzers.lariatwvformpmt.fit_expmult4: 1.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope1: 15.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope2: 50.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope2low: 40.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope2high: 60.0
+physics.analyzers.lariatwvformpmt.fit_exp_slope3: 1000.0
+physics.analyzers.lariatwvformpmt.fit_start: 1250.0
+physics.analyzers.lariatwvformpmt.fit_end: 5000.0
 
 
 outputs:
@@ -58,13 +64,14 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:    "pmtwvform.root" #default file name, can override from command line with -o or --output
+   fileName:    "pmtwvform0.root" #default file name, can override from command line with -o or --output
    outputCommands: [ "keep *", "drop artdaq::Fragments_daq_*_Wrapper" ]
  }
 }
 
 services:
 {
-  TFileService: { fileName: "wvforms.root" }
+  TFileService: { fileName: "wvforms_run0.root" }
 #  message:      @local::standard_info
+  @table::lariat_services
 }
