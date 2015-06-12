@@ -102,6 +102,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 {
  
   // Setting up to begin looping over the Triggers in the inputted ROOT file
+
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);    
   art::PtrVector<raw::Trigger> const& EventTriggersPtr = tdu.EventTriggersPtr();
 

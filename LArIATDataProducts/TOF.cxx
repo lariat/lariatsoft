@@ -20,13 +20,7 @@ namespace ldp{
     fTOF = blank0;
     fTimeStamp = blank1;
   }
-  /*
-  //----------------------------------------------------------------------
-  TOF::TOF(std::vector<short> TOF, std::vector<long> TimeStamp) { 
 
-    fTOF = TOF;
-    fTimeStamp = TimeStamp;
-    } */
  
   //--------------------------------------------------
   short TOF::SingleTOF(size_t iHit) const
