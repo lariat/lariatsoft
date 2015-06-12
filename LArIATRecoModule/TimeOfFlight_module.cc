@@ -116,7 +116,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
   for(size_t trig = 0; trig < tdu.NTriggers(); ++trig) {
 
     // Getting a the current trigger
-    art::Ptr<raw::Trigger> theTrigger = (EventTriggersPtr.at(trig));
+    art::Ptr<raw::Trigger> theTrigger = (EventTriggersPtr[trig]);
 
     // Retrieve the digits for the upstream and downstream paddles
     std::vector<const raw::AuxDetDigit*> ust_wv = tdu.TriggerUpStreamTOFDigits(trig);
@@ -132,11 +132,11 @@ void lrm::TimeOfFlight::produce(art::Event & e)
       // Converts the digits into vectors to pass into the functions
       //   might be the wrong approach for this
       std::vector<short> ust_v0, ust_v1, dst_v0, dst_v1;
-      for(size_t i = 1; i < ust_wv.at(0)->NADC(); ++i) { 
-      	ust_v0.insert(ust_v0.end(), ust_wv.at(0)->ADC(i));
-      	ust_v1.insert(ust_v1.end(), ust_wv.at(1)->ADC(i));
-      	dst_v0.insert(dst_v0.end(), dst_wv.at(0)->ADC(i));
-      	dst_v1.insert(dst_v1.end(), dst_wv.at(1)->ADC(i));
+      for(size_t i = 1; i < ust_wv[0]->NADC(); ++i) { 
+      	ust_v0.insert(ust_v0.end(), ust_wv[0]->ADC(i));
+      	ust_v1.insert(ust_v1.end(), ust_wv[1]->ADC(i));
+      	dst_v0.insert(dst_v0.end(), dst_wv[0]->ADC(i));
+      	dst_v1.insert(dst_v1.end(), dst_wv[1]->ADC(i));
       }
     
       // Calls the hit finders for each waveform and then matches the hits, using functions
@@ -168,7 +168,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
 	    // dst_wv.at(0)->TimeStamp() gives the TTT (Trigger Time Tag) since a spill
 	    //    each tick of the TTT is 8 ns
 	    // Then add the downstream hit to that number to get out final timetamp
-	    double time = (dst_wv.at(0)->TimeStamp()*8)+dstof_hits[dst_hit];
+	    double time = (dst_wv[0]->TimeStamp()*8)+dstof_hits[dst_hit];
 	    timeStampDst.insert(timeStampDst.end(), time);
       
 	    // Fills debug histos with tof, timestamp, and hit time for the ust hits
@@ -216,7 +216,7 @@ std::vector<short> lrm::TimeOfFlight::find_hits(std::vector<short> wv) {
   // Starts from 2 because the gradient can't be taken from the edges
   for(unsigned short i = 2; i < wv.size(); ++i) {
     
-    float gradient = float(wv.at(i)-wv.at(i-2))/2;
+    float gradient = float(wv[i]-wv[i-2])/2;
     
     // Uses the rising_edge variable to test if a hit has already been found or not
     if(gradient < threshold && rising_edge == false) {
@@ -290,7 +290,7 @@ void lrm::TimeOfFlight::beginJob()
   // Setting up the debugging histograms
   tof_counts  = tfs->make<TH1F>("tof_counts" , "tof_counts" ,   100, 0.,   100.);
   timestamp_histo = tfs->make<TH1F>("timestamp_histo", "timestamp_histo", 10000, 0., 9000000000.);
-  ustof_histo = tfs->make<TH1F>("ustof_histo", "ustof_histo", 10000, 0., 0.);
+  ustof_histo = tfs->make<TH1F>("ustof_histo", "ustof_histo", 1000, 0., 0.);
   tof_counts->GetXaxis()->SetTitle("ToF (ns)");
   tof_counts->GetYaxis()->SetTitle("N counts");
 }
