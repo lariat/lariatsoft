@@ -219,7 +219,7 @@ void DBClusterT1034::produce(art::Event & evt)
       {
       
       // === Getting the pointer for this trigger ====
-      // art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
+      art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
       
       allhits = HitDigits.at(trig);
       
@@ -243,8 +243,9 @@ void DBClusterT1034::produce(art::Event & evt)
 	 std::cout<<"Loop over fps.size"<<std::endl;
 	 for(unsigned int j = 0; j < fDBScan.fps.size(); ++j)
 	    {
-	    std::cout<<"j = "<<j<<std::endl;
-	    std::cout<<"allhits.size() = "<<allhits.size()<<" , fDBScan.fps.size() = "<<fDBScan.fps.size()<<std::endl;
+	      LOG_VERBATIM("DBClusterT1034") << "j = " << j 
+					     << "\nallhits.size() = " << allhits.size()
+					     << " , fDBScan.fps.size() = " << fDBScan.fps.size();
 	    if(allhits.size() != fDBScan.fps.size()) break;
 	    //fhitwidth->Fill(fDBScan.fps[j][1]);
 	    
@@ -315,8 +316,8 @@ void DBClusterT1034::produce(art::Event & evt)
 		  
 		ccol->emplace_back(cluster.move());
 		// associate the hits to this cluster
-		util::CreateAssn(*this, evt, *(ccol.get()), clusterHits, *(assn.get()));
-		
+		util::CreateAssn(*this, evt, *ccol, clusterHits, *assn);
+		util::CreateAssn(*this, evt, *ccol, trigger, *TrigCluAssn);
 		clusterHits.clear(); 
 	    
 	        }//<---End filling if there are enough hits
@@ -333,6 +334,8 @@ void DBClusterT1034::produce(art::Event & evt)
    for(unsigned int i = 0; i<ccol->size(); ++i) mf::LogVerbatim("Summary") << ccol->at(i) ;
    
    evt.put(std::move(ccol));
+   evt.put(std::move(assn));
+   evt.put(std::move(TrigCluAssn));
       
    
 }// <---End Evt loop

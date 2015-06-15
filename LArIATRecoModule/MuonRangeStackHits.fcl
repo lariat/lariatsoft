@@ -1,0 +1,34 @@
+#include "services_lariat.fcl"
+
+process_name: MuonRangeStackHits
+
+services:
+{
+  TFileService: { fileName: "MuonRangeStackHits_histo.root" }
+  message:      @local::standard_info
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1 
+  # fileNames: ["input.root"]
+}
+
+outputs: {}
+
+physics:
+{
+  producers:
+  {
+    MuonRangeStackHits:
+    {
+      module_type: MuonRangeStackHits
+    }
+  }
+  analysis:  [ MuonRangeStackHits ]
+  end_paths: [ analysis ]
+}
+
+physics.producers.MuonRangeStackHits.TriggerUtility: "FragmentToDigit"
+// #Change MyNewMod -> MuonRangeStack

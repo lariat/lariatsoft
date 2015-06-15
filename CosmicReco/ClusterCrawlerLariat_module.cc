@@ -87,14 +87,12 @@ class cluster::ClusterCrawlerLariat : public art::EDProducer {
     hit::CCHitFinderAlg    fCCHFAlg;            ///< define CCHitFinderAlg object
     cluster::ClusterCrawlerAlg fCCAlg;              ///< define ClusterCrawlerAlg object
     std::string            fCalDataModuleLabel; ///< label of module producing input wires
-    std::string            fDigitModuleLabel;   ///< module that made digits                 //***
+    std::string            fDigitModuleLabel;   ///< module that made digits                
                                                        
-  void Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
+    void Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
 		  std::vector<recob::Cluster> & clus, 
 		  std::vector< std::vector<recob::Hit> > & clusToHits,
-		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex, 
-		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertexBgn,
-		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertexEnd);
+		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex);
 
 };
 
@@ -117,9 +115,9 @@ namespace cluster {
     produces< art::Assns<recob::Wire,    recob::Hit>     >();
     produces< art::Assns<recob::Cluster, recob::Hit>     >();
     produces< art::Assns<recob::Cluster, recob::Vertex>  >();
-    produces< art::Assns<raw::Trigger,   recob::Hit>     >(); //***
-    produces< art::Assns<raw::Trigger,   recob::Vertex>  >(); //***
-    produces< art::Assns<raw::Trigger,   recob::Cluster> >(); //***
+    produces< art::Assns<raw::Trigger,   recob::Hit>     >();
+    produces< art::Assns<raw::Trigger,   recob::Vertex>  >();
+    produces< art::Assns<raw::Trigger,   recob::Cluster> >();
   }
 
   ClusterCrawlerLariat::~ClusterCrawlerLariat()
@@ -129,7 +127,7 @@ namespace cluster {
   void ClusterCrawlerLariat::reconfigure(fhicl::ParameterSet const & pset)
   {
     fCalDataModuleLabel = pset.get< std::string >("CalDataModuleLabel"                 );
-    fDigitModuleLabel   = pset.get< std::string >("DigitModuleLabel", "FragmentToDigit");      //***
+    fDigitModuleLabel   = pset.get< std::string >("DigitModuleLabel", "FragmentToDigit");
 
     fCCAlg  .reconfigure(pset.get< fhicl::ParameterSet >("ClusterCrawlerAlg"));
     fCCHFAlg.reconfigure(pset.get< fhicl::ParameterSet >("CCHitFinderAlg")   );
@@ -144,68 +142,61 @@ namespace cluster {
     std::unique_ptr<art::Assns<recob::Cluster, recob::Hit>                     > hc_assn( new art::Assns<recob::Cluster, recob::Hit>                      );
 //    std::unique_ptr<art::Assns<recob::Cluster, recob::Vertex, unsigned short>  > cv_assn( new art::Assns<recob::Cluster, recob::Vertex, unsigned short>   );
     std::unique_ptr<art::Assns<recob::Cluster, recob::Vertex>                  > cv_assn( new art::Assns<recob::Cluster, recob::Vertex>                   );
-    std::unique_ptr<art::Assns<raw::Trigger,   recob::Hit>                     > th_assn( new art::Assns<raw::Trigger,   recob::Hit>                      );         //***
-    std::unique_ptr<art::Assns<raw::Trigger,   recob::Vertex>                  > tv_assn( new art::Assns<raw::Trigger,   recob::Vertex>                   );   //***
-    std::unique_ptr<art::Assns<raw::Trigger,   recob::Cluster>                 > tc_assn( new art::Assns<raw::Trigger,   recob::Cluster>                  ); //***
+    std::unique_ptr<art::Assns<raw::Trigger,   recob::Hit>                     > th_assn( new art::Assns<raw::Trigger,   recob::Hit>                      );
+    std::unique_ptr<art::Assns<raw::Trigger,   recob::Vertex>                  > tv_assn( new art::Assns<raw::Trigger,   recob::Vertex>                   );
+    std::unique_ptr<art::Assns<raw::Trigger,   recob::Cluster>                 > tc_assn( new art::Assns<raw::Trigger,   recob::Cluster>                  );
 
     std::unique_ptr<std::vector<recob::Hit>      > hits     (new std::vector<recob::Hit>);
-    std::unique_ptr<std::vector<recob::Hit>      > asshit   (new std::vector<recob::Hit>);
-    std::unique_ptr<std::vector<recob::Wire>     > asswire  (new std::vector<recob::Wire>);
     std::unique_ptr<std::vector<recob::Cluster>  > clusters (new std::vector<recob::Cluster>);
     std::unique_ptr<std::vector<recob::Vertex>   > vertices (new std::vector<recob::Vertex>);
-    std::unique_ptr<std::vector<recob::Vertex>   > verticesBgn(new std::vector<recob::Vertex>);
-    std::unique_ptr<std::vector<recob::Vertex>   > verticesEnd(new std::vector<recob::Vertex>);
   
     art::ServiceHandle<geo::Geometry> geo;
-    rdu::TriggerDigitUtility tdu(evt, fDigitModuleLabel);                 //***
+    rdu::TriggerDigitUtility tdu(evt, fDigitModuleLabel);
 
     art::FindManyP<recob::Wire> fmpw(tdu.EventTriggersPtr(), evt, fCalDataModuleLabel);
 
     std::map< raw::ChannelID_t, art::Ptr<recob::Wire>    > chIDToWire;
-    std::map< raw::ChannelID_t, std::vector<recob::Hit>  > chIDToHit;
     std::vector< art::Ptr<recob::Wire>           > wireVec;
     std::vector< std::vector<recob::Hit>         > clusToHits;
     std::vector< recob::Cluster                  > clus;
     std::map< size_t, std::vector<recob::Vertex> > clusToVertex;
-    std::map< size_t, std::vector<recob::Vertex> > clusToVertexBgn;
-    std::map< size_t, std::vector<recob::Vertex> > clusToVertexEnd;
     raw::ChannelID_t chid;
-    size_t n=0;
 
-    for (size_t t=0; t<tdu.NTriggers(); ++t)                              //***
+    hits->clear();
+
+    for (size_t t=0; t<tdu.NTriggers(); ++t)                              
     {
-       art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];           //***  
+       art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];            
 
        // fetch the wires needed by CCHitFinder
        chIDToWire.clear();
-       chIDToHit.clear();
-       wireVec.clear(); //***
+       wireVec.clear();
        wireVec = fmpw.at(t); 
 
        for(size_t w=0; w<wireVec.size(); ++w) 
        {
           chid=wireVec[w]->Channel(); 
-          asswire->push_back(*wireVec[w]);        // ask Brian: does it need to be cleared at some point inside teh trigger loop?
           chIDToWire[chid] = wireVec[w];
        }
 
-       ClusterCrawlerLariat::Clustering(wireVec, clus, clusToHits, clusToVertex, clusToVertexBgn, clusToVertexEnd);
+       ClusterCrawlerLariat::Clustering(wireVec, clus, clusToHits, clusToVertex);
 
+//       size_t firstHitClus = hits->size();
        for(size_t ic = 0; ic < clus.size(); ++ic) 
        {  
-          clusters->push_back(clus[ic]);     // ask Brian: does it need to be cleared at some point inside teh trigger loop?
+          clusters->push_back(clus[ic]);     
           size_t startHitIdx = hits->size();
           for(size_t h = 0; h < clusToHits[ic].size(); ++h)
           {
 	     hits->push_back(clusToHits[ic][h]);
              chid=hits->back().Channel();
-             chIDToHit[chid].push_back(clusToHits[ic][h]);
- //            art::Ptr<recob::Wire>& aidx = hits->back().WireID().Wire;
-//             art::Ptr<recob::Hit>& bidx  = hits->back();
-//             if(!wh_assn->addSingle(aidx,bidx));
-//             {
-//                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< "" << " with wire "<<"";
-//             } // exception
+
+             // make the wire - hit association
+             if(!util::CreateAssn(*this, evt, *hits, chIDToWire[chid], *wh_assn, hits->size()-1))
+             {
+                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with wire ";
+             } // exception
+
           }   
           size_t endHitIdx = hits->size();
 
@@ -220,35 +211,6 @@ namespace cluster {
              } // exception
           }
 
-
-//          for(size_t v = 0; v< clusToVertexBgn[ic].size(); ++v)
-//          {
-//   	     verticesBgn->push_back(clusToVertexBgn[ic][v]);
-/*             if(!util::CreateAssn(*this, evt, *clusters, *verticesBgn, *cv_assn, verticesBgn->size()-1, verticesBgn->size(), ic))
-             {
-                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate vertex "<< verticesBgn->size()-1 << " with cluster "<<ic;
-             } // exception*/
-//             if(!util::CreateAssnD(*this, evt, *cv_assn, ic, verticesBgn->size()-1, 0))
-//             {
-//              throw art::Exception(art::errors::InsertFailure) << "Failed to associate metadata for cluster " 
-//	                                                       << ic << " with vertex " << verticesBgn->size()-1;
-//             } // exception
-//          }
-
-//          for(size_t v = 0; v< clusToVertexEnd[ic].size(); ++v)
-//          {
-//   	     verticesEnd->push_back(clusToVertexEnd[ic][v]);
-/*             if(!util::CreateAssn(*this, evt, *clusters, *verticesEnd, *cv_assn, verticesEnd->size()-1, verticesEnd->size(), ic))
-             {
-                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate vertex "<< verticesEnd->size()-1 << " with cluster "<<ic;
-             } // exception*/
-//             if(!util::CreateAssnD(*this, evt, *cv_assn, ic, verticesEnd->size()-1, 1))  // Ask brian whether order matters
-//             {
-//              throw art::Exception(art::errors::InsertFailure) << "Failed to associate metadata for cluster " 
-//	                                                       << ic << " with vertex " << verticesEnd->size()-1;
-//             } // exception
-//          }
-
           // make the cluster - hit association
           if(!util::CreateAssn(*this, evt, *clusters, *hits, *hc_assn, startHitIdx, endHitIdx, ic))
           {
@@ -260,29 +222,22 @@ namespace cluster {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+/*
        // make the wire - hit association
-       n=0;
-       for(auto itr = chIDToWire.begin(); itr != chIDToWire.end(); ++itr)    // ask Brian: loop over channel ID???
+
+       for(size_t h=firstHitClus; h<hits->size(); ++h) 
        {
-
-          for(size_t h = 0; h< chIDToHit[itr->first].size(); ++h)
+          chid=hits->at(h).Channel(); 
+          if(!util::CreateAssn(*this, evt, *hits, chIDToWire[chid], *wh_assn, h))
           {
-   	     asshit->push_back(chIDToHit[itr->first][h]);
-             if(!util::CreateAssn(*this, evt, *asswire, *asshit, *wh_assn, asshit->size()-1, asshit->size(), n))
-//             if(!util::CreateAssn(*this, evt, chIDToHit[itr->first][h], itr->second, *wh_assn, h))
-             {
-                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with wire "<<n;
-             } // exception
-          }
-          n++;
+             throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with wire ";
+          } // exception
+
        }
-
+*/
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-
 
        // make the trigger - cluster association
        for(size_t c = 0; c < clusters->size(); ++c)
@@ -314,9 +269,9 @@ namespace cluster {
     } // Loop over triggers
 
     // move the hit collection and the associations into the event:
-    evt.put(std::move(hits)); 
+    evt.put(std::move(hits));
     evt.put(std::move(clusters));  
-    evt.put(std::move(vertices)); //ask Brian 
+    evt.put(std::move(vertices));
     evt.put(std::move(wh_assn));
     evt.put(std::move(hc_assn));
     evt.put(std::move(cv_assn));   
@@ -334,9 +289,7 @@ namespace cluster {
  void ClusterCrawlerLariat::Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
 				       std::vector<recob::Cluster> & clus, 
 				       std::vector< std::vector<recob::Hit> > & clusToHits,
-				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertex,  
-				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertexBgn,
-				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertexEnd)
+				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertex)
  {  
 
 //example of a std::map
@@ -352,13 +305,10 @@ namespace cluster {
     clusToHits.clear();
     clus.clear();
     clusToVertex.clear();
-    clusToVertexBgn.clear();
-    clusToVertexEnd.clear();
 
     // fetch the wires needed by CCHitFinder
     // find hits in all planes
     fCCHFAlg.RunCCHitFinder(wwires);
-//    fCCHFAlg.RunCCHitFinder(wireVec);
     
     // extract the result of the algorithm (it's moved)
     std::vector<recob::Hit> FirstHits = fCCHFAlg.YieldHits();
@@ -370,6 +320,7 @@ namespace cluster {
     ClusterCrawlerAlg::HitInCluster_t const& HitInCluster = fCCAlg.GetHitInCluster();
 
     std::vector<recob::Hit> allHits;
+    allHits.clear();
     for(auto hit : fCCAlg.YieldHits() ) allHits.push_back(hit);
     
     std::vector<ClusterCrawlerAlg::ClusterStore> const& tcl = fCCAlg.GetClusters();
@@ -450,7 +401,6 @@ namespace cluster {
                 xyz[0] = vtx3.X;
                 xyz[1] = vtx3.Y;
                 xyz[2] = vtx3.Z;
-                clusToVertexBgn[icl].emplace_back(xyz, vtxIndex);
                 clusToVertex[icl].emplace_back(xyz, vtxIndex);
                 ++vtxIndex;
              } // vertex match
@@ -471,7 +421,6 @@ namespace cluster {
                 xyz[0] = vtx3.X;
                 xyz[1] = vtx3.Y;
                 xyz[2] = vtx3.Z;
-                clusToVertexEnd[icl].emplace_back(xyz, vtxIndex);
                 clusToVertex[icl].emplace_back(xyz, vtxIndex);
                 ++vtxIndex;
              } // vertex match
