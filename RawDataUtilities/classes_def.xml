@@ -28,22 +28,30 @@
 
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>    >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Wire>      >"/>
+  <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Hit>       >"/>
+  <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Cluster>   >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit> >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>  >"/>
   
   <class name="std::pair< art::Ptr<raw::RawDigit>,    art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<recob::Wire>,      art::Ptr<raw::Trigger> >"/>
+  <class name="std::pair< art::Ptr<recob::Hit>,       art::Ptr<raw::Trigger> >"/>
+  <class name="std::pair< art::Ptr<recob::Cluster>,   art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<raw::OpDetPulse>,  art::Ptr<raw::Trigger> >"/>
   
   <class name="art::Assns<raw::Trigger, raw::RawDigit,    void>" />
   <class name="art::Assns<raw::Trigger, recob::Wire,      void>" />
+  <class name="art::Assns<raw::Trigger, recob::Hit,       void>" />
+  <class name="art::Assns<raw::Trigger, recob::Cluster,   void>" />
   <class name="art::Assns<raw::Trigger, raw::AuxDetDigit, void>" />
   <class name="art::Assns<raw::Trigger, raw::OpDetPulse,  void>" />
   
   
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,    void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Wire,      void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Hit,       void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Cluster,       void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit, void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,  void> >"/>
   
