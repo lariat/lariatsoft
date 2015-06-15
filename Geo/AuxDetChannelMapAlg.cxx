@@ -6,15 +6,15 @@
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "Geometry/ChannelMapAlg.h"
+#include "Geo/AuxDetChannelMapAlg.h"
 #include "Geometry/AuxDetGeo.h"
 
 namespace geo{
 
 
   //----------------------------------------------------------------------------
-  size_t ChannelMapAlg::NearestAuxDet(const double* point, 
-				      std::vector<geo::AuxDetGeo*> const& auxDets) const
+  size_t AuxDetChannelMapAlg::NearestAuxDet(const double* point, 
+					    std::vector<geo::AuxDetGeo*> const& auxDets) const
   {
     double HalfCenterWidth = 0.;
     double localPoint[3] = {0.};
@@ -47,8 +47,8 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  size_t ChannelMapAlg::NearestSensitiveAuxDet(const double* point, 
-					       std::vector<geo::AuxDetGeo*> const& auxDets) const
+  size_t AuxDetChannelMapAlg::NearestSensitiveAuxDet(const double* point, 
+						     std::vector<geo::AuxDetGeo*> const& auxDets) const
   {
     double HalfCenterWidth = 0.;
     double localPoint[3] = {0.};
@@ -84,9 +84,9 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  size_t ChannelMapAlg::ChannelToAuxDet(std::vector<geo::AuxDetGeo*> const& auxDets,
-					std::string                  const& detName,
-					uint32_t                     const& /*channel*/) const
+  size_t AuxDetChannelMapAlg::ChannelToAuxDet(std::vector<geo::AuxDetGeo*> const& auxDets,
+					      std::string                  const& detName,
+					      uint32_t                     const& /*channel*/) const
   {
     // loop over the map of AuxDet names to Geo object numbers to determine which auxdet 
     // we have.  If no name in the map matches the provided string, throw an exception
@@ -102,9 +102,9 @@ namespace geo{
   //----------------------------------------------------------------------------
   // the first member of the pair is the index in the auxDets vector for the AuxDetGeo,
   // the second member is the index in the vector of AuxDetSensitiveGeos for that AuxDetGeo
-  std::pair<size_t, size_t> ChannelMapAlg::ChannelToSensitiveAuxDet(std::vector<geo::AuxDetGeo*> const& auxDets,
-								    std::string                  const& detName,
-								    uint32_t                     const& channel) const
+  std::pair<size_t, size_t> AuxDetChannelMapAlg::ChannelToSensitiveAuxDet(std::vector<geo::AuxDetGeo*> const& auxDets,
+									  std::string                  const& detName,
+									  uint32_t                     const& channel) const
   {
     size_t adGeoIdx     = this->ChannelToAuxDet(auxDets, detName, channel);
 

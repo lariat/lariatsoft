@@ -135,7 +135,7 @@ namespace geo {
   public:
     
     /// Type of list of auxiliary detectors
-    using AuxDetList_t = GeometryData_t::AuxDetList_t;    
+    using AuxDetList_t = AuxDetGeometryData_t::AuxDetList_t;    
     
     /**
      * @brief Initialize geometry from a given configuration
@@ -150,10 +150,10 @@ namespace geo {
     ~AuxDetGeometryCore();
    
     // You shall not copy or move or assign me!
-    AuxDetGeometryCore(GeometryCore const&) = delete;
-    AuxDetGeometryCore(GeometryCore&&) = delete;
-    AuxDetGeometryCore& operator= (GeometryCore const&) = delete;
-    AuxDetGeometryCore& operator= (GeometryCore&&) = delete;
+    AuxDetGeometryCore(AuxDetGeometryCore const&) = delete;
+    AuxDetGeometryCore(AuxDetGeometryCore&&) = delete;
+    AuxDetGeometryCore& operator= (AuxDetGeometryCore const&) = delete;
+    AuxDetGeometryCore& operator= (AuxDetGeometryCore&&) = delete;
     
     
     /**
@@ -374,7 +374,7 @@ namespace geo {
      * This method needs to be called after LoadGeometryFile() to complete the
      * geometry initialization.
      */
-    void ApplyChannelMap(std::shared_ptr<geo::ChannelMapAlg> pChannelMap);
+    void ApplyChannelMap(std::shared_ptr<geo::AuxDetChannelMapAlg> pChannelMap);
     /// @}
     
     

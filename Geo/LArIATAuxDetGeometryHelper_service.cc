@@ -5,7 +5,7 @@
 /// \author  rs@fnal.gov
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "Geo/AuxDetLArIATGeometryHelper.h"
+#include "Geo/LArIATAuxDetGeometryHelper.h"
 #include "Geo/AuxDetChannelMapAlg.h"
 #include "Geo/AuxDetGeometryCore.h"
 

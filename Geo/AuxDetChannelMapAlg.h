@@ -34,7 +34,7 @@ namespace geo{
     
     virtual ~AuxDetChannelMapAlg() = default;
 
-    virtual void                     Initialize(GeometryData_t& geodata) = 0;
+    virtual void                     Initialize(AuxDetGeometryData_t& geodata) = 0;
     virtual void                     Uninitialize() = 0;
     
     // method returns the entry in the sorted AuxDetGeo vector so that the 

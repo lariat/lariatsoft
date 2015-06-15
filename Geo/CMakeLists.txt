@@ -1,10 +1,17 @@
 art_make_library( LIBRARY_NAME Geo
-                  SOURCE ChannelMapLArIATAlg.cxx GeoObjectSorterLArIAT.cxx AuxDetChannelMapLArIATAlg.cxx AuxDetGeoObjectSorterLArIAT.cxx AuxDetChannelMapAlg.cxx AuxDetGeometryCore.cxx AuxDetGeometryObjectSorter.cxx 
+                  SOURCE     AuxDetChannelMapAlg.cxx
+			     AuxDetChannelMapLArIATAlg.cxx 
+			     AuxDetGeometryCore.cxx 
+			     AuxDetGeoObjectSorter.cxx 
+			     AuxDetGeoObjectSorterLArIAT.cxx  
+		             ChannelMapLArIATAlg.cxx 
+			     GeoObjectSorterLArIAT.cxx 
 		  LIBRARIES Geometry
 		            ${MF_MESSAGELOGGER}
 		            ${MF_UTILITIES}
 			    ${FHICLCPP}
-			    ${ROOT_BASIC_LIB_LIST}                
+			    ${ROOT_BASIC_LIB_LIST} 
+			    ${ROOT_GEOM}
 			    ${CETLIB}
 )
 

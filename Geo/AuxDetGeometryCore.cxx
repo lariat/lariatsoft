@@ -55,7 +55,7 @@ namespace geo {
 
 
   //......................................................................
-  void AuxDetGeometryCore::ApplyChannelMap(std::shared_ptr<geo::ChannelMapAlg> pChannelMap)
+  void AuxDetGeometryCore::ApplyChannelMap(std::shared_ptr<geo::AuxDetChannelMapAlg> pChannelMap)
   {
     pChannelMap->Initialize(fGeoData);
     fChannelMapAlg = pChannelMap;
@@ -193,62 +193,6 @@ namespace geo {
   {
     auto idx = fChannelMapAlg->ChannelToSensitiveAuxDet(AuxDets(), auxDetName, channel);
     return this->AuxDet(idx.first).SensitiveVolume(idx.second);
-  }
-
-  //......................................................................
-  const std::string AuxDetGeometryCore::VolumeName(TVector3 point)
-  {
-    // check that the given point is in the World volume at least
-    TGeoVolume *volWorld = gGeoManager->FindVolumeFast(this->GetWorldVolumeName().c_str());
-    double halflength = ((TGeoBBox*)volWorld->GetShape())->GetDZ();
-    double halfheight = ((TGeoBBox*)volWorld->GetShape())->GetDY();
-    double halfwidth  = ((TGeoBBox*)volWorld->GetShape())->GetDX();
-    if(std::abs(point.x()) > halfwidth  ||
-       std::abs(point.y()) > halfheight ||
-       std::abs(point.z()) > halflength
-       ){
-      mf::LogWarning("AuxDetGeometryCoreBadInputPoint") << "point (" << point.x() << ","
-                                              << point.y() << "," << point.z() << ") "
-                                              << "is not inside the world volume "
-                                              << " half width = " << halfwidth
-                                              << " half height = " << halfheight
-                                              << " half length = " << halflength
-                                              << " returning unknown volume name";
-      const std::string unknown("unknownVolume");
-      return unknown;
-    }
-    
-    const std::string name(gGeoManager->FindNode(point.x(), point.y(), point.z())->GetName());
-    return name;
-  }
-
-  //......................................................................
-  const std::string AuxDetGeometryCore::MaterialName(TVector3 point)
-  {
-    // check that the given point is in the World volume at least
-    TGeoVolume *volWorld = gGeoManager->FindVolumeFast(this->GetWorldVolumeName().c_str());
-    double halflength = ((TGeoBBox*)volWorld->GetShape())->GetDZ();
-    double halfheight = ((TGeoBBox*)volWorld->GetShape())->GetDY();
-    double halfwidth  = ((TGeoBBox*)volWorld->GetShape())->GetDX();
-    if(std::abs(point.x()) > halfwidth  ||
-       std::abs(point.y()) > halfheight ||
-       std::abs(point.z()) > halflength
-       ){ 
-      mf::LogWarning("AuxDetGeometryCoreBadInputPoint") << "point (" << point.x() << ","
-                                              << point.y() << "," << point.z() << ") "
-                                              << "is not inside the world volume "
-                                              << " half width = " << halfwidth
-                                              << " half height = " << halfheight
-                                              << " half length = " << halflength
-                                              << " returning unknown material name";
-      const std::string unknown("unknownMaterial");
-      return unknown;
-    }
-    
-    const std::string name(gGeoManager->FindNode(point.x(), 
-                                                 point.y(), 
-                                                 point.z())->GetMedium()->GetMaterial()->GetName());
-    return name;
   }
 
   //......................................................................
