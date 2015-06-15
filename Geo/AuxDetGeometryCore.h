@@ -58,6 +58,7 @@
 #include <iterator> // std::forward_iterator_tag
 #include <type_traits> // std::is_base_of<>
 
+#include "Geo/AuxDetChannelMapAlg.h"
 
 // ROOT class prototypes
 class TGeoManager;
@@ -380,7 +381,7 @@ namespace geo {
   protected:
 
     /// Returns the object handling the channel map
-    geo::ChannelMapAlg const* ChannelMap() const
+    geo::AuxDetChannelMapAlg const* AuxDetChannelMap() const
       { return fChannelMapAlg.get(); }
     
     //@{
@@ -404,7 +405,7 @@ namespace geo {
     std::string    fDetectorName;   ///< Name of the detector.
     std::string    fGDMLfile;       ///< path to geometry file used for Geant4 simulation
     std::string    fROOTfile;       ///< path to geometry file for geometry in GeometryCore
-    std::shared_ptr<const geo::ChannelMapAlg>
+    std::shared_ptr<const geo::AuxDetChannelMapAlg>
                    fChannelMapAlg;  ///< Object containing the channel to wire mapping
   }; // class GeometryCore
   
