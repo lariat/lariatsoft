@@ -1,5 +1,5 @@
 art_make_library( LIBRARY_NAME Geo
-                  SOURCE ChannelMapLArIATAlg.cxx GeoObjectSorterLArIAT.cxx
+                  SOURCE ChannelMapLArIATAlg.cxx GeoObjectSorterLArIAT.cxx AuxDetChannelMapLArIATAlg.cxx AuxDetGeoObjectSorterLArIAT.cxx AuxDetChannelMapAlg.cxx AuxDetGeometryCore.cxx AuxDetGeometryObjectSorter.cxx 
 		  LIBRARIES Geometry
 		            ${MF_MESSAGELOGGER}
 		            ${MF_UTILITIES}
@@ -9,6 +9,40 @@ art_make_library( LIBRARY_NAME Geo
 )
 
 simple_plugin( LArIATGeometryHelper service
+	  	Geometry
+		Geo
+		${ART_FRAMEWORK_CORE}
+		${ART_FRAMEWORK_IO_SOURCES}
+		${ART_FRAMEWORK_PRINCIPAL}
+		${ART_PERSISTENCY_COMMON}
+		${ART_PERSISTENCY_PROVENANCE}
+		${ART_UTILITIES}
+		${ART_FRAMEWORK_SERVICES_REGISTRY}
+		${MF_MESSAGELOGGER}
+		${MF_UTILITIES}
+		${ROOT_BASIC_LIB_LIST}                
+		${CETLIB}
+		BASENAME_ONLY
+)
+
+simple_plugin( LArIATAuxDetGeometryHelper service
+	  	Geometry
+		Geo
+		${ART_FRAMEWORK_CORE}
+		${ART_FRAMEWORK_IO_SOURCES}
+		${ART_FRAMEWORK_PRINCIPAL}
+		${ART_PERSISTENCY_COMMON}
+		${ART_PERSISTENCY_PROVENANCE}
+		${ART_UTILITIES}
+		${ART_FRAMEWORK_SERVICES_REGISTRY}
+		${MF_MESSAGELOGGER}
+		${MF_UTILITIES}
+		${ROOT_BASIC_LIB_LIST}                
+		${CETLIB}
+		BASENAME_ONLY
+)
+
+simple_plugin( AuxDetGeometry service
 	  	Geometry
 		Geo
 		${ART_FRAMEWORK_CORE}

@@ -38,14 +38,10 @@
 
 namespace geo {
   
-  template <typename T>
-  inline T sqr(T v) { return v * v; }
-  
-  
   //......................................................................
   // Constructor.
   AuxDetGeometryCore::AuxDetGeometryCore(fhicl::ParameterSet const& pset)
-    : fDetectorName     (pset.get< std::string >("Name"))
+    : fDetectorName(pset.get< std::string >("Name"))
   {
     std::transform(fDetectorName.begin(), fDetectorName.end(), fDetectorName.begin(), ::tolower);
   } // AuxDetGeometryCore::AuxDetGeometryCore()
@@ -80,7 +76,12 @@ namespace geo {
     ClearGeometry();
 
     // Open the GDML file, and convert it into ROOT TGeoManager format.
-    TGeoManager::Import(rootfile.c_str());
+    // try to be efficient - if the GeometryCore object already imported 
+    // the file, then the gGeoManager will be non-null.  If not, import it.
+    // There will still be an efficiency issue in that case because GeometryCore
+    // will also import it, but I think that the gGeoManager pointer will dump
+    // the previous information and get filled with the same information
+    if( !gGeoManager ) TGeoManager::Import(rootfile.c_str());
 
     std::vector<const TGeoNode*> path(8);
     path[0] = gGeoManager->GetTopNode();
