@@ -31,7 +31,6 @@ namespace geo {
   Geometry::Geometry(fhicl::ParameterSet const& pset, art::ActivityRegistry &reg)
     : GeometryCore(pset)
     , fRelPath          (pset.get< std::string       >("RelativePath",     ""   ))
-    , fDisableWiresInG4 (pset.get< bool              >("DisableWiresInG4", false))
     , fForceUseFCLOnly  (pset.get< bool              >("ForceUseFCLOnly" , false))
     , fSortingParameters(pset.get<fhicl::ParameterSet>("SortingParameters", fhicl::ParameterSet() ))
   {
