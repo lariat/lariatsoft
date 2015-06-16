@@ -177,62 +177,7 @@ namespace geo {
     //
     // object description and information
     //
-    
-    /// Access to the ROOT geometry description manager
-    TGeoManager* ROOTGeoManager() const;
-    
-    /**
-     * @brief Returns the name of the deepest volume containing specified point
-     * @param point the location to query, in world coordinates
-     * @return name of the volume containing the point
-     * 
-     * @todo Use a reference to TVector3
-     * @todo Use a double[3] instead?
-     * @todo declare it const
-     * @todo what happens if none?
-     * @todo Unify the coordinates type
-     */
-    const std::string VolumeName(TVector3 point);
-    
-    
-    /**
-     * @brief Name of the deepest material containing the point xyz
-     * @return material of the origin by default
-     * 
-     * @todo make this constant
-     * @todo remove return value constantness (or make it a reference)
-     * @todo Unify the coordinates type
-     */
-    const std::string MaterialName(TVector3 point);
-    
-    
-    /// Returns the material at the specified position
-    /// @todo Unify the coordinates type
-    TGeoMaterial const* Material(double x, double y, double z) const;
-    
-    /// Returns the total mass [kg] of the specified volume (default: world)
-    /// @todo Use GetWorldVolumeName() as default instead
-    double TotalMass(const char* vol = "volWorld") const;
-    
-    // this requires a bit more explanation about what this mass density is...
-    /**
-     * @brief Return the column density between two points
-     * @param p1 pointer to array holding (x, y, z) of the first point
-     * @param p2 pointer to array holding (x, y, z) of the second point
-     * @return the mass
-     * 
-     * Both points are specified in world coordinates.
-     * 
-     * @todo Unify the coordinates type
-     */
-    /// Returns the mass between two coordinates
-    double MassBetweenPoints(double *p1, double *p2) const;
-    
-    /// @}
-    
-    /// @name Auxiliary detectors access and information
-    /// @{
-    
+        
     /// @todo use a AutDetID_t instead of unsigned int?
     
     //
@@ -301,8 +246,8 @@ namespace geo {
      * 
      * @todo what happens if it does not exist?
      */
-    AuxDetGeo const& PositionToAuxDet
-      (double const worldLoc[3], unsigned int &ad) const;
+    AuxDetGeo const& PositionToAuxDet(double const worldLoc[3], 
+				      unsigned int &ad) const;
     
     /**
      * @brief Returns the auxiliary detector at specified location
@@ -317,6 +262,10 @@ namespace geo {
                                                         size_t     & ad,
                                                         size_t     & sv) const;
     
+    const uint32_t           PositionToAuxDetChannel(double const worldLoc[3],
+						     size_t     & ad,
+						     size_t     & sv) const;
+
     const AuxDetGeo&         ChannelToAuxDet(std::string const& auxDetName,
 					     uint32_t    const& channel) const; // return the AuxDetGeo for the given detector 
                                                                                 // name and channel

@@ -27,10 +27,15 @@ namespace geo{
 
     AuxDetChannelMapLArIATAlg(fhicl::ParameterSet const& p);
     
-    void                     Initialize( AuxDetGeometryData_t& geodata ) override;
-    void                     Uninitialize();
+    void      Initialize( AuxDetGeometryData_t& geodata ) override;
+    void      Uninitialize();
+    uint32_t  PositionToAuxDetChannel(double const worldLoc[3],
+				      size_t      &ad,
+				      size_t      &sv) const;
+    const TVector3 AuxDetChannelToPosition(uint32_t                     const& channel,
+					   std::string                  const& auxDetName,
+					   std::vector<geo::AuxDetGeo*> const& auxDets) const;
     
-
   private:
     
     geo::AuxDetGeoObjectSorterLArIAT  fSorter; ///< class to sort geo objects

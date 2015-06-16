@@ -150,7 +150,7 @@ namespace geo {
   
   //......................................................................
   const AuxDetGeo& AuxDetGeometryCore::PositionToAuxDet(double const  worldLoc[3],
-                                              unsigned int &ad) const
+							unsigned int &ad) const
   {    
     // locate the desired Auxiliary Detector
     ad = this->FindAuxDetAtPosition(worldLoc);
@@ -177,6 +177,14 @@ namespace geo {
     // locate the desired Auxiliary Detector
     this->FindAuxDetSensitiveAtPosition(worldLoc, ad, sv);    
     return this->AuxDet(ad).SensitiveVolume(sv);
+  }
+
+  //......................................................................
+  const uint32_t AuxDetGeometryCore::PositionToAuxDetChannel(double const worldLoc[3],
+							     size_t      &ad,
+							     size_t      &sv) const
+  {    
+    return fChannelMapAlg->PositionToAuxDetChannel(worldLoc, ad, sv);
   }
   
   //......................................................................

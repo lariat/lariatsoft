@@ -47,15 +47,16 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  size_t AuxDetChannelMapAlg::NearestSensitiveAuxDet(const double* point, 
-						     std::vector<geo::AuxDetGeo*> const& auxDets) const
+  size_t AuxDetChannelMapAlg::NearestSensitiveAuxDet(const double*                       point, 
+						     std::vector<geo::AuxDetGeo*> const& auxDets,
+						     size_t                            & ad) const
   {
     double HalfCenterWidth = 0.;
     double localPoint[3] = {0.};
 
-    size_t auxDetIdx = this->NearestAuxDet(point, auxDets);
+    size_t ad = this->NearestAuxDet(point, auxDets);
     
-    geo::AuxDetGeo* adg = auxDets[auxDetIdx];
+    geo::AuxDetGeo* adg = auxDets[ad];
 
     for(size_t a = 0; a < adg->NSensitiveVolume(); ++a) {
 
