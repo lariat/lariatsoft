@@ -190,6 +190,7 @@ private:
   std::map<size_t, size_t>                   fTDCToStartWire;          ///< map TDCs to first wire attached to TDC
   std::map<size_t, size_t>                   fTDCToChamber;            ///< map TDCs to the chamber they are attached
   std::vector<std::string>                   fMWPCNames;               ///< vector to hold detector names of the MWPCs
+  int                                        fRunNumber;               ///< current run number
   TH2F * FragCountsSameTrigger_1751vsTDC_NoTPC;
   TH2F * FragCountsSameTrigger_1751vsTDC_WithTPC;
   TH2F * FragCountsSameTrigger_1751vsTDC_ExtraTPC;
@@ -250,6 +251,7 @@ private:
 
 //------------------------------------------------------------------------------
 FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
+  : fRunNumber(0)
 {
   this->reconfigure(p);
 
@@ -339,6 +341,7 @@ void FragmentToDigit::endJob()
 //____________________________________________________________________________
 void FragmentToDigit::beginRun(art::Run& run)
 {
+  fRunNumber = run.run();
 
   // grab the geometry object to see what geometry we are using
   art::ServiceHandle<geo::Geometry> geo;
@@ -590,6 +593,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //  8          CAEN boardId 8, V1751 board 0
   //  9          CAEN boardId 9, V1751 board 1
   //  10         Multi-wire proportional chambers, 16 TDCs
+  //  24         CAEN boardId 24, V1740 board 24
   //////////////////////////////////////////////////////////////////////
 
   //////////////////////////////////////////////////////////////////////
@@ -597,7 +601,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   //          into dataBlockTimeStamps
   //////////////////////////////////////////////////////////////////////
 
-  size_t numberCaenDataBlocks[10] = {};
+  size_t numberCaenDataBlocks[32] = {};
   size_t numberMwpcDataBlocks = 0;
 
   const size_t numberCaenFrags = data->caenFrags.size();
@@ -653,7 +657,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
         // each TDC Time Stamp count is 1/106.208 microseconds
         double timeStamp = tdcEventData.tdcEventHeader.tdcTimeStamp / 106.208;  // convert to microseconds
 
-        int deviceID = 10;
+        int deviceID = 32;
 
         LOG_DEBUG("FragmentToDigit") << "  TDC index: " << tdc_index;
         LOG_DEBUG("FragmentToDigit") << "  TDC time stamp: " << tdcTimeStamp;
@@ -691,7 +695,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   }
 
   for (size_t i = 0; i < TDCFragment::MAX_TDCS; ++i) {
-    int deviceID = 10;
+    int deviceID = 32;
     LOG_DEBUG("FragmentToDigit") << "TDC index: " << i << ", number of data blocks: " << numberMwpcDataBlocks;
     LOG_DEBUG("FragmentToDigit") << "Device ID: " << deviceID;
     for (size_t j = 0; j < numberMwpcDataBlocks; ++j) {
@@ -766,8 +770,9 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   this->matchFitIter(8,  5, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
   this->matchFitIter(8,  6, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
   this->matchFitIter(8,  7, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
-  this->matchFitIter(8, 10, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751MwpcInterRange,  v1751MwpcInterEps);
-  this->matchFitIter(0, 10, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1740MwpcInterRange,  v1740MwpcInterEps);
+  this->matchFitIter(8, 24, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751v1740InterRange, v1751v1740InterEps);
+  this->matchFitIter(8, 32, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1751MwpcInterRange,  v1751MwpcInterEps);
+  this->matchFitIter(0, 32, dataBlockTimeStamps, matchMaps, fitParamsMaps, v1740MwpcInterRange,  v1740MwpcInterEps);
 
   //////////////////////////////////////////////////////////////////////
   //@\ END: matching
@@ -779,7 +784,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
 
   int triggerID = 0;
 
-  size_t numberMatchedCaenDataBlocks[10] = {};
+  size_t numberMatchedCaenDataBlocks[32] = {};
   size_t numberMatchedMwpcDataBlocks = 0;
 
   fitParamsMaps[8][8].push_back(std::make_pair<double, double>(0, 0));
@@ -850,7 +855,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
     //    << "tdcEvents.size(): " << tdcEvents.size();
     //tdcFrag.print();
 
-    int deviceID = 10;
+    int deviceID = 32;
     std::pair<double, double> fitParams(0, 0);
     fitParams = fitParamsMaps[8][deviceID].back();
 
@@ -893,7 +898,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
         }
       }
 
-      std::pair<int, int> dataBlockIndex(10, j);
+      std::pair<int, int> dataBlockIndex(32, j);
 
       timeStampToDataBlockIndices.push_back(std::make_pair(corrTimeStamp, dataBlockIndex));
 
@@ -1019,7 +1024,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
       int deviceID = indexPair.first;
       int idx = indexPair.second;
 
-      if (deviceID < 10) {
+      if (deviceID < 10 || deviceID == 24) {
         CAENFragment & caenFrag = data->caenFrags[idx];
         unsigned int boardId = static_cast <unsigned int> (caenFrag.header.boardId);
         fTriggerToCAENDataBlocks[triggerID].push_back(caenFrag);
@@ -1028,7 +1033,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
         if (deviceID == 8) ++v1751DataBlockCount; //Also need to check for the other v17451 somehow
       }
 
-      else if (deviceID == 10) {
+      else if (deviceID == 32) {
         if (numberTdcFrags > 0) {
           TDCFragment & tdcFrag = data->tdcFrags[0]; //The first and only spill's worth of TDC data.
           std::vector< std::vector<TDCFragment::TdcEventData> > &tdcEvents = tdcFrag.tdcEvents;
@@ -1036,7 +1041,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
           numberMatchedMwpcDataBlocks += 1;
           ++WChamDataBlockCount;
         }//if numberTdcFrags > 0
-      }//if deviceID == 10
+      }//if deviceID == 32
     } // end loop over selected data blocks
 
     triggerID += 1;
@@ -1062,7 +1067,7 @@ void FragmentToDigit::matchDataBlocks(LariatFragment * data)
   // print matching summary
 
   LOG_VERBATIM("FragmentToDigit") << "\n";
-  for (size_t i = 0; i < 10; ++i) {
+  for (size_t i = 0; i < 32; ++i) {
     LOG_VERBATIM("FragmentToDigit") << "    boardId " << i << " matches: "
                                     << numberMatchedCaenDataBlocks[i] << " / "
                                     << numberCaenDataBlocks[i];
@@ -1534,8 +1539,17 @@ void FragmentToDigit::makeMuonRangeDigits(std::vector<CAENFragment>     const& c
   // The channels are 32 <= ch < 48
   uint32_t boardId = 7;
   uint32_t chanOff = 32;
+  uint32_t maxChan = 48;
   std::set<uint32_t> boardChans;
-  for(uint32_t bc = chanOff; bc < 48; ++bc) boardChans.insert(bc);
+
+  // Starting in run 6155 the MuRS channels were read out by boardID 24
+  if(fRunNumber > 6154){
+    boardId = 24;
+    chanOff = 32;
+    maxChan = 48;
+  }
+
+  for(uint32_t bc = chanOff; bc < maxChan; ++bc) boardChans.insert(bc);
 
   this->caenFragmentToAuxDetDigits(caenFrags, mrAuxDigits, boardId, boardChans, chanOff, "MuonRangeStack");
 
@@ -1626,6 +1640,13 @@ void FragmentToDigit::makeTriggerDigits(std::vector<CAENFragment>     const& cae
   trigNames.push_back("MICHEL"); 
   trigNames.push_back("LARSCINT"); 
   trigNames.push_back("MuRS");
+
+  // Starting in run 6155 the trigger channels were read out by boardID 24
+  if(fRunNumber > 6154){
+    boardId = 24;
+    chanOff = 48;
+    maxChan = 64;
+  }
 
   // Call this for each AeroGel counter
   for(uint32_t tc = 0; tc < maxChan - chanOff; ++tc){
