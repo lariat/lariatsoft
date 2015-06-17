@@ -1544,7 +1544,7 @@ void FragmentToDigit::makeMuonRangeDigits(std::vector<CAENFragment>     const& c
   if(fRunNumber > 6154){
     boardId = 24;
     chanOff = 32;
-    maxChan = 47;
+    maxChan = 48;
   }
 
   for(uint32_t bc = chanOff; bc < maxChan; ++bc) boardChans.insert(bc);
