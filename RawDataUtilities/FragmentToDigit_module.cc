@@ -190,6 +190,7 @@ private:
   std::map<size_t, size_t>                   fTDCToStartWire;          ///< map TDCs to first wire attached to TDC
   std::map<size_t, size_t>                   fTDCToChamber;            ///< map TDCs to the chamber they are attached
   std::vector<std::string>                   fMWPCNames;               ///< vector to hold detector names of the MWPCs
+  int                                        fRunNumber;               ///< current run number
   TH2F * FragCountsSameTrigger_1751vsTDC_NoTPC;
   TH2F * FragCountsSameTrigger_1751vsTDC_WithTPC;
   TH2F * FragCountsSameTrigger_1751vsTDC_ExtraTPC;
@@ -250,6 +251,7 @@ private:
 
 //------------------------------------------------------------------------------
 FragmentToDigit::FragmentToDigit(fhicl::ParameterSet const & p)
+  : fRunNumber(0)
 {
   this->reconfigure(p);
 
@@ -339,6 +341,7 @@ void FragmentToDigit::endJob()
 //____________________________________________________________________________
 void FragmentToDigit::beginRun(art::Run& run)
 {
+  fRunNumber = run.run();
 
   // grab the geometry object to see what geometry we are using
   art::ServiceHandle<geo::Geometry> geo;
@@ -1534,8 +1537,17 @@ void FragmentToDigit::makeMuonRangeDigits(std::vector<CAENFragment>     const& c
   // The channels are 32 <= ch < 48
   uint32_t boardId = 7;
   uint32_t chanOff = 32;
+  uint32_t maxChan = 48;
   std::set<uint32_t> boardChans;
-  for(uint32_t bc = chanOff; bc < 48; ++bc) boardChans.insert(bc);
+
+  // Starting in run 6155 the MuRS channels were read out by boardID 24
+  if(fRunNumber > 6154){
+    boardId = 24;
+    chanOff = 32;
+    maxChan = 47;
+  }
+
+  for(uint32_t bc = chanOff; bc < maxChan; ++bc) boardChans.insert(bc);
 
   this->caenFragmentToAuxDetDigits(caenFrags, mrAuxDigits, boardId, boardChans, chanOff, "MuonRangeStack");
 
@@ -1626,6 +1638,13 @@ void FragmentToDigit::makeTriggerDigits(std::vector<CAENFragment>     const& cae
   trigNames.push_back("MICHEL"); 
   trigNames.push_back("LARSCINT"); 
   trigNames.push_back("MuRS");
+
+  // Starting in run 6155 the trigger channels were read out by boardID 24
+  if(fRunNumber > 6154){
+    boardId = 24;
+    chanOff = 48;
+    maxChan = 64;
+  }
 
   // Call this for each AeroGel counter
   for(uint32_t tc = 0; tc < maxChan - chanOff; ++tc){
