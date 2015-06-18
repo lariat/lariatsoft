@@ -321,8 +321,6 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 //------------------------------------------------------------------------------
 void FragmentToDigit::beginJob()
 {
-  this->InitializeMWPCContainers();
-
   FragCountsSameTrigger_1751vsTDC_NoTPC   = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_NoTPC"   ,"FragCountsSameTrigger_1751vsTDC_NoTPC; Number TDC Data Blocks; Number v1751 Data Blocks"   ,6,-0.5,5.5,6,-0.5,5.5);
   FragCountsSameTrigger_1751vsTDC_WithTPC = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_WithTPC" ,"FragCountsSameTrigger_1751vsTDC_WithTPC; Number TDC Data Blocks; Number v1751 Data Blocks" ,6,-0.5,5.5,6,-0.5,5.5);
   FragCountsSameTrigger_1751vsTDC_ExtraTPC= tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_ExtraTPC","FragCountsSameTrigger_1751vsTDC_ExtraTPC; Number TDC Data Blocks; Number v1751 Data Blocks",6,-0.5,5.5,6,-0.5,5.5);
@@ -342,6 +340,8 @@ void FragmentToDigit::endJob()
 void FragmentToDigit::beginRun(art::Run& run)
 {
   fRunNumber = run.run();
+
+  this->InitializeMWPCContainers();
 
   // grab the geometry object to see what geometry we are using
   art::ServiceHandle<geo::Geometry> geo;
@@ -1724,6 +1724,12 @@ void FragmentToDigit::InitializeMWPCContainers()
     else if(tdc == 2 || tdc == 6 || tdc == 10 || tdc == 14) fTDCToStartWire[tdc] = 64;
     else if(tdc == 3 || tdc == 7 || tdc == 11 || tdc == 15) fTDCToStartWire[tdc] = 128;
     else if(tdc == 4 || tdc == 8 || tdc == 12 || tdc == 16) fTDCToStartWire[tdc] = 192;
+  }
+
+  // had swapped cables in runs 5546 - 5598 for TDC 7 and 8.
+  if(fRunNumber > 5545 && fRunNumber < 5599){
+    fTDCToStartWire[7] = 192;
+    fTDCToStartWire[8] = 128;
   }
 
   fMWPCNames.resize(4);
