@@ -109,7 +109,8 @@ namespace cluster {
       
     
     this->reconfigure(pset);
-    
+
+    produces< std::vector<recob::Hit> >();     
     produces< std::vector<recob::Cluster> >();  
     produces< std::vector<recob::Vertex> >();
     produces< art::Assns<recob::Wire,    recob::Hit>     >();
