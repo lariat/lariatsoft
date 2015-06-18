@@ -1,6 +1,19 @@
 #include "clusteralgorithms.fcl"
+#include "hitalgorithms.fcl"
+#include "cluster_lariat.fcl"
 
 BEGIN_PROLOG
+
+lariat_clustercrawler:
+
+{
+ module_type:         "ClusterCrawlerLArIAT"
+ CalDataModuleLabel:  "caldata"
+ ClusterCrawlerAlg:   @local::lariat_clustercrawleralg
+ CCHitFinderAlg:      @local::lariat_cchitfinderalg
+# CCHitRefinerAlg:     @local::standard_cchitrefineralg
+ TriggerUtility:      "FragmentToDigit"
+}
 
 lariat_dbcluster:
 
