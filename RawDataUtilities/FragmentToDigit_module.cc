@@ -1416,7 +1416,7 @@ void FragmentToDigit::makeOpDetPulses(std::vector<CAENFragment>    const& caenFr
     boardId        = caenFrag.header.boardId;
     triggerTimeTag = caenFrag.header.triggerTimeTag;
     
-    if(fOpDetChID[boardId].size() > 0){
+    if((int(boardId)<int(fOpDetChID.size())) && (fOpDetChID[boardId].size() > 0)){
 
       // loop over the channels on this board connected to optical detectors
       for(auto ch : fOpDetChID[boardId]){
