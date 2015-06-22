@@ -1,29 +1,19 @@
 /**
- * @file   Geometry.h
- * @brief  art framework interface to geometry description
+ * @file   AuxDetGeometry.h
+ * @brief  art framework interface to geometry description for auxiliary detectors
  * @author brebel@fnal.gov
- * @see    Geometry_service.cc
+ * @see    AuxDetGeometry_service.cc
  *
- * Revised <seligman@nevis.columbia.edu> 29-Jan-2009
- *         Revise the class to make it into more of a general detector interface
- * Revised <petrillo@fnal.gov> 27-Apr-2015
- *         Factorization into a framework-independent GeometryCore.h and a
- *         art framework interface
  */
 
 #ifndef GEO_GEOMETRY_H
 #define GEO_GEOMETRY_H
 
 // LArSoft libraries
-#include "Geometry/GeometryCore.h"
 
 // the following are included for convenience only
-#include "Geometry/ChannelMapAlg.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
-#include "Geometry/WireGeo.h"
-#include "Geometry/OpDetGeo.h"
+#include "Geo/AuxDetGeometryCore.h"
+#include "Geo/AuxDetChannelMapAlg.h"
 #include "Geometry/AuxDetGeo.h"
 
 // framework libraries
@@ -104,11 +94,11 @@ namespace geo {
    * ROOT for the internal geometry representation.
    * 
    */
-  class Geometry: public GeometryCore
+  class AuxDetGeometry: public AuxDetGeometryCore
   {
   public:
     
-    Geometry(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
+    AuxDetGeometry(fhicl::ParameterSet const& pset, art::ActivityRegistry& reg);
     
     /// Updates the geometry if needed at the beginning of each new run
     void preBeginRun(art::Run const& run);
@@ -122,8 +112,6 @@ namespace geo {
 
     std::string               fRelPath;          ///< Relative path added to FW_SEARCH_PATH to search for 
                                                  ///< geometry file
-    bool                      fDisableWiresInG4; ///< If set true, supply G4 with GDMLfileNoWires
-                                                 ///< rather than GDMLfile
     bool                      fForceUseFCLOnly;  ///< Force Geometry to only use the geometry
                                                  ///< files specified in the fcl file
     fhicl::ParameterSet       fSortingParameters;///< Parameter set to define the channel map sorting
@@ -131,6 +119,6 @@ namespace geo {
 
 } // namespace geo
 
-DECLARE_ART_SERVICE(geo::Geometry, LEGACY)
+DECLARE_ART_SERVICE(geo::AuxDetGeometry, LEGACY)
 
 #endif // GEO_GEOMETRY_H

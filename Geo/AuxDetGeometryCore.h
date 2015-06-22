@@ -174,6 +174,10 @@ namespace geo {
      */
     std::string GDMLFile() const { return fGDMLfile; }
             
+
+    /// Returns a string with the name of the detector, as configured
+    std::string DetectorName() const { return fDetectorName; }    
+    
     //
     // object description and information
     //
@@ -330,8 +334,7 @@ namespace geo {
   protected:
 
     /// Returns the object handling the channel map
-    geo::AuxDetChannelMapAlg const* AuxDetChannelMap() const
-      { return fChannelMapAlg.get(); }
+    geo::AuxDetChannelMapAlg const* AuxDetChannelMap() const { return fChannelMapAlg.get(); }
     
     //@{
     /// Return the internal auxiliary detectors list
@@ -348,14 +351,12 @@ namespace geo {
     /// Deletes the detector geometry structures
     void ClearGeometry();
     
-    
-    AuxDetGeometryData_t fGeoData;        ///< The detector description data
+    AuxDetGeometryData_t fGeoData;  ///< The detector description data
     
     std::string    fDetectorName;   ///< Name of the detector.
     std::string    fGDMLfile;       ///< path to geometry file used for Geant4 simulation
     std::string    fROOTfile;       ///< path to geometry file for geometry in GeometryCore
-    std::shared_ptr<const geo::AuxDetChannelMapAlg>
-                   fChannelMapAlg;  ///< Object containing the channel to wire mapping
+    std::shared_ptr<const geo::AuxDetChannelMapAlg> fChannelMapAlg;  ///< Object containing the channel to wire mapping
   }; // class GeometryCore
   
 } // namespace geo
