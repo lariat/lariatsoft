@@ -283,8 +283,8 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
 
   for(size_t i = 0; i < fOpDetChID.size(); ++i){
     for(size_t j = 0; j < fOpDetChID[i].size(); ++j)   
-      LOG_VERBATIM("FragmentToDigit") << "channels and boards for opdetpulses : board - channel "
-				      << i << " - " << j << " " << fOpDetChID[i][j];
+     if(int(fOpDetChID[i].size())>0) LOG_VERBATIM("FragmentToDigit") << "channels and boards for opdetpulses : board - channel "
+				      << fOpDetChID[i][0] << " - " << fOpDetChID[i][j];
   }
 
   // fWutLabel             = p.get< std::string >("WutLabel",             "Wut"              );
@@ -1411,18 +1411,31 @@ void FragmentToDigit::makeOpDetPulses(std::vector<CAENFragment>    const& caenFr
   // loop over the caenFrags
   uint32_t boardId        = 0;
   uint32_t triggerTimeTag = 0;
+  std::vector<int> board_channels;
+	bool has_optical_channels;
   for(auto const& caenFrag : caenFrags){
 
     boardId        = caenFrag.header.boardId;
     triggerTimeTag = caenFrag.header.triggerTimeTag;
-    
-    if(boardId < fOpDetChID.size() && fOpDetChID[boardId].size() > 0){
+	board_channels.clear();
+	has_optical_channels=false;
+	for(size_t i = 0; i < fOpDetChID.size(); ++i){
+    for(size_t j = 0; j < fOpDetChID[i].size(); ++j){   
+     if((int)fOpDetChID[i][0]==int(boardId)){
+				if(fOpDetChID[i].size()>0){
+					has_optical_channels=true;
+					if(j>0) board_channels.push_back(fOpDetChID[i][j]);
+				}
+			}
+		}
+	}
+    if(has_optical_channels){
 
       // loop over the channels on this board connected to optical detectors
-      for(auto ch : fOpDetChID[boardId]){
+      for(auto ch : board_channels){
 
 	// check that the current channel, ch, is a valid one for grabbing a waveform
-	if(ch > caenFrag.waveForms.size() )
+	if(ch > (int)caenFrag.waveForms.size() )
 	  throw cet::exception("FragmentToDigit") << "requested channel, " << ch 
 						  << " from board "        << boardId
 						  << " is beyond the scope of the waveform vector";
