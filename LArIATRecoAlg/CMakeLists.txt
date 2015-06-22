@@ -21,6 +21,7 @@ art_make( LIBRARY_NAME  LArIATRecoAlg
 			${ROOT_BASIC_LIB_LIST}
                         ${ROOT_MINUIT}
 			${ROOT_MINUIT2}	
+			${Boost_SYSTEM_LIBRARY}
         )
 
 install_headers()
