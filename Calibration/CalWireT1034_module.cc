@@ -338,13 +338,13 @@ void CalWireT1034::produce(art::Event& evt)
           
 	  // add an association between the last object in wirecol
           // (that we just inserted) and digitVec  
-	  util::CreateAssn(*this, evt, *wirecol, rdvec[rdItr], *WireDigitAssn);      
+	 // util::CreateAssn(*this, evt, *wirecol, rdvec[rdItr], *WireDigitAssn);      
 	  if (!util::CreateAssn(*this, evt, *wirecol, rdvec[rdItr], *WireDigitAssn)) 
 	     {
              throw art::Exception(art::errors::InsertFailure) << "Can't associate wire #" << (wirecol->size() - 1)
                                                               << " with raw digit #" << rdvec[rdItr].key();
 	     } // if failed to add association   
-	  util::CreateAssn(*this, evt, *wirecol, trigger, *TrigWireAssn);
+	  //util::CreateAssn(*this, evt, *wirecol, trigger, *TrigWireAssn);
           // add an association between the last object in wirecol
           // (that we just inserted) and digitVec 
           if (!util::CreateAssn(*this, evt, *wirecol, trigger, *TrigWireAssn)) 
