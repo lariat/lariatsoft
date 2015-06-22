@@ -186,7 +186,7 @@ private:
   std::string                                fRawFragmentLabel;        ///< label for module producing artdaq fragments
   std::string 				     fRawFragmentInstance;     ///< instance label for artdaq fragments        
   size_t                                     fMaxNumberFitIterations;  ///< number of fit iterations before stopping
-  std::vector<std::vector<unsigned int> >    fOpDetChID;               ///< channels on boards used for PMTs and SiPMs
+  std::map<uint32_t, std::set<uint32_t> >    fOpticalDetChannels;      ///< key is the board ID, set are channels on that board
   std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks; ///< map trigger ID to vector of CAEN blocks
   std::map< int, std::vector<TDCDataBlock> > fTriggerToTDCDataBlocks;  ///< map trigger ID to vector of TDC blocks
   std::map<size_t, size_t>                   fTDCToStartWire;          ///< map TDCs to first wire attached to TDC
@@ -279,13 +279,18 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   fRawFragmentLabel       = p.get< std::string >("RawFragmentLabel",       "daq"  );
   fRawFragmentInstance    = p.get< std::string >("RawFragmentInstance",    "SPILL");
   fMaxNumberFitIterations = p.get< int         >("MaxNumberFitIterations", 5      );
-  fOpDetChID              = p.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
+  std::vector<std::vector<unsigned int> > opChans = p.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
 
-  for(size_t i = 0; i < fOpDetChID.size(); ++i){
-    for(size_t j = 0; j < fOpDetChID[i].size(); ++j)   
-     if(int(fOpDetChID[i].size())>0) LOG_VERBATIM("FragmentToDigit") << "channels and boards for opdetpulses : board - channel "
-				      << fOpDetChID[i][0] << " - " << fOpDetChID[i][j];
+  for(size_t i = 0; i < opChans.size(); ++i){
+    if(opChans[i].size() < 1) continue;
+    for(size_t j = 1; j < opChans[i].size(); ++j){
+      fOpticalDetChannels[opChans[i][0]].insert(opChans[i][j]);
+      LOG_VERBATIM("FragmentToDigit") << "board " << opChans[i][0] 
+				      << " has optical detector on channel " 
+				      << opChans[i][j];
+    }
   }
+
 
   // fWutLabel             = p.get< std::string >("WutLabel",             "Wut"              );
   // fCaenV1740Board0Label = p.get< std::string >("CaenV1740Board0Label", "CaenV1740Board0"  );
@@ -1411,31 +1416,19 @@ void FragmentToDigit::makeOpDetPulses(std::vector<CAENFragment>    const& caenFr
   // loop over the caenFrags
   uint32_t boardId        = 0;
   uint32_t triggerTimeTag = 0;
-  std::vector<int> board_channels;
-	bool has_optical_channels;
+
   for(auto const& caenFrag : caenFrags){
 
     boardId        = caenFrag.header.boardId;
     triggerTimeTag = caenFrag.header.triggerTimeTag;
-	board_channels.clear();
-	has_optical_channels=false;
-	for(size_t i = 0; i < fOpDetChID.size(); ++i){
-    for(size_t j = 0; j < fOpDetChID[i].size(); ++j){   
-     if((int)fOpDetChID[i][0]==int(boardId)){
-				if(fOpDetChID[i].size()>0){
-					has_optical_channels=true;
-					if(j>0) board_channels.push_back(fOpDetChID[i][j]);
-				}
-			}
-		}
-	}
-    if(has_optical_channels){
+
+    if(fOpticalDetChannels.count(boardId) > 0){
 
       // loop over the channels on this board connected to optical detectors
-      for(auto ch : board_channels){
+      for(auto ch : fOpticalDetChannels.find(boardId)->second){
 
 	// check that the current channel, ch, is a valid one for grabbing a waveform
-	if(ch > (int)caenFrag.waveForms.size() )
+	if(ch > caenFrag.waveForms.size() )
 	  throw cet::exception("FragmentToDigit") << "requested channel, " << ch 
 						  << " from board "        << boardId
 						  << " is beyond the scope of the waveform vector";
