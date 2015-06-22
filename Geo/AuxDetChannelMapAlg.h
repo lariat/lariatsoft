@@ -55,9 +55,10 @@ namespace geo{
     // Experiments must implement these method. It accounts for auxiliary detectors like
     // Multiwire proportional chambers where there is only a single sensitive volume, but
     // multiple channels running through that volume.
-    virtual uint32_t PositionToAuxDetChannel(double const worldLoc[3],
-					     size_t      &ad,
-					     size_t      &sv) const = 0;
+    virtual uint32_t PositionToAuxDetChannel(double                       const  worldLoc[3],
+					     std::vector<geo::AuxDetGeo*> const& auxDets,
+					     size_t                            &ad,		
+					     size_t      		       &sv) const = 0;
 
     virtual const TVector3 AuxDetChannelToPosition(uint32_t                     const& channel,
 						   std::string                  const& auxDetName,

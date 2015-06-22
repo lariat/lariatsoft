@@ -107,12 +107,6 @@ namespace geo {
 
 
   //......................................................................
-  TGeoManager* AuxDetGeometryCore::ROOTGeoManager() const
-  {
-    return gGeoManager;
-  }
-  
-  //......................................................................
   unsigned int AuxDetGeometryCore::NAuxDetSensitive(size_t const& aid) const
   {
     if( aid > NAuxDets() - 1)
@@ -164,7 +158,7 @@ namespace geo {
 							 size_t     & sv) const
   {
     adg = this->FindAuxDetAtPosition(worldPos);
-    sv  = fChannelMapAlg->NearestSensitiveAuxDet(worldPos, AuxDets());
+    sv  = fChannelMapAlg->NearestSensitiveAuxDet(worldPos, AuxDets(), adg);
 
     return;
   } // AuxDetGeometryCore::FindAuxDetAtPosition()
@@ -184,7 +178,7 @@ namespace geo {
 							     size_t      &ad,
 							     size_t      &sv) const
   {    
-    return fChannelMapAlg->PositionToAuxDetChannel(worldLoc, ad, sv);
+    return fChannelMapAlg->PositionToAuxDetChannel(worldLoc, AuxDets(), ad, sv);
   }
   
   //......................................................................

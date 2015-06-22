@@ -18,17 +18,18 @@ BEGIN_PROLOG
 
 lariat_services:
 {
- ExptGeoHelperInterface:    @local::lariat_geometry_helper 
- Geometry:                  @local::lariat_geo 	        
- AuxDetGeometry:            @local::lariat_auxdetgeo
- DetectorProperties:        @local::lariat_detproperties   
- LArProperties:             @local::lariat_properties	
- LArFFT:                    @local::lariat_larfft  	
- DatabaseUtil:	            @local::lariat_database        
- SignalShapingServiceT1034: @local::lariat_signalshapingservice
- TimeService:               @local::lariat_timeservice  
- BackTracker:               @local::standard_backtracker
- SeedService:               @local::standard_seedservice
+ ExptGeoHelperInterface:       @local::lariat_geometry_helper 
+ Geometry:                     @local::lariat_geo 	        
+ AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
+ AuxDetGeometry:               @local::lariat_auxdetgeo            
+ DetectorProperties:           @local::lariat_detproperties        
+ LArProperties:                @local::lariat_properties	        
+ LArFFT:                       @local::lariat_larfft  	        
+ DatabaseUtil:	               @local::lariat_database             
+ SignalShapingServiceT1034:    @local::lariat_signalshapingservice 
+ TimeService:                  @local::lariat_timeservice          
+ BackTracker:                  @local::standard_backtracker        
+ SeedService:                  @local::standard_seedservice        
  #UBOpticalChConfig:     @local::lariat_optical_ch_config
 }
 

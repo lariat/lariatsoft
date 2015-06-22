@@ -53,8 +53,8 @@ namespace geo{
     // The  MuRS detector has 16  channels, and 16 sensitive volumes
     // Each MWPC detector has 128 channels, and 1  sensitive volume
     // The  Halo detector has 2   channels, and    sensitive volume
-    fADNameToGeo.clear();
-    fADChannelToSensitiveGeo.clear();
+    fADGeoToName.clear();
+    fADGeoToChannelAndSV.clear();
 
     for(size_t a = 0; a < adgeo.size(); ++a){
       std::string volName(adgeo[a]->TotalVolume()->GetName());
@@ -84,7 +84,7 @@ namespace geo{
 	for(size_t c = 0; c < 2; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
       }	
       else if(volName.find("AeroGelDS") != std::string::npos){
-	for(size_t c = 0; c < 2; ++c) fADGeoToChanAndSV[a].push_back(std::make_pair(c, 0));
+	for(size_t c = 0; c < 2; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
       }	
       else if(volName.find("MuonRangeStack") != std::string::npos){
 
@@ -123,8 +123,8 @@ namespace geo{
     uint32_t channel = UINT_MAX;
 
     // figure out which detector we are in
-    size_t ad = 0;
-    size_t sv = this->NearestSensitiveAuxDet(worldLoc, auxDets, ad);
+    ad = 0;
+    sv = this->NearestSensitiveAuxDet(worldLoc, auxDets, ad);
 
     // get the origin of the sensitive volume in the world coordinate system
     double svOrigin[3]    = {0.};
