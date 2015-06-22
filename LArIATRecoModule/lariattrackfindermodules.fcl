@@ -1,0 +1,15 @@
+BEGIN_PROLOG
+
+lariat_spacepts:
+{
+module_type:"SpacePoints"
+TicksOffset: 0.
+ClusterModuleLabel:"dbcluster"
+EndPoint2DModuleLabel:"vertex2d"
+TMatch: 50.0
+vertexclusterWindow: 100.
+TriggerUtility:  "FragmentToDigit"
+
+}
+
+END_PROLOG

@@ -226,11 +226,16 @@ void DBClusterT1034::produce(art::Event & evt)
       // Making a map of the geo::PlaneID to vectors of art::Ptr<recob::Hit>
       std::map<geo::PlaneID, std::vector< art::Ptr<recob::Hit> > > planeIDToHits;
       for(size_t i = 0; i < HitDigits.at(trig).size(); ++i)
-         {planeIDToHits[allhits[i]->WireID().planeID()].push_back(art::Ptr<recob::Hit>(hitcol, i));}
+         {
+	planeIDToHits[allhits[i]->WireID().planeID()].push_back(allhits[i]);
+	std::cout<<"trig = "<<trig<<"/"<< tdu.NTriggers() << " " <<allhits[i]->WireID().Plane << " " << allhits[i]->WireID().Wire << " " <<allhits[i]->PeakTime() << std::endl;
+	}
       
       
       for(auto & itr : planeIDToHits)
          {
+	for(auto &hit: itr.second)
+	{std::cout << itr.first.Plane << " " << hit->WireID().Wire << " "  << hit->PeakTime() << std::endl;}
          //geo::SigType_t sigType = geom->SignalType(itr.first);
 	 allhits.resize(itr.second.size());
 	 allhits.swap(itr.second);

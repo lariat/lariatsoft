@@ -694,8 +694,9 @@ void GausHitFinder::produce(art::Event& evt)
 	    
 	    raw::TDCtick_t ET = endT;
 	    // ### Recording each hit in the pulse ###
+          	
 	    for(size_t dd = 0; dd < MeanPosition.size(); dd++)
-	       {
+	       {  std::cout << "gaus hit	" << dd << " " << MeanPosition[dd] << " "  << wid.Plane << " " << wid.Wire << std::endl;
 		 recob::Hit hit(
 		   channel, 		//raw::ChannelID_t        channel
 		   ST,	    		//raw::TDCtick_t          start_tick

@@ -16,6 +16,8 @@ art_make(BASENAME_ONLY
 			  RawDataUtilities
 			  RecoBase
 			  RecoBaseArt
+			  Utilities
+			  LArProperties_service
 			  ${SEEDSERVICE_SERVICE} # artextensions
 			  ${SIMULATIONBASE}
 			  ${ART_FRAMEWORK_CORE}

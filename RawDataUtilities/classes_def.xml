@@ -30,6 +30,9 @@
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Wire>      >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Hit>       >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Cluster>   >"/>
+  <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::EndPoint2D>   >"/>
+  <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::SpacePoint>   >"/>
+  <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Track>   >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<std::vector<recob::Cluster> >   >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit> >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>  >"/>
@@ -38,6 +41,9 @@
   <class name="std::pair< art::Ptr<recob::Wire>,      art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<recob::Hit>,       art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<recob::Cluster>,   art::Ptr<raw::Trigger> >"/>
+  <class name="std::pair< art::Ptr<recob::EndPoint2D>,   art::Ptr<raw::Trigger> >"/>
+  <class name="std::pair< art::Ptr<recob::SpacePoint>,   art::Ptr<raw::Trigger> >"/>
+  <class name="std::pair< art::Ptr<recob::Track>,   art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<std::vector<recob::Cluster> >,   art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<raw::OpDetPulse>,  art::Ptr<raw::Trigger> >"/>
@@ -46,6 +52,9 @@
   <class name="art::Assns<raw::Trigger, recob::Wire,      void>" />
   <class name="art::Assns<raw::Trigger, recob::Hit,       void>" />
   <class name="art::Assns<raw::Trigger, recob::Cluster,   void>" />
+  <class name="art::Assns<raw::Trigger, recob::EndPoint2D,   void>" />
+  <class name="art::Assns<raw::Trigger, recob::SpacePoint,   void>" />
+  <class name="art::Assns<raw::Trigger, recob::Track,   void>" />
   <class name="art::Assns<raw::Trigger, std::vector<recob::Cluster>,   void>" />
   <class name="art::Assns<raw::Trigger, raw::AuxDetDigit, void>" />
   <class name="art::Assns<raw::Trigger, raw::OpDetPulse,  void>" />
@@ -55,6 +64,9 @@
   <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Wire,      void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Hit,       void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Cluster,       void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::Trigger, recob::EndPoint2D,       void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::Trigger, recob::SpacePoint,       void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Track,       void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, std::vector<recob::Cluster>,       void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit, void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,  void> >"/>
