@@ -27,6 +27,8 @@ namespace geo{
   //----------------------------------------------------------------------------
   AuxDetChannelMapLArIATAlg::AuxDetChannelMapLArIATAlg(fhicl::ParameterSet const& p)
     : fSorter(geo::AuxDetGeoObjectSorterLArIAT(p))
+    , fMWPCWirePitch(p.get<float>("MWPCWirePitch", 0.1))
+    , fMWPCPlanePitch(p.get<float>("MWPCWirePitch", 0.5))
   {
   }
 
@@ -140,8 +142,6 @@ namespace geo{
 	throw cet::exception("AuxDetChannelMapLArIATAlg") << "No entry in channel and sensitive volume"
 							  << " map for AuxDet index " << ad << " bail";
 
-      // there are two cases here - the MWPC and everything else
-      // the MWPC wires are XXX mm apart
       if( gnItr->second.find("MWPC") != std::string::npos){
 	
 	// determine the number of wire spacings from the center 
@@ -150,8 +150,11 @@ namespace geo{
 			      worldLoc[1] - svOrigin[1],
 			      worldLoc[2] - svOrigin[2]};
 
-	double numChanX = 64 + deltaPos[0]/0.1;
-	double numChanY = 64 + deltaPos[1]/0.1;
+	// wire 64 is the center wire of the MWPC in each view
+	// if the deltaPos is 0, then the second term will subtract
+	// from the center of the chamber
+	double numChanX = 64 + deltaPos[0]/fMWPCWirePitch;
+	double numChanY = 64 + deltaPos[1]/fMWPCWirePitch;
 
 	if(numChanX < 0. || numChanY < 0.) 
 	  throw cet::exception("AuxDetChannelMapLArIATAlg") << "position (" 
@@ -165,11 +168,18 @@ namespace geo{
 	// each SV in the MuRS has a single channel
 	channel = sv;
       }
-      else{
-	// the remaining aux dets have 2 channels and a single SV.  Figure out which
-	// channel the position is closer to
+      // the remaining aux dets have 2 channels and a single SV.  Figure out which
+      // channel the position is closer to
+      else if(gnItr->second.find("AeroGel") != std::string::npos){
+	// there are east and west side PMTs on the AG detectors
+	channel = 0;
+	if(worldLoc[0] < svOrigin[0]) channel = 1;
       }
-
+      else if(gnItr->second.find("TOF") != std::string::npos){
+	// there are east and west side PMTs on the TOF detectors
+	channel = 0;
+	if(worldLoc[0] < svOrigin[0]) channel = 1;
+      }
     }// end finding of the detector name
 
     if(channel == UINT_MAX) 
@@ -191,8 +201,9 @@ namespace geo{
 
     // figure out which detector we are in
     size_t ad = UINT_MAX;
-    if( fNameToADGeo.count(auxDetName) > 0 )
-      ad = fNameToADGeo.find(auxDetName)->second;
+    if( fNameToADGeo.count(auxDetName) > 0 ){
+      ad     = fNameToADGeo.find(auxDetName)->second;
+    }
     else
       throw cet::exception("AuxDetChannelMapLArIATAlg") << "No AuxDetGeo with name " << auxDetName;
 
@@ -203,8 +214,7 @@ namespace geo{
 							<< " map for AuxDet index " << ad << " bail";
 
     // loop over the vector of channel and sensitive volumes to determine the sensitive volume 
-    // for this channel
-    // then get the origin of the sensitive volume in the world coordinate system
+    // for this channel.  Then get the origin of the sensitive volume in the world coordinate system
     double svOrigin[3]    = {0.};
     double localOrigin[3] = {0.};
     for(auto csv : csvItr->second){
@@ -212,19 +222,37 @@ namespace geo{
       if( csv.first == channel ){
 
 	// get the center of the sensitive volume for this channel
-	auxDets[ad]->SensitiveVolume(sv).LocalToWorld(localOrigin, svOrigin);
+	auxDets[ad]->SensitiveVolume(csv.second).LocalToWorld(localOrigin, svOrigin);
 
-	// there are two cases here - the MWPC and everything else
-	// the MWPC wires are XXX mm apart
-	if( auxDetName.find("MWPC") != std::string::npos){
-	
+	if(auxDetName.find("MWPC") != std::string::npos){
+	  
+	  // x view channels first
+	  if(channel < 128){
+	    x = svOrigin[0] + (64 - channel)*fMWPCWirePitch;
+	    y = svOrigin[1];
+	    z = svOrigin[2] - fMWPCPlanePitch;
+	  }
+	  else{
+	    x = svOrigin[0];
+	    y = svOrigin[1] + (192 - channel)*fMWPCWirePitch;;
+	    z = svOrigin[2] + fMWPCPlanePitch;
+	  }
+	  
 	} // end if this is an MWPC
 	else if(auxDetName.find("MuonRangeStack") != std::string::npos){
-	  // each SV in the MuRS has a single channel
+	  x = svOrigin[0];
+	  y = svOrigin[1];
+	  z = svOrigin[2];
 	}
-	else{
-	  // the remaining aux dets have 2 channels and a single SV.  Figure out which
-	  // channel the position is closer to
+	else if(auxDetName.find("AeroGel") != std::string::npos){
+	  x = svOrigin[0];
+	  y = svOrigin[1];
+	  z = svOrigin[2];
+	}
+	else if(auxDetName.find("TOF") != std::string::npos){
+	  x = svOrigin[0];
+	  y = svOrigin[1];
+	  z = svOrigin[2];	  
 	}
 	
 	break;

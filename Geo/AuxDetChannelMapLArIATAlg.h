@@ -38,7 +38,9 @@ namespace geo{
     
   private:
     
-    geo::AuxDetGeoObjectSorterLArIAT  fSorter; ///< class to sort geo objects
+    geo::AuxDetGeoObjectSorterLArIAT fSorter;         ///< class to sort geo objects
+    float                            fMWPCWirePitch;  ///< distance between wires in a MWPC, in cm
+    float                            fMWPCPlanePitch; ///< distance between planes in a MWPC, in cm
   };
 
 
