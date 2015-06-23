@@ -30,12 +30,36 @@
 #include "RawData/ExternalTrigger.h"
 #include "RawData/TriggerData.h"
 #include "RawData/OpDetWaveform.h"
-#include "WCTrack.h"
+#include "LArIATDataProducts/TOF.h"
+#include "LArIATDataProducts/WCTrack.h"
+
 
 //
 // Only include objects that we would like to be able to put into the event.
 // Do not include the objects they contain internally.
 //
+
+
+template class std::vector<ldp::TOF>;
+
+template class art::Wrapper< ldp::TOF                  >;
+
+template class art::Wrapper< std::vector<ldp::TOF >    >;
+
+template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >    ;
+template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF> >    ;
+
+template class std::pair< art::Ptr<ldp::TOF>,     art::Ptr<raw::Trigger> >    ;
+template class std::pair< art::Ptr<ldp::TOF>,     art::Ptr<raw::AuxDetDigit> >;
+
+template class art::Assns<ldp::TOF,     raw::Trigger,      void>; 
+template class art::Assns<raw::Trigger,     ldp::TOF,      void>; 
+template class art::Assns<raw::AuxDetDigit, ldp::TOF,      void>;
+
+template class art::Wrapper<art::Assns<raw::Trigger,     ldp::TOF,     void> >;
+template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,     void> >;
+template class art::Wrapper<art::Assns<ldp::TOF,     raw::Trigger,     void> >;
+
 template class std::vector<ldp::WCTrack>;
 
 template class art::Wrapper< ldp::WCTrack                  >;
@@ -55,3 +79,4 @@ template class art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>;
 template class art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >;
+
