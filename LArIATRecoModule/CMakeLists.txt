@@ -18,6 +18,7 @@ art_make(BASENAME_ONLY
 			  RecoBaseArt
 			  Utilities
 			  LArProperties_service
+                          DetectorProperties_service
 			  ${SEEDSERVICE_SERVICE} # artextensions
 			  ${SIMULATIONBASE}
 			  ${ART_FRAMEWORK_CORE}

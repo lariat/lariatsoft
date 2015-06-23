@@ -1,11 +1,16 @@
-////////////////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////////////////////////////////
 // Class:       ClusterCrawlerLariat
 // Module Type: producer
 // File:        ClusterCrawlerLariat_module.cc
 //
 // Generated at Fri Jun  7 09:44:09 2013 by Bruce Baller using artmod 
 // from cetpkgsupport v1_02_00.
-////////////////////////////////////////////////////////////////////////
+//
+//  ** Modified by Roberto Acciarri to account multiple trigger in one event for LArIAT.
+//   
+//  acciarri@fnal.gov
+//  July 2015
+//////////////////////////////////////////////////////////////////////////////////////////
 
 // ####################
 // ### C++ Includes ###
@@ -165,16 +170,16 @@ namespace cluster {
 
     hits->clear();
 
-    //std::cout<< "Number of Triggers: " << tdu.NTriggers() << std::endl;
+    std::cout<< "Number of Triggers: " << tdu.NTriggers() << std::endl;
     for (size_t t=0; t<tdu.NTriggers(); ++t)                              
     {
        art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];  
 
-       //std::cout<< "#####################################################" << std::endl;
-       //std::cout<< "#####################################################" << std::endl;
-       //std::cout<< "#####################################################" << std::endl;                  
-       //std::cout<< "Trigger # " << t << std::endl;  
-       //std::cout<< " " << std::endl;
+       std::cout<< "#####################################################" << std::endl;
+       std::cout<< "#####################################################" << std::endl;
+       std::cout<< "#####################################################" << std::endl;                  
+       std::cout<< "Trigger # " << t << std::endl;  
+       std::cout<< " " << std::endl;
        // fetch the wires needed by CCHitFinder
        chIDToWire.clear();
        wireVec.clear();
@@ -209,7 +214,7 @@ namespace cluster {
 
 
           // make the cluster - vertices association
-          //std::cout << "CLus to Vertex size: " << clusToVertex[ic].size() << std::endl;
+          std::cout << "CLus to Vertex size: " << clusToVertex[ic].size() << std::endl;
           for(size_t v = 0; v< clusToVertex[ic].size(); ++v)
           {
    	     vertices->push_back(clusToVertex[ic][v]);
@@ -344,8 +349,8 @@ namespace cluster {
     unsigned short plane = 0;
     double xyz[3] = {0, 0, 0};
     clusToHits.resize(tcl.size());
-    //std::cout << " Number of Clusters in the trigger: " <<tcl.size() << std::endl;
-    //std::cout << " " << std::endl;
+    std::cout << " Number of Clusters in the trigger: " <<tcl.size() << std::endl;
+    std::cout << " " << std::endl;
  
     for(unsigned int icl = 0; icl < tcl.size(); ++icl) 
     {
@@ -396,18 +401,18 @@ namespace cluster {
                            recob::Cluster::Sentry  // sentry
                          );
 
-       //std::cout << " /////////////////////////////////////// " << std::endl;
-       //std::cout << " /////////////////////////////////////// " << std::endl;
-       //std::cout << " Cluster ID " << clstr.ID << " Number of hits " << nclhits << std::endl;
-       //std::cout << " Cluster Info: Start Wire " << clstr.BeginWir << " End Wire " << clstr.EndWir <<std::endl;
-       //std::cout << " Cluster Info: Begin Time " << clstr.BeginTim << " End Time " << clstr.EndTim <<std::endl;
-       //std::cout << " Cluster Info: Begin Charge " << clstr.BeginChg << " Begin Angle " << clstr.BeginAng <<std::endl;
-       //std::cout << " Cluster Info: End Charge " << clstr.EndChg << " End Angle " << clstr.EndAng <<std::endl;
-       //std::cout << " Cluster Info: Charge " << sumChg << " ADC Sum " << sumADC <<std::endl;
-       //std::cout << " View " << view << " Plane ID " << planeID <<std::endl;
-       //std::cout << " Begin Vertex Index " << clstr.BeginVtx <<  " End Vertex Index " << clstr.EndVtx <<std::endl;
-       //std::cout << "  " << std::endl;
-       //std::cout << "  " << std::endl;
+       std::cout << " /////////////////////////////////////// " << std::endl;
+       std::cout << " /////////////////////////////////////// " << std::endl;
+       std::cout << " Cluster ID " << clstr.ID << " Number of hits " << nclhits << std::endl;
+       std::cout << " Cluster Info: Start Wire " << clstr.BeginWir << " End Wire " << clstr.EndWir <<std::endl;
+       std::cout << " Cluster Info: Begin Time " << clstr.BeginTim << " End Time " << clstr.EndTim <<std::endl;
+       std::cout << " Cluster Info: Begin Charge " << clstr.BeginChg << " Begin Angle " << clstr.BeginAng <<std::endl;
+       std::cout << " Cluster Info: End Charge " << clstr.EndChg << " End Angle " << clstr.EndAng <<std::endl;
+       std::cout << " Cluster Info: Charge " << sumChg << " ADC Sum " << sumADC <<std::endl;
+       std::cout << " View " << view << " Plane ID " << planeID <<std::endl;
+       std::cout << " Begin Vertex Index " << clstr.BeginVtx <<  " End Vertex Index " << clstr.EndVtx <<std::endl;
+       std::cout << "  " << std::endl;
+       std::cout << "  " << std::endl;
        // make the cluster - endpoint associations
        if(clstr.BeginVtx >= 0) 
        {
@@ -415,7 +420,7 @@ namespace cluster {
           vtxIndex = 0;
           for(ClusterCrawlerAlg::Vtx3Store const& vtx3: Vertx) 
           {  
-             //std::cout << "Begin Vertex XYZ: " << vtx3.X << "  " << vtx3.Y << "  "  << vtx3.Z << std::endl;
+             std::cout << "Begin Vertex XYZ: " << vtx3.X << "  " << vtx3.Y << "  "  << vtx3.Z << std::endl;
              // ignore incomplete vertices
              if(vtx3.Ptr2D[0] < 0) continue;
              if(vtx3.Ptr2D[1] < 0) continue;
@@ -437,7 +442,7 @@ namespace cluster {
            vtxIndex = 0;
           for(ClusterCrawlerAlg::Vtx3Store const& vtx3: Vertx) 
           {
-             //std::cout << "End Vertex XYZ: " << vtx3.X << "  " << vtx3.Y << "  "  << vtx3.Z << std::endl;
+             std::cout << "End Vertex XYZ: " << vtx3.X << "  " << vtx3.Y << "  "  << vtx3.Z << std::endl;
              // ignore incomplete vertices
              if(vtx3.Ptr2D[0] < 0) continue;
              if(vtx3.Ptr2D[1] < 0) continue;
