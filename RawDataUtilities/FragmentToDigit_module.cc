@@ -61,7 +61,8 @@
 //#include "TTree.h"
 #include "TGraph.h"
 #include "TF1.h"
-#include "TH2F.h"
+#include "TH2.h"
+#include "TH1.h"
 
 #include <memory>
 #include <functional>
@@ -193,61 +194,11 @@ private:
   std::map<size_t, size_t>                   fTDCToChamber;            ///< map TDCs to the chamber they are attached
   std::vector<std::string>                   fMWPCNames;               ///< vector to hold detector names of the MWPCs
   int                                        fRunNumber;               ///< current run number
-  TH2F * FragCountsSameTrigger_1751vsTDC_NoTPC;
-  TH2F * FragCountsSameTrigger_1751vsTDC_WithTPC;
-  TH2F * FragCountsSameTrigger_1751vsTDC_ExtraTPC;
-
-  //----The commented out methods and data members below are deprecated----
-  // void matchFragments(uint32_t            & Ntriggers,
-  // 		      std::vector<size_t> & v1751InTrigger,
-  // 		      std::vector<size_t> & v1740InTrigger,
-  // 		      std::vector<size_t> & TDCInTrigger,
-  // 		      LariatFragment*       data);
-
-  // void makeCaenV1751AuxDetDigits(int i, 
-  // 				 LariatFragment*                                    data,
-  // 				 std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board0Vec,
-  // 				 std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1751Board1Vec,
-  // 				 std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec2,
-  // 				 std::unique_ptr<std::vector< raw::OpDetPulse > > & OpDetVec1);
-  // void makeCaenV1740AuxDetDigits(int i,
-  // 				 LariatFragment * data,
-  // 				 std::unique_ptr< std::vector<raw::AuxDetDigit> > & caenV1740Board7Vec);
-  // void makeMWPCTDCAuxDetDigits(int i, LariatFragment * data,
-  // 			       std::vector< std::reference_wrapper< std::unique_ptr< std::vector<raw::AuxDetDigit> > > > & mwpcTdcVecs,
-  // 			       std::string mwpcTdcLabels[16]);
-  // void makeWUTDigits(LariatFragment*                                    data,
-  // 		     std::unique_ptr< std::vector<raw::AuxDetDigit> > & wutVec);
-
-  // std::string fCaenV1740Board0Label;
-  // std::string fCaenV1740Board1Label;
-  // std::string fCaenV1740Board2Label;
-  // std::string fCaenV1740Board3Label;
-  // std::string fCaenV1740Board4Label;
-  // std::string fCaenV1740Board5Label;
-  // std::string fCaenV1740Board6Label;
-  // std::string fCaenV1740Board7Label;
-  // std::string fCaenV1751Board0Label;
-  // std::string fCaenV1751Board1Label;
-  // std::string fCaenOpLabel1;
-  // std::string fCaenOpLabel2;
-  // std::string fWutLabel;
-  // std::string fMwpcTdc01Label;
-  // std::string fMwpcTdc02Label;
-  // std::string fMwpcTdc03Label;
-  // std::string fMwpcTdc04Label;
-  // std::string fMwpcTdc05Label;
-  // std::string fMwpcTdc06Label;
-  // std::string fMwpcTdc07Label;
-  // std::string fMwpcTdc08Label;
-  // std::string fMwpcTdc09Label;
-  // std::string fMwpcTdc10Label;
-  // std::string fMwpcTdc11Label;
-  // std::string fMwpcTdc12Label;
-  // std::string fMwpcTdc13Label;
-  // std::string fMwpcTdc14Label;
-  // std::string fMwpcTdc15Label;
-  // std::string fMwpcTdc16Label;
+  TH2F *                                     FragCountsSameTrigger_1751vsTDC_NoTPC;	  
+  TH2F * 				     FragCountsSameTrigger_1751vsTDC_WithTPC; 
+  TH2F * 				     FragCountsSameTrigger_1751vsTDC_ExtraTPC;
+  TH1F*   				     fRawDigitPedestals;       ///< computed pedestal values               
+  TH1F*  				     fRawDigitADC;             ///< pedestal subtracted values               
 
 };
 
@@ -292,45 +243,24 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   }
 
 
-  // fWutLabel             = p.get< std::string >("WutLabel",             "Wut"              );
-  // fCaenV1740Board0Label = p.get< std::string >("CaenV1740Board0Label", "CaenV1740Board0"  );
-  // fCaenV1740Board1Label = p.get< std::string >("CaenV1740Board1Label", "CaenV1740Board1"  );
-  // fCaenV1740Board2Label = p.get< std::string >("CaenV1740Board2Label", "CaenV1740Board2"  );
-  // fCaenV1740Board3Label = p.get< std::string >("CaenV1740Board3Label", "CaenV1740Board3"  );
-  // fCaenV1740Board4Label = p.get< std::string >("CaenV1740Board4Label", "CaenV1740Board4"  );
-  // fCaenV1740Board5Label = p.get< std::string >("CaenV1740Board5Label", "CaenV1740Board5"  );
-  // fCaenV1740Board6Label = p.get< std::string >("CaenV1740Board6Label", "CaenV1740Board6"  );
-  // fCaenV1740Board7Label = p.get< std::string >("CaenV1740Board7Label", "CaenV1740Board7"  );
-  // fCaenV1751Board0Label = p.get< std::string >("CaenV1751Board0Label", "CaenV1751Board0"  );
-  // fCaenV1751Board1Label = p.get< std::string >("CaenV1751Board1Label", "CaenV1751Board1"  );
-  // fMwpcTdc01Label       = p.get< std::string >("MwpcTdc01Label",       "MwpcTdc01"        );
-  // fMwpcTdc02Label       = p.get< std::string >("MwpcTdc02Label",       "MwpcTdc02"        );
-  // fMwpcTdc03Label       = p.get< std::string >("MwpcTdc03Label",       "MwpcTdc03"        );
-  // fMwpcTdc04Label       = p.get< std::string >("MwpcTdc04Label",       "MwpcTdc04"        );
-  // fMwpcTdc05Label       = p.get< std::string >("MwpcTdc05Label",       "MwpcTdc05"        );
-  // fMwpcTdc06Label       = p.get< std::string >("MwpcTdc06Label",       "MwpcTdc06"        );
-  // fMwpcTdc07Label       = p.get< std::string >("MwpcTdc07Label",       "MwpcTdc07"        );
-  // fMwpcTdc08Label       = p.get< std::string >("MwpcTdc08Label",       "MwpcTdc08"        );
-  // fMwpcTdc09Label       = p.get< std::string >("MwpcTdc09Label",       "MwpcTdc09"        );
-  // fMwpcTdc10Label       = p.get< std::string >("MwpcTdc10Label",       "MwpcTdc10"        );
-  // fMwpcTdc11Label       = p.get< std::string >("MwpcTdc11Label",       "MwpcTdc11"        );
-  // fMwpcTdc12Label       = p.get< std::string >("MwpcTdc12Label",       "MwpcTdc12"        );
-  // fMwpcTdc13Label       = p.get< std::string >("MwpcTdc13Label",       "MwpcTdc13"        );
-  // fMwpcTdc14Label       = p.get< std::string >("MwpcTdc14Label",       "MwpcTdc14"        );
-  // fMwpcTdc15Label       = p.get< std::string >("MwpcTdc15Label",       "MwpcTdc15"        );
-  // fMwpcTdc16Label       = p.get< std::string >("MwpcTdc16Label",       "MwpcTdc16"        );
-  // fCaenOpLabel1         = p.get< std::string >("OpDetBoardLabel1",     "Caenv1751Optical1");
-  // fCaenOpLabel2         = p.get< std::string >("OpDetBoardLabel2",     "Caenv1751Optical2");
-
   return;
 }
 
 //------------------------------------------------------------------------------
 void FragmentToDigit::beginJob()
 {
-  FragCountsSameTrigger_1751vsTDC_NoTPC   = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_NoTPC"   ,"FragCountsSameTrigger_1751vsTDC_NoTPC; Number TDC Data Blocks; Number v1751 Data Blocks"   ,6,-0.5,5.5,6,-0.5,5.5);
-  FragCountsSameTrigger_1751vsTDC_WithTPC = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_WithTPC" ,"FragCountsSameTrigger_1751vsTDC_WithTPC; Number TDC Data Blocks; Number v1751 Data Blocks" ,6,-0.5,5.5,6,-0.5,5.5);
-  FragCountsSameTrigger_1751vsTDC_ExtraTPC= tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_ExtraTPC","FragCountsSameTrigger_1751vsTDC_ExtraTPC; Number TDC Data Blocks; Number v1751 Data Blocks",6,-0.5,5.5,6,-0.5,5.5);
+  FragCountsSameTrigger_1751vsTDC_NoTPC   = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_NoTPC"   
+							    ,"FragCountsSameTrigger_1751vsTDC_NoTPC; Number TDC Data Blocks; Number v1751 Data Blocks"   
+							    ,6,-0.5,5.5,6,-0.5,5.5);
+  FragCountsSameTrigger_1751vsTDC_WithTPC = tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_WithTPC" 
+							    ,"FragCountsSameTrigger_1751vsTDC_WithTPC; Number TDC Data Blocks; Number v1751 Data Blocks" 
+							    ,6,-0.5,5.5,6,-0.5,5.5);
+  FragCountsSameTrigger_1751vsTDC_ExtraTPC= tfs->make<TH2F>("FragCountsSameTrigger_1751vsTDC_ExtraTPC"
+							    ,"FragCountsSameTrigger_1751vsTDC_ExtraTPC; Number TDC Data Blocks; Number v1751 Data Blocks"
+							    ,6,-0.5,5.5,6,-0.5,5.5);
+
+  fRawDigitPedestals = tfs->make<TH1F>("rawDigitPedestals", ";Pedestal (ADC);Digits", 1000, 0., 10000.);
+  fRawDigitADC       = tfs->make<TH1F>("rawDigitADC",       ";Signal (ADC);Digits"  , 1000, 0., 10000.);   
 
   return;
 }
@@ -1348,6 +1278,7 @@ void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrag
   raw::ChannelID_t tpcChan = 0;
   size_t maxChan = 64;
   size_t boardId = 0;
+  float  ped     = 0.;
 
   // make a list of the starting wire number for each board channel 0
   size_t startWireInd[8] = {239, 175, 111, 47,   0,   0,   0, 0 };
@@ -1382,9 +1313,21 @@ void FragmentToDigit::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrag
 	else if(boardId == 3 && chan > 47)
 	  tpcChan = 240 + startWireCol[boardId] - chan + 48;
 
-	std::vector<short> const adc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
+	// as of v04_13_00 of LArSoft, the event display no longer takes the
+	// pedestal value from the RawDigit and uses an interface to a database instead
+	// that doesn't really work for LArIAT, so pre-pedestal subtract the data
+	// and keep the pedestal value for reference in the RawDigit
+	std::vector<short> const padc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
+	ped = this->findPedestal(padc);
+	fRawDigitPedestals->Fill(ped);
+	std::vector<short> adc(padc.size());
+        for(size_t a = 0; a < adc.size(); ++a){
+	  adc[a] = padc[a] - (short)ped;
+	  fRawDigitADC->Fill(adc[a]);
+	}
+
 	raw::RawDigit rd(tpcChan, adc.size(), adc);
-	rd.SetPedestal(this->findPedestal(adc));
+	rd.SetPedestal(ped);
 	tpcDigits.push_back(rd);
       } // end loop to fill channels from this board
     }// end if it is a TPC board      
