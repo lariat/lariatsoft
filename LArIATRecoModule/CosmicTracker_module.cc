@@ -216,7 +216,12 @@ namespace trkf {
     rdu::TriggerDigitUtility tdu(evt, fTriggerUtility);   //***
 
     std::unique_ptr<std::vector<recob::Track>      >              tcol (new std::vector<recob::Track>);           
-    std::unique_ptr<std::vector<recob::SpacePoint> >                 spcol(new std::vector<recob::SpacePoint>);
+    std::unique_ptr<std::vector<recob::SpacePoint> >              spcol(new std::vector<recob::SpacePoint>);
+
+    std::vector<   art::Ptr<recob::Cluster>     >                 clusterlist;           //***
+    art::Handle<   std::vector<recob::Cluster>  >                 clusterListHandle;     //***
+    evt.getByLabel(fClusterModuleLabel,clusterListHandle);                               //***
+
     std::unique_ptr<art::Assns<recob::Track, recob::SpacePoint> > tspassn(new art::Assns<recob::Track, recob::SpacePoint>);
     std::unique_ptr<art::Assns<recob::Track, recob::Cluster> >    tcassn(new art::Assns<recob::Track, recob::Cluster>);
     std::unique_ptr<art::Assns<recob::Track, recob::Hit> >        thassn(new art::Assns<recob::Track, recob::Hit>);
@@ -239,10 +244,10 @@ namespace trkf {
     mf::LogVerbatim("Summary") << "TimeTick (in mus): " << timetick;       //***
     mf::LogVerbatim("Summary") << "TimePitch (in cm): " << timepitch;      //***
 
-   // art::FindManyP<recob::Hit> hm(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);                  //***
-   // art::FindManyP<recob::Hit> fmh(clusterListHandle, evt,fClusterModuleLabel);                       //***   
-   // art::FindManyP<recob::Cluster> fm(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);              //***
-    //art::FindManyP<recob::EndPoint2D> em(tdu.EventTriggersPtr(), evt, fEndPoint2DModuleLabel);      //***
+//    art::FindManyP<recob::Hit> hm(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);                  //***
+    art::FindManyP<recob::Cluster> fc(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);                //***
+    art::FindManyP<recob::Hit> fm(clusterListHandle, evt,fClusterModuleLabel);                          //***   
+    //art::FindManyP<recob::EndPoint2D> em(tdu.EventTriggersPtr(), evt, fEndPoint2DModuleLabel);        //***
   
     for(size_t t = 0; t < tdu.NTriggers(); t++)        // Loop over triggers                          //***
     {
@@ -252,11 +257,15 @@ namespace trkf {
        art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];                                //***
 
        // get input Cluster object(s).
-       art::Handle< std::vector<recob::Cluster> > clusterListHandle;
-       std::vector<art::Ptr<recob::Cluster> > clusterlist;
-       if (evt.getByLabel(fClusterModuleLabel,clusterListHandle)) art::fill_ptr_vector(clusterlist, clusterListHandle);
+//       art::Handle< std::vector<recob::Cluster> > clusterListHandle;
+//       std::vector<art::Ptr<recob::Cluster> > clusterlist;
+//       if (evt.getByLabel(fClusterModuleLabel,clusterListHandle)) art::fill_ptr_vector(clusterlist, clusterListHandle);
 
-       art::FindManyP<recob::Hit> fm(clusterListHandle, evt, fClusterModuleLabel);
+       // get input Cluster object(s).
+       clusterlist.clear();
+       clusterlist = fc.at(t);
+
+//       art::FindManyP<recob::Hit> fm(clusterListHandle, evt, fClusterModuleLabel);
 
        fClusterMatch.ClusterMatch(clusterlist,fm);
        std::vector<std::vector<unsigned int> > &matchedclusters = fClusterMatch.matchedclusters;
@@ -711,6 +720,7 @@ namespace trkf {
                    spacepoints.push_back(mysp);
                    spcol->push_back(mysp);        
                    util::CreateAssn(*this, evt, *spcol, sp_hits, *shassn);
+	           util::CreateAssn(*this, evt, *spcol, trig, *TrigPtAssn);
                 }
              }//loop over hits1 min-hits
       
@@ -912,6 +922,7 @@ namespace trkf {
          
                 // now the track and clusters
                 util::CreateAssn(*this, evt, *tcol, clustersPerTrack, *tcassn);
+	        util::CreateAssn(*this, evt, *tcol, trig, *TrigTrackAssn);
         
                // and the hits and track
                if (!fdebug)
@@ -954,6 +965,8 @@ namespace trkf {
     evt.put(std::move(tcassn));
     evt.put(std::move(thassn));
     evt.put(std::move(shassn));
+    evt.put(std::move(TrigTrackAssn));
+    evt.put(std::move(TrigPtAssn));
     
     return;
   }
