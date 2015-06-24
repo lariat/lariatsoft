@@ -260,7 +260,7 @@ void CalWireROIT1034::produce(art::Event& evt)
   else evt.getByLabel(fDigitModuleLabel, digitVecHandle);
   
   if (!digitVecHandle->size())  return;
-  mf::LogInfo("CalWireROIT1034") << "CalWireT1034:: digitVecHandle size is " << digitVecHandle->size();
+  LOG_INFO("CalWireROIT1034") << "CalWireT1034:: digitVecHandle size is " << digitVecHandle->size();
   
   // #######################################
   // ### Getting the Dead Channel Filter ###
@@ -326,7 +326,7 @@ void CalWireROIT1034::produce(art::Event& evt)
 
         // search for ROIs
         for(bin = 1; bin < dataSize; ++bin) {
-          float SigVal = fabs(rawadc[bin] - pdstl);
+          float SigVal = std::abs(rawadc[bin] - pdstl);
           if(roiStart == 0) {
             // not in a ROI
             // Handle the onset of a ROI differently for the 1st induction plane
@@ -362,7 +362,7 @@ void CalWireROIT1034::produce(art::Event& evt)
 	    for (int qx = 0; qx!=7;qx++){
 	      sum += rawadc[sbin[qx]]-pdstl;
 	    }
-	    sum = fabs(sum);
+	    sum = std::abs(sum);
 	    //std::cout << bin << " " << sum << " " << raw_noise/sqrt(7.)*3. << std::endl;
 	    if (sum > raw_noise*sqrt(7.)*6.) roiStart = bin;
 
@@ -372,7 +372,7 @@ void CalWireROIT1034::produce(art::Event& evt)
               // is the ROI wide enough?
               //unsigned int roiLen = bin - roiStart;
               // if(roiLen > transformSize) {
-              //   mf::LogError("CalWireROI")<<"ROI too long "
+              //   LOG_ERROR("CalWireROI")<<"ROI too long "
               //     <<roiLen<<" on plane:wire "<<thePlane<<":"<<theWire;
               //   break;
               // }
@@ -520,7 +520,7 @@ void CalWireROIT1034::produce(art::Event& evt)
 	    // ### jasaadi: fix this
 	    double deconNoise = 2;//sss->GetDeconNoise(channel)/sqrt(10.)*4;
 	    
-	    if (fabs(tempPost-tempPre)<deconNoise){
+	    if (std::abs(tempPost-tempPre)<deconNoise){
 	      flag = 0;
 	    }else{
 	      if (tempPre > tempPost && roiStart <= 2){
@@ -619,7 +619,7 @@ float CalWireROIT1034::SubtractBaseline(std::vector<float>& holder, float basePr
       base = basePre;
       // can trust both
     }else if (roiStart >= 20 && roiStart + roiLen < dataSize - 20){
-      if (fabs(basePre-basePost)<3){
+      if (std::abs(basePre-basePost)<3){
 	base = (basePre+basePost)/2.;
       }else{
 	if (basePre < basePost){
@@ -644,7 +644,7 @@ float CalWireROIT1034::SubtractBaseline(std::vector<float>& holder, float basePr
 	float ped = h1->GetMaximum();
 	float ave=0,ncount = 0;
 	for (unsigned int bin = 0; bin < roiLen; bin++){
-	  if (fabs(holder[bin]-ped)<2){
+	  if (std::abs(holder[bin]-ped)<2){
 	    ave +=holder[bin];
 	    ncount ++;
 	  }
