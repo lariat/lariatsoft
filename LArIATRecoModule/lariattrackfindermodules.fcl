@@ -20,7 +20,7 @@ lariat_cosmictracker:
 
 {
  module_type:        "CosmicTracker"
- ClusterModuleLabel: "dbcluster"
+ ClusterModuleLabel: "cccluster"
  TMatch:             2.5         ### what is it?
  SMatch:             1.0         ### what is it?
  Toler1:             60          ### what is it?
