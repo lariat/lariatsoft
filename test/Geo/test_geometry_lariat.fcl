@@ -10,8 +10,10 @@ process_name: testGeo
 
 services: {
   
-  Geometry:               @local::lariat_geo
-  ExptGeoHelperInterface: @local::lariat_geometry_helper
+  Geometry:                     @local::lariat_geo
+  ExptGeoHelperInterface:       @local::lariat_geometry_helper
+  AuxDetGeometry:               @local::lariat_auxdetgeo
+  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper
   
   message: {
     destinations: {
@@ -82,6 +84,17 @@ physics: {
       #  "WirePitch",
         "PlanePitch",
         "Stepping"
+      ]
+    }
+
+    auxdetgeotest: {
+      module_type: "AuxDetGeometryTest"
+      
+      RunTests: [
+        "PrintSummary",
+        "CheckOverlaps",
+        "FindAtPosition",
+        "ChannelMethods"
       ]
     }
   }
