@@ -5,8 +5,13 @@
 // Module Type: producer
 // File:        SpacePoints_module.cc
 //
-// Generated at Fri Jun 12 17:59:51 2015 by Irene Nutini using artmod
+// Generated at Fri Jun 12 17:59:51 2015 by Irene Nutini (inutini@fnal.gov) using artmod
 // from cetpkgsupport v1_08_05.
+//
+// This is the LArIAT version of \LArSoFT\SpacePts_module.cc
+// \author echurch@fnal.gov, msoderbe@fnal.gov
+// used for ArgoNeuT.
+
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDProducer.h"
@@ -206,7 +211,7 @@ void SpacePoints::produce(art::Event & evt)
   double YC =  (geom->DetHalfHeight())*2.; // TPC height in cm
   double Angle = geom->Plane(1).Wire(0).ThetaZ(false)-TMath::Pi()/2.; // wire angle with respect to the vertical direction
   // Parameters temporary defined here, but possibly to be retrieved somewhere in the code
-  double timetick = 0.198;    //time sample in us
+  double timetick = 0.128;    //time sample in us
   double presamplings = fPreSamplings; // 60.;
   const double wireShift=50.; // half the number of wires from the Induction(Collection) plane intersecting with a wire from the Collection(Induction) plane.
   double plane_pitch = geom->PlanePitch(0,1);   //wire plane pitch in cm 
@@ -214,7 +219,7 @@ void SpacePoints::produce(art::Event & evt)
   double Efield_drift = 0.5;  // Electric Field in the drift region in kV/cm
   double Efield_SI = 0.7;     // Electric Field between Shield and Induction planes in kV/cm
   double Efield_IC = 0.9;     // Electric Field between Induction and Collection planes in kV/cm
-  double Temperature = 90.;  // LAr Temperature in K
+  double Temperature = 90.5;  // LAr Temperature in K
   
   double driftvelocity = larprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
   double driftvelocity_SI = larprop->DriftVelocity(Efield_SI,Temperature);    //drift velocity between shield and induction (cm/us)
@@ -249,7 +254,9 @@ void SpacePoints::produce(art::Event & evt)
   art::FindManyP<recob::Cluster> fm(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);
   //art::FindManyP<recob::EndPoint2D> em(tdu.EventTriggersPtr(), evt, fEndPoint2DModuleLabel);
  
- 
+ std::cout<< "N triggers in the spill	" << tdu.NTriggers() << std::endl;
+ //std::cout << "info TPC	" << Angle << " " << plane_pitch << " " << wire_pitch << std::endl;
+
   for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
       {
       //std::cout<<"trigger number = "<<trig<<std::endl;
@@ -258,7 +265,14 @@ void SpacePoints::produce(art::Event & evt)
       art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
       //HitVecHandle = hm.at(trig);
       
+       //check for raw digits in the trigger
+      art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(trig);
+      std::cout<<"trigger number	" << trig << "rdvec.size() = "<< rdvec.size()<< std::endl;
+
+      if(!rdvec.size()){
+	mf::LogInfo("SpacePoints") << "Problem SpacePoint:: RawDigiVec size is " << rdvec.size();      		   		continue;}
       // get input Cluster object(s).
+      ClusterVecHandle.clear();
       ClusterVecHandle = fm.at(trig);
       
       // get input EndPoint2D object(s). 
@@ -273,7 +287,7 @@ void SpacePoints::produce(art::Event & evt)
     }
    
    
-
+std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << ClusterVecHandle.size() << std::endl;
   for(unsigned int ii = 0; ii < ClusterVecHandle.size(); ++ii){
 
     art::Ptr<recob::Cluster> cl=ClusterVecHandle[ii];
@@ -306,7 +320,7 @@ void SpacePoints::produce(art::Event & evt)
     // Some variables for the hit
     float time;            //hit time at maximum
 
-    //grab the index of cluster object and make vector of the hits associated with that cluster     
+    //Grab the index of cluster object and make vector of the hits associated with that cluster     
     std::vector< art::Ptr<recob::Hit> > hitlist = fmh.at(cl.key());
 
     std::sort(hitlist.begin(), hitlist.end(), trkf::SortByWire());
@@ -332,10 +346,11 @@ void SpacePoints::produce(art::Event & evt)
       //transform hit wire and time into cm
       double wire_cm = 0.; 
       if(geom->SignalType((*theHit)->Channel()) == geo::kInduction)
-	wire_cm = (double)(((*theHit)->WireID().Wire+3.95) * wire_pitch);          
+	//wire_cm = (double)(((*theHit)->WireID().Wire+3.95) * wire_pitch);   
+        wire_cm = (double)(((*theHit)->WireID().Wire) * wire_pitch);       
       else
-	wire_cm = (double)(((*theHit)->WireID().Wire+1.84) * wire_pitch);
-	
+	//wire_cm = (double)(((*theHit)->WireID().Wire+1.84) * wire_pitch);
+	wire_cm = (double)(((*theHit)->WireID().Wire) * wire_pitch);
       //double time_cm = (double)(time * timepitch);
       double time_cm;
       if(time>tSI) time_cm = (double)( (time-tSI)*timepitch + tSI*driftvelocity_SI*timetick);
@@ -521,10 +536,12 @@ void SpacePoints::produce(art::Event & evt)
                
 	  //the 3.95 and 1.84 below are the ArgoNeuT TPC offsets for the induction and collection plane, respectively and are in units of wire pitch.
 	  if(geom->Cryostat(hit1WireID.Cryostat).TPC(hit1WireID.TPC).Plane(hit1WireID.Plane).SignalType() == geo::kInduction)
-	    w1 = (double)((hit1WireID.Wire+3.95) * wire_pitch);          
+	   // w1 = (double)((hit1WireID.Wire+3.95) * wire_pitch); 
+	  w1 = (double)((hit1WireID.Wire) * wire_pitch) ;        
 	  else
-	    w1 = (double)((hit1WireID.Wire+1.84) * wire_pitch);
-               
+	   //w1 = (double)((hit1WireID.Wire+1.84) * wire_pitch);
+          w1 = (double)((hit1WireID.Wire) * wire_pitch);
+
 	  double temptime1 = minhits[imin]->PeakTime()-presamplings;
 	  if(geom->Cryostat(hit1WireID.Cryostat).TPC(hit1WireID.TPC).Plane(hit1WireID.Plane).SignalType() == geo::kCollection) temptime1 -= tIC;
 	  double t1;// = plane1==1?(double)((minhits[imin]->PeakTime()-presamplings-tIC)*timepitch):(double)((minhits[imin]->PeakTime()-presamplings)*timepitch); //in cm
@@ -552,10 +569,11 @@ void SpacePoints::produce(art::Event & evt)
 	      geo::WireID hit2WireID = maxhits[imax]->WireID();
 	      double w2=0.;
 	      if(geom->Cryostat(hit2WireID.Cryostat).TPC(hit2WireID.TPC).Plane(hit2WireID.Plane).SignalType() == geo::kInduction)
-		w2 = (double)((hit2WireID.Wire+3.95) * wire_pitch);          
+		//w2 = (double)((hit2WireID.Wire+3.95) * wire_pitch);       
+              w2 = (double)((hit2WireID.Wire) * wire_pitch);     
 	      else
-		w2 = (double)((hit2WireID.Wire+1.84) * wire_pitch);
-                     
+		//w2 = (double)((hit2WireID.Wire+1.84) * wire_pitch);
+              w2 = (double)((hit2WireID.Wire) * wire_pitch);       
 	      double temptime2 = maxhits[imax]->PeakTime()-presamplings;
 	      if(geom->Cryostat(hit2WireID.Cryostat).TPC(hit2WireID.TPC).Plane(hit2WireID.Plane).SignalType() == geo::kCollection) temptime2 -= tIC;
 	      double t2;
@@ -586,10 +604,12 @@ void SpacePoints::produce(art::Event & evt)
 	  //double w1_match = (double)((wire+1)*wire_pitch);  
 	  double w1_match=0.;
 	  if(geom->Cryostat(hit2WireID.Cryostat).TPC(hit2WireID.TPC).Plane(hit2WireID.Plane).SignalType() == geo::kInduction)
-	    w1_match = (double)((hit2WireID.Wire+3.95) * wire_pitch);          
+	    //w1_match = (double)((hit2WireID.Wire+3.95) * wire_pitch);   
+          w1_match = (double)((hit2WireID.Wire) * wire_pitch);       
 	  else
-	    w1_match = (double)((hit2WireID.Wire+1.84) * wire_pitch);
-               
+	    //w1_match = (double)((hit2WireID.Wire+1.84) * wire_pitch);
+          w1_match = (double)((hit2WireID.Wire) * wire_pitch);    
+
 	  double temptime3 = maxhits[imaximum]->PeakTime()-presamplings;
 	  if(geom->Cryostat(hit2WireID.Cryostat).TPC(hit2WireID.TPC).Plane(hit2WireID.Plane).SignalType() == geo::kCollection) temptime3 -= tIC;
 	  double t1_match;
@@ -603,7 +623,7 @@ void SpacePoints::produce(art::Event & evt)
 
 	  const TVector3 hit3d(Ct,(Cw-Iw)/(2.*TMath::Sin(Angle)),(Cw+Iw)/(2.*TMath::Cos(Angle))-YC/2.*TMath::Tan(Angle)); 
                
-               
+        //std::cout << "3D Hit coord	" << hit3d.X() << " " << hit3d.Y() << " " << hit3d.Z() << std::endl;
 	  Double_t hitcoord[3];       
 	  hitcoord[0] = hit3d.X();
 	  hitcoord[1] = hit3d.Y();
@@ -637,6 +657,7 @@ void SpacePoints::produce(art::Event & evt)
 		  magNew.Mag()<=magLast.Mag()-eps) )
 	      continue;
 	  }
+          
 	  spacepoints.push_back(mysp);
 	  spcol->push_back(mysp);	
 	  util::CreateAssn(*this, evt, *spcol, sp_hits, *shassn);
@@ -644,6 +665,8 @@ void SpacePoints::produce(art::Event & evt)
 	}//loop over min-hits
 
 	size_t spEnd = spcol->size();
+     
+         std::cout << "SpacePoints in the track	" << spacepoints.size()<< std::endl;
       
 	// Add the 3D track to the vector of the reconstructed tracks
 	if(spacepoints.size()>0){
@@ -694,6 +717,7 @@ void SpacePoints::produce(art::Event & evt)
   evt.put(std::move(shassn));
   evt.put(std::move(TrigTrackAssn));
   evt.put(std::move(TrigPtAssn));
+  return;
   
 }
 // End of produce() 
