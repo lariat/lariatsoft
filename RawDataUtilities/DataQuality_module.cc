@@ -31,9 +31,11 @@
 
 enum {
   V1740_N_CHANNELS = 64,
-  V1740_N_SAMPLES = 16 * 192,
+  V1740_N_SAMPLES = 192 * 16,
+  V1740B_N_CHANNELS = 64,
+  V1740B_N_SAMPLES = 192 * 16,
   V1751_N_CHANNELS = 8,
-  V1751_N_SAMPLES = 8 * 1792,
+  V1751_N_SAMPLES = 1792 * 16,
   WUT_MAX_HITS = 128,
 };
 
@@ -63,6 +65,7 @@ private:
   TTree *     fEventRecord;          ///< Tree holding some data from art::Event
   TTree *     fSpillTrailerTree;     ///< Tree holding the data from the SpillTrailer fragments
   TTree *     fCaenV1740DataTree;    ///< Tree holding the data from the CAEN V1740 fragments
+  TTree *     fCaenV1740BDataTree;   ///< Tree holding the data from the CAEN V1740B fragments
   TTree *     fCaenV1751DataTree;    ///< Tree holding the data from the CAEN V1751 fragments
   TTree *     fMwpcTdcDataTree;      ///< Tree holding the data from the MWPC TDC fragments
   TTree *     fWutDataTree;          ///< Tree holding the data from the Wave Union TDC fragments
@@ -86,8 +89,9 @@ private:
   uint32_t caen_board_id;
   uint32_t caen_event_counter;
   uint32_t caen_trigger_time_tag;  // Each count in the CAEN trigger time tag is 8 ns
-  std::vector< std::vector<uint16_t> > caen_v1751_waveform;  // 1 ns per sample, 1792 samples per trigger
-  std::vector< std::vector<uint16_t> > caen_v1740_waveform;  // 250 ns per sample, 1536 samples per trigger
+  std::vector< std::vector<uint16_t> > caen_v1751_waveform;   // 1 ns per sample, 28672 samples per trigger
+  std::vector< std::vector<uint16_t> > caen_v1740_waveform;   // 128 ns per sample, 3072 samples per trigger
+  std::vector< std::vector<uint16_t> > caen_v1740b_waveform;  // 128 ns per sample, 3072 samples per trigger
 
   // variables that will go into fMwpcTdcDataTree
   uint32_t mwpc_trigger_counter;
@@ -129,6 +133,11 @@ void DataQuality::beginJob()
     caen_v1740_waveform[i].reserve(V1740_N_SAMPLES);
   }
 
+  caen_v1740b_waveform.resize(V1740B_N_CHANNELS);
+  for (size_t i = 0; i < V1740B_N_CHANNELS; ++i) {
+    caen_v1740b_waveform[i].reserve(V1740B_N_SAMPLES);
+  }
+
   caen_v1751_waveform.resize(V1751_N_CHANNELS);
   for (size_t i = 0; i < V1751_N_CHANNELS; ++i) {
     caen_v1751_waveform[i].reserve(V1751_N_SAMPLES);
@@ -166,6 +175,16 @@ void DataQuality::beginJob()
   fCaenV1740DataTree->Branch("trigger_time_tag", &caen_trigger_time_tag,
                              "trigger_time_tag/i");
 
+  fCaenV1740BDataTree = tfs->make<TTree>("v1740b", "v1740b");
+  fCaenV1740BDataTree->Branch("run", &run_number, "run/i");
+  fCaenV1740BDataTree->Branch("spill", &sub_run_number, "spill/i");
+  fCaenV1740BDataTree->Branch("fragment", &caen_fragment, "fragment/i");
+  fCaenV1740BDataTree->Branch("event_counter", &caen_event_counter,
+                              "event_counter/i");
+  fCaenV1740BDataTree->Branch("board_id", &caen_board_id, "board_id/i");
+  fCaenV1740BDataTree->Branch("trigger_time_tag", &caen_trigger_time_tag,
+                              "trigger_time_tag/i");
+
   for (size_t i = 0; i < V1740_N_CHANNELS; ++i) {
     std::string branch_name = "channel_" + std::to_string(i);
     std::string leaf_list = "channel_" + std::to_string(i) + "[" +
@@ -175,6 +194,15 @@ void DataQuality::beginJob()
     fCaenV1740DataTree->Branch(branch_name.c_str(),
                                caen_v1740_waveform[i].data(),
                                leaf_list.c_str());
+  }
+
+  for (size_t i = 0; i < V1740B_N_CHANNELS; ++i) {
+    std::string branch_name = "channel_" + std::to_string(i);
+    std::string leaf_list = "channel_" + std::to_string(i) + "[" +
+                            std::to_string(V1740B_N_SAMPLES) + "]/s";
+    fCaenV1740BDataTree->Branch(branch_name.c_str(),
+                                caen_v1740b_waveform[i].data(),
+                                leaf_list.c_str());
   }
 
   fCaenV1751DataTree = tfs->make<TTree>("v1751", "v1751");
@@ -313,6 +341,25 @@ void DataQuality::analyze(art::Event const & evt)
       }
 
       fCaenV1740DataTree->Fill();
+    }
+    else if (board == 24) {
+
+      caen_fragment = i;
+      caen_event_counter = caenFrag.header.eventCounter;
+      caen_board_id = caenFrag.header.boardId;
+      caen_trigger_time_tag = caenFrag.header.triggerTimeTag;
+
+      for (size_t j = 0; j < V1740B_N_CHANNELS; ++j) {
+        caen_v1740b_waveform[j].clear();
+      }
+
+      for (size_t sample = 0; sample < caenFrag.header.nSamples; ++sample) {
+        for (size_t j = 0; j < V1740B_N_CHANNELS; ++j) {
+          caen_v1740b_waveform[j].push_back(caenFrag.waveForms[j].data[sample]);
+        }
+      }
+
+      fCaenV1740BDataTree->Fill();
     }
     else if (board == 8 or board == 9) {
       //caenFrag.print();

@@ -11,6 +11,7 @@ include_directories( $ENV{POSTGRESQL_INC}       	       )
 art_make(BASENAME_ONLY
          LIBRARY_NAME     RawDataUtilities
 	 LIB_LIBRARIES    RawData
+	                  LariatFragments
 			  ${ART_FRAMEWORK_CORE}
 			  ${ART_FRAMEWORK_PRINCIPAL}
 			  ${ART_PERSISTENCY_COMMON}
@@ -26,6 +27,7 @@ art_make(BASENAME_ONLY
 	                  SummaryData
 			  Geometry_service
                           LariatFragments
+			  RawDataUtilities
 			  ${ART_FRAMEWORK_CORE}
 			  ${ART_FRAMEWORK_PRINCIPAL}
 			  ${ART_FRAMEWORK_SERVICES_REGISTRY}

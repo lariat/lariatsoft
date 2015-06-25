@@ -10,6 +10,8 @@ lariat_colordrawingopt.RawQHigh:              [ 50.]
 lariat_rawdrawingopt:                         @local::standard_rawdrawingopt
 lariat_rawdrawingopt.RawDataLabel:            FragmentToDigit
 lariat_rawdrawingopt.TotalTicks:              3072
+lariat_rawdrawingopt.DetPedestalRetrievalAlg.DefaultCollMean:  0
+lariat_rawdrawingopt.DetPedestalRetrievalAlg.DefaultIndMean:   0
 lariat_recodrawingopt:                        @local::standard_recodrawingopt
 lariat_analysisdrawingopt:                    @local::standard_analysisdrawingopt
 #{
@@ -53,7 +55,6 @@ lariat_disp:
  InfoTransfer:		                      @local::lariat_infotransfer    
  TimeService:                  		      @local::lariat_timeservice
 }                                                                                  
-                                                                                   
                                                                                    
 #######################################                                            
                                                                                    
