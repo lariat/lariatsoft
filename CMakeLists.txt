@@ -75,7 +75,6 @@ include(BuildPlugins)
 
 # source
 add_subdirectory(Calibration)
-add_subdirectory(CosmicReco)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
 add_subdirectory(JobConfigurations)
