@@ -25,7 +25,7 @@ namespace ldp{
       fXYFace[i] = 0;
     fTheta = 0;
     fPhi = 0;
-    fWCAxis = blank1;
+    fWC = blank1;
     fHitWire = blank2;
     fHitTime = blank2;
   }
@@ -40,7 +40,7 @@ namespace ldp{
 		   float yFace,
 		   float theta,
 		   float phi,
-		   std::vector<int> wcAxisVect,
+		   std::vector<int> wcVect,
 		   std::vector<float> hitWireVect,
 		   std::vector<float> hitTimeVect )
   { 
@@ -50,7 +50,7 @@ namespace ldp{
     fXYFace[0] = xFace; fXYFace[1] = yFace;
     fTheta = theta;
     fPhi = phi;
-    fWCAxis = wcAxisVect;
+    fWC = wcVect;
     fHitWire = hitWireVect;
     fHitTime = hitTimeVect;
   }
@@ -77,13 +77,13 @@ namespace ldp{
   }
  
   //--------------------------------------------------
-  int WCTrack::WCAxis(size_t iHit) const
+  int WCTrack::WC(size_t iHit) const
   {
-    if( iHit >= fWCAxis.size() ){
-      throw cet::exception("WCTrack") << "illegal index requested for WCAxis vector: "
+    if( iHit >= fWC.size() ){
+      throw cet::exception("WCTrack") << "illegal index requested for WC vector: "
 				      << iHit << "\n";
     }
-    return fWCAxis[iHit];
+    return fWC[iHit];
   }
 
   //--------------------------------------------------

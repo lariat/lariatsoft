@@ -303,6 +303,8 @@ void GausHitFinder::produce(art::Event& evt)
    // ### Grab the trigger data utility (tdu) ###
    // ###########################################
    rdu::TriggerDigitUtility tdu(evt, fTriggerUtility);
+   art::PtrVector<raw::Trigger> const& EventTriggersPtr = tdu.EventTriggersPtr();
+
    
    // #################################################################
    // ### Reading in the RawDigit associated with these wires, too  ###
@@ -311,7 +313,6 @@ void GausHitFinder::produce(art::Event& evt)
      //(wireVecHandle, evt, fCalDataModuleLabel);
    
    //std::cout<<"RawDigits(tdu.EventTriggersPtr(), evt, fTriggerUtility);"<<std::endl;  
-   
    art::FindManyP<raw::RawDigit> RawDigits(tdu.EventTriggersPtr(), evt, fTriggerUtility);
    art::FindManyP<recob::Wire>   CalWireDigits(tdu.EventTriggersPtr(), evt, fCalDataModuleLabel);
    
@@ -319,17 +320,27 @@ void GausHitFinder::produce(art::Event& evt)
    // ### Loop over the triggers ###
    // ##############################
    size_t startHit = 0;
+   std::cout << "HitFinder mod: Triggers in this spill	" << tdu.NTriggers()<< std::endl;
+
    for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
       {
-      //std::cout<<"trigger number = "<<trig<<std::endl;
+      std::cout<<"trigger number = "<<trig<<std::endl;
       // === Getting the pointer for this trigger ===
       art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
 
       // get the starting index of the hits for this trigger
       startHit = hitcol->size();
+      
+      //art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
+     art::Ptr<raw::Trigger> theTrigger = (EventTriggersPtr[trig]);
 
+     art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(trig);
+      std::cout<<"trigger number	" << trig << "rdvec.size() = "<< rdvec.size()<< std::endl;
+
+      if(!rdvec.size()){mf::LogInfo("GausHitFinder") << "Problem GaussHitFinder:: RawDigiVec size is " << rdvec.size(); continue;}
+      wireVecHandle.clear();
       wireVecHandle = CalWireDigits.at(trig);
-      //std::cout<<"wireVecHandle.size()"<<wireVecHandle.size()<<std::endl;
+      std::cout<<"wireVecHandle.size()"<<wireVecHandle.size()<<std::endl;
       //##############################
       //### Looping over the wires ###
       //############################## 
@@ -744,19 +755,21 @@ void GausHitFinder::produce(art::Event& evt)
 	 {throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with trigger "<<trigger.key();} // exception
 
          }//<---End h loop
-	    
+	 
+      if(hcol->size() == 0){mf::LogWarning("GaussHitFinder") << "No hits made for this trigger.";}
+      // move the hit collection and the associations into the event
+      //hcol.put_into(evt);
+      
       }//<---End loop over trigger
+   
 
+   evt.put(std::move(hcol));
+   evt.put(std::move(TrigHitAssn));
+   return;
 //==================================================================================================  
 // End of the event  
    
-   // move the hit collection and the associations into the event
-   //hcol.put_into(evt);
-   evt.put(std::move(hcol));
-   evt.put(std::move(TrigHitAssn));
-
-
-
+  
 } // End of produce() 
 
 // --------------------------------------------------------------------------------------------

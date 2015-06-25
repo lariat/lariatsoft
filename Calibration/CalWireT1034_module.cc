@@ -362,15 +362,16 @@ namespace caldata {
 	// ### Send a warning if no wires were made for this event ###
 	// ###########################################################
 	if(wirecol->size() == 0){LOG_WARNING("CalWireT1034") << "No wires made for this event.";}
-	evt.put(std::move(wirecol));
-	evt.put(std::move(WireDigitAssn));
-	evt.put(std::move(TrigWireAssn));
-	delete chanFilt;
-	return;
-
+	
 	
       }//<---End trig loop
 
+       evt.put(std::move(wirecol));
+       evt.put(std::move(WireDigitAssn));
+       evt.put(std::move(TrigWireAssn));
+       delete chanFilt;
+    return;
+    
     
     
     

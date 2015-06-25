@@ -215,11 +215,14 @@ void DBClusterT1034::produce(art::Event & evt)
    // ##################################
    // ### Loop over all the triggers ###
    // ##################################
-   for(size_t trig = 0; trig < tdu.NTriggers(); ++trig){
+   for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
+      { 
+      std::cout<<"trigger number = "<<trig<<std::endl;
       
       // === Getting the pointer for this trigger ====
       art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
       
+      allhits.clear();
       allhits = HitDigits.at(trig);
       
       // Making a map of the geo::PlaneID to vectors of art::Ptr<recob::Hit>
@@ -238,6 +241,19 @@ void DBClusterT1034::produce(art::Event & evt)
 	allhits.swap(itr.second);
 	
 	fDBScan.InitScan(allhits, chanFilt.SetOfBadChannels());
+	//std::cout<<"trig = "<<trig<<"/"<< tdu.NTriggers() << " " <<allhits[i]->WireID().Plane << " " << allhits[i]->WireID().Wire << " " <<allhits[i]->PeakTime() << std::endl;
+	}
+      
+      
+      for(auto & itr : planeIDToHits)
+         { std::cout << "Plane ID:	" << itr.first.Plane << std::endl;
+	//for(auto &hit: itr.second)
+	//{std::cout << itr.first.Plane << " " << hit->WireID().Wire << " "  << hit->PeakTime() << std::endl;}
+         //geo::SigType_t sigType = geom->SignalType(itr.first);
+	 allhits.resize(itr.second.size());
+	 allhits.swap(itr.second);
+	 
+	 fDBScan.InitScan(allhits, chanFilt.SetOfBadChannels());
 	 
 	 // #######################################
 	 // ### Looping over fDBScan.fbs.size() ###
@@ -322,17 +338,21 @@ void DBClusterT1034::produce(art::Event & evt)
 	 
 	 allhits.clear();
 	 
-      }//<---End itr auto loop
+         }//<---End itr auto loop
       
-   }//<---End trig loop
+      if(ccol->size() == 0){mf::LogWarning("DBCluster") << "No clusters made for this trigger.";}
+  
+
+      }//<---End trig loop
    
    mf::LogVerbatim("Summary") << std::setfill('-') << std::setw(175) << "-" << std::setfill(' ');
    mf::LogVerbatim("Summary") << "DBcluster Summary:";
    for(unsigned int i = 0; i<ccol->size(); ++i) mf::LogVerbatim("Summary") << ccol->at(i) ;
-   
    evt.put(std::move(ccol));
    evt.put(std::move(assn));
    evt.put(std::move(TrigCluAssn));
+   return;
+   
       
    
 }// <---End Evt loop
