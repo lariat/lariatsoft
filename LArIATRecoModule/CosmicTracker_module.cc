@@ -245,7 +245,7 @@ namespace trkf {
                   
     art::FindManyP<recob::Cluster> fc(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);                   
   
-    for(size_t t = 0; t < tdu.NTriggers(); t++)        // Loop over triggers                          
+    for(size_t t = 0; t < tdu.NTriggers(); ++t)        // Loop over triggers                          
     {
        mf::LogVerbatim("Summary") << "Trigger Number: " << t;
       

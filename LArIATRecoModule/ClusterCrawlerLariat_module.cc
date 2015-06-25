@@ -170,10 +170,17 @@ namespace cluster {
 
     hits->clear();
 
-    std::cout<< "Number of Triggers: " << tdu.NTriggers() << std::endl;
+    //std::cout<< "Number of Triggers: " << tdu.NTriggers() << std::endl;
+    mf::LogVerbatim("Summary") << "Number of Triggers: " << tdu.NTriggers();
     for (size_t t=0; t<tdu.NTriggers(); ++t)                              
     {
        art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];  
+
+       // Skip trigger if empty
+       art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(t);
+//       std::cout<<"trigger number	" << t << "rdvec.size() = "<< rdvec.size()<< std::endl;
+       mf::LogVerbatim("Summary") << "Trigger Number: " << t << "rdvec.size(): "<< rdvec.size();
+       if(!rdvec.size()){mf::LogInfo("Summary") << "Problem! RawDigiVec size is " << rdvec.size(); continue;}
 
        std::cout<< "#####################################################" << std::endl;
        std::cout<< "#####################################################" << std::endl;
