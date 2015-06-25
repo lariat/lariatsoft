@@ -325,12 +325,11 @@ void GausHitFinder::produce(art::Event& evt)
    for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
       {
       std::cout<<"trigger number = "<<trig<<std::endl;
-      // === Getting the pointer for this trigger ===
-      art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
 
       // get the starting index of the hits for this trigger
-      startHit = hitcol->size();
+      startHit = hcol->size();
       
+      // === Getting the pointer for this trigger ===
       //art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
      art::Ptr<raw::Trigger> theTrigger = (EventTriggersPtr[trig]);
 
@@ -751,8 +750,8 @@ void GausHitFinder::produce(art::Event& evt)
       // ######################################################
       for(size_t h = startHit; h < hcol->size(); ++h)
          {
-	 if(!util::CreateAssn(*this, evt, *hcol, trigger, *TrigHitAssn, h))
-	 {throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with trigger "<<trigger.key();} // exception
+	 if(!util::CreateAssn(*this, evt, *hcol, theTrigger, *TrigHitAssn, h))
+	 {throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with trigger "<<theTrigger.key();} // exception
 
          }//<---End h loop
 	 
