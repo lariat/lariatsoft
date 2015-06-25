@@ -35,7 +35,7 @@ namespace ldp {
     //These are indexed by hit: each
     //hit is represented by the same
     //index in all three.
-    std::vector<int> fWCAxis;           //Defined from 0 to 7, so that 1X = 0, 1Y = 1, 2X = 2, 2Y = 3, and so on...
+    std::vector<int> fWC;               //Defined from 1 to 4, like the Wire Chambers
     std::vector<float> fHitWire;        
     std::vector<float> fHitTime;
     
@@ -52,7 +52,7 @@ namespace ldp {
 	     float yFace,
 	     float theta,
 	     float phi,
-	     std::vector<int> wcAxisVect,
+	     std::vector<int> wcVect,
 	     std::vector<float> hitWireVect,
 	     std::vector<float> hitTimeVect );
 	     
@@ -64,7 +64,7 @@ namespace ldp {
     float               XYFace(size_t i)                const;
     float               Theta()                         const;
     float               Phi()                           const;
-    int                 WCAxis(size_t iHit)             const;
+    int                 WC(size_t iHit)                 const;
     float               HitWire(size_t iHit)            const;
     float               HitTime(size_t iHit)            const;
     size_t              NHits()                         const;
@@ -80,7 +80,7 @@ inline float  ldp::WCTrack::Momentum() const { return fMomentum;      }
 inline float  ldp::WCTrack::YKink()    const { return fYKink;         }
 inline float  ldp::WCTrack::Theta()    const { return fTheta;         }
 inline float  ldp::WCTrack::Phi()      const { return fPhi;           }
-inline size_t ldp::WCTrack::NHits()    const { return fWCAxis.size(); }
+inline size_t ldp::WCTrack::NHits()    const { return fWC.size();     }
 
 #endif
 

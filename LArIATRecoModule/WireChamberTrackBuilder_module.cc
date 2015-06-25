@@ -84,7 +84,13 @@ public:
 				 std::vector<int> & WC_axis_vect,
 				 std::vector<float> & hit_wire_vect,
 				 std::vector<float> & hit_time_vect);
+
+  void createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
+					    std::vector<int> & WC_vect,
+					    std::vector<float> & hit_wire_vect,
+					    std::vector<float> & hit_time_vect);
     
+
 
 private:
   // Declare member data here.
@@ -261,15 +267,24 @@ void WireChamberTrackBuilder::produce(art::Event & e)
     //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
     for( int iNewTrack = 0; iNewTrack < track_count-track_count_pre; ++iNewTrack ){
-      std::vector<int> WC_axis_vect;
+      //      std::vector<int> WC_axis_vect;
+      std::vector<int> WC_vect;
       std::vector<float> hit_wire_vect;
       std::vector<float> hit_time_vect;
       
+      /*
       //WCTrack objects hold 3 vectors representing hit information, so here we fill these
       createVectorsFromHitLists(final_tracks.at(final_tracks.size()-1-iNewTrack),
 				WC_axis_vect,
 				hit_wire_vect,
 				hit_time_vect);
+      */
+
+      //Filling as done above, but formats the WC and hit wire vectors in the WCAuxDetDigit style
+      createAuxDetStyleVectorsFromHitLists(final_tracks.at(final_tracks.size()-1-iNewTrack),
+					   WC_vect,
+					   hit_wire_vect,
+					   hit_time_vect);
 
       //WCTrack object creation and association with trigger created
       ldp::WCTrack the_track(reco_pz_list.at(reco_pz_list.size()-1-iNewTrack),
@@ -281,7 +296,7 @@ void WireChamberTrackBuilder::produce(art::Event & e)
 			     y_face_list.at(y_face_list.size()-1-iNewTrack),
 			     theta_list.at(theta_list.size()-1-iNewTrack),
 			     phi_list.at(phi_list.size()-1-iNewTrack),
-			     WC_axis_vect,
+			     WC_vect,
 			     hit_wire_vect,
 			     hit_time_vect);
       (*WCTrackCol).push_back( the_track );
@@ -321,6 +336,25 @@ void WireChamberTrackBuilder::createVectorsFromHitLists(WCHitList final_track,
     hit_time_vect.push_back(final_track.hits.at(iHit).time);
   }
 }
+
+
+//===================================================================================
+void WireChamberTrackBuilder::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
+								   std::vector<int> & WC_vect,
+								   std::vector<float> & hit_wire_vect,
+								   std::vector<float> & hit_time_vect)
+{
+  for( size_t iHit = 0; iHit < final_track.hits.size() ; ++iHit ){
+    WC_vect.push_back(int(iHit/2)+1);          //Look at how hits are pushed into the tracks in buildTracksFromHits (alg)
+
+    float the_wire = (final_track.hits.at(iHit).wire*-1)+64+(128*(iHit%2));
+    //    std::cout << "Old WCAxis/Wire: " << iHit << "/" << final_track.hits.at(iHit).wire << ", New WC/Wire: " << int(iHit/2)+1 << "/" << the_wire << std::endl;
+    hit_wire_vect.push_back(the_wire);
+    hit_time_vect.push_back(final_track.hits.at(iHit).time);
+    
+  }
+}
+  
 
 //===================================================================================
 void WireChamberTrackBuilder::beginJob()
