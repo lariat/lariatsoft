@@ -20,17 +20,17 @@ lariat_cosmictracker:
 
 {
  module_type:        "CosmicTracker"
- ClusterModuleLabel: "cccluster"
- TMatch:             2.5         ### what is it?
- SMatch:             1.0         ### what is it?
- Toler1:             60          ### what is it?
- Toler2:             40          ### what is it?
- Debug:              false       ### what is it?
- IsoHitCut:          1           ### what is it?
+ ClusterModuleLabel: "dbcluster"
+ TMatch:             2.5  
+ SMatch:             1.0  
+ Toler1:             60   
+ Toler2:             40   
+ Debug:              false
+ IsoHitCut:          1    
  SortDirection:      "+z"
- StitchTracks:       false       ### what is it?
- CleanUpHits:        true        ### what is it?
- DirSPS:             false       ### what is it?
+ StitchTracks:       false 
+ CleanUpHits:        true  
+ DirSPS:             false 
  DisCut:             20
  AngCut:             0.1
  TrajOnly:           false

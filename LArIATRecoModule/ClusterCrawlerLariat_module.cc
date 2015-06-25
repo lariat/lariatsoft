@@ -356,6 +356,11 @@ namespace cluster {
     {
 //       FinalHits.clear();
        ClusterCrawlerAlg::ClusterStore const& clstr = tcl[icl];
+
+       std::cout << " /////////////////////////////////////// " << std::endl;
+       std::cout << " /////////////////////////////////////// " << std::endl;
+       std::cout << " Cluster ID " << clstr.ID << std::endl;
+
        if(clstr.ID < 0) continue;
        sumChg = 0;
        sumADC = 0;
@@ -401,9 +406,7 @@ namespace cluster {
                            recob::Cluster::Sentry  // sentry
                          );
 
-       std::cout << " /////////////////////////////////////// " << std::endl;
-       std::cout << " /////////////////////////////////////// " << std::endl;
-       std::cout << " Cluster ID " << clstr.ID << " Number of hits " << nclhits << std::endl;
+       std::cout <<  " Number of hits " << nclhits << std::endl;
        std::cout << " Cluster Info: Start Wire " << clstr.BeginWir << " End Wire " << clstr.EndWir <<std::endl;
        std::cout << " Cluster Info: Begin Time " << clstr.BeginTim << " End Time " << clstr.EndTim <<std::endl;
        std::cout << " Cluster Info: Begin Charge " << clstr.BeginChg << " Begin Angle " << clstr.BeginAng <<std::endl;
@@ -413,6 +416,7 @@ namespace cluster {
        std::cout << " Begin Vertex Index " << clstr.BeginVtx <<  " End Vertex Index " << clstr.EndVtx <<std::endl;
        std::cout << "  " << std::endl;
        std::cout << "  " << std::endl;
+
        // make the cluster - endpoint associations
        if(clstr.BeginVtx >= 0) 
        {
