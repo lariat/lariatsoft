@@ -319,13 +319,19 @@ void GausHitFinder::produce(art::Event& evt)
    // ##############################
    // ### Loop over the triggers ###
    // ##############################
+   size_t startHit = 0;
    std::cout << "HitFinder mod: Triggers in this spill	" << tdu.NTriggers()<< std::endl;
 
    for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
       {
       std::cout<<"trigger number = "<<trig<<std::endl;
       // === Getting the pointer for this trigger ===
-       //art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
+      art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
+
+      // get the starting index of the hits for this trigger
+      startHit = hitcol->size();
+      
+      //art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
      art::Ptr<raw::Trigger> theTrigger = (EventTriggersPtr[trig]);
 
      art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(trig);
@@ -338,9 +344,7 @@ void GausHitFinder::produce(art::Event& evt)
       //##############################
       //### Looping over the wires ###
       //############################## 
-      //hcol->reserve(wireVecHandle.size());
-     
-      for(size_t wireIter = 0; wireIter < wireVecHandle.size(); wireIter++)
+      for(size_t wireIter = 0; wireIter < wireVecHandle.size(); ++wireIter)
          {
          // -----------------------------------------------------------
          // -- Clearing variables at the start of looping over wires --
@@ -737,23 +741,27 @@ void GausHitFinder::produce(art::Event& evt)
 	 
 
          }//<---End looping over all the wires
-  
+
+      // make sure we don't have the wires from the previous trigger
+      wireVecHandle.clear();
+
+
       // ######################################################
       // ### Creating association between hits and triggers ###
       // ######################################################
-      for(size_t h = 0; h < hcol->size(); ++h)
-         {  
-	 if(!util::CreateAssn(*this, evt, *hcol, theTrigger, *TrigHitAssn, h))
-	 {throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with trigger "<<theTrigger.key();} // exception
-        
+      for(size_t h = startHit; h < hcol->size(); ++h)
+         {
+	 if(!util::CreateAssn(*this, evt, *hcol, trigger, *TrigHitAssn, h))
+	 {throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with trigger "<<trigger.key();} // exception
+
          }//<---End h loop
 	 
-     if(hcol->size() == 0){mf::LogWarning("GaussHitFinder") << "No hits made for this trigger.";}
-   // move the hit collection and the associations into the event
-   //hcol.put_into(evt);
-  
+      if(hcol->size() == 0){mf::LogWarning("GaussHitFinder") << "No hits made for this trigger.";}
+      // move the hit collection and the associations into the event
+      //hcol.put_into(evt);
+      
       }//<---End loop over trigger
-
+   
 
    evt.put(std::move(hcol));
    evt.put(std::move(TrigHitAssn));
