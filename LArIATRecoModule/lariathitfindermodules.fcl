@@ -5,7 +5,7 @@ lariat_hitfinder:
  module_type:         "GaussHitFinderT1034"
  CalDataModuleLabel:  "caldata" 
  TriggerUtility:      "FragmentToDigit"     
- MinSig: [ 6.0, 11.0 ]                  # signal height threshold, per plane
+ MinSig: [ 15.0, 30.0 ]                  # signal height threshold, per plane
  InitWidth: [ 6.0, 7.8 ]                # initial width for fit, per plane
  MinWidth: [ 4.0, 6.0 ]                 # hit width threshold, per plane
  MaxMultiHit:          10               # maximum hits for multi fit   
