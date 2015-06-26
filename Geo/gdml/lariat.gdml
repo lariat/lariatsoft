@@ -1250,30 +1250,30 @@
     <position name="volDetEnclosure_754involWorldpos" x="23.75" y="-12" z="45" unit="cm"/>
     <position name="volAuxDetTOFUS_6ing4blpos" x="-30.14472" y="0.43434" z="140.39342" unit="cm"/>
     <rotation name="volAuxDetTOFUS_6ing4blrot" x="-9.27166181885" y="9.15259576143" z="-45.7437332364" unit="deg"/>
-    <position name="volAuxDetSensitiveMWPC1_0involAuxDetWC1pos" x="0" y="0" z="0" unit="cm"/>
+    <position name="volAuxDetSensitiveWC1_0involAuxDetMWPC1pos" x="0" y="0" z="0" unit="cm"/>
     <position name="FramS_0inChFrampos" x="-9.55" y="0" z="0" unit="cm"/>
     <position name="FramS_1inChFrampos" x="9.55" y="0" z="0" unit="cm"/>
     <position name="FramT_2inChFrampos" x="0" y="-9.55" z="0" unit="cm"/>
     <position name="FramT_3inChFrampos" x="0" y="9.55" z="0" unit="cm"/>
-    <position name="ChFram_1involAuxDetWC1pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="volAuxDetWC1_7ing4blpos" x="-39.2176" y="-0.00254" z="169.8244" unit="cm"/>
-    <rotation name="volAuxDetWC1_7ing4blrot" x="0" y="13" z="0" unit="deg"/>
-    <position name="volAuxDetSensitiveMWPC2_0involAuxDetWC2pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="ChFram_10x1involAuxDetWC2pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="volAuxDetWC2_8ing4blpos" x="-75.69962" y="0.0381" z="319.60058" unit="cm"/>
-    <rotation name="volAuxDetWC2_8ing4blrot" x="0" y="13" z="0" unit="deg"/>
-    <position name="volAuxDetSensitiveMWPC3_0involAuxDetWC3pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="ChFram_10x2involAuxDetWC3pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="volAuxDetWC3_9ing4blpos" x="-106.30154" y="-0.2794" z="516.38454" unit="cm"/>
-    <rotation name="volAuxDetWC3_9ing4blrot" x="0" y="3" z="0" unit="deg"/>
-    <position name="volAuxDetSensitiveMWPC4_0involAuxDetWC4pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="ChFram_10x3involAuxDetWC4pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="volAuxDetWC4_11ing4blpos" x="-119.07266" y="-2.0066" z="760.20168" unit="cm"/>
-    <rotation name="volAuxDetWC4_11ing4blrot" x="0" y="3" z="0" unit="deg"/>
+    <position name="ChFram_1involAuxDetMWPC1pos" x="0" y="0" z="0" unit="cm"/>
+    <position name="volAuxDetMWPC1_7ing4blpos" x="-39.2176" y="-0.00254" z="169.8244" unit="cm"/>
+    <rotation name="volAuxDetMWPC1_7ing4blrot" x="0" y="13" z="0" unit="deg"/>
+    <position name="volAuxDetSensitiveWC2_0involAuxDetMWPC2pos" x="0" y="0" z="0" unit="cm"/>
+    <position name="ChFram_10x1involAuxDetMWPC2pos" x="0" y="0" z="0" unit="cm"/>
+    <position name="volAuxDetMWPC2_8ing4blpos" x="-75.69962" y="0.0381" z="319.60058" unit="cm"/>
+    <rotation name="volAuxDetMWPC2_8ing4blrot" x="0" y="13" z="0" unit="deg"/>
+    <position name="volAuxDetSensitiveWC3_0involAuxDetMWPC3pos" x="0" y="0" z="0" unit="cm"/>
+    <position name="ChFram_10x2involAuxDetMWPC3pos" x="0" y="0" z="0" unit="cm"/>
+    <position name="volAuxDetMWPC3_9ing4blpos" x="-106.30154" y="-0.2794" z="516.38454" unit="cm"/>
+    <rotation name="volAuxDetMWPC3_9ing4blrot" x="0" y="3" z="0" unit="deg"/>
+    <position name="volAuxDetSensitiveWC4_0involAuxDetMWPC4pos" x="0" y="0" z="0" unit="cm"/>
+    <position name="ChFram_10x3involAuxDetMWPC4pos" x="0" y="0" z="0" unit="cm"/>
+    <position name="volAuxDetMWPC4_11ing4blpos" x="-119.07266" y="-2.0066" z="760.20168" unit="cm"/>
+    <rotation name="volAuxDetMWPC4_11ing4blrot" x="0" y="3" z="0" unit="deg"/>
     <position name="volAuxDetHalo_13ing4blpos" x="-118.61546" y="-2.0066" z="792.97022" unit="cm"/>
     <rotation name="volAuxDetHalo_13ing4blrot" x="0" y="3" z="0" unit="deg"/>
-    <position name="volAuxDetTOFDSHorz_14ing4blpos" x="-118.61546" y="-3.35788" z="800.59022" unit="cm"/>
-    <rotation name="volAuxDetTOFDSHorz_14ing4blrot" x="-3" y="1.83613095409e-16" z="-90" unit="deg"/>
+    <position name="volAuxDetTOFDS_14ing4blpos" x="-118.61546" y="-3.35788" z="800.59022" unit="cm"/>
+    <rotation name="volAuxDetTOFDS_14ing4blrot" x="-3" y="1.83613095409e-16" z="-90" unit="deg"/>
     <position name="volAuxDetSensitivePunchUL_0involAuxDetPunchPaddlespos" x="14.5" y="0" z="0.5" unit="cm"/>
     <position name="volAuxDetSensitivePunchLR_1involAuxDetPunchPaddlespos" x="-14.5" y="0" z="-0.5" unit="cm"/>
     <position name="volAuxDetSensitivePunchUR_2involAuxDetPunchPaddlespos" x="0" y="14.5" z="1.5" unit="cm"/>
@@ -1282,35 +1282,35 @@
     <rotation name="volAuxDetSensitivePunchLL_3involAuxDetPunchPaddlesrot" x="0" y="-0" z="-90" unit="deg"/>
     <position name="volAuxDetPunchPaddles_15ing4blpos" x="-126.49876" y="1.68402" z="1065.14176" unit="cm"/>
     <rotation name="volAuxDetPunchPaddles_15ing4blrot" x="-2.12228989587" y="2.12083546764" z="-45.0392878524" unit="deg"/>
-    <position name="MuShort0_0involAuxDetMuStackpos" x="0" y="0" z="-59.61507" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint0_1involAuxDetMuStackpos" x="0" y="-24.765" z="-56.91632" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint1_2involAuxDetMuStackpos" x="0" y="-9.525" z="-56.91632" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint2_3involAuxDetMuStackpos" x="0" y="5.715" z="-56.91632" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint3_4involAuxDetMuStackpos" x="0" y="20.955" z="-56.91632" unit="cm"/>
-    <position name="MuShort1_5involAuxDetMuStackpos" x="0" y="0" z="-54.21757" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint4_6involAuxDetMuStackpos" x="0" y="-24.765" z="-51.51882" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint5_7involAuxDetMuStackpos" x="0" y="-9.525" z="-51.51882" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint6_8involAuxDetMuStackpos" x="0" y="5.715" z="-51.51882" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint7_9involAuxDetMuStackpos" x="0" y="20.955" z="-51.51882" unit="cm"/>
-    <position name="MuLong0_10involAuxDetMuStackpos" x="0" y="0" z="-43.10507" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint8_11involAuxDetMuStackpos" x="0" y="-24.765" z="-34.69132" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint9_12involAuxDetMuStackpos" x="0" y="-9.525" z="-34.69132" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint10_13involAuxDetMuStackpos" x="0" y="5.715" z="-34.69132" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint11_14involAuxDetMuStackpos" x="0" y="20.955" z="-34.69132" unit="cm"/>
-    <position name="MuMed0_15involAuxDetMuStackpos" x="0" y="0" z="-29.29382" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint12_16involAuxDetMuStackpos" x="0" y="-24.765" z="-23.89632" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint13_17involAuxDetMuStackpos" x="0" y="-9.525" z="-23.89632" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint14_18involAuxDetMuStackpos" x="0" y="5.715" z="-23.89632" unit="cm"/>
-    <position name="volAuxDetSensitiveMuScint15_19involAuxDetMuStackpos" x="0" y="20.955" z="-23.89632" unit="cm"/>
-    <position name="MuMed1_20involAuxDetMuStackpos" x="0" y="0" z="-18.49882" unit="cm"/>
-    <position name="MuMed2_21involAuxDetMuStackpos" x="0" y="0" z="-7.70382" unit="cm"/>
-    <position name="MuMed3_22involAuxDetMuStackpos" x="0" y="0" z="3.09118" unit="cm"/>
-    <position name="MuMed4_23involAuxDetMuStackpos" x="0" y="0" z="13.88618" unit="cm"/>
-    <position name="MuMed5_24involAuxDetMuStackpos" x="0" y="0" z="24.68118" unit="cm"/>
-    <position name="MuLong1_25involAuxDetMuStackpos" x="0" y="0" z="38.49243" unit="cm"/>
-    <position name="MuMed6_26involAuxDetMuStackpos" x="0" y="0" z="52.30368" unit="cm"/>
-    <position name="volAuxDetMuStack_16ing4blpos" x="-136.29386" y="-1.31318" z="1143.77978" unit="cm"/>
-    <rotation name="volAuxDetMuStack_16ing4blrot" x="0" y="3" z="0" unit="deg"/>
+    <position name="MuShort0_0involAuxDetMuonRangeStackpos" x="0" y="0" z="-59.61507" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint0_1involAuxDetMuonRangeStackpos" x="0" y="-24.765" z="-56.91632" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint1_2involAuxDetMuonRangeStackpos" x="0" y="-9.525" z="-56.91632" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint2_3involAuxDetMuonRangeStackpos" x="0" y="5.715" z="-56.91632" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint3_4involAuxDetMuonRangeStackpos" x="0" y="20.955" z="-56.91632" unit="cm"/>
+    <position name="MuShort1_5involAuxDetMuonRangeStackpos" x="0" y="0" z="-54.21757" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint4_6involAuxDetMuonRangeStackpos" x="0" y="-24.765" z="-51.51882" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint5_7involAuxDetMuonRangeStackpos" x="0" y="-9.525" z="-51.51882" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint6_8involAuxDetMuonRangeStackpos" x="0" y="5.715" z="-51.51882" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint7_9involAuxDetMuonRangeStackpos" x="0" y="20.955" z="-51.51882" unit="cm"/>
+    <position name="MuLong0_10involAuxDetMuonRangeStackpos" x="0" y="0" z="-43.10507" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint8_11involAuxDetMuonRangeStackpos" x="0" y="-24.765" z="-34.69132" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint9_12involAuxDetMuonRangeStackpos" x="0" y="-9.525" z="-34.69132" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint10_13involAuxDetMuonRangeStackpos" x="0" y="5.715" z="-34.69132" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint11_14involAuxDetMuonRangeStackpos" x="0" y="20.955" z="-34.69132" unit="cm"/>
+    <position name="MuMed0_15involAuxDetMuonRangeStackpos" x="0" y="0" z="-29.29382" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint12_16involAuxDetMuonRangeStackpos" x="0" y="-24.765" z="-23.89632" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint13_17involAuxDetMuonRangeStackpos" x="0" y="-9.525" z="-23.89632" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint14_18involAuxDetMuonRangeStackpos" x="0" y="5.715" z="-23.89632" unit="cm"/>
+    <position name="volAuxDetSensitiveMuScint15_19involAuxDetMuonRangeStackpos" x="0" y="20.955" z="-23.89632" unit="cm"/>
+    <position name="MuMed1_20involAuxDetMuonRangeStackpos" x="0" y="0" z="-18.49882" unit="cm"/>
+    <position name="MuMed2_21involAuxDetMuonRangeStackpos" x="0" y="0" z="-7.70382" unit="cm"/>
+    <position name="MuMed3_22involAuxDetMuonRangeStackpos" x="0" y="0" z="3.09118" unit="cm"/>
+    <position name="MuMed4_23involAuxDetMuonRangeStackpos" x="0" y="0" z="13.88618" unit="cm"/>
+    <position name="MuMed5_24involAuxDetMuonRangeStackpos" x="0" y="0" z="24.68118" unit="cm"/>
+    <position name="MuLong1_25involAuxDetMuonRangeStackpos" x="0" y="0" z="38.49243" unit="cm"/>
+    <position name="MuMed6_26involAuxDetMuonRangeStackpos" x="0" y="0" z="52.30368" unit="cm"/>
+    <position name="volAuxDetMuonRangeStack_16ing4blpos" x="-136.29386" y="-1.31318" z="1143.77978" unit="cm"/>
+    <rotation name="volAuxDetMuonRangeStack_16ing4blrot" x="0" y="3" z="0" unit="deg"/>
     <position name="volAuxDetCosmic3_17ing4blpos" x="-211.12734" y="57.82056" z="725.47226" unit="cm"/>
     <position name="volAuxDetCosmic1_18ing4blpos" x="-211.55914" y="-80.78978" z="725.96502" unit="cm"/>
     <position name="volAuxDetCosmic4_19ing4blpos" x="-62.81166" y="-48.92548" z="1010.4755" unit="cm"/>
@@ -2157,7 +2157,7 @@
     <box name="FramS0x1" x="6.3" y="25.4" z="2.5" lunit="cm"/>
     <box name="FramT0x1" x="12.8" y="6.3" z="2.5" lunit="cm"/>
     <box name="volAuxDetHalo0x1" x="39" y="38" z="1" lunit="cm"/>
-    <box name="volAuxDetTOFDS" x="11.8" y="60.96" z="5.08" lunit="cm"/>
+    <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="5.08" lunit="cm"/>
     <box name="volAuxDetPunch" x="31" y="101" z="1" lunit="cm"/>
     <box name="MuRSShort" x="66.04" y="64.77" z="2.54" lunit="cm"/>
     <box name="volAuxDetMuonScint" x="66.04" y="15.24" z="1.27" lunit="cm"/>
@@ -6210,7 +6210,7 @@
       <materialref ref="LUCITE0x1"/>
       <solidref ref="volAuxDetTOFUS0x1"/>
     </volume>
-    <volume name="volAuxDetSensitiveMWPC1">
+    <volume name="volAuxDetSensitiveWC1">
       <materialref ref="Vacuum"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
@@ -6240,65 +6240,65 @@
         <positionref ref="FramT_3inChFrampos"/>
       </physvol>
     </assembly>
-    <assembly name="volAuxDetWC1">
+    <assembly name="volAuxDetMWPC1">
       <physvol>
-        <volumeref ref="volAuxDetSensitiveMWPC1"/>
-        <positionref ref="volAuxDetSensitiveMWPC1_0involAuxDetWC1pos"/>
+        <volumeref ref="volAuxDetSensitiveWC1"/>
+        <positionref ref="volAuxDetSensitiveWC1_0involAuxDetMWPC1pos"/>
       </physvol>
       <physvol>
         <volumeref ref="ChFram"/>
-        <positionref ref="ChFram_1involAuxDetWC1pos"/>
+        <positionref ref="ChFram_1involAuxDetMWPC1pos"/>
       </physvol>
     </assembly>
-    <volume name="volAuxDetSensitiveMWPC2">
+    <volume name="volAuxDetSensitiveWC2">
       <materialref ref="Vacuum"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
-    <assembly name="volAuxDetWC2">
+    <assembly name="volAuxDetMWPC2">
       <physvol>
-        <volumeref ref="volAuxDetSensitiveMWPC2"/>
-        <positionref ref="volAuxDetSensitiveMWPC2_0involAuxDetWC2pos"/>
+        <volumeref ref="volAuxDetSensitiveWC2"/>
+        <positionref ref="volAuxDetSensitiveWC2_0involAuxDetMWPC2pos"/>
       </physvol>
       <physvol>
         <volumeref ref="ChFram"/>
-        <positionref ref="ChFram_10x1involAuxDetWC2pos"/>
+        <positionref ref="ChFram_10x1involAuxDetMWPC2pos"/>
       </physvol>
     </assembly>
-    <volume name="volAuxDetSensitiveMWPC3">
+    <volume name="volAuxDetSensitiveWC3">
       <materialref ref="Vacuum"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
-    <assembly name="volAuxDetWC3">
+    <assembly name="volAuxDetMWPC3">
       <physvol>
-        <volumeref ref="volAuxDetSensitiveMWPC3"/>
-        <positionref ref="volAuxDetSensitiveMWPC3_0involAuxDetWC3pos"/>
+        <volumeref ref="volAuxDetSensitiveWC3"/>
+        <positionref ref="volAuxDetSensitiveWC3_0involAuxDetMWPC3pos"/>
       </physvol>
       <physvol>
         <volumeref ref="ChFram"/>
-        <positionref ref="ChFram_10x2involAuxDetWC3pos"/>
+        <positionref ref="ChFram_10x2involAuxDetMWPC3pos"/>
       </physvol>
     </assembly>
-    <volume name="volAuxDetSensitiveMWPC4">
+    <volume name="volAuxDetSensitiveWC4">
       <materialref ref="Vacuum"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
-    <assembly name="volAuxDetWC4">
+    <assembly name="volAuxDetMWPC4">
       <physvol>
-        <volumeref ref="volAuxDetSensitiveMWPC4"/>
-        <positionref ref="volAuxDetSensitiveMWPC4_0involAuxDetWC4pos"/>
+        <volumeref ref="volAuxDetSensitiveWC4"/>
+        <positionref ref="volAuxDetSensitiveWC4_0involAuxDetMWPC4pos"/>
       </physvol>
       <physvol>
         <volumeref ref="ChFram"/>
-        <positionref ref="ChFram_10x3involAuxDetWC4pos"/>
+        <positionref ref="ChFram_10x3involAuxDetMWPC4pos"/>
       </physvol>
     </assembly>
     <volume name="volAuxDetHalo">
       <materialref ref="POLYSTYRENE0x1"/>
       <solidref ref="volAuxDetHalo0x1"/>
     </volume>
-    <volume name="volAuxDetTOFDSHorz">
+    <volume name="volAuxDetTOFDS">
       <materialref ref="LUCITE0x1"/>
-      <solidref ref="volAuxDetTOFDS"/>
+      <solidref ref="volAuxDetTOFDS0x1"/>
     </volume>
     <volume name="volAuxDetSensitivePunchUL">
       <materialref ref="POLYSTYRENE0x1"/>
@@ -6444,114 +6444,114 @@
       <materialref ref="Vacuum"/>
       <solidref ref="MuRSMed"/>
     </volume>
-    <assembly name="volAuxDetMuStack">
+    <assembly name="volAuxDetMuonRangeStack">
       <physvol>
         <volumeref ref="MuShort0"/>
-        <positionref ref="MuShort0_0involAuxDetMuStackpos"/>
+        <positionref ref="MuShort0_0involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint0"/>
-        <positionref ref="volAuxDetSensitiveMuScint0_1involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint0_1involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint1"/>
-        <positionref ref="volAuxDetSensitiveMuScint1_2involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint1_2involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint2"/>
-        <positionref ref="volAuxDetSensitiveMuScint2_3involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint2_3involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint3"/>
-        <positionref ref="volAuxDetSensitiveMuScint3_4involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint3_4involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuShort1"/>
-        <positionref ref="MuShort1_5involAuxDetMuStackpos"/>
+        <positionref ref="MuShort1_5involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint4"/>
-        <positionref ref="volAuxDetSensitiveMuScint4_6involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint4_6involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint5"/>
-        <positionref ref="volAuxDetSensitiveMuScint5_7involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint5_7involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint6"/>
-        <positionref ref="volAuxDetSensitiveMuScint6_8involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint6_8involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint7"/>
-        <positionref ref="volAuxDetSensitiveMuScint7_9involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint7_9involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuLong0"/>
-        <positionref ref="MuLong0_10involAuxDetMuStackpos"/>
+        <positionref ref="MuLong0_10involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint8"/>
-        <positionref ref="volAuxDetSensitiveMuScint8_11involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint8_11involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint9"/>
-        <positionref ref="volAuxDetSensitiveMuScint9_12involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint9_12involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint10"/>
-        <positionref ref="volAuxDetSensitiveMuScint10_13involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint10_13involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint11"/>
-        <positionref ref="volAuxDetSensitiveMuScint11_14involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint11_14involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuMed0"/>
-        <positionref ref="MuMed0_15involAuxDetMuStackpos"/>
+        <positionref ref="MuMed0_15involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint12"/>
-        <positionref ref="volAuxDetSensitiveMuScint12_16involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint12_16involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint13"/>
-        <positionref ref="volAuxDetSensitiveMuScint13_17involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint13_17involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint14"/>
-        <positionref ref="volAuxDetSensitiveMuScint14_18involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint14_18involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetSensitiveMuScint15"/>
-        <positionref ref="volAuxDetSensitiveMuScint15_19involAuxDetMuStackpos"/>
+        <positionref ref="volAuxDetSensitiveMuScint15_19involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuMed1"/>
-        <positionref ref="MuMed1_20involAuxDetMuStackpos"/>
+        <positionref ref="MuMed1_20involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuMed2"/>
-        <positionref ref="MuMed2_21involAuxDetMuStackpos"/>
+        <positionref ref="MuMed2_21involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuMed3"/>
-        <positionref ref="MuMed3_22involAuxDetMuStackpos"/>
+        <positionref ref="MuMed3_22involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuMed4"/>
-        <positionref ref="MuMed4_23involAuxDetMuStackpos"/>
+        <positionref ref="MuMed4_23involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuMed5"/>
-        <positionref ref="MuMed5_24involAuxDetMuStackpos"/>
+        <positionref ref="MuMed5_24involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuLong1"/>
-        <positionref ref="MuLong1_25involAuxDetMuStackpos"/>
+        <positionref ref="MuLong1_25involAuxDetMuonRangeStackpos"/>
       </physvol>
       <physvol>
         <volumeref ref="MuMed6"/>
-        <positionref ref="MuMed6_26involAuxDetMuStackpos"/>
+        <positionref ref="MuMed6_26involAuxDetMuonRangeStackpos"/>
       </physvol>
     </assembly>
     <volume name="volAuxDetCosmic3">
@@ -6577,24 +6577,24 @@
         <rotationref ref="volAuxDetTOFUS_6ing4blrot"/>
       </physvol>
       <physvol>
-        <volumeref ref="volAuxDetWC1"/>
-        <positionref ref="volAuxDetWC1_7ing4blpos"/>
-        <rotationref ref="volAuxDetWC1_7ing4blrot"/>
+        <volumeref ref="volAuxDetMWPC1"/>
+        <positionref ref="volAuxDetMWPC1_7ing4blpos"/>
+        <rotationref ref="volAuxDetMWPC1_7ing4blrot"/>
       </physvol>
       <physvol>
-        <volumeref ref="volAuxDetWC2"/>
-        <positionref ref="volAuxDetWC2_8ing4blpos"/>
-        <rotationref ref="volAuxDetWC2_8ing4blrot"/>
+        <volumeref ref="volAuxDetMWPC2"/>
+        <positionref ref="volAuxDetMWPC2_8ing4blpos"/>
+        <rotationref ref="volAuxDetMWPC2_8ing4blrot"/>
       </physvol>
       <physvol>
-        <volumeref ref="volAuxDetWC3"/>
-        <positionref ref="volAuxDetWC3_9ing4blpos"/>
-        <rotationref ref="volAuxDetWC3_9ing4blrot"/>
+        <volumeref ref="volAuxDetMWPC3"/>
+        <positionref ref="volAuxDetMWPC3_9ing4blpos"/>
+        <rotationref ref="volAuxDetMWPC3_9ing4blrot"/>
       </physvol>
       <physvol>
-        <volumeref ref="volAuxDetWC4"/>
-        <positionref ref="volAuxDetWC4_11ing4blpos"/>
-        <rotationref ref="volAuxDetWC4_11ing4blrot"/>
+        <volumeref ref="volAuxDetMWPC4"/>
+        <positionref ref="volAuxDetMWPC4_11ing4blpos"/>
+        <rotationref ref="volAuxDetMWPC4_11ing4blrot"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetHalo"/>
@@ -6602,9 +6602,9 @@
         <rotationref ref="volAuxDetHalo_13ing4blrot"/>
       </physvol>
       <physvol>
-        <volumeref ref="volAuxDetTOFDSHorz"/>
-        <positionref ref="volAuxDetTOFDSHorz_14ing4blpos"/>
-        <rotationref ref="volAuxDetTOFDSHorz_14ing4blrot"/>
+        <volumeref ref="volAuxDetTOFDS"/>
+        <positionref ref="volAuxDetTOFDS_14ing4blpos"/>
+        <rotationref ref="volAuxDetTOFDS_14ing4blrot"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetPunchPaddles"/>
@@ -6612,9 +6612,9 @@
         <rotationref ref="volAuxDetPunchPaddles_15ing4blrot"/>
       </physvol>
       <physvol>
-        <volumeref ref="volAuxDetMuStack"/>
-        <positionref ref="volAuxDetMuStack_16ing4blpos"/>
-        <rotationref ref="volAuxDetMuStack_16ing4blrot"/>
+        <volumeref ref="volAuxDetMuonRangeStack"/>
+        <positionref ref="volAuxDetMuonRangeStack_16ing4blpos"/>
+        <rotationref ref="volAuxDetMuonRangeStack_16ing4blrot"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetCosmic3"/>
