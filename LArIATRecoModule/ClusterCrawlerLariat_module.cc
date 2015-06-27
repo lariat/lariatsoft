@@ -107,11 +107,7 @@ namespace cluster {
   ClusterCrawlerLariat::ClusterCrawlerLariat(fhicl::ParameterSet const& pset)
     : fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
     , fCCAlg  (pset.get< fhicl::ParameterSet >("ClusterCrawlerAlg"))
-  {
-    mf::LogWarning("ClusterCrawlerLariat") <<
-      "\nClusterCrawlerLariat module has been deprecated and will be removed."
-      "\nIt is now replaced by HitFinder and LineCluster modules.";
-      
+  {      
     
     this->reconfigure(pset);
 
@@ -168,25 +164,35 @@ namespace cluster {
     std::map< size_t, std::vector<recob::Vertex> > clusToVertex;
     raw::ChannelID_t chid;
 
+    //clearing vectors before to start. Just to stay on the safe side
     hits->clear();
+    clusters->clear();
+    vertices->clear();
 
-    //std::cout<< "Number of Triggers: " << tdu.NTriggers() << std::endl;
-    mf::LogVerbatim("Summary") << "Number of Triggers: " << tdu.NTriggers();
+    size_t startHit = 0;
+    size_t startCluster = 0;
+    size_t startVertex = 0;
+
+
+    LOG_VERBATIM("Summary") << "Number of Triggers: " << tdu.NTriggers();
     for (size_t t=0; t<tdu.NTriggers(); ++t)                              
     {
        art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];  
 
        // Skip trigger if empty
        art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(t);
-//       std::cout<<"trigger number	" << t << "rdvec.size() = "<< rdvec.size()<< std::endl;
-       mf::LogVerbatim("Summary") << "Trigger Number: " << t << "rdvec.size(): "<< rdvec.size();
-       if(!rdvec.size()){mf::LogInfo("Summary") << "Problem! RawDigiVec size is " << rdvec.size(); continue;}
 
-       std::cout<< "#####################################################" << std::endl;
-       std::cout<< "#####################################################" << std::endl;
-       std::cout<< "#####################################################" << std::endl;                  
-       std::cout<< "Trigger # " << t << std::endl;  
-       std::cout<< " " << std::endl;
+       LOG_VERBATIM("ClusterCrawlerLariat") << "#####################################################"
+                                            << "\n #####################################################"                 
+                                            << "\n Trigger Number: " << t << "   Raw Digit vector size: "<< rdvec.size();
+       if(!rdvec.size()){mf::LogInfo("ClusterCrawlerLariat") << " Raw Digit vector is empty. Skipping the trigger"; continue;}
+       LOG_VERBATIM("ClusterCrawlerLariat") << " ";
+
+       // get the starting index of the hits, clusters and vertices for this trigger
+       startHit = hits->size();
+       startCluster = clusters->size();
+       startVertex = vertices->size();
+
        // fetch the wires needed by CCHitFinder
        chIDToWire.clear();
        wireVec.clear();
@@ -211,7 +217,7 @@ namespace cluster {
              chid=hits->back().Channel();
 
              // make the wire - hit association
-             if(!util::CreateAssn(*this, evt, *hits, chIDToWire[chid], *wh_assn, hits->size()-1))
+             if(!util::CreateAssn(*this, evt, *hits, chIDToWire[chid], *wh_assn))//, hits->size()-1))
              {
                 throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with wire ";
              } // exception
@@ -221,7 +227,6 @@ namespace cluster {
 
 
           // make the cluster - vertices association
-          std::cout << "CLus to Vertex size: " << clusToVertex[ic].size() << std::endl;
           for(size_t v = 0; v< clusToVertex[ic].size(); ++v)
           {
    	     vertices->push_back(clusToVertex[ic][v]);
@@ -260,7 +265,7 @@ namespace cluster {
 ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
        // make the trigger - cluster association
-       for(size_t c = 0; c < clusters->size(); ++c)
+       for(size_t c = startCluster; c < clusters->size(); ++c)
        {
           if(!util::CreateAssn(*this, evt, *clusters, trig, *tc_assn, c))
           {
@@ -269,7 +274,7 @@ namespace cluster {
        }
 
        // make the trigger - hit association
-       for(size_t h = 0; h < hits->size(); ++h)
+       for(size_t h = startHit; h < hits->size(); ++h)
        {
           if(!util::CreateAssn(*this, evt, *hits, trig, *th_assn, h))
           {
@@ -278,7 +283,7 @@ namespace cluster {
        }
 
        // make the trigger - vertex association
-       for(size_t v = 0; v < vertices->size(); ++v)
+       for(size_t v = startVertex; v < vertices->size(); ++v)
        {
           if(!util::CreateAssn(*this, evt, *vertices, trig, *tv_assn, v))
           {
@@ -345,6 +350,30 @@ namespace cluster {
     
     std::vector<ClusterCrawlerAlg::ClusterStore> const& tcl = fCCAlg.GetClusters();
 
+    // Consistency check
+    for(unsigned int icl = 0; icl < tcl.size(); ++icl) 
+    {
+       ClusterCrawlerAlg::ClusterStore const& clstr = tcl[icl];
+       if(clstr.ID < 0) continue;
+       geo::PlaneID planeID = ClusterCrawlerAlg::DecodeCTP(clstr.CTP);
+       unsigned short plane = planeID.Plane;
+       for(unsigned short ii = 0; ii < clstr.tclhits.size(); ++ii) 
+       {
+          unsigned int iht = clstr.tclhits[ii];
+          recob::Hit const& theHit = allHits.at(iht);
+          if(theHit.WireID().Plane != plane) 
+          {
+             std::cout<<"CC: cluster-hit plane mis-match "<<theHit.WireID().Plane<<" "<< plane <<" in cluster "<< clstr.ID <<" WT "<< clstr.BeginWir <<" : "<<(int)clstr.BeginTim << "\n";
+             return;
+          }
+          if(HitInCluster[iht] != clstr.ID) 
+          {
+             std::cout << "CC: InClus mis-match " << HitInCluster[iht] << " ID " << clstr.ID << " in cluster " << icl << "\n";
+             return;
+          }
+       } // ii
+    } // icl
+
     // make 3D vertices
     std::vector<ClusterCrawlerAlg::Vtx3Store> const& Vertx = fCCAlg.GetVertices();
 
@@ -356,17 +385,12 @@ namespace cluster {
     unsigned short plane = 0;
     double xyz[3] = {0, 0, 0};
     clusToHits.resize(tcl.size());
-    std::cout << " Number of Clusters in the trigger: " <<tcl.size() << std::endl;
-    std::cout << " " << std::endl;
+    LOG_VERBATIM("ClusterCrawlerLariat") << " Number of Clusters in the trigger: " <<tcl.size();
+    LOG_VERBATIM("ClusterCrawlerLariat") << " ";
  
     for(unsigned int icl = 0; icl < tcl.size(); ++icl) 
     {
-//       FinalHits.clear();
        ClusterCrawlerAlg::ClusterStore const& clstr = tcl[icl];
-
-       std::cout << " /////////////////////////////////////// " << std::endl;
-       std::cout << " /////////////////////////////////////// " << std::endl;
-       std::cout << " Cluster ID " << clstr.ID << std::endl;
 
        if(clstr.ID < 0) continue;
        sumChg = 0;
@@ -413,16 +437,16 @@ namespace cluster {
                            recob::Cluster::Sentry  // sentry
                          );
 
-       std::cout <<  " Number of hits " << nclhits << std::endl;
-       std::cout << " Cluster Info: Start Wire " << clstr.BeginWir << " End Wire " << clstr.EndWir <<std::endl;
-       std::cout << " Cluster Info: Begin Time " << clstr.BeginTim << " End Time " << clstr.EndTim <<std::endl;
-       std::cout << " Cluster Info: Begin Charge " << clstr.BeginChg << " Begin Angle " << clstr.BeginAng <<std::endl;
-       std::cout << " Cluster Info: End Charge " << clstr.EndChg << " End Angle " << clstr.EndAng <<std::endl;
-       std::cout << " Cluster Info: Charge " << sumChg << " ADC Sum " << sumADC <<std::endl;
-       std::cout << " View " << view << " Plane ID " << planeID <<std::endl;
-       std::cout << " Begin Vertex Index " << clstr.BeginVtx <<  " End Vertex Index " << clstr.EndVtx <<std::endl;
-       std::cout << "  " << std::endl;
-       std::cout << "  " << std::endl;
+          LOG_VERBATIM("ClusterCrawlerLariat") << " /////////////////////////////////////// "
+                                               << "\n /////////////////////////////////////// "
+                                               << "\n Cluster ID " << clstr.ID << "   Number of hits " << nclhits << "   View " << view
+                                               << "\n Cluster Info: Start Wire " << clstr.BeginWir << "   End Wire " << clstr.EndWir
+                                               << "\n Cluster Info: Begin Time " << clstr.BeginTim << "   End Time " << clstr.EndTim
+                                               << "\n Cluster Info: Charge " << sumChg << "   ADC Sum " << sumADC
+                                               << "\n Cluster Info: Begin Charge " << clstr.BeginChg << "   End Charge " << clstr.EndChg
+                                               << "\n Cluster Info: Begin Angle " << clstr.BeginAng << "   End Angle " << clstr.EndAng
+                                               << "\n Begin Vertex Index " << clstr.BeginVtx <<  "   End Vertex Index " << clstr.EndVtx
+                                               << "\n  ";
 
        // make the cluster - endpoint associations
        if(clstr.BeginVtx >= 0) 
@@ -431,7 +455,6 @@ namespace cluster {
           vtxIndex = 0;
           for(ClusterCrawlerAlg::Vtx3Store const& vtx3: Vertx) 
           {  
-             std::cout << "Begin Vertex XYZ: " << vtx3.X << "  " << vtx3.Y << "  "  << vtx3.Z << std::endl;
              // ignore incomplete vertices
              if(vtx3.Ptr2D[0] < 0) continue;
              if(vtx3.Ptr2D[1] < 0) continue;
@@ -453,7 +476,6 @@ namespace cluster {
            vtxIndex = 0;
           for(ClusterCrawlerAlg::Vtx3Store const& vtx3: Vertx) 
           {
-             std::cout << "End Vertex XYZ: " << vtx3.X << "  " << vtx3.Y << "  "  << vtx3.Z << std::endl;
              // ignore incomplete vertices
              if(vtx3.Ptr2D[0] < 0) continue;
              if(vtx3.Ptr2D[1] < 0) continue;
