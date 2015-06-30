@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////////////////////////////////
 //
-//  CosmicTracker
+//  CosmicTrackerT1034
 //
 //  Tracker to reconstruct cosmic ray muons and neutrino interactions
 // 
@@ -128,11 +128,11 @@ bool sp_sort_z1(const recob::SpacePoint h1, const recob::SpacePoint h2)
 
 namespace trkf {
 
-  class CosmicTracker : public art::EDProducer {
+  class CosmicTrackerT1034 : public art::EDProducer {
     
   public:
     
-    explicit CosmicTracker(fhicl::ParameterSet const& pset);
+    explicit CosmicTrackerT1034(fhicl::ParameterSet const& pset);
     
     //////////////////////////////////////////////////////////
     void reconfigure(fhicl::ParameterSet const& p);
@@ -157,14 +157,14 @@ namespace trkf {
     bool            fCleanUpHits;        ///< flag to remove outlier hits
     bool            fDirSPS;             ///< calculate direction cosine for each space point
   
-  }; // class CosmicTracker
+  }; // class CosmicTrackerT1034
 
 }
 
 namespace trkf {
 
   //-------------------------------------------------
-  CosmicTracker::CosmicTracker(fhicl::ParameterSet const& pset) :
+  CosmicTrackerT1034::CosmicTrackerT1034(fhicl::ParameterSet const& pset) :
     fClusterMatch(pset.get< fhicl::ParameterSet >("ClusterMatch"))
   {
     this->reconfigure(pset);
@@ -180,7 +180,7 @@ namespace trkf {
   }
 
   //-------------------------------------------------
-  void CosmicTracker::reconfigure(fhicl::ParameterSet const& pset)
+  void CosmicTrackerT1034::reconfigure(fhicl::ParameterSet const& pset)
   {
     fClusterModuleLabel     = pset.get< std::string >("ClusterModuleLabel");
     ftmatch                 = pset.get< double >("TMatch");
@@ -196,17 +196,17 @@ namespace trkf {
   }
 
   //-------------------------------------------------
-  void CosmicTracker::beginJob()
+  void CosmicTrackerT1034::beginJob()
   {
   }
 
   //-------------------------------------------------
-  void CosmicTracker::endJob()
+  void CosmicTrackerT1034::endJob()
   {
   }
 
   //------------------------------------------------------------------------------------//
-  void CosmicTracker::produce(art::Event& evt){
+  void CosmicTrackerT1034::produce(art::Event& evt){
   
     // get services
     art::ServiceHandle<geo::Geometry> geom;
@@ -844,7 +844,7 @@ namespace trkf {
                          } // try
                          catch(...)
                          {
-                            mf::LogWarning("CosmicTracker") <<"Fitter failed";
+                            mf::LogWarning("CosmicTrackerT1034") <<"Fitter failed";
                          }
                          delete xs;
                          TGraph *ys = new TGraph(np,&vs[0],&vy[0]);
@@ -866,7 +866,7 @@ namespace trkf {
                          } //try
                          catch(...)
                          {
-                            mf::LogWarning("CosmicTracker") <<"Fitter failed";
+                            mf::LogWarning("CosmicTrackerT1034") <<"Fitter failed";
                          }
                          delete ys;
                          TGraph *zs = new TGraph(np,&vs[0],&vz[0]);
@@ -888,7 +888,7 @@ namespace trkf {
                          } //try
                          catch(...)
                          {
-                            mf::LogWarning("CosmicTracker") <<"Fitter failed";
+                            mf::LogWarning("CosmicTrackerT1034") <<"Fitter failed";
                          }
                          delete zs;
                          if (kx||ky||kz)
@@ -944,9 +944,9 @@ namespace trkf {
                                  << std::setw(175) 
                                  << "-" 
                                  << std::setfill(' ');
-      mf::LogVerbatim("Summary") << "CosmicTracker Summary:";
+      mf::LogVerbatim("Summary") << "CosmicTrackerT1034 Summary:";
       for(unsigned int i = 0; i<tcol->size(); ++i) mf::LogVerbatim("Summary") << tcol->at(i) ;
-      mf::LogVerbatim("Summary") << "CosmicTracker Summary End:";    
+      mf::LogVerbatim("Summary") << "CosmicTrackerT1034 Summary End:";    
     } // Loop over triggers   
 
     evt.put(std::move(tcol));
@@ -961,6 +961,6 @@ namespace trkf {
     return;
   }
   
-  DEFINE_ART_MODULE(CosmicTracker)
+  DEFINE_ART_MODULE(CosmicTrackerT1034)
 
 } // namespace

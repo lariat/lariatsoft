@@ -19,7 +19,7 @@ lariat_spacepts:
 lariat_cosmictracker:
 
 {
- module_type:        "CosmicTracker"
+ module_type:        "CosmicTrackerT1034"
  ClusterModuleLabel: "dbcluster"
  TMatch:             2.5  
  SMatch:             1.0  

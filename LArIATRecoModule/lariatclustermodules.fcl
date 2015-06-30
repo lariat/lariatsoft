@@ -7,7 +7,7 @@ BEGIN_PROLOG
 lariat_clustercrawler:
 
 {
- module_type:         "ClusterCrawlerLariat"
+ module_type:         "ClusterCrawlerT1034"
  CalDataModuleLabel:  "caldata"
  ClusterCrawlerAlg:   @local::lariat_clustercrawleralg
  CCHitFinderAlg:      @local::lariat_cchitfinderalg

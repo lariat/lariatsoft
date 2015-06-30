@@ -1,7 +1,7 @@
 //////////////////////////////////////////////////////////////////////////////////////////
-// Class:       ClusterCrawlerLariat
+// Class:       ClusterCrawlerT1034
 // Module Type: producer
-// File:        ClusterCrawlerLariat_module.cc
+// File:        ClusterCrawlerT1034_module.cc
 //
 // Generated at Fri Jun  7 09:44:09 2013 by Bruce Baller using artmod 
 // from cetpkgsupport v1_02_00.
@@ -75,14 +75,14 @@
 
 
 namespace cluster {
-  class ClusterCrawlerLariat;
+  class ClusterCrawlerT1034;
 }
 
-class cluster::ClusterCrawlerLariat : public art::EDProducer {
+class cluster::ClusterCrawlerT1034 : public art::EDProducer {
 
   public:
-    explicit ClusterCrawlerLariat(fhicl::ParameterSet const & pset);
-    virtual ~ClusterCrawlerLariat();
+    explicit ClusterCrawlerT1034(fhicl::ParameterSet const & pset);
+    virtual ~ClusterCrawlerT1034();
 
     void reconfigure(fhicl::ParameterSet const & pset) override;
     void produce(art::Event & evt) override;
@@ -104,7 +104,7 @@ class cluster::ClusterCrawlerLariat : public art::EDProducer {
 
 namespace cluster {
 
-  ClusterCrawlerLariat::ClusterCrawlerLariat(fhicl::ParameterSet const& pset)
+  ClusterCrawlerT1034::ClusterCrawlerT1034(fhicl::ParameterSet const& pset)
     : fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
     , fCCAlg  (pset.get< fhicl::ParameterSet >("ClusterCrawlerAlg"))
   {      
@@ -122,11 +122,11 @@ namespace cluster {
     produces< art::Assns<raw::Trigger,   recob::Cluster> >();
   }
 
-  ClusterCrawlerLariat::~ClusterCrawlerLariat()
+  ClusterCrawlerT1034::~ClusterCrawlerT1034()
   {
   }
 
-  void ClusterCrawlerLariat::reconfigure(fhicl::ParameterSet const & pset)
+  void ClusterCrawlerT1034::reconfigure(fhicl::ParameterSet const & pset)
   {
     fCalDataModuleLabel = pset.get< std::string >("CalDataModuleLabel"                 );
     fDigitModuleLabel   = pset.get< std::string >("DigitModuleLabel", "FragmentToDigit");
@@ -135,10 +135,10 @@ namespace cluster {
     fCCHFAlg.reconfigure(pset.get< fhicl::ParameterSet >("CCHitFinderAlg")   );
   }
   
-  void ClusterCrawlerLariat::beginJob(){
+  void ClusterCrawlerT1034::beginJob(){
   }
   
-  void ClusterCrawlerLariat::produce(art::Event & evt)
+  void ClusterCrawlerT1034::produce(art::Event & evt)
   {
     std::unique_ptr<art::Assns<recob::Wire,    recob::Hit>                     > wh_assn( new art::Assns<recob::Wire,    recob::Hit>                      );
     std::unique_ptr<art::Assns<recob::Cluster, recob::Hit>                     > hc_assn( new art::Assns<recob::Cluster, recob::Hit>                      );
@@ -182,11 +182,11 @@ namespace cluster {
        // Skip trigger if empty
        art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(t);
 
-       LOG_VERBATIM("ClusterCrawlerLariat") << "#####################################################"
+       LOG_VERBATIM("ClusterCrawlerT1034") << "#####################################################"
                                             << "\n #####################################################"                 
                                             << "\n Trigger Number: " << t << "   Raw Digit vector size: "<< rdvec.size();
-       if(!rdvec.size()){mf::LogInfo("ClusterCrawlerLariat") << " Raw Digit vector is empty. Skipping the trigger"; continue;}
-       LOG_VERBATIM("ClusterCrawlerLariat") << " ";
+       if(!rdvec.size()){mf::LogInfo("ClusterCrawlerT1034") << " Raw Digit vector is empty. Skipping the trigger"; continue;}
+       LOG_VERBATIM("ClusterCrawlerT1034") << " ";
 
        // get the starting index of the hits, clusters and vertices for this trigger
        startHit = hits->size();
@@ -204,7 +204,7 @@ namespace cluster {
           chIDToWire[chid] = wireVec[w];
        }
 
-       ClusterCrawlerLariat::Clustering(wireVec, clus, clusToHits, clusToVertex);
+       ClusterCrawlerT1034::Clustering(wireVec, clus, clusToHits, clusToVertex);
 
 //       size_t firstHitClus = hits->size();
        for(size_t ic = 0; ic < clus.size(); ++ic) 
@@ -311,7 +311,7 @@ namespace cluster {
 /////***************************************************************/////
 /////////////////////////////////////////////////////////////////////////
 
- void ClusterCrawlerLariat::Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
+ void ClusterCrawlerT1034::Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
 				       std::vector<recob::Cluster> & clus, 
 				       std::vector< std::vector<recob::Hit> > & clusToHits,
 				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertex)
@@ -385,8 +385,8 @@ namespace cluster {
     unsigned short plane = 0;
     double xyz[3] = {0, 0, 0};
     clusToHits.resize(tcl.size());
-    LOG_VERBATIM("ClusterCrawlerLariat") << " Number of Clusters in the trigger: " <<tcl.size();
-    LOG_VERBATIM("ClusterCrawlerLariat") << " ";
+    LOG_VERBATIM("ClusterCrawlerT1034") << " Number of Clusters in the trigger: " <<tcl.size();
+    LOG_VERBATIM("ClusterCrawlerT1034") << " ";
  
     for(unsigned int icl = 0; icl < tcl.size(); ++icl) 
     {
@@ -437,7 +437,7 @@ namespace cluster {
                            recob::Cluster::Sentry  // sentry
                          );
 
-          LOG_VERBATIM("ClusterCrawlerLariat") << " /////////////////////////////////////// "
+          LOG_VERBATIM("ClusterCrawlerT1034") << " /////////////////////////////////////// "
                                                << "\n /////////////////////////////////////// "
                                                << "\n Cluster ID " << clstr.ID << "   Number of hits " << nclhits << "   View " << view
                                                << "\n Cluster Info: Start Wire " << clstr.BeginWir << "   End Wire " << clstr.EndWir
@@ -501,6 +501,6 @@ namespace cluster {
 
 namespace cluster{
 
-  DEFINE_ART_MODULE(ClusterCrawlerLariat)
+  DEFINE_ART_MODULE(ClusterCrawlerT1034)
   
 } 
