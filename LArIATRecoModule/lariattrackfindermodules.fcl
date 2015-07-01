@@ -6,7 +6,7 @@ BEGIN_PROLOG
 
 lariat_spacepts:
 {
- module_type:           "SpacePoints"
+ module_type:           "SpacePointsT1034"
  TicksOffset:           0.
  ClusterModuleLabel:    "dbcluster"
  EndPoint2DModuleLabel: "vertex2d"
