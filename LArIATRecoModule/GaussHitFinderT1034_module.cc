@@ -320,11 +320,9 @@ void GausHitFinder::produce(art::Event& evt)
    // ### Loop over the triggers ###
    // ##############################
    size_t startHit = 0;
-   std::cout << "HitFinder mod: Triggers in this spill	" << tdu.NTriggers()<< std::endl;
 
    for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
       {
-      std::cout<<"trigger number = "<<trig<<std::endl;
 
       // get the starting index of the hits for this trigger
       startHit = hcol->size();
@@ -334,7 +332,6 @@ void GausHitFinder::produce(art::Event& evt)
      art::Ptr<raw::Trigger> theTrigger = (EventTriggersPtr[trig]);
 
      art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(trig);
-      std::cout<<"trigger number	" << trig << "rdvec.size() = "<< rdvec.size()<< std::endl;
 
       if(!rdvec.size()){mf::LogInfo("GausHitFinder") << "Problem GaussHitFinder:: RawDigiVec size is " << rdvec.size(); continue;}
       wireVecHandle.clear();
@@ -710,7 +707,7 @@ void GausHitFinder::produce(art::Event& evt)
 	    // ### Recording each hit in the pulse ###
           	
 	    for(size_t dd = 0; dd < MeanPosition.size(); dd++)
-	       {  std::cout << "gaus hit	" << dd << " " << MeanPosition[dd] << " "  << wid.Plane << " " << wid.Wire << std::endl;
+	       { 
 		 recob::Hit hit(
 		   channel, 		//raw::ChannelID_t        channel
 		   ST,	    		//raw::TDCtick_t          start_tick

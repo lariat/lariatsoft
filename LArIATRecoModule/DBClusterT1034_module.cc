@@ -215,7 +215,6 @@ void DBClusterT1034::produce(art::Event & evt)
    // ##################################
    // ### Loop over all the triggers ###
    // ##################################
-std::cout << "ClusterDB mod: Triggers in this spill	" << tdu.NTriggers()<< std::endl;
    for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
       { 
       std::cout<<"trigger number = "<<trig<<std::endl;
@@ -266,10 +265,8 @@ std::cout << "ClusterDB mod: Triggers in this spill	" << tdu.NTriggers()<< std::
 	 // ######################
 	 // ### Run Clustering ###
 	 // ######################
-	 std::cout<<"Run Cluster"<<std::endl;
 	 fDBScan.run_cluster();
 	
-         std::cout<<"Cluster size for trigger N " << fDBScan.fclusters.size() << " " << trig << std::endl;
 	 // #############################################
 	 // ### Looping over fDBScan.fclusters.size() ###
 	 // #############################################
