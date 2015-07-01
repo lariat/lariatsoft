@@ -639,7 +639,7 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
 
 	  const TVector3 hit3d(Ct,(Cw-Iw)/(2.*TMath::Sin(Angle)),(Cw+Iw)/(2.*TMath::Cos(Angle))-YC/2.*TMath::Tan(Angle)); 
                
-        std::cout << "3D Hit coord	" << hit3d.X() << " " << hit3d.Y() << " " << hit3d.Z() << std::endl;
+        //std::cout << "3D Hit coord	" << hit3d.X() << " " << hit3d.Y() << " " << hit3d.Z() << std::endl;
 	  Double_t hitcoord[3];       
 	  hitcoord[0] = hit3d.X();
 	  hitcoord[1] = hit3d.Y();
