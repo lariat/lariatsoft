@@ -268,13 +268,14 @@ std::cout << "ClusterDB mod: Triggers in this spill	" << tdu.NTriggers()<< std::
 	 // ######################
 	 std::cout<<"Run Cluster"<<std::endl;
 	 fDBScan.run_cluster();
-	 
+	
+         std::cout<<"Cluster size for trigger N " << fDBScan.fclusters.size() << " " << trig << std::endl;
 	 // #############################################
 	 // ### Looping over fDBScan.fclusters.size() ###
 	 // #############################################
 	 for(size_t i = 0; i < fDBScan.fclusters.size(); ++i)
 	    {
-	    
+	     
 	    art::PtrVector<recob::Hit> clusterHits;
 	    double totalQ = 0.;
 	    
