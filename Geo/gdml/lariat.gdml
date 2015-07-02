@@ -1594,7 +1594,7 @@
     </material>
   </materials>
   <solids>
-    <box name="World" x="695.455" y="448.838" z="328.385" lunit="cm"/>
+    <box name="World" x="695.455" y="448.838" z="2020.74272" lunit="cm"/>
     <box name="DetEnclosure" x="401.955" y="417.695" z="173.355" lunit="cm"/>
     <box name="TubBottom" x="147.32" y="0.635" z="172.72" lunit="cm"/>
     <tube name="InnerSteelTube_ph1" rmin="37.624" rmax="38.1" z="101.13" startphi="0" deltaphi="360" aunit="deg" lunit="cm"/>
@@ -2153,12 +2153,19 @@
       <section zOrder="1" zPosition="12.7" xOffset="0" yOffset="0" scalingFactor="1"/>
     </xtru>
     <box name="volAuxDetTOFUS0x1" x="15" y="15" z="5.08" lunit="cm"/>
+    <box name="MWPC1" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="volAuxDetDet" x="12.8" y="12.5" z="2.5" lunit="cm"/>
+    <box name="ChFram0x1" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="FramS0x1" x="6.3" y="25.4" z="2.5" lunit="cm"/>
     <box name="FramT0x1" x="12.8" y="6.3" z="2.5" lunit="cm"/>
+    <box name="MWPC2" x="12.8" y="25.4" z="2.5" lunit="cm"/>
+    <box name="MWPC3" x="12.8" y="25.4" z="2.5" lunit="cm"/>
+    <box name="MWPC4" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="volAuxDetHalo0x1" x="39" y="38" z="1" lunit="cm"/>
     <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="5.08" lunit="cm"/>
+    <box name="PunchPaddles" x="31" y="101" z="5" lunit="cm"/>
     <box name="volAuxDetPunch" x="31" y="101" z="1" lunit="cm"/>
+    <box name="MuonRangeStack" x="66.04" y="64.77" z="121.77014" lunit="cm"/>
     <box name="MuRSShort" x="66.04" y="64.77" z="2.54" lunit="cm"/>
     <box name="volAuxDetMuonScint" x="66.04" y="15.24" z="1.27" lunit="cm"/>
     <box name="MuRSLong" x="66.04" y="64.77" z="13.97" lunit="cm"/>
@@ -6222,7 +6229,9 @@
       <materialref ref="Vacuum"/>
       <solidref ref="FramT0x1"/>
     </volume>
-    <assembly name="ChFram">
+    <volume name="ChFram">
+      <materialref ref="Vacuum"/>
+      <solidref ref="ChFram0x1"/>
       <physvol>
         <volumeref ref="FramS"/>
         <positionref ref="FramS_0inChFrampos"/>
@@ -6239,8 +6248,10 @@
         <volumeref ref="FramT"/>
         <positionref ref="FramT_3inChFrampos"/>
       </physvol>
-    </assembly>
-    <assembly name="volAuxDetMWPC1">
+    </volume>
+    <volume name="volAuxDetMWPC1">
+      <materialref ref="Vacuum"/>
+      <solidref ref="MWPC1"/>
       <physvol>
         <volumeref ref="volAuxDetSensitiveWC1"/>
         <positionref ref="volAuxDetSensitiveWC1_0involAuxDetMWPC1pos"/>
@@ -6249,12 +6260,14 @@
         <volumeref ref="ChFram"/>
         <positionref ref="ChFram_1involAuxDetMWPC1pos"/>
       </physvol>
-    </assembly>
+    </volume>
     <volume name="volAuxDetSensitiveWC2">
       <materialref ref="Vacuum"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
-    <assembly name="volAuxDetMWPC2">
+    <volume name="volAuxDetMWPC2">
+      <materialref ref="Vacuum"/>
+      <solidref ref="MWPC2"/>
       <physvol>
         <volumeref ref="volAuxDetSensitiveWC2"/>
         <positionref ref="volAuxDetSensitiveWC2_0involAuxDetMWPC2pos"/>
@@ -6263,12 +6276,14 @@
         <volumeref ref="ChFram"/>
         <positionref ref="ChFram_10x1involAuxDetMWPC2pos"/>
       </physvol>
-    </assembly>
+    </volume>
     <volume name="volAuxDetSensitiveWC3">
       <materialref ref="Vacuum"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
-    <assembly name="volAuxDetMWPC3">
+    <volume name="volAuxDetMWPC3">
+      <materialref ref="Vacuum"/>
+      <solidref ref="MWPC3"/>
       <physvol>
         <volumeref ref="volAuxDetSensitiveWC3"/>
         <positionref ref="volAuxDetSensitiveWC3_0involAuxDetMWPC3pos"/>
@@ -6277,12 +6292,14 @@
         <volumeref ref="ChFram"/>
         <positionref ref="ChFram_10x2involAuxDetMWPC3pos"/>
       </physvol>
-    </assembly>
+    </volume>
     <volume name="volAuxDetSensitiveWC4">
       <materialref ref="Vacuum"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
-    <assembly name="volAuxDetMWPC4">
+    <volume name="volAuxDetMWPC4">
+      <materialref ref="Vacuum"/>
+      <solidref ref="MWPC4"/>
       <physvol>
         <volumeref ref="volAuxDetSensitiveWC4"/>
         <positionref ref="volAuxDetSensitiveWC4_0involAuxDetMWPC4pos"/>
@@ -6291,7 +6308,7 @@
         <volumeref ref="ChFram"/>
         <positionref ref="ChFram_10x3involAuxDetMWPC4pos"/>
       </physvol>
-    </assembly>
+    </volume>
     <volume name="volAuxDetHalo">
       <materialref ref="POLYSTYRENE0x1"/>
       <solidref ref="volAuxDetHalo0x1"/>
@@ -6316,7 +6333,9 @@
       <materialref ref="POLYSTYRENE0x1"/>
       <solidref ref="volAuxDetPunch"/>
     </volume>
-    <assembly name="volAuxDetPunchPaddles">
+    <volume name="volAuxDetPunchPaddles">
+      <materialref ref="Vacuum"/>
+      <solidref ref="PunchPaddles"/>
       <physvol>
         <volumeref ref="volAuxDetSensitivePunchUL"/>
         <positionref ref="volAuxDetSensitivePunchUL_0involAuxDetPunchPaddlespos"/>
@@ -6335,7 +6354,7 @@
         <positionref ref="volAuxDetSensitivePunchLL_3involAuxDetPunchPaddlespos"/>
         <rotationref ref="volAuxDetSensitivePunchLL_3involAuxDetPunchPaddlesrot"/>
       </physvol>
-    </assembly>
+    </volume>
     <volume name="MuShort0">
       <materialref ref="Vacuum"/>
       <solidref ref="MuRSShort"/>
@@ -6444,7 +6463,9 @@
       <materialref ref="Vacuum"/>
       <solidref ref="MuRSMed"/>
     </volume>
-    <assembly name="volAuxDetMuonRangeStack">
+    <volume name="volAuxDetMuonRangeStack">
+      <materialref ref="Vacuum"/>
+      <solidref ref="MuonRangeStack"/>
       <physvol>
         <volumeref ref="MuShort0"/>
         <positionref ref="MuShort0_0involAuxDetMuonRangeStackpos"/>
@@ -6553,7 +6574,7 @@
         <volumeref ref="MuMed6"/>
         <positionref ref="MuMed6_26involAuxDetMuonRangeStackpos"/>
       </physvol>
-    </assembly>
+    </volume>
     <volume name="volAuxDetCosmic3">
       <materialref ref="POLYSTYRENE0x1"/>
       <solidref ref="volAuxDetCosmic30x1"/>
