@@ -86,6 +86,7 @@ add_subdirectory(LArIATDataProducts)
 add_subdirectory(LArIATEventGenerator)
 add_subdirectory(LArIATRecoAlg)
 add_subdirectory(LArIATRecoModule)
+add_subdirectory(LArIATChecks)
 
 
 add_subdirectory(RawDataUtilities)

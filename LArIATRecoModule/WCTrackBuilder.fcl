@@ -1,0 +1,59 @@
+#include "services_lariat.fcl"
+#include "lariat_reco_algs.fcl"
+
+
+process_name: WCTrackBuilder
+
+services:
+{
+  TFileService: { fileName: "WireChamberTrackBuilder_histo.root" }
+  message:      @local::standard_info
+  user:         @local::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1 
+  # fileNames: ["input.root"]
+}
+
+
+outputs:
+{
+  output1: {
+    module_type: RootOutput
+    fileName: "evtWithTracks.root"
+  }
+}
+
+
+
+physics:
+{
+  producers:
+  {
+    WCTrackBuilder:
+    {
+      module_type:         WCTrackBuilder
+      WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
+      
+      TriggerUtility: "FragmentToDigit"
+      NWC: 4
+      NWperTDC: 64
+      Verbose: false
+    }
+  }
+ 
+  analysis: [ WCTrackBuilder ]
+  stream1: [output1]
+  		       
+  end_paths: [ analysis, stream1 ]
+}
+
+physics.producers.WCTrackBuilder.TriggerUtility: "FragmentToDigit"
+
+
+
+
+

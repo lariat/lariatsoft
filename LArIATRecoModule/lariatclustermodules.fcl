@@ -1,6 +1,19 @@
 #include "clusteralgorithms.fcl"
+#include "hitalgorithms.fcl"
+#include "cluster_lariat.fcl"
 
 BEGIN_PROLOG
+
+lariat_clustercrawler:
+
+{
+ module_type:         "ClusterCrawlerT1034"
+ CalDataModuleLabel:  "caldata"
+ ClusterCrawlerAlg:   @local::lariat_clustercrawleralg
+ CCHitFinderAlg:      @local::lariat_cchitfinderalg
+# CCHitRefinerAlg:     @local::standard_cchitrefineralg
+ TriggerUtility:      "FragmentToDigit"
+}
 
 lariat_dbcluster:
 
@@ -12,6 +25,20 @@ lariat_dbcluster:
 
 }
 
+lariat_houghlinefinder:
+
+{
+ module_type:       "HoughLineFinderT1034"
+ DBScanModuleLabel: "dbcluster"
+ HoughSeed:	    0
+ MaxLines:	    5
+ MinHits: 	    3
+ NumAngleCelss:	    5000
+ MaxDistance:	    5.
+ TriggerUtility:    "FragmentToDigit"
+ HoughBaseAlg:      @local::standard_houghbasealg
+
+}
 
 
 END_PROLOG

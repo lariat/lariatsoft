@@ -47,3 +47,7 @@ physics:
  evd: [ evdisp ] 
  recopath: []
 }
+
+services.RecoDrawingOptions.DrawClusters: 2
+services.RecoDrawingOptions.ClusterModuleLabels: ["cccluster"]
+services.RecoDrawingOptions.HitModuleLabels: ["cccluster"]
