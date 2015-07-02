@@ -206,10 +206,10 @@ namespace cluster {
 
        ClusterCrawlerT1034::Clustering(wireVec, clus, clusToHits, clusToVertex);
 
-//       size_t firstHitClus = hits->size();
        for(size_t ic = 0; ic < clus.size(); ++ic) 
        {  
-          clusters->push_back(clus[ic]);     
+          clusters->push_back(clus[ic]);   
+
           size_t startHitIdx = hits->size();
           for(size_t h = 0; h < clusToHits[ic].size(); ++h)
           {
@@ -243,26 +243,6 @@ namespace cluster {
           } // exception
 
        } // Loop over clusters
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-/*
-       // make the wire - hit association
-
-       for(size_t h=firstHitClus; h<hits->size(); ++h) 
-       {
-          chid=hits->at(h).Channel(); 
-          if(!util::CreateAssn(*this, evt, *hits, chIDToWire[chid], *wh_assn, h))
-          {
-             throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with wire ";
-          } // exception
-
-       }
-*/
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
        // make the trigger - cluster association
        for(size_t c = startCluster; c < clusters->size(); ++c)
@@ -331,6 +311,10 @@ namespace cluster {
     clus.clear();
     clusToVertex.clear();
 
+    //Create a vector to store loop indices of negative clusters to be removed from the vectors
+    std::vector<int> negcluster; 
+    negcluster.clear();
+
     // fetch the wires needed by CCHitFinder
     // find hits in all planes
     fCCHFAlg.RunCCHitFinder(wwires);
@@ -347,7 +331,7 @@ namespace cluster {
     std::vector<recob::Hit> allHits;
     allHits.clear();
     for(auto hit : fCCAlg.YieldHits() ) allHits.push_back(hit);
-    
+
     std::vector<ClusterCrawlerAlg::ClusterStore> const& tcl = fCCAlg.GetClusters();
 
     // Consistency check
@@ -378,12 +362,13 @@ namespace cluster {
     std::vector<ClusterCrawlerAlg::Vtx3Store> const& Vertx = fCCAlg.GetVertices();
 
     // make the clusters and associations
-    float sumChg=0.0; 
-    float sumADC=0.0;
-    unsigned int vtxIndex = 0;
-    unsigned int nclhits = 0;
-    unsigned short plane = 0;
-    double xyz[3] = {0, 0, 0};
+    float sumChg          = 0.0; 
+    float sumADC          = 0.0;
+    unsigned int idx      =   0;  //index for clusToHits
+    unsigned int vtxIndex =   0;
+    unsigned int nclhits  =   0;
+    unsigned short plane  =   0;
+    double xyz[3]   = {0, 0, 0};
     clusToHits.resize(tcl.size());
     LOG_VERBATIM("ClusterCrawlerT1034") << " Number of Clusters in the trigger: " <<tcl.size();
     LOG_VERBATIM("ClusterCrawlerT1034") << " ";
@@ -399,16 +384,17 @@ namespace cluster {
        plane = planeID.Plane;
        nclhits = clstr.tclhits.size();
        std::vector<unsigned int> clsHitIndices;
+
        // correct the hit indices to refer to the valid hits that were just added
        for(unsigned int itt = 0; itt < nclhits; ++itt) 
        {  
-          clusToHits[icl].push_back(allHits.at(clstr.tclhits[itt]));
-          sumChg += clusToHits[icl].back().Integral();
-          sumADC += clusToHits[icl].back().SummedADC();
+          clusToHits[idx].push_back(allHits.at(clstr.tclhits[itt]));
+          sumChg += clusToHits[idx].back().Integral();
+          sumADC += clusToHits[idx].back().SummedADC();
        } // itt
 
        // get the wire, plane from a hit
-       geo::View_t view = clusToHits[icl].front().View();
+       geo::View_t view = clusToHits[idx].front().View();
        clus.emplace_back(
                            (float)clstr.BeginWir,  // Start wire
                            0,                      // sigma start wire
@@ -464,7 +450,7 @@ namespace cluster {
                 xyz[0] = vtx3.X;
                 xyz[1] = vtx3.Y;
                 xyz[2] = vtx3.Z;
-                clusToVertex[icl].emplace_back(xyz, vtxIndex);
+                clusToVertex[idx].emplace_back(xyz, vtxIndex);
                 ++vtxIndex;
              } // vertex match
           } // 3D vertices
@@ -485,13 +471,15 @@ namespace cluster {
                 xyz[0] = vtx3.X;
                 xyz[1] = vtx3.Y;
                 xyz[2] = vtx3.Z;
-                clusToVertex[icl].emplace_back(xyz, vtxIndex);
+                clusToVertex[idx].emplace_back(xyz, vtxIndex);
                 ++vtxIndex;
              } // vertex match
           } // 3D vertices
        } // clstr.EndVtx >= 0
+       idx++;
     } // icl
-        
+    // assign the right size to clusToHits
+    clusToHits.resize(idx);
     // clean up
     fCCAlg.ClearResults();
  } //clustering function
