@@ -311,10 +311,6 @@ namespace cluster {
     clus.clear();
     clusToVertex.clear();
 
-    //Create a vector to store loop indices of negative clusters to be removed from the vectors
-    std::vector<int> negcluster; 
-    negcluster.clear();
-
     // fetch the wires needed by CCHitFinder
     // find hits in all planes
     fCCHFAlg.RunCCHitFinder(wwires);
