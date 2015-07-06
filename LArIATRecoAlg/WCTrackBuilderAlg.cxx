@@ -17,9 +17,12 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
+#include "Geometry/AuxDetGeo.h"
+
 
 // LArIAT includes
 #include "LArIATRecoAlg/WCTrackBuilderAlg.h"
+
 
 #include <iostream>
 #include <cmath>
@@ -67,6 +70,10 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   auto tpcGeo = fGeo->begin_TPC_id().get();
   double tpcLocalCenter[3] = {0.};
   tpcGeo->LocalToWorld(tpcLocalCenter, fCenter_of_tpc);
+  std::cout << "fCenter of TPC: "
+	    << fCenter_of_tpc[0] << ","
+	    << fCenter_of_tpc[1] << ","
+	    << fCenter_of_tpc[2] << std::endl;
 
   // put the center of the TPC in world coordinates into mm
   for(int i = 0; i < 3; ++i) fCenter_of_tpc[i] *= CLHEP::cm;
@@ -75,6 +82,46 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   // returns the values in cm, so have to multiply by CLHEP::cm
   fHalf_z_length_of_tpc = 0.5*tpcGeo->ActiveLength() * CLHEP::cm;
   fHalf_x_length_of_tpc = tpcGeo->ActiveHalfWidth()  * CLHEP::cm;
+
+  //Testing the AuxDetGeo capabilitites
+  std::cout << "Number of auxiliary detectors: " << fGeo->NAuxDets() << std::endl;
+  std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
+  double centerOfDet[3] = {0,0,0};
+  for( uint iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
+    std::cout << "************** AuxDet: " << iDet << "******************"  << std::endl;
+    geo::AuxDetGeo* anAuxDetGeo = theAuxDetGeoVect.at(iDet);
+    std::cout << "Length: " << anAuxDetGeo->Length() << std::endl;
+    std::cout << "Half Width 1: " << anAuxDetGeo->HalfWidth1() << std::endl;
+    std::cout << "Half Width 2: " << anAuxDetGeo->HalfWidth2() << std::endl;
+    anAuxDetGeo->GetCenter(centerOfDet);
+    std::cout << "Center (x,y,z): (" 
+	      << centerOfDet[0] << "," 
+	      << centerOfDet[1] << ","
+	      << centerOfDet[2] 
+	      << ")" << std::endl;
+
+    //Setting the TGeo world locations of the MWPCs
+    if(iDet == 1){ //WC1
+      fX_cntr_1 = centerOfDet[0];
+      fY_cntr_1 = centerOfDet[1];
+      fZ_cntr_1 = centerOfDet[2];
+    }
+   if(iDet == 2){ //WC2
+      fX_cntr_2 = centerOfDet[0];
+      fY_cntr_2 = centerOfDet[1];
+      fZ_cntr_2 = centerOfDet[2];
+    }
+   if(iDet == 3){ //WC1
+      fX_cntr_3 = centerOfDet[0];
+      fY_cntr_3 = centerOfDet[1];
+      fZ_cntr_3 = centerOfDet[2];
+    }
+   if(iDet == 6){ //WC2
+      fX_cntr_4 = centerOfDet[0];
+      fY_cntr_4 = centerOfDet[1];
+      fZ_cntr_4 = centerOfDet[2];
+    }
+  }
 }
 
 //--------------------------------------------------------------  
@@ -118,8 +165,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fZ_cntr_3 		= pset.get<float >("ZCntr3", 		  5183.07   ); 
   fX_cntr_4 		= pset.get<float >("XCntr4", 		  -1146.64  );
   fY_cntr_4 		= pset.get<float >("YCntr4", 	   	  0.0       );     
-  fZ_cntr_4 		= pset.get<float >("ZCntr4", 		  7587.99   ); 
-  
+  fZ_cntr_4 		= pset.get<float >("ZCntr4", 		  7587.99   );   
   return;
 }
 
