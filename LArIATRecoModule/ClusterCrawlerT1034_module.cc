@@ -97,7 +97,8 @@ class cluster::ClusterCrawlerT1034 : public art::EDProducer {
     void Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
 		  std::vector<recob::Cluster> & clus, 
 		  std::vector< std::vector<recob::Hit> > & clusToHits,
-		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex);
+		  std::map< size_t, std::vector<recob::Vertex> > & clusToVertex,
+                  size_t & lastID);
 
 };
 
@@ -172,7 +173,7 @@ namespace cluster {
     size_t startHit = 0;
     size_t startCluster = 0;
     size_t startVertex = 0;
-
+    size_t lastID = 0;
 
     LOG_VERBATIM("Summary") << "Number of Triggers: " << tdu.NTriggers();
     for (size_t t=0; t<tdu.NTriggers(); ++t)                              
@@ -204,12 +205,11 @@ namespace cluster {
           chIDToWire[chid] = wireVec[w];
        }
 
-       ClusterCrawlerT1034::Clustering(wireVec, clus, clusToHits, clusToVertex);
-
+       ClusterCrawlerT1034::Clustering(wireVec, clus, clusToHits, clusToVertex, lastID);
+       std::cout << " " <<std::endl;
        for(size_t ic = 0; ic < clus.size(); ++ic) 
        {  
           clusters->push_back(clus[ic]);   
-
           size_t startHitIdx = hits->size();
           for(size_t h = 0; h < clusToHits[ic].size(); ++h)
           {
@@ -243,6 +243,8 @@ namespace cluster {
           } // exception
 
        } // Loop over clusters
+
+       lastID=clusters->back().ID()+1;
 
        // make the trigger - cluster association
        for(size_t c = startCluster; c < clusters->size(); ++c)
@@ -294,7 +296,8 @@ namespace cluster {
  void ClusterCrawlerT1034::Clustering(std::vector< art::Ptr<recob::Wire> > & wireVec, 
 				       std::vector<recob::Cluster> & clus, 
 				       std::vector< std::vector<recob::Hit> > & clusToHits,
-				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertex)
+				       std::map< size_t, std::vector<recob::Vertex> > & clusToVertex,
+                                       size_t & lastID)
  {  
 
 //example of a std::map
@@ -413,7 +416,7 @@ namespace cluster {
                            nclhits,                // n hits
                            0,                      // wires over hits
                            0,                      // width (0 for line-like clusters)
-                           clstr.ID,                  // ID
+                           clstr.ID+lastID,        // ID
                            view,                   // view
                            planeID,                // plane
                            recob::Cluster::Sentry  // sentry
@@ -421,7 +424,7 @@ namespace cluster {
 
           LOG_VERBATIM("ClusterCrawlerT1034") << " /////////////////////////////////////// "
                                                << "\n /////////////////////////////////////// "
-                                               << "\n Cluster ID " << clstr.ID << "   Number of hits " << nclhits << "   View " << view
+                                               << "\n Cluster ID " << clus.back().ID() << "   Number of hits " << nclhits << "   View " << view
                                                << "\n Cluster Info: Start Wire " << clstr.BeginWir << "   End Wire " << clstr.EndWir
                                                << "\n Cluster Info: Begin Time " << clstr.BeginTim << "   End Time " << clstr.EndTim
                                                << "\n Cluster Info: Charge " << sumChg << "   ADC Sum " << sumADC
