@@ -236,7 +236,7 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   fMaxNumberFitIterations = p.get< int         >("MaxNumberFitIterations", 5      );
   fTriggerDecisionTick    = p.get< unsigned int>("TriggerDecisionTick",    100    ); 
   fTrigger1740Pedestal    = p.get< float       >("Trigger1740Pedestal",    2000.  );
-  fTrigger1740Threshold   = p.get< float       >("Trigger1740Threshold",   100.   );
+  fTrigger1740Threshold   = p.get< float       >("Trigger1740Threshold",   0.     );
 
   std::vector<std::vector<unsigned int> > opChans = p.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
 
