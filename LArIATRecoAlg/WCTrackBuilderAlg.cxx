@@ -906,7 +906,6 @@ void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, 
 			   fY_cntr_4 + track.hits.at(7).wire,
 			   fZ_cntr_4 + track.hits.at(6).wire*float(sin(3.141592654/180*(3.0))) };
 
-  std::cout << "WC4 wires X/Y: " << track.hits.at(6).wire << "/" << track.hits.at(7).wire << std::endl;
 
   //  transformWCHits(WC3_point,WC4_point);
 
