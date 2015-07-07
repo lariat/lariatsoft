@@ -72,10 +72,10 @@ namespace wct {
 
 
   private:
-
     // Declare member data here.
 
-     std::string fTriggerUtility;
+    //Trigger Utility
+    std::string fTriggerUtility;
 
     //Algorithm object for track building
     WCTrackBuilderAlg fWCTrackBuilderAlg;
@@ -86,35 +86,33 @@ namespace wct {
  
     //Misc
     bool fVerbose;
-
   };
 
-
+  //===============================================================================================
   WCTrackBuilder::WCTrackBuilder(fhicl::ParameterSet const & p) :fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg"))
   // :
   // Initialize member data here.
-  {
-      
+  {      
     this->reconfigure(p);
-    // Call appropriate produces<>() functions here.
-  
+
+    // Call appropriate produces<>() functions here.  
     produces<std::vector<ldp::WCTrack> >();
     produces<art::Assns<raw::Trigger, ldp::WCTrack> >();
   }
 
+  //===============================================================================================
   void WCTrackBuilder::produce(art::Event & e)
-  {
-    
+  {    
     //Creating an association between the WireChamberTrack collection and the trigger
     std::unique_ptr<art::Assns<raw::Trigger, ldp::WCTrack> > TriggerWCTrackAssn(new art::Assns<raw::Trigger, ldp::WCTrack>);
   
     //Creating the WCTrack Collection
     std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
 
+
     // ###########################################
     // ### Grab the trigger data utility (tdu) ###
     // ###########################################
-
    
     rdu::TriggerDigitUtility tdu(e, fTriggerUtility);
       
@@ -170,8 +168,6 @@ namespace wct {
       std::vector<int> tdc_number_vect;
       std::vector<float> hit_channel_vect;
       std::vector<float> hit_time_bin_vect;
-
-
       convertDigitsToVectors( WireChamber1Digits,
 			    WireChamber2Digits,
 			    WireChamber3Digits,
@@ -179,9 +175,6 @@ namespace wct {
 			    tdc_number_vect,
 			    hit_channel_vect,
 			    hit_time_bin_vect );
-
-  
-      
   
       /*    
       //DO NOT ERASE - GOOD FOR SANITY CHECKS IN CASE AUXDETDIGITS AREN'T CONFIGURED CORRECTLY
@@ -248,8 +241,6 @@ namespace wct {
 					   hit_wire_vect,
 					   hit_time_vect);
 
-
-
 	//WCTrack object creation and association with trigger created
 	ldp::WCTrack the_track(reco_pz_list.at(reco_pz_list.size()-1-iNewTrack),
 			       y_kink_list.at(y_kink_list.size()-1-iNewTrack),
@@ -266,20 +257,14 @@ namespace wct {
 	(*WCTrackCol).push_back( the_track );
 	util::CreateAssn(*this, e, *(WCTrackCol.get()), theTrigger, *(TriggerWCTrackAssn.get()));
       }
-  
     }
-  
-  
+    
     //Put objects and associations into event (root file)
     e.put(std::move(TriggerWCTrackAssn));
     e.put(std::move(WCTrackCol));  
-  
-
   }
 
-//=================================================================================================
-
- 
+  //=================================================================================================
   void WCTrackBuilder::reconfigure(fhicl::ParameterSet const & p)
   {
     fTriggerUtility = p.get< std::string >("TriggerUtility");
@@ -288,8 +273,7 @@ namespace wct {
     fVerbose = p.get<bool>("Verbose");
   }
 
-//==================================================================================================
-
+  //==================================================================================================
   void WCTrackBuilder::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
 								   std::vector<int> & WC_vect,
 								   std::vector<float> & hit_wire_vect,
@@ -301,13 +285,11 @@ namespace wct {
       float the_wire = (final_track.hits.at(iHit).wire*-1)+64+(128*(iHit%2));
       if (fVerbose) { std::cout << "Old WCAxis/Wire: " << iHit << "/" << final_track.hits.at(iHit).wire << ", New WC/Wire: " << int(iHit/2)+1 << "/" << the_wire << std::endl; }
       hit_wire_vect.push_back(the_wire);
-      hit_time_vect.push_back(final_track.hits.at(iHit).time);
-    
+      hit_time_vect.push_back(final_track.hits.at(iHit).time);    
     }
   }
 
-//===============================================================================================
-
+  //===============================================================================================
   void WCTrackBuilder::convertDigitsToVectors( art::PtrVector<raw::AuxDetDigit> the_digits_1,
 						      art::PtrVector<raw::AuxDetDigit> the_digits_2,
 						      art::PtrVector<raw::AuxDetDigit> the_digits_3,
@@ -315,8 +297,7 @@ namespace wct {
 						      std::vector<int> & tdc_number_vect,
 						      std::vector<float> & hit_channel_vect,
 						      std::vector<float> & hit_time_bin_vect )
-  {
-  
+  {  
     if (fVerbose) {  std::cout << "Digits' sizes, 1:2:3:4: " << the_digits_1.size() << ":" << the_digits_2.size() << ":"  << the_digits_3.size() << ":" << the_digits_4.size() << std::endl;}
 
     //Loop through digits for WC1

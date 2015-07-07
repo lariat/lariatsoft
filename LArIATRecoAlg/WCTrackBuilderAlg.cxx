@@ -17,9 +17,12 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
+#include "Geometry/AuxDetGeo.h"
+
 
 // LArIAT includes
 #include "LArIATRecoAlg/WCTrackBuilderAlg.h"
+
 
 #include <iostream>
 #include <cmath>
@@ -30,6 +33,52 @@
 WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
+
+
+  //Testing the AuxDetGeo capabilitites
+  std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
+  double centerOfDet[3] = {0,0,0};
+  for( uint iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
+    geo::AuxDetGeo* anAuxDetGeo = theAuxDetGeoVect.at(iDet);
+    anAuxDetGeo->GetCenter(centerOfDet);
+
+    /*
+    std::cout << "************** AuxDet: " << iDet << "******************"  << std::endl;
+    std::cout << "Length: " << anAuxDetGeo->Length() << std::endl;
+    std::cout << "Half Width 1: " << anAuxDetGeo->HalfWidth1() << std::endl;
+    std::cout << "Half Width 2: " << anAuxDetGeo->HalfWidth2() << std::endl;
+    std::cout << "Test print" << std::endl;
+    std::cout << "Center (x,y,z): (" 
+	      << centerOfDet[0] << "," 
+	      << centerOfDet[1] << ","
+	      << centerOfDet[2] 
+	      << ")" << std::endl;
+    */
+
+    //Setting the TGeo world locations of the MWPCs in mm
+    if(iDet == 1){ //WC1
+      fX_cntr_1 = centerOfDet[0] * CLHEP::cm;
+      fY_cntr_1 = centerOfDet[1] * CLHEP::cm;
+      fZ_cntr_1 = centerOfDet[2] * CLHEP::cm;
+    }
+   if(iDet == 2){ //WC2
+      fX_cntr_2 = centerOfDet[0] * CLHEP::cm;
+      fY_cntr_2 = centerOfDet[1] * CLHEP::cm;
+      fZ_cntr_2 = centerOfDet[2] * CLHEP::cm;
+    }
+   if(iDet == 3){ //WC1
+      fX_cntr_3 = centerOfDet[0] * CLHEP::cm;
+      fY_cntr_3 = centerOfDet[1] * CLHEP::cm;
+      fZ_cntr_3 = centerOfDet[2] * CLHEP::cm;
+    }
+   if(iDet == 6){ //WC2
+      fX_cntr_4 = centerOfDet[0] * CLHEP::cm;
+      fY_cntr_4 = centerOfDet[1] * CLHEP::cm;
+      fZ_cntr_4 = centerOfDet[2] * CLHEP::cm;
+    }
+  }
+
+
     
   // rough guess beginning 2015.02: moved WC4 33" along the 3deg beam.
   // x = -1146.64 mm = -1102.77 mm - sin(3 deg)*33"
@@ -67,6 +116,10 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   auto tpcGeo = fGeo->begin_TPC_id().get();
   double tpcLocalCenter[3] = {0.};
   tpcGeo->LocalToWorld(tpcLocalCenter, fCenter_of_tpc);
+  //  std::cout << "fCenter of TPC: "
+  //	    << fCenter_of_tpc[0] << ","
+  //	    << fCenter_of_tpc[1] << ","
+  //	    << fCenter_of_tpc[2] << std::endl;
 
   // put the center of the TPC in world coordinates into mm
   for(int i = 0; i < 3; ++i) fCenter_of_tpc[i] *= CLHEP::cm;
@@ -75,6 +128,7 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   // returns the values in cm, so have to multiply by CLHEP::cm
   fHalf_z_length_of_tpc = 0.5*tpcGeo->ActiveLength() * CLHEP::cm;
   fHalf_x_length_of_tpc = tpcGeo->ActiveHalfWidth()  * CLHEP::cm;
+
 }
 
 //--------------------------------------------------------------  
@@ -104,21 +158,6 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
   fmm_to_m    		= pset.get<float >("MMtoM",        	  0.001     );	
   fGeV_to_MeV 		= pset.get<float >("GeVToMeV",    	  1000.0    );   
-  
-  // center (cntr) of multi-wire proportional chambers
-  ///\todo: Switch to using a service to get these values when available
-  fX_cntr_1             = pset.get<float >("XCntr1",              -392.33   ); 
-  fY_cntr_1 		= pset.get<float >("YCntr1",              0.0       );     	   
-  fZ_cntr_1 		= pset.get<float >("ZCntr1", 		  1683.59   ); 
-  fX_cntr_2 		= pset.get<float >("XCntr2", 		  -738.35   ); 
-  fY_cntr_2 		= pset.get<float >("YCntr2", 	   	  0.0       );     
-  fZ_cntr_2 		= pset.get<float >("ZCntr2", 		  3195.65   ); 
-  fX_cntr_3 		= pset.get<float >("XCntr3", 		  -1019.89  );
-  fY_cntr_3 		= pset.get<float >("YCntr3", 	   	  0.0       );     
-  fZ_cntr_3 		= pset.get<float >("ZCntr3", 		  5183.07   ); 
-  fX_cntr_4 		= pset.get<float >("XCntr4", 		  -1146.64  );
-  fY_cntr_4 		= pset.get<float >("YCntr4", 	   	  0.0       );     
-  fZ_cntr_4 		= pset.get<float >("ZCntr4", 		  7587.99   ); 
   
   return;
 }
@@ -288,17 +327,17 @@ void WCTrackBuilderAlg::midPlaneExtrapolation(std::vector<float> x_wires,
 {
   // correct x and z for rotation of MWPCs about the vertical
   float x[4] = { fX_cntr_1 + x_wires[0] * float(cos(3.141592654/180*(13.0))),
-		   fX_cntr_2 + x_wires[1] * float(cos(3.141592654/180*(13.0))),
-		   fX_cntr_3 + x_wires[2] * float(cos(3.141592654/180*(3.0))),
-		   fX_cntr_4 + x_wires[3] * float(cos(3.141592654/180*(3.0))) };
+		 fX_cntr_2 + x_wires[1] * float(cos(3.141592654/180*(13.0))),
+		 fX_cntr_3 + x_wires[2] * float(cos(3.141592654/180*(3.0))),
+		 fX_cntr_4 + x_wires[3] * float(cos(3.141592654/180*(3.0))) };
   float y[4] = { fY_cntr_1 + y_wires[0],
-		   fY_cntr_2 + y_wires[1],
-		   fY_cntr_3 + y_wires[2],
-		   fY_cntr_4 + y_wires[3] };
+		 fY_cntr_2 + y_wires[1],
+		 fY_cntr_3 + y_wires[2],
+		 fY_cntr_4 + y_wires[3] };
   float z[4] = { fZ_cntr_1 + x_wires[0] * float(sin(3.141592654/180*(13.0))),
-		   fZ_cntr_2 + x_wires[1] * float(sin(3.141592654/180*(13.0))),
-		   fZ_cntr_3 + x_wires[2] * float(sin(3.141592654/180*(3.0))),
-		   fZ_cntr_4 + x_wires[3] * float(sin(3.141592654/180*(3.0))) };
+		 fZ_cntr_2 + x_wires[1] * float(sin(3.141592654/180*(13.0))),
+		 fZ_cntr_3 + x_wires[2] * float(sin(3.141592654/180*(3.0))),
+		 fZ_cntr_4 + x_wires[3] * float(sin(3.141592654/180*(3.0))) };
   
   // upstream (us) leg, extrapolating forward to mid-plane
   float slope_xz_us = (z[1] - z[0])/(x[1] - x[0]);
@@ -411,7 +450,7 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  ////////////////////////////////////////////////////////////////////////////////////////////////
 		  
 		  //Convert x on tpc face to convention
-		  x_on_tpc_face = x_on_tpc_face+fHalf_x_length_of_tpc;
+		  //		  x_on_tpc_face = x_on_tpc_face+fHalf_x_length_of_tpc;
 
 		  //Add the track to the track list
 		  track_list.push_back(track);
@@ -867,8 +906,12 @@ void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, 
 			   fY_cntr_4 + track.hits.at(7).wire,
 			   fZ_cntr_4 + track.hits.at(6).wire*float(sin(3.141592654/180*(3.0))) };
 
-  transformWCHits(WC3_point,WC4_point);
 
+  //  transformWCHits(WC3_point,WC4_point);
+
+
+  /*
+  //OLD WAY OF FINDING X, Y, THETA, PHI AT FACE
   //Now have hit vectors in the frame of the TPC. Now we recreate the second track and find its
   //intersection with the upstream plane of the TPC. In this new frame, the upstream plane is just
   //Z = -450 mm. So we parametrize the track with t and find at which t Z = -450. We then use that
@@ -880,6 +923,18 @@ void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, 
   y = y_at_US_plane;
   float r = pow(pow(x-WC4_point[0],2)+pow(y-WC4_point[1],2),0.5);
   theta = atan(r/(-1*fHalf_z_length_of_tpc-WC4_point[2]));
+  */
+
+  //Now we have hit vectors in the frame of the TPC. Now we recreate the second track and find its
+  //intersection with the upstream plane of the TPC. In this new frame, the upstream plane is just
+  //Z = 0 mm, as it is in the TPC coordinate system
+  float parameter_t = (WC3_point[2])/(WC3_point[2]-WC4_point[2]);
+  float x_at_US_plane = (WC3_point[0])+parameter_t*(WC4_point[0]-WC3_point[0]);
+  float y_at_US_plane = (WC3_point[1])+parameter_t*(WC4_point[1]-WC3_point[1]);  
+  x = x_at_US_plane;
+  y = y_at_US_plane;
+  float r = pow(pow(x-WC4_point[0],2)+pow(y-WC4_point[1],2),0.5);
+  theta = atan(-r/(WC4_point[2]));
 
   //Calculating phi (degeneracy elimination for the atan function)
   float dY = WC4_point[1]-WC3_point[1];
