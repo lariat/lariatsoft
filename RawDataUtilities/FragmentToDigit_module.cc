@@ -1230,6 +1230,7 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
 {
 
   // the trigger bits are piped into the V1740 board in slot 7, inputs 48 to 63
+  // after run 6154 the bits were piped into a V1740 in slot 24, inputs 48 to 63
   // these are example connections as of May 08, 2015
   // 0   WC1      | OR of 2 X view TDCs ANDed with OR of 2 Y
   // 1   WC2      | "                                      " 
@@ -1259,7 +1260,7 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
 
   size_t minChan  = 48;
   size_t maxChan  = 64;
-  float  pedestal = 0.;
+
   for(auto const& frag : caenFrags){
 
     if     (frag.header.boardId != 7  && fRunNumber < 6155) continue;
@@ -1274,7 +1275,7 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
       // only look at the specific tick of the waveform where the trigger decision is taken
       if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1)
 	// the trigger waveform goes below the pedestal (low) if the trigger is on
-	if(fTrigger1740Pedestal - frag.waveFroms[chan].data[fTriggerDecisionTick] > fTrigger1740Threshold) 
+	if(fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick] > fTrigger1740Threshold) 
 	   triggerBits.set(chan - minChan);
 
     } // end loop over channels on the board
