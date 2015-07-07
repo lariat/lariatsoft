@@ -348,7 +348,8 @@ void FragmentToDigit::produce(art::Event & evt)
       auto trigToCAEN = fTriggerToCAENDataBlocks.find(trigNum);
 
       for(auto c : trigToCAEN->second) caenFrags.push_back(c);
-      
+
+      /// \todo May need to change from using the triggerTimeTag to some other value
       triggerVec->push_back(raw::Trigger(trigNum, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
       caenDataPresent = true;
     }
