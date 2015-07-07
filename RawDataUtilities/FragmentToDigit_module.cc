@@ -1252,21 +1252,22 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
   float  pedestal = 0.;
   for(auto const& frag : caenFrags){
 
-    if(frag.header.boardId != 7) continue;
+    if     (frag.header.boardId != 7  && fRunNumber < 6155) continue;
+    else if(frag.header.boardId != 24 && fRunNumber > 6154) continue;
 
-      for(size_t chan = minChan; chan < maxChan; ++chan){ 
-	if(chan > frag.waveForms.size() )
-	  throw cet::exception("FragmentToDigit") << "attempting to access channel "
-						  << chan << " from 1740 fragment with only "
-						  << frag.waveForms.size() << " channels";
-
-	std::vector<short> const trig(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
-	pedestal = this->findPedestal(trig);
-	for(auto const& data : trig){
-	  if(data < pedestal) triggerBits.set(chan - minChan);
-	}
-      } // end loop over channels on the board
-  }
+    for(size_t chan = minChan; chan < maxChan; ++chan){ 
+      if(chan > frag.waveForms.size() )
+	throw cet::exception("FragmentToDigit") << "attempting to access channel "
+						<< chan << " from 1740 fragment with only "
+						<< frag.waveForms.size() << " channels";
+      
+      std::vector<short> const trig(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
+      pedestal = this->findPedestal(trig);
+      for(auto const& data : trig){
+	if(data < pedestal) triggerBits.set(chan - minChan);
+      }
+    } // end loop over channels on the board
+  } // end loop over caen fragments
 
   return triggerBits.to_ulong();
 }  
