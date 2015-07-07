@@ -206,18 +206,19 @@ namespace cluster {
        }
 
        ClusterCrawlerT1034::Clustering(wireVec, clus, clusToHits, clusToVertex, lastID);
-       std::cout << " " <<std::endl;
+
        for(size_t ic = 0; ic < clus.size(); ++ic) 
        {  
           clusters->push_back(clus[ic]);   
+
           size_t startHitIdx = hits->size();
           for(size_t h = 0; h < clusToHits[ic].size(); ++h)
           {
 	     hits->push_back(clusToHits[ic][h]);
              chid=hits->back().Channel();
-
+              
              // make the wire - hit association
-             if(!util::CreateAssn(*this, evt, *hits, chIDToWire[chid], *wh_assn))//, hits->size()-1))
+             if(!util::CreateAssn(*this, evt, *hits, chIDToWire[chid], *wh_assn))
              {
                 throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with wire ";
              } // exception
@@ -225,19 +226,18 @@ namespace cluster {
           }   
           size_t endHitIdx = hits->size();
 
-
           // make the cluster - vertices association
           for(size_t v = 0; v< clusToVertex[ic].size(); ++v)
           {
    	     vertices->push_back(clusToVertex[ic][v]);
-             if(!util::CreateAssn(*this, evt, *clusters, *vertices, *cv_assn, vertices->size()-1, vertices->size(), ic))
+             if(!util::CreateAssn(*this, evt, *clusters, *vertices, *cv_assn, vertices->size()-1, vertices->size()))
              {
                 throw art::Exception(art::errors::InsertFailure) <<"Failed to associate vertex "<< vertices->size()-1 << " with cluster "<<ic;
              } // exception
           }
-
+ 
           // make the cluster - hit association
-          if(!util::CreateAssn(*this, evt, *clusters, *hits, *hc_assn, startHitIdx, endHitIdx, ic))
+          if(!util::CreateAssn(*this, evt, *clusters, *hits, *hc_assn, startHitIdx, endHitIdx))
           {
              throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<<" with cluster "<<ic;
           } // exception
