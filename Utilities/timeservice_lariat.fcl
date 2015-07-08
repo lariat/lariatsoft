@@ -9,7 +9,7 @@ lariat_timeservice.InheritClockConfig: true
 lariat_timeservice.G4RefTime:        -10. # G4 time [us] where electronics clock counting start
 lariat_timeservice.TriggerOffsetTPC: 0. # Time [us] for TPC readout start w.r.t. trigger time
 lariat_timeservice.FramePeriod:       393.2 # Frame period [us]
-lariat_timeservice.ClockSpeedTPC:     3.90625    # TPC clock speed in MHz
+lariat_timeservice.ClockSpeedTPC:     7.8125  # TPC clock speed in MHz 3.90625 value for 256ns sampling time  
 lariat_timeservice.ClockSpeedOptical: 1000.   # Optical clock speed in MHz
 lariat_timeservice.ClockSpeedTrigger: 16.   # Trigger clock speed in MHz
 lariat_timeservice.DefaultTrigTime:   10. # Default trigger time [us].

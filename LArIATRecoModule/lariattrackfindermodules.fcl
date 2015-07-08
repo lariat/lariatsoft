@@ -1,15 +1,42 @@
+#include "trackfinderalgorithms.fcl"
+#include "clusteralgorithms.fcl"
+
+
 BEGIN_PROLOG
 
 lariat_spacepts:
 {
-module_type:"SpacePoints"
-TicksOffset: 0.
-ClusterModuleLabel:"dbcluster"
-EndPoint2DModuleLabel:"vertex2d"
-TMatch: 50.0
-vertexclusterWindow: 100.
-TriggerUtility:  "FragmentToDigit"
+ module_type:           "SpacePointsT1034"
+ TicksOffset:           0.
+ ClusterModuleLabel:    "dbcluster"
+ EndPoint2DModuleLabel: "vertex2d"
+ TMatch:                50.0
+ vertexclusterWindow:   100.
+ TriggerUtility:        "FragmentToDigit"
 
+}
+
+lariat_cosmictracker:
+
+{
+ module_type:        "CosmicTrackerT1034"
+ ClusterModuleLabel: "dbcluster"
+ TMatch:             2.5  
+ SMatch:             1.0  
+ Toler1:             60   
+ Toler2:             40   
+ Debug:              false
+ IsoHitCut:          1    
+ SortDirection:      "+z"
+ StitchTracks:       false 
+ CleanUpHits:        true  
+ DirSPS:             false 
+ DisCut:             20
+ AngCut:             0.1
+ TrajOnly:           false
+ ClusterMatch:       @local::standard_clustermatchtq
+ CTAlg:              @local::standard_cosmictrackeralg
+ TriggerUtility:     "FragmentToDigit"
 }
 
 END_PROLOG

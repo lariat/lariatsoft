@@ -180,6 +180,13 @@ namespace geo {
   {    
     return fChannelMapAlg->PositionToAuxDetChannel(worldLoc, AuxDets(), ad, sv);
   }
+
+  //......................................................................
+  const TVector3 AuxDetGeometryCore::AuxDetChannelToPosition(uint32_t    const& channel,
+							     std::string const& auxDetName) const
+  {    
+    return fChannelMapAlg->AuxDetChannelToPosition(channel, auxDetName, AuxDets());
+  }
   
   //......................................................................
   const AuxDetGeo& AuxDetGeometryCore::ChannelToAuxDet(std::string const& auxDetName,

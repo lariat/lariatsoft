@@ -20,7 +20,8 @@
 // [x] Put Pawel's OpDetPulse modifications back in (Pawel)
 // [x] Add data block matching algorithm
 // [x] Add trigger associations (Brian)
-// [ ] Set the trigger bits correctly (Brian)
+// [x] Set the trigger bits correctly (Brian)
+// [ ] Add database access to the trigger configuration database
 // [x] Determine the pedestals for the RawDigits 
 // [ ] Add helpful comments throughout code. This may never be
 //     checked off.
@@ -194,11 +195,14 @@ private:
   std::map<size_t, size_t>                   fTDCToChamber;            ///< map TDCs to the chamber they are attached
   std::vector<std::string>                   fMWPCNames;               ///< vector to hold detector names of the MWPCs
   int                                        fRunNumber;               ///< current run number
+  size_t                                     fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
+  float                                      fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
+  float                                      fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
+  TH1F*   				     fRawDigitPedestals;       ///< computed pedestal values               
+  TH1F*  				     fRawDigitADC;             ///< pedestal subtracted values               
   TH2F *                                     FragCountsSameTrigger_1751vsTDC_NoTPC;	  
   TH2F * 				     FragCountsSameTrigger_1751vsTDC_WithTPC; 
   TH2F * 				     FragCountsSameTrigger_1751vsTDC_ExtraTPC;
-  TH1F*   				     fRawDigitPedestals;       ///< computed pedestal values               
-  TH1F*  				     fRawDigitADC;             ///< pedestal subtracted values               
 
 };
 
@@ -230,6 +234,10 @@ void FragmentToDigit::reconfigure(fhicl::ParameterSet const & p)
   fRawFragmentLabel       = p.get< std::string >("RawFragmentLabel",       "daq"  );
   fRawFragmentInstance    = p.get< std::string >("RawFragmentInstance",    "SPILL");
   fMaxNumberFitIterations = p.get< int         >("MaxNumberFitIterations", 5      );
+  fTriggerDecisionTick    = p.get< unsigned int>("TriggerDecisionTick",    100    ); 
+  fTrigger1740Pedestal    = p.get< float       >("Trigger1740Pedestal",    2000.  );
+  fTrigger1740Threshold   = p.get< float       >("Trigger1740Threshold",   0.     );
+
   std::vector<std::vector<unsigned int> > opChans = p.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
 
   for(size_t i = 0; i < opChans.size(); ++i){
@@ -340,7 +348,8 @@ void FragmentToDigit::produce(art::Event & evt)
       auto trigToCAEN = fTriggerToCAENDataBlocks.find(trigNum);
 
       for(auto c : trigToCAEN->second) caenFrags.push_back(c);
-      
+
+      /// \todo May need to change from using the triggerTimeTag to some other value
       triggerVec->push_back(raw::Trigger(trigNum, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
       caenDataPresent = true;
     }
@@ -1222,6 +1231,7 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
 {
 
   // the trigger bits are piped into the V1740 board in slot 7, inputs 48 to 63
+  // after run 6154 the bits were piped into a V1740 in slot 24, inputs 48 to 63
   // these are example connections as of May 08, 2015
   // 0   WC1      | OR of 2 X view TDCs ANDed with OR of 2 Y
   // 1   WC2      | "                                      " 
@@ -1243,30 +1253,34 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
   // Each waveform corresponds to a single trigger channel.  If the (pedestal subtracted?) value of any ADC
   // in a waveform is less than 0, then the trigger for that channel fired
 
-  //Need database eventually to set this correctly for different data-taking periods.
+  // Need database eventually to set this correctly for different data-taking periods.
+  // would set the fTriggerDecisionTick, fTrigger1740Pedestal, fTrigger1740Threshold values
+  // in the beginRun method
 
   std::bitset<16> triggerBits;
 
   size_t minChan  = 48;
   size_t maxChan  = 64;
-  float  pedestal = 0.;
+
   for(auto const& frag : caenFrags){
 
-    if(frag.header.boardId != 7) continue;
+    if     (frag.header.boardId != 7  && fRunNumber < 6155) continue;
+    else if(frag.header.boardId != 24 && fRunNumber > 6154) continue;
 
-      for(size_t chan = minChan; chan < maxChan; ++chan){ 
-	if(chan > frag.waveForms.size() )
-	  throw cet::exception("FragmentToDigit") << "attempting to access channel "
-						  << chan << " from 1740 fragment with only "
-						  << frag.waveForms.size() << " channels";
+    for(size_t chan = minChan; chan < maxChan; ++chan){ 
+      if(chan > frag.waveForms.size() )
+	throw cet::exception("FragmentToDigit") << "attempting to access channel "
+						<< chan << " from 1740 fragment with only "
+						<< frag.waveForms.size() << " channels";
+      
+      // only look at the specific tick of the waveform where the trigger decision is taken
+      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1)
+	// the trigger waveform goes below the pedestal (low) if the trigger is on
+	if(fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick] > fTrigger1740Threshold) 
+	   triggerBits.set(chan - minChan);
 
-	std::vector<short> const trig(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
-	pedestal = this->findPedestal(trig);
-	for(auto const& data : trig){
-	  if(data < pedestal) triggerBits.set(chan - minChan);
-	}
-      } // end loop over channels on the board
-  }
+    } // end loop over channels on the board
+  } // end loop over caen fragments
 
   return triggerBits.to_ulong();
 }  

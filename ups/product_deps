@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v01_05_01
+parent	lariatsoft v01_05_02
 defaultqual	e7
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
@@ -10,10 +10,10 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		v04_13_00
+larsoft		v04_14_01
 LariatFilters   v01_02
 lariatfragments v01_05_00
-artdaq_core     v1_04_13
+artdaq_core     v1_04_14
 LariatBeamFiles v01_00 - optional
 
 cetbuildtools   v4_11_01 - only_for_build
@@ -21,12 +21,12 @@ end_product_list
   
 # e7  - with gcc 4.9.2 and -std=c++11
 qualifier	larsoft   LariatFilters	lariatfragments artdaq_core	LariatBeamFiles	notes
-e7:debug	e7:debug  -nq-		e7:debug        e7:nu:s11:debug	-nq-					
-e7:opt		e7:opt	  -nq-		e7:opt		e7:nu:s11:opt	-nq-
-e7:prof		e7:prof	  -nq-		e7:prof		e7:nu:s11:prof	-nq-		
-e7:debug:nobeam	e7:debug  -nq-		e7:debug        e7:nu:s11:debug	-		
-e7:opt:nobeam	e7:opt	  -nq-		e7:opt		e7:nu:s11:opt	-		
-e7:prof:nobeam	e7:prof	  -nq-		e7:prof		e7:nu:s11:prof	-		
+e7:debug	e7:debug  -nq-		e7:debug        e7:nu:s12:debug	-nq-					
+e7:opt		e7:opt	  -nq-		e7:opt		e7:nu:s12:opt	-nq-
+e7:prof		e7:prof	  -nq-		e7:prof		e7:nu:s12:prof	-nq-		
+e7:debug:nobeam	e7:debug  -nq-		e7:debug        e7:nu:s12:debug	-		
+e7:opt:nobeam	e7:opt	  -nq-		e7:opt		e7:nu:s12:opt	-		
+e7:prof:nobeam	e7:prof	  -nq-		e7:prof		e7:nu:s12:prof	-		
 
 end_qualifier_list
 

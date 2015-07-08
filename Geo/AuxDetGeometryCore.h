@@ -269,6 +269,9 @@ namespace geo {
     const uint32_t           PositionToAuxDetChannel(double const worldLoc[3],
 						     size_t     & ad,
 						     size_t     & sv) const;
+    const TVector3           AuxDetChannelToPosition(uint32_t    const& channel,
+						     std::string const& auxDetName) const;
+
 
     const AuxDetGeo&         ChannelToAuxDet(std::string const& auxDetName,
 					     uint32_t    const& channel) const; // return the AuxDetGeo for the given detector 
@@ -276,11 +279,6 @@ namespace geo {
 
     const AuxDetSensitiveGeo& ChannelToAuxDetSensitive(std::string const& auxDetName,
 						       uint32_t    const& channel) const; // return the AuxDetSensitiveGeo for the given
-    
-    /// @} Auxiliary detectors access and information
-    
-    
-    
     
     /// @name Geometry initialization
     /// @{
