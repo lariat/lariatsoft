@@ -6,8 +6,8 @@
  *
  */
 
-#ifndef GEO_GEOMETRY_H
-#define GEO_GEOMETRY_H
+#ifndef GEO_AUXDETGEOMETRY_H
+#define GEO_AUXDETGEOMETRY_H
 
 // LArSoft libraries
 
@@ -121,4 +121,4 @@ namespace geo {
 
 DECLARE_ART_SERVICE(geo::AuxDetGeometry, LEGACY)
 
-#endif // GEO_GEOMETRY_H
+#endif // GEO_AUXDETGEOMETRY_H
