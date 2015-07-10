@@ -127,6 +127,28 @@ namespace rdu{
   }
 
   //----------------------------------------------------------------------------
+  raw::Trigger const& TriggerDigitUtility::Trigger(size_t t) const
+  {
+    if(t > fTriggers.size() )
+      throw cet::exception("TriggerDigitUtility") << "request for trigger " << t 
+						  << " is beyond bounds of trigger vector "
+						  << fTriggers.size();
+
+    return *fTriggers[t];
+  }
+
+  //----------------------------------------------------------------------------
+  art::Ptr<raw::Trigger> TriggerDigitUtility::Trigger(size_t t) const
+  {
+    if(t > fTriggers.size() )
+      throw cet::exception("TriggerDigitUtility") << "request for trigger " << t 
+						  << " is beyond bounds of trigger vector "
+						  << fTriggers.size();
+
+    return fTriggers[t];
+  }
+
+  //----------------------------------------------------------------------------
   std::vector<const raw::Trigger*> TriggerDigitUtility::EventTriggers() const
   {
     // loop over the PtrVector and make the vector of raw::Triggers

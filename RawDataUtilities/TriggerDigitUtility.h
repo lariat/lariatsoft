@@ -44,6 +44,8 @@ namespace rdu{
 
     // Methods for accessing Triggers
     size_t                                    NTriggers()                                        const;
+    raw::Trigger                       const& Trigger(size_t t)                                  const;
+    art::Ptr<raw::Trigger>                    TriggerPtr(size_t t)                               const;
     std::vector<const raw::Trigger*>          EventTriggers() 				      	 const;			  
     art::PtrVector<raw::Trigger>       const& EventTriggersPtr() 			      	 const;
 
