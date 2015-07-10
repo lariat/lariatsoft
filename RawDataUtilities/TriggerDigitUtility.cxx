@@ -138,7 +138,7 @@ namespace rdu{
   }
 
   //----------------------------------------------------------------------------
-  art::Ptr<raw::Trigger> TriggerDigitUtility::Trigger(size_t t) const
+  art::Ptr<raw::Trigger> TriggerDigitUtility::TriggerPtr(size_t t) const
   {
     if(t > fTriggers.size() )
       throw cet::exception("TriggerDigitUtility") << "request for trigger " << t 
