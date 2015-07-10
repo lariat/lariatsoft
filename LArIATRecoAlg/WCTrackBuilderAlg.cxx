@@ -38,7 +38,7 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   //Testing the AuxDetGeo capabilitites
   std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
   double centerOfDet[3] = {0,0,0};
-  for( uint iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
+  for( size_t iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
     geo::AuxDetGeo* anAuxDetGeo = theAuxDetGeoVect.at(iDet);
     anAuxDetGeo->GetCenter(centerOfDet);
 
