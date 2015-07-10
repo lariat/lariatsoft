@@ -49,6 +49,12 @@ namespace rdu{
     std::vector<const raw::Trigger*>          EventTriggers() 				      	 const;			  
     art::PtrVector<raw::Trigger>       const& EventTriggersPtr() 			      	 const;
 
+    // Methods to determine if a trigger bit is on
+    bool                                      Triggered(size_t      const& t,
+							std::string const& trigName)             const;
+    bool                                      Triggered(size_t      const& t,
+							size_t      const& bit)                  const;
+
     // Methods for accessing RawDigits
     std::vector<const raw::RawDigit*>         EventRawDigits()   		   	         const;			   	 
     art::PtrVector<raw::RawDigit>             EventRawDigitsPtr()   		   	         const;                  	 
@@ -144,6 +150,8 @@ namespace rdu{
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerHaloDigits;          /// vector mapping trigger index to collection of halo digits
     std::vector< art::PtrVector<raw::AuxDetDigit> > fTriggerTriggerWaveForms;    /// vector mapping trigger index to collection of trigger waveforms
     std::vector< art::PtrVector<raw::OpDetPulse>  > fTriggerOpDetPulses;         /// vector mapping trigger index to collection of OpDetPulses
+
+    std::map<std::string, size_t>                   fTriggerNameToChannel;       /// map the trigger name to the channel number from the 1740
 
   };   
 
