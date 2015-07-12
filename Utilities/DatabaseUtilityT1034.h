@@ -17,7 +17,7 @@
 #include "fhiclcpp/ParameterSet.h"
 
 // PostgreSQL includes
-#include <libpq-fe.h>
+#include "libpq-fe.h"
 
 namespace util {
 
@@ -55,7 +55,7 @@ namespace util {
 
     //////////////////////////////////////////////////////////
     // the following methods return a map where the key is
-    // the column name and the value is the value
+    // the column name and the mapped value is the value
     //////////////////////////////////////////////////////////
 
     // retrieve row from the lariat_xml_database table

@@ -27,6 +27,7 @@ namespace util {
   DatabaseUtilityT1034::DatabaseUtilityT1034(fhicl::ParameterSet   const& pset,
                                              art::ActivityRegistry      & reg) {
 
+    // read in parameters from .fcl files
     this->reconfigure(pset);
 
   }
@@ -38,16 +39,18 @@ namespace util {
   //-----------------------------------------------------------------------
   void DatabaseUtilityT1034::reconfigure(fhicl::ParameterSet const& pset) {
 
+    // get parameters from .fcl files
     fDBHost = pset.get< std::string >("DBHost", "ifdb02.fnal.gov");
     fDBPort = pset.get< std::string >("DBPort", "5443");
     fDBName = pset.get< std::string >("DBName", "lariat_prd");
     fDBUser = pset.get< std::string >("DBUser", "lariat_prd_user");
+
     fDBPasswordFile = pset.get< std::string >("DBPasswordFile", "lariat_prd_passwd");
     fDBReconnectWaitTime = pset.get< unsigned int >("DBReconnectWaitTime", 10);
     fDBNumberConnectAttempts = pset.get< unsigned int >("DBNumberConnectAttempts", 3);
 
-    fConfigTableName = pset.get< std::string >("DBConfigTableName", "lariat_xml_database");
-    fIFBeamTableName = pset.get< std::string >("DBIFBeamTableName", "lariat_ifbeam_database");
+    fConfigTableName = pset.get< std::string >("ConfigTableName", "lariat_xml_database");
+    fIFBeamTableName = pset.get< std::string >("IFBeamTableName", "lariat_ifbeam_database");
 
     // find the password file
     cet::search_path search_path("FW_SEARCH_PATH");
@@ -131,7 +134,7 @@ namespace util {
     while (PQstatus(fConnection) != CONNECTION_OK) {
 
       mf::LogVerbatim("DatabaseUtilityT1034") << "Connection to database failed: "
-                                         << PQerrorMessage(fConnection);
+                                              << PQerrorMessage(fConnection);
       PQfinish(fConnection);
 
       number_attempts += 1;
@@ -296,6 +299,7 @@ namespace util {
   std::map< std::string, std::string > DatabaseUtilityT1034::GetConfigValues(std::vector< std::string > const& ColumnNames,
                                                                              int                        const& RunNumber) {
 
+    // concatenate column names into single string for query
     std::string column_names;
 
     size_t number_columns = ColumnNames.size();
@@ -329,6 +333,7 @@ namespace util {
                                                                              int                        const& RunNumber,
                                                                              int                        const& SubRunNumber) {
 
+    // concatenate column names into single string for query
     std::string column_names;
 
     size_t number_columns = ColumnNames.size();

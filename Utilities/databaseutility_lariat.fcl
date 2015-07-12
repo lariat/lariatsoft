@@ -10,6 +10,9 @@ lariat_databaseutility:
 
   DBReconnectWaitTime:     10
   DBNumberConnectAttempts:  3
+
+  ConfigTableName: "lariat_xml_database"
+  IFBeamTableName: "lariat_ifbeam_database"
 }
 
 END_PROLOG
