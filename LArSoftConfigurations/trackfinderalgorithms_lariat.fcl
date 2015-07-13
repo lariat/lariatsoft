@@ -1,4 +1,5 @@
 #include "trackfinderalgorithms.fcl"
+#include "clusteralgorithms.fcl"
 
 BEGIN_PROLOG
 
@@ -8,7 +9,8 @@ lariat_kalmanfilteralg: @local::standard_kalmanfilteralg
 
 lariat_trackstitcheralg:  @local::standard_trackstitcheralg
 
-
+lariat_clustermatchtq:                               @local::standard_clustermatchtq
+lariat_clustermatchtq.KSCut:                         0.7                # DEFAULT: 0.9
 
 
 lariat_seedfinderalgorithm:                          @local::standard_seedfinderalgorithm
