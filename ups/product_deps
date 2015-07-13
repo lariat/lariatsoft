@@ -32,8 +32,9 @@ end_qualifier_list
 
 # table file fragment to set FW_DATA
 table_fragment_begin
-    pathPrepend(FW_DATA,        /grid/fermiapp/lariat/)
-    pathPrepend(FW_SEARCH_PATH, ${UPS_PROD_DIR}/gdml:/grid/fermiapp/lariat/:/grid/fermiapp/lbne/lar/aux/)
+    pathPrepend(FW_DATA,         /grid/fermiapp/lariat/)
+    pathPrepend(FW_SEARCH_PATH,  ${UPS_PROD_DIR}/gdml:/grid/fermiapp/lariat/:/lariat/data:/grid/fermiapp/lbne/lar/aux/)
+    pathPrepend(FHICL_FILE_PATH, .)
 table_fragment_end
 
 
