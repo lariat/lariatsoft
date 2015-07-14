@@ -1,0 +1,11 @@
+BEGIN_PROLOG
+
+lariat_anatree:
+{
+    module_type:              "AnaTreeT1034"
+    HitsModuleLabel:          "cccluster"
+    TrackModuleLabel:         "ct"
+    TriggerUtility:           "FragmentToDigit"
+}
+
+END_PROLOG
