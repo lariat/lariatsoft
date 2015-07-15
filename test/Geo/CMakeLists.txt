@@ -40,6 +40,7 @@ cet_test(geometry_iterator_lariat_test
             ${MF_UTILITIES}
             ${FHICLCPP}
             ${CETLIB}
+  USE_BOOST_UNIT
 )
 
 
