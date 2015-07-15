@@ -196,7 +196,25 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
    art::FindManyP<recob::Hit>   fmh (tdu.EventTriggersPtr(), evt, fHitsModuleLabel);
    art::FindManyP<recob::Track> fmt (tdu.EventTriggersPtr(), evt, fTrackModuleLabel);
+
+   art::Handle< std::vector<recob::Track> > trackListHandle;
+   evt.getByLabel(fTrackModuleLabel,trackListHandle);
+
+   art::Handle< std::vector<recob::Hit> > hitListHandle;
+   evt.getByLabel(fHitsModuleLabel,hitListHandle);
+
+   art::FindManyP<recob::SpacePoint> fmsp (trackListHandle, evt, fTrackModuleLabel);
+   art::FindMany<recob::Track>       fmtk (hitListHandle,   evt, fTrackModuleLabel);
   
+   std::vector<const sim::SimChannel*> fSimChannels;
+   try
+   {
+      evt.getView("largeant", fSimChannels);
+   }
+   catch (art::Exception const&e)
+   {
+   }
+
    for(size_t t = 0; t < tdu.NTriggers(); ++t)        // Loop over triggers                          
    {
       // Skip trigger if empty
@@ -232,17 +250,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 */
 
 //      art::FindOne<raw::RawDigit>       ford (hitlist,   evt, fHitsModuleLabel);
-      art::FindManyP<recob::SpacePoint> fmsp (tracklist, evt, fTrackModuleLabel);
-      art::FindMany<recob::Track>       fmtk (hitlist,   evt, fTrackModuleLabel);
-
-      std::vector<const sim::SimChannel*> fSimChannels;
-      try
-      {
-         evt.getView("largeant", fSimChannels);
-      }
-      catch (art::Exception const&e)
-      {
-      }
+//      art::FindManyP<recob::SpacePoint> fmsp (tracklist, evt, fTrackModuleLabel);
+//      art::FindMany<recob::Track>       fmtk (hitlist,   evt, fTrackModuleLabel);
 
       //track information
       ntracks_reco=tracklist.size();
