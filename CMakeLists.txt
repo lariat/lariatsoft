@@ -94,6 +94,8 @@ add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
 add_subdirectory(LongBo)
 
+add_subdirectory(AnalysisExample)
+
 
 # tests
 add_subdirectory(test)
