@@ -16,6 +16,20 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <string>
+#include <map>
+
+#include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
+#include "art/Utilities/InputTag.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+
 
 //Framework includes
 #include "fhiclcpp/ParameterSet.h"
@@ -23,6 +37,9 @@
 
 //LArSoft includes
 #include "RawData/TriggerData.h"
+
+//LArIATSoft includes
+#include "Utilities/DatabaseUtilityT1034.h"
 
 //--------------------------------------------
 class TriggerFilterAlg{
@@ -34,6 +51,8 @@ class TriggerFilterAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
 
+
+
   bool doesTriggerPassFilter( raw::Trigger theTrigger, std::string filterPattern );
   void parseFilterPattern( std::string filterPattern,
 			   std::vector<std::string> & triggerInputs,
@@ -43,11 +62,21 @@ class TriggerFilterAlg{
 				raw::Trigger theTrigger );
   void initializeBitsToStrings( std::map<std::string,bool> & whatIsTriggered,
 				raw::Trigger theTrigger );
-  
+  void loadXMLDatabaseTable( int run );
 
+  bool verifyInputPattern( std::vector<std::string> filterTriggerInputs,
+			   std::vector<std::string> filterVetoInputs );
+    
 
  private:
   bool fVerbose;
+  size_t fNumTrigInputs;
+  art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
+  int fRun;
+  std::vector<std::string> fTriggerInputConfigParams;
+  std::map<std::string,std::string> fTriggerInputConfigValues;
+
+
 
 };
 

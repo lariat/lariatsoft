@@ -23,12 +23,15 @@
 
 //LArSoft/LArIATSoft includes
 #include "TriggerFilterAlg.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
 //--------------------------------------------------------------
 //Constructor
 TriggerFilterAlg::TriggerFilterAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
+  fNumTrigInputs = 16;
+  
 }
 
 //--------------------------------------------------------------
@@ -52,10 +55,20 @@ bool TriggerFilterAlg::doesTriggerPassFilter(raw::Trigger theTrigger, std::strin
   //to be compared to the TriggerBits member of the Trigger class
 
   //Creating the TRIGGER and VETO choice vectors
-  std::vector<std::string> triggerInputs;
-  std::vector<std::string> vetoInputs;
-  parseFilterPattern( filterPattern, triggerInputs, vetoInputs );
-  bool didTriggerPassFilter = comparePatternToTrigger( triggerInputs, vetoInputs, theTrigger );
+  std::vector<std::string> filterTriggerInputs;
+  std::vector<std::string> filterVetoInputs;
+  parseFilterPattern( filterPattern, filterTriggerInputs, filterVetoInputs );
+
+  //Checking to make sure that the filter patterns are all included in current 16 options
+  bool isPatternValid = verifyInputPattern( filterTriggerInputs, filterVetoInputs );
+  if( isPatternValid == false ){
+    std::cout << "You have input a filter pattern specifying a device that is not in the 16 trigger inputs for run "
+	      << fRun << ". Please correct. Returning false for filter abort." << std::endl;
+    return isPatternValid;
+  }
+
+  //If the input patterns are all valid, we finally compare them to the triggerBits
+  bool didTriggerPassFilter = comparePatternToTrigger( filterTriggerInputs, filterVetoInputs, theTrigger );
   if( fVerbose ){ 
     if( didTriggerPassFilter ){ std::cout << "Trigger passed filter!" << std::endl; }
     else{ std::cout << "Trigger failed filter." << std::endl; }
@@ -115,12 +128,12 @@ void TriggerFilterAlg::parseFilterPattern( std::string filterPattern,
   }
 
   if( fVerbose ){  
-    std::cout << "*********TRIGGER PATTERNS**********" << std::endl;
+    std::cout << "--------->TRIGGER PATTERNS" << std::endl;
     for( size_t iWord = 0; iWord < triggerInputs.size(); ++iWord ){
       std::cout << triggerInputs.at(iWord) << std::endl;
     }
     
-    std::cout << "*********VETO PATTERNS*************" << std::endl;
+    std::cout << "--------->VETO PATTERNS" << std::endl;
     for( size_t iWord = 0; iWord < vetoInputs.size(); ++iWord ){
       std::cout << vetoInputs.at(iWord) << std::endl;
     }
@@ -155,6 +168,12 @@ bool TriggerFilterAlg::comparePatternToTrigger( std::vector<std::string> trigger
 void TriggerFilterAlg::initializeBitsToStrings( std::map<std::string,bool> & whatIsTriggered,
 						raw::Trigger theTrigger )
 {
+  //Now using the database-retrieval method for getting trigger input values
+  for( size_t iConfig = 0; iConfig < fNumTrigInputs ; ++iConfig ){
+    std::string xmlTriggerInput = fTriggerInputConfigValues.at(fTriggerInputConfigParams.at(iConfig));
+    whatIsTriggered.emplace(xmlTriggerInput,theTrigger.Triggered(iConfig));
+  }
+  /*
   whatIsTriggered.emplace("WC1",theTrigger.Triggered(0));
   whatIsTriggered.emplace("WC2",theTrigger.Triggered(1));
   whatIsTriggered.emplace("WC3",theTrigger.Triggered(2));
@@ -171,6 +190,15 @@ void TriggerFilterAlg::initializeBitsToStrings( std::map<std::string,bool> & wha
   whatIsTriggered.emplace("SC2 CFD",theTrigger.Triggered(13));
   whatIsTriggered.emplace("SC3 CFD",theTrigger.Triggered(14));
   whatIsTriggered.emplace("MuRS",theTrigger.Triggered(15));
+  */
+  
+  if( fVerbose ){
+    std::cout << "---------> TRIGGER INPUT CONFIG" << std::endl;
+    for( size_t iTrig = 0; iTrig < fNumTrigInputs; ++iTrig ){
+      std::cout << "Bit: " << iTrig << ", Device: " << fTriggerInputConfigValues.at(fTriggerInputConfigParams.at(iTrig)) << std::endl;
+    }
+  }
+
 
   if( fVerbose ){
     //Temporary testing
@@ -184,3 +212,63 @@ void TriggerFilterAlg::initializeBitsToStrings( std::map<std::string,bool> & wha
 }
 
   
+//============================================================================================
+//This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginRun() method of your analysis module
+void TriggerFilterAlg::loadXMLDatabaseTable( int run )
+{
+  fRun = run;
+
+  
+  if( fVerbose ){
+    std::cout << "**************************************************" << std::endl;
+    std::cout << " NEW RUN: " << fRun << std::endl;
+    std::cout << "**************************************************" << std::endl;
+  }
+  
+
+
+  //Specifying the trigger input config labels
+  for( size_t iConfig = 0; iConfig < fNumTrigInputs; ++iConfig ){
+    char name[40];
+    sprintf(name,"v1495_config_v1495_in%d_name",int(iConfig));
+    fTriggerInputConfigParams.push_back(name);
+  }
+  
+  //Loading the corresponding string values into a map with the labels
+  fTriggerInputConfigValues = fDatabaseUtility->GetConfigValues(fTriggerInputConfigParams,fRun);
+}
+
+//============================================================================================
+//This is used to determine if there are user-input trigger patterns 
+bool TriggerFilterAlg::verifyInputPattern( std::vector<std::string> filterTriggerInputs,
+					   std::vector<std::string> filterVetoInputs )
+{
+  /*
+  for( size_t iV = 0; iV < filterVetoInputs.size() ; ++iV )
+    std::cout << "FilterVetoInputsVerify: " << filterVetoInputs.at(iV) << std::endl;
+  for( size_t iT = 0; iT < filterTriggerInputs.size(); ++iT )
+    std::cout << "FilterTriggerInputsVerify: " << filterTriggerInputs.at(iT) << std::endl;
+  */
+  
+  //Checking to make sure that each user defined filter trigger string matches a database trigger string
+  for( size_t iTrig = 0; iTrig < filterTriggerInputs.size(); ++iTrig ){
+    bool hasMatch = false;
+    std::map< std::string, std::string >::iterator iter;
+    for( iter = fTriggerInputConfigValues.begin(); iter != fTriggerInputConfigValues.end(); ++iter ){
+      if( iter->second == filterTriggerInputs.at(iTrig) ) hasMatch = true;
+    }
+    if( hasMatch == false ) return false;
+  }
+
+  //Checking to make sure that each user defined filter veto string matches a database veto string
+  for( size_t iVeto = 0; iVeto < filterVetoInputs.size(); ++iVeto ){
+    bool hasMatch = false;
+    std::map< std::string, std::string >::iterator iter;
+    for( iter = fTriggerInputConfigValues.begin(); iter != fTriggerInputConfigValues.end(); ++iter ){
+      if( iter->second == filterVetoInputs.at(iVeto) ) hasMatch = true;
+    }
+    if( hasMatch == false ) return false;
+  }
+
+  return true;
+}

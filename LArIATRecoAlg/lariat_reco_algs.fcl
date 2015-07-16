@@ -7,7 +7,7 @@ lariat_wctrackbuilderalg:
 
 lariat_triggerfilteralg:
 {
-  Verbosity: 0	
+  Verbosity: false
 }
 
 END_PROLOG
