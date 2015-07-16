@@ -1,4 +1,5 @@
 #include "trackfinderalgorithms.fcl"
+#include "trackfinderalgorithms_lariat.fcl"
 #include "clusteralgorithms.fcl"
 
 
@@ -21,20 +22,20 @@ lariat_cosmictracker:
 {
  module_type:        "CosmicTrackerT1034"
  ClusterModuleLabel: "dbcluster"
- TMatch:             2.5  
- SMatch:             1.0  
- Toler1:             60   
- Toler2:             40   
- Debug:              false
+ TMatch:             15                                 # DEFAULT VALUE 2.5  
+ SMatch:             1.0                                # DEFAULT VALUE 1.0  
+ Toler1:             60                                 # DEFAULT VALUE 60   
+ Toler2:             40                                 # DEFAULT VALUE 40   
+ Debug:              false                              # DEFAULT VALUE false
  IsoHitCut:          1    
  SortDirection:      "+z"
- StitchTracks:       false 
+ StitchTracks:       false                              # DEFAULT VALUE false 
  CleanUpHits:        true  
  DirSPS:             false 
- DisCut:             20
- AngCut:             0.1
- TrajOnly:           false
- ClusterMatch:       @local::standard_clustermatchtq
+ DisCut:             20                                 # DEFAULT VALUE 20
+ AngCut:             0.1                                # DEFAULT VALUE 0.1
+ TrajOnly:           false                              # DEFAULT VALUE false
+ ClusterMatch:       @local::lariat_clustermatchtq
  CTAlg:              @local::standard_cosmictrackeralg
  TriggerUtility:     "FragmentToDigit"
 }
