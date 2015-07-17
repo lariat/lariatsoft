@@ -70,7 +70,7 @@ private:
 };
 
 
-lrm::MyNewMod::MyNewMod(fhicl::ParameterSet const & p) :fTrigFiltAlg(p.get< fhicl::ParameterSet > ("TriggerFilterAlg"))
+lrm::MyNewMod::MyNewMod(fhicl::ParameterSet const & p) //:fTrigFiltAlg(p.get< fhicl::ParameterSet > ("TriggerFilterAlg"))
 // :
 // Initialize member data here.
 {
