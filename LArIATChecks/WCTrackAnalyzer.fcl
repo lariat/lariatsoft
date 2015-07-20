@@ -6,7 +6,6 @@ process_name: WCTrackAnalyzer
 
 services:
 {
-  TFileService: { fileName: "WireChamberTrackBuilder_histo.root" }
   message:      @local::standard_info
   user:         @local::lariat_services
 }
@@ -36,7 +35,7 @@ physics:
       module_type: WCTrackAnalyzer
       WCTrackLabel: "WCTrackBuilder"
       WCDigLabel: "FragmentToDigit"
-      WCScale: 1.0 
+      WCScale: 0.1 
       NWC: 4     
       XBins: 600.    
       XHi:   300.   
@@ -59,13 +58,15 @@ physics:
       KinkHi: 5
       KinkLo: -5
       KinkBins: 100
-      ThetaHi: 0.2
-      ThetaLo: 0
-      ThetaBins: 100
+      ThetaHi: 1.6
+      ThetaLo: -1.6
+      ThetaBins: 1600
       PhiHi: 6.28
       PhiLo: 0
       PhiBins: 100
-
+      FaceHi: 300
+      FaceLo: -300
+      FaceBins: 600
     }
   }
   

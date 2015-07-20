@@ -1,17 +1,21 @@
 #include "clustermodules.fcl"
+##include "clusteralgorithms.fcl"
 
 BEGIN_PROLOG
 
 lariat_dbscanalg:                                 @local::standard_dbscanalg        
                                                                                     
 lariat_clustercrawleralg:                         @local::standard_clustercrawleralg
-lariat_clustercrawleralg.AllowNoHitWire:          3                                 
-lariat_clustercrawleralg.MaxWirSkip:              [12, 8, 2]                        
-lariat_clustercrawleralg.MinWirAfterSkip:         [1, 1, 1]                         
+lariat_clustercrawleralg.DoMerge:                 [true, true, true] # merge far clusters                                    DEFAULT: [false, true, true]
+lariat_clustercrawleralg.AllowNoHitWire:          5                  # Allow skipping N wires w no hits (if poor purity)     DEFAULT: 1               
+lariat_clustercrawleralg.MaxWirSkip:              [30, 15, 10]       # max number of wires to skip without adding a hit      DEFAULT: [25, 8, 2]                    
+lariat_clustercrawleralg.MinWirAfterSkip:         [1, 1, 1]          # min reqd # of consecut wires with hit after a skip    DEFAULT: [2, 2, 1]               
+lariat_clustercrawleralg.TimeDelta:               [5., 6., 20.]      #  max time difference for cluster merging              DEFAULT: [2., 3., 10.]
+lariat_clustercrawleralg.MinHits:                 [50, 10, 5]        # minimum size of a cluster                             DEFAULT: [50,  8, 3]
 lariat_clustercrawleralg.ChiCut:                  [2., 2., 2.]                      
 lariat_clustercrawleralg.ChgCut:                  [2., 2., 2.]                      
-lariat_clustercrawleralg.HitErrFac:               0.6                               
-                                                                                    
+lariat_clustercrawleralg.HitErrFac:               0.6     
+                                                                                   
 lariat_cchitfinderalg:                            @local::standard_cchitfinderalg   
 lariat_cchitfinderalg.MinSigInd:                  1.8                               
 lariat_cchitfinderalg.MinSigCol:                  2.5                               

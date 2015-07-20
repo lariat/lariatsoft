@@ -226,15 +226,20 @@ namespace geo{
 
 	if(auxDetName.find("MWPC") != std::string::npos){
 	  
+	  int chanInt = channel;
 	  // x view channels first
+	  // The middle wire is in the middle of the chamber in 
+	  // the relevant direction.  Wire 0 is at one end of the
+	  // x view, 127 at the other.  Wire 128 is at one end of 
+	  // the y view, 255 at the other
 	  if(channel < 128){
-	    x = svOrigin[0] + (64 - channel)*fMWPCWirePitch;
+	    x = svOrigin[0] + (64 - chanInt)*fMWPCWirePitch;
 	    y = svOrigin[1];
 	    z = svOrigin[2] - fMWPCPlanePitch;
 	  }
 	  else{
 	    x = svOrigin[0];
-	    y = svOrigin[1] + (192 - channel)*fMWPCWirePitch;;
+	    y = svOrigin[1] + (192 - chanInt)*fMWPCWirePitch;;
 	    z = svOrigin[2] + fMWPCPlanePitch;
 	  }
 	  

@@ -25,6 +25,8 @@
 
 #include "RawDataUtilities/TriggerDigitUtility.h"
 
+#include <bitset>
+
 namespace rdu{
 
   //----------------------------------------------------------------------------
@@ -110,6 +112,15 @@ namespace rdu{
 
       } // end loop over AuxDetDigits for this trigger
 
+      if(t == 0){
+
+	// make the map of the trigger name to the channel number from the V1740
+	// just use the first trigger in the event
+	for( auto twf : fTriggerTriggerWaveForms[0] ) 
+	  fTriggerNameToChannel[twf->AuxDetName()] = twf->Channel();
+	  
+      }
+      
     } // end loop over triggers
 
     return;
@@ -124,6 +135,28 @@ namespace rdu{
   size_t TriggerDigitUtility::NTriggers() const
   {
     return fTriggers.size();
+  }
+
+  //----------------------------------------------------------------------------
+  raw::Trigger const& TriggerDigitUtility::Trigger(size_t t) const
+  {
+    if(t > fTriggers.size() )
+      throw cet::exception("TriggerDigitUtility") << "request for trigger " << t 
+						  << " is beyond bounds of trigger vector "
+						  << fTriggers.size();
+
+    return *fTriggers[t];
+  }
+
+  //----------------------------------------------------------------------------
+  art::Ptr<raw::Trigger> TriggerDigitUtility::TriggerPtr(size_t t) const
+  {
+    if(t > fTriggers.size() )
+      throw cet::exception("TriggerDigitUtility") << "request for trigger " << t 
+						  << " is beyond bounds of trigger vector "
+						  << fTriggers.size();
+
+    return fTriggers[t];
   }
 
   //----------------------------------------------------------------------------
@@ -142,6 +175,44 @@ namespace rdu{
   art::PtrVector<raw::Trigger> const& TriggerDigitUtility::EventTriggersPtr() const
   {
     return fTriggers;
+  }
+
+  //----------------------------------------------------------------------------
+  bool TriggerDigitUtility::Triggered(size_t      const& t,
+				      std::string const& trigName) const
+  {
+
+    if(t > fTriggers.size() )
+      throw cet::exception("TriggerDigitUtility") << "request for trigger " << t 
+						  << " is beyond bounds of trigger vector "
+						  << fTriggers.size();
+
+    // get the bit number for this trigger name
+    // set the default to 17 as we only have 16 input bits
+    size_t bit = 17;
+    if(fTriggerNameToChannel.count(trigName) > 0)
+      bit = fTriggerNameToChannel.find(trigName)->second;
+    
+    return this->Triggered(t, bit);
+  }
+
+  //----------------------------------------------------------------------------
+  bool TriggerDigitUtility::Triggered(size_t const& t,
+				      size_t const& bit) const
+  {
+
+    if(t > fTriggers.size() )
+      throw cet::exception("TriggerDigitUtility") << "request for trigger " << t 
+						  << " is beyond bounds of trigger vector "
+						  << fTriggers.size();
+    std::bitset<16> bits(fTriggers[t]->TriggerBits());
+
+    if(bit > bits.size())
+      throw cet::exception("TriggerDigitUtility") << "request for bit " << bit
+						  << " is beyond bounds of the bitset "
+						  << bits.size();
+    
+    return bits.test(bit);
   }
 
   //----------------------------------------------------------------------------

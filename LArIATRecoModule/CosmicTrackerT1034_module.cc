@@ -240,17 +240,27 @@ namespace trkf {
     double driftvelocity = larprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
     double timepitch = driftvelocity*timetick;                         //time sample (cm) 
 
-    mf::LogVerbatim("Summary") << "TimeTick (in mus): " << timetick;       
-    mf::LogVerbatim("Summary") << "TimePitch (in cm): " << timepitch;      
+    LOG_VERBATIM("CosmicTrackerT1034") << " ";       
+    LOG_VERBATIM("CosmicTrackerT1034") << " ";    
+    LOG_VERBATIM("CosmicTrackerT1034") << "Cosmic Tracker Section starts here";
+    LOG_VERBATIM("CosmicTrackerT1034") << "TimeTick (in mus): " << timetick;       
+    LOG_VERBATIM("CosmicTrackerT1034") << "TimePitch (in cm): " << timepitch;      
                   
     art::FindManyP<recob::Cluster> fc(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);                   
   
     for(size_t t = 0; t < tdu.NTriggers(); ++t)        // Loop over triggers                          
     {
-       mf::LogVerbatim("Summary") << "Trigger Number: " << t;
-      
        // === Getting the pointer for this trigger ===
-       art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];                               
+       art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t]; 
+
+       // Skip trigger if empty
+       art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(t);
+
+       LOG_VERBATIM("CosmicTrackerT1034") << " ";       
+       LOG_VERBATIM("CosmicTrackerT1034") << " ";
+       LOG_VERBATIM("CosmicTrackerT1034") << "Trigger Number: " << t << "   Raw Digit vector size: "<< rdvec.size();
+       if(!rdvec.size()){mf::LogInfo("CosmicTrackerT1034") << " Raw Digit vector is empty. Skipping the trigger"; continue;}                              
+       LOG_VERBATIM("CosmicTrackerT1034") << " ";
 
        // get input Cluster object(s).
        clusterlist.clear();
