@@ -186,7 +186,7 @@ private:
 
   art::ServiceHandle<art::TFileService>      tfs;                      ///< handle to the TFileService
   std::string                                fRawFragmentLabel;        ///< label for module producing artdaq fragments
-  std::string 				     fRawFragmentInstance;     ///< instance label for artdaq fragments        
+  std::string                                fRawFragmentInstance;     ///< instance label for artdaq fragments        
   size_t                                     fMaxNumberFitIterations;  ///< number of fit iterations before stopping
   std::map<uint32_t, std::set<uint32_t> >    fOpticalDetChannels;      ///< key is the board ID, set are channels on that board
   std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks; ///< map trigger ID to vector of CAEN blocks
@@ -198,11 +198,11 @@ private:
   size_t                                     fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
   float                                      fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
   float                                      fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
-  TH1F*   				     fRawDigitPedestals;       ///< computed pedestal values               
-  TH1F*  				     fRawDigitADC;             ///< pedestal subtracted values               
-  TH2F *                                     FragCountsSameTrigger_1751vsTDC_NoTPC;	  
-  TH2F * 				     FragCountsSameTrigger_1751vsTDC_WithTPC; 
-  TH2F * 				     FragCountsSameTrigger_1751vsTDC_ExtraTPC;
+  TH1F*                                      fRawDigitPedestals;       ///< computed pedestal values               
+  TH1F*                                      fRawDigitADC;             ///< pedestal subtracted values               
+  TH2F*                                      FragCountsSameTrigger_1751vsTDC_NoTPC;	  
+  TH2F*                                      FragCountsSameTrigger_1751vsTDC_WithTPC; 
+  TH2F*                                      FragCountsSameTrigger_1751vsTDC_ExtraTPC;
 
 };
 
@@ -505,8 +505,8 @@ void FragmentToDigit::matchDataBlocks(const LariatFragment * data)
   //  7          CAEN boardId 7, V1740 board 7
   //  8          CAEN boardId 8, V1751 board 0
   //  9          CAEN boardId 9, V1751 board 1
-  //  10         Multi-wire proportional chambers, 16 TDCs
   //  24         CAEN boardId 24, V1740 board 24
+  //  32         Multi-wire proportional chambers, 16 TDCs
   //////////////////////////////////////////////////////////////////////
 
   //////////////////////////////////////////////////////////////////////
@@ -1276,7 +1276,12 @@ uint32_t FragmentToDigit::triggerBits(std::vector<CAENFragment> const& caenFrags
       // only look at the specific tick of the waveform where the trigger decision is taken
       if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1)
 	// the trigger waveform goes below the pedestal (low) if the trigger is on
-	if(fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick] > fTrigger1740Threshold) 
+	//Hard-coded temporarily to hit the right window of ticks for trigge (it's not just one tick)
+	//Studies about a precise window for this first trigger tick are underway
+	if(fTrigger1740Pedestal - frag.waveForms[chan].data[135] > fTrigger1740Threshold ||
+	   fTrigger1740Pedestal - frag.waveForms[chan].data[136] > fTrigger1740Threshold ||
+	   fTrigger1740Pedestal - frag.waveForms[chan].data[137] > fTrigger1740Threshold ||
+	   fTrigger1740Pedestal - frag.waveForms[chan].data[138] > fTrigger1740Threshold ) 
 	   triggerBits.set(chan - minChan);
 
     } // end loop over channels on the board

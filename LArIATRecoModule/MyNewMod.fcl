@@ -23,7 +23,7 @@ physics:
   {
     MyNewMod:
     {
-      module_type: MyNewMod
+      module_type:       MyNewMod
     }
   }
   analysis:  [ MyNewMod ]

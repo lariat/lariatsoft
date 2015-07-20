@@ -401,25 +401,25 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
   int track_count_this_trigger = 0;
 
   //Loop through all combinations of tracks
-  for( size_t iHit0 = 0; iHit0 < good_hits.at(0).at(0).hits.size(); ++iHit0 ){
-    for( size_t iHit1 = 0; iHit1 < good_hits.at(0).at(1).hits.size(); ++iHit1 ){
-      for( size_t iHit2 = 0; iHit2 < good_hits.at(1).at(0).hits.size(); ++iHit2 ){
-	for( size_t iHit3 = 0; iHit3 < good_hits.at(1).at(1).hits.size(); ++iHit3 ){
-	  for( size_t iHit4 = 0; iHit4 < good_hits.at(2).at(0).hits.size(); ++iHit4 ){
-	    for( size_t iHit5 = 0; iHit5 < good_hits.at(2).at(1).hits.size(); ++iHit5 ){
-	      for( size_t iHit6 = 0; iHit6 < good_hits.at(3).at(0).hits.size(); ++iHit6 ){
-		for( size_t iHit7 = 0; iHit7 < good_hits.at(3).at(1).hits.size(); ++iHit7 ){
+  for( size_t iHit0 = 0; iHit0 < good_hits[0][0].hits.size(); ++iHit0 ){
+    for( size_t iHit1 = 0; iHit1 < good_hits[0][1].hits.size(); ++iHit1 ){
+      for( size_t iHit2 = 0; iHit2 < good_hits[1][0].hits.size(); ++iHit2 ){
+	for( size_t iHit3 = 0; iHit3 < good_hits[1][1].hits.size(); ++iHit3 ){
+	  for( size_t iHit4 = 0; iHit4 < good_hits[2][0].hits.size(); ++iHit4 ){
+	    for( size_t iHit5 = 0; iHit5 < good_hits[2][1].hits.size(); ++iHit5 ){
+	      for( size_t iHit6 = 0; iHit6 < good_hits[3][0].hits.size(); ++iHit6 ){
+		for( size_t iHit7 = 0; iHit7 < good_hits[3][1].hits.size(); ++iHit7 ){
 
 		  //Push back a track
 		  WCHitList track;
-		  track.hits.push_back(good_hits.at(0).at(0).hits.at(iHit0));
-		  track.hits.push_back(good_hits.at(0).at(1).hits.at(iHit1));
-		  track.hits.push_back(good_hits.at(1).at(0).hits.at(iHit2));
-		  track.hits.push_back(good_hits.at(1).at(1).hits.at(iHit3));
-		  track.hits.push_back(good_hits.at(2).at(0).hits.at(iHit4));
-		  track.hits.push_back(good_hits.at(2).at(1).hits.at(iHit5));
-		  track.hits.push_back(good_hits.at(3).at(0).hits.at(iHit6));
-		  track.hits.push_back(good_hits.at(3).at(1).hits.at(iHit7));
+		  track.hits.push_back(good_hits[0][0].hits[iHit0]);
+		  track.hits.push_back(good_hits[0][1].hits[iHit1]);
+		  track.hits.push_back(good_hits[1][0].hits[iHit2]);
+		  track.hits.push_back(good_hits[1][1].hits[iHit3]);
+		  track.hits.push_back(good_hits[2][0].hits[iHit4]);
+		  track.hits.push_back(good_hits[2][1].hits[iHit5]);
+		  track.hits.push_back(good_hits[3][0].hits[iHit6]);
+		  track.hits.push_back(good_hits[3][1].hits[iHit7]);
 
 
 		  //Track reco info
