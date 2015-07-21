@@ -196,7 +196,26 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
    art::FindManyP<recob::Hit>   fmh (tdu.EventTriggersPtr(), evt, fHitsModuleLabel);
    art::FindManyP<recob::Track> fmt (tdu.EventTriggersPtr(), evt, fTrackModuleLabel);
+
+   art::Handle< std::vector<recob::Track> > trackListHandle;
+   evt.getByLabel(fTrackModuleLabel,trackListHandle);
+
+   art::Handle< std::vector<recob::Hit> > hitListHandle;
+   evt.getByLabel(fHitsModuleLabel,hitListHandle);
+
+   art::FindManyP<recob::SpacePoint> fmsp (trackListHandle, evt, fTrackModuleLabel);
+   art::FindMany<recob::Track>       fmtk (hitListHandle,   evt, fTrackModuleLabel);
+//  art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
   
+   std::vector<const sim::SimChannel*> fSimChannels;
+   try
+   {
+      evt.getView("largeant", fSimChannels);
+   }
+   catch (art::Exception const&e)
+   {
+   }
+
    for(size_t t = 0; t < tdu.NTriggers(); ++t)        // Loop over triggers                          
    {
       // Skip trigger if empty
@@ -215,35 +234,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       tracklist.clear();
       hitlist   = fmh.at(t);
       tracklist = fmt.at(t);
-/*
-  art::Handle< std::vector<recob::Track> > trackListHandle;
-   std::vector<art::Ptr<recob::Track> > tracklist;
-  if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
-    art::fill_ptr_vector(tracklist, trackListHandle);    
-
-  art::Handle< std::vector<recob::Hit> > hitListHandle;
-  std::vector<art::Ptr<recob::Hit> > hitlist;
-  if (evt.getByLabel(fHitsModuleLabel,hitListHandle))
-    art::fill_ptr_vector(hitlist, hitListHandle);
-
-  art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
-  art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
-  art::FindMany<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
-*/
-
-//      art::FindOne<raw::RawDigit>       ford (hitlist,   evt, fHitsModuleLabel);
-      art::FindManyP<recob::SpacePoint> fmsp (tracklist, evt, fTrackModuleLabel);
-      art::FindMany<recob::Track>       fmtk (hitlist,   evt, fTrackModuleLabel);
-
-      std::vector<const sim::SimChannel*> fSimChannels;
-      try
-      {
-         evt.getView("largeant", fSimChannels);
-      }
-      catch (art::Exception const&e)
-      {
-      }
-
+ 
       //track information
       ntracks_reco=tracklist.size();
       double larStart[3];

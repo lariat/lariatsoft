@@ -325,7 +325,7 @@ namespace cluster {
     fCCAlg.RunCrawler(FirstHits);
     
     // access to the algorithm results
-    ClusterCrawlerAlg::HitInCluster_t const& HitInCluster = fCCAlg.GetHitInCluster();
+    auto const& HitInCluster = fCCAlg.GetinClus();
 
     std::vector<recob::Hit> allHits;
     allHits.clear();

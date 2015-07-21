@@ -3,12 +3,11 @@ BEGIN_PROLOG
 lariat_wctrackbuilderalg:
 {
 
+}
 
-
-
-
-
-
+lariat_triggerfilteralg:
+{
+  Verbosity: false
 }
 
 END_PROLOG
