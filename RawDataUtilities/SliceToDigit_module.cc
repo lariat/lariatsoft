@@ -162,9 +162,7 @@ SliceToDigit::SliceToDigit(fhicl::ParameterSet const & p)
   produces< std::vector<raw::Trigger>     >();
   produces< std::vector<raw::AuxDetDigit> >();
   produces< std::vector<raw::OpDetPulse>  >();
-  produces< art::Assns<raw::Trigger, raw::RawDigit>    >();
-  produces< art::Assns<raw::Trigger, raw::AuxDetDigit> >();
-  produces< art::Assns<raw::Trigger, raw::OpDetPulse>  >();
+
   //produces< std::vector<V1495Fragment> >();
 
 
@@ -311,9 +309,6 @@ void SliceToDigit::produce(art::Event & evt)
   evt.put(std::move(rawDigitVec));
   evt.put(std::move(auxDetVec));
   evt.put(std::move(opDetVec));
-  //evt.put(std::move(tdRDAssns));
-  //evt.put(std::move(tdADAssns));
-  //evt.put(std::move(tdOPAssns));
 
   fTriggerToCAENDataBlocks.clear();
   fTriggerToTDCDataBlocks .clear();
