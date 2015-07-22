@@ -1,12 +1,10 @@
 ////////////////////////////////////////////////////////////////
-//                                                            //
-// This is a class definition for the time of flight          //
-// builder algorithm, used to reconstruct the time of flight  //
-// of test-beam particles passing through LArIAT's            //
-// upstream and downstream time of flight                     //
-//                                                            //
-// Authors: Elena Gramellini elena.gramellini@yale.edu        //
-//                                                            //
+//
+// Class definition for OpHitBuilderAlg, a collection of tools
+// to be used in creating OpHit objects from PMT waveforms.
+//
+// Authors: William Foreman, wforeman@uchicago.edu
+//
 ////////////////////////////////////////////////////////////////
 
 
@@ -41,6 +39,8 @@ class OpHitBuilderAlg{
   ~OpHitBuilderAlg();
 
   void reconfigure( fhicl::ParameterSet const& pset );
+  std::vector<short> GetHits( std::vector<short>&, Double_t );
+  std::vector<short> MakeGradient( std::vector<short> );
   
  private:
 

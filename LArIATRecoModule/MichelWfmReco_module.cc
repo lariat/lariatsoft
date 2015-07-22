@@ -3,8 +3,25 @@
 // Module Type: producer
 // File:        MichelWfmReco_module.cc
 //
+// This module is used to perform some ID and reconstruction of PMT
+// waveforms from stopping/decaying muons (primarily in the Michel 
+// trigger sample).
+//
+// Eventually it may be used to create a new data product related to 
+// Michel events, but for now, it does not add to the data file.
+//
+// Output histograms include:
+//  - # hits found in each waveform
+//  - amplitude of Michel-candidate pulses
+//  - integrated charge of Michel candidates (100ns window)
+//  - time difference between 1st and 2nd pulse
+//    when exactly two pulses are found
+//
+// Authors: William Foreman, wforeman@uchicago.edu
+//
 // Generated at Wed Jul 15 13:09:43 2015 by William Foreman using artmod
 // from cetpkgsupport v1_08_06.
+//
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDProducer.h"
@@ -16,10 +33,30 @@
 #include "art/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 
+//C++ Includes
+#include <iostream>
+#include <fstream>
+#include <vector>
 #include <memory>
+#include <utility>
 
+//ROOT Includes
+#include <TH1F.h>
+
+// LArSoft Includes
+#include "Utilities/AssociationUtil.h"
+#include "RawData/TriggerData.h"
+
+//LAriatSoft Includes
+#include "RawDataUtilities/TriggerDigitUtility.h"
 #include "LArIATRecoAlg/OpHitBuilderAlg.h"
+#include "LArIATRecoAlg/TriggerFilterAlg.h"
+#include "Utilities/DatabaseUtilityT1034.h"
+
 
 class MichelWfmReco;
 
@@ -53,76 +90,161 @@ public:
 
 private:
 
-  // Declare member data here.
+  // Name of the module producing the triggers
+  std::string fTriggerUtility;
 
+  // Switch to use the trigger filter or not
+  bool      bUseTriggerFilter;
+  Double_t  fGradientHitThreshold;
+  
+  // Alg objects
+  OpHitBuilderAlg   fOpHitBuilderAlg; 
+  TriggerFilterAlg  fTrigFiltAlg;
 };
 
 
+
 MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & p)
-// :
-// Initialize member data here.
+: fOpHitBuilderAlg(p), fTrigFiltAlg(p)
 {
-  // Call appropriate produces<>() functions here.
+
+  // Configures the ROOT histograms
+  this->reconfigure(p);
+  
+  // Produces the LArSoft object to be outputted
+  // (none for now!) 
+  
 }
+
 
 void MichelWfmReco::produce(art::Event & e)
 {
-  // Implementation of required member function here.
+
+  std::cout << "Here we are... in MichelWfmReco::produce\n";
+
+  // Set up loop over triggers in the inputted ROOT file
+  rdu::TriggerDigitUtility tdu(e, fTriggerUtility);
+
+  // Defint the vector of associations to be saved
+  // (none yet!)
+
+  // Loop over the triggers
+  for(size_t trig = 0 ; trig < tdu.NTriggers(); ++trig){
+    
+    std::cout<<"Trigger "<<trig<<"\n";
+
+    // Global trigger that will be used to make associations
+    art::Ptr<raw::Trigger> theTrigger = tdu.EventTriggersPtr()[trig];
+    raw::Trigger thisTrigger = *theTrigger;
+    
+    bool isMichel; 
+    // filter for MICHEL trigger
+    if (bUseTriggerFilter){
+      std::string myFilter = "+MICHEL";
+      isMichel = fTrigFiltAlg.doesTriggerPassFilter( thisTrigger, myFilter ); 
+    } else {
+      isMichel = 1;
+    }
+
+    if ( isMichel ){
+      
+      std::cout<<"We're about to try getting the waveform....\n";
+
+      // get the OpDetPulses; skip if empty
+      art::PtrVector<raw::OpDetPulse> OpPulses = tdu.TriggerOpDetPulsesPtr(trig);
+
+      std::cout<<"We got it..  size = "<<OpPulses.size()<<"\n";
+      if ( OpPulses.size() == 0 ) continue;
+      
+      // loop through the pulses
+      for (unsigned int i=0; i < OpPulses.size(); ++i){
+
+        std::cout<<"   ... pulse \n";
+
+        // get the OpDetPulses
+        raw::OpDetPulse ThePulse = *OpPulses[i];
+        std::cout<<"   waveform length: "<<ThePulse.Waveform().size()<<std::endl;
+
+        std::cout<<"   opchannel      : "<<ThePulse.OpChannel()<<std::endl;
+        // if this is the ETL, continue onward
+        if (ThePulse.OpChannel() == 1){
+
+          std::cout << "Huzzah! it's the ETL!\n";
+          // save the ETL waveform into a new vector of shorts
+          std::vector<short> ETL_waveform = ThePulse.Waveform();
+             
+          // perform hit-finding/filtering
+          std::vector<short> hit_times = fOpHitBuilderAlg.GetHits(ETL_waveform, fGradientHitThreshold);
+
+          std::cout << "We found "<<hit_times.size()<<" hits\n";
+          for (unsigned int i=0; i<hit_times.size(); i++){
+            std::cout<<"   "<<i<<"    t = "<<hit_times[i]<<"\n";
+          }
+
+
+          //printf("Size of ETL waveform is %lu",n);
+        } // <-- endif PMT is ETL (OpChannel == 1)
+      
+      
+      }
+
+    } // <-- endif isMichel
+    
+  
+  } //<-- End loop over triggers
+
+  
+
 }
 
 void MichelWfmReco::beginJob()
 {
-  // Implementation of optional member function here.
 }
 
 void MichelWfmReco::beginRun(art::Run & r)
 {
-  // Implementation of optional member function here.
+  fTrigFiltAlg.loadXMLDatabaseTable( r.run() ); 
 }
 
 void MichelWfmReco::beginSubRun(art::SubRun & sr)
 {
-  // Implementation of optional member function here.
 }
 
 void MichelWfmReco::endJob()
 {
-  // Implementation of optional member function here.
 }
 
 void MichelWfmReco::endRun(art::Run & r)
 {
-  // Implementation of optional member function here.
 }
 
 void MichelWfmReco::endSubRun(art::SubRun & sr)
 {
-  // Implementation of optional member function here.
 }
 
 void MichelWfmReco::reconfigure(fhicl::ParameterSet const & p)
 {
-  // Implementation of optional member function here.
+  // Pass name of TriggerUtility
+  fTriggerUtility       = p.get< std::string >("TriggerUtility","FragmentToDigit");
+  bUseTriggerFilter      = p.get< bool >("UseTriggerFilter","false");
+  fGradientHitThreshold  = p.get< Double_t >("GradientHitThreshold",-10);
+  
 }
 
 void MichelWfmReco::respondToCloseInputFile(art::FileBlock const & fb)
 {
-  // Implementation of optional member function here.
 }
 
 void MichelWfmReco::respondToCloseOutputFiles(art::FileBlock const & fb)
 {
-  // Implementation of optional member function here.
 }
 
 void MichelWfmReco::respondToOpenInputFile(art::FileBlock const & fb)
 {
-  // Implementation of optional member function here.
 }
 
 void MichelWfmReco::respondToOpenOutputFiles(art::FileBlock const & fb)
 {
-  // Implementation of optional member function here.
 }
 
 DEFINE_ART_MODULE(MichelWfmReco)
