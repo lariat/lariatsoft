@@ -26,6 +26,36 @@
   <class name="art::Wrapper<std::vector<V1495TriggerPatternData> >" />
   -->
 
+  <class name="raw::AuxDetDigit" ClassVersion="10">
+   <version ClassVersion="10" checksum="3822054512"/>
+  </class>
+
+  <class name="art::Wrapper<raw::AuxDetDigit>"/>
+  <class name="std::vector<raw::AuxDetDigit>"/>
+  <class name="art::Wrapper<std::vector<raw::AuxDetDigit> >"/>
+  
+
+  <class name="raw::OpDetPulse" ClassVersion="10">
+   <version ClassVersion="10" checksum="3733748172"/>
+  </class>
+  <class name="art::Wrapper<raw::OpDetPulse>"/>
+  <class name="std::vector<raw::OpDetPulse>"/>
+  <class name="art::Wrapper<std::vector<raw::OpDetPulse> >"/>
+
+  <class name="raw::RawDigit" ClassVersion="10">
+   <version ClassVersion="10" checksum="412021819"/>
+  </class>
+  <class name="art::Wrapper<raw::RawDigit>"/>
+  <class name="std::vector<raw::RawDigit>"/>
+  <class name="art::Wrapper<std::vector<raw::RawDigit> >"/>
+
+  <class name="sumdata::RunData" ClassVersion="10">
+   <version ClassVersion="10" checksum="2747058960"/>
+    </class>
+  <class name="art::Wrapper<sumdata::RunData>"/>
+  <class name="std::vector<sumdata::RunData>"/>
+  <class name="art::Wrapper<std::vector<sumdata::RunData> >"/>
+
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>    >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Wire>      >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Hit>       >"/>
