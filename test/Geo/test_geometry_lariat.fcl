@@ -58,31 +58,44 @@ physics: {
   analyzers: {
     geotest: {
       module_type: "GeometryTest"
-      PrintWires:  true
+      
+      # Tests can be selected individually using a list of strings called
+      # RunTests.
+      # See GeometryTestAlg documentation for specific strings in case new tests
+      # are added.
+      RunTests: [
+        # run the default test suite (actually unnecessary):
+        "@default",
+        # in addition (overriding the default): print wires
+        "+PrintWires",
+        
+        # - WireIntersection fails because the test is not always able to compute
+        #   the correct expected distance from the intersection;
+        #   this is a bug related to having a point not lying on a z wire together
+        #   with the presence of planes in which the wire doesn;t increase with z;
+        #   the test needs to be fixed
+        "-WireIntersection",
+        
+        # - WirePitch fails, exposing the non-constant wire pitch
+        "-WirePitch",
+        
+        # - NearestWire fails because NearestWireID() assumes constant wire pitch
+        "-NearestWire",
+        
+        # - WireIntersection and WireCoordAngle fail because its expectation relies on NearestWireID()
+        "-WireCoordAngle",
+        "-WireIntersection"
+
+      ]
       
       # wire pitch for planes #0 and #1
       ExpectedWirePitch: [ 0.4, 0.4 ]
       # plane pitch  #0 -> #1)
       ExpectedPlanePitches: [ 0.4 ]
       
-      # ArgoNeuT mapping currently does not always raise an exception
+      # ArgoNeuT/LArIAT mapping currently does not always raise an exception
       DisableWireBoundaryCheck: true
       
-      # Disabled tests:
-      # - WirePitch fails, exposing the non-constant wire pitch
-      # - NearestWire fails because NearestWireID() assumes constant wire pitch
-      # - WireIntersection fails because its expectation relies on NearestWireID()
-      RunTests: [
-        "Cryostat",
-        "ChannelToWire",
-        "FindPlaneCenters",
-        "Projection",
-      #  "NearestWire",
-      #  "WireIntersection",
-      #  "WirePitch",
-        "PlanePitch",
-        "Stepping"
-      ]
     }
   }
 
