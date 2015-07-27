@@ -17,6 +17,14 @@
 #include "RecoBase/SpacePoint.h"
 #include "RecoBase/Track.h"
 
+
+#include "RawData/RawDigit.h"
+#include "RawData/AuxDetDigit.h"
+#include "RawData/OpDetPulse.h"
+#include "RawData/TriggerData.h"
+#include "SummaryData/RunData.h"
+
+
 /* template class std::vector<V1495Fragment>; */
 /* template class std::vector<V1495ChannelData>; */
 /* template class std::vector<V1495TriggerPatternData>; */
@@ -75,3 +83,19 @@ template class art::Wrapper<art::Assns<raw::Trigger, recob::Vertex,       void> 
 template class art::Wrapper<art::Assns<raw::Trigger, std::vector<recob::Vertex>,       void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit, void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,  void> >;
+
+template class art::Wrapper<raw::AuxDetDigit>;
+template class std::vector<raw::AuxDetDigit>;
+template class art::Wrapper<std::vector<raw::AuxDetDigit> >;
+
+template class art::Wrapper<raw::RawDigit>;
+template class std::vector<raw::RawDigit>;
+template class art::Wrapper<std::vector<raw::RawDigit> >;
+
+template class art::Wrapper<raw::OpDetPulse>;
+template class std::vector<raw::OpDetPulse>;
+template class art::Wrapper<std::vector<raw::OpDetPulse> >;
+
+template class art::Wrapper<sumdata::RunData>;
+template class std::vector<sumdata::RunData>;
+template class art::Wrapper<std::vector<sumdata::RunData> >;

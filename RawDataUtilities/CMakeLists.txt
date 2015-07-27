@@ -21,8 +21,26 @@ art_make(BASENAME_ONLY
 			  ${MF_UTILITIES}
 			  ${CETLIB}
 			  ${ROOT_BASIC_LIB_LIST}
+			  ${Boost_SYSTEM_LIBRARY}	
+	                  ${ART_FRAMEWORK_SERVICES_REGISTRY}
+			  ${ART_FRAMEWORK_SERVICES_BASIC}
+			  ${ART_FRAMEWORK_SERVICES_OPTIONAL}
+			  ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                          ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+                          ${FHICLCPP}	  
          DICT_LIBRARIES   RawData
-	                  LariatFragments
+	 		  SummaryData
+	 SOURCE_LIBRARIES RawData
+	                  RawDataUtilities
+	 		  LArIATFragments
+			  SummaryData
+	                  ${ART_FRAMEWORK_SERVICES_REGISTRY}
+			  ${ART_FRAMEWORK_SERVICES_BASIC}
+			  ${ART_FRAMEWORK_SERVICES_OPTIONAL}
+			  ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                          ${ART_FRAMEWORK_IO_ROOT}
+			  ${MF_MESSAGELOGGER}
+                          ${ROOT_BASIC_LIB_LIST}
          MODULE_LIBRARIES RawData
 	                  SummaryData
 			  Geometry_service
