@@ -1,0 +1,55 @@
+#include "FragmentToDigit_config.fcl"
+#include "services_lariat.fcl"
+#include "RawDataUtilities_algs.fcl"
+
+process_name: SlicerInput
+
+services:
+{
+  TFileService: { fileName: "SlicerInput_histo.root" }
+  message:      @local::standard_info
+}
+
+source:
+{
+  module_type: SlicerInput
+  maxEvents:   -1 
+  fileNames: ["lariat_r005103_s0015.root"]
+  maxNumberFitIterations: 5
+  FragmentToDigitAlg:  @local::lariat_fragmenttodigit_alg
+}
+
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "SlicedFragments.root" #default file name, can override from command line with -o or --output
+ }
+}
+
+services:
+{
+  TFileService: { fileName: "FragmentToDigit.root" }
+#  message:      @local::standard_info
+  @table::lariat_services
+}
+
+physics:
+{
+  producers:
+  {
+
+  }
+
+  #define the output stream, there could be more than one if using filters 
+  stream1:  [ out1 ]
+ 
+  #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+  # #ie analyzers and output streams.  these all run simultaneously
+  end_paths:     [stream1]
+
+}
+
+
