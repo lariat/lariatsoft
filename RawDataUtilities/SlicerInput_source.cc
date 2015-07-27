@@ -98,7 +98,7 @@ namespace {
   // This regex object is used to extract the run and subrun numbers.
   // The '()' groupings correspond to regex matches that can be
   // extracted using the std::regex_match facility.
-  std::regex const filename_format( "lariat_r(\\d+)_sr(\\d+).*\\.root" );
+  std::regex const filename_format( ".*\\lariat_r(\\d+)_sr(\\d+).*\\.root" );
 
 }
 
@@ -283,6 +283,9 @@ DAQToOffline::SlicerInput::readFile(string const& filename, art::FileBlock*& fb)
       << "Unable to open file " << filename << ".\n";
   }
 
+  //Resetting transient variables
+  fDoneWithThisFile = false;
+  
 
   //Doing the following two things now so that we only do them once
   
@@ -306,10 +309,16 @@ DAQToOffline::SlicerInput::readNext(art::RunPrincipal*    const& inR,
                                  art::SubRunPrincipal* & outSR,
                                  art::EventPrincipal*  & outE)
 {
-  if ( fDoneWithFiles && fDoneWithThisFile ) {
+  if ( fDoneWithThisFile ) {
     return false;
   }
 
+  //Check to see if we're on our last file
+  std::cout << "fFile->GetName: " << fFile->GetName() << ", fLastFileName: " << fLastFileName << std::endl;
+  // if( fFile->GetName() == fLastFileName )
+  //  fDoneWithFiles = true;
+
+  
 
   art::Timestamp ts; // LBNE should decide how to initialize this
   //REL if this is a new run number, make a new run principal - This should only call once for a given file
@@ -346,10 +355,6 @@ DAQToOffline::SlicerInput::readNext(art::RunPrincipal*    const& inR,
   
   //Make event corresponding to one entry in the two maps
   makeEventAndPutFragments( outE ); 
-
-  //Check to see if we're on our last file
-  if( fFile->GetName() == fLastFileName )
-    fDoneWithFiles = true;
 
   return true;
 
