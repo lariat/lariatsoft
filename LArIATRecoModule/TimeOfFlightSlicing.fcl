@@ -1,0 +1,59 @@
+#include "services_lariat.fcl"
+#include "lariat_reco_algs.fcl"
+
+process_name: TimeOfFlightSlicing
+
+services:
+{
+  TFileService: { fileName: "TimeOfFlightSlicing_histo.root" }
+  message:      @local::standard_info
+  user:         @local::lariat_services	
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1 
+  # fileNames: ["input.root"]
+}
+
+outputs: 
+{
+ out1:
+  {
+    module_type: RootOutput
+    fileName:    "SlicedEventsWithTOF.root" #default file name, can override from command line with -o or --output
+   } # This part of the .fcl is not working right now, the only way of getting a .root output with the objects is by -o fileName.root
+}
+
+physics:
+{
+  producers:
+  {
+    TimeOfFlight:
+    {
+      module_type:         TimeOfFlightSlicing
+      SourceLabel:         SlicerInput			
+      MakeHistograms:      true
+    }
+  }
+  analysis:  [ TimeOfFlight ]
+  end_paths: [ analysis ]
+  
+  #define the output stream, there could be more than one if using filters
+  stream1:  [ out1 ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event,
+ # #ie filters and producers
+ #trigger_paths: [LariatProducer] #DO WE NEED THIS??? 
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event,                                                                                            
+ # #ie analyzers and output streams.  these all run simultaneously 
+ end_paths: [ analysis , stream1]
+
+}
+
+
+
+
+physics.producers.TimeOfFlight.TriggerUtility: "FragmentToDigit"
