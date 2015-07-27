@@ -25,7 +25,7 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:    "SlicedFragments.root" #default file name, can override from command line with -o or --output
+   fileName:    "SlicedEvents.root" #default file name, can override from command line with -o or --output
  }
 }
 
