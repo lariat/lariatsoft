@@ -87,9 +87,6 @@ namespace wct {
   private:
     // Declare member data here.
 
-    //Trigger Utility
-    std::string fTriggerUtility;
-
     //Algorithm object for track building
     WCTrackBuilderAlg fWCTrackBuilderAlg;
     std::string       fSlicerSourceLabel;
@@ -122,7 +119,6 @@ namespace wct {
 
     // Call appropriate produces<>() functions here.  
     produces<std::vector<ldp::WCTrack> >();
-    produces<art::Assns<raw::Trigger, ldp::WCTrack> >();
   }
 
   //===================================================================================
@@ -333,7 +329,6 @@ namespace wct {
   //=================================================================================================
   void WCTrackBuilderSlicing::reconfigure(fhicl::ParameterSet const & p)
   {
-    fTriggerUtility = p.get< std::string >("TriggerUtility");
     fNumber_wire_chambers = p.get<int>("NWC"); //4;  
     fNumber_wires_per_tdc = p.get<int>("NWperTDC"); //64;
     fVerbose = p.get<bool>("Verbose");
