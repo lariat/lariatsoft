@@ -1,0 +1,16 @@
+BEGIN_PROLOG
+
+lariat_fragmenttodigit_alg:
+{
+  RawFragmentLabel: "daq"
+  RawFragmentInstance:    "SPILL"
+  MaxNumberFitIterations: 5
+  TriggerDecisionTick:    137   	 
+  Trigger1740Pedestal:    2000  	 
+  Trigger1740Threshold:   0     	 
+  pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,2,3,4]] #currently v1751 CAEN boards are nr 8 and 9 in DAQ, only ch 0-4 on board 9 reserved for PMTs and SiPMs now 
+}
+
+
+
+END_PROLOG

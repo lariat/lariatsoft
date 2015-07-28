@@ -145,6 +145,7 @@ std::vector<short> TOFBuilderAlg::match_hits(std::vector<short> hits1, std::vect
 
 std::pair <std::vector<short>, std::vector<long> > TOFBuilderAlg::get_TOF_and_TimeStamp(std::vector<const raw::AuxDetDigit*> ust_wv, std::vector<const raw::AuxDetDigit*> dst_wv){
 
+
   std::pair<std::vector<short>, std::vector<long> > p;
   // Tests if the event has 2 PMTs, the amount needed for analysis
   if(ust_wv.size() == 2) { 
@@ -182,7 +183,8 @@ std::pair <std::vector<short>, std::vector<long> > TOFBuilderAlg::get_TOF_and_Ti
 	if(differ > 20 and differ < 100) {
 	  
 	  // Adds the calculated TOF to the vector tof
-	  tof.insert(tof.end(), differ);
+	  tof.insert(tof.end(),differ);
+	  
 	  
 	  // Adds the timestamp for each downstream hit to the vector timeStampDst
 	  // dst_wv.at(0)->TimeStamp() gives the TTT (Trigger Time Tag) since a spill
@@ -217,4 +219,10 @@ std::vector<long> TOFBuilderAlg::get_timeStampDst(std::vector<const raw::AuxDetD
 {
   timeStampDst = (get_TOF_and_TimeStamp(ust_wv, dst_wv)).second;
   return timeStampDst;
+}
+
+void TOFBuilderAlg::clear_tof_and_timeStampDst()
+{
+  tof.clear();
+  timeStampDst.clear();
 }

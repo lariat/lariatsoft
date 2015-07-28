@@ -2,11 +2,11 @@
 #include "lariat_reco_algs.fcl"
 
 
-process_name: WCTrackBuilder
+process_name: WCTrackBuilderSlicing
 
 services:
 {
-  TFileService: { fileName: "WireChamberTrackBuilder_histo.root" }
+  TFileService: { fileName: "WCTrackBuilderSlicing_histo.root" }
   message:      @local::standard_info
   user:         @local::lariat_services
 }
@@ -23,7 +23,7 @@ outputs:
 {
   output1: {
     module_type: RootOutput
-    fileName: "evtWithTracks.root"
+    fileName: "SlicedEventsWithTracks.root"
   }
 }
 
@@ -35,8 +35,9 @@ physics:
   {
     WCTrackBuilder:
     {
-      module_type:         WCTrackBuilder
-      WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
+      module_type:         WCTrackBuilderSlicing
+      SourceLabel:         SlicerInput		
+      WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg  
       TriggerUtility: "FragmentToDigit"
       NWC: 4
       NWperTDC: 64
@@ -51,8 +52,3 @@ physics:
 }
 
 physics.producers.WCTrackBuilder.TriggerUtility: "FragmentToDigit"
-
-
-
-
-
