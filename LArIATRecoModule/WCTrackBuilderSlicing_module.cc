@@ -167,7 +167,7 @@ namespace wct {
 
     //Retrieving the digits from the sliced event
     art::Handle< std::vector<raw::AuxDetDigit> > AuxDetDigitHandle;
-    e.getByLabel(fSlicerSourceLabel,"SPILL",AuxDetDigitHandle);
+    e.getByLabel(fSlicerSourceLabel,AuxDetDigitHandle);
     
     //Loop through the auxdetdigits and collect those that are from the WCs
     std::vector<raw::AuxDetDigit> WC1Digits;
