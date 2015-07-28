@@ -167,11 +167,11 @@ void ParticleIdentification::produce(art::Event & e)
 	fNTOF->Fill(theTOF.NTOF());
 	fPz->Fill(theWCTrack.Momentum());
 	fY_Kink->Fill(theWCTrack.YKink());
-	fX_Dist->Fill(theWCTrack.DeltaDist[0]);
-	fY_Dist->Fill(theWCTrack.DeltaDist[1]);
-	fZ_Dist->Fill(theWCTrack.DeltaDist[2]);
-	fX_Face_Dist->Fill(theWCTrack.XYFace[0]);
-	fY_Face_Dist->Fill(theWCTrack.XYFace[1]);
+	fX_Dist->Fill(theWCTrack.DeltaDist(0));
+	fY_Dist->Fill(theWCTrack.DeltaDist(1));
+	fZ_Dist->Fill(theWCTrack.DeltaDist(2));
+	fX_Face_Dist->Fill(theWCTrack.XYFace(0));
+	fY_Face_Dist->Fill(theWCTrack.XYFace(1));
 	fTheta_Dist->Fill(theWCTrack.Theta());
 	fPhi_Dist->Fill(theWCTrack.Phi());
 	fTOF->Fill(theTOF.SingleTOF(0));
