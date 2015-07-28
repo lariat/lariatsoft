@@ -76,6 +76,14 @@ private:
   TH2F*             fPzVsTOF;
   TH1F*             fNTOF;
   TH1F*             fPz;
+  TH1F*             fY_Kink;
+  TH1F*             fX_Dist;
+  TH1F*             fY_Dist;
+  TH1F*             fZ_Dist;
+  TH1F*             fX_Face_Dist;
+  TH1F*             fY_Face_Dist;
+  TH1F*             fTheta_Dist;
+  TH1F*             fPhi_Dist;
   TH1F*             fTOF;
   
 };
@@ -87,7 +95,6 @@ ParticleIdentificationSlicing::ParticleIdentificationSlicing(fhicl::ParameterSet
 {
   // Call appropriate produces<>() functions here.
   this->reconfigure(p);
-
   
 }
 
@@ -126,6 +133,15 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
       fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
       fPz->Fill(WCTrackColHandle->at(0).Momentum());
       fTOF->Fill(TOFColHandle->at(0).SingleTOF(0));
+      fY_Kink->Fill(theWCTrack.YKink());
+      fX_Dist->Fill(theWCTrack.DeltaDist[0]);
+      fY_Dist->Fill(theWCTrack.DeltaDist[1]);
+      fZ_Dist->Fill(theWCTrack.DeltaDist[2]);
+      fX_Face_Dist->Fill(theWCTrack.XYFace[0]);
+      fY_Face_Dist->Fill(theWCTrack.XYFace[1]);
+      fTheta_Dist->Fill(theWCTrack.Theta());
+      fPhi_Dist->Fill(theWCTrack.Phi());
+
     }
   }
 
@@ -141,6 +157,33 @@ void ParticleIdentificationSlicing::beginJob()
     fNTOF = tfs->make<TH1F>("NTOF","Number of TOF values per TOF object",10,0,10);
     fPz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum",180,0,1800);
     fTOF = tfs->make<TH1F>("Reco_TOF","Reconstructed Time of Flight",70,20,90);
+    fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",100,-5*3.1415926/180,5*3.141592654/180);
+    fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",120,-60,60);
+    fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",120,-60,60);
+    fZ_Dist = tfs->make<TH1F>("Z_Dist","Z distance between US/DS tracks at midplane (mm)",120,-60,60);
+    fX_Face_Dist = tfs->make<TH1F>("X_Face","X Location of Track's TPC Entry (mm)",800,-200,600);
+    fY_Face_Dist = tfs->make<TH1F>("Y_Face","Y Location of Track's TPC Entry (mm)",800,-400,400);
+    fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
+    fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
+    
+    fPz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
+    fPz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
+    fY_Kink->GetXaxis()->SetTitle("Reconstructed y_kink (radians)");
+    fY_Kink->GetYaxis()->SetTitle("Tracks per 0.000872 radians");
+    fX_Dist->GetXaxis()->SetTitle("X distance between US and DS track ends");
+    fX_Dist->GetYaxis()->SetTitle("Tracks per 1 mm");
+    fY_Dist->GetXaxis()->SetTitle("Y distance between US and DS track ends");
+    fY_Dist->GetYaxis()->SetTitle("Tracks per 1 mm");
+    fZ_Dist->GetXaxis()->SetTitle("Z distance between US and DS track ends");
+    fZ_Dist->GetYaxis()->SetTitle("Tracks per 1 mm");
+    fX_Face_Dist->GetXaxis()->SetTitle("X (mm)");
+    fX_Face_Dist->GetYaxis()->SetTitle("Tracks per 1 mm");
+    fY_Face_Dist->GetXaxis()->SetTitle("Y (mm)");
+    fY_Face_Dist->GetYaxis()->SetTitle("Tracks per 1 mm");
+    fTheta_Dist->GetXaxis()->SetTitle("Theta (radians)");
+    fTheta_Dist->GetYaxis()->SetTitle("Tracks per .002 radians");
+    fPhi_Dist->GetXaxis()->SetTitle("Phi (radians)");
+    fPhi_Dist->GetYaxis()->SetTitle("Tracks per 0.0628 radians");
     
   }
 }
