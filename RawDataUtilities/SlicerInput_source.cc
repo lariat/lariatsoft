@@ -251,10 +251,10 @@ DAQToOffline::SlicerInput::SlicerInput(fhicl::ParameterSet const& ps,
 {
   // Will use same instance name for the outgoing products as for the
   // incoming ones.
-  prh.reconstitutes<std::vector<raw::AuxDetDigit>,art::InEvent>( fSourceName, fInputTag.instance() );
-  prh.reconstitutes<std::vector<raw::RawDigit>,art::InEvent>( fSourceName, fInputTag.instance() );
-  prh.reconstitutes<std::vector<raw::OpDetPulse>,art::InEvent>( fSourceName, fInputTag.instance() );
-  prh.reconstitutes<sumdata::RunData,art::InRun>( fSourceName, fInputTag.instance() );
+  prh.reconstitutes<std::vector<raw::AuxDetDigit>,art::InEvent>( fSourceName );
+  prh.reconstitutes<std::vector<raw::RawDigit>,art::InEvent>( fSourceName );
+  prh.reconstitutes<std::vector<raw::OpDetPulse>,art::InEvent>( fSourceName );
+  prh.reconstitutes<sumdata::RunData,art::InRun>( fSourceName );
 }
 
 //=======================================================================================
@@ -462,16 +462,13 @@ DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE){
   //Now we have vectors of auxDigits, rawDigits, and opPulses that we feed into the event.
   art::put_product_in_principal( std::make_unique<std::vector<raw::AuxDetDigit> >(auxDigits),
 				 *outE,
-				 fSourceName,
-				 fInputTag.instance());
+				 fSourceName);
   art::put_product_in_principal( std::make_unique<std::vector<raw::RawDigit> >(rawDigits),
 				 *outE,
-				 fSourceName,
-				 fInputTag.instance());
+				 fSourceName);
   art::put_product_in_principal( std::make_unique<std::vector<raw::OpDetPulse> >(opPulses),
 				 *outE,
-				 fSourceName,
-				 fInputTag.instance());
+				 fSourceName);
   
   //Check to see if we're done with this file yet
   if( fTriggerToCAENDataBlocks.size() == 0 && fTriggerToTDCDataBlocks.size() == 0 )
@@ -1265,8 +1262,8 @@ void DAQToOffline::SlicerInput::commenceRun( art::RunPrincipal*& outR )
   sumdata::RunData runcol = sumdata::RunData(geo->DetectorName());
   art::put_product_in_principal( std::make_unique<sumdata::RunData>(runcol),
 				 *outR,
-				 fSourceName,
-				 fInputTag.instance());
+				 fSourceName);
+				 
   return;
 }
 

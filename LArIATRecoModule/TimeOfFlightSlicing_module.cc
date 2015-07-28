@@ -113,7 +113,7 @@ void lrm::TimeOfFlightSlicing::produce(art::Event & e)
 
   //Retrieving the digits for the upstream and downstream paddles from the sliced event
   art::Handle< std::vector<raw::AuxDetDigit> > AuxDetDigitHandle;
-  e.getByLabel(fSlicerSourceLabel,"SPILL",AuxDetDigitHandle);
+  e.getByLabel(fSlicerSourceLabel,AuxDetDigitHandle);
 
   //Determine which digits are the USTOF and DSTOF ones
   std::vector<const raw::AuxDetDigit*> USTOF;

@@ -1,0 +1,15 @@
+BEGIN_PROLOG
+
+standard_slicerinput:
+{
+  module_type: SlicerInput
+  maxEvents:   -1 
+  fileNames: ["lariat_r005103_s0015.root"]
+  maxNumberFitIterations: 5
+  FragmentToDigitAlg:  @local::lariat_fragmenttodigit_alg
+}
+
+
+
+
+END_PROLOG
