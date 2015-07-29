@@ -152,12 +152,13 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fDBSCANEpsilon        = pset.get<float >("DBSCANEpsilon",       1.0/16.0  );
   fDBSCANMinHits        = pset.get<int   >("DBSCANMinHits",       1         );
 
-  fCentralYKink         = pset.get<float >("CentralYKink",        0         );
-  fSigmaYKink           = pset.get<float >("SigmaYKink",          0.02      );
-  fCentralYDist         = pset.get<float >("CentralYDist",        0         );
-  fSigmaYDist           = pset.get<float >("SigmaYDist",          11        );
+  fCentralYKink         = pset.get<float >("CentralYKink",        0.006     ); //These four are parameters from histos I produced from picky-good tracks
+  fSigmaYKink           = pset.get<float >("SigmaYKink",          0.023     );
+  fCentralYDist         = pset.get<float >("CentralYDist",        1.7       );
+  fSigmaYDist           = pset.get<float >("SigmaYDist",          11.3      );
 
   fPrintDisambiguation = false;
+  fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
 
   //Survey constants
   fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );   
@@ -272,18 +273,20 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 					     trigger_final_tracks);
   
   //Need to use the cut information to whittle down track candidates
-  disambiguateTracks( reco_pz_list,
-		      y_kink_list,
-		      x_dist_list,
-		      y_dist_list,
-		      z_dist_list,
-		      track_count,
-		      x_face_list,
-		      y_face_list,
-		      incoming_theta_list,
-		      incoming_phi_list,
-		      trigger_final_tracks,
-		      lonely_hit_bool);
+  if( !fPickyTracks ){
+    disambiguateTracks( reco_pz_list,
+			y_kink_list,
+			x_dist_list,
+			y_dist_list,
+			z_dist_list,
+			track_count,
+			x_face_list,
+			y_face_list,
+			incoming_theta_list,
+			incoming_phi_list,
+			trigger_final_tracks,
+			lonely_hit_bool);
+  }
 }
 
 
@@ -484,15 +487,20 @@ bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  //                                                                                            //
 		  ////////////////////////////////////////////////////////////////////////////////////////////////
 
-		  bool is_good_track = cutOnGoodTracks(track,y_kink,dist_array,track_list.size());
+		  //Seems nonintuitive, but when there are picky tracks, we want to get all of them,
+		  //and when we cut, some of them get removed.
+		  bool is_good_track = false;
+		  if( !fPickyTracks )
+		    is_good_track = cutOnGoodTracks(track,y_kink,dist_array,track_list.size());
 		 		  		  
 		  //Convert x on tpc face to convention
 		  //		  x_on_tpc_face = x_on_tpc_face+fHalf_x_length_of_tpc;
 
 		  //Add the track to the track list
-		  if( is_good_track ){
-		    track_list.push_back(track);
 		  
+		  if( fPickyTracks || (!fPickyTracks && is_good_track) ){
+		    track_list.push_back(track);
+		    
 		    //Storing the momentum in the buffer that will be
 		    //pushed back into the final reco_pz_array for this trigger
 		    //POSSIBLY IRRELEVANT NOW - MAY NEED TO TRIM THIS IF HAVE TIME, BUT IT DOESN'T INTERFERE
@@ -542,9 +550,17 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   bool skip = false;
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
-      if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
-	skip = true;
-	break;
+      if( fPickyTracks ){
+	if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
+	  skip = true;
+	  break;
+	}
+      }
+      if( !fPickyTracks ){
+	if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
+	  skip = true;
+	  break;
+	}
       }
     }
   }
@@ -1054,7 +1070,6 @@ void WCTrackBuilderAlg::disambiguateTracks( std::vector<double> & reco_pz_list,
 {
   if( fGoodTrackCandidateHitLists.size() > 1 ){
     if( lonely_hit_bool ){ //For now, only allow single tracks to be made
-      std::cout << "Lonely hit present. We're making one track." << std::endl;
       if( fPrintDisambiguation ){
 	std::cout << "Candidate Hit Lists Vector size: " << fGoodTrackCandidateHitLists.size() << std::endl;      
 	for( size_t iTrack = 0; iTrack < fGoodTrackCandidateHitLists.size() ; ++iTrack ){

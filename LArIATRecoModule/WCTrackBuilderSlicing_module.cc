@@ -371,7 +371,6 @@ namespace wct {
       fZ_Dist->Fill(z_dist_list.at(iTrack));
       fX_Face_Dist->Fill(x_face_list.at(iTrack));
       fY_Face_Dist->Fill(y_face_list.at(iTrack));
-      std::cout << "Filling with: " << y_face_list.at(iTrack) << std::endl;
       fTheta_Dist->Fill(theta_list.at(iTrack));
       fPhi_Dist->Fill(phi_list.at(iTrack));
     }

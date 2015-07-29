@@ -209,6 +209,7 @@ class WCTrackBuilderAlg{
   float  fCentralYDist;
   float  fSigmaYDist;
   float  fPrintDisambiguation;
+  bool   fPickyTracks;
 
   //Semi-Persistent vectors
   std::map<size_t,std::pair<float,float> > fGoodTrackCandidateErrors;
