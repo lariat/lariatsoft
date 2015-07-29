@@ -128,19 +128,21 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //that only one TOF can correspond to one trigger
  
   //Temporary solution - need to address cases where there is more than 1 TOF per event
-  if((WCTrackColHandle->size() == 1 && TOFColHandle->at(0).NTOF() == 1)){
-    if( fPlotHistograms ){
-      fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
-      fPz->Fill(WCTrackColHandle->at(0).Momentum());
-      fTOF->Fill(TOFColHandle->at(0).SingleTOF(0));
-      fY_Kink->Fill(WCTrackColHandle->at(0).YKink());
-      fX_Dist->Fill(WCTrackColHandle->at(0).DeltaDist(0));
-      fY_Dist->Fill(WCTrackColHandle->at(0).DeltaDist(1));
-      fZ_Dist->Fill(WCTrackColHandle->at(0).DeltaDist(2));
-      fX_Face_Dist->Fill(WCTrackColHandle->at(0).XYFace(0));
-      fY_Face_Dist->Fill(WCTrackColHandle->at(0).XYFace(1));
-      fTheta_Dist->Fill(WCTrackColHandle->at(0).Theta());
-      fPhi_Dist->Fill(WCTrackColHandle->at(0).Phi());
+  if( TOFColHandle->size() > 0 ){
+    if((WCTrackColHandle->size() == 1 && TOFColHandle->at(0).NTOF() == 1)){
+      if( fPlotHistograms ){
+	fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
+	fPz->Fill(WCTrackColHandle->at(0).Momentum());
+	fTOF->Fill(TOFColHandle->at(0).SingleTOF(0));
+	fY_Kink->Fill(WCTrackColHandle->at(0).YKink());
+	fX_Dist->Fill(WCTrackColHandle->at(0).DeltaDist(0));
+	fY_Dist->Fill(WCTrackColHandle->at(0).DeltaDist(1));
+	fZ_Dist->Fill(WCTrackColHandle->at(0).DeltaDist(2));
+	fX_Face_Dist->Fill(WCTrackColHandle->at(0).XYFace(0));
+	fY_Face_Dist->Fill(WCTrackColHandle->at(0).XYFace(1));
+	fTheta_Dist->Fill(WCTrackColHandle->at(0).Theta());
+	fPhi_Dist->Fill(WCTrackColHandle->at(0).Phi());
+      }
     }
   }
 
