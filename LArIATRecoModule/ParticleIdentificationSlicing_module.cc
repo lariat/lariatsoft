@@ -154,7 +154,7 @@ void ParticleIdentificationSlicing::beginJob()
   // Implementation of optional member function here.
   if( fPlotHistograms ){
     art::ServiceHandle<art::TFileService> tfs;
-    fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz vs. Time of Flight",40,0,1600,40,20,80);
+    fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz vs. Time of Flight",160,0,1600,60,20,80);
     fNTOF = tfs->make<TH1F>("NTOF","Number of TOF values per TOF object",10,0,10);
     fPz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum",180,0,1800);
     fTOF = tfs->make<TH1F>("Reco_TOF","Reconstructed Time of Flight",70,20,90);
