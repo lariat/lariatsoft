@@ -105,6 +105,8 @@ namespace wct {
     TH1F* fY_Face_Dist;
     TH1F* fTheta_Dist;
     TH1F* fPhi_Dist;
+    TH1F* fTrack_Type;
+
  
     //Misc
     bool fVerbose;
@@ -135,6 +137,7 @@ namespace wct {
     fY_Face_Dist = tfs->make<TH1F>("Y_Face","Y Location of Track's TPC Entry (mm)",800,-400,400);
     fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
     fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
+
     
     fReco_Pz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
     fReco_Pz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
@@ -154,6 +157,12 @@ namespace wct {
     fTheta_Dist->GetYaxis()->SetTitle("Tracks per .002 radians");
     fPhi_Dist->GetXaxis()->SetTitle("Phi (radians)");
     fPhi_Dist->GetYaxis()->SetTitle("Tracks per 0.0628 radians");
+
+    fTrack_Type = tfs->make<TH1F>("TrackType","WCTrack conditions: 1=missHit,2=uniqueHits,3=lonelyHit,4=socialHits",4,0,4);
+    fTrack_Type->GetYaxis()->SetTitle("# Events");
+    fTrack_Type->GetXaxis()->SetTitle("Track Conditions");
+ 
+   
     
   }
 
@@ -277,6 +286,8 @@ namespace wct {
 					 good_trigger_counter,
 					 0, //hardcoded in from iTrig, but never used (deprecated)
 					 track_count);
+
+    fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType());
     
     //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
@@ -331,7 +342,7 @@ namespace wct {
   {
     fNumber_wire_chambers = p.get<int>("NWC"); //4;  
     fNumber_wires_per_tdc = p.get<int>("NWperTDC"); //64;
-    fVerbose = p.get<bool>("Verbose");
+    fVerbose = p.get<bool>("Verbose", false);
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
   }
 

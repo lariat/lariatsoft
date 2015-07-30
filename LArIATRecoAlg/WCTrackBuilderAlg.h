@@ -23,9 +23,13 @@
 //Framework includes
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // LArSoft includes
 #include "Geometry/Geometry.h"
+
+//ROOT includes
+#include <TH1F.h>
 
 //Structs for organizational purposes
 struct WCHit
@@ -56,7 +60,7 @@ class WCTrackBuilderAlg{
   
   void reconfigure( fhicl::ParameterSet const& pset );
   
-  void firstFunction();
+  int getTrackType();
   
   
   void reconstructTracks( std::vector<int> tdc_number_vect,
@@ -210,10 +214,14 @@ class WCTrackBuilderAlg{
   float  fSigmaYDist;
   float  fPrintDisambiguation;
   bool   fPickyTracks;
+  int    fTrack_Type;
+
+
 
   //Semi-Persistent vectors
   std::map<size_t,std::pair<float,float> > fGoodTrackCandidateErrors;
   std::vector<std::pair<WCHitList,size_t> > fGoodTrackCandidateHitLists;
+
   /////////////////////////////////
   // CONSTANTS FROM SURVEY       //
   /////////////////////////////////
