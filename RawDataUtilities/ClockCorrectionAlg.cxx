@@ -44,15 +44,15 @@ namespace rdu {
   //-----------------------------------------------------------------------
   void ClockCorrectionAlg::reconfigure(fhicl::ParameterSet const& pset)
   {
-    fMinSamples                   = pset.get< size_t >("MinSamples",                    2);
-    fResidualThreshold            = pset.get< double >("ResidualThreshold",             1);
-    fMaxTrials                    = pset.get< size_t >("MaxTrials",                     10000);
-    fStopSampleNumber             = pset.get< size_t >("StopSampleNumber",              fMaxSize_T);
-    fStopResidualsSum             = pset.get< double >("StopResidualsSum",              0);
-    fStopProbability              = pset.get< double >("StopProbability",               1);
-    fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThresdhold", 1e6);
-    fSampleSlopeCutLower          = pset.get< double >("SampleSlopeCutLower",           0.5);
-    fSampleSlopeCutUpper          = pset.get< double >("SampleSlopeCutUpper",           1.5);
+    fMinSamples                   = pset.get< size_t >("MinSamples",                   2);
+    fResidualThreshold            = pset.get< double >("ResidualThreshold",            1);
+    fMaxTrials                    = pset.get< size_t >("MaxTrials",                    10000);
+    fStopSampleNumber             = pset.get< size_t >("StopSampleNumber",             fMaxSize_T);
+    fStopResidualsSum             = pset.get< double >("StopResidualsSum",             0);
+    fStopProbability              = pset.get< double >("StopProbability",              1);
+    fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e6);
+    fSampleSlopeCutLower          = pset.get< double >("SampleSlopeCutLower",          0.5);
+    fSampleSlopeCutUpper          = pset.get< double >("SampleSlopeCutUpper",          1.5);
   }
 
   //-----------------------------------------------------------------------
