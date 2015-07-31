@@ -3,7 +3,9 @@
 // Date:      15 July 2015
 // Author:    Everybody is an author!
 //////////////////////////////////////////////////////////////
-// Relativistic clock correction algorithm for LArIAT.
+// Clock correction algorithm for LArIAT. This corrects the
+// timestamps of data blocks from the CAEN digitizers and
+// wire chambers.
 //////////////////////////////////////////////////////////////
 
 #ifndef CLOCKCORRECTIONALG_H
