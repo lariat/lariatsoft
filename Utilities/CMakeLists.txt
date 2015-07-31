@@ -47,6 +47,9 @@ simple_plugin( DatabaseUtilityT1034  "service"
                BASENAME_ONLY
 )
 
+file(GLOB pwd_files *passwd)
+install( FILES ${pwd_files} DESTINATION ${product}/${version}/pwd/Utilities )
+
 install_headers()
 install_fhicl()
 install_source()
