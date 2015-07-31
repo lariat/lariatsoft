@@ -1,10 +1,10 @@
 #include "services_lariat.fcl"
 
-process_name: AnalysisExample
+process_name: DatabaseExample
 
 services:
 {
-  #TFileService: { fileName: "AnalysisExample.root" }
+  #TFileService: { fileName: "DatabaseExample.root" }
   Timing:       {}
   RandomNumberGenerator: {} 
   message:      @local::standard_info
@@ -27,17 +27,17 @@ physics:
 {
   analyzers:
   {
-    AnalysisExample:
+    DatabaseExample:
     {
       # The "module_type" tells us which module to run. The name here
       # matches the name supplied to DEFINE_ART_MODULE near the end of
-      # AnalysisExample_module.cc.
+      # DatabaseExample_module.cc.
 
-      module_type: "AnalysisExample"
+      module_type: "DatabaseExample"
     }
   }
 
-  analysis: [ AnalysisExample ]
+  analysis: [ DatabaseExample ]
 
   end_paths: [ analysis ]  
 }
