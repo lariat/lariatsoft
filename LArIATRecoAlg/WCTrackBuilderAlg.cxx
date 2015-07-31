@@ -331,7 +331,9 @@ void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
   float atan_y_ds = atan(delta_y_ds / fDelta_z_ds);
 
   //Calculate momentum and y_kink
-  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us)));
+  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us))) / cos(atan_y_ds);
+
+
   y_kink = atan_y_us - atan_y_ds;
 
   //Calculate the X/Y/Y Track End Distances

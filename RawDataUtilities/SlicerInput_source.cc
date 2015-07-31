@@ -904,7 +904,7 @@ void DAQToOffline::SlicerInput::matchDataBlocks(const LariatFragment * data)
         double timeStamp_ = timeStampToDataBlockIndices[index].first;
         double recordLength = numberV1740Samples * v1740SampleTime;  // microseconds
 
-        double timeThresholdLow = timeStamp_ - recordLength;                // microseconds
+        double timeThresholdLow = timeStamp_ - 2*recordLength;                // microseconds
         double timeThresholdHigh = timeStamp_ + recordLength;        // microseconds
 
         for (size_t k = 0; k < timeStampToDataBlockIndices.size(); ++k) {
