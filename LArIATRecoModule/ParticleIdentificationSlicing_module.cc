@@ -85,6 +85,12 @@ private:
   TH1F*             fTheta_Dist;
   TH1F*             fPhi_Dist;
   TH1F*             fTOF;
+  TH1F*             fParticleMass;
+  TH1F*             fTOFType;
+
+  std::vector<size_t>  fKaonRun;
+  std::vector<size_t>  fKaonSubRun;
+  std::vector<size_t>  fKaonEvent;
   
 };
 
@@ -102,6 +108,10 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 {
   // Implementation of required member function here.
   
+  float distance_traveled = 6.7; //meters
+  float c = 3e+8;
+
+
 
 
   //Get the collection of WCTracks produced by the WCTrackBuilder module
@@ -122,14 +132,33 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   }
 
 
+ 
+ 
+  
 
   //Quick-and-dirty method for matching TOF and WCTracks: good WCTracks only have one track per trigger.
   //I think (?) that only one TOF comes out of the TimeOfFlight module, but just in case that's not true, we'll require
   //that only one TOF can correspond to one trigger
- 
+  
+  if( TOFColHandle->size() > 1 ) std::cout << "More than one TOF object per event? This is weird." << std::endl;
+  if( TOFColHandle->size() > 0 ){
+    if( fPlotHistograms )
+      fTOFType->Fill(TOFColHandle->at(0).NTOF());
+  }
+
   //Temporary solution - need to address cases where there is more than 1 TOF per event
   if( TOFColHandle->size() > 0 ){
     if((WCTrackColHandle->size() == 1 && TOFColHandle->at(0).NTOF() == 1)){
+      
+       //Identify Kaons
+      if((WCTrackColHandle->at(0).Momentum() < 700 && WCTrackColHandle->at(0).Momentum() > 500 ) &&
+	 (TOFColHandle->at(0).SingleTOF(0) < 45 && TOFColHandle->at(0).SingleTOF(0) > 37) ){
+	fKaonRun.push_back(size_t(e.run()));
+	fKaonSubRun.push_back(size_t(e.subRun()));
+	fKaonEvent.push_back(size_t(e.event()));
+      }
+			  	
+
       if( fPlotHistograms ){
 	fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
 	fPz->Fill(WCTrackColHandle->at(0).Momentum());
@@ -142,10 +171,15 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 	fY_Face_Dist->Fill(WCTrackColHandle->at(0).XYFace(1));
 	fTheta_Dist->Fill(WCTrackColHandle->at(0).Theta());
 	fPhi_Dist->Fill(WCTrackColHandle->at(0).Phi());
+	
+	float mass = pow(pow((c*(TOFColHandle->at(0).SingleTOF(0))*1e-9/distance_traveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
+	fParticleMass->Fill(mass);
+	std::cout << "mass: " << mass << std::endl;
+
       }
     }
   }
-
+  
   
 }
 
@@ -166,6 +200,8 @@ void ParticleIdentificationSlicing::beginJob()
     fY_Face_Dist = tfs->make<TH1F>("Y_Face","Y Location of Track's TPC Entry (mm)",800,-400,400);
     fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
     fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
+    fTOFType = tfs->make<TH1F>("TOFType","Number of valid times of flight per event",10,0,10);
+    fParticleMass = tfs->make<TH1F>("Mass","Particle Mass",400,0,2000);
     
     fPz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
     fPz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
@@ -185,7 +221,8 @@ void ParticleIdentificationSlicing::beginJob()
     fTheta_Dist->GetYaxis()->SetTitle("Tracks per .002 radians");
     fPhi_Dist->GetXaxis()->SetTitle("Phi (radians)");
     fPhi_Dist->GetYaxis()->SetTitle("Tracks per 0.0628 radians");
-    
+    fParticleMass->GetXaxis()->SetTitle("Particle Mass (MeV/c^2)");
+    fParticleMass->GetYaxis()->SetTitle("Counts");
   }
 }
 
@@ -202,6 +239,9 @@ void ParticleIdentificationSlicing::beginSubRun(art::SubRun & sr)
 void ParticleIdentificationSlicing::endJob()
 {
   // Implementation of optional member function here.
+  for( size_t iKaon = 0; iKaon < fKaonRun.size() ; ++iKaon ){
+    std::cout << "Kaon Run: " << fKaonRun.at(iKaon) << ", SubRun: " << fKaonSubRun.at(iKaon) << ", Event: " << fKaonEvent.at(iKaon) << std::endl;
+  }
 }
 
 void ParticleIdentificationSlicing::endRun(art::Run & r)
