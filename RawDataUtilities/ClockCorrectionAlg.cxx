@@ -15,7 +15,6 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // C++ includes
-#include <functional>
 #include <iostream>
 #include <limits>
 
