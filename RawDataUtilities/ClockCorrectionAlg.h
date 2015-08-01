@@ -27,49 +27,54 @@
 #include "RawDataUtilities/FragmentUtility.h"
 
 // C++ includes
+#include <utility>
 #include <vector>
+
+enum {
+  TDC_DEVICE_ID = 32,
+};
 
 namespace rdu {
 
-  //struct DataBlock {
+  struct DataBlock {
 
-  //  int deviceId;
-  //  double timestamp;
-  //  double correctedTimestamp;
+    unsigned int deviceId;
+    double timestamp;
+    double correctedTimestamp;
 
-  //  // there should only be one data block in only one of these vectors
-  //  std::vector< const CAENFragment * > caenBlocks;
-  //  std::vector< const std::vector< TDCFragment::TdcEventData > * > tdcBlocks;
-  //  //std::vector< const V1494Fragment* > v1495Blocks;
-  //  //std::vector< const WUTFragment* > wutBlocks;
-  //  //std::vector< const LARASICFragment* > larasicBlocks;
-  //  //std::vector< const ReadoutError* > errorBlocks;
+    // there should only be one data block in only one of these vectors
+    std::vector< const CAENFragment * > caenBlocks;
+    std::vector< const std::vector< TDCFragment::TdcEventData > * > tdcBlocks;
+    //std::vector< const V1494Fragment* > v1495Blocks;
+    //std::vector< const WUTFragment* > wutBlocks;
+    //std::vector< const LARASICFragment* > larasicBlocks;
+    //std::vector< const ReadoutError* > errorBlocks;
 
-  //  void clear()
-  //  {
-  //    timestamp = 0;
-  //    correctedTimestamp = 0;
-  //    deviceId = -1;
-  //    caenBlocks.clear();
-  //    tdcBlocks.clear();
-  //    //v1495Blocks.clear();
-  //    //wutBlocks.clear();
-  //    //larasicBlocks.clear();
-  //    //errorBlocks.clear();
-  //  }
+    void clear()
+    {
+      timestamp = 0;
+      correctedTimestamp = 0;
+      deviceId = 999;
+      caenBlocks.clear();
+      tdcBlocks.clear();
+      //v1495Blocks.clear();
+      //wutBlocks.clear();
+      //larasicBlocks.clear();
+      //errorBlocks.clear();
+    }
 
-  //};
+  };
 
   struct DataBlockCollection {
   //struct Slice {
 
     double timestamp;
-    std::vector< const CAENFragment* > caenBlocks;
-    std::vector< const std::vector<TDCFragment::TdcEventData>* > tdcBlocks;
-    //std::vector< const V1494Fragment* > v1495Blocks;
-    //std::vector< const WUTFragment* > wutBlocks;
-    //std::vector< const LARASICFragment* > larasicBlocks;
-    //std::vector< const ReadoutError* > errorBlocks;
+    std::vector< const CAENFragment * > caenBlocks;
+    std::vector< const std::vector<TDCFragment::TdcEventData> * > tdcBlocks;
+    //std::vector< const V1494Fragment * > v1495Blocks;
+    //std::vector< const WUTFragment * > wutBlocks;
+    //std::vector< const LARASICFragment * > larasicBlocks;
+    //std::vector< const ReadoutError * > errorBlocks;
 
     void clear()
     {
@@ -84,29 +89,17 @@ namespace rdu {
 
   };
 
+  // functor for sorting data blocks by their corrected timestamps
+  //struct DataBlockTimeStampComparitor {
+  //  bool operator() (DataBlock const& a, DataBlock const& b)
+  //  {
+  //    return (a.correctedTimestamp < b.correctedTimestamp);
+  //  }
+  //} CompareTimeStamps;
+
   class ClockCorrectionAlg {
 
    public:
-
-    //typedef std::map<size_t, size_t> inlier_number_map;
-    //typedef std::map<size_t, double> residuals_sum_map;
-    //typedef std::map<size_t, double> slope_map;
-    //typedef std::map<size_t, double> intercept_map;
-    //typedef std::map<size_t, std::vector< std::pair< double, double > > inliers_map;
-
-    // BestInlierNumber = SampleInlierNumber;
-    // BestInlierResidualsSum = SampleResidualsSum;
-    // BestSlope = SampleSlope;
-    // BestIntercept = SampleIntercept;
-    // BestInliers = SampleInliers;
-
-    //  << "\nNumber of trials:            " << TrialNumber
-    //  << "\nNumber of convergence steps: " << ConvergenceSteps
-    //  << "\nTrial number of convergence: " << ConvergenceTrialNumber
-    //  << "\nBest slope:                  " << BestSlope
-    //  << "\nBest intercept:              " << BestIntercept
-    //  << "\nBestInlierNumber:            " << BestInlierNumber
-    //  << "\nBest inlier residuals sum:   " << BestInlierResidualsSum
 
     // constructor
     ClockCorrectionAlg(fhicl::ParameterSet const& pset);
@@ -128,12 +121,14 @@ namespace rdu {
                       double                                        & Slope,
                       double                                        & Intercept);
 
-    // return a map of timestamps
-    //std::map< unsigned int, std::map< unsigned int, double > > GetTimeStampMap(const LariatFragment * data);
-    std::map< unsigned int, std::vector< double > > GetTimeStampMap(const LariatFragment * data);
+    // get vector of DataBlocks and map of timestamps
+    void GetDataBlocksTimeStampMap(const LariatFragment                            * data,
+                                   std::vector< DataBlock >                        & DataBlocks,
+                                   std::map< unsigned int, std::vector< double > > & TimeStampMap);
 
-    // apply clock correction
-    void ClockCorrection(std::map< unsigned int, std::vector< double > > const& TimeStampMap);
+    // get clock correction parameters
+    void GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >  const& TimeStampMap,
+                                      std::map< unsigned int, std::pair< double, double > > & ClockCorrectionParameters);
 
     // return a vector of data block collections
     std::vector< DataBlockCollection > GroupCollections(const LariatFragment * data);

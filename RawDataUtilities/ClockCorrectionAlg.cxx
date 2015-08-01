@@ -15,6 +15,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // C++ includes
+#include <functional>
 #include <iostream>
 #include <limits>
 
@@ -123,9 +124,9 @@ namespace rdu {
 
     if (Data.size() != Residuals.size()) {
       throw cet::exception("ClockCorrectionAlg")
-        << "Number of residuals is not equal to number of data points!"
-        << " Number of residuals: " << Residuals.size()
-        << " Number of data points: " << Data.size();
+          << "Number of residuals is not equal to number of data points!"
+          << " Number of residuals: " << Residuals.size()
+          << " Number of data points: " << Data.size();
     }
 
     return;
@@ -261,14 +262,14 @@ namespace rdu {
       size_t SampleInlierNumber = SampleInliers.size();
 
       mf::LogVerbatim("ClockCorrectionAlg")
-        << "/////////////////////////////////////////////"
-        << "\nTrial:                       " << TrialNumber
-        << "\nSample slope:                " << SampleSlope
-        << "\nSample intercept:            " << SampleIntercept
-        << "\nSample inlier residuals sum: " << SampleResidualsSum
-        << "\nNumber of data points:       " << NumberDataPoints
-        << "\nNumber of sample residuals:  " << SampleResiduals.size()
-        << "\nNumber of sample inliers:    " << SampleInlierNumber;
+          << "/////////////////////////////////////////////"
+          << "\nTrial:                       " << TrialNumber
+          << "\nSample slope:                " << SampleSlope
+          << "\nSample intercept:            " << SampleIntercept
+          << "\nSample inlier residuals sum: " << SampleResidualsSum
+          << "\nNumber of data points:       " << NumberDataPoints
+          << "\nNumber of sample residuals:  " << SampleResiduals.size()
+          << "\nNumber of sample inliers:    " << SampleInlierNumber;
 
       // only allow real, finite values
       if (std::isnan(SampleInlierNumber)
@@ -304,30 +305,34 @@ namespace rdu {
     Slope = BestSlope;
     Intercept = BestIntercept;
 
-    mf::LogVerbatim("ClockCorrectionAlg")
-      << "\n/////////////////////////////////////////////"
-      << "\nNumber of trials:            " << TrialNumber
-      << "\nNumber of convergence steps: " << ConvergenceSteps
-      << "\nTrial number of convergence: " << ConvergenceTrialNumber
-      << "\nBest slope:                  " << BestSlope
-      << "\nBest intercept:              " << BestIntercept
-      << "\nBestInlierNumber:            " << BestInlierNumber
-      << "\nBest inlier residuals sum:   " << BestInlierResidualsSum
-      << "\n/////////////////////////////////////////////"
-      << "\n1 - (best slope):            " << 1 - BestSlope
-      << "\n/////////////////////////////////////////////";
+    //mf::LogVerbatim("ClockCorrectionAlg")
+    std::cout
+        << "\n/////////////////////////////////////////////"
+        << "\nNumber of trials:            " << TrialNumber
+        << "\nNumber of convergence steps: " << ConvergenceSteps
+        << "\nTrial number of convergence: " << ConvergenceTrialNumber
+        << "\nBest slope:                  " << BestSlope
+        << "\nBest intercept:              " << BestIntercept
+        << "\nBest inlier number:          " << BestInlierNumber
+        << "\nBest inlier residuals sum:   " << BestInlierResidualsSum
+        << "\n/////////////////////////////////////////////"
+        << "\n1 - (best slope):            " << 1 - BestSlope
+        << "\n/////////////////////////////////////////////";
+    std::cout << std::endl;
 
     return;
   }
 
   //-----------------------------------------------------------------------
-  void ClockCorrectionAlg::ClockCorrection(std::map< unsigned int, std::vector< double > > const& TimeStampMap)
+  //void ClockCorrectionAlg::ClockCorrection(std::map< unsigned int, std::vector< double > > const& TimeStampMap)
+  void ClockCorrectionAlg::GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >  const& TimeStampMap,
+                                                        std::map< unsigned int, std::pair< double, double > > & ClockCorrectionParameters)
   {
-
     // Container for clock correction parameters. The key is the device
     // ID, the mapped value is a pair. The first value of the pair is the
     // slope and the second value is the intercept.
-    std::map< unsigned int, std::pair< double, double > > ClockCorrectionParameters;
+    //
+    // std::map< unsigned int, std::pair< double, double > > ClockCorrectionParameters;
 
     // container of device IDs that have at least one data block
     std::vector<unsigned int> DeviceIDs;
@@ -412,11 +417,10 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  std::map< unsigned int, std::vector< double > > ClockCorrectionAlg::GetTimeStampMap(const LariatFragment * data)
+  void ClockCorrectionAlg::GetDataBlocksTimeStampMap(const LariatFragment                            * data,
+                                                     std::vector< DataBlock >                        & DataBlocks,
+                                                     std::map< unsigned int, std::vector< double > > & TimeStampMap)
   {
-
-    //std::map< unsigned int, std::map< unsigned int, double > > TimeStampMap;
-    std::map< unsigned int, std::vector< double > > TimeStampMap;
 
     std::map< unsigned int, unsigned int > numberCaenDataBlocks;
 
@@ -454,6 +458,13 @@ namespace rdu {
 
       // each CAEN Trigger Time Tag count is 8 ns
       double timestamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+
+      // create DataBlock struct and add to vector of DataBlocks
+      DataBlock caenBlock;
+      caenBlock.deviceId = boardId;
+      caenBlock.timestamp = timestamp;
+      caenBlock.caenBlocks.push_back(&caenFrag);
+      DataBlocks.push_back(caenBlock);
 
       //TimeStampMap[boardId][i] = timestamp;
       TimeStampMap[boardId].push_back(timestamp);
@@ -505,8 +516,8 @@ namespace rdu {
           continue;
         }
 
-        if (std::find(fDeviceId.begin(), fDeviceId.end(), 32) == fDeviceId.end()) {
-          fDeviceId.push_back(32);
+        if (std::find(fDeviceId.begin(), fDeviceId.end(), TDC_DEVICE_ID) == fDeviceId.end()) {
+          fDeviceId.push_back(TDC_DEVICE_ID);
         }
 
         mf::LogDebug("ClockCorrectionAlg") << "TDC event: " << j;
@@ -541,15 +552,22 @@ namespace rdu {
         }
 
         mf::LogDebug("ClockCorrectionAlg") << "tdcTimeStamp: " << tdcTimeStamp
-                                           << "\ncounts: " << counts;
+                                           << "; counts: "     << counts;
 
         ///////////////////////////////////////////////////////////////////////
 
         // each TDC Time Stamp count is 1/106.208 microseconds
         double timestamp = tdcTimeStamp / 106.208;  // convert to microseconds
 
-        //TimeStampMap[32][j] = timestamp;
-        TimeStampMap[32].push_back(timestamp);
+        // create DataBlock struct and add to vector of DataBlocks
+        DataBlock tdcBlock;
+        tdcBlock.deviceId = TDC_DEVICE_ID;
+        tdcBlock.timestamp = timestamp;
+        tdcBlock.tdcBlocks.push_back(&tdcEvents[j]);
+        DataBlocks.push_back(tdcBlock);
+
+        //TimeStampMap[TDC_DEVICE_ID][j] = timestamp;
+        TimeStampMap[TDC_DEVICE_ID].push_back(timestamp);
 
       } // TDC data block loop
     } // TDCFragment loop
@@ -570,33 +588,56 @@ namespace rdu {
     mf::LogInfo("ClockCorrectionAlg")
         << "\n//////////////////////////////////////////";
 
-    return TimeStampMap;
+    return;
   }
 
   //-----------------------------------------------------------------------
   std::vector< DataBlockCollection > ClockCorrectionAlg::GroupCollections(const LariatFragment * data)
   {
-
     std::vector< DataBlockCollection > collections;
 
-    //std::map< unsigned int, std::map< unsigned int, double > > TimeStampMap;
+    // get vector of data blocks and timestamp map
+    std::vector< DataBlock > DataBlocks;
     std::map< unsigned int, std::vector< double > > TimeStampMap;
+    this->GetDataBlocksTimeStampMap(data, DataBlocks, TimeStampMap);
 
-    TimeStampMap = this->GetTimeStampMap(data);
-
-    //for (std::map< unsigned int, std::map< unsigned int, double> >::const_iterator
     for (std::map< unsigned int, std::vector< double> >::const_iterator
          iter = TimeStampMap.begin(); iter != TimeStampMap.end(); ++iter) {
-
       mf::LogVerbatim("ClockCorrectionAlg") << "Device ID: "
                                             << iter->first
                                             << "; number of data blocks: "
                                             << iter->second.size();
     }
 
-    mf::LogVerbatim("ClockCorrectionAlg") << "blah";
-    this->ClockCorrection(TimeStampMap);
-    mf::LogVerbatim("ClockCorrectionAlg") << "blarg";
+    // get clock correction parameters
+    std::map< unsigned int, std::pair< double, double > > ClockCorrectionParameters;
+    this->GetClockCorrectionParameters(TimeStampMap, ClockCorrectionParameters);
+
+    // apply clock correction to DataBlock timestamps
+    for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
+      DataBlock & block = DataBlocks.at(block_idx);
+
+      unsigned int DeviceID = block.deviceId;
+
+      // correction parameters
+      double Slope = ClockCorrectionParameters[DeviceID].first;
+      double Intercept = ClockCorrectionParameters[DeviceID].second;
+
+      // apply correction
+      block.correctedTimestamp = (block.timestamp - Intercept) / Slope;
+    } // end loop over data blocks
+
+    // sort data blocks by their corrected timestamps
+    std::sort(DataBlocks.begin(), DataBlocks.end(),
+              [] (DataBlock const& a, DataBlock const& b) {
+                return a.correctedTimestamp < b.correctedTimestamp;
+              });
+    //std::sort(DataBlocks.begin(), DataBlocks.end(), CompareTimeStamps);
+
+    for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
+      DataBlock const& block = DataBlocks.at(block_idx);
+      std::cout << block.timestamp << ", " << block.correctedTimestamp << ", " << block.deviceId << std::endl;
+    } // end loop over data blocks
 
     return collections;
   }
