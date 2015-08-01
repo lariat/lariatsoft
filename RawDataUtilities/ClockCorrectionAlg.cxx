@@ -632,7 +632,6 @@ namespace rdu {
               [] (DataBlock const& a, DataBlock const& b) {
                 return a.correctedTimestamp < b.correctedTimestamp;
               });
-    //std::sort(DataBlocks.begin(), DataBlocks.end(), CompareTimeStamps);
 
     for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
       DataBlock const& block = DataBlocks.at(block_idx);

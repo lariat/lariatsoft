@@ -89,14 +89,6 @@ namespace rdu {
 
   };
 
-  // functor for sorting data blocks by their corrected timestamps
-  //struct DataBlockTimeStampComparitor {
-  //  bool operator() (DataBlock const& a, DataBlock const& b)
-  //  {
-  //    return (a.correctedTimestamp < b.correctedTimestamp);
-  //  }
-  //} CompareTimeStamps;
-
   class ClockCorrectionAlg {
 
    public:
@@ -132,9 +124,6 @@ namespace rdu {
 
     // return a vector of data block collections
     std::vector< DataBlockCollection > GroupCollections(const LariatFragment * data);
-
-    // return a vector of Slice structs
-    //std::vector< Slice > slice(LariatFragment * data);
 
     // this method is used for testing porpoises
     void hello_world();
