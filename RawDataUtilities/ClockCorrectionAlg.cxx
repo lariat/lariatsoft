@@ -15,7 +15,10 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // C++ includes
+#include <cstdlib>
+#include <iomanip>
 #include <iostream>
+#include <iterator>
 #include <limits>
 
 namespace rdu {
@@ -26,7 +29,8 @@ namespace rdu {
 
   //-----------------------------------------------------------------------
   // constructor
-  ClockCorrectionAlg::ClockCorrectionAlg(fhicl::ParameterSet const& pset) {
+  ClockCorrectionAlg::ClockCorrectionAlg(fhicl::ParameterSet const& pset)
+  {
 
     // since we can't use infinity here, this will have to do
     fMaxDouble = std::numeric_limits<double>::max();
@@ -51,8 +55,8 @@ namespace rdu {
     fStopResidualsSum             = pset.get< double >("StopResidualsSum",             0);
     fStopProbability              = pset.get< double >("StopProbability",              1);
     fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e6);
-    fSampleSlopeCutLower          = pset.get< double >("SampleSlopeCutLower",          0.5);
-    fSampleSlopeCutUpper          = pset.get< double >("SampleSlopeCutUpper",          1.5);
+    fSampleSlopeCutLower          = pset.get< double >("SampleSlopeCutLower",          0.9);
+    fSampleSlopeCutUpper          = pset.get< double >("SampleSlopeCutUpper",          1.1);
   }
 
   //-----------------------------------------------------------------------
@@ -203,10 +207,20 @@ namespace rdu {
     while (TrialNumber < MaxTrials) {
 
       // copy vector of datum indices to shuffle
-      std::vector<size_t> RandomIndices(DatumIndices);
+      //std::vector<size_t> RandomIndices(DatumIndices);
 
       // shuffle the datum indices
-      std::random_shuffle(RandomIndices.begin(), RandomIndices.end());
+      //std::random_shuffle(RandomIndices.begin(), RandomIndices.end());
+
+      std::vector<size_t> RandomIndices;
+      size_t sample_idx = 0;
+      while (sample_idx < MinSamples) {
+        size_t RandomIndex = (size_t) std::rand() % NumberDataPoints;
+        if (std::find(RandomIndices.begin(), RandomIndices.end(), RandomIndex) != RandomIndices.end())
+          continue;
+        RandomIndices.push_back(RandomIndex);
+        ++sample_idx;
+      }
 
       // initialize vector of sample data points
       std::vector< std::pair< double, double > > Sample;
@@ -260,7 +274,7 @@ namespace rdu {
       // get number of sample inliers
       size_t SampleInlierNumber = SampleInliers.size();
 
-      mf::LogVerbatim("ClockCorrectionAlg")
+      mf::LogDebug("ClockCorrectionAlg")
           << "/////////////////////////////////////////////"
           << "\nTrial:                       " << TrialNumber
           << "\nSample slope:                " << SampleSlope
@@ -310,6 +324,7 @@ namespace rdu {
         << "\nNumber of trials:            " << TrialNumber
         << "\nNumber of convergence steps: " << ConvergenceSteps
         << "\nTrial number of convergence: " << ConvergenceTrialNumber
+        << "\nNumber of data points:       " << NumberDataPoints
         << "\nBest slope:                  " << BestSlope
         << "\nBest intercept:              " << BestIntercept
         << "\nBest inlier number:          " << BestInlierNumber
@@ -593,7 +608,7 @@ namespace rdu {
   //-----------------------------------------------------------------------
   std::vector< DataBlockCollection > ClockCorrectionAlg::GroupCollections(const LariatFragment * data)
   {
-    std::vector< DataBlockCollection > collections;
+    std::vector< DataBlockCollection > Collections;
 
     // get vector of data blocks and timestamp map
     std::vector< DataBlock > DataBlocks;
@@ -632,12 +647,19 @@ namespace rdu {
                 return a.correctedTimestamp < b.correctedTimestamp;
               });
 
-    for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
-      DataBlock const& block = DataBlocks.at(block_idx);
-      std::cout << block.timestamp << ", " << block.correctedTimestamp << ", " << block.deviceId << std::endl;
+    //for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
+    //  DataBlock const& block = DataBlocks.at(block_idx);
+    //  std::cout << block.timestamp << ", " << block.correctedTimestamp << ", " << block.deviceId << std::endl;
+    //} // end loop over data blocks
+
+    for (std::vector< DataBlock >::const_reverse_iterator
+         block = DataBlocks.rbegin(); block != DataBlocks.rend(); ++block) {
+      std::cout << std::setfill(' ') << std::setw(3)
+                << block->deviceId << "; " << block->correctedTimestamp
+                << std::endl;
     } // end loop over data blocks
 
-    return collections;
+    return Collections;
   }
 
   //-----------------------------------------------------------------------
