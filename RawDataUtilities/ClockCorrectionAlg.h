@@ -174,7 +174,7 @@ namespace rdu {
     double fStopProbability;
 
     // restrict the linear fit for RANSAC
-    double fTimeStampDifferenceThreshold;
+    double fTimeStampDifferenceThreshold;  // microseconds
     double fSampleSlopeCutLower;
     double fSampleSlopeCutUpper;
 
