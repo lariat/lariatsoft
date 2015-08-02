@@ -176,7 +176,7 @@ namespace rdu {
                                         double                                        & Slope,
                                         double                                        & Intercept)
   {
-    // random seed for shuffle
+    // random seed for random thoughts
     std::srand(std::time(0));
 
     // get number of data points
@@ -190,10 +190,10 @@ namespace rdu {
     std::vector< std::pair<double, double> > BestInliers;
 
     // get vector of datum indices for shuffling
-    std::vector<size_t> DatumIndices;
-    for (size_t idx = 0; idx < NumberDataPoints; ++idx) {
-      DatumIndices.push_back(idx);
-    }
+    //std::vector<size_t> DatumIndices;
+    //for (size_t idx = 0; idx < NumberDataPoints; ++idx) {
+    //  DatumIndices.push_back(idx);
+    //}
 
     // number of steps taken to convergence
     size_t ConvergenceSteps = 0;
@@ -206,12 +206,10 @@ namespace rdu {
     // commence iterations
     while (TrialNumber < MaxTrials) {
 
-      // copy vector of datum indices to shuffle
-      //std::vector<size_t> RandomIndices(DatumIndices);
-
       // shuffle the datum indices
-      //std::random_shuffle(RandomIndices.begin(), RandomIndices.end());
+      //std::random_shuffle(DatumIndices.begin(), DatumIndices.end());
 
+      // generate random indices
       std::vector<size_t> RandomIndices;
       size_t sample_idx = 0;
       while (sample_idx < MinSamples) {
@@ -225,9 +223,9 @@ namespace rdu {
       // initialize vector of sample data points
       std::vector< std::pair< double, double > > Sample;
 
-      // get sample of size MinSamples from the shuffled datum indices
+      // get sample of size MinSamples from the randomized datum indices
       for (size_t rand_idx = 0; rand_idx < MinSamples; ++rand_idx) {
-        //std::cout << RandomIndices.at(rand_idx) << std::endl;
+        //size_t DatumIndex = DatumIndices.at(rand_idx);
         size_t DatumIndex = RandomIndices.at(rand_idx);
         Sample.push_back(Data.at(DatumIndex));
       }
