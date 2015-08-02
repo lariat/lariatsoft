@@ -54,7 +54,7 @@ namespace rdu {
     fStopSampleNumber             = pset.get< size_t >("StopSampleNumber",             fMaxSize_T);
     fStopResidualsSum             = pset.get< double >("StopResidualsSum",             0);
     fStopProbability              = pset.get< double >("StopProbability",              1);
-    fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e6);
+    fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e5);
     fSampleSlopeCutLower          = pset.get< double >("SampleSlopeCutLower",          0.9);
     fSampleSlopeCutUpper          = pset.get< double >("SampleSlopeCutUpper",          1.1);
   }
@@ -287,9 +287,9 @@ namespace rdu {
           or std::isinf(SampleInlierNumber)) continue;
 
       // choose as new best model if number of inliers is maximal
-      if (SampleInlierNumber > BestInlierNumber
-          or (SampleInlierNumber == BestInlierNumber
-              and SampleResidualsSum < BestInlierResidualsSum)) {
+      if ((SampleInlierNumber > BestInlierNumber)
+          or ((SampleInlierNumber == BestInlierNumber)
+              and (SampleResidualsSum < BestInlierResidualsSum))) {
 
         BestInlierNumber = SampleInlierNumber;
         BestInlierResidualsSum = SampleResidualsSum;
