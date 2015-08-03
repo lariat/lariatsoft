@@ -32,7 +32,7 @@ art_make(BASENAME_ONLY
 	 		  SummaryData
 	 SOURCE_LIBRARIES RawData
 	                  RawDataUtilities
-	 		  LArIATFragments
+	 		  LariatFragments
 			  SummaryData
 	                  ${ART_FRAMEWORK_SERVICES_REGISTRY}
 			  ${ART_FRAMEWORK_SERVICES_BASIC}
