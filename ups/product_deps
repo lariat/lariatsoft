@@ -10,7 +10,7 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		v04_16_00
+larsoft		v04_17_00
 LariatFilters   v01_02
 lariatfragments v01_06_01
 artdaq_core     v1_04_15
