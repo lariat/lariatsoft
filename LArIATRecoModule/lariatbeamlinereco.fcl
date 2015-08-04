@@ -32,7 +32,7 @@ lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini
 
 #lariat_murs:            #Taken from MuonRangeStackHits.fcl by Greg Pulliam
 #{
-#  module_type:       MuonRangeStackHits
+#  module_type:       MuonRangeStackHitsSlicing
 #}
 
 lariat_pid:

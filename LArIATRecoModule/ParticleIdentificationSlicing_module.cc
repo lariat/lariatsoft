@@ -33,7 +33,7 @@
 //ROOT includes
 #include <TH2F.h>
 #include <TH1F.h>
-
+#include <TF1.h>
 
 class ParticleIdentificationSlicing;
 
@@ -65,6 +65,10 @@ public:
   void respondToOpenInputFile(art::FileBlock const & fb) override;
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
 
+  void setPriors();
+  void getActivePriors( std::string runSetting );
+  void getActivePriorsDefault();
+
 private:
 
   // Declare member data here.
@@ -72,6 +76,10 @@ private:
   std::string       fTOFModuleLabel;
   bool              fVerbose;
   bool              fPlotHistograms;
+
+
+  //Histogramming and distribution generation
+  //parameters and hists
 
   TH2F*             fPzVsTOF;
   TH1F*             fNTOF;
@@ -91,6 +99,26 @@ private:
   std::vector<size_t>  fKaonRun;
   std::vector<size_t>  fKaonSubRun;
   std::vector<size_t>  fKaonEvent;
+
+  //Particle ID parameters
+
+  //Gaussian parameters for mass fits
+  float             fPiMuMassMean;
+  float             fPiMuMassSigma;
+  float             fKaonMassMean;
+  float             fKaonMassSigma;
+  float             fProtonMassMean;
+  float             fProtonMassSigma;
+
+  //Priors for likelihood analysis
+  std::map<std::string,float> fPionPriorMap;
+  std::map<std::string,float> fMuonPriorMap;
+  std::map<std::string,float> fKaonPriorMap;
+  std::map<std::string,float> fProtonPriorMap;
+  float fPionActivePrior;
+  float fMuonActivePrior;
+  float fKaonActivePrior;
+  float fProtonActivePrior;
   
 };
 
@@ -131,10 +159,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
       std::cout << "NumTOFs for first event TOF objct: " << TOFColHandle->at(0).NTOF() << std::endl;
   }
 
-
- 
- 
-  
+  ///////////////// DISTRIBUTION GENERATION ///////////////////
 
   //Quick-and-dirty method for matching TOF and WCTracks: good WCTracks only have one track per trigger.
   //I think (?) that only one TOF comes out of the TimeOfFlight module, but just in case that's not true, we'll require
@@ -172,16 +197,129 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 	fTheta_Dist->Fill(WCTrackColHandle->at(0).Theta());
 	fPhi_Dist->Fill(WCTrackColHandle->at(0).Phi());
 	
-	float mass = pow(pow((c*(TOFColHandle->at(0).SingleTOF(0))*1e-9/distance_traveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
-	fParticleMass->Fill(mass);
-	std::cout << "mass: " << mass << std::endl;
 
+	if(WCTrackColHandle->at(0).Momentum() < 1000 ){
+	  float mass = pow(pow((c*(TOFColHandle->at(0).SingleTOF(0)-11)*1e-9/distance_traveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
+	  fParticleMass->Fill(mass);
+	  std::cout << "mass: " << mass << std::endl;
+	}
       }
     }
   }
+
+  ///////////////// DISTRIBUTION GENERATION ENDING ///////////////////  
   
+
+    
+  ///////////////// PARTICLE ID Pz vs. TOF/////////////////////////////
+  //We take the calculated mass of the particle and find the value of 3
+  //p.d.f.s at that mass. Each p.d.f. is a gaussian with the parameters
+  //defined in the class definition above, and represents a particle
+  //flavor (pi/mu, kaon, proton). Each of these probabilities is equal
+  //to the likelihood of the associated particle being the correct one
+  //given the mass. We normalize these three probabilities and store them
+  //for future use.
+  //NOTE: If I can get my mitts on MC beam information, we can also weight
+  //these with priors (relative beam composition of pions, protons, kaons,
+  //and improve our likelihood estimates)
+
+  //Indices after filling:
+  //0: proton likelihood ratio
+  //1: kaon likelihood ratio
+  //2: pimu likelihood ratio
+  //Note that the size might still be zero after the
+  //following function if cuts aren't passed. Careful!
+  
+
+  std::vector<float> proton_kaon_pimu_likelihood_ratios;
+  doThePiMu_Proton_KaonSeparation( WCTrackColHandle,
+				   TOFColHandle,
+				   proton_kaon_pimu_likelihood_ratios );
+  
+
+
+  ///////////////// PARTICLE ID ENDING Pz vs. TOF /////////////////////
+    }
+  }
+
   
 }
+
+//============================================================================================
+//Setting prior information (very rough) on the likelihood
+//of different particle ID hypotheses
+void ParticleIdentificationSlicing::setPriors()
+{
+  fPionPriorMap.emplace("12Deg_08GeV_+35Tesla",0.9068); 
+  fMuonPriorMap.emplace("12Deg_08GeV_+35Tesla",0.0297);
+  fKaonPriorMap.emplace("12Deg_08GeV_+35Tesla",0.000938);
+  fProtonPriorMap.emplace("12Deg_08GeV_+35Tesla",0.06097);
+}
+
+
+//============================================================================================
+//Setting the active prior variables from the prior maps set in setPriors() function
+void ParticleIdentificationSlicing::getActivePriors( std::string runSetting )
+{
+  fPionPriorActive = fPionPriorMap.at( runSetting );
+  fMuonPriorActive = fMuonPriorMap.at( runSetting );
+  fKaonPriorActive = fKaonPriorMap.at( runSetting );
+  fProtonPriorActive = fProtonPriorMap.at( runSetting );
+}
+
+
+//============================================================================================
+//Setting the active priors to 1 for defualt  
+void ParticleIdentificationSlicing::getActivePriorsDefault()
+{
+  fPionPriorActive = 1;
+  fMuonPriorActive = 1;
+  fKaonPriorActive = 1;
+  fProtonPriorActive = 1;
+}
+
+//============================================================================================
+void ParticleIdentifiactionSlicing::doThePiMu_Proton_KaonSeparation( art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle,
+								     art::Handle< std::vector<ldp::TOF> > TOFColHandle,
+								     std::vector<float> & proton_kaon_pimu_likelihood_ratios );
+{
+  if( TOFColHandle->size() > 0 ){
+    if((WCTrackColHandle->size() == 1 && TOFColHandle->at(0).NTOF() == 1)){
+
+      //Finding the mass
+      if(WCTrackColHandle->at(0).Momentum() < 1000 ){
+	float mass = pow(pow((c*(TOFColHandle->at(0).SingleTOF(0)-11)*1e-9/distance_traveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
+      }
+      else return;   //If mass is too high, it's hard to disambiguate protons, pi/mu, and kaons
+
+      //Finding values of pdf for mass given proton, kaon, pi/mu distributions
+      float proton_prob = fProtonPriorActive*(1/pow(2*3.1415926,0.5)/fProtonMassSigma)*exp(-0.5*pow((mass-fProtonMassMean)/fProtonMassSigma,2));
+      float kaon_prob = fKaonPriorActive*(1/pow(2*3.1415926,0.5)/fKaonMassSigma)*exp(-0.5*pow((mass-fKaonMassMean)/fKaonMassSigma,2));
+      float pimu_prob = 0;
+      //If we're doing pimu separation, pis and mus become the same particle according to our priors.
+      //They become the same hypothesis, and all hypotheses are equally likely (for default).
+      if( fPionPriorActive == 1 && fMuonPriorActive == 1 )
+	pimu_prob = (1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
+      else pimu_prob = (fPionPriorActive+fMuonPriorActive)*(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
+      
+      //These ^ are likelihoods, so find the likelihood ratio of each to the total, given no priors (temporary)
+      float proton_likelihood = proton_prob/(proton_prob+kaon_prob+pimu_prob);
+      float kaon_likelihood = kaon_prob/(proton_prob+kaon_prob+pimu_prob);
+      float pimu_likelihood = pimu_prob/(proton_prob+kaon_prob+pimu_prob);
+      
+      proton_kaon_pimu_likelihood_ratios.push_back(proton_likelihood);
+      proton_kaon_pimu_likelihood_ratios.push_back(kaon_likelihood);
+      proton_kaon_pimu_likelihood_ratios.push_back(pimu_likelihood);
+    }
+  }
+
+
+
+
+}
+
+
+
 
 void ParticleIdentificationSlicing::beginJob()
 {
@@ -201,7 +339,7 @@ void ParticleIdentificationSlicing::beginJob()
     fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
     fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
     fTOFType = tfs->make<TH1F>("TOFType","Number of valid times of flight per event",10,0,10);
-    fParticleMass = tfs->make<TH1F>("Mass","Particle Mass",400,0,2000);
+    fParticleMass = tfs->make<TH1F>("Mass","Particle Mass",50,0,2000);
     
     fPz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
     fPz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
@@ -229,6 +367,10 @@ void ParticleIdentificationSlicing::beginJob()
 void ParticleIdentificationSlicing::beginRun(art::Run & r)
 {
   // Implementation of optional member function here.
+  setPriors();
+
+  //Temporary, but must always either use this or the non-default prior setting
+  getActivePriorsDefault();
 }
 
 void ParticleIdentificationSlicing::beginSubRun(art::SubRun & sr)
@@ -242,6 +384,30 @@ void ParticleIdentificationSlicing::endJob()
   for( size_t iKaon = 0; iKaon < fKaonRun.size() ; ++iKaon ){
     std::cout << "Kaon Run: " << fKaonRun.at(iKaon) << ", SubRun: " << fKaonSubRun.at(iKaon) << ", Event: " << fKaonEvent.at(iKaon) << std::endl;
   }
+  
+  //Fitting the mass histogram in the appropriate regions to get the
+  //parameters used for likelihood estimation of particle flavor
+  TF1 * f1 = new TF1("f1","[2]/pow(2*3.14159265,0.5)*exp(-pow((x-[0])/[1],2)/2)",0,400);
+  TF1 * f2 = new TF1("f2","[2]/pow(2*3.14159265,0.5)*exp(-pow((x-[0])/[1],2)/2)",400,700);
+  TF1 * f3 = new TF1("f3","[2]/pow(2*3.14159265,0.5)*exp(-pow((x-[0])/[1],2)/2)",700,1200);
+  f1->SetParameter(0,140);
+  f1->SetParameter(1,50);
+  f1->SetParameter(2,50);
+  f2->SetParameter(0,490);
+  f2->SetParameter(1,20);
+  f2->SetParameter(2,5);
+  f3->SetParameter(0,940);
+  f3->SetParameter(1,100);
+  f3->SetParameter(2,20);
+  std::cout << "Fitting to Pi/Mu peak: " << std::endl;
+  fParticleMass->Fit("f1","R");
+  std::cout << "Fitting to Kaon peak: " << std::endl;
+  fParticleMass->Fit("f2","R");
+  std::cout << "Fitting to Proton peak: " << std::endl;
+  fParticleMass->Fit("f3","R");
+  
+
+
 }
 
 void ParticleIdentificationSlicing::endRun(art::Run & r)
@@ -261,6 +427,16 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fTOFModuleLabel               =p.get< std::string >("TOFModuleLabel");
   fVerbose                      =p.get< bool >("Verbose");
   fPlotHistograms               =p.get< bool >("PlotHistograms");
+
+  fPiMuMassMean                 =p.get< float >("PiMuMassMean",1.892e+2);
+  fPiMuMassSigma                =p.get< float >("PiMuMassSigma",4.646e+1);
+  fKaonMassMean                 =p.get< float >("KaonMassMean",5.56e+2);
+  fKaonMassSigma                =p.get< float >("KaonMassSigma",8.39e+1);
+  fProtonMassMean               =p.get< float >("ProtonMassMean",9.16e+2);
+  fProtonMassSigma              =p.get< float >("ProtonMassSigma",9.85e+1);
+
+
+  
 }
 
 void ParticleIdentificationSlicing::respondToCloseInputFile(art::FileBlock const & fb)
