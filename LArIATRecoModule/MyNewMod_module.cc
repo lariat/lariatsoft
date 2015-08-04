@@ -57,6 +57,7 @@ public:
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const & fb) override;
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
+    
 
 private:
   
@@ -69,11 +70,12 @@ private:
 };
 
 
-lrm::MyNewMod::MyNewMod(fhicl::ParameterSet const & p)
+lrm::MyNewMod::MyNewMod(fhicl::ParameterSet const & p) //:fTrigFiltAlg(p.get< fhicl::ParameterSet > ("TriggerFilterAlg"))
 // :
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.
+  this->reconfigure(p);
 }
 
 void lrm::MyNewMod::produce(art::Event & e)
@@ -102,53 +104,51 @@ void lrm::MyNewMod::produce(art::Event & e)
   for(size_t trig = 0; trig < tdu.NTriggers(); ++trig)
      {
      
-     // ### Global Trigger that you will use to make associations ###
-     //art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
-     
-     // ### Getting a vector of Wire Chamber 1 Digits ###
-     std::vector<const raw::AuxDetDigit*> WireChamber1Digi = tdu.TriggerMWPC1Digits(trig);
-     // art::PtrVector<raw::AuxDetDigit> WireChamber1Digi = tdu.TriggerWMPC1DigitsPtr(trig); //if you want to use more correct pointer instead
-     
-     std::cout<<"Size of WC1Digi = "<<WireChamber1Digi.size()<<std::endl;
-     fWC1Size->Fill(WireChamber1Digi.size());
-     
-     // ### Looping over Wire Chamber #1's Digits ###
-     for(size_t wc1 = 0; wc1 < WireChamber1Digi.size(); ++wc1)
-        {
-	//std::cout<<"WireChamber1Digi Channel Number = "<<WireChamber1Digi.at(wc1)->Channel()<<std::endl;
-	///std::cout<<"WireChamber1Digi TDC = "<<WireChamber1Digi.at(wc1)->NADC()<<std::endl;
-	  auto wcDigit = WireChamber1Digi[wc1];
+       //### Global Trigger that you will use to make associations ###
+       //       art::Ptr<raw::Trigger> trigger = tdu.EventTriggersPtr()[trig];
 
-	// ### Looping over all the TDC hits (annoyingly called ADC's) ###
-	for (size_t i =0; i < wcDigit->NADC(); ++i)
-	   {
-
-	   // ### Skipping any TDC hits (which returns the time tick) that is zero ###
-	   if(wcDigit->ADC(i) == 0){continue;}
-	    
-	      
-	   //### Clustering over X Plane ###
-	   if(wcDigit->Channel() < 128) //<---(Channels 0 - 127 are the X Plane)
-	      {
-	      // Get wire and time pairs, cluster with dBScan (or whatever), save the good hits
-	      fWC1XPlaneADC->Fill(wcDigit->ADC(i));
-	      }//<---End X Plane
+       // ### Getting a vector of Wire Chamber 1 Digits ###
+       std::vector<const raw::AuxDetDigit*> WireChamber1Digi = tdu.TriggerMWPC1Digits(trig);
+       // art::PtrVector<raw::AuxDetDigit> WireChamber1Digi = tdu.TriggerWMPC1DigitsPtr(trig); //if you want to use more correct pointer instead
+       
+       std::cout<<"Size of WC1Digi = "<<WireChamber1Digi.size()<<std::endl;
+       fWC1Size->Fill(WireChamber1Digi.size());
+       
+       // ### Looping over Wire Chamber #1's Digits ###
+       for(size_t wc1 = 0; wc1 < WireChamber1Digi.size(); ++wc1)
+	 {
+	   //std::cout<<"WireChamber1Digi Channel Number = "<<WireChamber1Digi.at(wc1)->Channel()<<std::endl;
+	   ///std::cout<<"WireChamber1Digi TDC = "<<WireChamber1Digi.at(wc1)->NADC()<<std::endl;
+	   auto wcDigit = WireChamber1Digi[wc1];
 	   
-	   // ### Clustering over the Y Plane ###
-	   if(wcDigit->Channel() > 127) //<---(Channels 128 - 255 are the Y Plane)
-	      {
-	      
-	       // Get wire and time pairs, cluster with dBScan (or whatever), save the good hits
-	      
-	      }//<---End Y Plane
+	   // ### Looping over all the TDC hits (annoyingly called ADC's) ###
+	   for (size_t i =0; i < wcDigit->NADC(); ++i)
+	     {
+	       
+	       // ### Skipping any TDC hits (which returns the time tick) that is zero ###
+	       if(wcDigit->ADC(i) == 0){continue;}
+	       
+	       
+	       //### Clustering over X Plane ###
+	       if(wcDigit->Channel() < 128) //<---(Channels 0 - 127 are the X Plane)
+		 {
+		   // Get wire and time pairs, cluster with dBScan (or whatever), save the good hits
+		   fWC1XPlaneADC->Fill(wcDigit->ADC(i));
+		 }//<---End X Plane
+	       
+	       // ### Clustering over the Y Plane ###
+	       if(wcDigit->Channel() > 127) //<---(Channels 128 - 255 are the Y Plane)
+		 {
+		   
+		   // Get wire and time pairs, cluster with dBScan (or whatever), save the good hits
+		   
+		 }//<---End Y Plane
+	       
+	       
+	     }// <--- End i loop
 	   
-	   
-	   }// <--- End i loop
-	
-	}//<--End wc1
-     
-     
-     
+	 }//<--End wc1
+       
      }//<---End trig loop
   
   
@@ -222,5 +222,6 @@ void lrm::MyNewMod::respondToOpenOutputFiles(art::FileBlock const & fb)
 {
   // Implementation of optional member function here.
 }
+
 
 DEFINE_ART_MODULE(lrm::MyNewMod)

@@ -1,0 +1,47 @@
+#Created by Andrew Olivier on 6/30/2015
+#FHICL header file for all LArIAT beamline reco files
+#When you make a new beamline reco module for LArIAT, add it here as follows:
+#
+#lariat_<module_name_in_all_lowercase>:
+#{
+#  <numeric_parameter:<number_character>
+# .
+# .
+# .
+#
+#}
+
+#include "lariat_reco_algs.fcl"
+
+BEGIN_PROLOG
+lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Ryan Linehan
+{
+  module_type:        WCTrackBuilder
+  WCTrackBuilderAlg:  @local::lariat_wctrackbuilderalg
+  TriggerUtility:     "FragmentToDigit"
+  NWC:                4
+  NWperTDC:           64
+  Verbose:            false
+}
+
+lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini
+{
+  module_type:        TimeOfFlight
+  TriggerUtility:     "FragmentToDigit"
+}
+
+#lariat_murs:            #Taken from MuonRangeStackHits.fcl by Greg Pulliam
+#{
+#  module_type:       MuonRangeStackHits
+#}
+
+lariat_pid:
+{
+  module_type:        ParticleIdentification
+  WCTrackModuleLabel: wctrack
+  TOFModuleLabel:     tof
+  Verbose:            true
+  PlotHistograms:     true
+} 
+
+END_PROLOG

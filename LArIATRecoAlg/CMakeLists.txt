@@ -2,6 +2,8 @@
 art_make( LIBRARY_NAME  LArIATRecoAlg
 	  LIB_LIBRARIES Utilities
 	                Geometry
+			RawData
+			DatabaseUtilityT1034_service
 	  		${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
 			${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -20,6 +22,7 @@ art_make( LIBRARY_NAME  LArIATRecoAlg
 			${ROOT_BASIC_LIB_LIST}
                         ${ROOT_MINUIT}
 			${ROOT_MINUIT2}	
+			${Boost_SYSTEM_LIBRARY}
         )
 
 install_headers()

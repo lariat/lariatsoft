@@ -6,7 +6,31 @@
 
 
 <lcgdict>
- <class name="ldp::WCTrack" ClassVersion="10"                                      >
+
+ <class name="ldp::TOF" ClassVersion="11"                                      >
+  <version ClassVersion="11" checksum="1589017684"/>
+  <version ClassVersion="10" checksum="4212739596"                                />
+ </class>
+ <class name="std::vector<ldp::TOF>"                                          />
+ <class name="art::Wrapper<ldp::TOF>"                                         />
+ <class name="art::Wrapper<std::vector<ldp::TOF> >"                           />
+
+ <class name="std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >"    />
+ <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF> >"    />
+  
+ <class name="std::pair< art::Ptr<ldp::TOF>,     art::Ptr<raw::Trigger> >"    />
+ <class name="std::pair< art::Ptr<ldp::TOF>,     art::Ptr<raw::AuxDetDigit> >"/>
+
+ <class name="art::Assns<ldp::TOF,     raw::Trigger,      void>"              />
+ <class name="art::Assns<raw::Trigger,     ldp::TOF,      void>"              />
+ <class name="art::Assns<raw::AuxDetDigit, ldp::TOF,      void>"              />
+ 
+ <class name="art::Wrapper<art::Assns<raw::Trigger,     ldp::TOF,     void> >"/>
+ <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,     void> >"/>
+ <class name="art::Wrapper<art::Assns<ldp::TOF,     raw::Trigger,     void> >"/>
+
+ <class name="ldp::WCTrack" ClassVersion="11"                                      >
+  <version ClassVersion="11" checksum="167827337"/>
   <version ClassVersion="10" checksum="4212739596"                                />
  </class>
  <class name="std::vector<ldp::WCTrack>"                                          />
@@ -26,6 +50,7 @@
  <class name="art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >"/>
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >"/>
  <class name="art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >"/>
+
 
 
 </lcgdict>

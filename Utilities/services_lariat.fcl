@@ -6,6 +6,7 @@
 #include "simulationservices_lariat.fcl"
 #include "magfield.fcl"
 #include "databaseutil_lariat.fcl"
+#include "databaseutility_lariat.fcl"
 #include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
 #include "sam_lariat.fcl"
@@ -24,6 +25,7 @@ lariat_services:
  LArProperties:             @local::lariat_properties	
  LArFFT:                    @local::lariat_larfft  	
  DatabaseUtil:	            @local::lariat_database        
+ DatabaseUtilityT1034:      @local::lariat_databaseutility
  SignalShapingServiceT1034: @local::lariat_signalshapingservice
  TimeService:               @local::lariat_timeservice  
  BackTracker:               @local::standard_backtracker
@@ -42,6 +44,7 @@ lariat_simulation_services:
  LArProperties:             @local::lariat_properties        
  LArFFT:                    @local::lariat_larfft            
  DatabaseUtil:	            @local::lariat_database          
+ DatabaseUtilityT1034:      @local::lariat_databaseutility
  SignalShapingServiceT1034: @local::lariat_signalshapingservice
  TimeService:               @local::lariat_timeservice  
  BackTracker:               @local::standard_backtracker      

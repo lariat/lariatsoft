@@ -74,23 +74,24 @@ include(ArtMake)
 include(BuildPlugins)
 
 # source
-add_subdirectory(LArSoftConfigurations)
-add_subdirectory(JobConfigurations)
 add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
+add_subdirectory(JobConfigurations)
+add_subdirectory(LArSoftConfigurations)
 add_subdirectory(LArIATDataProducts)
+add_subdirectory(LArIATEventGenerator)
 add_subdirectory(LArIATRecoAlg)
 add_subdirectory(LArIATRecoModule)
-add_subdirectory(LArIATEventGenerator)
+add_subdirectory(LArIATChecks)
+add_subdirectory(LArIATAnaModule)
 add_subdirectory(RawDataUtilities)
-add_subdirectory(LongBo)
 add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
-
+add_subdirectory(LongBo)
 
 # tests
-add_subdirectory(test)
+#add_subdirectory(test)
 
 # ups - table and config files
 add_subdirectory(ups)

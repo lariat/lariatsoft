@@ -2,13 +2,12 @@ BEGIN_PROLOG
 
 lariat_wctrackbuilderalg:
 {
+  PickyTracks: true
+}
 
-
-
-
-
-
-
+lariat_triggerfilteralg:
+{
+  Verbosity: false
 }
 
 END_PROLOG

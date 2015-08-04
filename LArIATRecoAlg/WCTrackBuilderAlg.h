@@ -90,7 +90,7 @@ class WCTrackBuilderAlg{
 			     float (&pos_us)[3],
 			     float (&pos_ds)[3]);
   
-  void buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
+  bool buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 			   std::vector<std::vector<double> > & reco_pz_array,
 			   std::vector<double> & reco_pz_list,
 			   std::vector<double> & y_kink_list,
@@ -174,7 +174,25 @@ class WCTrackBuilderAlg{
   
   void transformWCHits( float (&WC3_point)[3],
 			float (&WC4_point)[3]);
-  
+
+  bool cutOnGoodTracks( WCHitList track,
+			float & y_kink,
+			float (&dist_array)[3],
+			size_t track_index);
+
+  void disambiguateTracks( std::vector<double> & reco_pz_list,
+			   std::vector<double> & y_kink_list,
+			   std::vector<double> & x_dist_list,
+			   std::vector<double> & y_dist_list,
+			   std::vector<double> & z_dist_list,
+			   int & track_count,
+			   std::vector<double> & x_on_tpc_face_list,
+			   std::vector<double> & y_on_tpc_face_list,
+			   std::vector<double> & incoming_theta_list,
+			   std::vector<double> & incoming_phi_list,
+			   std::vector<WCHitList> & track_list,
+			   bool lonely_hit_bool);
+
  private:
   //Hardware constants
   int fNumber_tdcs;
@@ -186,8 +204,16 @@ class WCTrackBuilderAlg{
   double fGoodHitAveragingEps;
   float  fDBSCANEpsilon;
   int    fDBSCANMinHits;
- 
+  float  fCentralYKink;
+  float  fSigmaYKink;
+  float  fCentralYDist;
+  float  fSigmaYDist;
+  float  fPrintDisambiguation;
+  bool   fPickyTracks;
 
+  //Semi-Persistent vectors
+  std::map<size_t,std::pair<float,float> > fGoodTrackCandidateErrors;
+  std::vector<std::pair<WCHitList,size_t> > fGoodTrackCandidateHitLists;
   /////////////////////////////////
   // CONSTANTS FROM SURVEY       //
   /////////////////////////////////

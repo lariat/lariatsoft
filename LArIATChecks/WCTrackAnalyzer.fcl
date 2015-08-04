@@ -1,0 +1,79 @@
+#include "services_lariat.fcl"
+#include "lariat_reco_algs.fcl"
+
+
+process_name: WCTrackAnalyzer
+
+services:
+{
+  message:      @local::standard_info
+  user:         @local::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1 
+  # fileNames: ["input.root"]
+}
+
+
+outputs:
+{
+
+}
+
+
+
+physics:
+{
+  
+  analyzers:
+  {
+    WCTrackAnalyzer:
+    {
+      module_type: WCTrackAnalyzer
+      WCTrackLabel: "WCTrackBuilder"
+      WCDigLabel: "FragmentToDigit"
+      WCScale: 0.1 
+      NWC: 4     
+      XBins: 600.    
+      XHi:   300.   
+      XLo:   -300.
+      YBins: 600.  
+      YHi:   300.  
+      YLo:   -300.
+      ZBins: 600.  
+      ZHi:   300.  
+      ZLo:   -300.
+      MomBins: 100    
+      MomLo:   0  
+      MomHi:   3000
+      NBins:   100  
+      NLo:     0   
+      NHi:     10
+      TimeBins: 100  
+      TimeLo: 0
+      TimeHi: 1000
+      KinkHi: 5
+      KinkLo: -5
+      KinkBins: 100
+      ThetaHi: 1.6
+      ThetaLo: -1.6
+      ThetaBins: 1600
+      PhiHi: 6.28
+      PhiLo: 0
+      PhiBins: 100
+      FaceHi: 300
+      FaceLo: -300
+      FaceBins: 600
+    }
+  }
+  
+  analysis:  [ WCTrackAnalyzer ]
+ 		       
+  end_paths: [ analysis ]
+}
+
+
+
