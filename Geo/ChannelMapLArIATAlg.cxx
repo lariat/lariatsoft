@@ -180,19 +180,19 @@ namespace geo{
       }
       else if(volName.find("MWPC1") != std::string::npos){
 	fADNameToGeo["MWPC1"]= a;
-	for(size_t c = 0; c < 128; ++c) fADChannelToSensitiveGeo[a].push_back(0);
+	for(size_t c = 0; c < 255; ++c) fADChannelToSensitiveGeo[a].push_back(0);
       }
       else if(volName.find("MWPC2") != std::string::npos){
 	fADNameToGeo["MWPC2"]= a;
-	for(size_t c = 0; c < 128; ++c) fADChannelToSensitiveGeo[a].push_back(0);
+	for(size_t c = 0; c < 255; ++c) fADChannelToSensitiveGeo[a].push_back(0);
       }
       else if(volName.find("MWPC3") != std::string::npos){
 	fADNameToGeo["MWPC3"]= a;
-	for(size_t c = 0; c < 128; ++c) fADChannelToSensitiveGeo[a].push_back(0);
+	for(size_t c = 0; c < 255; ++c) fADChannelToSensitiveGeo[a].push_back(0);
       }
       else if(volName.find("MWPC4") != std::string::npos){
 	fADNameToGeo["MWPC4"]= a;
-	for(size_t c = 0; c < 128; ++c) fADChannelToSensitiveGeo[a].push_back(0);
+	for(size_t c = 0; c < 255; ++c) fADChannelToSensitiveGeo[a].push_back(0);
       }
       else if(volName.find("AeroGelUS") != std::string::npos){
 	fADNameToGeo["AeroGelUS"] = a;
@@ -258,8 +258,9 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  double ChannelMapLArIATAlg::WireCoordinate
-    (double YPos, double ZPos, geo::PlaneID const& planeID) const
+  double ChannelMapLArIATAlg::WireCoordinate(double              YPos, 
+					     double              ZPos, 
+					     geo::PlaneID const& planeID) const
   {
     // Returns the wire number corresponding to a (Y,Z) position in PlaneNo 
     // with float precision.
@@ -271,33 +272,32 @@ namespace geo{
 
   
   //----------------------------------------------------------------------------
-  WireID ChannelMapLArIATAlg::NearestWireID
-    (const TVector3& worldPos, geo::PlaneID const& planeID) const
+  WireID ChannelMapLArIATAlg::NearestWireID(TVector3     const& worldPos, 
+					    geo::PlaneID const& planeID) const
   {
 
     // This part is the actual calculation of the nearest wire number, where we assume
     //  uniform wire pitch and angle within a wireplane
     
     // add 0.5 to have the correct rounding
-    int NearestWireNumber = int
-      (0.5 + WireCoordinate(worldPos.Y(), worldPos.Z(), planeID));
+    int NearestWireNumber = int(0.5 + WireCoordinate(worldPos.Y(), worldPos.Z(), planeID));
     
     // If we are outside of the wireplane range, throw an exception
     // (this response maintains consistency with the previous
     // implementation based on geometry lookup)
-    if(NearestWireNumber < 0 ||
-       NearestWireNumber >= AccessElement(fWireCounts, planeID))
+    if(NearestWireNumber < 0 || (unsigned int)NearestWireNumber >= this->WireCount(planeID) )
     {
       int wireNumber = NearestWireNumber; // save for the output
       
       if(NearestWireNumber < 0 ) NearestWireNumber = 0;
-      else                       NearestWireNumber = AccessElement(fWireCounts, planeID) - 1;
+      else                       NearestWireNumber = this->WireCount(planeID) - 1;
       
-      throw InvalidWireIDError("Geometry", wireNumber, NearestWireNumber)
-        << "Can't Find Nearest Wire for position (" 
-        << worldPos[0] << "," << worldPos[1] << "," << worldPos[2] << ")"
-        << " approx wire number # " << wireNumber
-        << " (capped from " << NearestWireNumber << ")\n";
+      throw InvalidWireIDError("Geometry", wireNumber, NearestWireNumber)<< "Can't Find Nearest Wire for position (" 
+									 << worldPos[0] << "," 
+									 << worldPos[1] << "," 
+									 << worldPos[2] << ")"
+									 << " approx wire number # " << wireNumber
+									 << " (capped from " << NearestWireNumber << ")\n";
     }
 
     return geo::WireID(planeID, (geo::WireID::WireID_t) NearestWireNumber);
@@ -317,17 +317,14 @@ namespace geo{
   //           Plane2 { Wire1     | 6
   //                    Wire2     v 7
   //
-  raw::ChannelID_t ChannelMapLArIATAlg::PlaneWireToChannel
-    (geo::WireID const& wireID) const
+  raw::ChannelID_t ChannelMapLArIATAlg::PlaneWireToChannel(geo::WireID const& wireID) const
   {
+    unsigned int const* pBaseLine = GetElementPtr(fPlaneBaselines, wireID);
     // This is the actual lookup part - first make sure coordinates are legal
-    if(wireID.TPC   < fNTPC[wireID.Cryostat] &&
-       wireID.Plane < fWiresPerPlane[wireID.Cryostat][wireID.TPC].size() &&
-       wireID.Wire  < AccessElement(fWiresPerPlane, wireID)){
+    if (pBaseLine) {
       // if the channel has legal coordinates, its ID is given by the wire
-      // number above the number of wires in lower planes, tpcs and cryostats;
-      // wireID is used here as PlaneID
-      return AccessElement(fPlaneBaselines, wireID) + wireID.Wire;
+      // number above the number of wires in lower planes, tpcs and cryostats
+      return *pBaseLine + wireID.Wire;
     }
     else{  
       // if the coordinates were bad, throw an exception
@@ -336,7 +333,7 @@ namespace geo{
     
     // made it here, that shouldn't happen, return raw::InvalidChannelID
     mf::LogWarning("ChannelMapLArIATAlg") << "should not be at the point in the function, returning "
-					    << "invalid channel";
+					  << "invalid channel";
     return raw::InvalidChannelID;
 
   }
@@ -353,8 +350,6 @@ namespace geo{
     //need number of planes to know Collection 
     unsigned int PlanesThisTPC = fNPlanes[0][tpc];
     
-      
-    
     SigType_t sigt = geo::kMysteryType;
     if(      (channel >= fFirstChannelInThisPlane[0][tpc][0]) &&
              (channel <  fFirstChannelInNextPlane[0][tpc][PlanesThisTPC-2])    ){ sigt = geo::kInduction; }
@@ -364,10 +359,8 @@ namespace geo{
       mf::LogWarning("BadChannelSignalType") << "Channel " << channel
 					     << " not given signal type." << std::endl;
             
-
     return sigt;
   }
-
 
   //----------------------------------------------------------------------------
   View_t ChannelMapLArIATAlg::View(raw::ChannelID_t const channel) const
@@ -377,7 +370,6 @@ namespace geo{
     unsigned int nChanPerTPC = fNchannels/fNTPC[0];
     // casting wil trunc towards 0 -- faster than floor
     unsigned int tpc = channel / nChanPerTPC; 
-
 
     View_t view = geo::kUnknown; 
 

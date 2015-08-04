@@ -69,16 +69,16 @@ namespace geo{
 	for(size_t c = 0; c < 2; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
       }
       else if(volName.find("MWPC1") != std::string::npos){
-	for(size_t c = 0; c < 128; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
+	for(size_t c = 0; c < 256; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
       }
       else if(volName.find("MWPC2") != std::string::npos){
-	for(size_t c = 0; c < 128; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
+	for(size_t c = 0; c < 256; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
       }
       else if(volName.find("MWPC3") != std::string::npos){
-	for(size_t c = 0; c < 128; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
+	for(size_t c = 0; c < 256; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
       }
       else if(volName.find("MWPC4") != std::string::npos){
-	for(size_t c = 0; c < 128; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
+	for(size_t c = 0; c < 256; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
       }
       else if(volName.find("AeroGelUS") != std::string::npos){
 	for(size_t c = 0; c < 2; ++c) fADGeoToChannelAndSV[a].push_back(std::make_pair(c, 0));
