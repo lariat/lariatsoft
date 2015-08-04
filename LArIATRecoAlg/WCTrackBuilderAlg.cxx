@@ -28,6 +28,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <TH1F.h>
+#include <string>
 
 //--------------------------------------------------------------
 //Constructor
@@ -143,7 +144,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
   fNumber_tdcs          = pset.get<int   >("NumberTDCs",         16         );
   fNumber_wire_chambers = pset.get<int   >("NumberWireChambers", 4          );
-  fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.35       );
+  fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
 
   fTime_bin_scaling     = pset.get<double>("TimeBinScaling",      1.0/1280.0);
   fWire_scaling         = pset.get<double>("WireScaling",         1.0/64.0  ); 
@@ -178,6 +179,15 @@ int WCTrackBuilderAlg::getTrackType()
   return fTrack_Type;
 }
 
+//--------------------------------------------------------------
+//This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginRun() method of your analysis module
+void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
+{
+  fRun = run;
+  fSubRun = subrun;
+  fB_field_tesla = 0.0035*std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
+  std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl;
+}
 
 //--------------------------------------------------------------
 //Main function called for each trigger

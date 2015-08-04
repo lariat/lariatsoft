@@ -36,9 +36,11 @@
 #include "RawDataUtilities/TriggerDigitUtility.h"
 #include "LArIATRecoAlg/WCTrackBuilderAlg.h"
 #include "LArIATDataProducts/WCTrack.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
 #include <memory>
 #include <utility>
+#include <string>
 
 namespace wct {
 
@@ -55,6 +57,9 @@ namespace wct {
     WCTrackBuilderSlicing(WCTrackBuilderSlicing &&) = delete;
     WCTrackBuilderSlicing & operator = (WCTrackBuilderSlicing const &) = delete;
     WCTrackBuilderSlicing & operator = (WCTrackBuilderSlicing &&) = delete;
+
+    void beginRun(art::Run & r) override;
+    void beginSubRun(art::SubRun & sr) override;
 
     // Required functions.
     void produce(art::Event & e) override;
@@ -387,7 +392,21 @@ namespace wct {
     }
     
   }
+
+  //===================================================================================
+  void WCTrackBuilderSlicing::beginRun(art::Run & r)
+  {
+    // Implementation of optional member function here.
+  }
  
+  //===================================================================================
+  void WCTrackBuilderSlicing::beginSubRun(art::SubRun & sr)
+  {
+    // Implementation of optional member function here.
+    fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );
+  }
+
+
   //===============================================================================================
   void WCTrackBuilderSlicing::convertDigitsToVectors( std::vector<raw::AuxDetDigit> the_digits_1,
 						     std::vector<raw::AuxDetDigit> the_digits_2,
