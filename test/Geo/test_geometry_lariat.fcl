@@ -87,16 +87,16 @@ physics: {
       ]
     }
 
-    auxdetgeotest: {
-      module_type: "AuxDetGeometryTest"
-      
-      RunTests: [
-        "PrintSummary",
-        "CheckOverlaps",
-        "FindAtPosition",
-        "ChannelMethods"
-      ]
-    }
+#    auxdetgeotest: {
+#      module_type: "AuxDetGeometryTest"
+#      
+#      RunTests: [
+#        "PrintSummary",
+#        "CheckOverlaps",
+#        "FindAtPosition",
+#        "ChannelMethods"
+#      ]
+#    }
   }
 
   ana:           [ geotest ]
