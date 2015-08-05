@@ -1,0 +1,16 @@
+BEGIN_PROLOG
+
+standard_clockcorrectionalg:
+{
+    MinSamples:                   2
+    ResidualThreshold:            1
+    MaxTrials:                    10000
+    StopSampleNumber:             15000000000000000000
+    StopResidualsSum:             0
+    StopProbability:              1
+    TimeStampDifferenceThreshold: 1e5  # microseconds
+    SampleSlopeCutLower:          0.9
+    SampleSlopeCutUpper:          1.1
+}
+
+END_PROLOG
