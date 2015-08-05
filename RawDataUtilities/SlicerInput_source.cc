@@ -91,6 +91,37 @@ namespace {
     return reinterpret_cast<artdaq::Fragments*>( br->GetAddress() );
   }
 
+  /*  
+  art::EventAuxiliary*
+  getEvtAuxiliary( TBranch * br, unsigned entry )
+  {
+    std::cout << "Pre GetEntry" << std::endl;
+    br->GetEntry( entry );
+    std::cout << "Post GetEntry" << std::endl;
+    return reinterpret_cast<art::EventAuxiliary*>( br->GetAddress() );
+  }
+  */
+  /*
+  void getEventTimes( TTree* evtree, int & timehigh, int & timelow )
+  {
+    evtree->SetMakeClass(1);
+    //    TBranch * branch = evtree->GetBranch("EventAuxiliary.time_.timeHigh_");
+    // branch->SetAddress(&timehigh);
+    //TBranch * branch1 = evtree->GetBranch("EventAuxiliary.time_.timeLow_");
+    //branch->Print();
+    //branch1->Print();
+    //  evtree->Print();
+    //branch1->SetAddress(&timelow);
+    evtree->SetBranchAddress("EventAuxiliary.time_.timeHigh_",&timehigh);
+    evtree->SetBranchAddress("EventAuxiliary.time_.timeLow_",&timelow);
+  
+    if( evtree->GetEntries() > 0 ){
+      evtree->GetEntry( 0 );
+    }
+    else{ std::cout << "Event tree has no entries." << std::endl; }
+    std::cout << "Event timeHigh: " << timehigh << ", timeLow: " << timelow << std::endl;
+  }    
+*/
   // Assumed file format is
   //
   //     "lbne_r[digits]_sr[digits]_other_stuff.root"
@@ -159,6 +190,7 @@ namespace DAQToOffline
     art::InputTag                              fInputTag;
     art::SourceHelper                          fSH;
     TBranch*                                   fFragmentsBranch;
+    TBranch*                                   fEvtAuxBranch;
     size_t                                     fNInputEvts;
     size_t                                     fTreeIndex;
     art::RunNumber_t                           fRunNumber;
@@ -174,6 +206,9 @@ namespace DAQToOffline
     std::map<int,std::vector<TDCDataBlock> > fTriggerToTDCDataBlocks;
     bool                                     fDoneWithThisFile;
     FragmentToDigitAlg                       fFrag2DigAlg;
+    size_t                                   fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
+    float                                    fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
+    float                                    fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
 
 
     bool miniFragmentUtility();
@@ -222,7 +257,9 @@ namespace DAQToOffline
     ////////////////////////////////////////
 
     void commenceRun( art::RunPrincipal*& outR );
-
+    std::vector<raw::Trigger> makeTheTriggers( std::vector<CAENFragment> theCAENDataBlocks,
+					       std::vector<TDCDataBlock> theTDCDataBlocks );
+    uint32_t triggerBits               (std::vector<CAENFragment>     const& caenFrags);   				  
 
   };
 }
@@ -247,7 +284,11 @@ DAQToOffline::SlicerInput::SlicerInput(fhicl::ParameterSet const& ps,
   //  fBufferedDigits(),
   fMaxNumberFitIterations(ps.get<size_t>("maxNumberFitIterations")),
   fVerbose(true),
-  fFrag2DigAlg(ps.get< fhicl::ParameterSet >("FragmentToDigitAlg"))
+  fFrag2DigAlg(ps.get< fhicl::ParameterSet >("FragmentToDigitAlg")),
+  fTriggerDecisionTick(size_t(137)),
+  fTrigger1740Pedestal(2000),
+  fTrigger1740Threshold(0)
+
 {
   // Will use same instance name for the outgoing products as for the
   // incoming ones.
@@ -255,6 +296,7 @@ DAQToOffline::SlicerInput::SlicerInput(fhicl::ParameterSet const& ps,
   prh.reconstitutes<std::vector<raw::RawDigit>,art::InEvent>( fSourceName );
   prh.reconstitutes<std::vector<raw::OpDetPulse>,art::InEvent>( fSourceName );
   prh.reconstitutes<sumdata::RunData,art::InRun>( fSourceName );
+  prh.reconstitutes<std::vector<raw::Trigger>,art::InEvent>( fSourceName );
 }
 
 //=======================================================================================
@@ -273,6 +315,8 @@ DAQToOffline::SlicerInput::readFile(string const& filename, art::FileBlock*& fb)
   fFile.reset( new TFile(filename.data()) );
   TTree* evtree    = reinterpret_cast<TTree*>(fFile->Get(art::rootNames::eventTreeName().c_str()));
   fFragmentsBranch = evtree->GetBranch( getBranchName<artdaq::Fragments>( fInputTag ) ); // get branch for specific input tag
+  //  std::cout << "Pre GetBranch" << std::endl;
+  //  fEvtAuxBranch    = evtree->GetBranch( "EventAuxiliary" );
   fNInputEvts      = static_cast<size_t>( fFragmentsBranch->GetEntries() );              //Number of fragment-containing events to read in from input file 
   fTreeIndex       = 0ul;
   
@@ -282,21 +326,35 @@ DAQToOffline::SlicerInput::readFile(string const& filename, art::FileBlock*& fb)
     throw art::Exception(art::errors::FileOpenError)
       << "Unable to open file " << filename << ".\n";
   }
-
+  
   //Resetting transient variables
   fDoneWithThisFile = false;
-  
 
-  //Doing the following two things now so that we only do them once
+  /*  
+  //LEAVE THIS FOR NOW - IT'S FOR GETTING CORRECT EVENT TIME FROM ROOT FILE - STILL UNDER CONSTRUCTION
+  size_t nEvtAuxEvents = fEvtAuxBranch->GetEntries();
+  std::cout << "Number of entries: " << nEvtAuxEvents << std::endl;
+  art::EventAuxiliary* evtAux = getEvtAuxiliary( fEvtAuxBranch, 0 );
+  std::cout << "Pre search time" << std::endl;
+  std::cout << "EventAuxiliary time: " << evtAux->time().timeLow() << std::endl;
+  std::cout << "EventAuxiliary time High: " << evtAux->time().timeHigh() << std::endl;
+  std::cout << "EventAuxiliary run: " << evtAux->id().run() << std::endl;
+
+  //Getting event time
+  //  int timehigh = 0 ;
+  //  int timelow = 0;
+  //  getEventTimes( evtree, timehigh, timelow );
+  */
   
   //Stores processed LArIATFragment in member variable
   bool fragProcessedOkay = miniFragmentUtility();
   if( !fragProcessedOkay ) std::cout << "Fragment not processed well." << std::endl;
-
+					
   //Accesses member variables and creates maps of ints to fragment vects
   //(matching data blocks with triggers)
   matchDataBlocks( &fLArIATFragment );
-
+					
+					
 
   return true;
 }
@@ -424,6 +482,32 @@ DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE){
   if( fVerbose )
     std::cout << "Number of triggers with CAEN Data Blocks: " << fTriggerToCAENDataBlocks.size() << ", number of triggers with TDC Data Blocks: " << fTriggerToTDCDataBlocks.size() << std::endl;
 
+  //Find the smallest trigNum in the two maps
+  int smallestTrigNum = 9999;
+  std::map< int, std::vector<CAENFragment> >::iterator iterCAEN;
+  std::map< int, std::vector<TDCDataBlock> >::iterator iterTDC;
+  for( iterCAEN = fTriggerToCAENDataBlocks.begin() ; iterCAEN != fTriggerToCAENDataBlocks.end() ; ++iterCAEN )
+    if( iterCAEN->first < smallestTrigNum ) smallestTrigNum = iterCAEN->first;
+  for( iterTDC = fTriggerToTDCDataBlocks.begin() ; iterTDC != fTriggerToTDCDataBlocks.end() ; ++iterTDC )
+    if( iterTDC->first < smallestTrigNum ) smallestTrigNum = iterTDC->first;
+
+  //Retrieve the last vector of fragments in the CAEN and TDC maps
+  //Make empty vectors in case there are events being created where there aren't data blocks for one or the other
+  std::vector<CAENFragment> theCAENDataBlocks;
+  std::vector<TDCDataBlock> theTDCDataBlocks;
+  if( fTriggerToCAENDataBlocks.count(smallestTrigNum) > 0 ){
+    theCAENDataBlocks = fTriggerToCAENDataBlocks.at(smallestTrigNum);
+    fTriggerToCAENDataBlocks.erase(smallestTrigNum);
+  }
+  //Now do this for the TDC Datablocks (entering them into the event)
+  if( fTriggerToTDCDataBlocks.count(smallestTrigNum) > 0 ){
+    theTDCDataBlocks = fTriggerToTDCDataBlocks.at(smallestTrigNum);
+    fTriggerToTDCDataBlocks.erase(smallestTrigNum);
+  }
+  
+
+  /*
+  //GOOD STUFF, BUT ACCIDENTALLY REVERSES THE EVENT ORDERING
   //Find the largest trigNum in the two maps
   int largestTrigNum = 0;
   std::map< int, std::vector<CAENFragment> >::iterator iterCAEN;
@@ -446,11 +530,17 @@ DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE){
     theTDCDataBlocks = fTriggerToTDCDataBlocks.at(largestTrigNum);
     fTriggerToTDCDataBlocks.erase(largestTrigNum);
   }
-
+  */
   //Creating digits for insertion into the event
   std::vector<raw::AuxDetDigit>          auxDigits;	 
   std::vector<raw::RawDigit>    	 rawDigits;	 
   std::vector<raw::OpDetPulse>   	 opPulses;	 
+
+  //Make triggers from the fragments
+  
+  std::vector<raw::Trigger> trigVect = makeTheTriggers( theCAENDataBlocks,
+							theTDCDataBlocks );
+				
 
   //Take fragments and convert them to the created digits
   fFrag2DigAlg.makeTheDigits( theCAENDataBlocks,
@@ -458,8 +548,11 @@ DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE){
 			      auxDigits,
 			      rawDigits,
 			      opPulses );
-  
+
   //Now we have vectors of auxDigits, rawDigits, and opPulses that we feed into the event.
+  art::put_product_in_principal( std::make_unique<std::vector<raw::Trigger> >(trigVect),
+				 *outE,
+				 fSourceName);
   art::put_product_in_principal( std::make_unique<std::vector<raw::AuxDetDigit> >(auxDigits),
 				 *outE,
 				 fSourceName);
@@ -481,7 +574,108 @@ DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE){
   
 }
 
+//=======================================================================================
+std::vector<raw::Trigger> DAQToOffline::SlicerInput::makeTheTriggers( std::vector<CAENFragment> theCAENDataBlocks,
+								      std::vector<TDCDataBlock> theTDCDataBlocks )
+{
+  //Hardcoded for now until I can find out how to 
+  //extract this from the raw event root file
+  float eventTime = 0;
+  
+  bool caenDataPresent = false;		     
+  std::vector<raw::Trigger> trigVect;
 
+  //If there are caen fragments present, set the trigger info
+  //based on the caen data block information
+  if( theCAENDataBlocks.size() > 0 ){
+    trigVect.push_back(raw::Trigger(fEventNumber, theCAENDataBlocks.front().header.triggerTimeTag, eventTime, this->triggerBits(theCAENDataBlocks) ) );
+    caenDataPresent = true;  
+  }
+  else
+    LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for event " << fEventNumber
+				   << " that may be OK, so continue";
+  
+  //If there are no caen fragments present, then set the trigger info
+  //based on the TDCDataBlock information
+  if( theTDCDataBlocks.size() > 0 ){    
+    if(!caenDataPresent){
+      trigVect.push_back(raw::Trigger(fEventNumber, theTDCDataBlocks.front().front().tdcEventHeader.tdcTimeStamp, 
+				      eventTime, this->triggerBits(theCAENDataBlocks)));
+    }
+  }
+  else
+    LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for event " << fEventNumber
+				   << " that may be OK, so continue";
+
+  return trigVect;
+
+}
+
+//=======================================================================================
+uint32_t DAQToOffline::SlicerInput::triggerBits(std::vector<CAENFragment> const& caenFrags)
+{
+
+  // the trigger bits are piped into the V1740 board in slot 7, inputs 48 to 63
+  // after run 6154 the bits were piped into a V1740 in slot 24, inputs 48 to 63
+  // these are example connections as of May 08, 2015
+  // 0   WC1      | OR of 2 X view TDCs ANDed with OR of 2 Y
+  // 1   WC2      | "                                      " 
+  // 2   WC3      | "                                      " 
+  // 3   WC4      | "                                      " 
+  // 4   BEAMON   | Spill gate : STARTs on $21, STOPs on $36 (cable says $26 but Bill says $36)
+  // 5   USTOF    | OR of 4 PMTs
+  // 6   DSTOF    | OR of 2 PMTs
+  // 7   PUNCH    | OR of 2 X view paddles ANDed with OR of 2 Y
+  // 8   HALO     | OR of 2 PMTs
+  // 9   PULSER   |
+  // 10  COSMICON | Cosmic gate : STARTs on $36, STOPs on $00 (not optimal, would like to stop before $00)
+  // 11  COSMIC   | the trigger signal from the cosmic rack
+  // 12  PILEUP   | Coincidence of any later LARSCINT with a delayed gate initiated by itself. Higher discrimination thresh. 
+  // 13  MICHEL   | Coincidence of two light flashes in TPC (LARSCINT) occurring within a 5us time window
+  // 14  LARSCINT | Coincidence of Hamamatsu and ETL PMTs (discriminated)
+  // 15  MuRS     | Any coincidence of two planes.  Each plane is the OR of the discriminated pulses of 4 paddles. 
+
+  // Each waveform corresponds to a single trigger channel.  If the (pedestal subtracted?) value of any ADC
+  // in a waveform is less than 0, then the trigger for that channel fired
+
+  // Need database eventually to set this correctly for different data-taking periods.
+  // would set the fTriggerDecisionTick, fTrigger1740Pedestal, fTrigger1740Threshold values
+  // in the beginRun method
+
+  std::bitset<16> triggerBits;
+
+  size_t minChan  = 48;
+  size_t maxChan  = 64;
+
+  for(auto const& frag : caenFrags){
+
+    if     (frag.header.boardId != 7  && fRunNumber < 6155) continue;
+    else if(frag.header.boardId != 24 && fRunNumber > 6154) continue;
+
+    for(size_t chan = minChan; chan < maxChan; ++chan){ 
+      if(chan > frag.waveForms.size() )
+	throw cet::exception("FragmentToDigit") << "attempting to access channel "
+						<< chan << " from 1740 fragment with only "
+						<< frag.waveForms.size() << " channels";
+      
+      // only look at the specific tick of the waveform where the trigger decision is taken
+      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1)
+	// the trigger waveform goes below the pedestal (low) if the trigger is on
+	//Hard-coded temporarily to hit the right window of ticks for trigge (it's not just one tick)
+	//Studies about a precise window for this first trigger tick are underway
+	if(fTrigger1740Pedestal - frag.waveForms[chan].data[135] > fTrigger1740Threshold ||
+	   fTrigger1740Pedestal - frag.waveForms[chan].data[136] > fTrigger1740Threshold ||
+	   fTrigger1740Pedestal - frag.waveForms[chan].data[137] > fTrigger1740Threshold ||
+	   fTrigger1740Pedestal - frag.waveForms[chan].data[138] > fTrigger1740Threshold ) 
+	   triggerBits.set(chan - minChan);
+
+    } // end loop over channels on the board
+  } // end loop over caen fragments
+
+  return triggerBits.to_ulong();
+}  
+
+//=======================================================================================
 void DAQToOffline::SlicerInput::matchDataBlocks(const LariatFragment * data) 
 {
 
