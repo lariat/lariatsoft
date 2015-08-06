@@ -1,0 +1,17 @@
+#include "lariat_reco_algs.fcl"
+
+
+BEGIN_PROLOG
+
+lariat_triggerpattern:
+{
+  module_type:        TriggerPatternFilter
+  TriggerFilterAlg:   @local::lariat_triggerfilteralg
+  SourceLabel:        SlicerInput
+  TriggerPattern:      "+BEAMON-PILEUP"
+
+}
+
+
+
+END_PROLOG
