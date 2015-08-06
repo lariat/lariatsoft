@@ -30,10 +30,12 @@ lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini
   TriggerUtility:     "FragmentToDigit"
 }
 
-#lariat_murs:            #Taken from MuonRangeStackHits.fcl by Greg Pulliam
-#{
-#  module_type:       MuonRangeStackHits
-#}
+lariat_murs:            #Taken from MuonRangeStackHits.fcl by Greg Pulliam
+{
+  module_type:       MuonRangeStackHitsSlicing
+  Threshold:  2020
+  SourceLabel:  SlicerInput
+}
 
 lariat_pid:
 {

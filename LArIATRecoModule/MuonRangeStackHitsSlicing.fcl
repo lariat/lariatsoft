@@ -1,0 +1,37 @@
+#include "services_lariat.fcl"
+
+process_name: MuonRangeStackHitsSlicing
+
+services:
+{
+  TFileService: { fileName: "MuonRangeStackHitsSlicing_histo.root" }
+  message:      @local::standard_info
+  user:		@local::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1 
+  # fileNames: ["input.root"]
+}
+
+outputs: {}
+
+physics:
+{
+  producers:
+  {
+    MuonRangeStackHits:
+    {
+      module_type: 	MuonRangeStackHitsSlicing
+      SourceLabel:	SlicerInput
+      Threshold: 	2020
+      TriggerUtility: "FragmentToDigit"
+    }
+  }
+  analysis:  [ MuonRangeStackHits ]
+  end_paths: [ analysis ]
+}
+
+physics.producers.MuonRangeStackHits.TriggerUtility: "FragmentToDigit"
