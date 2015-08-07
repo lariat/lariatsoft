@@ -294,7 +294,7 @@ DAQToOffline::SlicerInput::SlicerInput(fhicl::ParameterSet const& ps,
   fTriggerDecisionTick(size_t(137)),
   fTrigger1740Pedestal(2000),
   fTrigger1740Threshold(0),
-  fPILEUP(false),
+  fPILEUP(-1),
   fNumTrigInputs(16)
 
 {
@@ -448,9 +448,11 @@ void DAQToOffline::SlicerInput::isPileupPresent()
   
   //See if any of the config values are PILEUP, and if so, mark fPILEUP with that index
   for( size_t iPar = 0; iPar < triggerInputConfigParams.size() ; ++iPar ){
-    if( triggerInputConfigValues.at(triggerInputConfigParams.at(iPar)) == "PILEUP" )
-      std::cout << "The pileup trigger pattern setting is present for this run." << std::endl;
+    if( triggerInputConfigValues.at(triggerInputConfigParams.at(iPar)) == "PILEUP" ){
+      if( fVerbose) std::cout << "The pileup trigger pattern setting is present for this run, with channel: " << iPar << "." << std::endl;
       fPILEUP = iPar;
+      break;
+    }
   }
 }
 
