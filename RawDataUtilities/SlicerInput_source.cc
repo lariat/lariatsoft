@@ -43,6 +43,7 @@
 #include "LArIATFragments/TDCFragment.h"
 #include "LArIATFragments/V1495Fragment.h"
 #include "SimpleTypesAndConstants/RawTypes.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
@@ -201,14 +202,17 @@ namespace DAQToOffline
     size_t                                     fMaxNumberFitIterations;  ///< number of fit iterations before stopping
     bool                                       fVerbose;
 
-    LariatFragment                           fLArIATFragment; 
-    std::map<int,std::vector<CAENFragment> > fTriggerToCAENDataBlocks;
-    std::map<int,std::vector<TDCDataBlock> > fTriggerToTDCDataBlocks;
-    bool                                     fDoneWithThisFile;
-    FragmentToDigitAlg                       fFrag2DigAlg;
-    size_t                                   fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
-    float                                    fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
-    float                                    fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
+    LariatFragment                                 fLArIATFragment; 
+    std::map<int,std::vector<CAENFragment> >       fTriggerToCAENDataBlocks;
+    std::map<int,std::vector<TDCDataBlock> >       fTriggerToTDCDataBlocks;
+    bool                                           fDoneWithThisFile;
+    FragmentToDigitAlg                             fFrag2DigAlg;
+    size_t                                         fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
+    float                                          fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
+    float                                          fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
+    int                                            fPILEUP;                  //The trigger pattern to which pileup is associated
+    size_t                                         fNumTrigInputs;
+    art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
 
 
     bool miniFragmentUtility();
@@ -261,6 +265,8 @@ namespace DAQToOffline
 					       std::vector<TDCDataBlock> theTDCDataBlocks );
     uint32_t triggerBits               (std::vector<CAENFragment>     const& caenFrags);   				  
 
+    void isPileupPresent();
+
   };
 }
 
@@ -287,7 +293,9 @@ DAQToOffline::SlicerInput::SlicerInput(fhicl::ParameterSet const& ps,
   fFrag2DigAlg(ps.get< fhicl::ParameterSet >("FragmentToDigitAlg")),
   fTriggerDecisionTick(size_t(137)),
   fTrigger1740Pedestal(2000),
-  fTrigger1740Threshold(0)
+  fTrigger1740Threshold(0),
+  fPILEUP(-1),
+  fNumTrigInputs(16)
 
 {
   // Will use same instance name for the outgoing products as for the
@@ -372,14 +380,10 @@ DAQToOffline::SlicerInput::readNext(art::RunPrincipal*    const& inR,
   }
 
   //Check to see if we're on our last file
-  std::cout << "fFile->GetName: " << fFile->GetName() << ", fLastFileName: " << fLastFileName << std::endl;
-  // if( fFile->GetName() == fLastFileName )
-  //  fDoneWithFiles = true;
-
-  
+  if( fVerbose ) std::cout << "fFile->GetName: " << fFile->GetName() << ", fLastFileName: " << fLastFileName << std::endl;
 
   art::Timestamp ts; // LBNE should decide how to initialize this
-  //REL if this is a new run number, make a new run principal - This should only call once for a given file
+  //If this is a new run number, make a new run principal - This should only call once for a given file
   if ( fRunNumber != fCachedRunNumber ){
     outR = fSH.makeRunPrincipal(fRunNumber,ts);
     fCachedRunNumber = fRunNumber;
@@ -388,19 +392,24 @@ DAQToOffline::SlicerInput::readNext(art::RunPrincipal*    const& inR,
     //Add run information to run and initialize some
     //trigger-to-digit algorithm stuff
     commenceRun(outR);
-    
+
+    //Reset fPILEUP for the new run.
+    //Also, find out if pileup is one of the run's trigger inputs. If so,
+    //make a note of the channel for later use in triggerBits.
+    fPILEUP = -1;
+    isPileupPresent();
   }
 
-  std::cout << "Run: " << fRunNumber << std::endl;
+  if( fVerbose) std::cout << "Run: " << fRunNumber << std::endl;
 
-  //REL if this is a new subrun number, make a new subrun principal
+  //If this is a new subrun number, make a new subrun principal
   if ( fSubRunNumber != fCachedSubRunNumber ) {
     outSR = fSH.makeSubRunPrincipal(fRunNumber,fSubRunNumber,ts);
     fCachedSubRunNumber = fSubRunNumber;
     fEventNumber = 0ul;
   }
 
-  std::cout << "Subrun: " << fSubRunNumber << std::endl;
+  if( fVerbose ) std::cout << "Subrun: " << fSubRunNumber << std::endl;
   
 
   //Pseudocode
@@ -408,33 +417,10 @@ DAQToOffline::SlicerInput::readNext(art::RunPrincipal*    const& inR,
   // - Group the lariat fragments together into triggers using johnny's algorithm
   // - for each trigger, make event and put fragments
 
-  if( fVerbose )
-    std::cout << "Number of CAEN Data Blocks, pre-matching: " << (&fLArIATFragment)->caenFrags.size() << ", number of TDC Data Blocks, pre-matching: " << (&fLArIATFragment)->tdcFrags.size() << std::endl;
-  
   //Make event corresponding to one entry in the two maps
   makeEventAndPutFragments( outE ); 
 
   return true;
-
-  /*
-  // eventIsFull_ is what LBNE should modify based on its needs
-  while ( !eventIsFull_( fBufferedDigits ) ) {
-    if ( loadedDigits_.empty() && !loadDigits_() ) {
-      if ( fFile->GetName() != fLastFileName )
-        return false;
-      else {
-        fDoneWithFiles = true;
-        break;
-      }
-    }
-    fBufferedDigits.emplace_back( loadedDigits_.next() );
-  }
-  makeEventAndPutDigits_( outE );
-  */
-
-  //Temp
-  //  return true;
-
 }
 
 
@@ -444,6 +430,32 @@ DAQToOffline::SlicerInput::closeCurrentFile()
 { 
   fFile.reset(nullptr);
 }
+
+//=======================================================================================
+void DAQToOffline::SlicerInput::isPileupPresent()
+{
+  //Specifying the trigger input config labels
+  std::vector<std::string> triggerInputConfigParams;
+  std::map<std::string,std::string> triggerInputConfigValues;
+  for( size_t iConfig = 0; iConfig < fNumTrigInputs; ++iConfig ){
+    char name[40];
+    sprintf(name,"v1495_config_v1495_in%d_name",int(iConfig));
+    triggerInputConfigParams.push_back(name);
+  }
+  
+  //Loading the corresponding string values into a map with the labels
+  triggerInputConfigValues = fDatabaseUtility->GetConfigValues(triggerInputConfigParams,fRunNumber);
+  
+  //See if any of the config values are PILEUP, and if so, mark fPILEUP with that index
+  for( size_t iPar = 0; iPar < triggerInputConfigParams.size() ; ++iPar ){
+    if( triggerInputConfigValues.at(triggerInputConfigParams.at(iPar)) == "PILEUP" ){
+      if( fVerbose) std::cout << "The pileup trigger pattern setting is present for this run, with channel: " << iPar << "." << std::endl;
+      fPILEUP = iPar;
+      break;
+    }
+  }
+}
+
 
 //=======================================================================================
 bool DAQToOffline::SlicerInput::miniFragmentUtility()
@@ -659,7 +671,7 @@ uint32_t DAQToOffline::SlicerInput::triggerBits(std::vector<CAENFragment> const&
 						<< frag.waveForms.size() << " channels";
       
       // only look at the specific tick of the waveform where the trigger decision is taken
-      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1)
+      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1){
 	// the trigger waveform goes below the pedestal (low) if the trigger is on
 	//Hard-coded temporarily to hit the right window of ticks for trigge (it's not just one tick)
 	//Studies about a precise window for this first trigger tick are underway
@@ -668,10 +680,20 @@ uint32_t DAQToOffline::SlicerInput::triggerBits(std::vector<CAENFragment> const&
 	   fTrigger1740Pedestal - frag.waveForms[chan].data[137] > fTrigger1740Threshold ||
 	   fTrigger1740Pedestal - frag.waveForms[chan].data[138] > fTrigger1740Threshold ) 
 	   triggerBits.set(chan - minChan);
-
+	//Also, if there is pileup, set the trigger bit for it such that ANY pileup returns 1
+	if( fPILEUP != -1 && chan == fPILEUP+minChan ){
+	  for( size_t iTick = 0; iTick < frag.waveForms[chan].data.size(); ++iTick ){
+	    if( fTrigger1740Pedestal - frag.waveForms[chan].data[iTick] > fTrigger1740Threshold ){
+	      triggerBits.set(fPILEUP);
+	      if( fVerbose ) std::cout << "Event: " << fEventNumber << " has pileup." << std::endl;
+	      break;
+	    }
+	  }
+	}
+      }
     } // end loop over channels on the board
   } // end loop over caen fragments
-
+  
   return triggerBits.to_ulong();
 }  
 
