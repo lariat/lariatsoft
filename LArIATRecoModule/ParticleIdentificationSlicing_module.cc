@@ -254,10 +254,10 @@ void ParticleIdentificationSlicing::setPriors()
 //Setting the active prior variables from the prior maps set in setPriors() function
 void ParticleIdentificationSlicing::getActivePriors( std::string runSetting )
 {
-  fPionPriorActive = fPionPriorMap.at( runSetting );
-  fMuonPriorActive = fMuonPriorMap.at( runSetting );
-  fKaonPriorActive = fKaonPriorMap.at( runSetting );
-  fProtonPriorActive = fProtonPriorMap.at( runSetting );
+  fPionActivePrior = fPionPriorMap.at( runSetting );
+  fMuonActivePrior = fMuonPriorMap.at( runSetting );
+  fKaonActivePrior = fKaonPriorMap.at( runSetting );
+  fProtonActivePrior = fProtonPriorMap.at( runSetting );
 }
 
 
@@ -265,10 +265,10 @@ void ParticleIdentificationSlicing::getActivePriors( std::string runSetting )
 //Setting the active priors to 1 for defualt  
 void ParticleIdentificationSlicing::getActivePriorsDefault()
 {
-  fPionPriorActive = 1;
-  fMuonPriorActive = 1;
-  fKaonPriorActive = 1;
-  fProtonPriorActive = 1;
+  fPionActivePrior = 1;
+  fMuonActivePrior = 1;
+  fKaonActivePrior = 1;
+  fProtonActivePrior = 1;
 }
 
 //============================================================================================
@@ -287,14 +287,14 @@ void ParticleIdentifiactionSlicing::doThePiMu_Proton_KaonSeparation( art::Handle
       else return;   //If mass is too high, it's hard to disambiguate protons, pi/mu, and kaons
 
       //Finding values of pdf for mass given proton, kaon, pi/mu distributions
-      float proton_prob = fProtonPriorActive*(1/pow(2*3.1415926,0.5)/fProtonMassSigma)*exp(-0.5*pow((mass-fProtonMassMean)/fProtonMassSigma,2));
-      float kaon_prob = fKaonPriorActive*(1/pow(2*3.1415926,0.5)/fKaonMassSigma)*exp(-0.5*pow((mass-fKaonMassMean)/fKaonMassSigma,2));
+      float proton_prob = fProtonActivePrior*(1/pow(2*3.1415926,0.5)/fProtonMassSigma)*exp(-0.5*pow((mass-fProtonMassMean)/fProtonMassSigma,2));
+      float kaon_prob = fKaonActivePrior*(1/pow(2*3.1415926,0.5)/fKaonMassSigma)*exp(-0.5*pow((mass-fKaonMassMean)/fKaonMassSigma,2));
       float pimu_prob = 0;
       //If we're doing pimu separation, pis and mus become the same particle according to our priors.
       //They become the same hypothesis, and all hypotheses are equally likely (for default).
-      if( fPionPriorActive == 1 && fMuonPriorActive == 1 )
+      if( fPionActivePrior == 1 && fMuonActivePrior == 1 )
 	pimu_prob = (1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
-      else pimu_prob = (fPionPriorActive+fMuonPriorActive)*(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
+      else pimu_prob = (fPionActivePrior+fMuonActivePrior)*(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
       
       //These ^ are likelihoods, so find the likelihood ratio of each to the total, given no priors (temporary)
       float proton_likelihood = proton_prob/(proton_prob+kaon_prob+pimu_prob);
