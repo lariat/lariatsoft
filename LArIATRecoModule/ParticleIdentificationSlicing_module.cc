@@ -135,7 +135,7 @@ ParticleIdentificationSlicing::ParticleIdentificationSlicing(fhicl::ParameterSet
 void ParticleIdentificationSlicing::produce(art::Event & e)
 {
   // Implementation of required member function here.
-  
+  /*
   float distance_traveled = 6.7; //meters
   float c = 3e+8;
 
@@ -208,9 +208,6 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   }
 
   ///////////////// DISTRIBUTION GENERATION ENDING ///////////////////  
-  
-
-    
   ///////////////// PARTICLE ID Pz vs. TOF/////////////////////////////
   //We take the calculated mass of the particle and find the value of 3
   //p.d.f.s at that mass. Each p.d.f. is a gaussian with the parameters
@@ -229,20 +226,16 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //2: pimu likelihood ratio
   //Note that the size might still be zero after the
   //following function if cuts aren't passed. Careful!
-  
-
   std::vector<float> proton_kaon_pimu_likelihood_ratios;
   doThePiMu_Proton_KaonSeparation( WCTrackColHandle,
 				   TOFColHandle,
 				   proton_kaon_pimu_likelihood_ratios );
-  
-
 
   ///////////////// PARTICLE ID ENDING Pz vs. TOF /////////////////////
     }
   }
 
-  
+  */
 }
 
 //============================================================================================
@@ -279,6 +272,7 @@ void ParticleIdentificationSlicing::getActivePriorsDefault()
 }
 
 //============================================================================================
+/*  
 void ParticleIdentifiactionSlicing::doThePiMu_Proton_KaonSeparation( art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle,
 								     art::Handle< std::vector<ldp::TOF> > TOFColHandle,
 								     std::vector<float> & proton_kaon_pimu_likelihood_ratios );
@@ -317,6 +311,9 @@ void ParticleIdentifiactionSlicing::doThePiMu_Proton_KaonSeparation( art::Handle
 
 
 }
+
+
+*/
 
 
 
