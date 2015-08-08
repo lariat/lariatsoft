@@ -40,7 +40,7 @@ end_qualifier_list
 table_fragment_begin
     envSet(DB_PWD_DIR,          /pwd/Utilities/)
     pathPrepend(FW_DATA,        /grid/fermiapp/lariat/)
-    pathPrepend(FW_SEARCH_PATH, ${UPS_PROD_DIR}/gdml:${UPS_PROD_DIR}:/grid/fermiapp/lariat/:/grid/fermiapp/lbne/lar/aux/)
+    pathPrepend(FW_SEARCH_PATH, ${UPS_PROD_DIR}/gdml:${UPS_PROD_DIR}:/grid/fermiapp/lariat/:/grid/fermiapp/lbne/lar/aux/:/lariat/data)
     pathPrepend(FHICL_FILE_PATH, .)
     envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
     envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
