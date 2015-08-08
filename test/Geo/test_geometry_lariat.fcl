@@ -12,8 +12,8 @@ services: {
   
   Geometry:                     @local::lariat_geo
   ExptGeoHelperInterface:       @local::lariat_geometry_helper
-  AuxDetGeometry:               @local::lariat_auxdetgeo
-  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper
+  #AuxDetGeometry:               @local::lariat_auxdetgeo
+  #AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper
   
   message: {
     destinations: {
