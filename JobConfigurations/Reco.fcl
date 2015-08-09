@@ -53,10 +53,12 @@ physics:
   
   ### hit-finder producers ###
    gaushit:             @local::gaus_hitfinder
+   cchit:               @local::standard_clustercrawlerhit
 #  rffhit:              @local::lariat_rffhitfinder   
 
   ### cluster-finder producers
   cccluster:		@local::standard_clustercrawler
+  linecluster:          @local::standard_linecluster
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
   cctrack:              @local::standard_cctrackmaker
@@ -74,9 +76,11 @@ physics:
 #         opflash,
          #FragmentToDigit,
          caldata,
-	 cccluster,
+         cchit,
+	 linecluster,
          costrk,
-         pmtrack
+         pmtrack,
+         cctrack
          #gaushit
          #corner,
          #dbcluster,
@@ -131,18 +135,26 @@ physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 #physics.producers.fuzzycluster.CalDataModuleLabel:              "caldata"
 
 #physics.producers.cccluster.CalDataModuleLabel:                 "caldata"
-physics.producers.cccluster.CCHitFinderAlg.MinSigInd:  5
-physics.producers.cccluster.CCHitFinderAlg.MinSigCol:  5
-physics.producers.cccluster.CCHitFinderAlg.MinRMSInd:  5
-physics.producers.cccluster.CCHitFinderAlg.MinRMSCol:  5
+physics.producers.cchit.CCHitFinderAlg.MinSigInd:  5
+physics.producers.cchit.CCHitFinderAlg.MinSigCol:  5
+physics.producers.cchit.CCHitFinderAlg.MinRMSInd:  7.9
+physics.producers.cchit.CCHitFinderAlg.MinRMSCol:  7.9
+physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
+physics.producers.cchit.CCHitFinderAlg.CrudeHitWidth:  0
+physics.producers.cchit.CCHitFinderAlg.StudyHits: false
+physics.producers.cchit.CCHitFinderAlg.UWireRange: [70, 100]
+physics.producers.cchit.CCHitFinderAlg.UTickRange: [1560, 1660]
+physics.producers.cchit.CCHitFinderAlg.VWireRange: [45, 85]
+physics.producers.cchit.CCHitFinderAlg.VTickRange: [1500, 1800]
 
-physics.producers.costrk.ClusterModuleLabel: "cccluster"
-physics.producers.costrk.ClusterMatch.KSCut: 0.5
-physics.producers.pmtrack.ClusterModuleLabel: "cccluster"
-physics.producers.pmtrack.HitModuleLabel: "cccluster"
-
+physics.producers.costrk.ClusterModuleLabel:  "linecluster"
+physics.producers.costrk.VertexModuleLabel:   "linecluster"
+physics.producers.costrk.ClusterMatch.KSCut:  0.5
+physics.producers.pmtrack.ClusterModuleLabel: "linecluster"
+physics.producers.pmtrack.HitModuleLabel:     "linecluster"
+physics.producers.cctrack.HitModuleLabel:     "linecluster"
+physics.producers.cctrack.ClusterModuleLabel: "linecluster"
+physics.producers.cctrack.VertexModuleLabel:  "linecluster"
+physics.producers.cctrack.MatchAlgs: 1
 #physics.producers.pandora.GeantModuleLabel:                     "largeant"
 #physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
-
-
-
