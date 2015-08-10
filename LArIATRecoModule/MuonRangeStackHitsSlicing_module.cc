@@ -74,6 +74,8 @@ int fThreshold;
 
 std::vector<int> MuRSPaddleHits;
 std::map<int, std::vector<int> > fMuonRangeStackMap;
+
+  bool fVerbose;
   // Declare member data here.
 
 };
@@ -91,12 +93,17 @@ void MuonRangeStackHitsSlicing::produce(art::Event & e)
 {
   // Implementation of required member function here.
 	std::unique_ptr<std::vector<ldp::MuonRangeStackHits> > MuonRangeStackCol(new std::vector<ldp::MuonRangeStackHits>  ) ;	//I call this a map, but it's really a vector with one entry that is a map......hopefully.
+
+	//Retrieving AuxDetDigits from event record
  	art::Handle<std::vector<raw::AuxDetDigit>> AuxDetDigitHandle;
 	e.getByLabel(fSlicerSourceLabel,AuxDetDigitHandle);
+
+	//Finding the MuRS digits from the AuxDetDigits
  	std::vector<raw::AuxDetDigit> MuRSDigits;
  	for(size_t iDig=0; iDig<AuxDetDigitHandle->size(); ++iDig){
  		if(AuxDetDigitHandle->at(iDig).AuxDetName()=="MuonRangeStack"){
-    		MuRSDigits.push_back(AuxDetDigitHandle->at(iDig));
+		  if( fVerbose ) std::cout << "MuRS Digit Channel: " << AuxDetDigitHandle->at(iDig).Channel() << std::endl;
+		  MuRSDigits.push_back(AuxDetDigitHandle->at(iDig));
     		}
     	}
        
@@ -166,8 +173,9 @@ void MuonRangeStackHitsSlicing::endSubRun(art::SubRun & sr)
 
 void MuonRangeStackHitsSlicing::reconfigure(fhicl::ParameterSet const & p)
 {
-fSlicerSourceLabel=p.get<std::string>("SourceLabel");
-fThreshold=p.get<int>("Threshold");
+  fSlicerSourceLabel=p.get<std::string>("SourceLabel");
+  fThreshold=p.get<int>("Threshold");
+  fVerbose = true;
 }
 
 void MuonRangeStackHitsSlicing::respondToCloseInputFile(art::FileBlock const & fb)
