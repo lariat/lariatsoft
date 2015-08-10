@@ -12,6 +12,7 @@ art_make(BASENAME_ONLY
          LIBRARY_NAME     RawDataUtilities
 	 LIB_LIBRARIES    RawData
 	                  LariatFragments
+			  DatabaseUtilityT1034_service	
 			  ${ART_FRAMEWORK_CORE}
 			  ${ART_FRAMEWORK_PRINCIPAL}
 			  ${ART_PERSISTENCY_COMMON}
@@ -31,9 +32,11 @@ art_make(BASENAME_ONLY
          DICT_LIBRARIES   RawData
 	 		  SummaryData
 	 SOURCE_LIBRARIES RawData
-	                  RawDataUtilities
+	                  Utilities
 	 		  LariatFragments
 			  SummaryData
+			  RawDataUtilities
+			  DatabaseUtilityT1034_service
 	                  ${ART_FRAMEWORK_SERVICES_REGISTRY}
 			  ${ART_FRAMEWORK_SERVICES_BASIC}
 			  ${ART_FRAMEWORK_SERVICES_OPTIONAL}
