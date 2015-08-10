@@ -119,7 +119,7 @@ void MuonRangeStackHitsSlicing::produce(art::Event & e)
 			fMuonRangeStackMap.emplace(nPaddle-TrigIter*16,MuRSPaddleHits);
 			MuRSPaddleHits.clear();
 		}
-		MuonRangeStackHits the_MuRS(fMuonRangeStackMap);
+		ldp::MuonRangeStackHits the_MuRS(fMuonRangeStackMap);
 		(*MuonRangeStackCol).push_back(the_MuRS);
 		
 		fMuonRangeStackMap.clear();
