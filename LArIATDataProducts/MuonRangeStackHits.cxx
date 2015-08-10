@@ -18,33 +18,29 @@ namespace ldp{
 //#######################################
 MuonRangeStackHits::MuonRangeStackHits()
 {
-std::map<int,std::vector<int>> paddlemap;
+std::map<int,std::vector<int> > paddlemap;
 std::vector<int> blank1;
 blank1.push_back(0);
 for(int i=0; i<16;++i){
 
-paddlemap[i] = blank1;
+paddlemap.emplace(i,blank1);
 }
 }
 //##########################################
-MuonRangeStackHits::MuonRangeStackHits(std::map<int, std::vector<int>> paddlemap)
+MuonRangeStackHits::MuonRangeStackHits(std::map<int, std::vector<int> > paddlemap)
 {
-for(std::map<int,std::vector<int>>::iterator it=paddlemap.begin(); it!=paddlemap.end(); ++it)
-{
-	std::cout << it->first<< std::endl;
-	
+fPaddleTimeTickMap=paddlemap;
 
-}
 }
 
 //########################################
-std::vector<int> MuonRangeStackHits::TimeTick(std::map<int, std::vector<int>> paddlemap, int iPaddle) const
+std::vector<int> MuonRangeStackHits::TimeTick(int iPaddle) const
 {
-int lastpaddle=paddlemap.end()->first;
+int lastpaddle=fPaddleTimeTickMap.end()->first;
 	if(iPaddle > lastpaddle  ){
 	   throw cet::exception("MuonRangeStackHits") << "Requested time tick vector for paddle "<<iPaddle<<".  That doesn't exist for this event.  The last paddle number you can reference is ""<<lastpaddle<<" <<"\n";
 	   }
-return paddlemap.find(iPaddle)->second;
+return fPaddleTimeTickMap.find(iPaddle)->second;
 }
 
 

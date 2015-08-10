@@ -90,7 +90,7 @@ this->reconfigure(p);
 void MuonRangeStackHitsSlicing::produce(art::Event & e)
 {
   // Implementation of required member function here.
-	std::unique_ptr<std::vector<ldp::MuonRangeStackHits> > MuonRangeStackMap(new std::vector<ldp::MuonRangeStackHits>  ) ;	//I call this a map, but it's really a vector with one entry that is a map......hopefully.
+	std::unique_ptr<std::vector<ldp::MuonRangeStackHits> > MuonRangeStackCol(new std::vector<ldp::MuonRangeStackHits>  ) ;	//I call this a map, but it's really a vector with one entry that is a map......hopefully.
  	art::Handle<std::vector<raw::AuxDetDigit>> AuxDetDigitHandle;
 	e.getByLabel(fSlicerSourceLabel,AuxDetDigitHandle);
  	std::vector<raw::AuxDetDigit> MuRSDigits;
@@ -101,7 +101,7 @@ void MuonRangeStackHitsSlicing::produce(art::Event & e)
     	}
        
 	int size=MuRSDigits.size();
-	std::cout<<size<<std::endl;
+	//std::cout<<size<<std::endl;
 	
 	int TrigMult=size/16;
 	   for (int TrigIter=0; TrigIter<TrigMult; ++TrigIter){
@@ -117,13 +117,15 @@ void MuonRangeStackHitsSlicing::produce(art::Event & e)
 				}
 			}
 			fMuonRangeStackMap.emplace(nPaddle-TrigIter*16,MuRSPaddleHits);
-			for(size_t i=0; i<MuRSPaddleHits.size(); ++i){
-			std::cout<<"For paddle "<< nPaddle-TrigIter*16<<" there was a hit at "<<MuRSPaddleHits[i]<<std::endl;
-			}
 			MuRSPaddleHits.clear();
 		}
+		MuonRangeStackHits the_MuRS(fMuonRangeStackMap);
+		(*MuonRangeStackCol).push_back(the_MuRS);
+		
+		fMuonRangeStackMap.clear();
+		
 	   }
-	   
+e.put(std::move(MuonRangeStackCol));	   
 }//produce()
 
 void MuonRangeStackHitsSlicing::beginJob()

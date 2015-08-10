@@ -32,6 +32,7 @@
 #include "RawData/OpDetWaveform.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/WCTrack.h"
+#include "LArIATDataProducts/MuonRangeStackHits.h"
 
 
 //
@@ -45,6 +46,14 @@ template class std::vector<ldp::TOF>;
 template class art::Wrapper< ldp::TOF                  >;
 
 template class art::Wrapper< std::vector<ldp::TOF >    >;
+
+
+template class std::vector<ldp::MuonRangeStackHits >;
+
+template class art::Wrapper< ldp::MuonRangeStackHits               >;
+
+template class art::Wrapper< std::vector<ldp::MuonRangeStackHits >    >;
+
 
 template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >    ;
 template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF> >    ;

@@ -22,7 +22,7 @@ physics:
 {
   producers:
   {
-    MuonRangeStackHits:
+    MuonRangeStackHitsSlicing:
     {
       module_type: 	MuonRangeStackHitsSlicing
       SourceLabel:	SlicerInput
@@ -30,8 +30,8 @@ physics:
       TriggerUtility: "FragmentToDigit"
     }
   }
-  analysis:  [ MuonRangeStackHits ]
+  analysis:  [ MuonRangeStackHitsSlicing ]
   end_paths: [ analysis ]
 }
 
-physics.producers.MuonRangeStackHits.TriggerUtility: "FragmentToDigit"
+physics.producers.MuonRangeStackHitsSlicing.TriggerUtility: "FragmentToDigit"
