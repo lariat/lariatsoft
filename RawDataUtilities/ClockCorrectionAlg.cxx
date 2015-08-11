@@ -31,14 +31,12 @@ namespace rdu {
   // constructor
   ClockCorrectionAlg::ClockCorrectionAlg(fhicl::ParameterSet const& pset)
   {
-
     // since we can't use infinity here, this will have to do
     fMaxDouble = std::numeric_limits<double>::max();
     fMaxSize_T = std::numeric_limits<size_t>::max();
 
     // read in parameters from .fcl files
     this->reconfigure(pset);
-
   }
 
   //-----------------------------------------------------------------------
@@ -336,7 +334,6 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  //void ClockCorrectionAlg::ClockCorrection(std::map< unsigned int, std::vector< double > > const& TimeStampMap)
   void ClockCorrectionAlg::GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >  const& TimeStampMap,
                                                         std::map< unsigned int, std::pair< double, double > > & ClockCorrectionParameters)
   {
@@ -546,7 +543,7 @@ namespace rdu {
         for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
           TDCFragment::TdcEventData tdcEventData = tdcEvents[j].at(tdc_index);
 
-          // each TDC Time Stamp count is 1/106.208 microseconds
+          // each TDC Time Stamp count is 1/106.2064 microseconds
           int tdcTimeStamp = static_cast <int> (tdcEventData.tdcEventHeader.tdcTimeStamp);
 
           tdcTimeStampCounts[tdcTimeStamp] += 1;
@@ -568,8 +565,8 @@ namespace rdu {
 
         ///////////////////////////////////////////////////////////////////////
 
-        // each TDC Time Stamp count is 1/106.208 microseconds
-        double timestamp = tdcTimeStamp / 106.208;  // convert to microseconds
+        // each TDC Time Stamp count is 1/106.2064 microseconds
+        double timestamp = tdcTimeStamp / 106.2064;  // convert to microseconds
 
         // create DataBlock struct and add to vector of DataBlocks
         DataBlock tdcBlock;
@@ -650,12 +647,20 @@ namespace rdu {
     //  std::cout << block.timestamp << ", " << block.correctedTimestamp << ", " << block.deviceId << std::endl;
     //} // end loop over data blocks
 
-    for (std::vector< DataBlock >::const_reverse_iterator
-         block = DataBlocks.rbegin(); block != DataBlocks.rend(); ++block) {
-      std::cout << std::setfill(' ') << std::setw(3)
-                << block->deviceId << "; " << block->correctedTimestamp
-                << std::endl;
-    } // end loop over data blocks
+    //for (std::vector< DataBlock >::const_reverse_iterator
+    //     block = DataBlocks.rbegin(); block != DataBlocks.rend(); ++block) {
+    //  std::cout << std::setfill(' ') << std::setw(3)
+    //            << block->deviceId << "; " << block->correctedTimestamp
+    //            << std::endl;
+    //} // end loop over data blocks
+
+    //for (size_t block_idx = DataBlocks.size(); block_idx-- > 0;) { // What is this sorcery?
+    //  DataBlock const& block = DataBlocks.at(block_idx);
+    //  //std::cout << block_idx << std::endl;
+    //  std::cout << std::setfill(' ') << std::setw(3)
+    //            << block.deviceId << "; " << block.correctedTimestamp
+    //            << std::endl;
+    //} // end loop over data blocks
 
     return Collections;
   }
@@ -663,7 +668,6 @@ namespace rdu {
   //-----------------------------------------------------------------------
   void ClockCorrectionAlg::hello_world()
   {
-
     mf::LogVerbatim("ClockCorrectionAlg")
         << "\n///////////////////////////////////////////////////////////\n"
         << "Hello, World!\n"
