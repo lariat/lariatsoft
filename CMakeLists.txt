@@ -79,19 +79,17 @@ add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
 add_subdirectory(JobConfigurations)
 add_subdirectory(LArSoftConfigurations)
+add_subdirectory(LArIATAnaModule)
 add_subdirectory(LArIATDataProducts)
 add_subdirectory(LArIATEventGenerator)
+add_subdirectory(LArIATFilterModule)
 add_subdirectory(LArIATRecoAlg)
 add_subdirectory(LArIATRecoModule)
 add_subdirectory(LArIATChecks)
-add_subdirectory(LArIATAnaModule)
 add_subdirectory(RawDataUtilities)
 add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
 add_subdirectory(LongBo)
-
-add_subdirectory(AnalysisExample)
-
 
 # tests
 #add_subdirectory(test)

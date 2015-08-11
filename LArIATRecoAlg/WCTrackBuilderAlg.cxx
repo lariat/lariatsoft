@@ -18,7 +18,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "Geometry/AuxDetGeo.h"
-
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // LArIAT includes
 #include "LArIATRecoAlg/WCTrackBuilderAlg.h"
@@ -27,13 +27,14 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include <TH1F.h>
+#include <string>
 
 //--------------------------------------------------------------
 //Constructor
 WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
-
 
   //Testing the AuxDetGeo capabilitites
   std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
@@ -143,7 +144,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
   fNumber_tdcs          = pset.get<int   >("NumberTDCs",         16         );
   fNumber_wire_chambers = pset.get<int   >("NumberWireChambers", 4          );
-  fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.35       );
+  fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
 
   fTime_bin_scaling     = pset.get<double>("TimeBinScaling",      1.0/1280.0);
   fWire_scaling         = pset.get<double>("WireScaling",         1.0/64.0  ); 
@@ -152,22 +153,41 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fDBSCANEpsilon        = pset.get<float >("DBSCANEpsilon",       1.0/16.0  );
   fDBSCANMinHits        = pset.get<int   >("DBSCANMinHits",       1         );
 
+  fCentralYKink         = pset.get<float >("CentralYKink",        -0.004    ); //These four are parameters from histos I produced from picky-good tracks
+  fSigmaYKink           = pset.get<float >("SigmaYKink",          0.04      );
+  fCentralYDist         = pset.get<float >("CentralYDist",        0.98      );
+  fSigmaYDist           = pset.get<float >("SigmaYDist",          24.0      );
+
+  fPrintDisambiguation = false;
+  fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
+  
   //Survey constants
   fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );   
   fDelta_z_ds 		= pset.get<float >("DeltaZds",   	  1570.06   );   
   fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
   fmm_to_m    		= pset.get<float >("MMtoM",        	  0.001     );	
   fGeV_to_MeV 		= pset.get<float >("GeVToMeV",    	  1000.0    );   
+
+  fTrack_Type = 9999;
   
   return;
 }
 
 //--------------------------------------------------------------
-void WCTrackBuilderAlg::firstFunction()
+int WCTrackBuilderAlg::getTrackType()
 {
-  
+  return fTrack_Type;
 }
 
+//--------------------------------------------------------------
+//This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginRun() method of your analysis module
+void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
+{
+  fRun = run;
+  fSubRun = subrun;
+  fB_field_tesla = 0.0035*std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
+  std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl;
+}
 
 //--------------------------------------------------------------
 //Main function called for each trigger
@@ -250,19 +270,35 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   //of the kinks or end displacements (for now). For the "exactly one" condition set in the above
   //step, this won't matter, but if you want to set the condition to "at least one hit in each WC axis,
   //this will give many combinations.
-  buildTracksFromHits(good_hits,
-		      reco_pz_array,
-		      reco_pz_list,
-		      y_kink_list,
-		      x_dist_list,
-		      y_dist_list,
-		      z_dist_list,
-		      track_count,
-		      x_face_list,
-		      y_face_list,
-		      incoming_theta_list,
-		      incoming_phi_list,
-		      trigger_final_tracks);
+  bool lonely_hit_bool = buildTracksFromHits(good_hits,
+					     reco_pz_array,
+					     reco_pz_list,
+					     y_kink_list,
+					     x_dist_list,
+					     y_dist_list,
+					     z_dist_list,
+					     track_count,
+					     x_face_list,
+					     y_face_list,
+					     incoming_theta_list,
+					     incoming_phi_list,
+					     trigger_final_tracks);
+  
+  //Need to use the cut information to whittle down track candidates
+  if( !fPickyTracks ){
+    disambiguateTracks( reco_pz_list,
+			y_kink_list,
+			x_dist_list,
+			y_dist_list,
+			z_dist_list,
+			track_count,
+			x_face_list,
+			y_face_list,
+			incoming_theta_list,
+			incoming_phi_list,
+			trigger_final_tracks,
+			lonely_hit_bool);
+  }
 }
 
 
@@ -305,7 +341,9 @@ void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
   float atan_y_ds = atan(delta_y_ds / fDelta_z_ds);
 
   //Calculate momentum and y_kink
-  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us)));
+  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us))) / cos(atan_y_ds);
+
+
   y_kink = atan_y_us - atan_y_ds;
 
   //Calculate the X/Y/Y Track End Distances
@@ -380,7 +418,7 @@ void WCTrackBuilderAlg::midPlaneExtrapolation(std::vector<float> x_wires,
 //=====================================================================
 //Taking the set of good hits and finding all combinations of possible tracks. These may not be physically
 //reasonable, but could just be anything with a hit on each wire plane axis.
-void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
+bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 					    std::vector<std::vector<double> > & reco_pz_array,
 					    std::vector<double> & reco_pz_list,
 					    std::vector<double> & y_kink_list,
@@ -394,12 +432,24 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 					    std::vector<double> & incoming_phi_list,
 					    std::vector<WCHitList> & track_list)
 					    
+					    
 					   
 {
   //Reconstructed momentum buffer for storing pz for all combinations in this trigger
   std::vector<double> reco_pz_buffer;
   int track_count_this_trigger = 0;
 
+  //Clear semi-persistent vectors
+  fGoodTrackCandidateErrors.clear();
+  fGoodTrackCandidateHitLists.clear();
+
+  bool lonely_hit_bool = false;   //Single hit on at most 7 WCAxes, at least 1
+  for( size_t iWC = 0; iWC < 4 ; ++iWC ){
+    for( size_t iAx = 0; iAx < 2 ; ++iAx ){
+      if( good_hits.at(iWC).at(iAx).hits.size() == 1 ) lonely_hit_bool = true;
+    }
+  }
+  
   //Loop through all combinations of tracks
   for( size_t iHit0 = 0; iHit0 < good_hits[0][0].hits.size(); ++iHit0 ){
     for( size_t iHit1 = 0; iHit1 < good_hits[0][1].hits.size(); ++iHit1 ){
@@ -446,32 +496,42 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 		  //                                                                                            //
 		  // The lists are updated to include all triggers, but don't worry - the module using the      //
 		  // reconstructTracks function has a way of identifying which tracks come from each trigger.   //
+		  // I can't remember what this ^ means, but it's obsolete now that we have the slicer. -Ryan   //
 		  //                                                                                            //
 		  ////////////////////////////////////////////////////////////////////////////////////////////////
-		  
+
+		  //Seems nonintuitive, but when there are picky tracks, we want to get all of them,
+		  //and when we cut, some of them get removed.
+		  bool is_good_track = false;
+		  if( !fPickyTracks )
+		    is_good_track = cutOnGoodTracks(track,y_kink,dist_array,track_list.size());
+		 		  		  
 		  //Convert x on tpc face to convention
 		  //		  x_on_tpc_face = x_on_tpc_face+fHalf_x_length_of_tpc;
 
 		  //Add the track to the track list
-		  track_list.push_back(track);
 		  
-		  //Storing the momentum in the buffer that will be
-		  //pushed back into the final reco_pz_array for this trigger
-		  //POSSIBLY IRRELEVANT NOW - MAY NEED TO TRIM THIS IF HAVE TIME, BUT IT DOESN'T INTERFERE
-		  reco_pz_buffer.push_back(reco_pz);
-		  
-		  //Filling full info lists
-		  reco_pz_list.push_back(reco_pz);
-		  y_kink_list.push_back(y_kink);
-		  x_dist_list.push_back(dist_array[0]);
-		  y_dist_list.push_back(dist_array[1]);
-		  z_dist_list.push_back(dist_array[2]);
-		  x_on_tpc_face_list.push_back(x_on_tpc_face);
-		  y_on_tpc_face_list.push_back(y_on_tpc_face);
-		  incoming_theta_list.push_back(incoming_theta);
-		  incoming_phi_list.push_back(incoming_phi);
-		  track_count_this_trigger++;
-		  track_count++;
+		  if( fPickyTracks || (!fPickyTracks && is_good_track) ){
+		    track_list.push_back(track);
+		    
+		    //Storing the momentum in the buffer that will be
+		    //pushed back into the final reco_pz_array for this trigger
+		    //POSSIBLY IRRELEVANT NOW - MAY NEED TO TRIM THIS IF HAVE TIME, BUT IT DOESN'T INTERFERE
+		    reco_pz_buffer.push_back(reco_pz);
+		    
+		    //Filling full info lists
+		    reco_pz_list.push_back(reco_pz);
+		    y_kink_list.push_back(y_kink);
+		    x_dist_list.push_back(dist_array[0]);
+		    y_dist_list.push_back(dist_array[1]);
+		    z_dist_list.push_back(dist_array[2]);
+		    x_on_tpc_face_list.push_back(x_on_tpc_face);
+		    y_on_tpc_face_list.push_back(y_on_tpc_face);
+		    incoming_theta_list.push_back(incoming_theta);
+		    incoming_phi_list.push_back(incoming_phi);
+		    track_count_this_trigger++;
+		    track_count++;
+		  }
 		}
 	      }
 	    }
@@ -489,7 +549,10 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
       good_hits.at(iWC).at(iAx).hits.clear();
     }
-  }	     
+  }
+  if( lonely_hit_bool ) return true;
+  else{ return false; }
+	     
 }
 
 //=====================================================================
@@ -497,12 +560,39 @@ void WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
 					    std::vector<std::vector<double> > & reco_pz_array)
 {
+  //Check to see if there is only a single hit on one of the WCAxes
+  bool lonely_hit_bool = false;   //Single hit on at most 7 WCAxes, at least 1
+  bool unique_hit_bool = true;   //Single hit on all WCAxes
+  bool missing_hit_bool = false;  //Missing hit on 1 or more WCAxes
+  for( size_t iWC = 0; iWC < 4 ; ++iWC ){
+    for( size_t iAx = 0; iAx < 2 ; ++iAx ){
+      if( good_hits.at(iWC).at(iAx).hits.size() == 0 ) missing_hit_bool = true;
+      if( good_hits.at(iWC).at(iAx).hits.size() == 1 ) lonely_hit_bool = true;
+      if( good_hits.at(iWC).at(iAx).hits.size() > 1 ) unique_hit_bool = false;
+    }
+  }
+  if( missing_hit_bool ) fTrack_Type = 0;
+  else if( lonely_hit_bool && unique_hit_bool ) fTrack_Type = 1;
+  else if( lonely_hit_bool && !unique_hit_bool ) fTrack_Type = 2;
+  else if( !lonely_hit_bool && !unique_hit_bool ) fTrack_Type = 3;
+  else{ std::cout << "Unknown track condition. Check me." << std::endl;
+  }
+
+  //Now determine if we want to skip
   bool skip = false;
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
-      if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
-	skip = true;
-	break;
+      if( fPickyTracks ){
+	if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
+	  skip = true;
+	  break;
+	}
+      }
+      if( !fPickyTracks ){
+	if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
+	  skip = true;
+	  break;
+	}
       }
     }
   }
@@ -970,3 +1060,213 @@ void WCTrackBuilderAlg::transformWCHits( float (&WC3_point)[3],
    
 }
 
+//=====================================================================
+//Take a look at the track produced by the combinations of hits and determine
+//if it's good enough to be considered a track.
+bool WCTrackBuilderAlg::cutOnGoodTracks( WCHitList track,
+					 float & y_kink,
+					 float (&dist_array)[3],
+					 size_t track_index)
+{
+  //Hard cut on ykink
+  if( y_kink > (fCentralYKink + fSigmaYKink) || y_kink < (fCentralYKink - fSigmaYKink) )
+    return false;
+
+  //Hard cut on ydist
+  if( dist_array[1] > (fCentralYDist + fSigmaYDist ) || dist_array[1] < (fCentralYDist - fSigmaYDist) )
+    return false;
+
+  std::pair<float,float> the_error_pair(y_kink,dist_array[1]);
+  std::pair<WCHitList,size_t> hitlist_pair(track,track_index);
+  fGoodTrackCandidateErrors.emplace(track_index,the_error_pair);  
+  fGoodTrackCandidateHitLists.push_back(hitlist_pair);
+  return true;
+
+}
+					 
+//=====================================================================
+//For all tracks passing the hard cuts, narrow down on those with identical hits
+//in any of the WCAxes
+void WCTrackBuilderAlg::disambiguateTracks( std::vector<double> & reco_pz_list,
+					    std::vector<double> & y_kink_list,
+					    std::vector<double> & x_dist_list,
+					    std::vector<double> & y_dist_list,
+					    std::vector<double> & z_dist_list,
+					    int & track_count,
+					    std::vector<double> & x_on_tpc_face_list,
+					    std::vector<double> & y_on_tpc_face_list,
+					    std::vector<double> & incoming_theta_list,
+					    std::vector<double> & incoming_phi_list,
+					    std::vector<WCHitList> & track_list,
+					    bool lonely_hit_bool)
+{
+  if( fGoodTrackCandidateHitLists.size() > 1 ){
+    if( lonely_hit_bool ){ //For now, only allow single tracks to be made
+      if( fPrintDisambiguation ){
+	std::cout << "Candidate Hit Lists Vector size: " << fGoodTrackCandidateHitLists.size() << std::endl;      
+	for( size_t iTrack = 0; iTrack < fGoodTrackCandidateHitLists.size() ; ++iTrack ){
+	  std::cout << "Candidate Hit List Index: " << fGoodTrackCandidateHitLists.at(iTrack).second << std::endl;
+	}
+      }
+      
+      //Loop through all possible good tracks and find the one with the lowest error
+      float theSmallestError = 99999;
+      float theSmallestErrorIndex = 99999;
+      float scalingFactor = 0.001818;          //Used to give same weight to deviations in y_kink and y_dist
+      for( size_t iHitList1 = 0; iHitList1 < fGoodTrackCandidateHitLists.size() ; ++iHitList1 ){
+	float trackError = pow((pow(fGoodTrackCandidateErrors.at(fGoodTrackCandidateHitLists.at(iHitList1).second).first,2) +
+				pow(fGoodTrackCandidateErrors.at(fGoodTrackCandidateHitLists.at(iHitList1).second).second*scalingFactor,2)),2);
+	if( trackError < theSmallestError ){
+	  theSmallestError = trackError;
+	  theSmallestErrorIndex = fGoodTrackCandidateHitLists.at(iHitList1).second;
+	}
+      }
+
+      //Keep only the good-index track from the initially good tracks (remove everything else)
+      bool continue_bool = false;
+      size_t tSize = track_list.size();
+      for( size_t iTrack = 0; iTrack < tSize ; ++iTrack ){
+	if( iTrack == theSmallestErrorIndex ){
+	  continue_bool = true;
+	  continue;
+	}
+	if( !continue_bool ){
+	  reco_pz_list.erase(reco_pz_list.begin());
+	  y_kink_list.erase(y_kink_list.begin());
+	  x_dist_list.erase(x_dist_list.begin());
+	  y_dist_list.erase(y_dist_list.begin());
+	  z_dist_list.erase(z_dist_list.begin());
+	  track_count--;
+	  x_on_tpc_face_list.erase(x_on_tpc_face_list.begin());
+	  y_on_tpc_face_list.erase(y_on_tpc_face_list.begin());
+	  incoming_theta_list.erase(incoming_theta_list.begin());
+	  incoming_phi_list.erase(incoming_phi_list.begin());
+	  track_list.erase(track_list.begin());
+	}
+	else{
+ 	  reco_pz_list.pop_back();
+	  y_kink_list.pop_back();
+	  x_dist_list.pop_back();
+	  y_dist_list.pop_back();
+	  z_dist_list.pop_back();
+	  track_count--;
+	  x_on_tpc_face_list.pop_back();
+	  y_on_tpc_face_list.pop_back();
+	  incoming_theta_list.pop_back();
+	  incoming_phi_list.pop_back();
+	  track_list.pop_back();
+	}	
+      }
+    }
+    else{ //Otherwise, kill every track - too complex to disambiguate at the moment.
+      reco_pz_list.clear();
+      y_kink_list.clear();
+      x_dist_list.clear();
+      y_dist_list.clear();
+      z_dist_list.clear();
+      track_count = 0;
+      x_on_tpc_face_list.clear();
+      y_on_tpc_face_list.clear();
+      incoming_theta_list.clear();
+      incoming_phi_list.clear();
+      track_list.clear();
+    }      
+  }
+
+  if( fPrintDisambiguation ){
+    std::cout << "Number of tracks left in tracklist: " << track_list.size() << std::endl;
+    std::cout << "Other list sizes: Pz:" << reco_pz_list.size() << ", Yk: " << y_kink_list.size() << ", y_dist: " << y_dist_list.size() << ", phi: " << incoming_phi_list.size() << std::endl;
+  }
+  
+  
+
+    /*
+    //Loop through all possible ambiguous pairs of hitlists
+    for( size_t iHitList1 = 0; iHitList1 < fGoodTrackCandidateHitLists.size() ; ++iHitList1 ){
+      for( size_t iHitList2 = 0; iHitList2 < fGoodTrackCandidateHitLists.size() ; ++iHitList2 ){
+	if( iHitList1 >= iHitList2 ) continue;
+	//Loop through all of the hits in the two hit lists.
+	//If any are the same, then run a comparison using the errors.
+	for( size_t iHit1 = 0; iHit1 < fGoodTrackCandidateHitLists.at(iHitList1).first.hits.size(); ++iHit1 ){
+	  bool break_bool = false;
+	  for( size_t iHit2 = 0; iHit2 < fGoodTrackCandidateHitLists.at(iHitList2).first.hits.size(); ++iHit2 ){
+	    if( (fGoodTrackCandidateHitLists.at(iHitList1).first.hits.at(iHit1).wire == 
+		 fGoodTrackCandidateHitLists.at(iHitList2).first.hits.at(iHit2).wire) &&
+		(fGoodTrackCandidateHitLists.at(iHitList1).first.hits.at(iHit1).time ==
+		 fGoodTrackCandidateHitLists.at(iHitList2).first.hits.at(iHit2).time) ){
+	      //If the hits are equal, identify which of the two tracks is better and push the bad one's index
+	      //into a vector for later elimination
+	      float t1FullError = pow((pow(fGoodTrackCandidateErrors.at(fGoodTrackCandidateHitLists.at(iHitList1).second).first,2) +
+				       pow(fGoodTrackCandidateErrors.at(fGoodTrackCandidateHitLists.at(iHitList1).second).second,2)),2);
+	      float t2FullError = pow((pow(fGoodTrackCandidateErrors.at(fGoodTrackCandidateHitLists.at(iHitList2).second).first,2) +
+				       pow(fGoodTrackCandidateErrors.at(fGoodTrackCandidateHitLists.at(iHitList2).second).second,2)),2);
+	      if( t1FullError <= t2FullError ){
+		if( fPrintDisambiguation )
+		  std::cout << "To-be-cut TrackIndex: " << fGoodTrackCandidateHitLists.at(iHitList2).second << std::endl; 
+		bad_track_indices.push_back(fGoodTrackCandidateHitLists.at(iHitList2).second);
+	      }
+	      if( t1FullError > t2FullError ){
+		if( fPrintDisambiguation )
+		  std::cout << "To-be-cut TrackIndex: " << fGoodTrackCandidateHitLists.at(iHitList1).second << std::endl; 
+		bad_track_indices.push_back(fGoodTrackCandidateHitLists.at(iHitList1).second);
+	      }
+	      break_bool = true;
+	      break;
+	    }
+	    if( break_bool ) break;
+	  }
+	}
+      }
+    }
+    
+    //Debug printing
+    if( fPrintDisambiguation ){
+      for( size_t iBad = 0; iBad < bad_track_indices.size(); ++iBad ){
+	std::cout << "Bad track index: " << bad_track_indices.at(iBad) << std::endl;
+      }
+    }
+
+
+    //Go through the bad track indices and determine a unique list of track indices (since there may be repeats)
+    std::vector<size_t> unique_bad_indices;
+    for( size_t iInd = 0; iInd < bad_track_indices.size() ; ++iInd ){
+      bool uniqueBool = true;
+      for( size_t iUInd = 0; iUInd < unique_bad_indices.size() ; ++iInd ){
+	if( bad_track_indices.at(iInd) == unique_bad_indices.at(iUInd) )
+	  uniqueBool = false;
+      }
+      if( uniqueBool ) unique_bad_indices.push_back(bad_track_indices.at(iInd));
+    }
+
+    //Debug printing
+    if( fPrintDisambiguation ){
+      for( size_t iBad = 0; iBad < unique_bad_indices.size(); ++iBad ){
+	std::cout << "Unique Bad track index: " << unique_bad_indices.at(iBad) << std::endl;
+      }
+    }
+    	  
+    //Go through the bad track indices and remove those tracks from the existing lists
+    for( size_t iBad = 0; iBad < unique_bad_indices.size(); ++iBad ){
+      reco_pz_list.erase(reco_pz_list.begin()+unique_bad_indices.at(iBad));
+      y_kink_list.erase(y_kink_list.begin()+unique_bad_indices.at(iBad));
+      x_dist_list.erase(x_dist_list.begin()+unique_bad_indices.at(iBad));
+      y_dist_list.erase(y_dist_list.begin()+unique_bad_indices.at(iBad));
+      z_dist_list.erase(z_dist_list.begin()+unique_bad_indices.at(iBad));
+      track_count--;
+      x_on_tpc_face_list.erase(x_on_tpc_face_list.begin()+unique_bad_indices.at(iBad));
+      y_on_tpc_face_list.erase(y_on_tpc_face_list.begin()+unique_bad_indices.at(iBad));
+      incoming_theta_list.erase(incoming_theta_list.begin()+unique_bad_indices.at(iBad));
+      incoming_phi_list.erase(incoming_phi_list.begin()+unique_bad_indices.at(iBad));
+      track_list.erase(track_list.begin()+unique_bad_indices.at(iBad));
+      //For all additional unique bad indices that are greater than that corresponding
+      //to iBad's, lower them by one, since the vectors have been shortened by one.
+      for( size_t iUB = 0; iUB < unique_bad_indices.size(); ++iUB ){
+	if( unique_bad_indices.at(iUB) > unique_bad_indices.at(iBad) ){
+	  unique_bad_indices.at(iUB)--;
+	}
+      }
+    }
+      
+  }
+    */
+}	

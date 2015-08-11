@@ -2,7 +2,7 @@ BEGIN_PROLOG
 
 lariat_wctrackbuilderalg:
 {
-
+  PickyTracks: false
 }
 
 lariat_triggerfilteralg:

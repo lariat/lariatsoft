@@ -1,13 +1,13 @@
 //////////////////////////////////////////////////////////////
-// Name:      AnalysisExample_module.cc
+// Name:      DatabaseExample_module.cc
 // Date:      13 July 2015
 // Author:    Everybody is an author! Except for Andrzej.
 //////////////////////////////////////////////////////////////
 // Example module that uses the DatabaseUtilityT1034 service.
 //////////////////////////////////////////////////////////////
 
-#ifndef AnalysisExample_Module
-#define AnalysisExample_Module
+#ifndef DatabaseExample_Module
+#define DatabaseExample_Module
 
 // Framework includes
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -31,19 +31,19 @@
 #include <iostream>
 #include <string>
 
-namespace AnalysisExample {
+namespace DatabaseExample {
 
   //-----------------------------------------------------------------------
   //-----------------------------------------------------------------------
   // class definition
 
-  class AnalysisExample : public art::EDAnalyzer 
+  class DatabaseExample : public art::EDAnalyzer 
   {
   public:
 
     // Standard constructor and destructor for an ART module.
-    explicit AnalysisExample(fhicl::ParameterSet const& pset);
-    virtual ~AnalysisExample();
+    explicit DatabaseExample(fhicl::ParameterSet const& pset);
+    virtual ~DatabaseExample();
 
     // This method is called once, at the start of the job.
     void beginJob();
@@ -116,7 +116,7 @@ namespace AnalysisExample {
     std::map< std::string, std::string > fAllIFBeamValues;
     //////////////////////////////////////////////////////////
 
-  }; // class AnalysisExample
+  }; // class DatabaseExample
 
 
   //-----------------------------------------------------------------------
@@ -125,7 +125,7 @@ namespace AnalysisExample {
 
   //-----------------------------------------------------------------------
   // constructor
-  AnalysisExample::AnalysisExample(fhicl::ParameterSet const& parameterSet)
+  DatabaseExample::DatabaseExample(fhicl::ParameterSet const& parameterSet)
     : EDAnalyzer(parameterSet)
   {
     // read in the parameters from the .fcl file
@@ -134,11 +134,11 @@ namespace AnalysisExample {
 
   //-----------------------------------------------------------------------
   // destructor
-  AnalysisExample::~AnalysisExample() 
+  DatabaseExample::~DatabaseExample() 
   {}
 
   //-----------------------------------------------------------------------
-  void AnalysisExample::beginJob()
+  void DatabaseExample::beginJob()
   {
     // add parameters to be queried from the lariat_xml_database table
     fConfigParams.push_back("larasic_config_larasic_induction_gain");
@@ -153,7 +153,7 @@ namespace AnalysisExample {
   }
 
   //-----------------------------------------------------------------------
-  void AnalysisExample::beginRun(const art::Run& run)
+  void DatabaseExample::beginRun(const art::Run& run)
   {
     // query lariat_xml_database table here
 
@@ -162,7 +162,6 @@ namespace AnalysisExample {
     //========================================================
 
     fRun = run.run();
-    fRun = 6373;  // temporary
 
     ///////////////////////////////////////////////////////////////////
     // get single parameter value from the lariat_xml_database table
@@ -174,7 +173,7 @@ namespace AnalysisExample {
       fDatabaseUtility->GetConfigValue("v1740_config_caen_recordlength", fRun));
 
     // print out the result
-    mf::LogVerbatim("AnalysisExample")
+    mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
       << "\nv1740_config_caen_recordlength: " << fV1740RecordLength << "\n"
       << "///////////////////////////////////////////////////////////////////";
@@ -190,7 +189,7 @@ namespace AnalysisExample {
     // let's iterate over the results and print them out
     std::map< std::string, std::string >::const_iterator config_iter;
 
-    mf::LogVerbatim("AnalysisExample")
+    mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
       << "\nQuery result from lariat_xml_database table for run " << fRun << ".\n"
       << "///////////////////////////////////////////////////////////////////";
@@ -199,12 +198,12 @@ namespace AnalysisExample {
          config_iter != fConfigValues.end();
          ++config_iter) {
 
-      mf::LogVerbatim("AnalysisExample")
+      mf::LogVerbatim("DatabaseExample")
         << "Column: " << config_iter->first << "; Value: " << config_iter->second;
 
     }
 
-    mf::LogVerbatim("AnalysisExample")
+    mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////";
 
     ///////////////////////////////////////////////////////////////////
@@ -218,7 +217,7 @@ namespace AnalysisExample {
     // iterate over the results and print them out
     std::map< std::string, std::string >::const_iterator all_config_iter;
 
-    mf::LogVerbatim("AnalysisExample")
+    mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
       << "\nBegin dump of lariat_xml_database table for run " << fRun << "\n"
       << "///////////////////////////////////////////////////////////////////";
@@ -227,12 +226,12 @@ namespace AnalysisExample {
          all_config_iter != fAllConfigValues.end();
          ++all_config_iter) {
 
-      mf::LogVerbatim("AnalysisExample")
+      mf::LogVerbatim("DatabaseExample")
         << "Column: " << all_config_iter->first << "; Value: " << all_config_iter->second;
 
     }
 
-    mf::LogVerbatim("AnalysisExample")
+    mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
       << "\nEnd dump.\n"
       << "///////////////////////////////////////////////////////////////////";
@@ -243,7 +242,7 @@ namespace AnalysisExample {
   }
 
   //-----------------------------------------------------------------------
-  void AnalysisExample::beginSubRun(const art::SubRun& subrun)
+  void DatabaseExample::beginSubRun(const art::SubRun& subrun)
   {
     // query lariat_ifbeam_database table here
 
@@ -254,9 +253,6 @@ namespace AnalysisExample {
     fRun = subrun.run();
     fSubRun = subrun.subRun();
 
-    fRun = 6373;  // temporary
-    fSubRun = 2;  // temporary
-
     ///////////////////////////////////////////////////////////////////
     // get single parameter value from the lariat_ifbeam_database table
     ///////////////////////////////////////////////////////////////////
@@ -266,7 +262,7 @@ namespace AnalysisExample {
     fCathodeVoltage = std::stod(fDatabaseUtility->GetIFBeamValue("mid_e_gmv", fRun, fSubRun));
 
     // print out the result
-    mf::LogVerbatim("AnalysisExample")
+    mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
       << "\nmid_e_gmv: " << fCathodeVoltage << "\n"
       << "///////////////////////////////////////////////////////////////////";
@@ -282,7 +278,7 @@ namespace AnalysisExample {
     // iterate over the results and print them out
     std::map< std::string, std::string >::const_iterator all_ifbeam_iter;
 
-    mf::LogVerbatim("AnalysisExample")
+    mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
       << "\nBegin dump of lariat_ifbeam_database table for run " << fRun << ", sub-run " << fSubRun << ".\n"
       << "///////////////////////////////////////////////////////////////////";
@@ -291,12 +287,12 @@ namespace AnalysisExample {
          all_ifbeam_iter != fAllIFBeamValues.end();
          ++all_ifbeam_iter) {
 
-      mf::LogVerbatim("AnalysisExample")
+      mf::LogVerbatim("DatabaseExample")
         << "Column: " << all_ifbeam_iter->first << "; Value: " << all_ifbeam_iter->second;
 
     }
 
-    mf::LogVerbatim("AnalysisExample")
+    mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
       << "\nEnd dump.\n"
       << "///////////////////////////////////////////////////////////////////";
@@ -307,13 +303,13 @@ namespace AnalysisExample {
   }
 
   //-----------------------------------------------------------------------
-  void AnalysisExample::reconfigure(fhicl::ParameterSet const& p)
+  void DatabaseExample::reconfigure(fhicl::ParameterSet const& p)
   {
     return;
   }
 
   //-----------------------------------------------------------------------
-  void AnalysisExample::analyze(const art::Event& event) 
+  void DatabaseExample::analyze(const art::Event& event) 
   {
     fEvent  = event.id().event(); 
     fRun    = event.run();
@@ -326,8 +322,8 @@ namespace AnalysisExample {
 
   // This macro has to be defined for this module to be invoked from a
   // .fcl file.
-  DEFINE_ART_MODULE(AnalysisExample)
+  DEFINE_ART_MODULE(DatabaseExample)
 
-} // namespace AnalysisExample
+} // namespace DatabaseExample
 
-#endif // AnalysisExample_Module
+#endif // DatabaseExample_Module
