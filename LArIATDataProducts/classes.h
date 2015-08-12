@@ -41,18 +41,17 @@
 //
 
 
+//Stuff regarding/belonging to TOF
 template class std::vector<ldp::TOF>;
-
 template class art::Wrapper< ldp::TOF                  >;
-
 template class art::Wrapper< std::vector<ldp::TOF >    >;
 
-
+//Stuff regarding/belonging to Muon Range Stack Reco
 template class std::vector<ldp::MuonRangeStackHits >;
-
 template class art::Wrapper< ldp::MuonRangeStackHits               >;
-
 template class art::Wrapper< std::vector<ldp::MuonRangeStackHits >    >;
+template class std::map<int,std::vector<int> >;
+template class art::Wrapper<std::map<int,std::vector<int> > >;
 
 
 template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >    ;

@@ -85,54 +85,57 @@ MuonRangeStackHitsSlicing::MuonRangeStackHitsSlicing(fhicl::ParameterSet const &
 // :
 // Initialize member data here.
 {
-this->reconfigure(p);
+  this->reconfigure(p);
+  
   // Call appropriate produces<>() functions here.
+  produces<std::vector<ldp::MuonRangeStackHits> >();
 }
 
 void MuonRangeStackHitsSlicing::produce(art::Event & e)
 {
+  
+
+
   // Implementation of required member function here.
-	std::unique_ptr<std::vector<ldp::MuonRangeStackHits> > MuonRangeStackCol(new std::vector<ldp::MuonRangeStackHits>  ) ;	//I call this a map, but it's really a vector with one entry that is a map......hopefully.
-
-	//Retrieving AuxDetDigits from event record
- 	art::Handle<std::vector<raw::AuxDetDigit>> AuxDetDigitHandle;
-	e.getByLabel(fSlicerSourceLabel,AuxDetDigitHandle);
-
-	//Finding the MuRS digits from the AuxDetDigits
- 	std::vector<raw::AuxDetDigit> MuRSDigits;
- 	for(size_t iDig=0; iDig<AuxDetDigitHandle->size(); ++iDig){
- 		if(AuxDetDigitHandle->at(iDig).AuxDetName()=="MuonRangeStack"){
-		  if( fVerbose ) std::cout << "MuRS Digit Channel: " << AuxDetDigitHandle->at(iDig).Channel() << std::endl;
-		  MuRSDigits.push_back(AuxDetDigitHandle->at(iDig));
-    		}
-    	}
-       
-	int size=MuRSDigits.size();
-	//std::cout<<size<<std::endl;
-	
-	int TrigMult=size/16;
-	   for (int TrigIter=0; TrigIter<TrigMult; ++TrigIter){
-	   	for (int nPaddle=TrigIter*16; nPaddle<(TrigIter+1)*16; ++nPaddle){
-			auto PaddleDigit=MuRSDigits[nPaddle];
-			for (size_t i=0; i<PaddleDigit.NADC(); ++i){
-				if(PaddleDigit.ADC(i)<fThreshold){
-				MuRSPaddleHits.push_back(i);
-				fMuRSHitTiming->Fill(i);
-				fAmpVsPaddle->Fill(nPaddle-TrigIter*16,fThreshold-PaddleDigit.ADC(i));
-				fTotalPaddleHits->Fill(nPaddle-TrigIter*16);
-				fPaddleHits->Fill(nPaddle-TrigIter*16);
-				}
-			}
-			fMuonRangeStackMap.emplace(nPaddle-TrigIter*16,MuRSPaddleHits);
-			MuRSPaddleHits.clear();
-		}
-		ldp::MuonRangeStackHits the_MuRS(fMuonRangeStackMap);
-		(*MuonRangeStackCol).push_back(the_MuRS);
-		
-		fMuonRangeStackMap.clear();
-		
-	   }
-e.put(std::move(MuonRangeStackCol));	   
+  std::unique_ptr<std::vector<ldp::MuonRangeStackHits> > MuonRangeStackCol(new std::vector<ldp::MuonRangeStackHits>  ) ;	//I call this a map, but it's really a vector with one entry that is a map......hopefully.
+  
+  //Retrieving AuxDetDigits from event record
+  art::Handle<std::vector<raw::AuxDetDigit>> AuxDetDigitHandle;
+  e.getByLabel(fSlicerSourceLabel,AuxDetDigitHandle);
+  
+  //Finding the MuRS digits from the AuxDetDigits
+  std::vector<raw::AuxDetDigit> MuRSDigits;
+  for(size_t iDig=0; iDig<AuxDetDigitHandle->size(); ++iDig){
+    if(AuxDetDigitHandle->at(iDig).AuxDetName()=="MuonRangeStack"){
+      if( fVerbose ) std::cout << "MuRS Digit Channel: " << AuxDetDigitHandle->at(iDig).Channel() << std::endl;
+      MuRSDigits.push_back(AuxDetDigitHandle->at(iDig));
+    }
+  }
+  
+  int size=MuRSDigits.size();
+  //std::cout<<size<<std::endl;
+  
+  int TrigMult=size/16;
+  for (int TrigIter=0; TrigIter<TrigMult; ++TrigIter){
+    for (int nPaddle=TrigIter*16; nPaddle<(TrigIter+1)*16; ++nPaddle){
+      auto PaddleDigit=MuRSDigits[nPaddle];
+      for (size_t i=0; i<PaddleDigit.NADC(); ++i){
+	if(PaddleDigit.ADC(i)<fThreshold){
+	  MuRSPaddleHits.push_back(i);
+	  fMuRSHitTiming->Fill(i);
+	  fAmpVsPaddle->Fill(nPaddle-TrigIter*16,fThreshold-PaddleDigit.ADC(i));
+	  fTotalPaddleHits->Fill(nPaddle-TrigIter*16);
+	  fPaddleHits->Fill(nPaddle-TrigIter*16);
+	}
+      }
+      fMuonRangeStackMap.emplace(nPaddle-TrigIter*16,MuRSPaddleHits);
+      MuRSPaddleHits.clear();
+    }
+    ldp::MuonRangeStackHits the_MuRS(fMuonRangeStackMap);
+    (*MuonRangeStackCol).push_back(the_MuRS);		
+    fMuonRangeStackMap.clear();
+  }
+  e.put(std::move(MuonRangeStackCol));	   
 }//produce()
 
 void MuonRangeStackHitsSlicing::beginJob()

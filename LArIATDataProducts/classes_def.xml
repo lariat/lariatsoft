@@ -51,12 +51,15 @@
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >"/>
  <class name="art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >"/>
 
- <class name="ldp::MuonRangeStackHits" ClassVersion="11"                                      >
+ <class name="ldp::MuonRangeStackHits" ClassVersion="12"                                      >
+  <version ClassVersion="12" checksum="1722931573"/>
   <version ClassVersion="11" checksum="2124238595"/>
  </class>
  <class name="std::vector<ldp::MuonRangeStackHits>"                                          />
  <class name="art::Wrapper<ldp::MuonRangeStackHits>"                                         />
  <class name="art::Wrapper<std::vector<ldp::MuonRangeStackHits> >"                           />
+ <class name="std::map<int,std::vector<int> >"                                               />
+ <class name="art::Wrapper<std::map<int,std::vector<int> > >"                                />
 
 </lcgdict>
 
