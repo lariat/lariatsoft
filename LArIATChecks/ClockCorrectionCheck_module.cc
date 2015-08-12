@@ -24,8 +24,10 @@
 // LArIATSoft includes
 #include "RawDataUtilities/ClockCorrectionAlg.h"
 #include "RawDataUtilities/FragmentUtility.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
 // C++ includes
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
 #include <limits>
@@ -62,14 +64,60 @@ namespace ClockCorrectionCheck {
     void reconfigure(fhicl::ParameterSet const& pset);
 
     // The analysis routine, called once per event. 
-    void analyze (const art::Event& evt); 
+    void analyze(const art::Event& evt); 
 
    private:
+
+    // generate a vector of intervals from a vector of data blocks
+    std::vector< std::pair< double, double> > CreateIntervals(std::vector< rdu::DataBlock > const& DataBlocks,
+                                                              unsigned int                  const& DeviceID,
+                                                              double                        const& PreTriggerWindow,
+                                                              double                        const& PostTriggerWindow);
+
+    // merge overlapping intervals in a vector of intervals
+    std::vector< std::pair< double, double > > IntervalsSelfMerge(std::vector< std::pair< double, double > > const& Intervals);
+
+    // merge overlapping intervals between two vectors of intervals
+    std::vector< std::pair< double, double > > MergeIntervals(std::vector< std::pair< double, double > > const& IntervalsA,
+                                                              std::vector< std::pair< double, double > > const& IntervalsB);
 
     std::string fRawFragmentLabel;    ///< label for module producing artdaq fragments
     std::string fRawFragmentInstance; ///< instance label for artdaq fragments
 
+    // run number
+    int fRun;
+
+    // DatabaseUtilityT1034 service handle
+    art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
+
+    // clock correction algorithm
     rdu::ClockCorrectionAlg fClockCorrectionAlg;
+
+    // vector of parameter names to be queried from the
+    // lariat_xml_database table for a specified run
+    std::vector<std::string> fConfigParams;
+    // (key, value) pair for the database query result
+    std::map< std::string, std::string > fConfigValues;
+
+    // sample reduction of the CAEN V1740 digitizers
+    size_t fV1740SampleReduction;
+    size_t fV1740BSampleReduction;
+
+    // record lengths (number of time ticks) of the CAEN
+    // V1740 and V1751 digitizers
+    size_t fV1740RecordLength;
+    size_t fV1740BRecordLength;
+    size_t fV1751RecordLength;
+
+    // sampling rate in MHz
+    double fV1740SamplingRate;
+    double fV1740BSamplingRate;
+    double fV1751SamplingRate;
+
+    // readout window lengths in microseconds
+    double fV1740ReadoutWindow;
+    double fV1740BReadoutWindow;
+    double fV1751ReadoutWindow;
 
   }; // class ClockCorrectionCheck
 
@@ -97,11 +145,34 @@ namespace ClockCorrectionCheck {
   void ClockCorrectionCheck::beginJob()
   {
     fClockCorrectionAlg.hello_world();
+
+    fConfigParams.push_back("v1740_config_caen_recordlength");
+    fConfigParams.push_back("v1740b_config_caen_recordlength");
+    fConfigParams.push_back("v1751_config_caen_recordlength");
+    fConfigParams.push_back("v1740_config_caen_v1740_samplereduction");
+    fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
   }
 
   //-----------------------------------------------------------------------
   void ClockCorrectionCheck::beginRun(const art::Run& run)
-  {}
+  {
+    fRun = run.run();
+    fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, fRun);
+
+    fV1740RecordLength     = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_recordlength"]));
+    fV1740BRecordLength    = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_recordlength"]));
+    fV1751RecordLength     = static_cast <size_t> (std::stoi(fConfigValues["v1751_config_caen_recordlength"]));
+    fV1740SampleReduction  = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_v1740_samplereduction"]));
+    fV1740BSampleReduction = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_v1740_samplereduction"]));
+
+    fV1740SamplingRate = 62.5 / fV1740SampleReduction;
+    fV1740BSamplingRate = 62.5 / fV1740BSampleReduction;
+    fV1751SamplingRate = 1 / 0.001;
+
+    fV1740ReadoutWindow = fV1740RecordLength / fV1740SamplingRate;
+    fV1740BReadoutWindow = fV1740BRecordLength / fV1740BSamplingRate;
+    fV1751ReadoutWindow = fV1751RecordLength / fV1751SamplingRate;
+  }
 
   //-----------------------------------------------------------------------
   void ClockCorrectionCheck::beginSubRun(const art::SubRun& subrun)
@@ -118,15 +189,434 @@ namespace ClockCorrectionCheck {
   //-----------------------------------------------------------------------
   void ClockCorrectionCheck::analyze(const art::Event& event) 
   {
+    //fClockCorrectionAlg.SetRunSubRun(event.run(), event.subRun());
 
     // make the utility to access the fragments from the event record
     rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
 
-    std::vector<rdu::DataBlockCollection> collections;
+    //std::vector<rdu::DataBlockCollection> collections;
 
-    collections = fClockCorrectionAlg.GroupCollections(&fragUtil.DAQFragment());
+    //collections = fClockCorrectionAlg.GroupCollections(&fragUtil.DAQFragment());
+
+    std::vector< rdu::DataBlock > DataBlocks;
+    std::map< unsigned int, std::vector< double > > TimeStampMap;
+    fClockCorrectionAlg.GetDataBlocksTimeStampMap(&fragUtil.DAQFragment(), DataBlocks, TimeStampMap);
+
+    for (std::map< unsigned int, std::vector< double> >::const_iterator
+         iter = TimeStampMap.begin(); iter != TimeStampMap.end(); ++iter) {
+      mf::LogVerbatim("ClockCorrectionAlg") << "Device ID: "
+                                            << iter->first
+                                            << "; number of data blocks: "
+                                            << iter->second.size();
+    }
+
+    // get clock correction parameters
+    std::map< unsigned int, std::pair< double, double > > ClockCorrectionParameters;
+    fClockCorrectionAlg.GetClockCorrectionParameters(TimeStampMap, ClockCorrectionParameters);
+
+    // apply clock correction to DataBlock timestamps
+    for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
+      rdu::DataBlock & block = DataBlocks.at(block_idx);
+
+      unsigned int DeviceID = block.deviceId;
+
+      // correction parameters
+      double Slope = ClockCorrectionParameters[DeviceID].first;
+      double Intercept = ClockCorrectionParameters[DeviceID].second;
+
+      // apply correction
+      block.correctedTimestamp = (block.timestamp - Intercept) / Slope;
+    } // end loop over data blocks
+
+    // sort data blocks by their corrected timestamps
+    std::sort(DataBlocks.begin(), DataBlocks.end(),
+              [] (rdu::DataBlock const& a, rdu::DataBlock const& b) {
+                return a.correctedTimestamp < b.correctedTimestamp;
+              });
+
+    //for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
+    //  rdu::DataBlock const& block = DataBlocks.at(block_idx);
+    //  std::cout << block.timestamp << ", " << block.correctedTimestamp << ", " << block.deviceId << std::endl;
+    //} // end loop over data blocks
+
+    //for (std::vector< rdu::DataBlock >::const_reverse_iterator
+    //     block = DataBlocks.rbegin(); block != DataBlocks.rend(); ++block) {
+    //  std::cout << std::setfill(' ') << std::setw(3)
+    //            << block->deviceId << "; " << block->correctedTimestamp
+    //            << std::endl;
+    //} // end loop over data blocks
+
+    //for (size_t block_idx = DataBlocks.size(); block_idx-- > 0;) { // What is this sorcery?
+    //  rdu::DataBlock const& block = DataBlocks.at(block_idx);
+    //  //std::cout << block_idx << std::endl;
+    //  std::cout << std::setfill(' ') << std::setw(3)
+    //            << block.deviceId << "; " << block.correctedTimestamp
+    //            << std::endl;
+    //} // end loop over data blocks
+
+    // initialize vector of intervals
+    std::vector< std::pair< double, double > > CAENBoard0Intervals;
+    std::vector< std::pair< double, double > > CAENBoard1Intervals;
+    std::vector< std::pair< double, double > > CAENBoard2Intervals;
+    std::vector< std::pair< double, double > > CAENBoard3Intervals;
+    std::vector< std::pair< double, double > > CAENBoard4Intervals;
+    std::vector< std::pair< double, double > > CAENBoard5Intervals;
+    std::vector< std::pair< double, double > > CAENBoard6Intervals;
+    std::vector< std::pair< double, double > > CAENBoard7Intervals;
+    std::vector< std::pair< double, double > > CAENBoard8Intervals;
+    std::vector< std::pair< double, double > > CAENBoard9Intervals;
+    std::vector< std::pair< double, double > > CAENBoard22Intervals;
+    std::vector< std::pair< double, double > > TDCIntervals;
+
+    // CAEN V1740 digitizers
+    CAENBoard0Intervals  = this->CreateIntervals(DataBlocks,  0,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    CAENBoard1Intervals  = this->CreateIntervals(DataBlocks,  1,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    CAENBoard2Intervals  = this->CreateIntervals(DataBlocks,  2,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    CAENBoard3Intervals  = this->CreateIntervals(DataBlocks,  3,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    CAENBoard4Intervals  = this->CreateIntervals(DataBlocks,  4,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    CAENBoard5Intervals  = this->CreateIntervals(DataBlocks,  5,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    CAENBoard6Intervals  = this->CreateIntervals(DataBlocks,  6,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    CAENBoard7Intervals  = this->CreateIntervals(DataBlocks,  7,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    // CAEN V1751 digitizers
+    CAENBoard8Intervals  = this->CreateIntervals(DataBlocks,  8,                   32, fV1751ReadoutWindow);
+    CAENBoard9Intervals  = this->CreateIntervals(DataBlocks,  9,                   32, fV1751ReadoutWindow);
+    // CAEN V1740B digitizer ("spare" CAEN V1740 digitizer)
+    CAENBoard22Intervals = this->CreateIntervals(DataBlocks, 22, fV1740BReadoutWindow, fV1740BReadoutWindow);
+
+    // WC TDC
+    // see TDC readout documentation here:
+    // https://cdcvs.fnal.gov/redmine/projects/lariat-online/wiki/TDC_Readout_Documentation
+    // TODO: This is temporary. We will need to figure out
+    //       how to convert tdc_config_tdc_gatewidth and
+    //       tdc_config_tdc_pipelinedelay into a TDC
+    //       readout window length.
+    TDCIntervals = this->CreateIntervals(DataBlocks, 32, 1.196, 1.196);
+
+    // self-merge intervals
+    CAENBoard0Intervals  = this->IntervalsSelfMerge(CAENBoard0Intervals);
+    CAENBoard1Intervals  = this->IntervalsSelfMerge(CAENBoard1Intervals);
+    CAENBoard2Intervals  = this->IntervalsSelfMerge(CAENBoard2Intervals);
+    CAENBoard3Intervals  = this->IntervalsSelfMerge(CAENBoard3Intervals);
+    CAENBoard4Intervals  = this->IntervalsSelfMerge(CAENBoard4Intervals);
+    CAENBoard5Intervals  = this->IntervalsSelfMerge(CAENBoard5Intervals);
+    CAENBoard6Intervals  = this->IntervalsSelfMerge(CAENBoard6Intervals);
+    CAENBoard7Intervals  = this->IntervalsSelfMerge(CAENBoard7Intervals);
+    CAENBoard8Intervals  = this->IntervalsSelfMerge(CAENBoard8Intervals);
+    CAENBoard9Intervals  = this->IntervalsSelfMerge(CAENBoard9Intervals);
+    CAENBoard22Intervals = this->IntervalsSelfMerge(CAENBoard22Intervals);
+    TDCIntervals         = this->IntervalsSelfMerge(TDCIntervals);
+
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+    std::cout << "Pre-merge stage" << std::endl;
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+
+    std::cout << "CAEN digitizer board 0" << std::endl;
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+
+    for (std::vector< std::pair< double, double > >::const_iterator
+         iter = CAENBoard0Intervals.begin(); iter != CAENBoard0Intervals.end(); ++iter) {
+      std::cout << iter->first << ", " << iter->second << std::endl;
+    }
+
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+    std::cout << "CAEN digitizer board 8" << std::endl;
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+
+    for (std::vector< std::pair< double, double > >::const_iterator
+         iter = CAENBoard8Intervals.begin(); iter != CAENBoard8Intervals.end(); ++iter) {
+      std::cout << iter->first << ", " << iter->second << std::endl;
+    }
+
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+    std::cout << "TDC" << std::endl;
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+
+    for (std::vector< std::pair< double, double > >::const_iterator
+         iter = TDCIntervals.begin(); iter != TDCIntervals.end(); ++iter) {
+      std::cout << iter->first << ", " << iter->second << std::endl;
+    }
+
+    // merge intervals
+    std::vector< std::pair< double, double > > MergedIntervals;
+
+    MergedIntervals = this->MergeIntervals(CAENBoard0Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard1Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard2Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard3Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard4Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard5Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard6Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard7Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard8Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard9Intervals,  MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard22Intervals, MergedIntervals);
+    MergedIntervals = this->MergeIntervals(TDCIntervals,         MergedIntervals);
+
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+    std::cout << "Post-merge stage" << std::endl;
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+
+    for (std::vector< std::pair< double, double > >::const_iterator
+         iter = MergedIntervals.begin(); iter != MergedIntervals.end(); ++iter) {
+      std::cout << iter->first << ", " << iter->second << std::endl;
+    }
+
+    std::cout << "//////////////////////////////////////////////" << std::endl;
+
+    //////////////////////////////////////////////////////////
+    // Cue Queen & David Bowie's Under Pressure:
+    //   Slice, slice, baby
+    //////////////////////////////////////////////////////////
+
+    // group data blocks into collections
+    std::vector< rdu::DataBlockCollection > Collections;
+
+    for (std::vector< std::pair< double, double > >::const_iterator
+         iter = MergedIntervals.begin(); iter != MergedIntervals.end(); ++iter) {
+
+      double const& t_a = iter->first;
+      double const& t_b = iter->second;
+
+      for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
+
+        rdu::DataBlock const& block              = DataBlocks.at(block_idx);
+        //unsigned int   const& DeviceID           = block.deviceId;
+        double         const& correctedTimestamp = block.correctedTimestamp;
+
+        rdu::DataBlockCollection Collection;
+        Collection.interval = std::make_pair(t_a, t_b);
+
+        size_t NumberDataBlocks = 0;
+
+        if ((correctedTimestamp > t_a) and (correctedTimestamp < t_b)) {
+          //std::cout << "Device ID: " << DeviceID << std::endl;
+          //std::cout << "  " << t_a << ", " << correctedTimestamp << ", " << t_b << std::endl;
+
+          for (size_t i = 0; i < block.caenBlocks.size(); ++i) {
+            const CAENFragment * caenFrag = block.caenBlocks[i];
+            Collection.caenBlocks.push_back(caenFrag);
+
+            // increment number of data blocks
+            ++NumberDataBlocks;
+          }
+
+          for (size_t i = 0; i < block.tdcBlocks.size(); ++i) {
+            const std::vector<TDCFragment::TdcEventData> * tdcEvents = block.tdcBlocks[i];
+            Collection.tdcBlocks.push_back(tdcEvents);
+
+            // increment number of data blocks
+            ++NumberDataBlocks;
+          }
+        }
+
+        // add collection to vector of collections only if
+        // there are data blocks present
+        if (NumberDataBlocks > 0) Collections.push_back(Collection);
+
+      } // end loop through data blocks
+
+    } // end loop through merged intervals
 
     return;
+  }
+
+  //-----------------------------------------------------------------------
+  std::vector< std::pair< double, double> > ClockCorrectionCheck::CreateIntervals(std::vector< rdu::DataBlock > const& DataBlocks,
+                                                                                  unsigned int                  const& DeviceID,
+                                                                                  double                        const& PreTriggerWindow,
+                                                                                  double                        const& PostTriggerWindow)
+  {
+    std::vector< std::pair< double, double > > Intervals;
+
+    for (std::vector< rdu::DataBlock >::const_iterator
+         block = DataBlocks.begin(); block != DataBlocks.end(); ++block) {
+      if (block->deviceId != DeviceID) continue;
+      //std::cout << block->timestamp << ", " << block->correctedTimestamp << ", " << block->deviceId << std::endl;
+      double IntervalLow = block->correctedTimestamp - PreTriggerWindow;
+      double IntervalHigh = block->correctedTimestamp + PostTriggerWindow;
+      Intervals.push_back(std::make_pair(IntervalLow, IntervalHigh));
+    }
+
+    return Intervals;
+  }
+
+  //-----------------------------------------------------------------------
+  std::vector< std::pair< double, double > > ClockCorrectionCheck::IntervalsSelfMerge(std::vector< std::pair< double, double > > const& Intervals)
+  {
+    // vector merged intervals
+    std::vector< std::pair< double, double > > MergedIntervals;
+
+    // bookkeeping for keeping track of which intervals have
+    // already been merged
+    std::vector<size_t> MergedIndices;
+
+    for (size_t i = 0; i < Intervals.size(); ++i) {
+
+      // skip if interval has already been merged
+      if (std::find(MergedIndices.begin(), MergedIndices.end(), i) != MergedIndices.end())
+        continue;
+
+      double t_a = Intervals[i].first;
+      double t_b = Intervals[i].second;
+
+      for (size_t j = 0; j < Intervals.size(); ++j) {
+
+        // skip if interval has already been merged or if
+        // this interval is the same as the interval in
+        // the parent loop
+        if ((i == j) or
+            (std::find(MergedIndices.begin(), MergedIndices.end(), j) != MergedIndices.end()))
+          continue;
+
+        double t_c = Intervals[j].first;
+        double t_d = Intervals[j].second;
+
+        //std::cout << t_a << ", " << t_b << "; " << t_c << ", " << t_d << std::endl;
+
+        if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_b)) {
+          t_b = t_d;
+          MergedIndices.push_back(j);
+          //std::cout << "t_a = t_a; t_b = t_d" << std::endl;
+        }
+        else if ((t_c <= t_a) and (t_d >= t_a) and (t_d <= t_b)) {
+          t_a = t_c;
+          MergedIndices.push_back(j);
+          //std::cout << "t_a = t_c; t_b = t_b" << std::endl;
+        }
+        else if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d <= t_b)) {
+          MergedIndices.push_back(j);
+          //std::cout << "t_a = t_a; t_b = t_b" << std::endl;
+        }
+        else if ((t_c <= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d >= t_b)) {
+          t_a = t_c;
+          t_b = t_d;
+          MergedIndices.push_back(j);
+          //std::cout << "t_a = t_c; t_b = t_d" << std::endl;
+        }
+
+      } // end loop over intervals
+
+      // add interval to vector of intervals
+      MergedIntervals.push_back(std::make_pair(t_a, t_b));
+
+    } // end loop over intervals
+
+    std::sort(MergedIntervals.begin(), MergedIntervals.end());
+
+    return MergedIntervals;
+  }
+
+  //-----------------------------------------------------------------------
+  std::vector< std::pair< double, double > > ClockCorrectionCheck::MergeIntervals(std::vector< std::pair< double, double > > const& IntervalsA,
+                                                                                  std::vector< std::pair< double, double > > const& IntervalsB)
+  {
+    // vector merged intervals
+    std::vector< std::pair< double, double > > MergedIntervals;
+
+    // bookkeeping for keeping track of which intervals have
+    // already been merged
+    std::vector<size_t> MergedIndicesA;
+    std::vector<size_t> MergedIndicesB;
+
+    for (size_t i = 0; i < IntervalsA.size(); ++i) {
+
+      // skip if interval has already been merged
+      if (std::find(MergedIndicesA.begin(), MergedIndicesA.end(), i) != MergedIndicesA.end())
+        continue;
+
+      double t_a = IntervalsA[i].first;
+      double t_b = IntervalsA[i].second;
+
+      for (size_t j = 0; j < IntervalsB.size(); ++j) {
+
+        // skip if interval has already been merged
+        if (std::find(MergedIndicesB.begin(), MergedIndicesB.end(), j) != MergedIndicesB.end())
+          continue;
+
+        double t_c = IntervalsB[j].first;
+        double t_d = IntervalsB[j].second;
+
+        //std::cout << t_a << ", " << t_b << "; " << t_c << ", " << t_d << std::endl;
+
+        if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_b)) {
+          t_b = t_d;
+          MergedIndicesB.push_back(j);
+          //std::cout << "t_a = t_a; t_b = t_d" << std::endl;
+        }
+        else if ((t_c <= t_a) and (t_d >= t_a) and (t_d <= t_b)) {
+          t_a = t_c;
+          MergedIndicesB.push_back(j);
+          //std::cout << "t_a = t_c; t_b = t_b" << std::endl;
+        }
+        else if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d <= t_b)) {
+          MergedIndicesB.push_back(j);
+          //std::cout << "t_a = t_a; t_b = t_b" << std::endl;
+        }
+        else if ((t_c <= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d >= t_b)) {
+          t_a = t_c;
+          t_b = t_d;
+          MergedIndicesB.push_back(j);
+          //std::cout << "t_a = t_c; t_b = t_d" << std::endl;
+        }
+
+      } // end loop over IntervalsB
+
+      MergedIndicesA.push_back(i);
+
+      // add interval to vector of intervals
+      MergedIntervals.push_back(std::make_pair(t_a, t_b));
+
+    } // end loop over IntervalsA
+
+    // TODO: TURN THIS INTO A FUNCTION. MAYBE. IDK.
+
+    for (size_t i = 0; i < IntervalsB.size(); ++i) {
+
+      // skip if interval has already been merged
+      if (std::find(MergedIndicesB.begin(), MergedIndicesB.end(), i) != MergedIndicesB.end())
+        continue;
+
+      double t_a = IntervalsB[i].first;
+      double t_b = IntervalsB[i].second;
+
+      for (size_t j = 0; j < IntervalsA.size(); ++j) {
+
+        // skip if interval has already been merged
+        if (std::find(MergedIndicesA.begin(), MergedIndicesA.end(), j) != MergedIndicesA.end())
+          continue;
+
+        double t_c = IntervalsA[j].first;
+        double t_d = IntervalsA[j].second;
+
+        if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_b)) {
+          t_b = t_d;
+          MergedIndicesA.push_back(j);
+        }
+        else if ((t_c <= t_a) and (t_d >= t_a) and (t_d <= t_b)) {
+          t_a = t_c;
+          MergedIndicesA.push_back(j);
+        }
+        else if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d <= t_b)) {
+          MergedIndicesA.push_back(j);
+        }
+        else if ((t_c <= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d >= t_b)) {
+          t_a = t_c;
+          t_b = t_d;
+          MergedIndicesA.push_back(j);
+        }
+
+      } // end loop over IntervalsA
+
+      MergedIndicesB.push_back(i);
+
+      // add interval to vector of intervals
+      MergedIntervals.push_back(std::make_pair(t_a, t_b));
+
+    } // end loop over IntervalsB
+
+    std::sort(MergedIntervals.begin(), MergedIntervals.end());
+
+    return MergedIntervals;
   }
 
   // This macro has to be defined for this module to be invoked from a
