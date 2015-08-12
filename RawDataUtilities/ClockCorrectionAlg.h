@@ -68,7 +68,9 @@ namespace rdu {
   struct DataBlockCollection {
   //struct Slice {
 
-    double timestamp;
+    //double timestamp;
+    std::pair< double, double > interval;
+
     std::vector< const CAENFragment * > caenBlocks;
     std::vector< const std::vector<TDCFragment::TdcEventData> * > tdcBlocks;
     //std::vector< const V1494Fragment * > v1495Blocks;
@@ -78,7 +80,8 @@ namespace rdu {
 
     void clear()
     {
-      timestamp = 0;
+      //timestamp = 0;
+      interval = std::make_pair(0.0, 0.0);
       caenBlocks.clear();
       tdcBlocks.clear();
       //v1495Blocks.clear();
