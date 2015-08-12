@@ -265,7 +265,7 @@ namespace ClockCorrectionCheck {
     std::vector< std::pair< double, double > > CAENBoard7Intervals;
     std::vector< std::pair< double, double > > CAENBoard8Intervals;
     std::vector< std::pair< double, double > > CAENBoard9Intervals;
-    std::vector< std::pair< double, double > > CAENBoard22Intervals;
+    std::vector< std::pair< double, double > > CAENBoard24Intervals;
     std::vector< std::pair< double, double > > TDCIntervals;
 
     // CAEN V1740 digitizers
@@ -281,7 +281,7 @@ namespace ClockCorrectionCheck {
     CAENBoard8Intervals  = this->CreateIntervals(DataBlocks,  8,                   32, fV1751ReadoutWindow);
     CAENBoard9Intervals  = this->CreateIntervals(DataBlocks,  9,                   32, fV1751ReadoutWindow);
     // CAEN V1740B digitizer ("spare" CAEN V1740 digitizer)
-    CAENBoard22Intervals = this->CreateIntervals(DataBlocks, 22, fV1740BReadoutWindow, fV1740BReadoutWindow);
+    CAENBoard24Intervals = this->CreateIntervals(DataBlocks, 24, fV1740BReadoutWindow, fV1740BReadoutWindow);
 
     // WC TDC
     // see TDC readout documentation here:
@@ -303,7 +303,7 @@ namespace ClockCorrectionCheck {
     CAENBoard7Intervals  = this->IntervalsSelfMerge(CAENBoard7Intervals);
     CAENBoard8Intervals  = this->IntervalsSelfMerge(CAENBoard8Intervals);
     CAENBoard9Intervals  = this->IntervalsSelfMerge(CAENBoard9Intervals);
-    CAENBoard22Intervals = this->IntervalsSelfMerge(CAENBoard22Intervals);
+    CAENBoard24Intervals = this->IntervalsSelfMerge(CAENBoard24Intervals);
     TDCIntervals         = this->IntervalsSelfMerge(TDCIntervals);
 
     std::cout << "//////////////////////////////////////////////" << std::endl;
@@ -349,7 +349,7 @@ namespace ClockCorrectionCheck {
     MergedIntervals = this->MergeIntervals(CAENBoard7Intervals,  MergedIntervals);
     MergedIntervals = this->MergeIntervals(CAENBoard8Intervals,  MergedIntervals);
     MergedIntervals = this->MergeIntervals(CAENBoard9Intervals,  MergedIntervals);
-    MergedIntervals = this->MergeIntervals(CAENBoard22Intervals, MergedIntervals);
+    MergedIntervals = this->MergeIntervals(CAENBoard24Intervals, MergedIntervals);
     MergedIntervals = this->MergeIntervals(TDCIntervals,         MergedIntervals);
 
     std::cout << "//////////////////////////////////////////////" << std::endl;
