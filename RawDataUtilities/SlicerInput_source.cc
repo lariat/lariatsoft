@@ -202,7 +202,7 @@ namespace DAQToOffline
     size_t                                     fMaxNumberFitIterations;  ///< number of fit iterations before stopping
     bool                                       fVerbose;
 
-    LariatFragment                                 fLArIATFragment; 
+    LariatFragment*                                fLArIATFragment; 
     std::map<int,std::vector<CAENFragment> >       fTriggerToCAENDataBlocks;
     std::map<int,std::vector<TDCDataBlock> >       fTriggerToTDCDataBlocks;
     bool                                           fDoneWithThisFile;
@@ -360,9 +360,9 @@ DAQToOffline::SlicerInput::readFile(string const& filename, art::FileBlock*& fb)
 					
   //Accesses member variables and creates maps of ints to fragment vects
   //(matching data blocks with triggers)
-  matchDataBlocks( &fLArIATFragment );
+  matchDataBlocks( fLArIATFragment );
 					
-					
+  delete fLArIATFragment;
 
   return true;
 }
@@ -473,8 +473,7 @@ bool DAQToOffline::SlicerInput::miniFragmentUtility()
     //Convert the artdaq fragment to a lariat fragment
     artdaq::Fragment frag = fragments->at(0);
     const char* bytePtr = reinterpret_cast<const char*> (&*frag.dataBegin());
-    LariatFragment * LArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(unsigned long long));
-    fLArIATFragment = *LArIATFragment;
+    fLArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(unsigned long long));
     if( fVerbose )
       std::cout << "MiniFragmentUtility executed well." << std::endl;
     return true;
@@ -1399,6 +1398,7 @@ void DAQToOffline::SlicerInput::fitClockDrift(int         const& deviceAID,
   graph->SetMarkerStyle(20);
   graph->SetTitle(graphTitles.c_str());
   graph->Write(graphName.c_str());
+  
   // return std::make_pair<double, double>(f->GetParameter(0), f->GetParameter(1));
 
   fitParametersMaps[deviceAID][deviceBID].push_back(intSlp);
