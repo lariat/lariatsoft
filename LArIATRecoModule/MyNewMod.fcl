@@ -31,3 +31,4 @@ physics:
 }
 
 physics.producers.MyNewMod.TriggerUtility: "FragmentToDigit"
+#Change MyNewMod -> MuonRangeStack

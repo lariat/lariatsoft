@@ -30,10 +30,10 @@ physics:
 
  producers:
  {
-  wctrack:     @local::lariat_wctrackbuilder
-  tof:         @local::lariat_tof
-#  murs:        @local::lariat_murs
-  pid:         @local::lariat_pid
+  #wctrack:     @local::lariat_wctrackbuilder
+  #tof:         @local::lariat_tof
+  murs:        @local::lariat_murs
+  #pid:         @local::lariat_pid
  }
 
  analyzers:
@@ -42,7 +42,8 @@ physics:
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- reco: [ wctrack, tof, pid ]# murs ]
+ reco: [ murs ]
+ #reco: [ wctrack, tof, pid ] murs ]
  ana:  [  ]
 
  #define the output stream, there could be more than one if using filters 
@@ -65,6 +66,6 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:      "beamline_fullreco_lariat.fcl"	
+   fileName:      "beamline_fullrecooutput_lariat.root"	
  }
 }
