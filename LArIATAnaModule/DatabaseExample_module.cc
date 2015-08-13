@@ -162,7 +162,6 @@ namespace DatabaseExample {
     //========================================================
 
     fRun = run.run();
-    fRun = 6373;  // temporary
 
     ///////////////////////////////////////////////////////////////////
     // get single parameter value from the lariat_xml_database table
@@ -253,9 +252,6 @@ namespace DatabaseExample {
 
     fRun = subrun.run();
     fSubRun = subrun.subRun();
-
-    fRun = 6373;  // temporary
-    fSubRun = 2;  // temporary
 
     ///////////////////////////////////////////////////////////////////
     // get single parameter value from the lariat_ifbeam_database table

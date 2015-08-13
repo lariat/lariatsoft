@@ -18,7 +18,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "Geometry/AuxDetGeo.h"
-
+#include "art/Framework/Services/Optional/TFileService.h"
 
 // LArIAT includes
 #include "LArIATRecoAlg/WCTrackBuilderAlg.h"
@@ -27,13 +27,14 @@
 #include <iostream>
 #include <cmath>
 #include <cstdlib>
+#include <TH1F.h>
+#include <string>
 
 //--------------------------------------------------------------
 //Constructor
 WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
-
 
   //Testing the AuxDetGeo capabilitites
   std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
@@ -143,7 +144,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
   fNumber_tdcs          = pset.get<int   >("NumberTDCs",         16         );
   fNumber_wire_chambers = pset.get<int   >("NumberWireChambers", 4          );
-  fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.35       );
+  fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
 
   fTime_bin_scaling     = pset.get<double>("TimeBinScaling",      1.0/1280.0);
   fWire_scaling         = pset.get<double>("WireScaling",         1.0/64.0  ); 
@@ -152,30 +153,41 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fDBSCANEpsilon        = pset.get<float >("DBSCANEpsilon",       1.0/16.0  );
   fDBSCANMinHits        = pset.get<int   >("DBSCANMinHits",       1         );
 
-  fCentralYKink         = pset.get<float >("CentralYKink",        0.006     ); //These four are parameters from histos I produced from picky-good tracks
-  fSigmaYKink           = pset.get<float >("SigmaYKink",          0.023     );
-  fCentralYDist         = pset.get<float >("CentralYDist",        1.7       );
-  fSigmaYDist           = pset.get<float >("SigmaYDist",          11.3      );
+  fCentralYKink         = pset.get<float >("CentralYKink",        -0.004    ); //These four are parameters from histos I produced from picky-good tracks
+  fSigmaYKink           = pset.get<float >("SigmaYKink",          0.04      );
+  fCentralYDist         = pset.get<float >("CentralYDist",        0.98      );
+  fSigmaYDist           = pset.get<float >("SigmaYDist",          24.0      );
 
   fPrintDisambiguation = false;
   fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
-
+  
   //Survey constants
   fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );   
   fDelta_z_ds 		= pset.get<float >("DeltaZds",   	  1570.06   );   
   fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
   fmm_to_m    		= pset.get<float >("MMtoM",        	  0.001     );	
   fGeV_to_MeV 		= pset.get<float >("GeVToMeV",    	  1000.0    );   
+
+  fTrack_Type = 9999;
   
   return;
 }
 
 //--------------------------------------------------------------
-void WCTrackBuilderAlg::firstFunction()
+int WCTrackBuilderAlg::getTrackType()
 {
-  
+  return fTrack_Type;
 }
 
+//--------------------------------------------------------------
+//This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginRun() method of your analysis module
+void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
+{
+  fRun = run;
+  fSubRun = subrun;
+  fB_field_tesla = 0.0035*std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
+  std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl;
+}
 
 //--------------------------------------------------------------
 //Main function called for each trigger
@@ -329,7 +341,9 @@ void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
   float atan_y_ds = atan(delta_y_ds / fDelta_z_ds);
 
   //Calculate momentum and y_kink
-  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us)));
+  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us))) / cos(atan_y_ds);
+
+
   y_kink = atan_y_us - atan_y_ds;
 
   //Calculate the X/Y/Y Track End Distances
@@ -429,8 +443,7 @@ bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
   fGoodTrackCandidateErrors.clear();
   fGoodTrackCandidateHitLists.clear();
 
-  //Check to see if there is only a single hit on one of the WCAxes
-  bool lonely_hit_bool = false;
+  bool lonely_hit_bool = false;   //Single hit on at most 7 WCAxes, at least 1
   for( size_t iWC = 0; iWC < 4 ; ++iWC ){
     for( size_t iAx = 0; iAx < 2 ; ++iAx ){
       if( good_hits.at(iWC).at(iAx).hits.size() == 1 ) lonely_hit_bool = true;
@@ -547,6 +560,25 @@ bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
 					    std::vector<std::vector<double> > & reco_pz_array)
 {
+  //Check to see if there is only a single hit on one of the WCAxes
+  bool lonely_hit_bool = false;   //Single hit on at most 7 WCAxes, at least 1
+  bool unique_hit_bool = true;   //Single hit on all WCAxes
+  bool missing_hit_bool = false;  //Missing hit on 1 or more WCAxes
+  for( size_t iWC = 0; iWC < 4 ; ++iWC ){
+    for( size_t iAx = 0; iAx < 2 ; ++iAx ){
+      if( good_hits.at(iWC).at(iAx).hits.size() == 0 ) missing_hit_bool = true;
+      if( good_hits.at(iWC).at(iAx).hits.size() == 1 ) lonely_hit_bool = true;
+      if( good_hits.at(iWC).at(iAx).hits.size() > 1 ) unique_hit_bool = false;
+    }
+  }
+  if( missing_hit_bool ) fTrack_Type = 0;
+  else if( lonely_hit_bool && unique_hit_bool ) fTrack_Type = 1;
+  else if( lonely_hit_bool && !unique_hit_bool ) fTrack_Type = 2;
+  else if( !lonely_hit_bool && !unique_hit_bool ) fTrack_Type = 3;
+  else{ std::cout << "Unknown track condition. Check me." << std::endl;
+  }
+
+  //Now determine if we want to skip
   bool skip = false;
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
