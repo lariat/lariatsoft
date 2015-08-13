@@ -52,7 +52,13 @@ template class art::Wrapper< ldp::MuonRangeStackHits               >;
 template class art::Wrapper< std::vector<ldp::MuonRangeStackHits >    >;
 template class std::map<int,std::vector<int> >;
 template class art::Wrapper<std::map<int,std::vector<int> > >;
-
+template class art::Wrapper<MuRSTrack>;
+template class std::vector<MuRSTrack>;
+template class art::Wrapper<std::vector<MuRSTrack> >;
+template class std::pair<int,int>;
+template class art::Wrapper<std::pair<int,int> >;
+template class std::vector<std::pair<int,int> >;
+template class art::Wrapper<std::vector<std::pair<int,int> > >;
 
 template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >    ;
 template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF> >    ;
