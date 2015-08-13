@@ -26,6 +26,9 @@
 #include "RawDataUtilities/FragmentUtility.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
+// ROOT includes
+#include "TGraph.h"
+
 // C++ includes
 #include <algorithm>
 #include <iomanip>
@@ -119,6 +122,19 @@ namespace ClockCorrectionCheck {
     double fV1740BReadoutWindow;
     double fV1751ReadoutWindow;
 
+    // TDC parameters
+    double fTDCPipelineDelay;
+    double fTDCGateWidth;
+
+    //double fV1740PreTriggerWindow;
+    //double fV1740PostTriggerWindow;
+    //double fV1740BPreTriggerWindow;
+    //double fV1740BPostTriggerWindow;
+    //double fV1751PreTriggerWindow;
+    //double fV1751PostTriggerWindow;
+    //double fTDCPreTriggerWindow;
+    //double fTDCPostTriggerWindow;
+
   }; // class ClockCorrectionCheck
 
 
@@ -151,6 +167,8 @@ namespace ClockCorrectionCheck {
     fConfigParams.push_back("v1751_config_caen_recordlength");
     fConfigParams.push_back("v1740_config_caen_v1740_samplereduction");
     fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
+    fConfigParams.push_back("tdc_config_tdc_pipelinedelay");
+    fConfigParams.push_back("tdc_config_tdc_gatewidth");
   }
 
   //-----------------------------------------------------------------------
@@ -164,6 +182,8 @@ namespace ClockCorrectionCheck {
     fV1751RecordLength     = static_cast <size_t> (std::stoi(fConfigValues["v1751_config_caen_recordlength"]));
     fV1740SampleReduction  = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_v1740_samplereduction"]));
     fV1740BSampleReduction = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_v1740_samplereduction"]));
+    fTDCPipelineDelay      = static_cast <size_t> (std::stoi(fConfigValues["tdc_config_tdc_pipelinedelay"]));
+    fTDCGateWidth          = static_cast <size_t> (std::stoi(fConfigValues["tdc_config_tdc_gatewidth"]));
 
     fV1740SamplingRate = 62.5 / fV1740SampleReduction;
     fV1740BSamplingRate = 62.5 / fV1740BSampleReduction;
@@ -184,19 +204,22 @@ namespace ClockCorrectionCheck {
     fClockCorrectionAlg.reconfigure(pset.get<fhicl::ParameterSet>("ClockCorrectionAlg"));
     fRawFragmentLabel    = pset.get< std::string >("RawFragmentLabel",    "daq"  );
     fRawFragmentInstance = pset.get< std::string >("RawFragmentInstance", "SPILL");
+
+    //fV1740PreTriggerWindow   = pset.get< double >("V1740PreTriggerWindow",   -1);
+    //fV1740PostTriggerWindow  = pset.get< double >("V1740PostTriggerWindow",  -1);
+    //fV1740BPreTriggerWindow  = pset.get< double >("V1740BPreTriggerWindow",  -1);
+    //fV1740BPostTriggerWindow = pset.get< double >("V1740BPostTriggerWindow", -1);
+    //fV1751PreTriggerWindow   = pset.get< double >("V1751PreTriggerWindow",   -1);
+    //fV1751PostTriggerWindow  = pset.get< double >("V1751PostTriggerWindow",  -1);
+    //fTDCPreTriggerWindow     = pset.get< double >("TDCPreTriggerWindow",     -1);
+    //fTDCPostTriggerWindow    = pset.get< double >("TDCPostTriggerWindow",    -1);
   }
 
   //-----------------------------------------------------------------------
   void ClockCorrectionCheck::analyze(const art::Event& event) 
   {
-    //fClockCorrectionAlg.SetRunSubRun(event.run(), event.subRun());
-
     // make the utility to access the fragments from the event record
     rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
-
-    //std::vector<rdu::DataBlockCollection> collections;
-
-    //collections = fClockCorrectionAlg.GroupCollections(&fragUtil.DAQFragment());
 
     std::vector< rdu::DataBlock > DataBlocks;
     std::map< unsigned int, std::vector< double > > TimeStampMap;
@@ -278,8 +301,8 @@ namespace ClockCorrectionCheck {
     CAENBoard6Intervals  = this->CreateIntervals(DataBlocks,  6,  fV1740ReadoutWindow, fV1740ReadoutWindow);
     CAENBoard7Intervals  = this->CreateIntervals(DataBlocks,  7,  fV1740ReadoutWindow, fV1740ReadoutWindow);
     // CAEN V1751 digitizers
-    CAENBoard8Intervals  = this->CreateIntervals(DataBlocks,  8,                   32, fV1751ReadoutWindow);
-    CAENBoard9Intervals  = this->CreateIntervals(DataBlocks,  9,                   32, fV1751ReadoutWindow);
+    CAENBoard8Intervals  = this->CreateIntervals(DataBlocks,  8,                 0.64, fV1751ReadoutWindow);
+    CAENBoard9Intervals  = this->CreateIntervals(DataBlocks,  9,                 0.64, fV1751ReadoutWindow);
     // CAEN V1740B digitizer ("spare" CAEN V1740 digitizer)
     CAENBoard24Intervals = this->CreateIntervals(DataBlocks, 24, fV1740BReadoutWindow, fV1740BReadoutWindow);
 
@@ -336,9 +359,10 @@ namespace ClockCorrectionCheck {
       std::cout << iter->first << ", " << iter->second << std::endl;
     }
 
-    // merge intervals
+    // vector of merged intervals
     std::vector< std::pair< double, double > > MergedIntervals;
 
+    // merge the intervals!
     MergedIntervals = this->MergeIntervals(CAENBoard0Intervals,  MergedIntervals);
     MergedIntervals = this->MergeIntervals(CAENBoard1Intervals,  MergedIntervals);
     MergedIntervals = this->MergeIntervals(CAENBoard2Intervals,  MergedIntervals);
@@ -374,8 +398,15 @@ namespace ClockCorrectionCheck {
     for (std::vector< std::pair< double, double > >::const_iterator
          iter = MergedIntervals.begin(); iter != MergedIntervals.end(); ++iter) {
 
+      // get interval
       double const& t_a = iter->first;
       double const& t_b = iter->second;
+
+      rdu::DataBlockCollection Collection;
+      Collection.interval = std::make_pair(t_a, t_b);
+
+      // number of data blocks in this interval
+      size_t NumberDataBlocks = 0;
 
       for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
 
@@ -383,14 +414,9 @@ namespace ClockCorrectionCheck {
         //unsigned int   const& DeviceID           = block.deviceId;
         double         const& correctedTimestamp = block.correctedTimestamp;
 
-        rdu::DataBlockCollection Collection;
-        Collection.interval = std::make_pair(t_a, t_b);
-
-        size_t NumberDataBlocks = 0;
-
         if ((correctedTimestamp > t_a) and (correctedTimestamp < t_b)) {
-          //std::cout << "Device ID: " << DeviceID << std::endl;
-          //std::cout << "  " << t_a << ", " << correctedTimestamp << ", " << t_b << std::endl;
+          // there should be at most one data block for each
+          // DataBlock struct
 
           for (size_t i = 0; i < block.caenBlocks.size(); ++i) {
             const CAENFragment * caenFrag = block.caenBlocks[i];
@@ -398,7 +424,7 @@ namespace ClockCorrectionCheck {
 
             // increment number of data blocks
             ++NumberDataBlocks;
-          }
+          } // end loop over CAEN data blocks
 
           for (size_t i = 0; i < block.tdcBlocks.size(); ++i) {
             const std::vector<TDCFragment::TdcEventData> * tdcEvents = block.tdcBlocks[i];
@@ -406,16 +432,23 @@ namespace ClockCorrectionCheck {
 
             // increment number of data blocks
             ++NumberDataBlocks;
-          }
+          } // end loop over TDC data blocks
         }
-
-        // add collection to vector of collections only if
-        // there are data blocks present
-        if (NumberDataBlocks > 0) Collections.push_back(Collection);
 
       } // end loop through data blocks
 
+      // add collection to vector of collections only if
+      // there are data blocks present
+      if (NumberDataBlocks > 0) Collections.push_back(Collection);
+
     } // end loop through merged intervals
+
+    for (size_t i = 0; i < Collections.size(); ++i) {
+      rdu::DataBlockCollection const& Collection = Collections[i];
+      std::cout << "Collection: " << i << std::endl;
+      std::cout << "  Number of CAEN data blocks: " << Collection.caenBlocks.size() << std::endl;
+      std::cout << "  Number of TDC data blocks:  " << Collection.tdcBlocks.size() << std::endl;
+    }
 
     return;
   }
@@ -456,6 +489,7 @@ namespace ClockCorrectionCheck {
       if (std::find(MergedIndices.begin(), MergedIndices.end(), i) != MergedIndices.end())
         continue;
 
+      // get interval
       double t_a = Intervals[i].first;
       double t_b = Intervals[i].second;
 
@@ -468,6 +502,7 @@ namespace ClockCorrectionCheck {
             (std::find(MergedIndices.begin(), MergedIndices.end(), j) != MergedIndices.end()))
           continue;
 
+        // get interval
         double t_c = Intervals[j].first;
         double t_d = Intervals[j].second;
 
@@ -475,21 +510,25 @@ namespace ClockCorrectionCheck {
 
         if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_b)) {
           t_b = t_d;
+          // add interval index for bookkeeping
           MergedIndices.push_back(j);
           //std::cout << "t_a = t_a; t_b = t_d" << std::endl;
         }
         else if ((t_c <= t_a) and (t_d >= t_a) and (t_d <= t_b)) {
           t_a = t_c;
+          // add interval index for bookkeeping
           MergedIndices.push_back(j);
           //std::cout << "t_a = t_c; t_b = t_b" << std::endl;
         }
         else if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d <= t_b)) {
+          // add interval index for bookkeeping
           MergedIndices.push_back(j);
           //std::cout << "t_a = t_a; t_b = t_b" << std::endl;
         }
         else if ((t_c <= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d >= t_b)) {
           t_a = t_c;
           t_b = t_d;
+          // add interval index for bookkeeping
           MergedIndices.push_back(j);
           //std::cout << "t_a = t_c; t_b = t_d" << std::endl;
         }
@@ -501,6 +540,7 @@ namespace ClockCorrectionCheck {
 
     } // end loop over intervals
 
+    // sort intervals in ascending order
     std::sort(MergedIntervals.begin(), MergedIntervals.end());
 
     return MergedIntervals;
@@ -524,6 +564,7 @@ namespace ClockCorrectionCheck {
       if (std::find(MergedIndicesA.begin(), MergedIndicesA.end(), i) != MergedIndicesA.end())
         continue;
 
+      // get interval
       double t_a = IntervalsA[i].first;
       double t_b = IntervalsA[i].second;
 
@@ -533,6 +574,7 @@ namespace ClockCorrectionCheck {
         if (std::find(MergedIndicesB.begin(), MergedIndicesB.end(), j) != MergedIndicesB.end())
           continue;
 
+        // get interval
         double t_c = IntervalsB[j].first;
         double t_d = IntervalsB[j].second;
 
@@ -540,27 +582,32 @@ namespace ClockCorrectionCheck {
 
         if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_b)) {
           t_b = t_d;
+          // add interval index for bookkeeping
           MergedIndicesB.push_back(j);
           //std::cout << "t_a = t_a; t_b = t_d" << std::endl;
         }
         else if ((t_c <= t_a) and (t_d >= t_a) and (t_d <= t_b)) {
           t_a = t_c;
+          // add interval index for bookkeeping
           MergedIndicesB.push_back(j);
           //std::cout << "t_a = t_c; t_b = t_b" << std::endl;
         }
         else if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d <= t_b)) {
+          // add interval index for bookkeeping
           MergedIndicesB.push_back(j);
           //std::cout << "t_a = t_a; t_b = t_b" << std::endl;
         }
         else if ((t_c <= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d >= t_b)) {
           t_a = t_c;
           t_b = t_d;
+          // add interval index for bookkeeping
           MergedIndicesB.push_back(j);
           //std::cout << "t_a = t_c; t_b = t_d" << std::endl;
         }
 
       } // end loop over IntervalsB
 
+      // add interval index for bookkeeping
       MergedIndicesA.push_back(i);
 
       // add interval to vector of intervals
@@ -590,23 +637,28 @@ namespace ClockCorrectionCheck {
 
         if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_b)) {
           t_b = t_d;
+          // add interval index for bookkeeping
           MergedIndicesA.push_back(j);
         }
         else if ((t_c <= t_a) and (t_d >= t_a) and (t_d <= t_b)) {
           t_a = t_c;
+          // add interval index for bookkeeping
           MergedIndicesA.push_back(j);
         }
         else if ((t_c >= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d <= t_b)) {
+          // add interval index for bookkeeping
           MergedIndicesA.push_back(j);
         }
         else if ((t_c <= t_a) and (t_c <= t_b) and (t_d >= t_a) and (t_d >= t_b)) {
           t_a = t_c;
           t_b = t_d;
+          // add interval index for bookkeeping
           MergedIndicesA.push_back(j);
         }
 
       } // end loop over IntervalsA
 
+      // add interval index for bookkeeping
       MergedIndicesB.push_back(i);
 
       // add interval to vector of intervals
@@ -614,6 +666,7 @@ namespace ClockCorrectionCheck {
 
     } // end loop over IntervalsB
 
+    // sort intervals in ascending order
     std::sort(MergedIntervals.begin(), MergedIntervals.end());
 
     return MergedIntervals;

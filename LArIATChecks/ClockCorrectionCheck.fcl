@@ -36,6 +36,16 @@ physics:
 
       module_type: "ClockCorrectionCheck"
       ClockCorrectionAlg: @local::standard_clockcorrectionalg
+
+      # Pre-/post-trigger windows in microseconds
+      V1740PreTriggerWindow:    393.216
+      V1740PostTriggerWindow:   393.216
+      V1740BPreTriggerWindow:   393.216
+      V1740BPostTriggerWindow:  393.216
+      V1751PreTriggerWindow:      0.64
+      V1751PostTriggerWindow:     0.64
+      TDCPreTriggerWindow:        1.196
+      TDCPostTriggerWindow:       1.196
     }
   }
 
