@@ -4,46 +4,76 @@ BEGIN_PROLOG
 
 lariat_signalshapingservice:
 {
-  ADCTicksPerPCAtLowestASICGainSetting: 25172.1 #ADC/pC
-  #ASICGain: Options: (4.7, 7.8, 14, 25). Default: 7.8
-  ASICGainInMVPerFC:                    14     #mV/fC (Maybe 25)
   
-  FieldBins:        75		#<----N Bins for field response
-  Col3DCorrection:  2.8         #<----Default set to 2.5
-  Ind3DCorrection:  1.8        #<----Default set to 1.5
-  #ColFieldRespAmp:  0.0354
+  DeconNorm: 50
+  ADCPerPCAtLowestASICGain: 9390 #ADC/pC
+  #ADCPerPCAtLowestASICGain: 4000 #ADC/pC
+  # ASICGains:           [4.7, 7.8, 14, 25] #Default: 7.8
+  ASICGainInMVPerFC:  [ 25, 25 ] #mV/fC for Ind & col planes
+  ShapeTimeConst:  [ 3.0, 3.0 ] #Gain and Peaking time (microseconds)	
+  
+  # Noise Factor - rms ADCs @ lowest ASIC Gain (4.7 mV/fC)
+  #NoiseFactVec:         [[ 1.12, 0.86, 0.60, 0.55 ], [ 0.89, 0.66, 0.48, 0.43 ]]
+  NoiseFactVec:         [[ 1.12, 0.86, 0.60, 0.26 ], [ 0.89, 0.66, 0.48, 0.26 ]]
+  # to turn off noise
+  # NoiseFactVec:         [[ 0.0, 0.0, 0.0, 0.0 ], [ 0.0, 0.0, 0.0, 0.0 ], [ 0.0, 0.0, 0.0, 0.0 ]]
+
+
+  #FieldBins:        75 # for UseFunctionFieldShape: true
+#  FieldBins:        400
+#  InputFieldRespSamplingPeriod: 100. # in nano second
+
+  FieldBins:        1000
+  InputFieldRespSamplingPeriod: 30. # in nano second
+  
+
+  Col3DCorrection:  2.5
+  Ind3DCorrection:  1.5
   ColFieldRespAmp:  1.0
-  #IndVFieldRespAmp:  0.018
-  IndVFieldRespAmp:  1.0
-  ShapeTimeConst:  [14, 2.0]#[ 1.4, 0.5 ] #Gain and Peaking time (microseconds)
+  IndFieldRespAmp:  1.0
+
+  FieldResponseTOffset: [-32.5e3, -32.5e3 ] # in ns, time offset of field response shape
+  CalibResponseTOffset: [0.0, 0.0 ] # in ns time offset to align all three planes  
+
 
   # For IndFilter and ColFilter, frequency (x) is measured in
   # cycles/microsecond.  The conversion to frequency bin depends on FFT size
   # samping rate.
 
-
-  IndVFilter:       "(x>0.0)*gaus*exp(-0.5*pow(x/[3],[4]))"
+  IndFilter:       "(x>0.0)*gaus*exp(-0.5*pow(x/[3],[4]))"
   # IndVFilterParams: [ .454, 0.0, 0.1875, 0.25, 8.0 ]
-  IndVFilterParams: [ 0.05, 0.0, 0.1875, 0.25, 8.0 ]
+  #IndVFilterParams: [ 0.05, 0.0, 0.1875, 0.25, 8.0 ]
+  IndFilterParams: [ 1.74, 1.46, 1.33, 0.23, 4.89 ]
+  #IndFilterParams: [ 1.74, 1.46, 1., 0.23, 4.89 ]
+
+#  IndFilter:       "(x>0)*[0]*exp(-0.5*(((x-[1])/[2])^2)^[3])"
+#  IndFilterParams: [ 1.03, 0.08, 0.15, 2.17 ]
+
+
   ColFilter:       "(x>0)*[0]*exp(-0.5*(((x-[1])/[2])^2)^[3])"
   # ColFilterParams: [ 79258.0, 0.0, 0.1875, 1.5 ]
-  ColFilterParams: [ 0.0792580, 0.0, 0.1875, 1.5 ]
-  
+  #ColFilterParams: [ 0.0792580, 0.0, 0.1875, 1.5 ]
+  ColFilterParams: [ 1.03, 0.08, 0.15, 2.17 ]  
+
   GetFilterFromHisto:   false  
 
-  FilterFunctionFname:  "LArIAT_filter.root"
- # FilterHistoName:	"noisefilter_%d"       
-  FilterHistoName:	"fft_filter_0_0_%d_av"       
+  FilterFunctionFname:  "uboone_filters_v0.1.root"
+  FilterHistoName:	"noisefilter_%d"       
   
 
-  UseFunctionFieldShape: false 
-  UseSimpleFieldShape: false
+  UseFunctionFieldShape: false
+  UseHistogramFieldShape: true
+  #FieldResponseFname:     "dune35t_response_v1.0.root"
+  FieldResponseFname:     "uboone_response_v1.3.root"
+  FieldResponseHistoName: "FieldResponse"
 
-  IndVFieldShape: "[0]*(1.0+[3]*tanh(x-[4]))*([4]-x)*exp(-0.5*((x-[4])/[2])^2.0)"
-  IndVFieldParams:  [0.13,.1534,1.77,0.,5.0]    #last parameter needs to be half of FFT vector, correct for in code
+  ScaleNegativeResponse: [3,    1    ]
+  ScaleResponseTime:     [0.98, 0.98 ]
+ 
+  IndFieldShape: "[0]*(1.0+[3]*tanh(x-[4]))*([4]-x)*exp(-0.5*((x-[4])/[2])^2.0)"
+  IndFieldParams:  [.00843,.1534,1.77,0.,0.5]    #last parameter needs to be half of FFT vector, correct for in code
   ColFieldShape: "x^[2]/(1.0+(x/[0])^[1])"
-  ColFieldParams: [ 8.0,16.0,.75 ]
-  
+  ColFieldParams: [ 8.0,16.0,.75 ]  
 
 
 }
