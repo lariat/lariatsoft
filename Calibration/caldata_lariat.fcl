@@ -6,11 +6,10 @@ lariat_calroi:
 {
  module_type:        "CalWireROIT1034"
  DigitModuleLabel:   "SlicerInput"
- PostsampleBins:     0
- BaseSampleBins:     48
- 
- BaseVarCut:         25
- FFTSize:     3072      # re-initialize FFT service to this size
+ PostsampleBins:     0	
+ DoBaselineSub:   false # subtract baseline after deconvolution?
+ DoROI: false
+ PlaneROIPad: [ 50, 50 ] # number of bins to pad both ends of the ROIs
 }
 
 lariat_calwire:
