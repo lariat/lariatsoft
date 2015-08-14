@@ -1,495 +1,389 @@
 ////////////////////////////////////////////////////////////////////////
 //
-// CalWireROIT1034 class
+// CalWireROTT1034 class
 //
 // brebel@fnal.gov
 //
 // 11-3-09 Pulled all FFT code out and put into Utilitiess/LArFFT
-//  copied over to 1034 - andrzej.szelc@yale.edu
+//
 ////////////////////////////////////////////////////////////////////////
 
+// C/C++ standard libraries
 #include <string>
 #include <vector>
-#include <stdint.h>
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
+#include <utility> // std::move()
+#include <memory> // std::unique_ptr<>
+
+// ROOT libraries
+#include "TComplex.h"
+
+// framework libraries
+#include "cetlib/exception.h"
+#include "cetlib/search_path.h"
+#include "fhiclcpp/ParameterSet.h" 
+#include "messagefacility/MessageLogger/MessageLogger.h" 
 #include "art/Framework/Core/ModuleMacros.h" 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Principal/Event.h" 
 #include "art/Framework/Principal/Handle.h" 
 #include "art/Persistency/Common/Ptr.h" 
-#include "art/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
-#include "fhiclcpp/ParameterSet.h" 
-#include "messagefacility/MessageLogger/MessageLogger.h" 
-#include "cetlib/exception.h"
-#include "cetlib/search_path.h"
-#include "Utilities/SignalShapingServiceT1034.h"
+
+// LArSoft libraries
+#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "Geometry/Geometry.h"
 #include "Filters/ChannelFilter.h"
 #include "RawData/RawDigit.h"
 #include "RawData/raw.h"
 #include "RecoBase/Wire.h"
-#include "Utilities/LArFFT.h"
-#include "TComplex.h"
-#include "TFile.h"
-#include "TH2D.h"
-#include "TF1.h"
 #include "RecoBaseArt/WireCreator.h"
+#include "Utilities/LArFFT.h"
 #include "Utilities/AssociationUtil.h"
+#include "Utilities/SignalShapingServiceT1034.h"
+
 
 ///creation of calibrated signals on wires
 namespace caldata {
-  
-  class CalWireROIT1034 : public art::EDProducer {
-  
-  public:
 
+  class CalWireROIT1034 : public art::EDProducer {
+
+  public:
+    
     // create calibrated signals on wires. this class runs 
     // an fft to remove the electronics shaping.     
     explicit CalWireROIT1034(fhicl::ParameterSet const& pset); 
     virtual ~CalWireROIT1034();
-
-    void produce(art::Event& evt); 
-    void beginJob(); 
-    void endJob();                 
+    
+    void produce(art::Event& evt);
+    void beginJob();
+    void endJob();
     void reconfigure(fhicl::ParameterSet const& p);
-
+    
   private:
-
+    
     int          fDataSize;          ///< size of raw data on one wire
     int          fPostsample;        ///< number of postsample bins
-    int          fBaseSampleBins;        ///< number of postsample bins
-    float        fBaseVarCut;        ///< baseline variance cut
+    int          fDoBaselineSub;        ///< number of postsample bins
+    bool         fDoROI;             ///< make ROIs
     std::string  fDigitModuleLabel;  ///< module that made digits
                                                        ///< constants
-
     std::string  fSpillName;  ///< nominal spill is an empty string
                               ///< it is set by the DigitModuleLabel
                               ///< ex.:  "daq:preSpill" for prespill data
+    unsigned short fPreROIPad; ///< ROI padding
+    unsigned short fPostROIPad; ///< ROI padding
 
-    void SubtractBaseline(std::vector<float>& holder, int fBaseSampleBins);
 
+    void SubtractBaseline(std::vector<float>& holder);
+
+    
   protected: 
-
+    
   }; // class CalWireROIT1034
+
   DEFINE_ART_MODULE(CalWireROIT1034)
-
   
-
   //-------------------------------------------------
   CalWireROIT1034::CalWireROIT1034(fhicl::ParameterSet const& pset)
   {
-    fSpillName="";
     this->reconfigure(pset);
-    if(fSpillName.size()<1) {produces< std::vector<recob::Wire> >();
-     produces<art::Assns<raw::RawDigit, recob::Wire>>();
-    }
-    else { produces< std::vector<recob::Wire> >(fSpillName);
-          produces<art::Assns<raw::RawDigit, recob::Wire>>(fSpillName);
-    }
+
+    produces< std::vector<recob::Wire> >(fSpillName);
+    produces<art::Assns<raw::RawDigit, recob::Wire>>(fSpillName);
   }
-
   
-
   //-------------------------------------------------
-
   CalWireROIT1034::~CalWireROIT1034()
   {
   }
 
   //////////////////////////////////////////////////////
-
   void CalWireROIT1034::reconfigure(fhicl::ParameterSet const& p)
-
   {
+    std::vector<unsigned short> uin;    std::vector<unsigned short> vin;
+    std::vector<unsigned short> zin;
+
 
     fDigitModuleLabel = p.get< std::string >("DigitModuleLabel", "daq");
     fPostsample       = p.get< int >        ("PostsampleBins");
-    fBaseSampleBins   = p.get< int >        ("BaseSampleBins");
-    fBaseVarCut       = p.get< int >        ("BaseVarCut");
+    fDoBaselineSub    = p.get< bool >       ("DoBaselineSub");
+    fDoROI            = p.get< bool >       ("DoROI");
+    uin               = p.get< std::vector<unsigned short> >   ("PlaneROIPad");
+    
+    
+   
+    
+    // put the ROI pad sizes into more convenient vectors
+    fPreROIPad  = uin[0];
+    fPostROIPad = uin[1];
+    
 
-    fSpillName="";
-
+    fSpillName.clear();
+    
     size_t pos = fDigitModuleLabel.find(":");
     if( pos!=std::string::npos ) {
-     fSpillName = fDigitModuleLabel.substr( pos+1 );
+      fSpillName = fDigitModuleLabel.substr( pos+1 );
       fDigitModuleLabel = fDigitModuleLabel.substr( 0, pos );
     }
-
-  
+    
   }
 
   //-------------------------------------------------
-
   void CalWireROIT1034::beginJob()
-
   {  
-
   }
 
   //////////////////////////////////////////////////////
-
   void CalWireROIT1034::endJob()
-
   {  
-
   }
-
   
-
   //////////////////////////////////////////////////////
-
   void CalWireROIT1034::produce(art::Event& evt)
-
   {      
     // get the geometry
     art::ServiceHandle<geo::Geometry> geom;
-   // get the FFT service to have access to the FFT size
+
+    // get the FFT service to have access to the FFT size
     art::ServiceHandle<util::LArFFT> fFFT;
     int transformSize = fFFT->FFTSize();
-   // Get signal shaping service.
+
+    // Get signal shaping service.
     art::ServiceHandle<util::SignalShapingServiceT1034> sss;
+    double DeconNorm = sss->GetDeconNorm();
+
     // make a collection of Wires
     std::unique_ptr<std::vector<recob::Wire> > wirecol(new std::vector<recob::Wire>);
-        // ... and an association set
+    // ... and an association set
     std::unique_ptr<art::Assns<raw::RawDigit,recob::Wire> > WireDigitAssn
       (new art::Assns<raw::RawDigit,recob::Wire>);
- 
     
-
     // Read in the digit List object(s). 
     art::Handle< std::vector<raw::RawDigit> > digitVecHandle;
-    if(fSpillName.size()>0) evt.getByLabel(fDigitModuleLabel, fSpillName, digitVecHandle);
-    else evt.getByLabel(fDigitModuleLabel, digitVecHandle);
+    evt.getByLabel(fDigitModuleLabel, fSpillName, digitVecHandle);
+
     if (!digitVecHandle->size())  return;
     mf::LogInfo("CalWireROIT1034") << "CalWireROIT1034:: digitVecHandle size is " << digitVecHandle->size();
 
     // Use the handle to get a particular (0th) element of collection.
     art::Ptr<raw::RawDigit> digitVec0(digitVecHandle, 0);
-
         
+    //  if (digitVec0->Compression() != raw::kZeroSuppression) {
+    //   throw art::Exception(art::errors::UnimplementedFeature)
+    //	<< "CalGausHFLBNE only supports zero-suppressed raw digit input!";
+    //} // if
+
+
 
     unsigned int dataSize = digitVec0->Samples(); //size of raw data vectors
-    if( (unsigned int)transformSize < dataSize){
-      mf::LogWarning("CalWireROIT1034")<<"FFT size (" << transformSize << ") "
-                                         << "is smaller than the data size (" << dataSize << ") "
-                                         << "\nResizing the FFT now...";
+    //std::cout << "Xin " << dataSize << std::endl;
 
-      fFFT->ReinitializeFFT(dataSize,fFFT->FFTOptions(),fFFT->FFTFitBins());
-      transformSize = fFFT->FFTSize();
-      mf::LogWarning("CalWireROIT1034")<<"FFT size is now (" << transformSize << ") "
-                                         << "and should be larger than the data size (" << dataSize << ")";
-
-    }
-
-    mf::LogInfo("CalWireROIT1034") << "Data size is " << dataSize << " and transform size is " << transformSize;
-
-    if(fBaseSampleBins > 0 && dataSize % fBaseSampleBins != 0) {
-      mf::LogError("CalWireROIT1034")<<"Set BaseSampleBins modulo dataSize= "<<dataSize;
-    }
-
-    uint32_t     channel(0); // channel number
+    raw::ChannelID_t channel = raw::InvalidChannelID; // channel number
     unsigned int bin(0);     // time bin loop variable
-
     
-
     filter::ChannelFilter *chanFilt = new filter::ChannelFilter();  
+
     std::vector<float> holder;                // holds signal data
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
     std::vector<TComplex> freqHolder(transformSize+1); // temporary frequency data
-
     
-
     // loop over all wires    
-
     wirecol->reserve(digitVecHandle->size());
     for(size_t rdIter = 0; rdIter < digitVecHandle->size(); ++rdIter){ // ++ move
       holder.clear();
-    // get the reference to the current raw::RawDigit
+      
+      // get the reference to the current raw::RawDigit
       art::Ptr<raw::RawDigit> digitVec(digitVecHandle, rdIter);
       channel = digitVec->Channel();
+
       // skip bad channels
       if(!chanFilt->BadChannel(channel)) {
-        // resize and pad with zeros
-        holder.resize(transformSize, 0.);
+	holder.resize(transformSize);
+	
+	// uncompress the data
+	raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
+	
+	// loop over all adc values and subtract the pedestal
+	for(bin = 0; bin < dataSize; ++bin) 
+	  //holder[bin]=(rawadc[bin]-digitVec->GetPedestal());
+	  holder[bin]=rawadc[bin]; //pedestal is already subtracted
 
-        // uncompress the data
-       // raw::Uncompress(digitVec->fADC, rawadc, digitVec->Compression());
-        raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
+	//Xin fill the remaining bin with data
+	for (bin = dataSize;bin<holder.size();bin++){
+	  //holder[bin] = (rawadc[bin-dataSize]-digitVec->GetPedestal());
+	  holder[bin] = rawadc[bin-dataSize];
+	}
 
-
-        // loop over all adc values and subtract the pedestal
-        float pdstl = 0;//digitVec->GetPedestal();
-
-        for(bin = 0; bin < dataSize; ++bin) 
-          holder[bin]=(rawadc[bin]-pdstl);
-        // Do deconvolution.
-        sss->Deconvolute(channel, holder);
+	// Do deconvolution.
+	sss->Deconvolute(channel, holder);
+	for(bin = 0; bin < holder.size(); ++bin) holder[bin]=holder[bin]/DeconNorm;
       } // end if not a bad channel 
-
+      
       holder.resize(dataSize,1e-5);
+
       //This restores the DC component to signal removed by the deconvolution.
       if(fPostsample) {
-        float average=0.0;
-        for(bin=0; bin < (unsigned short)fPostsample; ++bin) 
-          average += holder[holder.size()-1+bin];
-        average = average / (float)fPostsample;
+        double average=0.0;
+	for(bin=0; bin < (unsigned int)fPostsample; ++bin) 
+	  average+=holder[holder.size()-1-bin]/(double)fPostsample;
         for(bin = 0; bin < holder.size(); ++bin) holder[bin]-=average;
       }  
+       // adaptive baseline subtraction
+      if(fDoBaselineSub) SubtractBaseline(holder);
 
-      // adaptive baseline subtraction
-      if(fBaseSampleBins) SubtractBaseline(holder, fBaseSampleBins);
-      // Make a single ROI that spans the entire data size
-     // wirecol->emplace_back(holder,digitVec);
-      wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
-
-     // add an association between the last object in wirecol
-     // (that we just inserted) and digitVec
-      if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
-         throw art::Exception(art::errors::InsertFailure)
-            << "Can't associate wire #" << (wirecol->size() - 1)
-             << " with raw digit #" << digitVec.key();
-          } // if failed to add association
-
-      
-      
+      if (fDoROI){
+	// work out the ROI 
+	recob::Wire::RegionsOfInterest_t ROIVec;
+	std::vector<std::pair<unsigned int, unsigned int>> holderInfo;
+	std::vector<std::pair<unsigned int, unsigned int>> rois;
+	
+	double max = 0;
+	double deconNoise = sss->GetDeconNoise(channel);
+	// find out all ROI
+	unsigned int roiStart = 0;
+	for(bin = 0; bin < dataSize; ++bin) {
+	  double SigVal = holder[bin];
+	  if (SigVal > max) max = SigVal;
+	  if(roiStart == 0) {
+	    if (SigVal > 3*deconNoise) roiStart = bin; // 3 sigma above noise
+	  }else{
+	    if (SigVal < deconNoise){
+	      rois.push_back(std::make_pair(roiStart, bin));
+	      roiStart = 0;
+	    }
+	  }
+	}
+	if (roiStart!=0){
+	  rois.push_back(std::make_pair(roiStart, dataSize-1));
+	  roiStart = 0;
+	}
+	
+	// pad them
+	// if (channel==512){
+	// 	for (bin = 0; bin< holder.size();++bin){
+	// 	  if (fabs(holder[bin]) > 2)
+	// 	      std::cout << "Xin1: " << holder[bin] << std::endl;
+	// 	}
+	// }
+	//std::cout << "Xin: "  << max << " "<< channel << " " << deconNoise << " " << rois.size() << std::endl;
+	
+	if(rois.size() == 0) continue;
+	holderInfo.clear();
+	for(unsigned int ii = 0; ii < rois.size(); ++ii) {
+	  // low ROI end
+	  int low = rois[ii].first - fPreROIPad;
+	  if(low < 0) low = 0;
+	  rois[ii].first = low;
+	  // high ROI end
+	  unsigned int high = rois[ii].second + fPostROIPad;
+	  if(high >= dataSize) high = dataSize-1;
+	  rois[ii].second = high;
+	  
+	}
+	// merge them
+	if(rois.size() >= 1) {
+	  // temporary vector for merged ROIs
+	  
+	  for (unsigned int ii = 0; ii<rois.size();ii++){
+	    unsigned int roiStart = rois[ii].first;
+	    unsigned int roiEnd = rois[ii].second;
+	    
+	    int flag1 = 1;
+	    unsigned int jj=ii+1;
+	    while(flag1){	
+	      if (jj<rois.size()){
+		if(rois[jj].first <= roiEnd  ) {
+		  roiEnd = rois[jj].second;
+		  ii = jj;
+		  jj = ii+1;
+		}else{
+		  flag1 = 0;
+		}
+	      }else{
+		flag1 = 0;
+	      }
+	    }
+	    std::vector<float> sigTemp;
+	    for(unsigned int kk = roiStart; kk < roiEnd; ++kk) {
+	      sigTemp.push_back(holder[kk]);
+	    } // jj
+	    //	  std::cout << "Xin: " << roiStart << std::endl;
+	    ROIVec.add_range(roiStart, std::move(sigTemp));
+	    //trois.push_back(std::make_pair(roiStart,roiEnd));	    
+	  }
+	}
+	
+	// save them
+	wirecol->push_back(recob::WireCreator(std::move(ROIVec),*digitVec).move());
+	
+	// Make a single ROI that spans the entire data size
+	//wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
+	
+	
+	
+	
+	// add an association between the last object in wirecol
+	// (that we just inserted) and digitVec
+	if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
+	  throw art::Exception(art::errors::InsertFailure)
+	    << "Can't associate wire #" << (wirecol->size() - 1)
+	    << " with raw digit #" << digitVec.key();
+	} // if failed to add association
+      }
+      else{
+	wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
+	// add an association between the last object in wirecol
+	// (that we just inserted) and digitVec
+	if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
+	  throw art::Exception(art::errors::InsertFailure)
+	    << "Can't associate wire #" << (wirecol->size() - 1)
+	    << " with raw digit #" << digitVec.key();
+	} // if failed to add association  
+      }
     }
-
+    
     if(wirecol->size() == 0)
       mf::LogWarning("CalWireROIT1034") << "No wires made for this event.";
-    if(fSpillName.size()>0)
-      { evt.put(std::move(wirecol), fSpillName);
-        evt.put(std::move(WireDigitAssn), fSpillName);
-      }
     
-    else { evt.put(std::move(wirecol));
-           evt.put(std::move(WireDigitAssn), fSpillName); }
+    evt.put(std::move(wirecol), fSpillName);
+    evt.put(std::move(WireDigitAssn), fSpillName);
+    
     delete chanFilt;
     return;
-
   }
 
-  
-
-  void CalWireROIT1034::SubtractBaseline(std::vector<float>& holder,
-     int fBaseSampleBins)
-  {
-    // subtract baseline using linear interpolation between regions defined
-    // by the datasize and fBaseSampleBins
-    // number of points to characterize the baseline
-    unsigned short nBasePts = holder.size() / fBaseSampleBins;
-    // the baseline offset vector
-    std::vector<float> base;
-    for(unsigned short ii = 0; ii < nBasePts; ++ii) base.push_back(0.);
-    // find the average value in each region, using values that are
-    // similar
-    float fbins = fBaseSampleBins;
-    unsigned short nfilld = 0;
-    for(unsigned short ii = 0; ii < nBasePts; ++ii) {
-
-      unsigned short loBin = ii * fBaseSampleBins;
-
-      unsigned short hiBin = loBin + fBaseSampleBins;
-
-      float ave = 0.;
-
-      float sum = 0.;
-
-      for(unsigned short bin = loBin; bin < hiBin; ++bin) {
-
-        ave += holder[bin];
-
-        sum += holder[bin] * holder[bin];
-
-      } // jj
-
-      ave = ave / fbins;
-
-      float var = (sum - fbins * ave * ave) / (fbins - 1.);
-
-      // Set the baseline for this region if the variance is small
-
-      if(var < fBaseVarCut) {
-
-        base[ii] = ave;
-
-        ++nfilld;
-
-      }
-
-    } // ii
-
-    // fill in any missing points if there aren't too many missing
-
-    if(nfilld < nBasePts && nfilld > nBasePts / 2) {
-
-      bool baseOK = true;
-
-      // check the first region
-
-      if(base[0] == 0) {
-
-        unsigned short ii1 = 0;
-
-        for(unsigned short ii = 1; ii < nBasePts; ++ii) {
-
-          if(base[ii] != 0) {
-
-            ii1 = ii;
-
-            break;
-
-          }
-
-        } // ii
-
-        unsigned short ii2 = 0;
-
-        for(unsigned short ii = ii1 + 1; ii < nBasePts; ++ii) {
-
-          if(base[ii] != 0) {
-
-            ii2 = ii;
-
-            break;
-
-          }
-
-        } // ii
-
-        // failure
-
-        if(ii2 > 0) {
-
-          float slp = (base[ii2] - base[ii1]) / (float)(ii2 - ii1);
-
-          base[0] = base[ii1] - slp * ii1;
-
-        } else {
-
-          baseOK = false;
-
-        }
-
-      } // base[0] == 0
-
-      // check the last region
-
-      if(baseOK && base[nBasePts] == 0) {
-
-        unsigned short ii2 = 0;
-
-        for(unsigned short ii = nBasePts - 1; ii > 0; --ii) {
-
-          if(base[ii] != 0) {
-
-            ii2 = ii;
-
-            break;
-
-          }
-
-        } // ii
-
-        baseOK = false; // assume the worst, hope for better
-
-        unsigned short ii1 = 0;
-
-        if (ii2 >= 1) {
-
-          for(unsigned short ii = ii2 - 1; ii > 0; --ii) {
-
-            if(base[ii] != 0) {
-
-              ii1 = ii;
-
-              baseOK = true;
-
-              break;
-
-            } // if base[ii]
-
-          } // ii
-
-        } // if ii2
-
-        if (baseOK) {
-
-          float slp = (base[ii2] - base[ii1]) / (float)(ii2 - ii1);
-
-          base[nBasePts] = base[ii2] + slp * (nBasePts - ii2);
-
-        }
-
-      } // baseOK && base[nBasePts] == 0
-
-      // now fill in any intermediate points
-
-      for(unsigned short ii = 1; ii < nBasePts - 1; ++ii) {
-
-        if(base[ii] == 0) {
-
-          // find the next non-zero region
-
-          for(unsigned short jj = ii + 1; jj < nBasePts; ++jj) {
-
-            if(base[jj] != 0) {
-
-              float slp = (base[jj] - base[ii - 1]) / (jj - ii + 1);
-
-              base[ii] = base[ii - 1] + slp;
-
-              break;
-
-            }
-
-          } // jj
-
-        } // base[ii] == 0
-
-      } // ii
-
-    } // nfilld < nBasePts
-
-    // interpolate and subtract
-
-    float slp = (base[1] - base[0]) / (float)fBaseSampleBins;
-
-    // bin offset to the origin (the center of the region)
-
-    unsigned short bof = fBaseSampleBins / 2;
-
-    unsigned short lastRegion = 0;
-
-    for(unsigned short bin = 0; bin < holder.size(); ++bin) {
-
-      // in a new region?
-
-      unsigned short region = bin / fBaseSampleBins;
-
-      if(region > lastRegion) {
-
-        // update the slope and offset
-
-        slp = (base[region] - base[lastRegion]) / (float)fBaseSampleBins;
-
-        bof += fBaseSampleBins;
-
-        lastRegion = region;
-
-      }
-
-      holder[bin] -= base[region] + (bin - bof) * slp;
-
+   void CalWireROIT1034::SubtractBaseline(std::vector<float>& holder)
+   {
+    
+    float min = 0,max=0;
+    for (unsigned int bin = 0; bin < holder.size(); bin++){
+      if (holder[bin] > max) max = holder[bin];
+      if (holder[bin] < min) min = holder[bin];
     }
+    int nbin = max - min;
+    if (nbin!=0){
+      TH1F *h1 = new TH1F("h1","h1",nbin,min,max);
+      for (unsigned int bin = 0; bin < holder.size(); bin++){
+	h1->Fill(holder[bin]);
+      }
+      float ped = h1->GetMaximum();
+      float ave=0,ncount = 0;
+      for (unsigned int bin = 0; bin < holder.size(); bin++){
+	if (fabs(holder[bin]-ped)<2){
+	  ave +=holder[bin];
+	  ncount ++;
+	}
+      }
+      if (ncount==0) ncount=1;
+      ave = ave/ncount;
+      for (unsigned int bin = 0; bin < holder.size(); bin++){
+	holder[bin] -= ave;
+      }
+      h1->Delete();
+    }
+  }
 
-  } // SubtractBaseline
-
-  
 
 } // end namespace caldata
+
+
