@@ -19,8 +19,10 @@ BEGIN_PROLOG
 
 lariat_services:
 {
- ExptGeoHelperInterface:    @local::lariat_geometry_helper 
- Geometry:                  @local::lariat_geo 	        
+ ExptGeoHelperInterface:       @local::lariat_geometry_helper 
+ Geometry:                     @local::lariat_geo 	        
+ AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
+ AuxDetGeometry:               @local::lariat_auxdetgeo            
  DetectorProperties:        @local::lariat_detproperties   
  LArProperties:             @local::lariat_properties	
  LArFFT:                    @local::lariat_larfft  	
@@ -40,6 +42,8 @@ lariat_simulation_services:
  MagneticField:             @local::no_mag                   
  ExptGeoHelperInterface:    @local::lariat_geometry_helper   
  Geometry:                  @local::lariat_geo               
+ AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
+ AuxDetGeometry:               @local::lariat_auxdetgeo            
  DetectorProperties:        @local::lariat_detproperties     
  LArProperties:             @local::lariat_properties        
  LArFFT:                    @local::lariat_larfft            
