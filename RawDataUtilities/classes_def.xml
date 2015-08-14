@@ -26,6 +26,14 @@
   <class name="art::Wrapper<std::vector<V1495TriggerPatternData> >" />
   -->
 
+  <class name="raw::Trigger" ClassVersion="10">
+   <version ClassVersion="10" checksum="2734695139"/>
+  </class>
+
+  <class name="art::Wrapper<raw::Trigger>"/>
+  <class name="std::vector<raw::Trigger>"/>
+  <class name="art::Wrapper<std::vector<raw::Trigger> >"/>
+
   <class name="raw::AuxDetDigit" ClassVersion="10">
    <version ClassVersion="10" checksum="3822054512"/>
   </class>

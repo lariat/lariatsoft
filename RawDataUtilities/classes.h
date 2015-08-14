@@ -99,3 +99,7 @@ template class art::Wrapper<std::vector<raw::OpDetPulse> >;
 template class art::Wrapper<sumdata::RunData>;
 template class std::vector<sumdata::RunData>;
 template class art::Wrapper<std::vector<sumdata::RunData> >;
+
+template class art::Wrapper<raw::Trigger>;
+template class std::vector<raw::Trigger>;
+template class art::Wrapper<std::vector<raw::Trigger> >;
