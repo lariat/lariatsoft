@@ -1,0 +1,16 @@
+#include "database_standard.fcl"
+
+BEGIN_PROLOG
+
+# pedestal database; should return always 0...
+lariat_detpedestalservice:
+{
+  service_provider: SIOVDetPedestalService
+  DetPedestalRetrievalAlg: @local::standard_pedestalretrievalalg
+}
+
+# ... and here is where we tell it to:
+lariat_detpedestalservice.DetPedestalRetrievalAlg.DefaultCollMean: 0
+lariat_detpedestalservice.DetPedestalRetrievalAlg.DefaultIndMean:  0
+
+END_PROLOG
