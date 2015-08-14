@@ -130,8 +130,8 @@ DBClusterT1034::DBClusterT1034(fhicl::ParameterSet const & pset)
    // ### Calling new things that will be produced by this module ###
    // ###############################################################
    produces< std::vector<recob::Cluster> >();  
-   produces< art::Assns<recob::Cluster, recob::Hit> >();
-   produces< art::Assns<raw::Trigger, recob::Cluster>>();
+   produces< art::Assns<recob::Cluster, recob::Hit>     >();
+   produces< art::Assns<raw::Trigger,   recob::Cluster> >();
    
    // TODO: Need an association between clusters and triggers
 
@@ -227,8 +227,7 @@ void DBClusterT1034::produce(art::Event & evt)
       
       // Making a map of the geo::PlaneID to vectors of art::Ptr<recob::Hit>
       std::map<geo::PlaneID, std::vector< art::Ptr<recob::Hit> > > planeIDToHits;
-      for(size_t i = 0; i < HitDigits.at(trig).size(); ++i)
-         {
+      for(size_t i = 0; i < HitDigits.at(trig).size(); ++i){
 	planeIDToHits[allhits[i]->WireID().planeID()].push_back(allhits[i]);
 	//std::cout<<"trig = "<<trig<<"/"<< tdu.NTriggers() << " " <<allhits[i]->WireID().Plane << " " << allhits[i]->WireID().Wire << " " <<allhits[i]->PeakTime() << std::endl;
 	}
@@ -248,19 +247,18 @@ void DBClusterT1034::produce(art::Event & evt)
 	 // ### Looping over fDBScan.fbs.size() ###
 	 // #######################################
 	 std::cout<<"Loop over fps.size"<<std::endl;
-	 for(unsigned int j = 0; j < fDBScan.fps.size(); ++j)
-	    {
-	      LOG_VERBATIM("DBClusterT1034") << "j = " << j 
-					     << "\nallhits.size() = " << allhits.size()
-					     << " , fDBScan.fps.size() = " << fDBScan.fps.size();
-	    if(allhits.size() != fDBScan.fps.size()) break;
-	    //fhitwidth->Fill(fDBScan.fps[j][1]);
-	    
-	    //if(sigType == geo::kInduction)  fhitwidth_ind_test->Fill(fDBScan.fps[j][1]);
-	    //if(sigType == geo::kCollection) fhitwidth_coll_test->Fill(fDBScan.fps[j][1]);
-	    
-	    
-	    }//<---End j loop
+	 for(unsigned int j = 0; j < fDBScan.fps.size(); ++j){
+	   LOG_VERBATIM("DBClusterT1034") << "j = " << j 
+					  << "\nallhits.size() = " << allhits.size()
+					  << " , fDBScan.fps.size() = " << fDBScan.fps.size();
+	   if(allhits.size() != fDBScan.fps.size()) break;
+	   //fhitwidth->Fill(fDBScan.fps[j][1]);
+	   
+	   //if(sigType == geo::kInduction)  fhitwidth_ind_test->Fill(fDBScan.fps[j][1]);
+	   //if(sigType == geo::kCollection) fhitwidth_coll_test->Fill(fDBScan.fps[j][1]);
+	   
+	   
+	 }//<---End j loop
 	 
 	 // ######################
 	 // ### Run Clustering ###
@@ -288,52 +286,52 @@ void DBClusterT1034::produce(art::Event & evt)
 		  
 		  }// End if statement
 	       }//<--- end j loop
-	       
+	     
 	     // ######################################################  
 	     // ### If there are enough hits then fill the cluster ###
 	     // ######################################################
-	     if (clusterHits.size()>0)
-	        {
-		const geo::WireID& wireID = clusterHits.front()->WireID();
-		unsigned int sw = wireID.Wire;
-		unsigned int ew = clusterHits.back()->WireID().Wire;
-		
-		// feed the algorithm with all the cluster hits
-		
-		ClusterParamAlgo.ImportHits(clusterHits);
-		
-		// create the recob::Cluster directly in the vector  
-	        
-		ClusterCreator cluster(
-		  ClusterParamAlgo,                     // algo
-		  float(sw),                            // start_wire
-		  0.,                                   // sigma_start_wire
-		  clusterHits.front()->PeakTime(),      // start_tick
-		  clusterHits.front()->SigmaPeakTime(), // sigma_start_tick
-		  float(ew),                            // end_wire
-		  0.,                                   // sigma_end_wire,
-		  clusterHits.back()->PeakTime(),       // end_tick
-		  clusterHits.back()->SigmaPeakTime(),  // sigma_end_tick
-		  ccol->size(),                         // ID
-		  clusterHits.front()->View(),          // view
-		  wireID.planeID(),                     // plane
-		  recob::Cluster::Sentry                // sentry
-		  );
-		  
-		ccol->emplace_back(cluster.move());
-		// associate the hits to this cluster
-		util::CreateAssn(*this, evt, *ccol, clusterHits, *assn);
-		util::CreateAssn(*this, evt, *ccol, trigger, *TrigCluAssn);
-		clusterHits.clear(); 
-	    
-	        }//<---End filling if there are enough hits
-	    }//<--- end i loop
+	   if (clusterHits.size()>0){
+	     const geo::WireID& wireID = clusterHits.front()->WireID();
+	     unsigned int sw = wireID.Wire;
+	     unsigned int ew = clusterHits.back()->WireID().Wire;
+	     
+	     // feed the algorithm with all the cluster hits
+	     
+	     ClusterParamAlgo.ImportHits(clusterHits);
+	     
+	     // create the recob::Cluster directly in the vector  
+	     
+	     ClusterCreator cluster(
+				    ClusterParamAlgo,                     // algo
+				    float(sw),                            // start_wire
+				    0.,                                   // sigma_start_wire
+				    clusterHits.front()->PeakTime(),      // start_tick
+				    clusterHits.front()->SigmaPeakTime(), // sigma_start_tick
+				    float(ew),                            // end_wire
+				    0.,                                   // sigma_end_wire,
+				    clusterHits.back()->PeakTime(),       // end_tick
+				    clusterHits.back()->SigmaPeakTime(),  // sigma_end_tick
+				    ccol->size(),                         // ID
+				    clusterHits.front()->View(),          // view
+				    wireID.planeID(),                     // plane
+				    recob::Cluster::Sentry                // sentry
+				    );
+	     
+	     ccol->emplace_back(cluster.move());
+	     // associate the hits to this cluster
+	     util::CreateAssn(*this, evt, *ccol, clusterHits, *assn);
+	     util::CreateAssn(*this, evt, *ccol, trigger, *TrigCluAssn);
+	     clusterHits.clear(); 
+	     
+	   }//<---End filling if there are enough hits
+	 }//<--- end i loop
 	 
 	 allhits.clear();
+	 
+      }//<---End itr auto loop
       
-         }//<---End itr auto loop
       
- if(ccol->size() == 0){mf::LogWarning("DBCluster") << "No clusters made for this trigger.";}
+      if(ccol->size() == 0){mf::LogWarning("DBCluster") << "No clusters made for this trigger.";}
   
 
       }//<---End trig loop

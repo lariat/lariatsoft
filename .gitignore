@@ -1,2 +1,3 @@
 # list of file types to ignore, wildcard with *
 *~
+\#*
