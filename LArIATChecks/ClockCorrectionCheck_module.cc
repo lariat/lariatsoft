@@ -420,7 +420,8 @@ namespace ClockCorrectionCheck {
 
           for (size_t i = 0; i < block.caenBlocks.size(); ++i) {
             const CAENFragment * caenFrag = block.caenBlocks[i];
-            Collection.caenBlocks.push_back(caenFrag);
+            //Collection.caenBlocks.push_back(caenFrag);
+            Collection.caenBlocks.push_back(std::make_pair(correctedTimestamp, caenFrag));
 
             // increment number of data blocks
             ++NumberDataBlocks;
@@ -428,7 +429,8 @@ namespace ClockCorrectionCheck {
 
           for (size_t i = 0; i < block.tdcBlocks.size(); ++i) {
             const std::vector<TDCFragment::TdcEventData> * tdcEvents = block.tdcBlocks[i];
-            Collection.tdcBlocks.push_back(tdcEvents);
+            //Collection.tdcBlocks.push_back(tdcEvents);
+            Collection.tdcBlocks.push_back(std::make_pair(correctedTimestamp, tdcEvents));
 
             // increment number of data blocks
             ++NumberDataBlocks;

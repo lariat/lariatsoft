@@ -71,8 +71,10 @@ namespace rdu {
     //double timestamp;
     std::pair< double, double > interval;
 
-    std::vector< const CAENFragment * > caenBlocks;
-    std::vector< const std::vector<TDCFragment::TdcEventData> * > tdcBlocks;
+    std::vector< std::pair< double, const CAENFragment * > > caenBlocks;
+    std::vector< std::pair< double, const std::vector<TDCFragment::TdcEventData> * > > tdcBlocks;
+    //std::vector< const CAENFragment * > caenBlocks;
+    //std::vector< const std::vector<TDCFragment::TdcEventData> * > tdcBlocks;
     //std::vector< const V1494Fragment * > v1495Blocks;
     //std::vector< const WUTFragment * > wutBlocks;
     //std::vector< const LARASICFragment * > larasicBlocks;
