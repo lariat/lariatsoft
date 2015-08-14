@@ -45,7 +45,7 @@ namespace util {
     fDBName = pset.get< std::string >("DBName", "lariat_prd");
     fDBUser = pset.get< std::string >("DBUser", "lariat_prd_user");
 
-    fDBPasswordFile = pset.get< std::string >("DBPasswordFile", "lariat_prd_passwd");
+    fDBPasswordFile = pset.get< std::string >("DBPasswordFile", "Utilities/lariat_prd_passwd");
     fDBReconnectWaitTime = pset.get< unsigned int >("DBReconnectWaitTime", 10);
     fDBNumberConnectAttempts = pset.get< unsigned int >("DBNumberConnectAttempts", 3);
 
