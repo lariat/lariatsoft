@@ -5,10 +5,10 @@
 /// \author  rs@fnal.gov
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "Geo/LArIATAuxDetGeometryHelper.h"
-#include "Geo/AuxDetChannelMapAlg.h"
-#include "Geo/AuxDetGeometryCore.h"
+#include "Geometry/AuxDetChannelMapAlg.h"
+#include "Geometry/AuxDetGeometryCore.h"
 
+#include "Geo/LArIATAuxDetGeometryHelper.h"
 #include "Geo/AuxDetChannelMapLArIATAlg.h"
 
 #include <memory> // std::make_shared()

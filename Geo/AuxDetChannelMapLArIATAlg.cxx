@@ -13,9 +13,9 @@
 // LArSoft Includes
 #include "Geometry/AuxDetGeo.h"
 #include "Geometry/AuxDetSensitiveGeo.h"
+#include "Geometry/AuxDetGeometryCore.h"
 
 // LArIATSoft
-#include "Geo/AuxDetGeometryCore.h"
 #include "Geo/AuxDetChannelMapLArIATAlg.h"
 
 // C++ standard library

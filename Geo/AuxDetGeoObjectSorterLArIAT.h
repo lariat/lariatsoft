@@ -10,7 +10,7 @@
 
 #include <vector>
 
-#include "Geo/AuxDetGeoObjectSorter.h"
+#include "Geometry/AuxDetGeoObjectSorter.h"
 
 namespace geo{
 

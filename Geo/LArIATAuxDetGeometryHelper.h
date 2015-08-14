@@ -12,7 +12,7 @@
 #ifndef LArIAT_AUXDETExptGeoHelperInterface_h
 #define LArIAT_AUXDETExptGeoHelperInterface_h
 
-#include "Geo/AuxDetExptGeoHelperInterface.h"
+#include "Geometry/AuxDetExptGeoHelperInterface.h"
 
 #include <memory> // std::shared_ptr<>
 

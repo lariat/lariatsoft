@@ -13,7 +13,7 @@
 
 #include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "SimpleTypesAndConstants/geo_types.h"
-#include "Geo/AuxDetChannelMapAlg.h"
+#include "Geometry/AuxDetChannelMapAlg.h"
 #include "Geo/AuxDetGeoObjectSorterLArIAT.h"
 #include "fhiclcpp/ParameterSet.h"
 
