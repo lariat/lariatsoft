@@ -6,7 +6,7 @@ lariat_databaseutility:
   DBPort:          5443
   DBName:          "lariat_prd"
   DBUser:          "lariat_prd_user"
-  DBPasswordFile:  "lariat_prd_passwd"
+  DBPasswordFile:  "Utilities/lariat_prd_passwd"
 
   DBReconnectWaitTime:     10
   DBNumberConnectAttempts:  3
