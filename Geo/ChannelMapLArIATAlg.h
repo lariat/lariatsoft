@@ -33,8 +33,7 @@ namespace geo{
     std::vector<WireID>      ChannelToWire(raw::ChannelID_t channel)           const;
     unsigned int             Nchannels()                               const;
     //@{
-    virtual double WireCoordinate
-      (double YPos, double ZPos, geo::PlaneID const& planeID) const override;
+    virtual double WireCoordinate(double YPos, double ZPos, geo::PlaneID const& planeID) const override;
     virtual double WireCoordinate(double YPos, double ZPos,
                                  unsigned int PlaneNo,
                                  unsigned int TPCNo,
@@ -67,15 +66,10 @@ namespace geo{
    std::set<View_t>  const&  Views()                                   const;
    std::set<PlaneID> const&  PlaneIDs()                                const;
 
-   // methods for the auxiliary detectors
-/*
-   // method returns the entry in the sorted AuxDetGeo vector so that the 
-   // Geometry in turn can return that object
-   virtual size_t            NearestAuxDet         (TVector3 const& point)   const override;
-   virtual size_t            NearestSensitiveAuxDet(TVector3 const& point)   const override;
-   virtual size_t            NSensitiveAuxDet(std::string const& auxDetName) const override;
-*/
   private:
+
+    /// Retrieved the wire count for the specified plane ID
+    unsigned int WireCount(geo::PlaneID const& id) const { return AccessElement(fWireCounts, id); }
     
     unsigned int                                         fNcryostat;      ///< number of cryostats in the detector
     unsigned int                                         fNchannels;      ///< number of channels in the detector
@@ -83,31 +77,21 @@ namespace geo{
     std::vector<unsigned int>                            fNTPC;           ///< number of TPCs in each cryostat
     std::set<View_t>                                     fViews;          ///< vector of the views present in the detector
     std::set<PlaneID>                                    fPlaneIDs;       ///< vector of the PlaneIDs present in the detector
-    std::vector<std::vector<std::vector<float>>>         fFirstWireProj;  ///< Distance (0,0,0) to first wire 	 
+    PlaneInfoMap_t<float>                                fFirstWireProj;  ///< Distance (0,0,0) to first wire 	 
                                                                           ///< along orth vector per plane per TPC
-    std::vector<std::vector<std::vector<float>>>         fOrthVectorsY;   ///< Unit vectors orthogonal to wires in
-    std::vector<std::vector<std::vector<float>>>         fOrthVectorsZ;   ///< each plane - stored as 2 components
+    PlaneInfoMap_t<float>                                fOrthVectorsY;   ///< Unit vectors orthogonal to wires in
+    PlaneInfoMap_t<float>                                fOrthVectorsZ;   ///< each plane - stored as 2 components
                                                                           ///< to avoid having to invoke any bulky
                                                                           ///< TObjects / CLHEP vectors etc	 
-    std::vector<std::vector<std::vector<float>>>         fWireCounts;     ///< Number of wires in each plane - for
+    PlaneInfoMap_t<float>                                fWireCounts;     ///< Number of wires in each plane - for
                                                                           ///< range checking after calculation   
-    std::vector<std::vector<unsigned int>>  		 fNPlanes;        ///< Number of planes in each TPC - for
+    TPCInfoMap_t<unsigned int>           		 fNPlanes;        ///< Number of planes in each TPC - for
                                                                           ///< range checking after calculation   
-    std::vector<std::vector<std::vector<unsigned int>>>  fPlaneBaselines; ///< The number of wires in all the 
+    PlaneInfoMap_t<unsigned int>                         fPlaneBaselines; ///< The number of wires in all the 
                                                                           ///< tpcs and planes up to this one 
                                                                           ///< in the heirachy
-    std::vector<std::vector<std::vector<unsigned int>>>  fWiresPerPlane;  ///< The number of wires in this plane 
+    PlaneInfoMap_t<unsigned int>                         fWiresPerPlane;  ///< The number of wires in this plane 
                                                                           ///< in the heirachy
-    std::vector<std::string>                             fAuxDetNames;    ///< names of the sorted auxiliary detectors
-    std::vector<std::vector<float>>                      fAuxDetCenters;  ///< centers of the sorted auxiliary detectors
-                                                                          ///< in world coordinates
-    std::vector<std::vector<float>>                      fAuxDetHalfExt;  ///< half width, height, and length of the sorted
-                                                                          ///< auxiliary detectors in world coordinates
-    std::vector<std::vector<uint32_t>>                   fAuxDetSensitive;///< number of sensitive volumes in each auxiliary detector
-    std::vector<std::vector<std::vector<float>>>         fADSensCenters;  ///< centers of the channels in the sorted auxiliary 
-                                                                          ///< detector in world coordinates
-    std::vector<std::vector<std::vector<float>>>         fADSensHalfExt;  ///< half width, height, and length of the channels 
-                                                                          ///< in the sorted auxiliary detectors in world coordinates
     geo::GeoObjectSorterLArIAT                           fSorter;         ///< class to sort geo objects
   };
 
