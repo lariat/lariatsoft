@@ -17,7 +17,7 @@
 namespace geo{
 
   //----------------------------------------------------------------------------
-  // Define sort order for cryostats in standard configuration
+  // Define sort order for AuxDets in standard configuration
   static bool sortAuxDetLArIAT(const AuxDetGeo* ad1, const AuxDetGeo* ad2)
   {
 
@@ -28,11 +28,10 @@ namespace geo{
     ad1->GetCenter(c1);
     ad2->GetCenter(c2);
 
-    if(c1[2] != c2[2]){
-      return c1[2] < c2[2];
-    }
-    else if(c1[1] != c2[2]){
-      return c1[1] < c2[1];
+    for(int i = 2; i > 0; --i){ 
+      if(c1[i] != c2[i]){
+	return c1[i] < c2[i];
+      }
     }
     
     return c1[0] < c2[0];
@@ -40,7 +39,7 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  // Define sort order for cryostats in standard configuration
+  // Define sort order for AuxDetSensitives in standard configuration
   static bool sortAuxDetSensitiveLArIAT(const AuxDetSensitiveGeo* ad1, const AuxDetSensitiveGeo* ad2)
   {
 
@@ -51,11 +50,10 @@ namespace geo{
     ad1->GetCenter(c1);
     ad2->GetCenter(c2);
 
-    if(c1[2] != c2[2]){
-      return c1[2] < c2[2];
-    }
-    else if(c1[1] != c2[2]){
-      return c1[1] < c2[1];
+    for(int i = 2; i > 0; --i){ 
+      if(c1[i] != c2[i]){
+	return c1[i] < c2[i];
+      }
     }
     
     return c1[0] < c2[0];

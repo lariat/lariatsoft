@@ -320,7 +320,6 @@ void GausHitFinder::produce(art::Event& evt)
    // ### Loop over the triggers ###
    // ##############################
    size_t startHit = 0;
-
    for(size_t trig = 0; trig < tdu.NTriggers(); trig++)
       {
 

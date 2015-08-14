@@ -1,0 +1,19 @@
+BEGIN_PROLOG
+
+# Define geometry configurations in detector specific 
+# files, but include this in service configuration files 
+
+standard_auxdetgeo:
+{
+ Name:            "lartpcdetector"
+ GDML:            "LArTPCdetector.gdml"
+ ROOT:            "LArTPCdetector.gdml"
+ SortingParameters: {}                   # empty parameter set for default
+}
+
+standard_auxdetgeometry_helper:
+{
+ service_provider: AuxDetGeometryHelper
+}
+
+END_PROLOG
