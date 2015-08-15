@@ -34,18 +34,20 @@ physics:
       # matches the name supplied to DEFINE_ART_MODULE near the end of
       # ClockCorrectionCheck_module.cc.
 
-      module_type: "ClockCorrectionCheck"
-      ClockCorrectionAlg: @local::standard_clockcorrectionalg
+      module_type:             "ClockCorrectionCheck"
+      ClockCorrectionAlg:      @local::standard_clockcorrectionalg
 
-      # Pre-/post-trigger windows in microseconds
-      V1740PreTriggerWindow:    393.216
-      V1740PostTriggerWindow:   393.216
-      V1740BPreTriggerWindow:   393.216
-      V1740BPostTriggerWindow:  393.216
-      V1751PreTriggerWindow:      0.64
-      V1751PostTriggerWindow:     0.64
-      TDCPreTriggerWindow:        1.196
-      TDCPostTriggerWindow:       1.196
+      # Pre-/post-trigger windows in microseconds. A value of -1 will
+      # utilize values that are dependent on the lariat_prd database.
+
+      V1740PreTriggerWindow:   -1  # 393.216
+      V1740PostTriggerWindow:  -1  # 393.216
+      V1740BPreTriggerWindow:  -1  # 393.216
+      V1740BPostTriggerWindow: -1  # 393.216
+      V1751PreTriggerWindow:   -1  # 0.64
+      V1751PostTriggerWindow:  -1  # 28.672
+      TDCPreTriggerWindow:     -1  # 1.196
+      TDCPostTriggerWindow:    -1  # 1.196
     }
   }
 
@@ -54,6 +56,7 @@ physics:
   end_paths: [ analysis ]  
 }
 
+services.user.SeedService: @local::random_seedservice
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.MinSamples:                   2
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.ResidualThreshold:            1
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.MaxTrials:                    10000

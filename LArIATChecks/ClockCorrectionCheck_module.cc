@@ -26,9 +26,6 @@
 #include "RawDataUtilities/FragmentUtility.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
-// ROOT includes
-#include "TGraph.h"
-
 // C++ includes
 #include <algorithm>
 #include <iomanip>
@@ -126,14 +123,14 @@ namespace ClockCorrectionCheck {
     double fTDCPipelineDelay;
     double fTDCGateWidth;
 
-    //double fV1740PreTriggerWindow;
-    //double fV1740PostTriggerWindow;
-    //double fV1740BPreTriggerWindow;
-    //double fV1740BPostTriggerWindow;
-    //double fV1751PreTriggerWindow;
-    //double fV1751PostTriggerWindow;
-    //double fTDCPreTriggerWindow;
-    //double fTDCPostTriggerWindow;
+    double fV1740PreTriggerWindow;
+    double fV1740PostTriggerWindow;
+    double fV1740BPreTriggerWindow;
+    double fV1740BPostTriggerWindow;
+    double fV1751PreTriggerWindow;
+    double fV1751PostTriggerWindow;
+    double fTDCPreTriggerWindow;
+    double fTDCPostTriggerWindow;
 
   }; // class ClockCorrectionCheck
 
@@ -185,13 +182,36 @@ namespace ClockCorrectionCheck {
     fTDCPipelineDelay      = static_cast <size_t> (std::stoi(fConfigValues["tdc_config_tdc_pipelinedelay"]));
     fTDCGateWidth          = static_cast <size_t> (std::stoi(fConfigValues["tdc_config_tdc_gatewidth"]));
 
-    fV1740SamplingRate = 62.5 / fV1740SampleReduction;
+    // sampling rate in MHz
+    fV1740SamplingRate  = 62.5 / fV1740SampleReduction;
     fV1740BSamplingRate = 62.5 / fV1740BSampleReduction;
-    fV1751SamplingRate = 1 / 0.001;
+    fV1751SamplingRate  = 1e3;
 
-    fV1740ReadoutWindow = fV1740RecordLength / fV1740SamplingRate;
+    // readout window length in microseconds
+    fV1740ReadoutWindow  = fV1740RecordLength  / fV1740SamplingRate;
     fV1740BReadoutWindow = fV1740BRecordLength / fV1740BSamplingRate;
-    fV1751ReadoutWindow = fV1751RecordLength / fV1751SamplingRate;
+    fV1751ReadoutWindow  = fV1751RecordLength  / fV1751SamplingRate;
+
+    // Pre-/post-trigger windows
+    if (fV1740PreTriggerWindow   < 0) fV1740PreTriggerWindow   = fV1740ReadoutWindow;
+    if (fV1740PostTriggerWindow  < 0) fV1740PostTriggerWindow  = fV1740ReadoutWindow;
+    if (fV1740BPreTriggerWindow  < 0) fV1740BPreTriggerWindow  = fV1740BReadoutWindow;
+    if (fV1740BPostTriggerWindow < 0) fV1740BPostTriggerWindow = fV1740BReadoutWindow;
+    if (fV1751PreTriggerWindow   < 0) fV1751PreTriggerWindow   = 0.64;
+    if (fV1751PostTriggerWindow  < 0) fV1751PostTriggerWindow  = fV1751ReadoutWindow + 0.64;
+    if (fTDCPreTriggerWindow     < 0) fTDCPreTriggerWindow     = 1.196;
+    if (fTDCPostTriggerWindow    < 0) fTDCPostTriggerWindow    = 1.196;
+
+    std::cout << "//////////////////////////////////////////////"        << std::endl;
+    std::cout << "V1740PreTriggerWindow:   " << fV1740PreTriggerWindow   << std::endl;
+    std::cout << "V1740PostTriggerWindow:  " << fV1740PostTriggerWindow  << std::endl;
+    std::cout << "V1740BPreTriggerWindow:  " << fV1740BPreTriggerWindow  << std::endl;
+    std::cout << "V1740BPostTriggerWindow: " << fV1740BPostTriggerWindow << std::endl;
+    std::cout << "V1751PreTriggerWindow:   " << fV1751PreTriggerWindow   << std::endl;
+    std::cout << "V1751PostTriggerWindow:  " << fV1751PostTriggerWindow  << std::endl;
+    std::cout << "TDCPreTriggerWindow:     " << fTDCPreTriggerWindow     << std::endl;
+    std::cout << "TDCPostTriggerWindow:    " << fTDCPostTriggerWindow    << std::endl;
+    std::cout << "//////////////////////////////////////////////"        << std::endl;
   }
 
   //-----------------------------------------------------------------------
@@ -205,14 +225,14 @@ namespace ClockCorrectionCheck {
     fRawFragmentLabel    = pset.get< std::string >("RawFragmentLabel",    "daq"  );
     fRawFragmentInstance = pset.get< std::string >("RawFragmentInstance", "SPILL");
 
-    //fV1740PreTriggerWindow   = pset.get< double >("V1740PreTriggerWindow",   -1);
-    //fV1740PostTriggerWindow  = pset.get< double >("V1740PostTriggerWindow",  -1);
-    //fV1740BPreTriggerWindow  = pset.get< double >("V1740BPreTriggerWindow",  -1);
-    //fV1740BPostTriggerWindow = pset.get< double >("V1740BPostTriggerWindow", -1);
-    //fV1751PreTriggerWindow   = pset.get< double >("V1751PreTriggerWindow",   -1);
-    //fV1751PostTriggerWindow  = pset.get< double >("V1751PostTriggerWindow",  -1);
-    //fTDCPreTriggerWindow     = pset.get< double >("TDCPreTriggerWindow",     -1);
-    //fTDCPostTriggerWindow    = pset.get< double >("TDCPostTriggerWindow",    -1);
+    fV1740PreTriggerWindow   = pset.get< double >("V1740PreTriggerWindow",   -1);
+    fV1740PostTriggerWindow  = pset.get< double >("V1740PostTriggerWindow",  -1);
+    fV1740BPreTriggerWindow  = pset.get< double >("V1740BPreTriggerWindow",  -1);
+    fV1740BPostTriggerWindow = pset.get< double >("V1740BPostTriggerWindow", -1);
+    fV1751PreTriggerWindow   = pset.get< double >("V1751PreTriggerWindow",   -1);
+    fV1751PostTriggerWindow  = pset.get< double >("V1751PostTriggerWindow",  -1);
+    fTDCPreTriggerWindow     = pset.get< double >("TDCPreTriggerWindow",     -1);
+    fTDCPostTriggerWindow    = pset.get< double >("TDCPostTriggerWindow",    -1);
   }
 
   //-----------------------------------------------------------------------
@@ -292,19 +312,19 @@ namespace ClockCorrectionCheck {
     std::vector< std::pair< double, double > > TDCIntervals;
 
     // CAEN V1740 digitizers
-    CAENBoard0Intervals  = this->CreateIntervals(DataBlocks,  0,  fV1740ReadoutWindow, fV1740ReadoutWindow);
-    CAENBoard1Intervals  = this->CreateIntervals(DataBlocks,  1,  fV1740ReadoutWindow, fV1740ReadoutWindow);
-    CAENBoard2Intervals  = this->CreateIntervals(DataBlocks,  2,  fV1740ReadoutWindow, fV1740ReadoutWindow);
-    CAENBoard3Intervals  = this->CreateIntervals(DataBlocks,  3,  fV1740ReadoutWindow, fV1740ReadoutWindow);
-    CAENBoard4Intervals  = this->CreateIntervals(DataBlocks,  4,  fV1740ReadoutWindow, fV1740ReadoutWindow);
-    CAENBoard5Intervals  = this->CreateIntervals(DataBlocks,  5,  fV1740ReadoutWindow, fV1740ReadoutWindow);
-    CAENBoard6Intervals  = this->CreateIntervals(DataBlocks,  6,  fV1740ReadoutWindow, fV1740ReadoutWindow);
-    CAENBoard7Intervals  = this->CreateIntervals(DataBlocks,  7,  fV1740ReadoutWindow, fV1740ReadoutWindow);
+    CAENBoard0Intervals  = this->CreateIntervals(DataBlocks,  0,  fV1740PreTriggerWindow, fV1740PostTriggerWindow);
+    CAENBoard1Intervals  = this->CreateIntervals(DataBlocks,  1,  fV1740PreTriggerWindow, fV1740PostTriggerWindow);
+    CAENBoard2Intervals  = this->CreateIntervals(DataBlocks,  2,  fV1740PreTriggerWindow, fV1740PostTriggerWindow);
+    CAENBoard3Intervals  = this->CreateIntervals(DataBlocks,  3,  fV1740PreTriggerWindow, fV1740PostTriggerWindow);
+    CAENBoard4Intervals  = this->CreateIntervals(DataBlocks,  4,  fV1740PreTriggerWindow, fV1740PostTriggerWindow);
+    CAENBoard5Intervals  = this->CreateIntervals(DataBlocks,  5,  fV1740PreTriggerWindow, fV1740PostTriggerWindow);
+    CAENBoard6Intervals  = this->CreateIntervals(DataBlocks,  6,  fV1740PreTriggerWindow, fV1740PostTriggerWindow);
+    CAENBoard7Intervals  = this->CreateIntervals(DataBlocks,  7,  fV1740PreTriggerWindow, fV1740PostTriggerWindow);
     // CAEN V1751 digitizers
-    CAENBoard8Intervals  = this->CreateIntervals(DataBlocks,  8,                 0.64, fV1751ReadoutWindow);
-    CAENBoard9Intervals  = this->CreateIntervals(DataBlocks,  9,                 0.64, fV1751ReadoutWindow);
+    CAENBoard8Intervals  = this->CreateIntervals(DataBlocks,  8,  fV1751PreTriggerWindow, fV1751PostTriggerWindow);
+    CAENBoard9Intervals  = this->CreateIntervals(DataBlocks,  9,  fV1751PreTriggerWindow, fV1751PostTriggerWindow);
     // CAEN V1740B digitizer ("spare" CAEN V1740 digitizer)
-    CAENBoard24Intervals = this->CreateIntervals(DataBlocks, 24, fV1740BReadoutWindow, fV1740BReadoutWindow);
+    CAENBoard24Intervals = this->CreateIntervals(DataBlocks, 24, fV1740BPreTriggerWindow, fV1740BPostTriggerWindow);
 
     // WC TDC
     // see TDC readout documentation here:
@@ -313,7 +333,7 @@ namespace ClockCorrectionCheck {
     //       how to convert tdc_config_tdc_gatewidth and
     //       tdc_config_tdc_pipelinedelay into a TDC
     //       readout window length.
-    TDCIntervals = this->CreateIntervals(DataBlocks, 32, 1.196, 1.196);
+    TDCIntervals = this->CreateIntervals(DataBlocks, 32, fTDCPreTriggerWindow, fTDCPostTriggerWindow);
 
     // self-merge intervals
     CAENBoard0Intervals  = this->IntervalsSelfMerge(CAENBoard0Intervals);
@@ -447,9 +467,36 @@ namespace ClockCorrectionCheck {
 
     for (size_t i = 0; i < Collections.size(); ++i) {
       rdu::DataBlockCollection const& Collection = Collections[i];
+
+      size_t const& NumberCaenBlocks = Collection.caenBlocks.size();
+      size_t const& NumberTdcBlocks = Collection.tdcBlocks.size();
+
       std::cout << "Collection: " << i << std::endl;
-      std::cout << "  Number of CAEN data blocks: " << Collection.caenBlocks.size() << std::endl;
-      std::cout << "  Number of TDC data blocks:  " << Collection.tdcBlocks.size() << std::endl;
+      std::cout << "  Number of CAEN data blocks: " << NumberCaenBlocks << std::endl;
+      std::cout << "  Number of TDC data blocks:  " << NumberTdcBlocks << std::endl;
+
+      for (size_t j = 0; j < NumberCaenBlocks; ++j) {
+
+        std::pair< double, const CAENFragment * > caenBlock = Collection.caenBlocks[j];
+        double const& timestamp = caenBlock.first;
+        const CAENFragment * caenFrag = caenBlock.second;
+        unsigned int boardId = caenFrag->header.boardId;
+
+        std::cout << "    CAEN block: " << j << std::endl;
+        std::cout << "      Board ID: " << boardId << std::endl;
+        std::cout << "      Timestamp: " << timestamp << std::endl;
+      }
+
+      for (size_t j = 0; j < NumberTdcBlocks; ++j) {
+
+        std::pair< double, const std::vector<TDCFragment::TdcEventData> * > tdcBlock = Collection.tdcBlocks[j];
+        double const& timestamp = tdcBlock.first;
+        //const std::vector<TDCFragment::TdcEventData> * tdcEvents = tdcBlock.second;
+
+        std::cout << "    TDC block: " << j << std::endl;
+        std::cout << "      Timestamp: " << timestamp << std::endl;
+        //std::cout << "      TDC events: " << tdcEvents->size() << std::endl;
+      }
     }
 
     return;
