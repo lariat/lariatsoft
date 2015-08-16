@@ -35,6 +35,9 @@
 #include <TH1F.h>
 #include <TF1.h>
 
+//LArIAT Includes
+#include "Utilities/DatabaseUtilityT1034.h"
+
 class ParticleIdentificationSlicing;
 
 class ParticleIdentificationSlicing : public art::EDProducer {
@@ -65,11 +68,29 @@ public:
   void respondToOpenInputFile(art::FileBlock const & fb) override;
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
 
-  void setPriors();
+  void setPriors( float momentum );
   void getActivePriors( std::string runSetting );
   void getActivePriorsDefault();
 
 private:
+
+  //Run parameters and constants
+  float fDistanceTraveled;           //Path length of particle, in meters
+  float fSpeedOfLight;                
+  float fMagnetSetting;
+  float fEnergySetting;
+  float fPolaritySetting;
+
+  //Database Utility for getting run/subrun beam setting info
+  art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
+
+  //Priors storage
+  float fMuonPrior;
+  float fPionPrior;
+  float fKaonPrior;
+  float fProtonPrior;
+  
+  
 
   // Declare member data here.
   std::string       fWCTrackModuleLabel;
@@ -134,14 +155,11 @@ ParticleIdentificationSlicing::ParticleIdentificationSlicing(fhicl::ParameterSet
 
 void ParticleIdentificationSlicing::produce(art::Event & e)
 {
-  // Implementation of required member function here.
-
-  float distance_traveled = 6.7; //meters
-  float c = 3e+8;
-
-
-
-
+  //This particle ID work is done under the assumption that there is only one good WCTrack.
+  //We set our prior knowledge of particle type (the information about the numbers of
+  //pions, protons, etc. in the beam) as a function of the particle momentum. 
+  
+  
   //Get the collection of WCTracks produced by the WCTrackBuilder module
   art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle;
   e.getByLabel(fWCTrackModuleLabel,WCTrackColHandle);
@@ -150,6 +168,19 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   e.getByLabel(fTOFModuleLabel,TOFColHandle);
 
+  //Get the collection of MuonRangeStackHits objects produced by the MuonRangeStackHitsBuilder module
+  art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSColHandle;
+  e.getByLabel(fMuRSModuleLabel,MuRSColHandle);
+  
+  //Assume that there is only one good WCTrack. Identify the WCTrack's momentum.
+  if( WCTrackColHandle->size() != 1 ) return;
+  float reco_momentum = WCTrackColHandle->at(0).Momentum();
+  setPriors( reco_momentum );
+  
+  
+
+
+  /*
   std::cout << "Produce has commenced." << std::endl;
 
   if( fVerbose ){
@@ -206,7 +237,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
       }
     }
   }
-
+  */
   ///////////////// DISTRIBUTION GENERATION ENDING ///////////////////  
   ///////////////// PARTICLE ID Pz vs. TOF/////////////////////////////
   //We take the calculated mass of the particle and find the value of 3
@@ -233,23 +264,146 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 				   proton_kaon_pimu_likelihood_ratios );
 
   ///////////////// PARTICLE ID ENDING Pz vs. TOF /////////////////////
-    }
-  }
-
   */
+
+  
+  ///////////////// PARTICLE ID Pion Vs. Muon /////////////////////////
+  // We start with the assumption that there is only one good WCTrack,
+  // the one that triggered the event. The trigger waveform times for
+  // the wire chambers will therefore have hits at around time tick
+  // 136. We then cut on track time, saying that the MuRS track must be
+  // found within a reasonable distance of tick 136. This very roughly
+  // matches the WCTrack to the MuRS track.
+  //
+  
+  MuRSTrack theGoodMuRSTrack;
+  bool goodMuRS = isThereAGoodMuRSTrack( MuRSColHandle, thePenetrationDepth );
+  std::vector<float> pion_muon_likelihood_ratios;
+  if( goodMuRS ){
+    doThePion_MuonSeparation( thePenetrationDepth, 
+			      reco_momentum,
+			      pion_muon_likelihood_ratios );
+  }
+  
+  
+
+
+
 }
 
 //============================================================================================
-//Setting prior information (very rough) on the likelihood
-//of different particle ID hypotheses
-void ParticleIdentificationSlicing::setPriors()
+//Finding the likelihood ratio of pions and muons
+void ParticleIdentificationSlicing::doThePionMuonSeparation( float thePenetrationDepth,
+							     float reco_momentum,
+							     std::vector<float> & pion_muon_likelihood_ratios )
 {
-  fPionPriorMap.emplace("12Deg_08GeV_+35Tesla",0.9068); 
-  fMuonPriorMap.emplace("12Deg_08GeV_+35Tesla",0.0297);
-  fKaonPriorMap.emplace("12Deg_08GeV_+35Tesla",0.000938);
-  fProtonPriorMap.emplace("12Deg_08GeV_+35Tesla",0.06097);
+  float P_depth_given_pion = getProbabilityOfDepthGivenPionAtPunchThrough( reco_momentum, thePenetrationDepth );
+  float P_pion = getProbabilityOfPionAtPunchThrough( reco_momentum );
+  float P_depth_given_muon = getProbabilityOfDepthGivenMuonAtPunchThrough( reco_momentum, thePenetrationDepth );
+  float P_muon = getProbabilityOfMuonAtPunchThrough( reco_momentum );
+  
+  float P_pion_given_depth = (P_depth_given_pion*P_pion)/(P_depth_given_pion*P_pion+P_depth_given_muon*P_muon);
+  float P_muon_given_depth = (P_depth_given_muon*P_muon)/(P_depth_given_pion*P_pion+P_depth_given_muon*P_muon);
+  
+  pion_muon_likelihood_ratios.push_back(P_pion_given_depth,P_muon_given_depth);
 }
 
+
+//============================================================================================
+//Finding whether there is a MuRSTrack at the appropriate time
+bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack( art::Handle< std::vector<ldp::MuonRangeStackHits> > & MuRSColHandle,
+							   int & thePenetrationDepth )
+{
+  //Loop through the MuRS objects
+  int counter = 0;
+  for( size_t iMuRS; iMuRS < MuRSColHandle->size(); ++iMuRS ){
+    MuonRangeStackHits theMuRS = MuRSColHandle->at(iMuRS);
+    for( size_t iTrack = 0; iTrack < theMuRS.NTracks(); ++iTrack ){
+      float theTrackTime = theMuRS.GetArrivalTime(iTrack);
+      if( theTrackTime == 135 ||
+	  theTrackTime == 136 ||
+	  theTrackTime == 137 ||
+	  theTrackTime == 138 ){
+	thePenetrationDepth = theMuRS.GetPenetrationDepth(iTrack);
+	counter++;
+      }
+    }
+    
+  }
+
+  if( counter == 1 ) return true;
+  else if( counter == 0 ) return false;
+  else{
+    std::cout << "I'm not sure what to do here. There were 2+ good murs tracks. Returning true." << std::endl;
+    return true;
+  }
+}
+
+//============================================================================================
+//Setting prior information on the likelihood
+//of different particle ID hypotheses
+void ParticleIdentificationSlicing::setPriors(float momentum)
+{
+  //Draw information from database on the beam settings
+  queryDataBaseForMagnetAndEnergy();
+  
+  //Now dig through the prior table (which is at the moment unfinished) using the momentum,
+  //magnet settings, and energy settings
+  pullPriorsFromTable( momentum );
+}
+
+
+//============================================================================================
+//Extracts the prior information about beamline populations from a table built from MC simulation
+void ParticleIdentificationSlicing::pullPriorsFromTable( float momentum )
+{
+  
+
+
+
+
+}
+
+//============================================================================================
+//Gets the settings and rounds them to the nearest discrete setting that we use
+//(example: 99.7 Amps would round to 100 A)
+void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
+{
+  fMagnetSetting = std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
+  fEnergySetting = std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mcenrg",fRun,fSubRun));
+  if( fMagnetSetting > 0 ) fPolaritySetting = 1;
+  else if( fMagnetSetting < 0 ) fPolaritySetting = -1;
+  else fPolaritySEtting = 0;
+
+  //Known settings
+  int magSettingSize = 5;
+  int energySettingSize = 4;
+  float magSettings[magSettingSize] = {40,50,60,80,100};
+  float energySettings[energySetttingSize] = {8,16,32,64};
+  
+  //Loop through and find the closest settings
+  float theTrueMagSetting = 9996;
+  float theLowestDifference = 9995;
+  for( int iMag = 0; iMag < magSettingSize; ++iMag ){
+    if( fabs(magSettings[iMag] - fabs(fMagnetSetting)) < theLowestDifference ){
+      theLowestDifference = fabs(magSettings[iMag]-fabs(fMagnetSetting));
+      theTrueMagSetting = magSettins[iMag];
+    }
+  }
+  float theTrueEnergySetting = 9994;
+  theLowestDifference = 9994;
+  for( int iEn = 0; iEn < energySettingsSize; ++iEn ){
+    if( fabs(energySettings[iEn] - fabs(fEnergySetting)) < theLowestDifference ){
+      theLowestDifference = fabs(energySettings[iEn]-fabs(fEnergySetting));
+      theTrueEnergySetting = energySettings[iEn];
+    }
+  }
+
+  //Assign these true values 
+  fMagnetSetting = theTrueMagSetting;
+  fEnergySetting = theTrueEnergySetting;
+
+}
 
 //============================================================================================
 //Setting the active prior variables from the prior maps set in setPriors() function
@@ -365,8 +519,6 @@ void ParticleIdentificationSlicing::beginJob()
 void ParticleIdentificationSlicing::beginRun(art::Run & r)
 {
   // Implementation of optional member function here.
-  setPriors();
-
   //Temporary, but must always either use this or the non-default prior setting
   getActivePriorsDefault();
 }
@@ -374,6 +526,9 @@ void ParticleIdentificationSlicing::beginRun(art::Run & r)
 void ParticleIdentificationSlicing::beginSubRun(art::SubRun & sr)
 {
   // Implementation of optional member function here.
+  fRun = sr.run();
+  fSubRun = sr.subRun();
+  queryDataBaseForMagnetAndEnergy();
 }
 
 void ParticleIdentificationSlicing::endJob()
@@ -421,6 +576,10 @@ void ParticleIdentificationSlicing::endSubRun(art::SubRun & sr)
 void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
 {
   // Implementation of optional member function here.
+  fPathLength                   =p.get< float >("TrajectoryPathLength",6.7);
+  fSpeedOfLight                 = 3e+8;
+
+
   fWCTrackModuleLabel           =p.get< std::string >("WCTrackModuleLabel");
   fTOFModuleLabel               =p.get< std::string >("TOFModuleLabel");
   fVerbose                      =p.get< bool >("Verbose");

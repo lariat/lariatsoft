@@ -180,7 +180,7 @@ int WCTrackBuilderAlg::getTrackType()
 }
 
 //--------------------------------------------------------------
-//This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginRun() method of your analysis module
+//This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginSubRun() method of your analysis module
 void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
 {
   fRun = run;
