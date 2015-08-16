@@ -45,10 +45,10 @@ namespace rdu {
     // there should only be one data block in only one of these vectors
     std::vector< const CAENFragment * > caenBlocks;
     std::vector< const std::vector< TDCFragment::TdcEventData > * > tdcBlocks;
-    //std::vector< const V1494Fragment* > v1495Blocks;
-    //std::vector< const WUTFragment* > wutBlocks;
-    //std::vector< const LARASICFragment* > larasicBlocks;
-    //std::vector< const ReadoutError* > errorBlocks;
+    //std::vector< const V1494Fragment * > v1495Blocks;
+    //std::vector< const WUTFragment * > wutBlocks;
+    //std::vector< const LARASICFragment * > larasicBlocks;
+    //std::vector< const ReadoutError * > errorBlocks;
 
     void clear()
     {
@@ -126,9 +126,6 @@ namespace rdu {
     // get clock correction parameters
     void GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >  const& TimeStampMap,
                                       std::map< unsigned int, std::pair< double, double > > & ClockCorrectionParameters);
-
-    // return a vector of data block collections
-    std::vector< DataBlockCollection > GroupCollections(const LariatFragment * data);
 
     // this method is used for testing porpoises
     void hello_world();
