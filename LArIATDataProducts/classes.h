@@ -32,7 +32,11 @@
 #include "RawData/OpDetWaveform.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/WCTrack.h"
+<<<<<<< HEAD
 #include "LArIATDataProducts/AGCounter.h"
+=======
+#include "LArIATDataProducts/MuonRangeStackHits.h"
+>>>>>>> b8435cf40e1cf698166a93339b7f2ee186207c33
 
 
 //
@@ -41,11 +45,24 @@
 //
 
 
+//Stuff regarding/belonging to TOF
 template class std::vector<ldp::TOF>;
-
 template class art::Wrapper< ldp::TOF                  >;
-
 template class art::Wrapper< std::vector<ldp::TOF >    >;
+
+//Stuff regarding/belonging to Muon Range Stack Reco
+template class std::vector<ldp::MuonRangeStackHits >;
+template class art::Wrapper< ldp::MuonRangeStackHits               >;
+template class art::Wrapper< std::vector<ldp::MuonRangeStackHits >    >;
+template class std::map<int,std::vector<int> >;
+template class art::Wrapper<std::map<int,std::vector<int> > >;
+template class art::Wrapper<MuRSTrack>;
+template class std::vector<MuRSTrack>;
+template class art::Wrapper<std::vector<MuRSTrack> >;
+template class std::pair<int,int>;
+template class art::Wrapper<std::pair<int,int> >;
+template class std::vector<std::pair<int,int> >;
+template class art::Wrapper<std::vector<std::pair<int,int> > >;
 
 template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >    ;
 template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF> >    ;
