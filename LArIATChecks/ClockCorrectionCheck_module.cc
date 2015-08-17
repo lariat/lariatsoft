@@ -118,6 +118,7 @@ namespace ClockCorrectionCheck {
     double fV1740ReadoutWindow;
     double fV1740BReadoutWindow;
     double fV1751ReadoutWindow;
+    double fTDCReadoutWindow;
 
     // TDC parameters
     double fTDCPipelineDelay;
@@ -191,6 +192,7 @@ namespace ClockCorrectionCheck {
     fV1740ReadoutWindow  = fV1740RecordLength  / fV1740SamplingRate;
     fV1740BReadoutWindow = fV1740BRecordLength / fV1740BSamplingRate;
     fV1751ReadoutWindow  = fV1751RecordLength  / fV1751SamplingRate;
+    fTDCReadoutWindow    = fTDCGateWidth * 8 * 0.001177;
 
     // Pre-/post-trigger windows
     if (fV1740PreTriggerWindow   < 0) fV1740PreTriggerWindow   = fV1740ReadoutWindow;
@@ -199,8 +201,8 @@ namespace ClockCorrectionCheck {
     if (fV1740BPostTriggerWindow < 0) fV1740BPostTriggerWindow = fV1740BReadoutWindow;
     if (fV1751PreTriggerWindow   < 0) fV1751PreTriggerWindow   = 0.64;
     if (fV1751PostTriggerWindow  < 0) fV1751PostTriggerWindow  = fV1751ReadoutWindow + 0.64;
-    if (fTDCPreTriggerWindow     < 0) fTDCPreTriggerWindow     = 1.196;
-    if (fTDCPostTriggerWindow    < 0) fTDCPostTriggerWindow    = 1.196;
+    if (fTDCPreTriggerWindow     < 0) fTDCPreTriggerWindow     = fTDCReadoutWindow;
+    if (fTDCPostTriggerWindow    < 0) fTDCPostTriggerWindow    = fTDCReadoutWindow;
 
     std::cout << "//////////////////////////////////////////////"        << std::endl;
     std::cout << "V1740PreTriggerWindow:   " << fV1740PreTriggerWindow   << std::endl;
