@@ -7,6 +7,7 @@
 #include "magfield.fcl"
 #include "databaseutil_lariat.fcl"
 #include "databaseutility_lariat.fcl"
+#include "database_lariat.fcl"
 #include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
 #include "sam_lariat.fcl"
@@ -33,6 +34,7 @@ lariat_services:
  BackTracker:               @local::standard_backtracker
  SeedService:               @local::standard_seedservice
  #UBOpticalChConfig:     @local::lariat_optical_ch_config
+ IDetPedestalService:       @local::lariat_detpedestalservice
 }
 
 lariat_simulation_services:
