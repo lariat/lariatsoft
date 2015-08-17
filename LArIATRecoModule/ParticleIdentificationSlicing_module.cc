@@ -155,11 +155,6 @@ ParticleIdentificationSlicing::ParticleIdentificationSlicing(fhicl::ParameterSet
 
 void ParticleIdentificationSlicing::produce(art::Event & e)
 {
-  //This particle ID work is done under the assumption that there is only one good WCTrack.
-  //We set our prior knowledge of particle type (the information about the numbers of
-  //pions, protons, etc. in the beam) as a function of the particle momentum. 
-  
-  
   //Get the collection of WCTracks produced by the WCTrackBuilder module
   art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle;
   e.getByLabel(fWCTrackModuleLabel,WCTrackColHandle);
@@ -171,12 +166,15 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //Get the collection of MuonRangeStackHits objects produced by the MuonRangeStackHitsBuilder module
   art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSColHandle;
   e.getByLabel(fMuRSModuleLabel,MuRSColHandle);
-  
+
   //Assume that there is only one good WCTrack. Identify the WCTrack's momentum.
   if( WCTrackColHandle->size() != 1 ) return;
   float reco_momentum = WCTrackColHandle->at(0).Momentum();
   setPriors( reco_momentum );
   
+  //This particle ID work is done under the assumption that there is only one good WCTrack.
+  //We set our prior knowledge of particle type (the information about the numbers of
+  //pions, protons, etc. in the beam) as a function of the particle momentum. 
   
 
 
