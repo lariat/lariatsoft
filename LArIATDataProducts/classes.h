@@ -32,7 +32,11 @@
 #include "RawData/OpDetWaveform.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/WCTrack.h"
+<<<<<<< HEAD
+#include "LArIATDataProducts/AGCounter.h"
+=======
 #include "LArIATDataProducts/MuonRangeStackHits.h"
+>>>>>>> b8435cf40e1cf698166a93339b7f2ee186207c33
 
 
 //
@@ -73,6 +77,21 @@ template class art::Assns<raw::AuxDetDigit, ldp::TOF,      void>;
 template class art::Wrapper<art::Assns<raw::Trigger,     ldp::TOF,     void> >;
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,     void> >;
 template class art::Wrapper<art::Assns<ldp::TOF,     raw::Trigger,     void> >;
+
+
+
+
+template class std::vector<ldp::AGCounter>;
+template class std::vector<AGCHits>;
+template class std::vector<std::vector<AGCHits> > ;
+
+template class art::Wrapper< ldp::AGCounter >;
+template class art::Wrapper< AGCHits>;
+template class art::Wrapper< std::vector<AGCHits> >;
+template class art::Wrapper< std::vector<std::vector<AGCHits> > >;
+template class art::Wrapper< std::vector<ldp::AGCounter>    >;
+
+
 
 template class std::vector<ldp::WCTrack>;
 

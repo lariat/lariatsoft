@@ -29,6 +29,8 @@
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,     void> >"/>
  <class name="art::Wrapper<art::Assns<ldp::TOF,     raw::Trigger,     void> >"/>
 
+ 
+ 
  <class name="ldp::WCTrack" ClassVersion="11"                                      >
   <version ClassVersion="11" checksum="167827337"/>
   <version ClassVersion="10" checksum="4212739596"                                />
@@ -51,27 +53,24 @@
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >"/>
  <class name="art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >"/>
 
- <class name="ldp::MuonRangeStackHits" ClassVersion="14"                                      >
-  <version ClassVersion="14" checksum="2848453117"/>
-  <version ClassVersion="13" checksum="4078109643"/>
-  <version ClassVersion="12" checksum="1722931573"/>
-  <version ClassVersion="11" checksum="2124238595"/>
+ 
+ <class name="ldp::AGCounter" ClassVersion="14"                                      >
+  <version ClassVersion="14" checksum="3899263165"/>
+  <version ClassVersion="13" checksum="894412250"/>
+  <version ClassVersion="12" checksum="194513558"/>
+  
  </class>
- <class name="std::vector<ldp::MuonRangeStackHits>"                                          />
- <class name="art::Wrapper<ldp::MuonRangeStackHits>"                                         />
- <class name="art::Wrapper<std::vector<ldp::MuonRangeStackHits> >"                           />
- <class name="std::map<int,std::vector<int> >"                                               />
- <class name="art::Wrapper<std::map<int,std::vector<int> > >"                                />
- <class name="MuRSTrack"                                                                     />
- <class name="art::Wrapper<MuRSTrack>"                                                       />
- <class name="std::vector<MuRSTrack>"                                                        />
- <class name="art::Wrapper<std::vector<MuRSTrack> >"                                         />
- <class name="std::pair<int,int>"                                                            />
- <class name="art::Wrapper<std::pair<int,int> >"                                             />
- <class name="std::vector<std::pair<int,int> >"                                              />
- <class name="art::Wrapper<std::vector<std::pair<int,int> > >"                               />
+ <class name="AGCHits"                                          />
+ <class name="std::vector<ldp::AGCounter>"                                          />
+ <class name="std::vector<AGCHits>"                                          />
+ <class name="std::vector<std::vector<AGCHits> >"                                          />
+ 
+ <class name="art::Wrapper<ldp::AGCounter>"                                         />
+ <class name="art::Wrapper<std::vector<ldp::AGCounter> >"                           />
+ <class name="art::Wrapper<std::vector<AGCHits> >"                           />
+ <class name="art::Wrapper<std::vector<std::vector<AGCHits> > >"                           />
+ <class name="art::Wrapper<AGCHits >"                           />
+ 
 
 
 </lcgdict>
-
-
