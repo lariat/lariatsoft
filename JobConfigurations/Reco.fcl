@@ -147,10 +147,16 @@ physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 #physics.producers.cchit.CCHitFinderAlg.VWireRange: [45, 85]
 #physics.producers.cchit.CCHitFinderAlg.VTickRange: [1500, 1800]
 
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 1
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  132
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 1535
 physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 100
+physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.35,0.35,0.35]
+
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 0
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  5555
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: -1
+
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 1
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  126
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 600
 
 physics.producers.costrk.ClusterModuleLabel:  "linecluster"
 physics.producers.costrk.VertexModuleLabel:   "linecluster"
