@@ -6,6 +6,7 @@
 #include "hitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
+#include "lariatbeamlinereco.fcl"
 
 process_name: Reco2D
 
@@ -68,6 +69,14 @@ physics:
   ### pandora
 #  pandora:             @local::standard_pandora
 
+
+  ### wire chamber tracks
+  wctrack: 		@local::lariat_wctrackbuilder
+  
+  ### time of flight
+  tof:			@local::lariat_tof
+  
+
  }
 
  #define the producer and filter modules for this path, order matters, 
@@ -80,7 +89,9 @@ physics:
 	 linecluster,
          costrk,
          pmtrack,
-         cctrack
+	 wctrack,
+	 tof
+         #cctrack
          #gaushit
          #corner,
          #dbcluster,
