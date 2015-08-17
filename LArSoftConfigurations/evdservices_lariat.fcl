@@ -1,6 +1,7 @@
 #include "calorimetry.fcl"
 #include "services_lariat.fcl"
 #include "evdservices_base.fcl"
+#include "database_lariat.fcl"
 
 BEGIN_PROLOG
 
@@ -54,6 +55,7 @@ lariat_disp:
  LArVoxelCalculator:                          @local::lariat_larvoxelcalculator     
  InfoTransfer:		                      @local::lariat_infotransfer    
  TimeService:                  		      @local::lariat_timeservice
+ IDetPedestalService:                         @local::lariat_detpedestalservice
 }                                                                                  
                                                                                    
 #######################################                                            

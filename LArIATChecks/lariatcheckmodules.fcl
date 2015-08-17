@@ -1,0 +1,19 @@
+
+
+
+BEGIN_PROLOG
+
+lariat_tofchecker:
+{
+  module_type:        TOFChecker
+  WCTrackModuleLabel: wctrack
+  TOFModuleLabel:     tof
+}
+
+lariat_murschecker:
+{
+  module_type:        MuRSChecker
+  MuRSBuilderLabel:   murs
+}
+
+END_PROLOG
