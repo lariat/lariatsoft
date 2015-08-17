@@ -58,6 +58,7 @@ find_ups_product( lareventdisplay v03_02_04 )
 # art related products
 find_ups_product( art             v1_12_02 )
 find_ups_product( artdaq_core     v1_04_06 )
+find_ups_product( artextensions   v1_00_00 )
 
 # products that LArIAT needs for input data
 find_ups_product( LariatFilters   v01_00    )
@@ -79,19 +80,20 @@ add_subdirectory(DetectorSim)
 add_subdirectory(Geo)
 add_subdirectory(JobConfigurations)
 add_subdirectory(LArSoftConfigurations)
+add_subdirectory(LArIATAnaModule)
 add_subdirectory(LArIATDataProducts)
 add_subdirectory(LArIATEventGenerator)
+add_subdirectory(LArIATFilterModule)
 add_subdirectory(LArIATRecoAlg)
 add_subdirectory(LArIATRecoModule)
 add_subdirectory(LArIATChecks)
-add_subdirectory(LArIATAnaModule)
 add_subdirectory(RawDataUtilities)
 add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
 add_subdirectory(LongBo)
 
 # tests
-#add_subdirectory(test)
+add_subdirectory(test)
 
 # ups - table and config files
 add_subdirectory(ups)

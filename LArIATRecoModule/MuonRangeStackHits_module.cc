@@ -59,7 +59,9 @@ public:
 
 private:
 std::string fTriggerUtility;
-std::vector<TH1F*> fMRSADC;
+TH1F* fMuRSHitTiming;
+TH1F* fPaddleHits;
+std::vector<int> MuRSPaddleHits[16];
   // Declare member data here.
 
 };
@@ -78,15 +80,45 @@ void MuonRangeStackHits::produce(art::Event & e)
   fTriggerUtility = "FragmentToDigit";
   rdu::TriggerDigitUtility tdu(e, fTriggerUtility);
 
-    // Loop over Triggers
+	//std::unique_ptr<std::vector<ldp::MuonRangeStackHits> > MuonRangeStackMap(new std::vector<ldp::MuonRangeStackHits>  ) ;	//I call this a map, but it's really a vector with one entry that is a map......hopefully.
+ 	//art::Handle<std::vector<raw::AuxDetDigit>> AuxDetDigitHandle;
+	//e.getByLabel(fSlicerSourceLabel,AuxDetDigitHandle);
+ 	//std::vector<raw::AuxDetDigit> MuRSDigits;
+ 	//for(size_t iDig=0; iDig<AuxDetDigitHandle->size(); ++iDig){
+ 		//if(AuxDetDigitHandle->at(iDig).AuxDetName()=="MuonRangeStack"){
+    		//MuRSDigits.push_back(AuxDetDigitHandle->at(iDig));
+    		//}
+    	//}
+	   
+   // Loop over Triggers
   for(size_t trig=0; trig < tdu.NTriggers(); trig++)
-     {	
-      std::vector<const raw::AuxDetDigit*> MRSDigit=tdu.TriggerMuonRangeStackDigits(trig); 
-	std::cout<<"Size of MRSDigit = "<<MRSDigit.size()<<std::endl;
-	int size=MRSDigit.size();
-	if(size==0){continue;}
+       {	
+      std::vector<const raw::AuxDetDigit*> MuRSDigits=tdu.TriggerMuonRangeStackDigits(trig); 
+	std::cout<<"Size of MuRSDigits = "<<MuRSDigits.size()<<std::endl;
+	int size=MuRSDigits.size();
+	//if(size==0){continue;}
+	int fThreshold=2020;
+	int TrigMult=size/16;
+	   for (int TrigIter=0; TrigIter<TrigMult; ++TrigIter){
+	   	for (int nPaddle=TrigIter*16; nPaddle<(TrigIter+1)*16; ++nPaddle){
+			auto PaddleDigit=MuRSDigits[nPaddle];
+			for (size_t i=0; i<PaddleDigit->NADC(); ++i){
+				if(PaddleDigit->ADC(i)<fThreshold){
+				MuRSPaddleHits[nPaddle-TrigIter*16].push_back(i);
+				fMuRSHitTiming->Fill(i);
+				//fAmpVsPaddle->Fill(nPaddle-TrigIter*16,fThreshold-PaddleDigit->ADC(i));
+				fPaddleHits->Fill(15-(nPaddle-TrigIter*16)); //To account for the paddle digits being reversed.
+				}
+			}
+			//fMuonRangeStackMap.emplace(nPaddle-TrigIter*16,MuRSPaddleHits);
+//			for(size_t i=0; i<MuRSPaddleHits.size(); ++i){
+	//		std::cout<<"For paddle "<< nPaddle-TrigIter*16<<" there was a hit at "<<MuRSPaddleHits[i]<<std::endl;
+		//	}
+			//MuRSPaddleHits.clear();
+		}
+	   }
 	// Loop over PMT in trigger
-	for(int nPMT=0; nPMT < size; nPMT++)
+/* 	for(int nPMT=0; nPMT < size; nPMT++)
 	{
 	auto PMTDigit = MRSDigit[nPMT];
 	  for(size_t i=0; i < PMTDigit->NADC(); i++) 
@@ -171,21 +203,18 @@ std::cout<<"MuRS found a hit! Something passed through "<<Planeshit<<" planes.  
 	       
             }// close loop over time ticks
 	    
-    }//close nPMT loop
-}//tdu.NTriggers loop
+    }//close nPMT loop */
+}//tdu.NTriggers loop */
 }//event
 
 void MuonRangeStackHits::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
-   for(int trig=0; trig<80; trig++)
-   {
-   std::stringstream sMRSname, sMRStitle;
-   sMRSname.str(""); sMRSname.flush(); sMRStitle.str(""); sMRStitle.flush();
-   sMRSname<<"MRSADC for PMT"<<trig; sMRStitle<<"MRSADC for PMT"<<trig;
-   fMRSADC.push_back( (TH1F*)tfs->make<TH1F>(sMRSname.str().c_str(), sMRStitle.str().c_str(),3073,0,3072));
- 
-  }
+     fMuRSHitTiming = tfs->make<TH1F>("MuRSHitTicks","MuRSHitTicks", 3073, 0, 3073);
+
+  fPaddleHits=tfs->make<TH1F>("TotalPaddleHits","TotalPaddleHits",16, 0, 16);
+
+
   //fMRSSize = tfs->make<TH1F>("MRSSize","MRSSize", 100, 0, 100);
 
   // Implementation of optional member function here.

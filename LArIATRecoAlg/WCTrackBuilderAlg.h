@@ -23,9 +23,17 @@
 //Framework includes
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+
 
 // LArSoft includes
 #include "Geometry/Geometry.h"
+
+//LArIAT include
+#include "Utilities/DatabaseUtilityT1034.h"
+
+//ROOT includes
+#include <TH1F.h>
 
 //Structs for organizational purposes
 struct WCHit
@@ -56,7 +64,7 @@ class WCTrackBuilderAlg{
   
   void reconfigure( fhicl::ParameterSet const& pset );
   
-  void firstFunction();
+  int getTrackType();
   
   
   void reconstructTracks( std::vector<int> tdc_number_vect,
@@ -193,6 +201,8 @@ class WCTrackBuilderAlg{
 			   std::vector<WCHitList> & track_list,
 			   bool lonely_hit_bool);
 
+  void loadXMLDatabaseTableForBField( int run, int subrun );
+
  private:
   //Hardware constants
   int fNumber_tdcs;
@@ -210,10 +220,15 @@ class WCTrackBuilderAlg{
   float  fSigmaYDist;
   float  fPrintDisambiguation;
   bool   fPickyTracks;
+  int    fTrack_Type;
+
+  art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
+
 
   //Semi-Persistent vectors
   std::map<size_t,std::pair<float,float> > fGoodTrackCandidateErrors;
   std::vector<std::pair<WCHitList,size_t> > fGoodTrackCandidateHitLists;
+
   /////////////////////////////////
   // CONSTANTS FROM SURVEY       //
   /////////////////////////////////
@@ -273,6 +288,8 @@ class WCTrackBuilderAlg{
   //Misc
   float fB_field_tesla;
   bool fVerbose;
+  int fRun;
+  int fSubRun;
 
   art::ServiceHandle<geo::Geometry> fGeo;  /// Geometry Service Handle
   

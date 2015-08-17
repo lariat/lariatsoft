@@ -1,6 +1,7 @@
 #include "calorimetry.fcl"
 #include "services_lariat.fcl"
 #include "evdservices_base.fcl"
+#include "database_lariat.fcl"
 
 BEGIN_PROLOG
 
@@ -8,7 +9,7 @@ lariat_colordrawingopt:                       @local::standard_colordrawingopt
 lariat_colordrawingopt.RawQLow:               [-10.]
 lariat_colordrawingopt.RawQHigh:              [ 50.]
 lariat_rawdrawingopt:                         @local::standard_rawdrawingopt
-lariat_rawdrawingopt.RawDataLabel:            FragmentToDigit
+lariat_rawdrawingopt.RawDataLabel:            SlicerInput
 lariat_rawdrawingopt.TotalTicks:              3072
 lariat_rawdrawingopt.DetPedestalRetrievalAlg.DefaultCollMean:  0
 lariat_rawdrawingopt.DetPedestalRetrievalAlg.DefaultIndMean:   0
@@ -54,6 +55,7 @@ lariat_disp:
  LArVoxelCalculator:                          @local::lariat_larvoxelcalculator     
  InfoTransfer:		                      @local::lariat_infotransfer    
  TimeService:                  		      @local::lariat_timeservice
+ IDetPedestalService:                         @local::lariat_detpedestalservice
 }                                                                                  
                                                                                    
 #######################################                                            
