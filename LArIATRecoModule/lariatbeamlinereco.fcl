@@ -18,8 +18,12 @@ lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Ryan Linehan
 {
   module_type:        WCTrackBuilderSlicing
   WCTrackBuilderAlg:  @local::lariat_wctrackbuilderalg
+<<<<<<< HEAD
   TriggerUtility:     FragmentToDigit
   SourceLabel:        SlicerInput			
+=======
+  SourceLabel:        SlicerInput
+>>>>>>> b8435cf40e1cf698166a93339b7f2ee186207c33
   NWC:                4
   NWperTDC:           64
   Verbose:            false
@@ -40,6 +44,7 @@ lariat_murs:            #Taken from MuonRangeStackHitsSlicing.fcl by Greg Pullia
   NumberEventsToPlotWFs: 40	
 }
 
+<<<<<<< HEAD
 lariat_pid:
 {
   module_type:        ParticleIdentificationSlicing
@@ -49,4 +54,6 @@ lariat_pid:
   PlotHistograms:     true
 } 
 
+=======
+>>>>>>> b8435cf40e1cf698166a93339b7f2ee186207c33
 END_PROLOG

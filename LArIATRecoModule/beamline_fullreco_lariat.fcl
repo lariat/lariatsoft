@@ -68,7 +68,6 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:      "beamline_fullrecooutput_lariat.root"	
-
+   fileName:      "reconstructed_beamline.root"
  }
 }
