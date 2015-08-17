@@ -32,11 +32,8 @@
 #include "RawData/OpDetWaveform.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/WCTrack.h"
-<<<<<<< HEAD
 #include "LArIATDataProducts/AGCounter.h"
-=======
 #include "LArIATDataProducts/MuonRangeStackHits.h"
->>>>>>> b8435cf40e1cf698166a93339b7f2ee186207c33
 
 
 //
