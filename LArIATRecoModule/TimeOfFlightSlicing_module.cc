@@ -81,7 +81,6 @@ public:
 private:
 
   ///< Label for the module producing the triggers
-  std::string fTriggerUtility; 
   TOFBuilderAlg fTOFAlg;
   TH1F*         fTOFHisto;
   bool          fMakeHistograms;
@@ -98,8 +97,6 @@ lrm::TimeOfFlightSlicing::TimeOfFlightSlicing(fhicl::ParameterSet const & p)
 
   // Produces the LArSoft object to be ultimately outputted
   produces<std::vector<ldp::TOF> >();
-  produces<art::Assns<raw::Trigger, ldp::TOF> >();
-
 }
 
 void lrm::TimeOfFlightSlicing::produce(art::Event & e)
@@ -197,7 +194,6 @@ void lrm::TimeOfFlightSlicing::reconfigure(fhicl::ParameterSet const & p)
 {
    
    // Implementing the ability to pass the name of the TriggerUtililty 
-   fTriggerUtility     = p.get< std::string >("TriggerUtility", "FragmentToDigit");
    fMakeHistograms     = p.get< bool >("MakeHistograms", true);
    fSlicerSourceLabel  = p.get< std::string >("SourceLabel","SlicerInput");
 }
