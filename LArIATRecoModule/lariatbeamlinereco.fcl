@@ -45,6 +45,7 @@ lariat_pid:
   module_type:        ParticleIdentificationSlicing
   WCTrackModuleLabel: wctrack
   TOFModuleLabel:     tof
+  MuRSModuleLabel:    murs
   Verbose:            true
   PlotHistograms:     true
   PDepthInfo:         @local::penetration_depth_info

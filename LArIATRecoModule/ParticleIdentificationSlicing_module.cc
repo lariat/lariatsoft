@@ -23,6 +23,8 @@
 //Lariatsoft includes
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
+#include "LArIATDataProducts/MuonRangeStackHits.h"
+#include "LArIATDataProducts/AGCounter.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
 
 //C++ includes
@@ -75,7 +77,7 @@ public:
   bool isThereAGoodMuRSTrack( art::Handle< std::vector<ldp::MuonRangeStackHits> > & MuRSColHandle,
 			      int & thePenetrationDepth );
   void setPriors( float momentum );
-  void pullPriorsFromTable( float momentum )
+  void pullPriorsFromTable( float momentum );
   void queryDataBaseForMagnetAndEnergy();
   void getActivePriors( std::string runSetting );
   void getActivePriorsDefault();
@@ -88,6 +90,9 @@ private:
   float fMagnetSetting;
   float fEnergySetting;
   float fPolaritySetting;
+  int   fRun;
+  int   fSubRun;
+  float fPathLength;
 
   //Database Utility for getting run/subrun beam setting info
   art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
@@ -105,6 +110,7 @@ private:
   // Declare member data here.
   std::string       fWCTrackModuleLabel;
   std::string       fTOFModuleLabel;
+  std::string       fMuRSModuleLabel;
   bool              fVerbose;
   bool              fPlotHistograms;
 
@@ -285,10 +291,11 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //
   
   MuRSTrack theGoodMuRSTrack;
+  int thePenetrationDepth = 9989;
   bool goodMuRS = isThereAGoodMuRSTrack( MuRSColHandle, thePenetrationDepth );
   std::vector<float> pion_muon_likelihood_ratios;
   if( goodMuRS ){
-    doThePion_MuonSeparation( thePenetrationDepth, 
+    doThePionMuonSeparation( thePenetrationDepth, 
 			      reco_momentum,
 			      pion_muon_likelihood_ratios );
   }
@@ -326,7 +333,7 @@ bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack( art::Handle< std::vec
   //Loop through the MuRS objects
   int counter = 0;
   for( size_t iMuRS; iMuRS < MuRSColHandle->size(); ++iMuRS ){
-    MuonRangeStackHits theMuRS = MuRSColHandle->at(iMuRS);
+    ldp::MuonRangeStackHits theMuRS = MuRSColHandle->at(iMuRS);
     for( size_t iTrack = 0; iTrack < theMuRS.NTracks(); ++iTrack ){
       float theTrackTime = theMuRS.GetArrivalTime(iTrack);
       if( theTrackTime == 135 ||
@@ -382,13 +389,13 @@ void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
   fEnergySetting = std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mcenrg",fRun,fSubRun));
   if( fMagnetSetting > 0 ) fPolaritySetting = 1;
   else if( fMagnetSetting < 0 ) fPolaritySetting = -1;
-  else fPolaritySEtting = 0;
+  else fPolaritySetting = 0;
 
   //Known settings
   int magSettingSize = 5;
   int energySettingSize = 4;
   float magSettings[magSettingSize] = {40,50,60,80,100};
-  float energySettings[energySetttingSize] = {8,16,32,64};
+  float energySettings[energySettingSize] = {8,16,32,64};
   
   //Loop through and find the closest settings
   float theTrueMagSetting = 9996;
@@ -396,12 +403,12 @@ void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
   for( int iMag = 0; iMag < magSettingSize; ++iMag ){
     if( fabs(magSettings[iMag] - fabs(fMagnetSetting)) < theLowestDifference ){
       theLowestDifference = fabs(magSettings[iMag]-fabs(fMagnetSetting));
-      theTrueMagSetting = magSettins[iMag];
+      theTrueMagSetting = magSettings[iMag];
     }
   }
   float theTrueEnergySetting = 9994;
   theLowestDifference = 9994;
-  for( int iEn = 0; iEn < energySettingsSize; ++iEn ){
+  for( int iEn = 0; iEn < energySettingSize; ++iEn ){
     if( fabs(energySettings[iEn] - fabs(fEnergySetting)) < theLowestDifference ){
       theLowestDifference = fabs(energySettings[iEn]-fabs(fEnergySetting));
       theTrueEnergySetting = energySettings[iEn];
@@ -593,6 +600,7 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
 
   fWCTrackModuleLabel           =p.get< std::string >("WCTrackModuleLabel");
   fTOFModuleLabel               =p.get< std::string >("TOFModuleLabel");
+  fMuRSModuleLabel              =p.get< std::string >("MuRSModuleLabel");
   fVerbose                      =p.get< bool >("Verbose");
   fPlotHistograms               =p.get< bool >("PlotHistograms");
 
