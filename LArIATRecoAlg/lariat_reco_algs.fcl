@@ -10,4 +10,11 @@ lariat_triggerfilteralg:
   Verbosity: false
 }
 
+lariat_aerogel:
+{
+
+
+
+}
+
 END_PROLOG
