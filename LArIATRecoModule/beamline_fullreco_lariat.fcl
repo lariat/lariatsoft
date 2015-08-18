@@ -35,7 +35,7 @@ physics:
   tof:         @local::lariat_tof
   murs:        @local::lariat_murs
   pid:         @local::lariat_pid
-  check:       @local::lariat_tofchecker
+  agcounter:   @local::lariat_agcounter
  }
 
  analyzers:
@@ -68,6 +68,6 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:      "reconstructed_beamline.root"
+   fileName:      "beamline_fullreco_lariat.root"	
  }
 }

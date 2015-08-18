@@ -68,7 +68,15 @@ public:
   void respondToOpenInputFile(art::FileBlock const & fb) override;
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
 
+  void doThePionMuonSeparation( float thePenetrationDepth,
+				float reco_momentum,
+				std::vector<float> & pion_muon_likelihood_ratios );
+
+  bool isThereAGoodMuRSTrack( art::Handle< std::vector<ldp::MuonRangeStackHits> > & MuRSColHandle,
+			      int & thePenetrationDepth );
   void setPriors( float momentum );
+  void pullPriorsFromTable( float momentum )
+  void queryDataBaseForMagnetAndEnergy();
   void getActivePriors( std::string runSetting );
   void getActivePriorsDefault();
 
@@ -90,6 +98,8 @@ private:
   float fKaonPrior;
   float fProtonPrior;
   
+  //Gathering information from histograms
+  std::vector<float> fPenetrationDepthInfo;
   
 
   // Declare member data here.
@@ -295,6 +305,7 @@ void ParticleIdentificationSlicing::doThePionMuonSeparation( float thePenetratio
 							     float reco_momentum,
 							     std::vector<float> & pion_muon_likelihood_ratios )
 {
+  /*
   float P_depth_given_pion = getProbabilityOfDepthGivenPionAtPunchThrough( reco_momentum, thePenetrationDepth );
   float P_pion = getProbabilityOfPionAtPunchThrough( reco_momentum );
   float P_depth_given_muon = getProbabilityOfDepthGivenMuonAtPunchThrough( reco_momentum, thePenetrationDepth );
@@ -303,7 +314,7 @@ void ParticleIdentificationSlicing::doThePionMuonSeparation( float thePenetratio
   float P_pion_given_depth = (P_depth_given_pion*P_pion)/(P_depth_given_pion*P_pion+P_depth_given_muon*P_muon);
   float P_muon_given_depth = (P_depth_given_muon*P_muon)/(P_depth_given_pion*P_pion+P_depth_given_muon*P_muon);
   
-  pion_muon_likelihood_ratios.push_back(P_pion_given_depth,P_muon_given_depth);
+  pion_muon_likelihood_ratios.push_back(P_pion_given_depth,P_muon_given_depth);*/
 }
 
 
@@ -577,6 +588,8 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fPathLength                   =p.get< float >("TrajectoryPathLength",6.7);
   fSpeedOfLight                 = 3e+8;
 
+  fPenetrationDepthInfo         =p.get<std::vector<float> >("PDepthInfo");
+
 
   fWCTrackModuleLabel           =p.get< std::string >("WCTrackModuleLabel");
   fTOFModuleLabel               =p.get< std::string >("TOFModuleLabel");
@@ -590,6 +603,8 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fProtonMassMean               =p.get< float >("ProtonMassMean",9.16e+2);
   fProtonMassSigma              =p.get< float >("ProtonMassSigma",9.85e+1);
 
+
+  
 
   
 }
