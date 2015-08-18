@@ -71,11 +71,12 @@ private:
 
   // Declare member data here.
   AGCounterAlg	fAGCounterAlg;
+  std::string   fSourceModuleLabel;
 
 };
 
 
-lrm::AerogelCherenkovCounterSlicing::AerogelCherenkovCounterSlicing(fhicl::ParameterSet const & p) : fAGCounterAlg(p)
+lrm::AerogelCherenkovCounterSlicing::AerogelCherenkovCounterSlicing(fhicl::ParameterSet const & p) : fAGCounterAlg(p.get< fhicl::ParameterSet > ("AGBuilderAlg"))
 {
   // Call appropriate produces<>() functions here.
   // Configures param set
@@ -92,7 +93,7 @@ void lrm::AerogelCherenkovCounterSlicing::produce(art::Event & e)
 
   // Event Handling
   art::Handle< std::vector<raw::AuxDetDigit> > AuxDetDigitHandle;
-  e.getByLabel("SlicerInput", AuxDetDigitHandle);
+  e.getByLabel(fSourceModuleLabel, AuxDetDigitHandle);
   
   // Grab Aerogel Counter Digits
   std::vector<raw::AuxDetDigit> AGCUSEDigits; // Channel 4 - Board 8 - CALLID_0
@@ -160,6 +161,7 @@ void lrm::AerogelCherenkovCounterSlicing::endSubRun(art::SubRun & sr)
 void lrm::AerogelCherenkovCounterSlicing::reconfigure(fhicl::ParameterSet const & p)
 {
   // Implementation of optional member function here.
+  fSourceModuleLabel = p.get<std::string>("SourceLabel");
 }
 
 void lrm::AerogelCherenkovCounterSlicing::respondToCloseInputFile(art::FileBlock const & fb)
