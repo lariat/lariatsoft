@@ -40,6 +40,11 @@ lariat_murs:            #Taken from MuonRangeStackHitsSlicing.fcl by Greg Pullia
   NumberEventsToPlotWFs: 40	
 }
 
+lariat_agcounter:
+{
+  module_type:           AerogelCherenkovCounterSlicing
+}
+
 lariat_pid:
 {
   module_type:        ParticleIdentificationSlicing
@@ -50,6 +55,7 @@ lariat_pid:
   PlotHistograms:     true
   PDepthInfo:         @local::penetration_depth_info
 } 
+
 
 
 END_PROLOG
