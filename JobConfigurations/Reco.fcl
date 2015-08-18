@@ -75,7 +75,9 @@ physics:
   
   ### time of flight
   tof:			@local::lariat_tof
-  
+
+  ### muon range stack ###
+  murs:                 @local::lariat_murs  
 
  }
 
@@ -90,7 +92,8 @@ physics:
          costrk,
          pmtrack,
 	 wctrack,
-	 tof
+	 tof,
+	 murs
          #cctrack
          #gaushit
          #corner,
