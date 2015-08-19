@@ -171,6 +171,8 @@ ParticleIdentificationSlicing::ParticleIdentificationSlicing(fhicl::ParameterSet
 
 void ParticleIdentificationSlicing::produce(art::Event & e)
 {
+  //  std::cout << "Size of penetrationdepthinfo: " << fPenetrationDepthInfo.size() << std::endl;
+
   //Get the collection of WCTracks produced by the WCTrackBuilder module
   art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle;
   e.getByLabel(fWCTrackModuleLabel,WCTrackColHandle);

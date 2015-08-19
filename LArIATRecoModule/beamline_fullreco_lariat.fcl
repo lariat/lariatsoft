@@ -35,7 +35,7 @@ physics:
   tof:         @local::lariat_tof
   murs:        @local::lariat_murs
   pid:         @local::lariat_pid
-  agcounter:   @local::lariat_agcounter
+  agcounter:   @local::lariat_aerogel
  }
 
  analyzers:
