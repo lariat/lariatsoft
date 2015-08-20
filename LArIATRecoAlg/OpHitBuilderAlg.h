@@ -29,7 +29,6 @@
 #include <TH1F.h>
 
 
-
 //--------------------------------------------
 class OpHitBuilderAlg{
  public:
@@ -39,14 +38,20 @@ class OpHitBuilderAlg{
   ~OpHitBuilderAlg();
 
   void reconfigure( fhicl::ParameterSet const& pset );
-  std::vector<short> GetHits( std::vector<short>&, Double_t );
-  std::vector<short> MakeGradient( std::vector<short> );
+
+  std::vector<short>                GetHits( std::vector<short>&);
+  std::vector<Double_t>             MakeGradient( std::vector<short> );
+  Double_t                          GetLocalRMS( std::vector<Double_t>, short, short);
+  std::vector<std::vector<double>>  CalcHitInfo( std::vector<short>, std::vector<short> );
   
  private:
-
-  // ROOT histograms go here
-  // TH1F* ustof_histo;
-  // TH1F* timestamp_histo;
+  
+  Double_t  fGradientHitThreshold;
+  Double_t  fGradientRMSFilterThreshold;
+  Double_t  fMinHitSeparation;  
+ 
+  // ROOT objects
+  TF1 *prepulse_exp_fit;
   
 };
 

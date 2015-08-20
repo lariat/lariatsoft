@@ -52,7 +52,10 @@ physics:
 
 }
 
+physics.producers.MichelWfmReco.Verbosity: "true"
 physics.producers.MichelWfmReco.UseTriggerFilter: "false"
-physics.producers.MichelWfmReco.GradientHitThreshold: -10
+physics.producers.MichelWfmReco.OpHitBuilderAlg.GradientHitThreshold: -10
+physics.producers.MichelWfmReco.OpHitBuilderAlg.GradientRMSFilterThreshold: 5
+physics.producers.MichelWfmReco.OpHitBuilderAlg.MinHitSeparation: 100 #samples (ns)
 physics.producers.MichelWfmReco.TriggerUtility: "FragmentToDigit"
 physics.producers.MichelWfmReco.TriggerFilterAlg.Verbosity: true

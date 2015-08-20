@@ -46,6 +46,7 @@
 
 //ROOT Includes
 #include <TH1F.h>
+#include <TTree.h>
 
 // LArSoft Includes
 #include "Utilities/AssociationUtil.h"
@@ -95,11 +96,32 @@ private:
 
   // Switch to use the trigger filter or not
   bool      bUseTriggerFilter;
-  Double_t  fGradientHitThreshold;
-  
+  bool      bVerbose;
+  float     V1751PostPercent;
+
   // Alg objects
   OpHitBuilderAlg   fOpHitBuilderAlg; 
   TriggerFilterAlg  fTrigFiltAlg;
+
+  // Variables
+  Int_t       Timestamp;
+  Double_t    DeltaTime;
+  Int_t       NumHits;
+  Double_t    Amplitude;
+  Double_t    Charge_100ns; 
+
+  // Histograms
+  TH1F* h_NumOpHits;
+  TH1F* h_DeltaTime;
+  
+  // TTree info
+  TTree* MichelDataTree;
+  TBranch* b_Timestamp;
+  TBranch* b_NumHits;
+  TBranch* b_DeltaTime;
+  TBranch* b_Amplitude;
+  TBranch* b_Charge_100ns;
+
 };
 
 
@@ -137,6 +159,10 @@ void MichelWfmReco::produce(art::Event & e)
     art::Ptr<raw::Trigger> theTrigger = tdu.EventTriggersPtr()[trig];
     raw::Trigger thisTrigger = *theTrigger;
     
+    // filter for the MICHEL trigger pattern (note that for some runs,
+    // particularly for those with the optimized Michel trigger setup, 
+    // unfortunately the trigger inputs were not being saved and thus 
+    // the filter won't work).
     bool isMichel; 
     // filter for MICHEL trigger
     if (bUseTriggerFilter){
@@ -147,40 +173,61 @@ void MichelWfmReco::produce(art::Event & e)
     }
 
     if ( isMichel ){
-      
-      std::cout<<"We're about to try getting the waveform....\n";
 
       // get the OpDetPulses; skip if empty
       art::PtrVector<raw::OpDetPulse> OpPulses = tdu.TriggerOpDetPulsesPtr(trig);
-
-      std::cout<<"We got it..  size = "<<OpPulses.size()<<"\n";
       if ( OpPulses.size() == 0 ) continue;
       
       // loop through the pulses
-      for (unsigned int i=0; i < OpPulses.size(); ++i){
-
-        std::cout<<"   ... pulse \n";
+      for (unsigned int pulse_index =0; pulse_index < OpPulses.size(); ++pulse_index){
 
         // get the OpDetPulses
-        raw::OpDetPulse ThePulse = *OpPulses[i];
-        std::cout<<"   waveform length: "<<ThePulse.Waveform().size()<<std::endl;
+        raw::OpDetPulse ThePulse = *OpPulses[pulse_index];
 
-        std::cout<<"   opchannel      : "<<ThePulse.OpChannel()<<std::endl;
         // if this is the ETL, continue onward
         if (ThePulse.OpChannel() == 1){
+          
+          // Initialize variables to be added to tree
+          Timestamp   = -999;
+          NumHits     = -9;
+          DeltaTime   = -99.;
+          Amplitude   = -99.;
+          Charge_100ns= -99.;
 
-          std::cout << "Huzzah! it's the ETL!\n";
+          // find trigger time
+          Timestamp = ThePulse.FirstSample();
+
           // save the ETL waveform into a new vector of shorts
           std::vector<short> ETL_waveform = ThePulse.Waveform();
-             
-          // perform hit-finding/filtering
-          std::vector<short> hit_times = fOpHitBuilderAlg.GetHits(ETL_waveform, fGradientHitThreshold);
+          Int_t NSamples = ETL_waveform.size();
+          short PostPercentMark = NSamples*(1.-V1751PostPercent);
+          std::cout<<"NSamples: "<<NSamples<<"   PostPercent Mark: "<<PostPercentMark<<"\n";
 
-          std::cout << "We found "<<hit_times.size()<<" hits\n";
-          for (unsigned int i=0; i<hit_times.size(); i++){
-            std::cout<<"   "<<i<<"    t = "<<hit_times[i]<<"\n";
+          // perform hit-finding/filtering
+          std::vector<short> hit_times = fOpHitBuilderAlg.GetHits(ETL_waveform);
+          NumHits = hit_times.size();
+
+          std::cout << "We found "<<NumHits<<" hits\n";
+          for (Int_t i=0; i<NumHits; i++){
+            std::cout<<"   "<<i<<"    t = "<<hit_times[i]<<"  ("<<hit_times[i]/double(NSamples)<<" of total readout window)\n";
           }
 
+          // fill Nhits histo
+          h_NumOpHits ->Fill(NumHits);
+          
+          // if there were only 2 hits (one before PostPercent, one ~at PostPercent 
+          if( (NumHits == 2) && (hit_times[0] < PostPercentMark) && ( abs(hit_times[1]-PostPercentMark) <= 0.01*NSamples) ){
+            
+            std::cout << "    passes Michel cut \n";
+            DeltaTime = hit_times[1] - hit_times[0];
+            h_DeltaTime->Fill(DeltaTime);
+           
+            // calculate  
+            std::vector<std::vector<double>> hit_info = fOpHitBuilderAlg.CalcHitInfo(ETL_waveform, hit_times);
+          
+          }
+          
+          MichelDataTree->Fill();
 
           //printf("Size of ETL waveform is %lu",n);
         } // <-- endif PMT is ETL (OpChannel == 1)
@@ -199,6 +246,23 @@ void MichelWfmReco::produce(art::Event & e)
 
 void MichelWfmReco::beginJob()
 {
+  // Opens up the file service to read information from the ROOT file input
+  art::ServiceHandle<art::TFileService> tfs;
+
+  MichelDataTree        = tfs->make<TTree>("MichelDataTree","MichelDataTree");
+  b_Timestamp           = MichelDataTree->Branch("Timestamp",&Timestamp,"Timestamp/I");
+  b_NumHits             = MichelDataTree->Branch("NumHits",&NumHits,"NumHits/I");
+  b_DeltaTime           = MichelDataTree->Branch("DeltaTime",&DeltaTime,"DeltaTime/D");
+  b_Amplitude           = MichelDataTree->Branch("Amplitude",&Amplitude,"Amplitude/D");
+  b_Charge_100ns        = MichelDataTree->Branch("Charge_100ns",&Charge_100ns,"Charge_100ns/D");
+  
+  h_NumOpHits           = tfs->make<TH1F>("OpHitsPerEvent"    , "OpHitsPerEvent",     10,    0., 10.);
+  h_NumOpHits           ->GetXaxis()->SetTitle("Num hits");
+  h_NumOpHits           ->GetYaxis()->SetTitle("Counts");
+
+  h_DeltaTime           = tfs->make<TH1F>("DeltaTime"         , "DeltaTime",          800,    0., 8000.);
+  h_DeltaTime           ->GetXaxis()->SetTitle("Time difference in two-hit events");
+  h_DeltaTime           ->GetYaxis()->SetTitle("Counts");
 }
 
 void MichelWfmReco::beginRun(art::Run & r)
@@ -225,9 +289,10 @@ void MichelWfmReco::endSubRun(art::SubRun & sr)
 void MichelWfmReco::reconfigure(fhicl::ParameterSet const & p)
 {
   // Pass name of TriggerUtility
-  fTriggerUtility       = p.get< std::string >("TriggerUtility","FragmentToDigit");
-  bUseTriggerFilter      = p.get< bool >("UseTriggerFilter","false");
-  fGradientHitThreshold  = p.get< Double_t >("GradientHitThreshold",-10);
+  fTriggerUtility         = p.get< std::string >("TriggerUtility","FragmentToDigit");
+  bUseTriggerFilter       = p.get< bool >("UseTriggerFilter","false");
+  bVerbose                = p.get< bool >("Verbosity","false");
+  V1751PostPercent        = p.get< float >("V1751PostPercent",0.7);
   
 }
 
