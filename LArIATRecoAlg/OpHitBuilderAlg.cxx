@@ -65,6 +65,12 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
 //          a gradient-threshold method, and each is required to exceed some 
 //          multiple of the local RMS of the gradient (calculated in a window 
 //          preceding the hit) to reduce the frequency of fake hits.
+//          
+//          Parameters to set in your FCL if you want to fiddle with things:
+//              - GradientHitThreshold (default -10)
+//              - GradientRMSFilterThreshold (default 5)
+//              - MinHitSeparation (default 100 [ns])
+//
 std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short>& wfm) 
 {
   std::vector<short> hits;
