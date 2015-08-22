@@ -1,0 +1,8 @@
+BEGIN_PROLOG
+
+standard_sliceralg:
+{
+    ClockCorrectionAlg:      @local::standard_clockcorrectionalg
+}
+
+END_PROLOG
