@@ -69,19 +69,6 @@ namespace SlicerCheck {
 
    private:
 
-    // generate a vector of intervals from a vector of data blocks
-    std::vector< std::pair< double, double> > CreateIntervals(std::vector< rdu::DataBlock > const& DataBlocks,
-                                                              unsigned int                  const& DeviceID,
-                                                              double                        const& PreTriggerWindow,
-                                                              double                        const& PostTriggerWindow);
-
-    // merge overlapping intervals in a vector of intervals
-    std::vector< std::pair< double, double > > IntervalsSelfMerge(std::vector< std::pair< double, double > > const& Intervals);
-
-    // merge overlapping intervals between two vectors of intervals
-    std::vector< std::pair< double, double > > MergeIntervals(std::vector< std::pair< double, double > > const& IntervalsA,
-                                                              std::vector< std::pair< double, double > > const& IntervalsB);
-
     std::string fRawFragmentLabel;    ///< label for module producing artdaq fragments
     std::string fRawFragmentInstance; ///< instance label for artdaq fragments
 
