@@ -55,12 +55,14 @@ namespace rdu {
     fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e5);
     fSampleSlopeCutLower          = pset.get< double >("SampleSlopeCutLower",          0.9);
     fSampleSlopeCutUpper          = pset.get< double >("SampleSlopeCutUpper",          1.1);
+
+    return;
   }
 
   //-----------------------------------------------------------------------
-  void ClockCorrectionAlg::UnweightedLinearFit(std::vector< std::pair< double, double> > const& Data,
-                                               double                                         & Slope,
-                                               double                                         & Intercept)
+  void ClockCorrectionAlg::UnweightedLinearFit(std::vector< std::pair<double, double> > const& Data,
+                                               double                                        & Slope,
+                                               double                                        & Intercept)
   {
     const size_t NumberDataPoints = Data.size();
 
@@ -334,8 +336,8 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  void ClockCorrectionAlg::GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >  const& TimeStampMap,
-                                                        std::map< unsigned int, std::pair< double, double > > & ClockCorrectionParameters)
+  void ClockCorrectionAlg::GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >       const& TimeStampMap,
+                                                        std::map< unsigned int, std::pair< double, double > >      & ClockCorrectionParameters)
   {
     // Container for clock correction parameters. The key is the device
     // ID, the mapped value is a pair. The first value of the pair is the

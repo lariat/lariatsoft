@@ -30,11 +30,11 @@
 #include <utility>
 #include <vector>
 
-enum {
-  TDC_DEVICE_ID = 32,
-};
-
 namespace rdu {
+
+  enum {
+    TDC_DEVICE_ID = 32,
+  };
 
   struct DataBlock {
 
@@ -124,8 +124,8 @@ namespace rdu {
                                    std::map< unsigned int, std::vector< double > > & TimeStampMap);
 
     // get clock correction parameters
-    void GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >  const& TimeStampMap,
-                                      std::map< unsigned int, std::pair< double, double > > & ClockCorrectionParameters);
+    void GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >       const& TimeStampMap,
+                                      std::map< unsigned int, std::pair< double, double > >      & ClockCorrectionParameters);
 
     // this method is used for testing porpoises
     void hello_world();
@@ -144,9 +144,9 @@ namespace rdu {
     ///////////////////////////////////////////////////////////////////////////
 
     // unweighted linear fit
-    void UnweightedLinearFit(std::vector< std::pair< double, double> > const& Data,
-                             double                                         & Slope,
-                             double                                         & Intercept);
+    void UnweightedLinearFit(std::vector< std::pair<double, double> > const& Data,
+                             double                                        & Slope,
+                             double                                        & Intercept);
 
     // get residuals and residuals sum
     void GetLinearResiduals(std::vector< std::pair<double, double> > const& Data,
