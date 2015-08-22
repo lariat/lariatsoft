@@ -1,0 +1,70 @@
+#include "services_lariat.fcl"
+#include "clockcorrectionalg.fcl"
+#include "sliceralg.fcl"
+
+process_name: SlicerCheck
+
+services:
+{
+  TFileService: { fileName: "SlicerCheck.root" }
+  Timing:       {}
+  RandomNumberGenerator: {} 
+  message:      @local::standard_info
+  user:         @local::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+
+  # Number of events to analyze; "-1" means all of the events in the input
+  # file. You can override this value with the "-n" option on the command line. 
+  maxEvents:  -1 
+}
+
+# This is empty, because we're not writing any art::Events to an output file. 
+outputs: {}
+
+physics:
+{
+  analyzers:
+  {
+    SlicerCheck:
+    {
+      # The "module_type" tells us which module to run. The name here
+      # matches the name supplied to DEFINE_ART_MODULE near the end of
+      # SlicerCheck_module.cc.
+
+      module_type:             "SlicerCheck"
+      SlicerAlg:               @local::standard_sliceralg
+
+      # Pre-/post-trigger windows in microseconds. A value of -1 will
+      # utilize values that are dependent on the lariat_prd database.
+
+      V1740PreTriggerWindow:   -1  # 393.216
+      V1740PostTriggerWindow:  -1  # 393.216
+      V1740BPreTriggerWindow:  -1  # 393.216
+      V1740BPostTriggerWindow: -1  # 393.216
+      V1751PreTriggerWindow:   -1  # 0.64
+      V1751PostTriggerWindow:  -1  # 28.672
+      TDCPreTriggerWindow:     -1  # 1.196
+      TDCPostTriggerWindow:    -1  # 1.196
+    }
+  }
+
+  analysis: [ SlicerCheck ]
+
+  end_paths: [ analysis ]  
+}
+
+services.user.SeedService: @local::random_seedservice
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.MinSamples:                   2
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.ResidualThreshold:            1
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.MaxTrials:                    10000
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.StopResidualsSum:             0
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.StopProbability:              1
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e5  # microseconds
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
+
