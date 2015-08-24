@@ -78,10 +78,6 @@ namespace rdu {
     // this method is used for testing dolphins
     void hello_kitty();
 
-    // maximum values of different types
-    double fMaxDouble;
-    size_t fMaxSize_T;
-
     // parameters for generating intervals
     double fV1740PreTriggerWindow;
     double fV1740PostTriggerWindow;

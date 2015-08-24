@@ -30,10 +30,6 @@ namespace rdu {
   SlicerAlg::SlicerAlg(fhicl::ParameterSet const& pset)
     : fClockCorrectionAlg(pset.get<fhicl::ParameterSet>("ClockCorrectionAlg"))
   {
-    // since we can't use infinity here, this will have to do
-    fMaxDouble = std::numeric_limits<double>::max();
-    fMaxSize_T = std::numeric_limits<size_t>::max();
-
     // read in parameters from .fcl files
     this->reconfigure(pset);
   }
@@ -282,6 +278,9 @@ namespace rdu {
       MergedIntervals.push_back(std::make_pair(t_a, t_b));
 
     } // end loop over IntervalsB
+
+    // self-merging of intervals
+    MergedIntervals = this->IntervalsSelfMerge(MergedIntervals);
 
     // sort intervals in ascending order
     std::sort(MergedIntervals.begin(), MergedIntervals.end());
