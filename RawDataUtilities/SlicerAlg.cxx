@@ -289,8 +289,8 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  //void SlicerAlg::Slice(const LariatFragment * data)
-  std::vector< rdu::DataBlockCollection > SlicerAlg::Slice(const LariatFragment * data)
+  std::vector< rdu::DataBlock > SlicerAlg::GetDataBlocks(const LariatFragment * data)
+  //void SlicerAlg::GetDataBlocks(const LariatFragment * data, std::vector< rdu::DataBlock > & DataBlocks)
   {
 
     std::vector< rdu::DataBlock > DataBlocks;
@@ -328,6 +328,19 @@ namespace rdu {
               [] (rdu::DataBlock const& a, rdu::DataBlock const& b) {
                 return a.correctedTimestamp < b.correctedTimestamp;
               });
+
+    return DataBlocks;
+    //return;
+  }
+
+  //-----------------------------------------------------------------------
+  std::vector< rdu::DataBlockCollection > SlicerAlg::Slice(const LariatFragment * data)
+  //void SlicerAlg::Slice(const LariatFragment * data, std::vector< rdu::DataBlockCollection > & Collections)
+  {
+
+    std::vector< rdu::DataBlock > DataBlocks;
+    DataBlocks = this->GetDataBlocks(data);
+    //this->GetDataBlocks(data, DataBlocks);
 
     //for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
     //  rdu::DataBlock const& block = DataBlocks.at(block_idx);
@@ -385,7 +398,7 @@ namespace rdu {
     //       how to convert tdc_config_tdc_gatewidth and
     //       tdc_config_tdc_pipelinedelay into a TDC
     //       readout window length.
-    TDCIntervals = this->CreateIntervals(DataBlocks, 32, fTDCPreTriggerWindow, fTDCPostTriggerWindow);
+    TDCIntervals = this->CreateIntervals(DataBlocks, rdu::TDC_DEVICE_ID, fTDCPreTriggerWindow, fTDCPostTriggerWindow);
 
     // self-merge intervals
     CAENBoard0Intervals  = this->IntervalsSelfMerge(CAENBoard0Intervals);

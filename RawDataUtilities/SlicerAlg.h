@@ -66,9 +66,13 @@ namespace rdu {
     std::vector< std::pair< double, double > > MergeIntervals(std::vector< std::pair< double, double > > const& IntervalsA,
                                                               std::vector< std::pair< double, double > > const& IntervalsB);
 
+    // get data blocks with corrected timestamps
+    std::vector< rdu::DataBlock > GetDataBlocks(const LariatFragment * data);
+    //void GetDataBlocks(const LariatFragment * data, std::vector< rdu::DataBlock > & DataBlocks);
+
     // slice
-    //void Slice(const LariatFragment * data);
     std::vector< rdu::DataBlockCollection > Slice(const LariatFragment * data);
+    //void Slice(const LariatFragment * data, std::vector< rdu::DataBlockCollection > & Collections);
 
     // this method is used for testing porpoises
     void hello_world();
