@@ -20,6 +20,7 @@
 #include <cmath>
 #include <iostream>
 #include <bitset>
+#include <map>
 
 //LArSoft/LArIATSoft includes
 #include "TriggerFilterAlg.h"
@@ -49,31 +50,84 @@ void TriggerFilterAlg::reconfigure( fhicl::ParameterSet const& pset )
 }
 
 //--------------------------------------------------------------
-bool TriggerFilterAlg::doesTriggerPassFilter(raw::Trigger theTrigger, std::string filterPattern )
+bool TriggerFilterAlg::doesTriggerPassFilter(raw::Trigger theTrigger, std::string largeFilterPattern )
 {
   //First convert the string format of the filter pattern to a 32-bit value
   //to be compared to the TriggerBits member of the Trigger class
 
   //Creating the TRIGGER and VETO choice vectors
-  std::vector<std::string> filterTriggerInputs;
-  std::vector<std::string> filterVetoInputs;
-  parseFilterPattern( filterPattern, filterTriggerInputs, filterVetoInputs );
+  //  std::vector<std::string> filterTriggerInputs;
+  //  std::vector<std::string> filterVetoInputs;
+  //  parseFilterPattern( filterPattern, filterTriggerInputs, filterVetoInputs );
 
-  //Checking to make sure that the filter patterns are all included in current 16 options
-  bool isPatternValid = verifyInputPattern( filterTriggerInputs, filterVetoInputs );
-  if( isPatternValid == false ){
-    std::cout << "You have input a filter pattern specifying a device that is not in the 16 trigger inputs for run "
-	      << fRun << ". Please correct. Returning false for filter abort." << std::endl;
-    return isPatternValid;
-  }
+  //Parsing the AND/OR format of the filter pattern
+  std::vector<std::string> ANDPatterns;
+  parseANDPatterns( largeFilterPattern, ANDPatterns );
+    
+  //Now loop through the AND patterns
+  bool didAnyTriggerPatternPassFilter = false;
+  for( size_t iAND = 0; iAND < ANDPatterns.size(); ++iAND ){
+    
+    //Creating the TRIGGER and VETO choice vectors
+    std::string filterPattern = ANDPatterns.at(iAND);
+    std::vector<std::string> filterTriggerInputs;
+    std::vector<std::string> filterVetoInputs;
+    parseFilterPattern( filterPattern, filterTriggerInputs, filterVetoInputs );
+    
+    //Checking to make sure that the filter patterns are all included in current 16 options
+    bool isPatternValid = verifyInputPattern( filterTriggerInputs, filterVetoInputs );
+    if( isPatternValid == false ){
+      std::cout << "You have input a filter pattern in group " << iAND << " specifying a device that is not in the 16 trigger inputs for run "
+		<< fRun << ". Please correct. Returning false for filter abort." << std::endl;
+      didAnyTriggerPatternPassFilter = false;
+      break;
+    }
 
-  //If the input patterns are all valid, we finally compare them to the triggerBits
-  bool didTriggerPassFilter = comparePatternToTrigger( filterTriggerInputs, filterVetoInputs, theTrigger );
-  if( fVerbose ){ 
-    if( didTriggerPassFilter ){ std::cout << "Trigger passed filter!" << std::endl; }
-    else{ std::cout << "Trigger failed filter." << std::endl; }
+    //If the input patterns are all valid, we finally compare them to the triggerBits
+    bool didTriggerPassFilter = comparePatternToTrigger( filterTriggerInputs, filterVetoInputs, theTrigger );
+    if( fVerbose ){ 
+      if( didTriggerPassFilter ){ std::cout << "Trigger passed filter " << iAND << "!" << std::endl; }
+      else{ std::cout << "Trigger failed filter " << iAND << "." << std::endl; }
+    }
+    
+    //If anything is true in the or list, return true
+    if( didTriggerPassFilter ){
+      didAnyTriggerPatternPassFilter = true;
+    }
   }
-  return didTriggerPassFilter;
+  
+  
+
+
+  return didAnyTriggerPatternPassFilter;
+  
+}
+
+//============================================================================================
+//Look for all of the groups of patterns that form ANDs
+void TriggerFilterAlg::parseANDPatterns( std::string filterPattern,
+					 std::vector<std::string> & ANDGroups )
+{
+  //Loop through filter pattern and look for "<" symbols
+  bool insideAND = false;
+  std::string theNextANDGroup;
+  for( size_t iChar = 0; iChar < filterPattern.size(); ++iChar ){
+    if( filterPattern.at(iChar) == '>' ){ 
+      insideAND = false;
+      ANDGroups.push_back(theNextANDGroup);
+      theNextANDGroup.clear();
+    }
+    if( insideAND ) theNextANDGroup.push_back(filterPattern.at(iChar));
+    if( filterPattern.at(iChar) == '<' ) insideAND = true;
+  }
+  std::cout << "AND patterns parsed!" << std::endl;
+  
+  //Sanity check
+  if( fVerbose ){
+    for( size_t iGroup = 0; iGroup < ANDGroups.size(); ++iGroup ){
+      std::cout << "Group Found: " << ANDGroups.at(iGroup) << std::endl;
+    }
+  }
   
 }
 
@@ -199,7 +253,6 @@ void TriggerFilterAlg::initializeBitsToStrings( std::map<std::string,bool> & wha
     }
   }
 
-
   if( fVerbose ){
     //Temporary testing
     std::bitset<32> bits (theTrigger.TriggerBits());
@@ -236,6 +289,45 @@ void TriggerFilterAlg::loadXMLDatabaseTable( int run )
   
   //Loading the corresponding string values into a map with the labels
   fTriggerInputConfigValues = fDatabaseUtility->GetConfigValues(fTriggerInputConfigParams,fRun);
+
+  //Switching WC#IGNOREME to WC#
+  std::map<std::string,std::string>::iterator iter;
+  for( iter = fTriggerInputConfigValues.begin(); iter != fTriggerInputConfigValues.end(); ++iter ){
+    if( iter->second == "WC1IGNOREME" ){
+      std::string first = iter->first;
+      std::string second = "WC1";
+      fTriggerInputConfigValues.erase(iter);
+      fTriggerInputConfigValues.emplace(first,second);
+    }   
+    if( iter->second == "WC2IGNOREME" ){
+      std::string first = iter->first;
+      std::string second = "WC2";
+      fTriggerInputConfigValues.erase(iter);
+      fTriggerInputConfigValues.emplace(first,second);
+    }   
+    if( iter->second == "WC3IGNOREME" ){
+      std::string first = iter->first;
+      std::string second = "WC3";
+      fTriggerInputConfigValues.erase(iter);
+      fTriggerInputConfigValues.emplace(first,second);
+    }   
+    if( iter->second == "WC4IGNOREME" ){
+      std::string first = iter->first;
+      std::string second = "WC4";
+      fTriggerInputConfigValues.erase(iter);
+      fTriggerInputConfigValues.emplace(first,second);
+    }   
+  }
+  
+  //Sanity check
+  if( fVerbose ){
+    std::cout << "---------> TRIGGER INPUT CONFIG SPECIAL" << std::endl;
+    for( size_t iTrig = 0; iTrig < fNumTrigInputs; ++iTrig ){
+      std::cout << "Bit: " << iTrig << ", Device: " << fTriggerInputConfigValues.at(fTriggerInputConfigParams.at(iTrig)) << std::endl;
+    }
+  }
+    
+
 }
 
 //============================================================================================
