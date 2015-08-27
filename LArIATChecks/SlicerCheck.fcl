@@ -41,14 +41,14 @@ physics:
       # Pre-/post-trigger windows in microseconds. A value of -1 will
       # utilize values that are dependent on the lariat_prd database.
 
-      V1740PreTriggerWindow:   -1  # 393.216
-      V1740PostTriggerWindow:  -1  # 393.216
-      V1740BPreTriggerWindow:  -1  # 393.216
-      V1740BPostTriggerWindow: -1  # 393.216
-      V1751PreTriggerWindow:   -1  # 0.64
-      V1751PostTriggerWindow:  -1  # 28.672
-      TDCPreTriggerWindow:     -1  # 1.196
-      TDCPostTriggerWindow:    -1  # 1.196
+      V1740PreAcquisitionWindow:  -1  # 393.216
+      V1740AcquisitionWindow:     -1  # 393.216
+      V1740BPreAcquisitionWindow: -1  # 393.216
+      V1740BAcquisitionWindow:    -1  # 393.216
+      V1751PreAcquisitionWindow:  -1  # 0.64
+      V1751AcquisitionWindow:     -1  # 28.672
+      TDCPreAcquisitionWindow:    -1  # 1.196
+      TDCAcquisitionWindow:       -1  # 1.196
     }
   }
 
