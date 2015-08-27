@@ -43,21 +43,21 @@ namespace rdu {
     // this method reads in any parameters from the .fcl files
     void reconfigure(fhicl::ParameterSet const& pset);
 
-    // configure interval pre-/post-trigger window lengths
-    void Configure(double V1740PreTriggerWindow,
-                   double V1740PostTriggerWindow,
-                   double V1740BPreTriggerWindow,
-                   double V1740BPostTriggerWindow,
-                   double V1751PreTriggerWindow,
-                   double V1751PostTriggerWindow,
-                   double TDCPreTriggerWindow,
-                   double TDCPostTriggerWindow);
+    // configure interval pre-acquisition and acquisition window lengths
+    void Configure(double V1740PreAcquisitionWindow,
+                   double V1740AcquisitionWindow,
+                   double V1740BPreAcquisitionWindow,
+                   double V1740BAcquisitionWindow,
+                   double V1751PreAcquisitionWindow,
+                   double V1751AcquisitionWindow,
+                   double TDCPreAcquisitionWindow,
+                   double TDCAcquisitionWindow);
 
     // generate a vector of intervals from a vector of data blocks
     std::vector< std::pair< double, double> > CreateIntervals(std::vector< rdu::DataBlock > const& DataBlocks,
                                                               unsigned int                  const& DeviceID,
-                                                              double                        const& PreTriggerWindow,
-                                                              double                        const& PostTriggerWindow);
+                                                              double                        const& PreAcquisitionWindow,
+                                                              double                        const& AcquisitionWindow);
 
     // merge overlapping intervals in a vector of intervals
     std::vector< std::pair< double, double > > IntervalsSelfMerge(std::vector< std::pair< double, double > > const& Intervals);
@@ -83,14 +83,14 @@ namespace rdu {
     void hello_kitty();
 
     // parameters for generating intervals
-    double fV1740PreTriggerWindow;
-    double fV1740PostTriggerWindow;
-    double fV1740BPreTriggerWindow;
-    double fV1740BPostTriggerWindow;
-    double fV1751PreTriggerWindow;
-    double fV1751PostTriggerWindow;
-    double fTDCPreTriggerWindow;
-    double fTDCPostTriggerWindow;
+    double fV1740PreAcquisitionWindow;
+    double fV1740AcquisitionWindow;
+    double fV1740BPreAcquisitionWindow;
+    double fV1740BAcquisitionWindow;
+    double fV1751PreAcquisitionWindow;
+    double fV1751AcquisitionWindow;
+    double fTDCPreAcquisitionWindow;
+    double fTDCAcquisitionWindow;
 
     // clock correction algorithm
     rdu::ClockCorrectionAlg fClockCorrectionAlg;
