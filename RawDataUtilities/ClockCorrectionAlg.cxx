@@ -176,6 +176,7 @@ namespace rdu {
                                         double                                        & Slope,
                                         double                                        & Intercept)
   {
+
     // random seed for random thoughts
     std::srand(std::time(0));
 
@@ -248,6 +249,7 @@ namespace rdu {
       }
       catch (cet::exception &e) {
         // if fit fails, continue
+        std::cout << "Fit failed, continuing." << std::endl;
         continue;
       }
 
@@ -398,6 +400,9 @@ namespace rdu {
         } // end loop over TimeStampsB
       } // end loop over TimeStampsA
 
+      // skip if there are less than 2 data points
+      if (Data.size() < 2) continue;
+
       // clock correction parameters
       double Slope = 0;
       double Intercept = 0;
@@ -442,8 +447,14 @@ namespace rdu {
                                       << numberCaenFrags
                                       << " CAEN fragments";
 
-    if (numberCaenFrags > 0)
+    if (numberCaenFrags > 0) {
       mf::LogInfo("ClockCorrectionAlg") << "Looking at CAEN fragments...";
+    }
+    else {
+      // continue to the next file if no CAEN fragments are found
+      throw art::Exception(art::errors::NotFound)
+        << "No CAEN fragments found.";
+    }
 
     for (size_t i = 0; i < numberCaenFrags; ++i) {
 
