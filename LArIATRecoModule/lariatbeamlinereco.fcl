@@ -39,4 +39,11 @@ lariat_murs:            #Taken from MuonRangeStackHitsSlicing.fcl by Greg Pullia
   NumberEventsToPlotWFs: 40	
 }
 
+lariat_aerogel:
+{
+  module_type:           AerogelCherenkovCounterSlicing
+  AGBuilderAlg:          @local::lariat_aerogel
+  SourceLabel:           SlicerInput
+}
+
 END_PROLOG

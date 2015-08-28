@@ -30,9 +30,10 @@ physics:
 
  producers:
  {
-  wctrack:     @local::lariat_wctrackbuilder  #produces the WCTrack objects
-  tof:         @local::lariat_tof             #produces the TOF objects
-  murs:        @local::lariat_murs            #produces the MuonRangeStackHits objects
+  wctrack:     @local::lariat_wctrackbuilder
+  tof:         @local::lariat_tof
+  murs:        @local::lariat_murs
+  agcounter:   @local::lariat_aerogel
  }
 
  analyzers:
@@ -41,7 +42,7 @@ physics:
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- reco: [ wctrack, tof, murs ]
+ reco: [ wctrack, tof, murs, agcounter ]
  ana:  [  ]
 
  #define the output stream, there could be more than one if using filters 
