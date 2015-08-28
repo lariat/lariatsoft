@@ -386,6 +386,9 @@ namespace rdu {
 
       std::vector<double> const& TimeStampsB = TimeStampMap.at(DeviceID);
 
+      // skip if there are less than 2 timestamps
+      if (TimeStampsA.size() < 2 or TimeStampsB.size() < 2) continue;
+
       std::vector< std::pair< double, double > > Data;
 
       for (size_t m = 0; m < TimeStampsA.size(); ++m) {
