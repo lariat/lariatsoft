@@ -374,6 +374,9 @@ namespace rdu {
 
     } // end loop over TimeStampMap
 
+    // return if there is no reference clock
+    if (TimeStampMap.count(ReferenceClockDeviceID) < 1) return;
+
     // get reference timestamps
     std::vector<double> const& TimeStampsA = TimeStampMap.at(ReferenceClockDeviceID);
 
@@ -453,11 +456,11 @@ namespace rdu {
     if (numberCaenFrags > 0) {
       mf::LogInfo("ClockCorrectionAlg") << "Looking at CAEN fragments...";
     }
-    else {
-      // continue to the next file if no CAEN fragments are found
-      throw art::Exception(art::errors::NotFound)
-        << "No CAEN fragments found.";
-    }
+    //else {
+    //  // continue to the next file if no CAEN fragments are found
+    //  throw art::Exception(art::errors::NotFound)
+    //    << "No CAEN fragments found.";
+    //}
 
     for (size_t i = 0; i < numberCaenFrags; ++i) {
 
