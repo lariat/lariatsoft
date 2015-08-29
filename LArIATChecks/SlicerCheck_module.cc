@@ -91,6 +91,8 @@ namespace SlicerCheck {
     // (key, value) pair for the database query result
     std::map< std::string, std::string > fConfigValues;
 
+    size_t CastToSizeT(std::string const& String);
+
     // V1495 delay for the delayed trigger
     size_t fV1495DelayTicks;
     double fV1495Delay;
@@ -231,11 +233,11 @@ namespace SlicerCheck {
     fTPCTree->Branch("SubRun",             &fSubRun,             "SubRun/I");
     fTPCTree->Branch("TPCIntervalsDeltaT", &fTPCIntervalsDeltaT, "TPCIntervalsDeltaT/D");
 
-    fIntervalsDeltaTHistogram      = tfs->make<TH1D>("IntervalsDeltaT",   ";#Delta t [ms];Entries per ms", 5000, -0.5, 4999.5);
-    fIntervalsDeltaTZHistogram     = tfs->make<TH1D>("IntervalsDeltaTZ",  ";#Delta t [ms];Entries per 0.001 ms", 1000, 0, 1);
-    fNumberTPCReadoutsHistogram    = tfs->make<TH1D>("NumberTPCReadouts", ";Number of TPC readouts;Entries", 10, -0.5, 9.5);
-    fTPCIntervalsDeltaTHistogram   = tfs->make<TH1D>("TPCIntervalsDeltaT",   ";#Delta t [ms];Entries per ms", 5000, -0.5, 4999.5);
-    fTPCIntervalsDeltaTZHistogram  = tfs->make<TH1D>("TPCIntervalsDeltaTZ",  ";#Delta t [ms];Entries per 0.001 ms", 1000, 0, 1);
+    fIntervalsDeltaTHistogram      = tfs->make<TH1D>("IntervalsDeltaT",     ";#Delta t [ms];Entries per ms", 5000, -0.5, 4999.5);
+    fIntervalsDeltaTZHistogram     = tfs->make<TH1D>("IntervalsDeltaTZ",    ";#Delta t [ms];Entries per 0.001 ms", 1000, 0, 1);
+    fNumberTPCReadoutsHistogram    = tfs->make<TH1D>("NumberTPCReadouts",   ";Number of TPC readouts;Entries", 10, -0.5, 9.5);
+    fTPCIntervalsDeltaTHistogram   = tfs->make<TH1D>("TPCIntervalsDeltaT",  ";#Delta t [ms];Entries per ms", 5000, -0.5, 4999.5);
+    fTPCIntervalsDeltaTZHistogram  = tfs->make<TH1D>("TPCIntervalsDeltaTZ", ";#Delta t [ms];Entries per 0.001 ms", 1000, 0, 1);
 
     return;
   }
@@ -246,17 +248,43 @@ namespace SlicerCheck {
     fRun = run.run();
     fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, fRun);
 
-    fV1495DelayTicks       = static_cast <size_t> (std::stoi(fConfigValues["v1495_config_v1495_delay_ticks"]));
-    fV1740PostPercent      = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_postpercent"]));
-    fV1740BPostPercent     = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_postpercent"]));
-    fV1751PostPercent      = static_cast <size_t> (std::stoi(fConfigValues["v1751_config_caen_postpercent"]));
-    fV1740RecordLength     = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_recordlength"]));
-    fV1740BRecordLength    = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_recordlength"]));
-    fV1751RecordLength     = static_cast <size_t> (std::stoi(fConfigValues["v1751_config_caen_recordlength"]));
-    fV1740SampleReduction  = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_v1740_samplereduction"]));
-    fV1740BSampleReduction = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_v1740_samplereduction"]));
-    fTDCPipelineDelay      = static_cast <size_t> (std::stoi(fConfigValues["tdc_config_tdc_pipelinedelay"]));
-    fTDCGateWidth          = static_cast <size_t> (std::stoi(fConfigValues["tdc_config_tdc_gatewidth"]));
+    std::cout << "//////////////////////////////////////////////"                                       << std::endl;
+    std::cout << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           << std::endl;
+    std::cout << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            << std::endl;
+    std::cout << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           << std::endl;
+    std::cout << "V1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            << std::endl;
+    std::cout << "V1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           << std::endl;
+    std::cout << "V1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          << std::endl;
+    std::cout << "V1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           << std::endl;
+    std::cout << "V1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  << std::endl;
+    std::cout << "V1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] << std::endl;
+    std::cout << "fTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             << std::endl;
+    std::cout << "fTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 << std::endl;
+    std::cout << "//////////////////////////////////////////////"                                       << std::endl;
+
+    //fV1495DelayTicks       = static_cast <size_t> (std::stoi(fConfigValues["v1495_config_v1495_delay_ticks"]));
+    //fV1740PostPercent      = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_postpercent"]));
+    //fV1740BPostPercent     = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_postpercent"]));
+    //fV1751PostPercent      = static_cast <size_t> (std::stoi(fConfigValues["v1751_config_caen_postpercent"]));
+    //fV1740RecordLength     = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_recordlength"]));
+    //fV1740BRecordLength    = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_recordlength"]));
+    //fV1751RecordLength     = static_cast <size_t> (std::stoi(fConfigValues["v1751_config_caen_recordlength"]));
+    //fV1740SampleReduction  = static_cast <size_t> (std::stoi(fConfigValues["v1740_config_caen_v1740_samplereduction"]));
+    //fV1740BSampleReduction = static_cast <size_t> (std::stoi(fConfigValues["v1740b_config_caen_v1740_samplereduction"]));
+    //fTDCPipelineDelay      = static_cast <size_t> (std::stoi(fConfigValues["tdc_config_tdc_pipelinedelay"]));
+    //fTDCGateWidth          = static_cast <size_t> (std::stoi(fConfigValues["tdc_config_tdc_gatewidth"]));
+
+    fV1495DelayTicks       = this->CastToSizeT(fConfigValues["v1495_config_v1495_delay_ticks"]);
+    fV1740PostPercent      = this->CastToSizeT(fConfigValues["v1740_config_caen_postpercent"]);
+    fV1740BPostPercent     = this->CastToSizeT(fConfigValues["v1740b_config_caen_postpercent"]);
+    fV1751PostPercent      = this->CastToSizeT(fConfigValues["v1751_config_caen_postpercent"]);
+    fV1740RecordLength     = this->CastToSizeT(fConfigValues["v1740_config_caen_recordlength"]);
+    fV1740BRecordLength    = this->CastToSizeT(fConfigValues["v1740b_config_caen_recordlength"]);
+    fV1751RecordLength     = this->CastToSizeT(fConfigValues["v1751_config_caen_recordlength"]);
+    fV1740SampleReduction  = this->CastToSizeT(fConfigValues["v1740_config_caen_v1740_samplereduction"]);
+    fV1740BSampleReduction = this->CastToSizeT(fConfigValues["v1740b_config_caen_v1740_samplereduction"]);
+    fTDCPipelineDelay      = this->CastToSizeT(fConfigValues["tdc_config_tdc_pipelinedelay"]);
+    fTDCGateWidth          = this->CastToSizeT(fConfigValues["tdc_config_tdc_gatewidth"]);
 
     // V1495 delay
     fV1495Delay = static_cast <double> (fV1495DelayTicks) * 0.01;
@@ -272,28 +300,28 @@ namespace SlicerCheck {
     fV1751ReadoutWindow  = fV1751RecordLength  / fV1751SamplingRate;
     fTDCReadoutWindow    = fTDCGateWidth * 8 * 0.001177;
 
-    // Pre-/post-trigger windows
-    if (fV1740PreAcquisitionWindow   < 0) fV1740PreAcquisitionWindow   = fV1740ReadoutWindow;
-    if (fV1740AcquisitionWindow  < 0) fV1740AcquisitionWindow  = fV1740ReadoutWindow;
-    if (fV1740BPreAcquisitionWindow  < 0) fV1740BPreAcquisitionWindow  = fV1740BReadoutWindow;
-    if (fV1740BAcquisitionWindow < 0) fV1740BAcquisitionWindow = fV1740BReadoutWindow;
-    if (fV1751PreAcquisitionWindow   < 0) fV1751PreAcquisitionWindow   = 0.64;
-    if (fV1751AcquisitionWindow  < 0) fV1751AcquisitionWindow  = fV1751ReadoutWindow + 0.64;
-    if (fTDCPreAcquisitionWindow     < 0) fTDCPreAcquisitionWindow     = fTDCReadoutWindow;
-    if (fTDCAcquisitionWindow    < 0) fTDCAcquisitionWindow    = fTDCReadoutWindow;
+    // Pre-acquisition and acquisition windows
+    if (fV1740PreAcquisitionWindow  < 0) fV1740PreAcquisitionWindow  = fV1740ReadoutWindow;
+    if (fV1740AcquisitionWindow     < 0) fV1740AcquisitionWindow     = fV1740ReadoutWindow;
+    if (fV1740BPreAcquisitionWindow < 0) fV1740BPreAcquisitionWindow = fV1740BReadoutWindow;
+    if (fV1740BAcquisitionWindow    < 0) fV1740BAcquisitionWindow    = fV1740BReadoutWindow;
+    if (fV1751PreAcquisitionWindow  < 0) fV1751PreAcquisitionWindow  = 0.64;
+    if (fV1751AcquisitionWindow     < 0) fV1751AcquisitionWindow     = fV1751ReadoutWindow + 0.64;
+    if (fTDCPreAcquisitionWindow    < 0) fTDCPreAcquisitionWindow    = fTDCReadoutWindow;
+    if (fTDCAcquisitionWindow       < 0) fTDCAcquisitionWindow       = fTDCReadoutWindow;
 
-    std::cout << "//////////////////////////////////////////////"        << std::endl;
-    std::cout << "V1495DelayTicks:         " << fV1495DelayTicks         << std::endl;
-    std::cout << "V1495Delay:              " << fV1495Delay              << std::endl;
-    std::cout << "V1740PreAcquisitionWindow:   " << fV1740PreAcquisitionWindow   << std::endl;
-    std::cout << "V1740AcquisitionWindow:  " << fV1740AcquisitionWindow  << std::endl;
-    std::cout << "V1740BPreAcquisitionWindow:  " << fV1740BPreAcquisitionWindow  << std::endl;
-    std::cout << "V1740BAcquisitionWindow: " << fV1740BAcquisitionWindow << std::endl;
-    std::cout << "V1751PreAcquisitionWindow:   " << fV1751PreAcquisitionWindow   << std::endl;
-    std::cout << "V1751AcquisitionWindow:  " << fV1751AcquisitionWindow  << std::endl;
-    std::cout << "TDCPreAcquisitionWindow:     " << fTDCPreAcquisitionWindow     << std::endl;
-    std::cout << "TDCAcquisitionWindow:    " << fTDCAcquisitionWindow    << std::endl;
-    std::cout << "//////////////////////////////////////////////"        << std::endl;
+    std::cout << "//////////////////////////////////////////////"              << std::endl;
+    std::cout << "V1495DelayTicks:            " << fV1495DelayTicks            << std::endl;
+    std::cout << "V1495Delay:                 " << fV1495Delay                 << std::endl;
+    std::cout << "V1740PreAcquisitionWindow:  " << fV1740PreAcquisitionWindow  << std::endl;
+    std::cout << "V1740AcquisitionWindow:     " << fV1740AcquisitionWindow     << std::endl;
+    std::cout << "V1740BPreAcquisitionWindow: " << fV1740BPreAcquisitionWindow << std::endl;
+    std::cout << "V1740BAcquisitionWindow:    " << fV1740BAcquisitionWindow    << std::endl;
+    std::cout << "V1751PreAcquisitionWindow:  " << fV1751PreAcquisitionWindow  << std::endl;
+    std::cout << "V1751AcquisitionWindow:     " << fV1751AcquisitionWindow     << std::endl;
+    std::cout << "TDCPreAcquisitionWindow:    " << fTDCPreAcquisitionWindow    << std::endl;
+    std::cout << "TDCAcquisitionWindow:       " << fTDCAcquisitionWindow       << std::endl;
+    std::cout << "//////////////////////////////////////////////"              << std::endl;
 
     return;
   }
@@ -437,16 +465,33 @@ namespace SlicerCheck {
 
     fTPCIntervalsDeltaT = -1;
 
-    for (size_t i = 0; i < (CAENBoard0Intervals.size() - 1); ++i) {
-      fTPCIntervalsDeltaT = -1;
-      fTPCIntervalsDeltaT = (CAENBoard0Intervals.at(i+1).second - CAENBoard0Intervals.at(i).first) / 1000.0;
-      std::cout << "fTPCIntervalsDeltaT [ms]: " << fTPCIntervalsDeltaT << std::endl;
-      fTPCIntervalsDeltaTHistogram->Fill(fTPCIntervalsDeltaT);
-      fTPCIntervalsDeltaTZHistogram->Fill(fTPCIntervalsDeltaT);
-      fTPCTree->Fill();
+    if (CAENBoard0Intervals.size() > 1) {
+      for (size_t i = 0; i < (CAENBoard0Intervals.size() - 1); ++i) {
+        fTPCIntervalsDeltaT = -1;
+        fTPCIntervalsDeltaT = (CAENBoard0Intervals.at(i+1).second - CAENBoard0Intervals.at(i).first) / 1000.0;
+        std::cout << "fTPCIntervalsDeltaT [ms]: " << fTPCIntervalsDeltaT << std::endl;
+        fTPCIntervalsDeltaTHistogram->Fill(fTPCIntervalsDeltaT);
+        fTPCIntervalsDeltaTZHistogram->Fill(fTPCIntervalsDeltaT);
+        fTPCTree->Fill();
+      }
     }
 
     return;
+  }
+
+  //-----------------------------------------------------------------------
+  size_t SlicerCheck::CastToSizeT(std::string const& String) 
+  {
+    size_t SizeT;
+
+    if (!String.empty()) {
+        SizeT = static_cast <size_t> (std::stoi(String));
+    }
+    else {
+      SizeT = 0;
+    }
+
+    return SizeT;
   }
 
   // This macro has to be defined for this module to be invoked from a
