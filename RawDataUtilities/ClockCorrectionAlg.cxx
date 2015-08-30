@@ -389,8 +389,8 @@ namespace rdu {
 
       std::vector<double> const& TimeStampsB = TimeStampMap.at(DeviceID);
 
-      // skip if there are less than 2 timestamps
-      if (TimeStampsA.size() < 2 or TimeStampsB.size() < 2) continue;
+      // skip if there are less than 3 timestamps
+      if (TimeStampsA.size() < 3 or TimeStampsB.size() < 3) continue;
 
       std::vector< std::pair< double, double > > Data;
 
@@ -406,8 +406,8 @@ namespace rdu {
         } // end loop over TimeStampsB
       } // end loop over TimeStampsA
 
-      // skip if there are less than 2 data points
-      if (Data.size() < 2) continue;
+      // skip if there are less than 3 data points
+      if (Data.size() < 3) continue;
 
       // clock correction parameters
       double Slope = 0;
@@ -560,6 +560,9 @@ namespace rdu {
         std::map<int, unsigned int> tdcTimeStampCounts;
 
         for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
+
+          if (tdcEvents[j].size() < TDCFragment::MAX_TDCS) break;
+
           TDCFragment::TdcEventData tdcEventData = tdcEvents[j].at(tdc_index);
 
           // each TDC Time Stamp count is 1/106.2064 microseconds
