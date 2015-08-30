@@ -297,6 +297,9 @@ namespace rdu {
     std::map< unsigned int, std::vector< double > > TimeStampMap;
     fClockCorrectionAlg.GetDataBlocksTimeStampMap(data, DataBlocks, TimeStampMap);
 
+    //std::cout << "DataBlocks.size():   " << DataBlocks.size()   << std::endl;
+    //std::cout << "TimeStampMap.size(): " << TimeStampMap.size() << std::endl;
+
     for (std::map< unsigned int, std::vector< double> >::const_iterator
          iter = TimeStampMap.begin(); iter != TimeStampMap.end(); ++iter) {
       mf::LogVerbatim("SlicerAlg") << "Device ID: "
@@ -314,6 +317,8 @@ namespace rdu {
       rdu::DataBlock & block = DataBlocks.at(block_idx);
 
       unsigned int DeviceID = block.deviceId;
+
+      if (ClockCorrectionParameters.count(DeviceID) < 1) continue;
 
       // correction parameters
       double Slope = ClockCorrectionParameters[DeviceID].first;
