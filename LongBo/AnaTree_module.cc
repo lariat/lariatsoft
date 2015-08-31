@@ -7,17 +7,21 @@
 // from art v1_02_06.
 ////////////////////////////////////////////////////////////////////////
 // Framework includes
+#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h" 
-#include "art/Framework/Principal/Event.h" 
-#include "fhiclcpp/ParameterSet.h" 
-#include "art/Framework/Principal/Handle.h" 
-#include "art/Persistency/Common/Ptr.h" 
-#include "art/Persistency/Common/PtrVector.h" 
-#include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/SubRun.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/View.h"
+#include "art/Persistency/Common/Ptr.h"
+#include "art/Persistency/Common/PtrVector.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art/Framework/Core/FindMany.h"
+#include "art/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
+#include "fhiclcpp/ParameterSet.h" 
 #include "cetlib/maybe_ref.h"
 
 // LArSoft includes
@@ -36,6 +40,8 @@
 #include "RawData/raw.h"
 #include "MCCheater/BackTracker.h"
 #include "Simulation/SimChannel.h"
+#include "AnalysisBase/Calorimetry.h"
+#include "AnalysisBase/ParticleID.h"
 
 // ROOT includes
 #include "TTree.h"
@@ -89,7 +95,11 @@ private:
   double trkx[kMaxTrack][kMaxTrackHits];
   double trky[kMaxTrack][kMaxTrackHits];
   double trkz[kMaxTrack][kMaxTrackHits];
-  double trkpitch[kMaxTrack][3];
+  double trkpitch[kMaxTrack][2];
+  int    trkhits[kMaxTrack][2];
+  double trkpida[kMaxTrack][2];
+  double trkdedx[kMaxTrack][2][1000];
+  double trkpitchhit[kMaxTrack][2][1000];
   int    nhits;
   int    hit_plane[kMaxHits];
   int    hit_wire[kMaxHits];
@@ -107,12 +117,13 @@ private:
   double hit_rms[kMaxHits];
   double hit_nelec[kMaxHits];
   double hit_energy[kMaxHits];
+  int    hit_trkkey[kMaxHits];
 
   std::string fTrigModuleLabel;
   std::string fHitsModuleLabel;
   std::string fTrackModuleLabel;
-
-
+  std::string fCalorimetryModuleLabel;
+  std::string fParticleIDModuleLabel;
 };
 
 
@@ -121,6 +132,8 @@ bo::AnaTree::AnaTree(fhicl::ParameterSet const & pset)
   , fTrigModuleLabel       (pset.get< std::string >("TrigModuleLabel"))
   , fHitsModuleLabel       (pset.get< std::string >("HitsModuleLabel"))
   , fTrackModuleLabel       (pset.get< std::string >("TrackModuleLabel"))
+  , fCalorimetryModuleLabel (pset.get< std::string >("CalorimetryModuleLabel"))
+  , fParticleIDModuleLabel  (pset.get< std::string >("ParticleIDModuleLabel"))
 {
 }
 
@@ -182,11 +195,11 @@ void bo::AnaTree::analyze(art::Event const & evt)
   if (evt.getByLabel(fHitsModuleLabel,hitListHandle))
     art::fill_ptr_vector(hitlist, hitListHandle);
 
-
   art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
   art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
-  art::FindMany<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
-
+  art::FindManyP<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
+  art::FindManyP<anab::Calorimetry> fmcal(trackListHandle, evt, fCalorimetryModuleLabel);
+  art::FindManyP<anab::ParticleID>  fmpid(trackListHandle, evt, fParticleIDModuleLabel);
   std::vector<const sim::SimChannel*> fSimChannels;
   try{
     evt.getView("largeant", fSimChannels);
@@ -237,6 +250,29 @@ void bo::AnaTree::analyze(art::Event const & evt)
 	trkpitch[i][j] = 0;
       }
     }
+    if (fmcal.isValid()){
+      std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(i);
+      for (size_t j = 0; j<calos.size(); ++j){
+	if (!calos[j]->PlaneID().isValid) continue;
+	int pl = calos[j]->PlaneID().Plane;
+	if (pl<0||pl>1) continue;
+	trkhits[i][pl] = calos[j]->dEdx().size();
+	for (size_t k = 0; k<calos[j]->dEdx().size(); ++k){
+	  if (k>=1000) continue;
+	  trkdedx[i][pl][k] = calos[j]->dEdx()[k];
+	  trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
+	}
+      }
+    }
+    if (fmpid.isValid()){
+      std::vector<art::Ptr<anab::ParticleID> > pids = fmpid.at(i);
+      for (size_t j = 0; j<pids.size(); ++j){
+	if (!pids[j]->PlaneID().isValid) continue;
+	int pl = pids[j]->PlaneID().Plane;
+	if (pl<0||pl>1) continue;
+	trkpida[i][pl] = pids[j]->PIDA();
+      }
+    }
   }
 
   nhits = hitlist.size();
@@ -252,8 +288,11 @@ void bo::AnaTree::analyze(art::Event const & evt)
     hit_ph[i]      = hitlist[i]->PeakAmplitude();
     hit_tstart[i]  = hitlist[i]->StartTick();
     hit_tend[i]    = hitlist[i]->EndTick();
-    if (fmtk.at(i).size()!=0){
-      hit_trkid[i] = fmtk.at(i)[0]->ID();
+    if (fmtk.isValid()){
+      if (fmtk.at(i).size()!=0){
+	hit_trkid[i] = fmtk.at(i)[0]->ID();
+	hit_trkkey[i] = fmtk.at(i)[0].key();
+      }
     }
     if (hit_plane[i]==1){//collection plane
       if( rdref.isValid() ){
@@ -357,7 +396,11 @@ void bo::AnaTree::beginJob()
   fTree->Branch("trkx",trkx,"trkx[ntracks_reco][1000]/D");
   fTree->Branch("trky",trky,"trky[ntracks_reco][1000]/D");
   fTree->Branch("trkz",trkz,"trkz[ntracks_reco][1000]/D");
-  fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][3]/D");
+  fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/D");
+  fTree->Branch("trkhits",trkhits,"trkhits[ntracks_reco][2]/I");
+  fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
   fTree->Branch("nhits",&nhits,"nhits/I");
   fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
   fTree->Branch("hit_wire",hit_wire,"hit_wire[nhits]/I");
@@ -368,6 +411,7 @@ void bo::AnaTree::beginJob()
   fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/D");
   fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/D");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
+  fTree->Branch("hit_trkkey",hit_trkkey,"hit_trkkey[nhits]/I");
   fTree->Branch("hit_pk",hit_pk,"hit_pk[nhits]/I");
   fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
   fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
@@ -411,8 +455,14 @@ void bo::AnaTree::ResetVars(){
       trky[i][j] = -99999;
       trkz[i][j] = -99999;
     }
-    for (int j = 0; j<3; ++j){
+    for (int j = 0; j<2; ++j){
       trkpitch[i][j] = -99999;
+      trkhits[i][j] = -99999; 
+      trkpida[i][j] = -99999;
+      for (int k = 0; k<1000; ++k){
+	trkdedx[i][j][k] = -99999;
+	trkpitchhit[i][j][k] = -99999;
+      }
     }
   }
   nhits = -99999;
@@ -424,6 +474,7 @@ void bo::AnaTree::ResetVars(){
     hit_charge[i] = -99999;
     hit_ph[i] = -99999;
     hit_trkid[i] = -99999;
+    hit_trkkey[i] = -99999;
     hit_tstart[i] = -99999;
     hit_tend[i] = -99999;
     hit_pk[i] = -99999;
