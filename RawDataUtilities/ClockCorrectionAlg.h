@@ -3,9 +3,39 @@
 // Date:      15 July 2015
 // Author:    Everybody is an author!
 //////////////////////////////////////////////////////////////
+//
 // Clock correction algorithm for LArIAT. This corrects the
 // timestamps of data blocks from the CAEN digitizers and
 // wire chambers.
+//
+// The algorithm "corrects" the timestamps of all the devices
+// accordingly to a reference device. Given two devices, A
+// and B, each timestamp of device A is plotted against each
+// timestamp of device B.
+//
+//////////////////////////////////////////////////////////////
+//
+// RANSAC algorithm:
+//
+//   1. Randomly choose a minimal subset of data
+//   2. Use this subset to estimate the parameters of the
+//      model
+//   3. Compute the number of inliers for this model
+//   4. Repeat steps 1-3 a fixed number of times
+//   5. Re-estimate the model using inliers from the best
+//      fit
+//
+//////////////////////////////////////////////////////////////
+//
+// NOTE:
+// -----
+// This algorithm does not care about the absolute time of
+// when a trigger signal is received by a device. This means
+// that the time difference between the fast and delayed
+// triggers, along with the pre-/post-trigger windows of the
+// CAEN V1740 and V1751 acquisition windows, does not affect
+// the clock-drift correction.
+//
 //////////////////////////////////////////////////////////////
 
 #ifndef CLOCKCORRECTIONALG_H
@@ -174,6 +204,9 @@ namespace rdu {
     size_t fStopSampleNumber;
     double fStopResidualsSum;
     double fStopProbability;
+    size_t fMaxContinuations;
+    size_t fMinNumberTimeStamps;
+    size_t fMinNumberDataPoints;
 
     // restrict the linear fit for RANSAC
     double fTimeStampDifferenceThreshold;  // microseconds

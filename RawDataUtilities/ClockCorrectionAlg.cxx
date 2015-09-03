@@ -20,6 +20,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <set>
 
 namespace rdu {
 
@@ -52,9 +53,12 @@ namespace rdu {
     fStopSampleNumber             = pset.get< size_t >("StopSampleNumber",             fMaxSize_T);
     fStopResidualsSum             = pset.get< double >("StopResidualsSum",             0);
     fStopProbability              = pset.get< double >("StopProbability",              1);
-    fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e5);
+    fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e4);
     fSampleSlopeCutLower          = pset.get< double >("SampleSlopeCutLower",          0.9);
     fSampleSlopeCutUpper          = pset.get< double >("SampleSlopeCutUpper",          1.1);
+    fMaxContinuations             = pset.get< size_t >("MaxContinuations",             fMaxSize_T);
+    fMinNumberTimeStamps          = pset.get< size_t >("MinNumberTimeStamps",          3);
+    fMinNumberDataPoints          = pset.get< size_t >("MinNumberDataPoints",          3);
 
     return;
   }
@@ -201,6 +205,9 @@ namespace rdu {
     // trial number of convergence
     size_t ConvergenceTrialNumber = 0;
 
+    // number of continuations
+    size_t NumberContinuations = 0;
+
     // initialize iteration bookkeeper
     size_t TrialNumber = 0;
 
@@ -250,6 +257,7 @@ namespace rdu {
       catch (cet::exception &e) {
         // if fit fails, continue
         std::cout << "Fit failed, continuing." << std::endl;
+        NumberContinuations += 1;
         continue;
       }
 
@@ -257,12 +265,16 @@ namespace rdu {
       if (std::isnan(SampleSlope) or std::isinf(SampleSlope)
           or std::isnan(SampleIntercept) or std::isinf(SampleIntercept)
           or std::isnan(SampleResidualsSum) or std::isinf(SampleResidualsSum)) {
+        NumberContinuations += 1;
         continue;
       }
 
       // only allow slope in range (fSampleSlopeCutLower, fSampleSlopeCutUpper)
       if (SampleSlope < fSampleSlopeCutLower
-          or SampleSlope > fSampleSlopeCutUpper) continue;
+          or SampleSlope > fSampleSlopeCutUpper) {
+        //NumberContinuations += 1;
+        continue;
+      }
 
       // get sample inliers that is within ResidualThreshold of model
       for (size_t datum_idx = 0; datum_idx < NumberDataPoints; ++datum_idx) {
@@ -286,7 +298,10 @@ namespace rdu {
 
       // only allow real, finite values
       if (std::isnan(SampleInlierNumber)
-          or std::isinf(SampleInlierNumber)) continue;
+          or std::isinf(SampleInlierNumber)) {
+        NumberContinuations += 1;
+        continue;
+      }
 
       // choose as new best model if number of inliers is maximal
       if ((SampleInlierNumber > BestInlierNumber)
@@ -363,7 +378,9 @@ namespace rdu {
 
       DeviceIDs.push_back(DeviceID);
 
-      if (NumberDataBlocks > 0) {
+      // the reference clock device should have at least
+      // fMinNumberTimeStamps timestamps
+      if (NumberDataBlocks > fMinNumberTimeStamps) {
         if (DeviceID == 8) {
           ReferenceClockDeviceID = DeviceID;
         }
@@ -389,8 +406,15 @@ namespace rdu {
 
       std::vector<double> const& TimeStampsB = TimeStampMap.at(DeviceID);
 
-      // skip if there are less than 3 timestamps
-      if (TimeStampsA.size() < 3 or TimeStampsB.size() < 3) continue;
+      // skip if there are less than fMinNumberTimeStamps timestamps
+      if (TimeStampsA.size() < fMinNumberTimeStamps or
+          TimeStampsB.size() < fMinNumberTimeStamps)
+        continue;
+
+      // set of timestamp indices that make the timestamp
+      // difference threshold cut
+      std::set<size_t> TimeStampsAIndices;
+      std::set<size_t> TimeStampsBIndices;
 
       std::vector< std::pair< double, double > > Data;
 
@@ -400,18 +424,31 @@ namespace rdu {
           if (std::abs(TimeStampsA.at(m) - TimeStampsB.at(n)) > fTimeStampDifferenceThreshold) continue;
 
           Data.push_back(std::make_pair(TimeStampsA.at(m), TimeStampsB.at(n)));
+
           mf::LogDebug("ClockCorrectionAlg")
               << "(" << TimeStampsA.at(m) << ", " << TimeStampsB.at(n) << ")";
+
+          TimeStampsAIndices.insert(m);
+          TimeStampsBIndices.insert(n);
 
         } // end loop over TimeStampsB
       } // end loop over TimeStampsA
 
-      // skip if there are less than 3 data points
-      if (Data.size() < 3) continue;
+      // skip if there are less than fMinNumberTimeStamps timestamps that make the cut
+      if (TimeStampsAIndices.size() < fMinNumberTimeStamps or
+          TimeStampsBIndices.size() < fMinNumberTimeStamps)
+        continue;
+
+      // skip if there are less than fMinNumberDataPoints data points
+      if (Data.size() < fMinNumberDataPoints) continue;
 
       // clock correction parameters
       double Slope = 0;
       double Intercept = 0;
+
+      mf::LogInfo("ClockCorrectionAlg")
+          << "Performing linear RANSAC on device IDs: ("
+          << ReferenceClockDeviceID << ", " << DeviceID << ")";
 
       // RANSAC
       this->LinearRANSAC(Data,
@@ -426,9 +463,6 @@ namespace rdu {
 
       // copy clock correction parameters to container
       ClockCorrectionParameters[DeviceID] = std::make_pair(Slope, Intercept);
-
-      mf::LogInfo("ClockCorrectionAlg")
-          << "Device IDs: (" << ReferenceClockDeviceID << ", " << DeviceID << ")";
 
     } // end loop over device IDs
 
