@@ -46,22 +46,30 @@ namespace rdu {
 
   //-----------------------------------------------------------------------
   void SlicerAlg::Configure(double V1740PreAcquisitionWindow,
+                            double V1740PostAcquisitionWindow,
                             double V1740AcquisitionWindow,
                             double V1740BPreAcquisitionWindow,
+                            double V1740BPostAcquisitionWindow,
                             double V1740BAcquisitionWindow,
                             double V1751PreAcquisitionWindow,
+                            double V1751PostAcquisitionWindow,
                             double V1751AcquisitionWindow,
                             double TDCPreAcquisitionWindow,
+                            double TDCPostAcquisitionWindow,
                             double TDCAcquisitionWindow)
   {
-    fV1740PreAcquisitionWindow  = V1740PreAcquisitionWindow;
-    fV1740AcquisitionWindow     = V1740AcquisitionWindow;
-    fV1740BPreAcquisitionWindow = V1740BPreAcquisitionWindow;
-    fV1740BAcquisitionWindow    = V1740BAcquisitionWindow;
-    fV1751PreAcquisitionWindow  = V1751PreAcquisitionWindow;
-    fV1751AcquisitionWindow     = V1751AcquisitionWindow;
-    fTDCPreAcquisitionWindow    = TDCPreAcquisitionWindow;
-    fTDCAcquisitionWindow       = TDCAcquisitionWindow;
+    fV1740PreAcquisitionWindow   = V1740PreAcquisitionWindow;
+    fV1740PostAcquisitionWindow  = V1740PostAcquisitionWindow;
+    fV1740AcquisitionWindow      = V1740AcquisitionWindow;
+    fV1740BPreAcquisitionWindow  = V1740BPreAcquisitionWindow;
+    fV1740BPostAcquisitionWindow = V1740BPostAcquisitionWindow;
+    fV1740BAcquisitionWindow     = V1740BAcquisitionWindow;
+    fV1751PreAcquisitionWindow   = V1751PreAcquisitionWindow;
+    fV1751PostAcquisitionWindow  = V1751PostAcquisitionWindow;
+    fV1751AcquisitionWindow      = V1751AcquisitionWindow;
+    fTDCPreAcquisitionWindow     = TDCPreAcquisitionWindow;
+    fTDCPostAcquisitionWindow    = TDCPostAcquisitionWindow;
+    fTDCAcquisitionWindow        = TDCAcquisitionWindow;
 
     return;
   }
@@ -70,6 +78,7 @@ namespace rdu {
   std::vector< std::pair< double, double> > SlicerAlg::CreateIntervals(std::vector< rdu::DataBlock > const& DataBlocks,
                                                                        unsigned int                  const& DeviceID,
                                                                        double                        const& PreAcquisitionWindow,
+                                                                       double                        const& PostAcquisitionWindow,
                                                                        double                        const& AcquisitionWindow)
   {
     std::vector< std::pair< double, double > > Intervals;
@@ -79,7 +88,7 @@ namespace rdu {
       if (block->deviceId != DeviceID) continue;
       //std::cout << block->timestamp << ", " << block->correctedTimestamp << ", " << block->deviceId << std::endl;
       double IntervalLow = block->correctedTimestamp - PreAcquisitionWindow;
-      double IntervalHigh = block->correctedTimestamp + AcquisitionWindow;
+      double IntervalHigh = block->correctedTimestamp + AcquisitionWindow + PostAcquisitionWindow;
       Intervals.push_back(std::make_pair(IntervalLow, IntervalHigh));
     }
 
@@ -382,19 +391,19 @@ namespace rdu {
     std::vector< std::pair< double, double > > TDCIntervals;
 
     // CAEN V1740 digitizers
-    CAENBoard0Intervals  = this->CreateIntervals(DataBlocks,  0,  fV1740PreAcquisitionWindow, fV1740AcquisitionWindow);
-    CAENBoard1Intervals  = this->CreateIntervals(DataBlocks,  1,  fV1740PreAcquisitionWindow, fV1740AcquisitionWindow);
-    CAENBoard2Intervals  = this->CreateIntervals(DataBlocks,  2,  fV1740PreAcquisitionWindow, fV1740AcquisitionWindow);
-    CAENBoard3Intervals  = this->CreateIntervals(DataBlocks,  3,  fV1740PreAcquisitionWindow, fV1740AcquisitionWindow);
-    CAENBoard4Intervals  = this->CreateIntervals(DataBlocks,  4,  fV1740PreAcquisitionWindow, fV1740AcquisitionWindow);
-    CAENBoard5Intervals  = this->CreateIntervals(DataBlocks,  5,  fV1740PreAcquisitionWindow, fV1740AcquisitionWindow);
-    CAENBoard6Intervals  = this->CreateIntervals(DataBlocks,  6,  fV1740PreAcquisitionWindow, fV1740AcquisitionWindow);
-    CAENBoard7Intervals  = this->CreateIntervals(DataBlocks,  7,  fV1740PreAcquisitionWindow, fV1740AcquisitionWindow);
+    CAENBoard0Intervals  = this->CreateIntervals(DataBlocks,  0,  fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow,  fV1740AcquisitionWindow);
+    CAENBoard1Intervals  = this->CreateIntervals(DataBlocks,  1,  fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow,  fV1740AcquisitionWindow);
+    CAENBoard2Intervals  = this->CreateIntervals(DataBlocks,  2,  fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow,  fV1740AcquisitionWindow);
+    CAENBoard3Intervals  = this->CreateIntervals(DataBlocks,  3,  fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow,  fV1740AcquisitionWindow);
+    CAENBoard4Intervals  = this->CreateIntervals(DataBlocks,  4,  fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow,  fV1740AcquisitionWindow);
+    CAENBoard5Intervals  = this->CreateIntervals(DataBlocks,  5,  fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow,  fV1740AcquisitionWindow);
+    CAENBoard6Intervals  = this->CreateIntervals(DataBlocks,  6,  fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow,  fV1740AcquisitionWindow);
+    CAENBoard7Intervals  = this->CreateIntervals(DataBlocks,  7,  fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow,  fV1740AcquisitionWindow);
     // CAEN V1751 digitizers
-    CAENBoard8Intervals  = this->CreateIntervals(DataBlocks,  8,  fV1751PreAcquisitionWindow, fV1751AcquisitionWindow);
-    CAENBoard9Intervals  = this->CreateIntervals(DataBlocks,  9,  fV1751PreAcquisitionWindow, fV1751AcquisitionWindow);
+    CAENBoard8Intervals  = this->CreateIntervals(DataBlocks,  8,  fV1751PreAcquisitionWindow, fV1751PostAcquisitionWindow,  fV1751AcquisitionWindow);
+    CAENBoard9Intervals  = this->CreateIntervals(DataBlocks,  9,  fV1751PreAcquisitionWindow, fV1751PostAcquisitionWindow,  fV1751AcquisitionWindow);
     // CAEN V1740B digitizer ("spare" CAEN V1740 digitizer)
-    CAENBoard24Intervals = this->CreateIntervals(DataBlocks, 24, fV1740BPreAcquisitionWindow, fV1740BAcquisitionWindow);
+    CAENBoard24Intervals = this->CreateIntervals(DataBlocks, 24, fV1740BPreAcquisitionWindow, fV1740BPostAcquisitionWindow, fV1740BAcquisitionWindow);
 
     // WC TDC
     // see TDC readout documentation here:
@@ -403,7 +412,7 @@ namespace rdu {
     //       how to convert tdc_config_tdc_gatewidth and
     //       tdc_config_tdc_pipelinedelay into a TDC
     //       readout window length.
-    TDCIntervals = this->CreateIntervals(DataBlocks, rdu::TDC_DEVICE_ID, fTDCPreAcquisitionWindow, fTDCAcquisitionWindow);
+    TDCIntervals = this->CreateIntervals(DataBlocks, rdu::TDC_DEVICE_ID, fTDCPreAcquisitionWindow, fTDCPostAcquisitionWindow, fTDCAcquisitionWindow);
 
     // self-merge intervals
     CAENBoard0Intervals  = this->IntervalsSelfMerge(CAENBoard0Intervals);
@@ -554,6 +563,7 @@ namespace rdu {
 
         std::cout << "    CAEN block: " << j << std::endl;
         std::cout << "      Board ID: " << boardId << std::endl;
+        //std::cout << "           TTT: " << caenFrag->header.triggerTimeTag << std::endl;
         std::cout << "      Timestamp: " << timestamp << std::endl;
       }
 

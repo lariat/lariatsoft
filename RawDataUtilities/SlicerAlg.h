@@ -45,18 +45,23 @@ namespace rdu {
 
     // configure interval pre-acquisition and acquisition window lengths
     void Configure(double V1740PreAcquisitionWindow,
+                   double V1740PostAcquisitionWindow,
                    double V1740AcquisitionWindow,
                    double V1740BPreAcquisitionWindow,
+                   double V1740BPostAcquisitionWindow,
                    double V1740BAcquisitionWindow,
                    double V1751PreAcquisitionWindow,
+                   double V1751PostAcquisitionWindow,
                    double V1751AcquisitionWindow,
                    double TDCPreAcquisitionWindow,
+                   double TDCPostAcquisitionWindow,
                    double TDCAcquisitionWindow);
 
     // generate a vector of intervals from a vector of data blocks
     std::vector< std::pair< double, double> > CreateIntervals(std::vector< rdu::DataBlock > const& DataBlocks,
                                                               unsigned int                  const& DeviceID,
                                                               double                        const& PreAcquisitionWindow,
+                                                              double                        const& PostAcquisitionWindow,
                                                               double                        const& AcquisitionWindow);
 
     // merge overlapping intervals in a vector of intervals
@@ -84,12 +89,16 @@ namespace rdu {
 
     // parameters for generating intervals
     double fV1740PreAcquisitionWindow;
+    double fV1740PostAcquisitionWindow;
     double fV1740AcquisitionWindow;
     double fV1740BPreAcquisitionWindow;
+    double fV1740BPostAcquisitionWindow;
     double fV1740BAcquisitionWindow;
     double fV1751PreAcquisitionWindow;
+    double fV1751PostAcquisitionWindow;
     double fV1751AcquisitionWindow;
     double fTDCPreAcquisitionWindow;
+    double fTDCPostAcquisitionWindow;
     double fTDCAcquisitionWindow;
 
     // clock correction algorithm

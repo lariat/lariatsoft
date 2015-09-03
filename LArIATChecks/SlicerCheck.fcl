@@ -38,17 +38,22 @@ physics:
       module_type:             "SlicerCheck"
       SlicerAlg:               @local::standard_sliceralg
 
-      # Pre-/post-trigger windows in microseconds. A value of -1 will
-      # utilize values that are dependent on the lariat_prd database.
+      # Pre-/post-acquisition windows in microseconds. A value of -1
+      # will utilize values that are dependent on the lariat_prd
+      # database.
 
-      V1740PreAcquisitionWindow:  -1  # 393.216
-      V1740AcquisitionWindow:     -1  # 393.216
-      V1740BPreAcquisitionWindow: -1  # 393.216
-      V1740BAcquisitionWindow:    -1  # 393.216
-      V1751PreAcquisitionWindow:  -1  # 0.64
-      V1751AcquisitionWindow:     -1  # 28.672
-      TDCPreAcquisitionWindow:    -1  # 1.196
-      TDCAcquisitionWindow:       -1  # 1.196
+      V1740PreAcquisitionWindow:   -1  # 393.216
+      V1740PostAcquisitionWindow:  -1  # 0.64
+      V1740AcquisitionWindow:      -1  # 393.216
+      V1740BPreAcquisitionWindow:  -1  # 393.216
+      V1740BPostAcquisitionWindow: -1  # 0.64
+      V1740BAcquisitionWindow:     -1  # 393.216
+      V1751PreAcquisitionWindow:   -1  # 0.64
+      V1751PostAcquisitionWindow:  -1  # 0.64
+      V1751AcquisitionWindow:      -1  # 28.672
+      TDCPreAcquisitionWindow:     -1  # 1.196 or 1.20525?
+      TDCPostAcquisitionWindow:    -1  # 0
+      TDCAcquisitionWindow:        -1  # 1.196 or 1.20525?
     }
   }
 
@@ -67,4 +72,7 @@ services.user.SeedService: @local::random_seedservice
 #physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e5  # microseconds
 #physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
 #physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.MinNumberTimeStamps:          3
+#physics.analyzers.SlicerCheck.SlicerAlg.ClockCorrectionAlg.MinNumberDataPoints:          3
 
