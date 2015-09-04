@@ -354,7 +354,8 @@ namespace rdu {
 
   //-----------------------------------------------------------------------
   void ClockCorrectionAlg::GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >       const& TimeStampMap,
-                                                        std::map< unsigned int, std::pair< double, double > >      & ClockCorrectionParameters)
+                                                        std::map< unsigned int, std::pair< double, double > >      & ClockCorrectionParameters,
+                                                        unsigned int                                               & ReferenceClockDeviceID)
   {
     // Container for clock correction parameters. The key is the device
     // ID, the mapped value is a pair. The first value of the pair is the
@@ -366,7 +367,7 @@ namespace rdu {
     std::vector<unsigned int> DeviceIDs;
 
     // device ID of reference clock
-    unsigned int ReferenceClockDeviceID = 999;
+    ReferenceClockDeviceID = 999;
 
     // get device IDs that have at least one data block and get the
     // device ID of the reference clock

@@ -36,18 +36,6 @@ physics:
 
       module_type:             "ClockCorrectionCheck"
       ClockCorrectionAlg:      @local::standard_clockcorrectionalg
-
-      # Pre-/post-trigger windows in microseconds. A value of -1 will
-      # utilize values that are dependent on the lariat_prd database.
-
-      V1740PreTriggerWindow:   -1  # 393.216
-      V1740PostTriggerWindow:  -1  # 393.216
-      V1740BPreTriggerWindow:  -1  # 393.216
-      V1740BPostTriggerWindow: -1  # 393.216
-      V1751PreTriggerWindow:   -1  # 0.64
-      V1751PostTriggerWindow:  -1  # 28.672
-      TDCPreTriggerWindow:     -1  # 1.196
-      TDCPostTriggerWindow:    -1  # 1.196
     }
   }
 
@@ -66,4 +54,7 @@ services.user.SeedService: @local::random_seedservice
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e5  # microseconds
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
+#physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
+#physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.MinNumberTimeStamps:          3
+#physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.MinNumberDataPoints:          3
 

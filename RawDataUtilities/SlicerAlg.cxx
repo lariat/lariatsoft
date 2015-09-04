@@ -320,8 +320,11 @@ namespace rdu {
 
     // get clock correction parameters
     std::map< unsigned int, std::pair< double, double > > ClockCorrectionParameters;
+    unsigned ReferenceClockDeviceID;
 
-    fClockCorrectionAlg.GetClockCorrectionParameters(TimeStampMap, ClockCorrectionParameters);
+    fClockCorrectionAlg.GetClockCorrectionParameters(TimeStampMap,
+                                                     ClockCorrectionParameters,
+                                                     ReferenceClockDeviceID);
 
     // apply clock correction to DataBlock timestamps
     for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {

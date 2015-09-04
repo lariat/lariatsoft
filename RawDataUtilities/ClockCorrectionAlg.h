@@ -155,7 +155,8 @@ namespace rdu {
 
     // get clock correction parameters
     void GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >       const& TimeStampMap,
-                                      std::map< unsigned int, std::pair< double, double > >      & ClockCorrectionParameters);
+                                      std::map< unsigned int, std::pair< double, double > >      & ClockCorrectionParameters,
+                                      unsigned int                                               & ReferenceClockDeviceID);
 
     // this method is used for testing porpoises
     void hello_world();
