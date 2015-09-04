@@ -68,9 +68,9 @@ namespace rdu {
 
   struct DataBlock {
 
-    unsigned int deviceId;
-    double timestamp;
-    double correctedTimestamp;
+    unsigned int deviceId = 999;
+    double timestamp = -1;
+    double correctedTimestamp = -1;
 
     // there should only be one data block in only one of these vectors
     std::vector< const CAENFragment * > caenBlocks;
@@ -82,8 +82,8 @@ namespace rdu {
 
     void clear()
     {
-      timestamp = 0;
-      correctedTimestamp = 0;
+      timestamp = -1;
+      correctedTimestamp = -1;
       deviceId = 999;
       caenBlocks.clear();
       tdcBlocks.clear();

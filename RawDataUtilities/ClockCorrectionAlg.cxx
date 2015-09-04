@@ -443,7 +443,7 @@ namespace rdu {
       if (Data.size() < fMinNumberDataPoints) continue;
 
       // clock correction parameters
-      double Slope = 0;
+      double Slope     = 0;
       double Intercept = 0;
 
       mf::LogInfo("ClockCorrectionAlg")

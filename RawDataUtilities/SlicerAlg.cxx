@@ -86,6 +86,7 @@ namespace rdu {
     for (std::vector< rdu::DataBlock >::const_iterator
          block = DataBlocks.begin(); block != DataBlocks.end(); ++block) {
       if (block->deviceId != DeviceID) continue;
+      if (block->correctedTimestamp < 0) continue;
       //std::cout << block->timestamp << ", " << block->correctedTimestamp << ", " << block->deviceId << std::endl;
       double IntervalLow = block->correctedTimestamp - PreAcquisitionWindow;
       double IntervalHigh = block->correctedTimestamp + AcquisitionWindow + PostAcquisitionWindow;
@@ -319,6 +320,7 @@ namespace rdu {
 
     // get clock correction parameters
     std::map< unsigned int, std::pair< double, double > > ClockCorrectionParameters;
+
     fClockCorrectionAlg.GetClockCorrectionParameters(TimeStampMap, ClockCorrectionParameters);
 
     // apply clock correction to DataBlock timestamps
