@@ -87,10 +87,11 @@ namespace ClockCorrectionCheck {
     // variables that will go into the n-tuples
     int    fRun;
     int    fSubRun;
+    int    fDeviceID;
+    int    fReferenceClockDeviceID;
     double fSlope;
     double fIntercept;
     double fClockDrift;
-    int    fReferenceClockDeviceID;
 
   }; // class ClockCorrectionCheck
 
@@ -128,6 +129,7 @@ namespace ClockCorrectionCheck {
     fClockCorrectionTree->Branch("Slope",      &fSlope,      "Slope/D");
     fClockCorrectionTree->Branch("Intercept",  &fIntercept,  "Intercept/D");
     fClockCorrectionTree->Branch("ClockDrift", &fClockDrift, "ClockDrift/D");
+    fClockCorrectionTree->Branch("DeviceID",   &fDeviceID,   "DeviceID/I");
     fClockCorrectionTree->Branch("ReferenceClockDeviceID", &fReferenceClockDeviceID, "ReferenceClockDeviceID/I");
 
     return;
@@ -184,11 +186,12 @@ namespace ClockCorrectionCheck {
     for (std::map< unsigned int, std::pair< double, double > >::const_iterator
          iter = ClockCorrectionParameters.begin(); iter != ClockCorrectionParameters.end(); ++iter) {
 
+      fDeviceID = iter->first;
       fSlope = iter->second.first;
       fIntercept = iter->second.second;
       fClockDrift = 1 - fSlope;
 
-      std::cout << "Device ID: " << iter->first << std::endl;
+      std::cout << "Device ID: " << fDeviceID << std::endl;
       std::cout << "  Slope: " << fSlope << std::endl;
       std::cout << "  Intercept: " << fIntercept << std::endl;
       std::cout << "  Clock drift [s/s]: " << fClockDrift << std::endl;
