@@ -54,6 +54,8 @@ class TriggerFilterAlg{
 
 
   bool doesTriggerPassFilter( raw::Trigger theTrigger, std::string filterPattern );
+  void parseANDPatterns( std::string filterPattern,
+			 std::vector<std::string> & ANDGroups );
   void parseFilterPattern( std::string filterPattern,
 			   std::vector<std::string> & triggerInputs,
 			   std::vector<std::string> & vetoInputs );

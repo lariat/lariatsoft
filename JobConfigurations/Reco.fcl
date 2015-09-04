@@ -6,7 +6,8 @@
 #include "hitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
-#include "lariatbeamlinereco.fcl"
+#include "calorimetry.fcl"
+#include "particleid.fcl"
 
 process_name: Reco2D
 
@@ -69,16 +70,8 @@ physics:
   ### pandora
 #  pandora:             @local::standard_pandora
 
-
-  ### wire chamber tracks
-  wctrack: 		@local::lariat_wctrackbuilder
-  
-  ### time of flight
-  tof:			@local::lariat_tof
-
-  ### muon range stack ###
-  murs:                 @local::lariat_murs  
-
+  calo:                 @local::standard_calodata
+  pid:                  @local::standard_chi2pid
  }
 
  #define the producer and filter modules for this path, order matters, 
@@ -91,10 +84,9 @@ physics:
 	 linecluster,
          costrk,
          pmtrack,
-	 wctrack,
-	 tof,
-	 murs
-         #cctrack
+         cctrack,
+         calo,
+         pid
          #gaushit
          #corner,
          #dbcluster,
@@ -161,7 +153,7 @@ physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 #physics.producers.cchit.CCHitFinderAlg.VWireRange: [45, 85]
 #physics.producers.cchit.CCHitFinderAlg.VTickRange: [1500, 1800]
 
-physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 100
+physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 20
 physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.35,0.35,0.35]
 
 #physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 0
@@ -188,3 +180,9 @@ services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
 services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
 
 services.DetectorProperties.TimeOffsetV: -13.2
+services.LArProperties.Electronlifetime: 1600
+physics.producers.calo.TrackModuleLabel:      "pmtrack"
+physics.producers.calo.SpacePointModuleLabel: "pmtrack"
+physics.producers.calo.UseArea:               "true"
+physics.producers.pid.TrackModuleLabel:       "pmtrack"
+physics.producers.calo.CaloAlg.CalAreaConstants: [0.0068,0.0153]
