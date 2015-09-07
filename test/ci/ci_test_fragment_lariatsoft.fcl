@@ -1,0 +1,7 @@
+#include "standard_fragmenttodigit.fcl"
+
+services.SeedService.policy: "preDefinedSeed"
+services.SeedService.baseSeed: 1234
+
+#services.RandomNumberGenerator.restoreFrom: "FragmentRandomSeeds_Ref.dat"
+#services.RandomNumberGenerator.saveTo: "FragmentRandomSeeds.dat"
