@@ -478,6 +478,7 @@ namespace SlicerCheck {
 
       std::map< unsigned int, std::vector< double > > CAENTimeStamps;
 
+      fNumberTPCReadouts = Collection.numberTPCReadouts;
       fIntervalLength = Collection.interval.second - Collection.interval.first;
       fIntervalStart  = Collection.interval.first;
       fIntervalStop   = Collection.interval.second;
@@ -485,9 +486,7 @@ namespace SlicerCheck {
       std::cout << "Collection: " << i << std::endl;
       std::cout << "  Number of CAEN data blocks: " << NumberCaenBlocks << std::endl;
       std::cout << "  Number of TDC data blocks:  " << NumberTdcBlocks << std::endl;
-
-      // used for counting the number of TPC readouts
-      std::vector< std::pair< double, double > > TPCReadout;
+      std::cout << "  Number of TPC readouts:     " << fNumberTPCReadouts << std::endl;
 
       for (size_t j = 0; j < NumberCaenBlocks; ++j) {
 
@@ -500,58 +499,9 @@ namespace SlicerCheck {
         std::cout << "      Board ID: " << boardId << std::endl;
         std::cout << "      Timestamp: " << timestamp << std::endl;
 
-        // a +- 128-ns buffer time should be sufficient
-        // in a TPCReadout "interval"
-        double TPCReadoutLow  = timestamp - 0.128;
-        double TPCReadoutHigh = timestamp + 0.128;
-
-        TPCReadout.push_back(std::make_pair(TPCReadoutLow, TPCReadoutHigh));
-
         NumberCAENBlocksArray[boardId] += 1;
         CAENTimeStamps[boardId].push_back(timestamp);
 
-      }
-
-      // these TPCReadout "intervals" are used for counting
-      // the number of TPC readouts
-      TPCReadout = fSlicerAlg.IntervalsSelfMerge(TPCReadout);
-      std::map< size_t, std::vector< unsigned int > > TPCReadoutCAENBoardIDCountMap;
-
-      for (size_t j = 0; j < NumberCaenBlocks; ++j) {
-
-        std::pair< double, const CAENFragment * > caenBlock = Collection.caenBlocks[j];
-        double const& timestamp = caenBlock.first;
-        const CAENFragment * caenFrag = caenBlock.second;
-        unsigned int boardId = caenFrag->header.boardId;
-
-        if (boardId < 8) {
-          for (size_t k = 0; k < TPCReadout.size(); ++k) {
-            if ((timestamp >= TPCReadout[k].first) and (timestamp <= TPCReadout[k].second)) {
-              TPCReadoutCAENBoardIDCountMap[k].push_back(boardId);
-            }
-          }
-        }
-
-      }
-
-      // count the number of TPC readouts
-      for (std::map< size_t, std::vector< unsigned int > >::const_iterator
-           iter = TPCReadoutCAENBoardIDCountMap.begin();
-           iter != TPCReadoutCAENBoardIDCountMap.end();
-           ++iter) {
-        // require that boards 0, 1, 2, 3, 4, 5, 6, and 7
-        // are present in a TPCReadout "interval" before
-        // incrementing fNumberTPCReadouts
-        if ((std::find(iter->second.begin(), iter->second.end(), 0) != iter->second.end()) and
-            (std::find(iter->second.begin(), iter->second.end(), 1) != iter->second.end()) and
-            (std::find(iter->second.begin(), iter->second.end(), 2) != iter->second.end()) and
-            (std::find(iter->second.begin(), iter->second.end(), 3) != iter->second.end()) and
-            (std::find(iter->second.begin(), iter->second.end(), 4) != iter->second.end()) and
-            (std::find(iter->second.begin(), iter->second.end(), 5) != iter->second.end()) and
-            (std::find(iter->second.begin(), iter->second.end(), 6) != iter->second.end()) and
-            (std::find(iter->second.begin(), iter->second.end(), 7) != iter->second.end())) {
-          fNumberTPCReadouts += 1;
-        }
       }
 
       //

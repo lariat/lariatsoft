@@ -101,6 +101,10 @@ namespace rdu {
     double fTDCPostAcquisitionWindow;
     double fTDCAcquisitionWindow;
 
+    // parameters for counting the number of TPC readouts in an interval
+    double fTPCReadoutBufferLow;
+    double fTPCReadoutBufferHigh;
+
     // clock correction algorithm
     rdu::ClockCorrectionAlg fClockCorrectionAlg;
 
