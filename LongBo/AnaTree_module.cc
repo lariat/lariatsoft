@@ -435,6 +435,9 @@ void bo::AnaTree::ResetVars(){
     efield[i] = -99999;
   }
   t0 = -99999;
+  for (int i = 0; i < 16; ++i){
+     trigtime[i]=-99999;
+  }
   ntracks_reco = -99999;
   for (int i = 0; i < kMaxTrack; ++i){
     trkvtxx[i] = -99999;
