@@ -166,6 +166,51 @@ private:
   //Misc Parameters
   float fMaxMomentumForPID;  //MeV/c
   float fPiMuLRThreshold;
+
+  //Beam Priors
+  float beamProbE_08_pos350;
+  float beamProbMu_08_pos350;
+  float beamProbPi_08_pos350;
+  float beamProbK_08_pos350;
+  float beamProbProt_08_pos350;
+ 
+  float beamProbE_08_pos175;
+  float beamProbMu_08_pos175;
+  float beamProbPi_08_pos175;
+  float beamProbK_08_pos175;
+  float beamProbProt_08_pos175;
+  
+  float beamProbE_08_neg175;
+  float beamProbMu_08_neg175;
+  float beamProbPi_08_neg175;
+  float beamProbK_08_neg175;
+  float beamProbProt_08_neg175;
+  
+  float beamProbE_08_neg350;
+  float beamProbMu_08_neg350;
+  float beamProbPi_08_neg350;
+  float beamProbK_08_neg350;
+  float beamProbProt_08_neg350;
+  
+  float beamProbE_32_pos350;
+  float beamProbMu_32_pos350;
+  float beamProbPi_32_pos350;
+  float beamProbK_32_pos350;
+  float beamProbProt_32_pos350;
+ 
+  float beamProbE_32_pos175;
+  float beamProbMu_32_pos175;
+  float beamProbPi_32_pos175;
+  float beamProbK_32_pos175;
+  float beamProbProt_32_pos175;
+  
+  float beamProbE_32_neg175;
+  float beamProbMu_32_neg175;
+  float beamProbPi_32_neg175;
+  float beamProbK_32_neg175;
+  float beamProbProt_32_neg175;
+
+
   
 };
 
@@ -639,7 +684,50 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
 
   fMaxMomentumForPID            =p.get< float >("MaxMomentumForPID",1000);
   fPiMuLRThreshold              =p.get< float >("PiMuLikelihoodRatioThreshold",0.5);
+
+  //Beam Probabilities (priors) initialization
+  beamProbE_08_pos350 = 0;
+  beamProbMu_08_pos350 = 0;
+  beamProbPi_08_pos350 = 0;
+  beamProbK_08_pos350 = 0;
+  beamProbProt_08_pos350 = 0;
   
+  beamProbE_08_pos175 = 0;
+  beamProbMu_08_pos175 = 0;
+  beamProbPi_08_pos175 = 0;
+  beamProbK_08_pos175 = 0;
+  beamProbProt_08_pos175 = 0;
+  
+  beamProbE_08_neg175 = 0;
+  beamProbMu_08_neg175 = 0;
+  beamProbPi_08_neg175 = 0;
+  beamProbK_08_neg175 = 0;
+  beamProbProt_08_neg175 = 0;
+  
+  beamProbE_08_neg350 = 0;
+  beamProbMu_08_neg350 = 0;
+  beamProbPi_08_neg350 = 0;
+  beamProbK_08_neg350 = 0;
+  beamProbProt_08_neg350 = 0;
+  
+  beamProbE_32_pos350 = 0;
+  beamProbMu_32_pos350 = 0;
+  beamProbPi_32_pos350 = 0;
+  beamProbK_32_pos350 = 0;
+  beamProbProt_32_pos350 = 0;
+  
+  beamProbE_32_pos175 = 0;
+  beamProbMu_32_pos175 = 0;
+  beamProbPi_32_pos175 = 0;
+  beamProbK_32_pos175 = 0;
+  beamProbProt_32_pos175 = 0;
+  
+  beamProbE_32_neg175 = 0;
+  beamProbMu_32_neg175 = 0;
+  beamProbPi_32_neg175 = 0;
+  beamProbK_32_neg175 = 0;
+  beamProbProt_32_neg175 = 0;
+
 
   
 }
