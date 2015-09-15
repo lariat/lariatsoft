@@ -102,8 +102,8 @@ namespace rdu {
 
     // vector of pairs where the first is the corrected timestamp
     // and the second is a pointer to the data block
-    std::vector< std::pair< double, const CAENFragment * > > caenBlocks;
-    std::vector< std::pair< double, const std::vector<TDCFragment::TdcEventData> * > > tdcBlocks;
+    //std::vector< std::pair< double, const CAENFragment * > > caenBlocks;
+    //std::vector< std::pair< double, const std::vector<TDCFragment::TdcEventData> * > > tdcBlocks;
     //std::vector< const CAENFragment * > caenBlocks;
     //std::vector< const std::vector<TDCFragment::TdcEventData> * > tdcBlocks;
     //std::vector< const V1494Fragment * > v1495Blocks;
@@ -111,12 +111,22 @@ namespace rdu {
     //std::vector< const LARASICFragment * > larasicBlocks;
     //std::vector< const ReadoutError * > errorBlocks;
 
+    // vectors of data blocks
+    std::vector< CAENFragment > caenBlocks;
+    std::vector< std::vector<TDCFragment::TdcEventData> > tdcBlocks;
+
+    // vectors of timestamps of data blocks
+    std::vector< double > caenBlockTimeStamps;
+    std::vector< double > tdcBlockTimeStamps;
+
     void clear()
     {
       interval = std::make_pair(0.0, 0.0);
       numberTPCReadouts = 0;
       caenBlocks.clear();
       tdcBlocks.clear();
+      caenBlockTimeStamps.clear();
+      tdcBlockTimeStamps.clear();
       //v1495Blocks.clear();
       //wutBlocks.clear();
       //larasicBlocks.clear();

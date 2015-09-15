@@ -349,13 +349,13 @@ namespace SlicerCheck {
 
     // pre-/post-acquisition and acquisition windows
     if (fV1740PreAcquisitionWindow   < 0) fV1740PreAcquisitionWindow   = fV1740ReadoutWindow;
-    if (fV1740PostAcquisitionWindow  < 0) fV1740PostAcquisitionWindow  = 0.64;
+    if (fV1740PostAcquisitionWindow  < 0) fV1740PostAcquisitionWindow  = 0.128;
     if (fV1740AcquisitionWindow      < 0) fV1740AcquisitionWindow      = fV1740ReadoutWindow;
     if (fV1740BPreAcquisitionWindow  < 0) fV1740BPreAcquisitionWindow  = fV1740BReadoutWindow;
-    if (fV1740BPostAcquisitionWindow < 0) fV1740BPostAcquisitionWindow = 0.64;
+    if (fV1740BPostAcquisitionWindow < 0) fV1740BPostAcquisitionWindow = 0.128;
     if (fV1740BAcquisitionWindow     < 0) fV1740BAcquisitionWindow     = fV1740BReadoutWindow;
-    if (fV1751PreAcquisitionWindow   < 0) fV1751PreAcquisitionWindow   = 0.64;
-    if (fV1751PostAcquisitionWindow  < 0) fV1751PostAcquisitionWindow  = 0.64;
+    if (fV1751PreAcquisitionWindow   < 0) fV1751PreAcquisitionWindow   = 0.128;
+    if (fV1751PostAcquisitionWindow  < 0) fV1751PostAcquisitionWindow  = 0.128;
     if (fV1751AcquisitionWindow      < 0) fV1751AcquisitionWindow      = fV1751ReadoutWindow;
     if (fTDCPreAcquisitionWindow     < 0) fTDCPreAcquisitionWindow     = fTDCReadoutWindow;
     if (fTDCPostAcquisitionWindow    < 0) fTDCPostAcquisitionWindow    = 0;
@@ -490,10 +490,9 @@ namespace SlicerCheck {
 
       for (size_t j = 0; j < NumberCaenBlocks; ++j) {
 
-        std::pair< double, const CAENFragment * > caenBlock = Collection.caenBlocks[j];
-        double const& timestamp = caenBlock.first;
-        const CAENFragment * caenFrag = caenBlock.second;
-        unsigned int boardId = caenFrag->header.boardId;
+        CAENFragment const& caenFrag = Collection.caenBlocks[j];
+        double const& timestamp = Collection.caenBlockTimeStamps[j];
+        unsigned int boardId = caenFrag.header.boardId;
 
         std::cout << "    CAEN block: " << j << std::endl;
         std::cout << "      Board ID: " << boardId << std::endl;
@@ -532,13 +531,12 @@ namespace SlicerCheck {
 
       for (size_t j = 0; j < NumberTdcBlocks; ++j) {
 
-        std::pair< double, const std::vector<TDCFragment::TdcEventData> * > tdcBlock = Collection.tdcBlocks[j];
-        double const& timestamp = tdcBlock.first;
-        //const std::vector<TDCFragment::TdcEventData> * tdcEvents = tdcBlock.second;
+        //std::vector<TDCFragment::TdcEventData> const& tdcEvents = Collection.tdcBlocks[j];
+        double const& timestamp = Collection.tdcBlockTimeStamps[j];
 
         std::cout << "    TDC block: " << j << std::endl;
         std::cout << "      Timestamp: " << timestamp << std::endl;
-        //std::cout << "      TDC events: " << tdcEvents->size() << std::endl;
+        //std::cout << "      TDC events: " << tdcEvents.size() << std::endl;
 
         fTDCTimeStamps.push_back(timestamp);
       }
@@ -561,9 +559,11 @@ namespace SlicerCheck {
     std::vector< rdu::DataBlock > DataBlocks;
     DataBlocks = fSlicerAlg.GetDataBlocks(&fragUtil.DAQFragment());
     std::vector< std::pair< double, double > > CAENBoard0Intervals;
-    CAENBoard0Intervals = fSlicerAlg.CreateIntervals(DataBlocks, 0, fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow, fV1740AcquisitionWindow);
+    //CAENBoard0Intervals = fSlicerAlg.CreateIntervals(DataBlocks, 0, fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow, fV1740AcquisitionWindow);
+    CAENBoard0Intervals = fSlicerAlg.CreateIntervals(DataBlocks, 0, 0.128, 0.128, fV1740AcquisitionWindow);
     CAENBoard0Intervals = fSlicerAlg.IntervalsSelfMerge(CAENBoard0Intervals);
 
+    //fTPCIntervalsDeltaT = -999999999999999999;
     fTPCIntervalsDeltaT = -1;
 
     if (CAENBoard0Intervals.size() > 1) {

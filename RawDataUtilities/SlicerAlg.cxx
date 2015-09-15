@@ -527,8 +527,8 @@ namespace rdu {
 
           for (size_t i = 0; i < block.caenBlocks.size(); ++i) {
             const CAENFragment * caenFrag = block.caenBlocks[i];
-            //Collection.caenBlocks.push_back(caenFrag);
-            Collection.caenBlocks.push_back(std::make_pair(correctedTimestamp, caenFrag));
+            Collection.caenBlocks.push_back(* caenFrag);
+            Collection.caenBlockTimeStamps.push_back(correctedTimestamp);
 
             // increment number of data blocks
             ++NumberDataBlocks;
@@ -536,8 +536,8 @@ namespace rdu {
 
           for (size_t i = 0; i < block.tdcBlocks.size(); ++i) {
             const std::vector<TDCFragment::TdcEventData> * tdcEvents = block.tdcBlocks[i];
-            //Collection.tdcBlocks.push_back(tdcEvents);
-            Collection.tdcBlocks.push_back(std::make_pair(correctedTimestamp, tdcEvents));
+            Collection.tdcBlocks.push_back(* tdcEvents);
+            Collection.tdcBlockTimeStamps.push_back(correctedTimestamp);
 
             // increment number of data blocks
             ++NumberDataBlocks;
@@ -568,10 +568,9 @@ namespace rdu {
 
       for (size_t j = 0; j < NumberCaenBlocks; ++j) {
 
-        std::pair< double, const CAENFragment * > caenBlock = Collection.caenBlocks[j];
-        double const& timestamp = caenBlock.first;
-        const CAENFragment * caenFrag = caenBlock.second;
-        unsigned int boardId = caenFrag->header.boardId;
+        CAENFragment const& caenFrag = Collection.caenBlocks[j];
+        double const& timestamp = Collection.caenBlockTimeStamps[j];
+        unsigned int boardId = caenFrag.header.boardId;
 
         std::cout << "    CAEN block: " << j << std::endl;
         std::cout << "      Board ID: " << boardId << std::endl;
@@ -593,10 +592,9 @@ namespace rdu {
 
       for (size_t j = 0; j < NumberCaenBlocks; ++j) {
 
-        std::pair< double, const CAENFragment * > caenBlock = Collection.caenBlocks[j];
-        double const& timestamp = caenBlock.first;
-        const CAENFragment * caenFrag = caenBlock.second;
-        unsigned int boardId = caenFrag->header.boardId;
+        CAENFragment const& caenFrag = Collection.caenBlocks[j];
+        double const& timestamp = Collection.caenBlockTimeStamps[j];
+        unsigned int boardId = caenFrag.header.boardId;
 
         if (boardId < 8) {
           for (size_t k = 0; k < TPCReadout.size(); ++k) {
@@ -632,9 +630,8 @@ namespace rdu {
 
       for (size_t j = 0; j < NumberTdcBlocks; ++j) {
 
-        std::pair< double, const std::vector<TDCFragment::TdcEventData> * > tdcBlock = Collection.tdcBlocks[j];
-        double const& timestamp = tdcBlock.first;
-        //const std::vector<TDCFragment::TdcEventData> * tdcEvents = tdcBlock.second;
+        //std::vector<TDCFragment::TdcEventData> const& tdcEvents = Collection.tdcBlockTimeStamps[j];
+        double const& timestamp = Collection.tdcBlockTimeStamps[j];
 
         std::cout << "    TDC block: " << j << std::endl;
         std::cout << "      Timestamp: " << timestamp << std::endl;
