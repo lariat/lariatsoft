@@ -75,8 +75,8 @@ physics:
   ### pandora
 #  pandora:             @local::standard_pandora
 
-  #calo:                 @local::standard_calodata
-  #pid:                  @local::standard_chi2pid
+  calo:                 @local::standard_calodata
+  pid:                  @local::standard_chi2pid
  }
 # analyzers:
 #{
@@ -97,8 +97,8 @@ physics:
          #costrk,
          pmtrack,
          #cctrack
-        # calo,
-        # pid
+         calo,
+         pid
          #gaushit
          #corner,
          #dbcluster,
@@ -194,10 +194,10 @@ services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
 
 services.DetectorProperties.TimeOffsetV: -13.2
 services.LArProperties.Electronlifetime: 1600
-#physics.producers.calo.TrackModuleLabel:      "pmtrack"
-#physics.producers.calo.SpacePointModuleLabel: "pmtrack"
-#physics.producers.calo.UseArea:               "true"
-#physics.producers.pid.TrackModuleLabel:       "pmtrack"
-#physics.producers.calo.CaloAlg.CalAreaConstants: [0.0068,0.0153]
+physics.producers.calo.TrackModuleLabel:      "pmtrack"
+physics.producers.calo.SpacePointModuleLabel: "pmtrack"
+physics.producers.calo.UseArea:               "true"
+physics.producers.pid.TrackModuleLabel:       "pmtrack"
+physics.producers.calo.CaloAlg.CalAreaConstants: [0.0068,0.0153]
 physics.producers.showerreco.InputProducer:        "linecluster"
 
