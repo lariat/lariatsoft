@@ -12,7 +12,7 @@
 #}
 
 #include "lariat_reco_algs.fcl"
-#include "murs_bulk_parameters.fcl"
+#include "murs_beamline_composition_bulk.fcl"
 
 BEGIN_PROLOG
 lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Ryan Linehan
@@ -104,8 +104,12 @@ lariat_pid:
   beamProbK_32_neg175: @local::beamProbKaons_32GeV_neg0.175T
   beamProbProt_32_neg175: @local::beamProbProtons_32GeV_neg0.175T
 
-  penetrationDepthPions: @local::penetration_depth_info_pions
-  penetrationDepthMuons: @local::penetration_depth_info_muons
+  penetrationDepthPiPlus:  @local::penetration_depth_info_piplus
+  penetrationDepthPiMinus: @local::penetration_depth_info_piminus
+  penetrationDepthMuPlus:  @local::penetration_depth_info_muplus
+  penetrationDepthMuMinus: @local::penetration_depth_info_muminus	
+  
+
 } 
 
 END_PROLOG
