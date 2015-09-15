@@ -79,8 +79,11 @@ public:
   void setPriors( float momentum );
   void pullPriorsFromTable( float momentum );
   void queryDataBaseForMagnetAndEnergy();
+
+  /*
   void getActivePriors( std::string runSetting );
   void getActivePriorsDefault();
+  */
 
 private:
 
@@ -93,6 +96,8 @@ private:
   int   fRun;
   int   fSubRun;
   float fPathLength;
+  int   fTriggerWindowFirstTick;
+  int   fTriggerWindowLastTick;
 
   //Database Utility for getting run/subrun beam setting info
   art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
@@ -117,7 +122,6 @@ private:
 
   //Histogramming and distribution generation
   //parameters and hists
-
   TH2F*             fPzVsTOF;
   TH1F*             fNTOF;
   TH1F*             fPz;
@@ -132,12 +136,14 @@ private:
   TH1F*             fTOF;
   TH1F*             fParticleMass;
   TH1F*             fTOFType;
+  TH1F*             fMagnetSettingHist;
+  TH1F*             fEnergySettingHist;
+  TH1F*             fBDiffHist;
+  TH1F*             fEDiffHist;
 
   std::vector<size_t>  fKaonRun;
   std::vector<size_t>  fKaonSubRun;
   std::vector<size_t>  fKaonEvent;
-
-  //Particle ID parameters
 
   //Gaussian parameters for mass fits
   float             fPiMuMassMean;
@@ -156,6 +162,10 @@ private:
   float fMuonActivePrior;
   float fKaonActivePrior;
   float fProtonActivePrior;
+
+  //Misc Parameters
+  float fMaxMomentumForPID;  //MeV/c
+  float fPiMuLRThreshold;
   
 };
 
@@ -273,34 +283,38 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //2: pimu likelihood ratio
   //Note that the size might still be zero after the
   //following function if cuts aren't passed. Careful!
-  /*
   std::vector<float> proton_kaon_pimu_likelihood_ratios;
+  std::vector<float> pion_muon_likelihood_ratios;
   doThePiMu_Proton_KaonSeparation( WCTrackColHandle,
 				   TOFColHandle,
 				   proton_kaon_pimu_likelihood_ratios );
-
   ///////////////// PARTICLE ID ENDING Pz vs. TOF /////////////////////
-  */
 
-  
-  ///////////////// PARTICLE ID Pion Vs. Muon /////////////////////////
-  // We start with the assumption that there is only one good WCTrack,
-  // the one that triggered the event. The trigger waveform times for
-  // the wire chambers will therefore have hits at around time tick
-  // 136. We then cut on track time, saying that the MuRS track must be
-  // found within a reasonable distance of tick 136. This very roughly
-  // matches the WCTrack to the MuRS track.
-  //
-  
-  MuRSTrack theGoodMuRSTrack;
-  int thePenetrationDepth = 9989;
-  bool goodMuRS = isThereAGoodMuRSTrack( MuRSColHandle, thePenetrationDepth );
-  std::vector<float> pion_muon_likelihood_ratios;
-  if( goodMuRS ){
-    doThePionMuonSeparation( thePenetrationDepth, 
-			      reco_momentum,
-			      pion_muon_likelihood_ratios );
+  //Now we check to see if the pimu likelihood ratio is above some 
+  //parametrized threshold. If it is, run pi/mu separation on it.
+  if( proton_kaon_pimu_likelihood_ratios.at(2) > fPiMuLRThreshold ){
+    
+    ///////////////// PARTICLE ID Pion Vs. Muon /////////////////////////
+    // We start with the assumption that there is only one good WCTrack,
+    // the one that triggered the event. The trigger waveform times for
+    // the wire chambers will therefore have hits at around time tick
+    // 136. We then cut on track time, saying that the MuRS track must be
+    // found within a reasonable distance of tick 136. This very roughly
+    // matches the WCTrack to the MuRS track.
+    //
+    
+    MuRSTrack theGoodMuRSTrack;
+    int thePenetrationDepth = 9989;
+    bool goodMuRS = isThereAGoodMuRSTrack( MuRSColHandle, thePenetrationDepth );
+    if( goodMuRS ){
+      doThePionMuonSeparation( thePenetrationDepth, 
+			       reco_momentum,
+			       pion_muon_likelihood_ratios );
+    }
+    
   }
+
+  //Now fill in the AuxDetParticle with the likelihoods
   
   
 
@@ -338,10 +352,7 @@ bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack( art::Handle< std::vec
     ldp::MuonRangeStackHits theMuRS = MuRSColHandle->at(iMuRS);
     for( size_t iTrack = 0; iTrack < theMuRS.NTracks(); ++iTrack ){
       float theTrackTime = theMuRS.GetArrivalTime(iTrack);
-      if( theTrackTime == 135 ||
-	  theTrackTime == 136 ||
-	  theTrackTime == 137 ||
-	  theTrackTime == 138 ){
+      if( theTrackTime >= fTriggerWindowFirstTick && theTrackTime <= fTriggerWindowLastTick ){
 	thePenetrationDepth = theMuRS.GetPenetrationDepth(iTrack);
 	counter++;
       }
@@ -362,9 +373,9 @@ bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack( art::Handle< std::vec
 //of different particle ID hypotheses
 void ParticleIdentificationSlicing::setPriors(float momentum)
 {
-  //Draw information from database on the beam settings
-  queryDataBaseForMagnetAndEnergy();
-  
+  //We have a magnet and energy setting. Use these with momentum to identify:
+  //1. Which priors histogram file's associated vector to use (based on B field and Energy )
+  //2. Which momentum range to draw our priors from
   //Now dig through the prior table (which is at the moment unfinished) using the momentum,
   //magnet settings, and energy settings
   pullPriorsFromTable( momentum );
@@ -375,10 +386,13 @@ void ParticleIdentificationSlicing::setPriors(float momentum)
 //Extracts the prior information about beamline populations from a table built from MC simulation
 void ParticleIdentificationSlicing::pullPriorsFromTable( float momentum )
 {
+  //Make sure to use the fMag and fEnergy settings in this!!!
+
+
+
   
-
-
-
+  //By the end, I should have a set of scalar priors for this specific event (electron, muon, pion, proton, kaon, etc.)
+  
 
 }
 
@@ -402,20 +416,31 @@ void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
   //Loop through and find the closest settings
   float theTrueMagSetting = 9996;
   float theLowestDifference = 9995;
+  float theBDiff = 0;
   for( int iMag = 0; iMag < magSettingSize; ++iMag ){
     if( fabs(magSettings[iMag] - fabs(fMagnetSetting)) < theLowestDifference ){
       theLowestDifference = fabs(magSettings[iMag]-fabs(fMagnetSetting));
       theTrueMagSetting = magSettings[iMag];
+      theBDiff = fabs(theTrueMagSetting - fabs(fMagnetSetting) );
     }
   }
   float theTrueEnergySetting = 9994;
   theLowestDifference = 9994;
+  float theEDiff = 0;
   for( int iEn = 0; iEn < energySettingSize; ++iEn ){
     if( fabs(energySettings[iEn] - fabs(fEnergySetting)) < theLowestDifference ){
       theLowestDifference = fabs(energySettings[iEn]-fabs(fEnergySetting));
       theTrueEnergySetting = energySettings[iEn];
+      theEDiff = fabs(theTrueEnergySetting - fabs(fEnergySetting));
     }
   }
+  
+  //Sanity checks
+  fMagnetSettingHist->Fill(fMagnetSetting);
+  fEnergySettingHist->Fill(fEnergySetting);
+  fBDiffHist->Fill(theBDiff);
+  fEDiffHist->Fill(theEDiff);
+
 
   //Assign these true values 
   fMagnetSetting = theTrueMagSetting;
@@ -423,6 +448,7 @@ void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
 
 }
 
+/*
 //============================================================================================
 //Setting the active prior variables from the prior maps set in setPriors() function
 void ParticleIdentificationSlicing::getActivePriors( std::string runSetting )
@@ -443,9 +469,10 @@ void ParticleIdentificationSlicing::getActivePriorsDefault()
   fKaonActivePrior = 1;
   fProtonActivePrior = 1;
 }
+*/
 
-//============================================================================================
-/*  
+
+//============================================================================================  
 void ParticleIdentifiactionSlicing::doThePiMu_Proton_KaonSeparation( art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle,
 								     art::Handle< std::vector<ldp::TOF> > TOFColHandle,
 								     std::vector<float> & proton_kaon_pimu_likelihood_ratios );
@@ -454,22 +481,17 @@ void ParticleIdentifiactionSlicing::doThePiMu_Proton_KaonSeparation( art::Handle
     if((WCTrackColHandle->size() == 1 && TOFColHandle->at(0).NTOF() == 1)){
 
       //Finding the mass
-      if(WCTrackColHandle->at(0).Momentum() < 1000 ){
-	float mass = pow(pow((c*(TOFColHandle->at(0).SingleTOF(0)-11)*1e-9/distance_traveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
+      if(WCTrackColHandle->at(0).Momentum() < fMaxMomentumForPID ){
+	float mass = pow(pow((c*(TOFColHandle->at(0).SingleTOF(0)-fMissingNanoseconds)*1e-9/fDistanceTraveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
       }
       else return;   //If mass is too high, it's hard to disambiguate protons, pi/mu, and kaons
 
       //Finding values of pdf for mass given proton, kaon, pi/mu distributions
       float proton_prob = fProtonActivePrior*(1/pow(2*3.1415926,0.5)/fProtonMassSigma)*exp(-0.5*pow((mass-fProtonMassMean)/fProtonMassSigma,2));
       float kaon_prob = fKaonActivePrior*(1/pow(2*3.1415926,0.5)/fKaonMassSigma)*exp(-0.5*pow((mass-fKaonMassMean)/fKaonMassSigma,2));
-      float pimu_prob = 0;
-      //If we're doing pimu separation, pis and mus become the same particle according to our priors.
-      //They become the same hypothesis, and all hypotheses are equally likely (for default).
-      if( fPionActivePrior == 1 && fMuonActivePrior == 1 )
-	pimu_prob = (1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
-      else pimu_prob = (fPionActivePrior+fMuonActivePrior)*(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
+      float pimu_prob = (fPionActivePrior+fMuonActivePrior)*(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
       
-      //These ^ are likelihoods, so find the likelihood ratio of each to the total, given no priors (temporary)
+      //These ^ are likelihoods, so find the likelihood ratio of each to the total
       float proton_likelihood = proton_prob/(proton_prob+kaon_prob+pimu_prob);
       float kaon_likelihood = kaon_prob/(proton_prob+kaon_prob+pimu_prob);
       float pimu_likelihood = pimu_prob/(proton_prob+kaon_prob+pimu_prob);
@@ -479,18 +501,9 @@ void ParticleIdentifiactionSlicing::doThePiMu_Proton_KaonSeparation( art::Handle
       proton_kaon_pimu_likelihood_ratios.push_back(pimu_likelihood);
     }
   }
-
-
-
-
 }
 
-
-*/
-
-
-
-
+//============================================================================================  
 void ParticleIdentificationSlicing::beginJob()
 {
   // Implementation of optional member function here.
@@ -510,6 +523,11 @@ void ParticleIdentificationSlicing::beginJob()
     fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
     fTOFType = tfs->make<TH1F>("TOFType","Number of valid times of flight per event",10,0,10);
     fParticleMass = tfs->make<TH1F>("Mass","Particle Mass",50,0,2000);
+    fMagnetSettingHist = tfs->make<TH1F>("MagnetSetting","Magnet Setting",1,0,-1);
+    fEnergySettingHist = tfs->make<TH1F>("EnergySetting","Energy Setting",1,0,-1);
+    fBDiffHist = tfs->make<TH1F>("BDiff","Difference between B field setting and closest discrete one",1,0,-1);
+    fEDiffHist = tfs->make<TH1F>("EDiff","Difference between Energy setting and closest discrete one",1,0,-1);
+
     
     fPz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
     fPz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
@@ -532,13 +550,16 @@ void ParticleIdentificationSlicing::beginJob()
     fParticleMass->GetXaxis()->SetTitle("Particle Mass (MeV/c^2)");
     fParticleMass->GetYaxis()->SetTitle("Counts");
   }
+
+ 
+  //Setting the distance traveled by a particle via the geometry service
+  fDistanceTraveled = 6.7; //Temporarily hacked together
+
 }
 
 void ParticleIdentificationSlicing::beginRun(art::Run & r)
 {
-  // Implementation of optional member function here.
-  //Temporary, but must always either use this or the non-default prior setting
-  getActivePriorsDefault();
+  // getActivePriorsDefault();
 }
 
 void ParticleIdentificationSlicing::beginSubRun(art::SubRun & sr)
@@ -546,6 +567,8 @@ void ParticleIdentificationSlicing::beginSubRun(art::SubRun & sr)
   // Implementation of optional member function here.
   fRun = sr.run();
   fSubRun = sr.subRun();
+
+  //Draw information from database on the beam settings
   queryDataBaseForMagnetAndEnergy();
 }
 
@@ -596,9 +619,10 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   // Implementation of optional member function here.
   fPathLength                   =p.get< float >("TrajectoryPathLength",6.7);
   fSpeedOfLight                 = 3e+8;
+  fTriggerWindowFirstTick       =p.get< int >("TriggerWindowFirstTick",135);
+  fTriggerWindowLastTick        =p.get< int >("TriggerWindowLastTick",138);
 
   fPenetrationDepthInfo         =p.get<std::vector<float> >("PDepthInfo");
-
 
   fWCTrackModuleLabel           =p.get< std::string >("WCTrackModuleLabel");
   fTOFModuleLabel               =p.get< std::string >("TOFModuleLabel");
@@ -613,7 +637,8 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fProtonMassMean               =p.get< float >("ProtonMassMean",9.16e+2);
   fProtonMassSigma              =p.get< float >("ProtonMassSigma",9.85e+1);
 
-
+  fMaxMomentumForPID            =p.get< float >("MaxMomentumForPID",1000);
+  fPiMuLRThreshold              =p.get< float >("PiMuLikelihoodRatioThreshold",0.5);
   
 
   
