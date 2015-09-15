@@ -103,6 +103,9 @@ lariat_pid:
   beamProbPi_32_neg175: @local::beamProbPions_32GeV_neg0.175T
   beamProbK_32_neg175: @local::beamProbKaons_32GeV_neg0.175T
   beamProbProt_32_neg175: @local::beamProbProtons_32GeV_neg0.175T
+
+  penetrationDepthPions: @local::penetration_depth_info_pions
+  penetrationDepthMuons: @local::penetration_depth_info_muons
 } 
 
 END_PROLOG

@@ -168,48 +168,51 @@ private:
   float fPiMuLRThreshold;
 
   //Beam Priors
-  float beamProbE_08_pos350;
-  float beamProbMu_08_pos350;
-  float beamProbPi_08_pos350;
-  float beamProbK_08_pos350;
-  float beamProbProt_08_pos350;
+  std::vector<float> beamProbE_08_pos350;
+  std::vector<float> beamProbMu_08_pos350;
+  std::vector<float> beamProbPi_08_pos350;
+  std::vector<float> beamProbK_08_pos350;
+  std::vector<float> beamProbProt_08_pos350;
  
-  float beamProbE_08_pos175;
-  float beamProbMu_08_pos175;
-  float beamProbPi_08_pos175;
-  float beamProbK_08_pos175;
-  float beamProbProt_08_pos175;
+  std::vector<float> beamProbE_08_pos175;
+  std::vector<float> beamProbMu_08_pos175;
+  std::vector<float> beamProbPi_08_pos175;
+  std::vector<float> beamProbK_08_pos175;
+  std::vector<float> beamProbProt_08_pos175;
   
-  float beamProbE_08_neg175;
-  float beamProbMu_08_neg175;
-  float beamProbPi_08_neg175;
-  float beamProbK_08_neg175;
-  float beamProbProt_08_neg175;
+  std::vector<float> beamProbE_08_neg175;
+  std::vector<float> beamProbMu_08_neg175;
+  std::vector<float> beamProbPi_08_neg175;
+  std::vector<float> beamProbK_08_neg175;
+  std::vector<float> beamProbProt_08_neg175;
   
-  float beamProbE_08_neg350;
-  float beamProbMu_08_neg350;
-  float beamProbPi_08_neg350;
-  float beamProbK_08_neg350;
-  float beamProbProt_08_neg350;
+  std::vector<float> beamProbE_08_neg350;
+  std::vector<float> beamProbMu_08_neg350;
+  std::vector<float> beamProbPi_08_neg350;
+  std::vector<float> beamProbK_08_neg350;
+  std::vector<float> beamProbProt_08_neg350;
   
-  float beamProbE_32_pos350;
-  float beamProbMu_32_pos350;
-  float beamProbPi_32_pos350;
-  float beamProbK_32_pos350;
-  float beamProbProt_32_pos350;
+  std::vector<float> beamProbE_32_pos350;
+  std::vector<float> beamProbMu_32_pos350;
+  std::vector<float> beamProbPi_32_pos350;
+  std::vector<float> beamProbK_32_pos350;
+  std::vector<float> beamProbProt_32_pos350;
  
-  float beamProbE_32_pos175;
-  float beamProbMu_32_pos175;
-  float beamProbPi_32_pos175;
-  float beamProbK_32_pos175;
-  float beamProbProt_32_pos175;
+  std::vector<float> beamProbE_32_pos175;
+  std::vector<float> beamProbMu_32_pos175;
+  std::vector<float> beamProbPi_32_pos175;
+  std::vector<float> beamProbK_32_pos175;
+  std::vector<float> beamProbProt_32_pos175;
   
-  float beamProbE_32_neg175;
-  float beamProbMu_32_neg175;
-  float beamProbPi_32_neg175;
-  float beamProbK_32_neg175;
-  float beamProbProt_32_neg175;
+  std::vector<float> beamProbE_32_neg175;
+  std::vector<float> beamProbMu_32_neg175;
+  std::vector<float> beamProbPi_32_neg175;
+  std::vector<float> beamProbK_32_neg175;
+  std::vector<float> beamProbProt_32_neg175;
 
+  std::vector<float> pionPenetrationDepth;
+  std::vector<float> muonPenetrationDepth;
+  
 
   
 };
@@ -432,8 +435,18 @@ void ParticleIdentificationSlicing::setPriors(float momentum)
 void ParticleIdentificationSlicing::pullPriorsFromTable( float momentum )
 {
   //Make sure to use the fMag and fEnergy settings in this!!!
-
-
+  
+  //Pull the pion and muon penetration depth 
+  //The struture of the pion and muon penetration depth tables is such:
+  //Vector1 = first 10 entries, all for momentum range 0:
+  //Entry1: # particles incident on TPC in energy range 0
+  //Entry2: # particles surviving to MuRS in energy range 0
+  //Entry3: Probability of a particle stopping after the first slab
+  //Entry4: Probability of a particle stopping after the second slab
+  //...
+  //Entry10: Probability of a particle stopping after the 8th slab
+  //Vector2 = entries 11-20, all for momentum range 1:
+  //...repeat.
 
   
   //By the end, I should have a set of scalar priors for this specific event (electron, muon, pion, proton, kaon, etc.)
@@ -686,49 +699,50 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fPiMuLRThreshold              =p.get< float >("PiMuLikelihoodRatioThreshold",0.5);
 
   //Beam Probabilities (priors) initialization
-  beamProbE_08_pos350 = 0;
-  beamProbMu_08_pos350 = 0;
-  beamProbPi_08_pos350 = 0;
-  beamProbK_08_pos350 = 0;
-  beamProbProt_08_pos350 = 0;
+  beamProbE_08_pos350 = p.get< std::vector<float> >("beamProbE_08_pos350");
+  beamProbMu_08_pos350 = p.get< std::vector<float> >("beamProbMu_08_pos350");
+  beamProbPi_08_pos350 = p.get< std::vector<float> >("beamProbPi_08_pos350");
+  beamProbK_08_pos350 = p.get< std::vector<float> >("beamProbK_08_pos350");
+  beamProbProt_08_pos350 = p.get< std::vector<float> >("beamProbProt_08_pos350");
   
-  beamProbE_08_pos175 = 0;
-  beamProbMu_08_pos175 = 0;
-  beamProbPi_08_pos175 = 0;
-  beamProbK_08_pos175 = 0;
-  beamProbProt_08_pos175 = 0;
+  beamProbE_08_pos175 = p.get< std::vector<float> >("beamProbE_08_pos175");
+  beamProbMu_08_pos175 = p.get< std::vector<float> >("beamProbMu_08_pos175");
+  beamProbPi_08_pos175 = p.get< std::vector<float> >("beamProbPi_08_pos175");
+  beamProbK_08_pos175 = p.get< std::vector<float> >("beamProbK_08_pos175");
+  beamProbProt_08_pos175 = p.get< std::vector<float> >("beamProbProt_08_pos175");
   
-  beamProbE_08_neg175 = 0;
-  beamProbMu_08_neg175 = 0;
-  beamProbPi_08_neg175 = 0;
-  beamProbK_08_neg175 = 0;
-  beamProbProt_08_neg175 = 0;
+  beamProbE_08_neg175 = p.get< std::vector<float> >("beamProbE_08_neg175");
+  beamProbMu_08_neg175 = p.get< std::vector<float> >("beamProbMu_08_neg175");
+  beamProbPi_08_neg175 = p.get< std::vector<float> >("beamProbPi_08_neg175");
+  beamProbK_08_neg175 = p.get< std::vector<float> >("beamProbK_08_neg175");
+  beamProbProt_08_neg175 = p.get< std::vector<float> >("beamProbProt_08_neg175");
   
-  beamProbE_08_neg350 = 0;
-  beamProbMu_08_neg350 = 0;
-  beamProbPi_08_neg350 = 0;
-  beamProbK_08_neg350 = 0;
-  beamProbProt_08_neg350 = 0;
+  beamProbE_08_neg350 = p.get< std::vector<float> >("beamProbE_08_neg350");
+  beamProbMu_08_neg350 = p.get< std::vector<float> >("beamProbMu_08_neg350");
+  beamProbPi_08_neg350 = p.get< std::vector<float> >("beamProbPi_08_neg350");
+  beamProbK_08_neg350 = p.get< std::vector<float> >("beamProbK_08_neg350");
+  beamProbProt_08_neg350 = p.get< std::vector<float> >("beamProbProt_08_neg350");
   
-  beamProbE_32_pos350 = 0;
-  beamProbMu_32_pos350 = 0;
-  beamProbPi_32_pos350 = 0;
-  beamProbK_32_pos350 = 0;
-  beamProbProt_32_pos350 = 0;
+  beamProbE_32_pos350 = p.get< std::vector<float> >("beamProbE_32_pos350");
+  beamProbMu_32_pos350 = p.get< std::vector<float> >("beamProbMu_32_pos350");
+  beamProbPi_32_pos350 = p.get< std::vector<float> >("beamProbPi_32_pos350");
+  beamProbK_32_pos350 = p.get< std::vector<float> >("beamProbK_32_pos350");
+  beamProbProt_32_pos350 = p.get< std::vector<float> >("beamProbProt_32_pos350");
   
-  beamProbE_32_pos175 = 0;
-  beamProbMu_32_pos175 = 0;
-  beamProbPi_32_pos175 = 0;
-  beamProbK_32_pos175 = 0;
-  beamProbProt_32_pos175 = 0;
+  beamProbE_32_pos175 = p.get< std::vector<float> >("beamProbE_32_pos175");
+  beamProbMu_32_pos175 = p.get< std::vector<float> >("beamProbMu_32_pos175");
+  beamProbPi_32_pos175 = p.get< std::vector<float> >("beamProbPi_32_pos175");
+  beamProbK_32_pos175 = p.get< std::vector<float> >("beamProbK_32_pos175");
+  beamProbProt_32_pos175 = p.get< std::vector<float> >("beamProbProt_32_pos175");
   
-  beamProbE_32_neg175 = 0;
-  beamProbMu_32_neg175 = 0;
-  beamProbPi_32_neg175 = 0;
-  beamProbK_32_neg175 = 0;
-  beamProbProt_32_neg175 = 0;
+  beamProbE_32_neg175 = p.get< std::vector<float> >("beamProbE_32_neg175");
+  beamProbMu_32_neg175 = p.get< std::vector<float> >("beamProbMu_32_neg175");
+  beamProbPi_32_neg175 = p.get< std::vector<float> >("beamProbPi_32_neg175");
+  beamProbK_32_neg175 = p.get< std::vector<float> >("beamProbK_32_neg175");
+  beamProbProt_32_neg175 = p.get< std::vector<float> >("beamProbProt_32_neg175");
 
-
+  pionPenetrationDepth = p.get< std::vector<float> >("penetrationDepthPions");
+  muonPenetrationDepth = p.get< std::vector<float> >("penetrationDepthMuons");
   
 }
 
