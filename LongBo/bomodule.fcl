@@ -6,7 +6,8 @@ bo_anatree:
     HitsModuleLabel:          "hit"
     TrigModuleLabel:          "daq"
     TrackModuleLabel:         "track3d"
-
+    CalorimetryModuleLabel:   "calo"
+    ParticleIDModuleLabel:    "pid"
 }
 
 END_PROLOG
