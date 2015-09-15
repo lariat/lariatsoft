@@ -222,49 +222,51 @@ namespace DAQToOffline
     void matchDataBlocks(const LariatFragment * data);
     
     void coarseMatch(int   const& deviceAID,
-		     int   const& deviceBID,
-		     double       range[2],
-		     std::map< int, std::map<unsigned int, double> > timeStamps,
-		     match_maps & matchMaps);
+                     int   const& deviceBID,
+                     double       range[2],
+                     std::map< int, std::map<unsigned int, double> > timeStamps,
+                     match_maps & matchMaps);
     
     void fineMatch(int      const& deviceAID,
-		   int      const& deviceBID,
-		   double          range[2],    
-		   fit_params_maps fitParametersMaps,
-		   std::map< int, std::map<unsigned int, double> > timeStamps,
-		   match_maps    & matchMaps);
+                   int      const& deviceBID,
+                   double          range[2],
+                   fit_params_maps fitParametersMaps,
+                   std::map< int, std::map<unsigned int, double> > timeStamps,
+                   match_maps    & matchMaps);
     
     void printMatchMap(int   const& deviceAID,
-		       int   const& deviceBID,
-		       match_maps & matchMaps);
+                       int   const& deviceBID,
+                       match_maps & matchMaps);
     
-    double line(std::pair<double, double> const& parameters, 
-		double                    const& x);
+    double line(std::pair<double, double> const& parameters,
+                double                    const& x);
     
     double clockDriftCorr(std::pair<double, double> const& parameters,
-			  double                    const& x);
+                          double                    const& x);
     
     void fitClockDrift(int         const& deviceAID,
-		       int         const& deviceBID,
-		       std::map< int, std::map<unsigned int, double> > timeStamps,
-		       match_maps       & matchMaps,
-		       fit_params_maps  & fitParametersMaps,
-		       std::string const& graphNamePrefix);
+                       int         const& deviceBID,
+                       std::map< int, std::map<unsigned int, double> > timeStamps,
+                       match_maps       & matchMaps,
+                       fit_params_maps  & fitParametersMaps,
+                       std::string const& graphNamePrefix);
     
     void matchFitIter(int        const& deviceAID,
-		      int        const& deviceBID,
-		      std::map< int, std::map<unsigned int, double> > timeStamps,
-		      match_maps      & matchMaps,
-		      fit_params_maps & fitParametersMaps,
-		      double            coarseRange[2],
-		      double            fineEps[2]);
+                      int        const& deviceBID,
+                      std::map< int, std::map<unsigned int, double> > timeStamps,
+                      match_maps      & matchMaps,
+                      fit_params_maps & fitParametersMaps,
+                      double            coarseRange[2],
+                      double            fineEps[2]);
+    
     ////////////////////////////////////////
-
+    
     void commenceRun( art::RunPrincipal*& outR );
     std::vector<raw::Trigger> makeTheTriggers( std::vector<CAENFragment> theCAENDataBlocks,
-					       std::vector<TDCDataBlock> theTDCDataBlocks );
-    uint32_t triggerBits               (std::vector<CAENFragment>     const& caenFrags);   				  
-
+                                              std::vector<TDCDataBlock> theTDCDataBlocks );
+    
+    uint32_t triggerBits                     (std::vector<CAENFragment>     const& caenFrags);
+    
     void isPileupPresent();
 
   };
@@ -370,10 +372,10 @@ DAQToOffline::SlicerInput::readFile(string const& filename, art::FileBlock*& fb)
 //=======================================================================================
 bool
 DAQToOffline::SlicerInput::readNext(art::RunPrincipal*    const& inR,
-                                 art::SubRunPrincipal* const& inSR,
-                                 art::RunPrincipal*    & outR,
-                                 art::SubRunPrincipal* & outSR,
-                                 art::EventPrincipal*  & outE)
+                                    art::SubRunPrincipal* const& inSR,
+                                    art::RunPrincipal*    & outR,
+                                    art::SubRunPrincipal* & outSR,
+                                    art::EventPrincipal*  & outE)
 {
   if ( fDoneWithThisFile ) {
     return false;
@@ -406,7 +408,7 @@ DAQToOffline::SlicerInput::readNext(art::RunPrincipal*    const& inR,
   if ( fSubRunNumber != fCachedSubRunNumber ) {
     outSR = fSH.makeSubRunPrincipal(fRunNumber,fSubRunNumber,ts);
     fCachedSubRunNumber = fSubRunNumber;
-    fEventNumber = 0ul;
+    //fEventNumber = 0ul;
   }
 
   if( fVerbose ) std::cout << "Subrun: " << fSubRunNumber << std::endl;
@@ -483,7 +485,8 @@ bool DAQToOffline::SlicerInput::miniFragmentUtility()
 
 //=======================================================================================
 void
-DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE){
+DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE)
+{
   ++fEventNumber;
   if( fVerbose )
     std::cout << "Event number: " << fEventNumber << std::endl;
@@ -543,36 +546,36 @@ DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE){
   }
   */
   //Creating digits for insertion into the event
-  std::vector<raw::AuxDetDigit>          auxDigits;	 
+  std::vector<raw::AuxDetDigit>    auxDigits;
   std::vector<raw::RawDigit>    	 rawDigits;	 
   std::vector<raw::OpDetPulse>   	 opPulses;	 
 
   //Make triggers from the fragments
   
   std::vector<raw::Trigger> trigVect = makeTheTriggers( theCAENDataBlocks,
-							theTDCDataBlocks );
+                                                       theTDCDataBlocks );
 				
 
   //Take fragments and convert them to the created digits
   fFrag2DigAlg.makeTheDigits( theCAENDataBlocks,
-			      theTDCDataBlocks,
-			      auxDigits,
-			      rawDigits,
-			      opPulses );
+                             theTDCDataBlocks,
+                             auxDigits,
+                             rawDigits,
+                             opPulses );
 
   //Now we have vectors of auxDigits, rawDigits, and opPulses that we feed into the event.
   art::put_product_in_principal( std::make_unique<std::vector<raw::Trigger> >(trigVect),
-				 *outE,
-				 fSourceName);
+                                *outE,
+                                fSourceName);
   art::put_product_in_principal( std::make_unique<std::vector<raw::AuxDetDigit> >(auxDigits),
-				 *outE,
-				 fSourceName);
+                                *outE,
+                                fSourceName);
   art::put_product_in_principal( std::make_unique<std::vector<raw::RawDigit> >(rawDigits),
-				 *outE,
-				 fSourceName);
+                                *outE,
+                                fSourceName);
   art::put_product_in_principal( std::make_unique<std::vector<raw::OpDetPulse> >(opPulses),
-				 *outE,
-				 fSourceName);
+                                *outE,
+                                fSourceName);
   
   //Check to see if we're done with this file yet
   if( fTriggerToCAENDataBlocks.size() == 0 && fTriggerToTDCDataBlocks.size() == 0 )
@@ -587,7 +590,7 @@ DAQToOffline::SlicerInput::makeEventAndPutFragments(art::EventPrincipal*& outE){
 
 //=======================================================================================
 std::vector<raw::Trigger> DAQToOffline::SlicerInput::makeTheTriggers( std::vector<CAENFragment> theCAENDataBlocks,
-								      std::vector<TDCDataBlock> theTDCDataBlocks )
+                                                                     std::vector<TDCDataBlock> theTDCDataBlocks )
 {
   //Hardcoded for now until I can find out how to 
   //extract this from the raw event root file
@@ -599,7 +602,10 @@ std::vector<raw::Trigger> DAQToOffline::SlicerInput::makeTheTriggers( std::vecto
   //If there are caen fragments present, set the trigger info
   //based on the caen data block information
   if( theCAENDataBlocks.size() > 0 ){
-    trigVect.push_back(raw::Trigger(fEventNumber, theCAENDataBlocks.front().header.triggerTimeTag, eventTime, this->triggerBits(theCAENDataBlocks) ) );
+    trigVect.push_back(raw::Trigger(fEventNumber,
+                                    theCAENDataBlocks.front().header.triggerTimeTag,
+                                    eventTime,
+                                    this->triggerBits(theCAENDataBlocks) ) );
     caenDataPresent = true;  
   }
   else
@@ -610,8 +616,10 @@ std::vector<raw::Trigger> DAQToOffline::SlicerInput::makeTheTriggers( std::vecto
   //based on the TDCDataBlock information
   if( theTDCDataBlocks.size() > 0 ){    
     if(!caenDataPresent){
-      trigVect.push_back(raw::Trigger(fEventNumber, theTDCDataBlocks.front().front().tdcEventHeader.tdcTimeStamp, 
-				      eventTime, this->triggerBits(theCAENDataBlocks)));
+      trigVect.push_back(raw::Trigger(fEventNumber,
+                                      theTDCDataBlocks.front().front().tdcEventHeader.tdcTimeStamp,
+                                      eventTime,
+                                      this->triggerBits(theCAENDataBlocks)));
     }
   }
   else
@@ -665,30 +673,30 @@ uint32_t DAQToOffline::SlicerInput::triggerBits(std::vector<CAENFragment> const&
 
     for(size_t chan = minChan; chan < maxChan; ++chan){ 
       if(chan > frag.waveForms.size() )
-	throw cet::exception("FragmentToDigit") << "attempting to access channel "
-						<< chan << " from 1740 fragment with only "
-						<< frag.waveForms.size() << " channels";
+        throw cet::exception("FragmentToDigit") << "attempting to access channel "
+        << chan << " from 1740 fragment with only "
+        << frag.waveForms.size() << " channels";
       
       // only look at the specific tick of the waveform where the trigger decision is taken
       if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1){
-	// the trigger waveform goes below the pedestal (low) if the trigger is on
-	//Hard-coded temporarily to hit the right window of ticks for trigge (it's not just one tick)
-	//Studies about a precise window for this first trigger tick are underway
-	if(fTrigger1740Pedestal - frag.waveForms[chan].data[135] > fTrigger1740Threshold ||
-	   fTrigger1740Pedestal - frag.waveForms[chan].data[136] > fTrigger1740Threshold ||
-	   fTrigger1740Pedestal - frag.waveForms[chan].data[137] > fTrigger1740Threshold ||
-	   fTrigger1740Pedestal - frag.waveForms[chan].data[138] > fTrigger1740Threshold ) 
-	   triggerBits.set(chan - minChan);
-	//Also, if there is pileup, set the trigger bit for it such that ANY pileup returns 1
-	if( fPILEUP != -1 && chan == fPILEUP+minChan ){
-	  for( size_t iTick = 0; iTick < frag.waveForms[chan].data.size(); ++iTick ){
-	    if( fTrigger1740Pedestal - frag.waveForms[chan].data[iTick] > fTrigger1740Threshold ){
-	      triggerBits.set(fPILEUP);
-	      if( fVerbose ) std::cout << "Event: " << fEventNumber << " has pileup." << std::endl;
-	      break;
-	    }
-	  }
-	}
+        // the trigger waveform goes below the pedestal (low) if the trigger is on
+        //Hard-coded temporarily to hit the right window of ticks for trigge (it's not just one tick)
+        //Studies about a precise window for this first trigger tick are underway
+        if(fTrigger1740Pedestal - frag.waveForms[chan].data[135] > fTrigger1740Threshold ||
+           fTrigger1740Pedestal - frag.waveForms[chan].data[136] > fTrigger1740Threshold ||
+           fTrigger1740Pedestal - frag.waveForms[chan].data[137] > fTrigger1740Threshold ||
+           fTrigger1740Pedestal - frag.waveForms[chan].data[138] > fTrigger1740Threshold )
+          triggerBits.set(chan - minChan);
+        //Also, if there is pileup, set the trigger bit for it such that ANY pileup returns 1
+        if( fPILEUP != -1 && chan == fPILEUP+minChan ){
+          for( size_t iTick = 0; iTick < frag.waveForms[chan].data.size(); ++iTick ){
+            if( fTrigger1740Pedestal - frag.waveForms[chan].data[iTick] > fTrigger1740Threshold ){
+              triggerBits.set(fPILEUP);
+              if( fVerbose ) std::cout << "Event: " << fEventNumber << " has pileup." << std::endl;
+              break;
+            }
+          }
+        }
       }
     } // end loop over channels on the board
   } // end loop over caen fragments
@@ -1095,7 +1103,7 @@ void DAQToOffline::SlicerInput::matchDataBlocks(const LariatFragment * data)
       //REL std::pair<int, int> indexPair = timeStampToDataBlockIndices[j].second;
 
       if (timeThresholdLow <= timeStamp and timeStamp <= timeThresholdHigh) {
-	//REL LOG_VERBATIM("FragmentToDigit") << "    timeStamp:   " << timeStamp;
+	      //REL LOG_VERBATIM("FragmentToDigit") << "    timeStamp:   " << timeStamp;
         //REL LOG_VERBATIM("FragmentToDigit") << "      indexPair: (" << indexPair.first << ", " << indexPair.second << ")";
 
         selectedIndices.push_back(j);  // add to local bookkeeper of selected data blocks
@@ -1236,10 +1244,10 @@ void DAQToOffline::SlicerInput::matchDataBlocks(const LariatFragment * data)
 
 //-----------------------------------------------------------------------------------
 void DAQToOffline::SlicerInput::coarseMatch(int   const& deviceAID,
-                                  int   const& deviceBID,
-                                  double       range[2],      
-                                  std::map< int, std::map<unsigned int, double> > timeStamps,
-                                  match_maps & matchMaps) 
+                                            int   const& deviceBID,
+                                            double       range[2],
+                                            std::map< int, std::map<unsigned int, double> > timeStamps,
+                                            match_maps & matchMaps)
 {
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB;
@@ -1265,11 +1273,11 @@ void DAQToOffline::SlicerInput::coarseMatch(int   const& deviceAID,
 
 //-----------------------------------------------------------------------------------
 void DAQToOffline::SlicerInput::fineMatch(int      const& deviceAID,
-                                int      const& deviceBID,
-                                double             eps[2],      
-                                fit_params_maps fitParametersMaps,
-                                std::map< int, std::map<unsigned int, double> > timeStamps,
-                                match_maps    & matchMaps) 
+                                          int      const& deviceBID,
+                                          double             eps[2],
+                                          fit_params_maps fitParametersMaps,
+                                          std::map< int, std::map<unsigned int, double> > timeStamps,
+                                          match_maps    & matchMaps)
 {
 
   std::pair<double, double> fitParameters = fitParametersMaps[deviceAID][deviceBID].back();
@@ -1318,11 +1326,11 @@ double DAQToOffline::SlicerInput::clockDriftCorr(std::pair<double, double> const
 
 //-----------------------------------------------------------------------------------
 void DAQToOffline::SlicerInput::fitClockDrift(int         const& deviceAID,
-                                    int         const& deviceBID,
-                                    std::map< int, std::map<unsigned int, double> > timeStamps,
-                                    match_maps       & matchMaps,
-                                    fit_params_maps  & fitParametersMaps,
-                                    std::string const& graphNamePrefix) 
+                                              int         const& deviceBID,
+                                              std::map< int, std::map<unsigned int, double> > timeStamps,
+                                              match_maps       & matchMaps,
+                                              fit_params_maps  & fitParametersMaps,
+                                              std::string const& graphNamePrefix)
 {
 
   std::vector<double> x;
@@ -1408,12 +1416,12 @@ void DAQToOffline::SlicerInput::fitClockDrift(int         const& deviceAID,
 
 //------------------------------------------------------------------------------
 void DAQToOffline::SlicerInput::matchFitIter(int        const& deviceAID,
-                                   int        const& deviceBID,
-                                   std::map< int, std::map<unsigned int, double> > timeStamps,
-                                   match_maps      & matchMaps,
-                                   fit_params_maps & fitParametersMaps,
-                                   double            coarseRange[2],
-                                   double            fineEps[2])
+                                             int        const& deviceBID,
+                                             std::map< int, std::map<unsigned int, double> > timeStamps,
+                                             match_maps      & matchMaps,
+                                             fit_params_maps & fitParametersMaps,
+                                             double            coarseRange[2],
+                                             double            fineEps[2])
 {
 
   LOG_DEBUG("FragmentToDigit") << "matchFitIter -- "
@@ -1447,8 +1455,8 @@ void DAQToOffline::SlicerInput::matchFitIter(int        const& deviceAID,
 
 //------------------------------------------------------------------------------
 void DAQToOffline::SlicerInput::printMatchMap(int   const& deviceAID,
-                                    int   const& deviceBID,
-                                    match_maps & matchMaps) 
+                                              int   const& deviceBID,
+                                              match_maps & matchMaps)
 {
 
   std::map< unsigned int, std::vector<unsigned int> > matchAB = matchMaps[deviceAID][deviceBID].back();
