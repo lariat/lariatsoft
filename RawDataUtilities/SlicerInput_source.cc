@@ -274,8 +274,8 @@ namespace DAQToOffline
 
 //=======================================================================================
 DAQToOffline::SlicerInput::SlicerInput(fhicl::ParameterSet const& ps,
-                                 art::ProductRegistryHelper& prh,
-                                 art::SourceHelper& sh) :
+                                       art::ProductRegistryHelper& prh,
+                                       art::SourceHelper& sh) :
   fSourceName("SlicerInput"),
   fLastFileName(ps.get<vector<string>>("fileNames",{}).back()), //REL maybe for identifying when subrun files are done being split?
   fFile(),
