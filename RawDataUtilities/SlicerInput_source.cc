@@ -575,7 +575,7 @@ namespace rdu
                                       opDetPulses);
 
     // if there are no TPC readouts, clear the rawDigits vector
-    // since we do not want and partial TPC readouts
+    // since we do not want any partial TPC readouts
     if (NumberTPCReadouts < 1) rawDigits.clear();
 
     art::put_product_in_principal(std::make_unique<std::vector<raw::Trigger> > (triggerVector),
