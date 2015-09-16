@@ -1,0 +1,93 @@
+#include "services_lariat.fcl"
+#include "sliceralg.fcl"
+#include "FragmentToDigit_config.fcl"
+#include "RawDataUtilities_algs.fcl"
+
+process_name: Slicer
+
+services:
+{
+  TFileService: { fileName: "slicer_hist.root" }
+  Timing:       {}
+  RandomNumberGenerator: {} 
+  message:      @local::standard_info
+  user:         @local::lariat_services
+}
+
+source:
+{
+  module_type: SlicerInput
+
+  # Number of events to analyze; "-1" means all of the events in the input
+  # file. You can override this value with the "-n" option on the command line. 
+  maxEvents:    -1 
+
+  SourceName:   "daq"  # RawDataLabel
+  SlicerAlg:    @local::standard_sliceralg
+
+  FragmentToDigitAlg: @local::lariat_fragmenttodigit_alg
+
+  # Events with number of TPC readouts outside the range of
+  #
+  #   [ MinTPCReadoutPerEvent, MaxTPCReadoutPerEvent ]
+  #
+  # will not be written to the resulting ROOT file. This
+  # can also be taken care of in a filter module downstream.
+  MinTPCReadoutsPerEvent:       0
+  MaxTPCReadoutsPerEvent:       100
+
+  # Parameters for the slicing algorithm. A value of "-1" means that the
+  # values will be obtained from the lariat_prd database. This is what
+  # we want 99.9% of the time.
+  V1740PreAcquisitionWindow:   -1
+  V1740PostAcquisitionWindow:  -1
+  V1740AcquisitionWindow:      -1
+  V1740BPreAcquisitionWindow:  -1
+  V1740BPostAcquisitionWindow: -1
+  V1740BAcquisitionWindow:     -1
+  V1751PreAcquisitionWindow:   -1
+  V1751PostAcquisitionWindow:  -1
+  V1751AcquisitionWindow:      -1
+  TDCPreAcquisitionWindow:     -1
+  TDCPostAcquisitionWindow:    -1
+  TDCAcquisitionWindow:        -1
+}
+
+outputs:
+{
+  out1:
+  {
+    module_type: RootOutput
+    fileName:    "standard_slicer.root" # default file name, can override from command line with -o or --output
+  }
+}
+
+physics:
+{
+  producers: {}
+
+  stream1: [ out1 ]
+
+  end_paths: [ stream1 ]  
+}
+
+services.user.SeedService: @local::random_seedservice
+
+# parameters for SlicerAlg
+source.SlicerAlg.TPCReadoutBufferLow:  0.256
+source.SlicerAlg.TPCReadoutBufferHigh: 0.256
+
+# parameters for ClockCorrectionAlg
+source.SlicerAlg.ClockCorrectionAlg.MinSamples:                   2
+source.SlicerAlg.ClockCorrectionAlg.ResidualThreshold:            1
+source.SlicerAlg.ClockCorrectionAlg.MaxTrials:                    10000
+source.SlicerAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
+source.SlicerAlg.ClockCorrectionAlg.StopResidualsSum:             0
+source.SlicerAlg.ClockCorrectionAlg.StopProbability:              1
+source.SlicerAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e5  # microseconds
+source.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
+source.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
+source.SlicerAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
+source.SlicerAlg.ClockCorrectionAlg.MinNumberTimeStamps:          3
+source.SlicerAlg.ClockCorrectionAlg.MinNumberDataPoints:          3
+
