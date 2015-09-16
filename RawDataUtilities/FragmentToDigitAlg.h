@@ -59,38 +59,38 @@ class FragmentToDigitAlg{
   ~FragmentToDigitAlg();
    
   void reconfigure( fhicl::ParameterSet const& pset );
-
-  void makeTheDigits( std::vector<CAENFragment> caenFrags,
-		      std::vector<TDCDataBlock> tdcDataBlocks,
-		      std::vector<raw::AuxDetDigit> & auxDigits,
-		      std::vector<raw::RawDigit> & rawDigits,
-		      std::vector<raw::OpDetPulse> & opPulses );
+  
+  void makeTheDigits(std::vector<CAENFragment> caenFrags,
+                     std::vector<TDCDataBlock> tdcDataBlocks,
+                     std::vector<raw::AuxDetDigit> & auxDigits,
+                     std::vector<raw::RawDigit> & rawDigits,
+                     std::vector<raw::OpDetPulse> & opPulses );
   uint32_t triggerBits(std::vector<CAENFragment> const& caenFrags);
   void makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
-			std::vector<raw::RawDigit>     & tpcDigits);
+                        std::vector<raw::RawDigit>     & tpcDigits);
   float findPedestal(const std::vector<short> & adcVec);
   void makeOpDetPulses(std::vector<CAENFragment>    const& caenFrags,
-		       std::vector<raw::OpDetPulse>      & opDetPulse);
+                       std::vector<raw::OpDetPulse>      & opDetPulse);
   void caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,
-				  std::vector<raw::AuxDetDigit>      & auxDetDigits,
-				  uint32_t                      const& boardId,
-				  std::set<uint32_t>            const& boardChans,
-				  uint32_t                      const& chanOffset,
-				  std::string                   const& detName);
+                                  std::vector<raw::AuxDetDigit>      & auxDetDigits,
+                                  uint32_t                      const& boardId,
+                                  std::set<uint32_t>            const& boardChans,
+                                  uint32_t                      const& chanOffset,
+                                  std::string                   const& detName);
   void makeMuonRangeDigits(std::vector<CAENFragment>     const& caenFrags,
-			   std::vector<raw::AuxDetDigit>      & mrAuxDigits);
+                           std::vector<raw::AuxDetDigit>      & mrAuxDigits);
   void makeTOFDigits(std::vector<CAENFragment>     const& caenFrags,
-		     std::vector<raw::AuxDetDigit>      & tofAuxDigits);
+                     std::vector<raw::AuxDetDigit>      & tofAuxDigits);
   void makeAeroGelDigits(std::vector<CAENFragment>     const& caenFrags,
-			 std::vector<raw::AuxDetDigit>      & agAuxDigits);
+                         std::vector<raw::AuxDetDigit>      & agAuxDigits);
   void makeHaloDigits(std::vector<CAENFragment>     const& caenFrags,
-		      std::vector<raw::AuxDetDigit>      & hAuxDigits);
+                      std::vector<raw::AuxDetDigit>      & hAuxDigits);
   void makeTriggerDigits(std::vector<CAENFragment>     const& caenFrags,
-			 std::vector<raw::AuxDetDigit>      & trAuxDigits);
+                         std::vector<raw::AuxDetDigit>      & trAuxDigits);
   void InitializeMWPCContainers();
   void CleanUpMWPCContainers();
   void makeMWPCDigits(std::vector<TDCFragment::TdcEventData> const& tdcEventData,
-		      std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
+                      std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
 
   void InitializeRun( art::RunNumber_t runNumber );
   
