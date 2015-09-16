@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v01_07_00
+parent	lariatsoft v01_08_02
 defaultqual	e7
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
@@ -10,29 +10,29 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		v04_19_00
+larsoft		      v04_22_00
 LariatFilters   v01_02
 lariatfragments v01_06_01
-artdaq_core     v1_04_15
+artdaq_core     v1_04_17
 LariatBeamFiles v01_00 - optional
 
-cetbuildtools   v4_12_05 - only_for_build
+cetbuildtools   v4_13_00 - only_for_build
 end_product_list
   
 # e7  - with gcc 4.9.2 and -std=c++11
-qualifier	        larsoft          LariatFilters	lariatfragments artdaq_core	LariatBeamFiles	notes
-e7:debug		e7:debug         -nq-		e7:debug        e7:nu:s14:debug	-nq-					
-e7:opt			e7:opt	         -nq-		e7:opt		e7:nu:s14:opt	-nq-
-e7:prof			e7:prof	         -nq-		e7:prof		e7:nu:s14:prof	-nq-		
-e7:debug:noifdh		e7:debug:noifdh  -nq-		e7:debug        e7:nu:s14:debug	-nq-					
-e7:opt:noifdh		e7:opt:noifdh	 -nq-		e7:opt		e7:nu:s14:opt	-nq-
-e7:prof:noifdh		e7:prof:noifdh	 -nq-		e7:prof		e7:nu:s14:prof	-nq-		
-e7:debug:nobeam		e7:debug         -nq-		e7:debug        e7:nu:s14:debug	-		
-e7:opt:nobeam		e7:opt	         -nq-		e7:opt		e7:nu:s14:opt	-		
-e7:prof:nobeam		e7:prof	  	 -nq-		e7:prof		e7:nu:s14:prof	-		
-e7:debug:nobeam:noifdh	e7:debug:noifdh  -nq-		e7:debug        e7:nu:s14:debug	-		
-e7:opt:nobeam:noifdh	e7:opt:noifdh	 -nq-		e7:opt		e7:nu:s14:opt	-		
-e7:prof:nobeam:noifdh	e7:prof:noifdh	 -nq-		e7:prof		e7:nu:s14:prof	-		
+qualifier	              larsoft          LariatFilters	lariatfragments artdaq_core	    LariatBeamFiles	notes
+e7:debug		            e7:debug         -nq-		        e7:debug        e7:nu:s15:debug	-nq-
+e7:opt			            e7:opt	         -nq-		        e7:opt		      e7:nu:s15:opt	  -nq-
+e7:prof			            e7:prof	         -nq-		        e7:prof		      e7:nu:s15:prof	-nq-
+e7:debug:noifdh		      e7:debug:noifdh  -nq-		        e7:debug        e7:nu:s15:debug	-nq-
+e7:opt:noifdh		        e7:opt:noifdh	   -nq-		        e7:opt		      e7:nu:s15:opt	  -nq-
+e7:prof:noifdh		      e7:prof:noifdh	 -nq-		        e7:prof		      e7:nu:s15:prof	-nq-
+e7:debug:nobeam		      e7:debug         -nq-		        e7:debug        e7:nu:s15:debug	-
+e7:opt:nobeam		        e7:opt	         -nq-		        e7:opt		      e7:nu:s15:opt	  -
+e7:prof:nobeam		      e7:prof	  	     -nq-		        e7:prof		      e7:nu:s15:prof	-
+e7:debug:nobeam:noifdh	e7:debug:noifdh  -nq-		        e7:debug        e7:nu:s15:debug	-
+e7:opt:nobeam:noifdh	  e7:opt:noifdh	   -nq-		        e7:opt		      e7:nu:s15:opt  	-
+e7:prof:nobeam:noifdh	  e7:prof:noifdh	 -nq-		        e7:prof		      e7:nu:s15:prof	-
 
 end_qualifier_list
 
