@@ -342,7 +342,6 @@ namespace detsim {
       // add this digit to the collection
       raw::RawDigit rd(chan,fNTicks,adcvec,fCompression);// fNTimeSamples, adcvec, fCompression);
       rd.SetPedestal(ped_mean);
-
       digcol->push_back(rd);
 
     }// end loop over channels      
