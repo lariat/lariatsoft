@@ -4,23 +4,10 @@ BEGIN_PROLOG
 
 standard_sliceralg:
 {
-    ClockCorrectionAlg:      @local::standard_clockcorrectionalg
+    ClockCorrectionAlg:   @local::standard_clockcorrectionalg
 
     TPCReadoutBufferLow:  0.256
     TPCReadoutBufferHigh: 0.256
-
-    #V1740PreAcquisitionWindow:   -1  # 393.216
-    #V1740PostAcquisitionWindow:  -1  # 0.128
-    #V1740AcquisitionWindow:      -1  # 393.216
-    #V1740BPreAcquisitionWindow:  -1  # 393.216
-    #V1740BPostAcquisitionWindow: -1  # 0.128
-    #V1740BAcquisitionWindow:     -1  # 393.216
-    #V1751PreAcquisitionWindow:   -1  # 0.128
-    #V1751PostAcquisitionWindow:  -1  # 0.128
-    #V1751AcquisitionWindow:      -1  # 28.672
-    #TDCPreAcquisitionWindow:     -1  # 1.196 or 1.20525?
-    #TDCPostAcquisitionWindow:    -1  # 0
-    #TDCAcquisitionWindow:        -1  # 1.196 or 1.20525?
 }
 
 END_PROLOG
