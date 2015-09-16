@@ -41,8 +41,8 @@ namespace rdu {
   //-----------------------------------------------------------------------
   void SlicerAlg::reconfigure(fhicl::ParameterSet const& pset)
   {
-    fTPCReadoutBufferLow  = pset.get< double >("TPCReadoutBufferLow",  0.128);
-    fTPCReadoutBufferHigh = pset.get< double >("TPCReadoutBufferHigh", 0.128);
+    fTPCReadoutBufferLow  = pset.get< double >("TPCReadoutBufferLow",  0.256);
+    fTPCReadoutBufferHigh = pset.get< double >("TPCReadoutBufferHigh", 0.256);
 
     return;
   }
@@ -637,6 +637,9 @@ namespace rdu {
         std::cout << "      Timestamp: " << timestamp << std::endl;
         //std::cout << "      TDC events: " << tdcEvents->size() << std::endl;
       }
+
+      std::cout << "Number of TPC readouts: " << NumberTPCReadouts << std::endl;
+
     }
 
     return Collections;
