@@ -178,7 +178,7 @@ namespace rdu
     std::string            fSourceName;
     std::string            fLastFileName;
     std::unique_ptr<TFile> fFile;
-    bool                   fDoneWithFiles;
+    bool                   fDoneWithFile;
     art::InputTag          fInputTag;
     art::SourceHelper      fSourceHelper;
     TBranch *              fFragmentsBranch;
@@ -287,7 +287,7 @@ namespace rdu
     : fSourceName("SlicerInput")
     , fLastFileName(pset.get< std::vector< std::string > >("fileNames", {}).back())
     , fFile()
-    , fDoneWithFiles(false)
+    , fDoneWithFile(false)
     , fInputTag("daq:SPILL:DAQ")
     , fSourceHelper(shelper)
     , fFragmentsBranch(nullptr)
@@ -410,6 +410,9 @@ namespace rdu
         << "Unable to open file " << filename << ".\n";
     }
 
+    // reset flag
+    fDoneWithFile = false;
+
     // load the data blocks
     this->loadDigits_(fLariatFragment);
 
@@ -430,7 +433,7 @@ namespace rdu
                         art::SubRunPrincipal *      & outSubRun,
                         art::EventPrincipal  *      & outEvent)
   {
-    if (fDoneWithFiles) return false;
+    if (fDoneWithFile) return false;
 
     art::Timestamp timestamp; // LBNE should decide how to initialize this
 
@@ -594,10 +597,10 @@ namespace rdu
     ++fCollectionIndex;
 
     if (fCollectionIndex >= fCollections.size()) {
-      fDoneWithFiles = true;
+      fDoneWithFile = true;
     }
     else {
-      fDoneWithFiles = false;
+      fDoneWithFile = false;
     }
 
     return;
