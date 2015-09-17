@@ -8,9 +8,12 @@ standard_clockcorrectionalg:
     StopSampleNumber:             15000000000000000000
     StopResidualsSum:             0
     StopProbability:              1
-    TimeStampDifferenceThreshold: 1e5  # microseconds
+    TimeStampDifferenceThreshold: 1e4  # microseconds
     SampleSlopeCutLower:          0.9
     SampleSlopeCutUpper:          1.1
+    MaxContinuations:             15000000000000000000
+    MinNumberTimeStamps:          3
+    MinNumberDataPoints:          3
 }
 
 END_PROLOG

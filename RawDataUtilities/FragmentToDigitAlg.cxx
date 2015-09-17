@@ -652,6 +652,44 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
 }
 
 //===============================================================----------
+std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t                                    const& EventNumber,
+                                                              std::vector<CAENFragment>                             const& caenFrags,
+                                                              std::vector< std::vector<TDCFragment::TdcEventData> > const& tdcDataBlocks)
+{
+  //Hardcoded for now until I can find out how to
+  //extract this from the raw event root file
+  float eventTime = 0;
+
+  bool caenDataPresent = false;
+  std::vector<raw::Trigger> triggerVector;
+
+  //If there are caen fragments present, set the trigger info
+  //based on the caen data block information
+  if (caenFrags.size() > 0) {
+    triggerVector.push_back(raw::Trigger(EventNumber, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
+    caenDataPresent = true;
+  }
+  else
+    LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for event " << EventNumber
+                                   << " that may be OK, so continue";
+
+  //If there are no caen fragments present, then set the trigger info
+  //based on the TDCDataBlock information
+  if (tdcDataBlocks.size() > 0) {
+    if (!caenDataPresent) {
+      triggerVector.push_back(raw::Trigger(EventNumber, tdcDataBlocks.front().front().tdcEventHeader.tdcTimeStamp,
+                              eventTime, this->triggerBits(caenFrags)));
+    }
+  }
+  else
+    LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for event " << EventNumber
+                   << " that may be OK, so continue";
+
+  return triggerVector;
+
+}
+
+//===============================================================----------
 void FragmentToDigitAlg::InitializeRun( art::RunNumber_t runNumber )
 {
   fRunNumber = runNumber;
