@@ -1,1 +1,1 @@
-standard_slicer.fcl
+#include "standard_slicer.fcl"
