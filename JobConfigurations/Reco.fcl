@@ -26,7 +26,7 @@ services:
   #user:         @local::lariat_simulation_services
 }
 #services.user.DatabaseUtil.ShouldConnect: false
-
+services.scheduler.SkipEvent: [ ProductNotFound ]
 #source is now a root file
 source:
 {
@@ -168,6 +168,8 @@ physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 
 physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 20
 physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.35,0.35,0.35]
+physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3
+physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0
 
 #physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 0
 #physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  5555
