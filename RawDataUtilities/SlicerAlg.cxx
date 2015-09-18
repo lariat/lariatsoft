@@ -303,7 +303,6 @@ namespace rdu {
 
   //-----------------------------------------------------------------------
   std::vector< rdu::DataBlock > SlicerAlg::GetDataBlocks(const LariatFragment * data)
-  //void SlicerAlg::GetDataBlocks(const LariatFragment * data, std::vector< rdu::DataBlock > & DataBlocks)
   {
 
     std::vector< rdu::DataBlock > DataBlocks;
@@ -335,13 +334,16 @@ namespace rdu {
 
       unsigned int DeviceID = block.deviceId;
 
-      if (ClockCorrectionParameters.count(DeviceID) < 1) continue;
+      double Slope     = 1;
+      double Intercept = 0;
 
-      // correction parameters
-      double Slope = ClockCorrectionParameters[DeviceID].first;
-      double Intercept = ClockCorrectionParameters[DeviceID].second;
+      // get clock correction parameters for this device if they exist
+      if (ClockCorrectionParameters.count(DeviceID) > 0) {
+        Slope     = ClockCorrectionParameters[DeviceID].first;
+        Intercept = ClockCorrectionParameters[DeviceID].second;
+      }
 
-      // apply correction
+      // apply correction to timestamp
       block.correctedTimestamp = (block.timestamp - Intercept) / Slope;
     } // end loop over data blocks
 
@@ -352,37 +354,15 @@ namespace rdu {
               });
 
     return DataBlocks;
-    //return;
   }
 
   //-----------------------------------------------------------------------
   std::vector< rdu::DataBlockCollection > SlicerAlg::Slice(const LariatFragment * data)
-  //void SlicerAlg::Slice(const LariatFragment * data, std::vector< rdu::DataBlockCollection > & Collections)
   {
 
+    // get data blocks
     std::vector< rdu::DataBlock > DataBlocks;
     DataBlocks = this->GetDataBlocks(data);
-    //this->GetDataBlocks(data, DataBlocks);
-
-    //for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
-    //  rdu::DataBlock const& block = DataBlocks.at(block_idx);
-    //  std::cout << block.timestamp << ", " << block.correctedTimestamp << ", " << block.deviceId << std::endl;
-    //} // end loop over data blocks
-
-    //for (std::vector< rdu::DataBlock >::const_reverse_iterator
-    //     block = DataBlocks.rbegin(); block != DataBlocks.rend(); ++block) {
-    //  std::cout << std::setfill(' ') << std::setw(3)
-    //            << block->deviceId << "; " << block->correctedTimestamp
-    //            << std::endl;
-    //} // end loop over data blocks
-
-    //for (size_t block_idx = DataBlocks.size(); block_idx-- > 0;) { // What is this sorcery?
-    //  rdu::DataBlock const& block = DataBlocks.at(block_idx);
-    //  //std::cout << block_idx << std::endl;
-    //  std::cout << std::setfill(' ') << std::setw(3)
-    //            << block.deviceId << "; " << block.correctedTimestamp
-    //            << std::endl;
-    //} // end loop over data blocks
 
     // initialize vector of intervals
     std::vector< std::pair< double, double > > CAENBoard0Intervals;
