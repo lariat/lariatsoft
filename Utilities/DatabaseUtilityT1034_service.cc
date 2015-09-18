@@ -145,6 +145,10 @@ namespace util {
         mf::LogError("DatabaseUtilityT1034")
             << "Too many attempts made to connect to the database... Aborting.";
 
+        // if no connection can be established, throw exception
+        throw cet::exception("DatabaseUtilityT1034")
+            << "\nCannot connect to database!\n";
+
         return false;
       }
 
@@ -186,6 +190,12 @@ namespace util {
     // if no connection can be established, return empty string
     if (!connected) return "";
 
+    // if no connection can be established, throw exception
+    //if (!connected) {
+    //  throw cet::exception("DatabaseUtilityT1034")
+    //      << "\nCannot connect to database!\n";
+    //}
+
     mf::LogVerbatim("DatabaseUtilityT1034") << "Query: " << Query;
 
     // query the database, and get the result of query
@@ -222,6 +232,12 @@ namespace util {
 
     // if no connection can be established, return empty string
     if (!connected) return values;
+
+    // if no connection can be established, throw exception
+    //if (!connected) {
+    //  throw cet::exception("DatabaseUtilityT1034")
+    //      << "\nCannot connect to database!\n";
+    //}
 
     mf::LogVerbatim("DatabaseUtilityT1034") << "Query: " << Query;
 
