@@ -50,65 +50,68 @@ lariat_aerogel:
 
 lariat_pid:
 {
-  module_type:        ParticleIdentificationSlicing
-  WCTrackModuleLabel: wctrack
-  TOFModuleLabel:     tof
-  MuRSModuleLabel:    murs
-  Verbose:            true
-  PlotHistograms:     true
+  module_type:                     ParticleIdentificationSlicing
+  WCTrackModuleLabel:              wctrack
+  TOFModuleLabel:                  tof
+  MuRSModuleLabel:                 murs
+  Verbose:                         true
+  GenerateFitsForMassDistribution: true
 
-  ### MC INFORMATION ABOUT RANGE STACK PENETRATION DEPTH ### 
-  PDepthInfo:         @local::penetration_depth_info
 
   ### MC INFORMATION ABOUT TERTIARY BEAM COMPOSITION ###
       ### DO NOT TOUCH THIS. THAT MEANS YOU!!! ###
-  beamProbE_08_pos350: @local::beamProbElectrons_08GeV_pos0.350T
-  beamProbMu_08_pos350: @local::beamProbMuons_08GeV_pos0.350T
-  beamProbPi_08_pos350: @local::beamProbPions_08GeV_pos0.350T
-  beamProbK_08_pos350: @local::beamProbKaons_08GeV_pos0.350T
-  beamProbProt_08_pos350: @local::beamProbProtons_08GeV_pos0.350T
+  beamProbE_08_pos350: @local::beamProbElectrons_08GeV_pos350T
+  beamProbMu_08_pos350: @local::beamProbMuons_08GeV_pos350T
+  beamProbPi_08_pos350: @local::beamProbPions_08GeV_pos350T
+  beamProbK_08_pos350: @local::beamProbKaons_08GeV_pos350T
+  beamProbProt_08_pos350: @local::beamProbProtons_08GeV_pos350T
  
-  beamProbE_08_pos175: @local::beamProbElectrons_08GeV_pos0.175T
-  beamProbMu_08_pos175: @local::beamProbMuons_08GeV_pos0.175T
-  beamProbPi_08_pos175: @local::beamProbPions_08GeV_pos0.175T
-  beamProbK_08_pos175: @local::beamProbKaons_08GeV_pos0.175T
-  beamProbProt_08_pos175: @local::beamProbProtons_08GeV_pos0.175T
+  beamProbE_08_pos175: @local::beamProbElectrons_08GeV_pos175T
+  beamProbMu_08_pos175: @local::beamProbMuons_08GeV_pos175T
+  beamProbPi_08_pos175: @local::beamProbPions_08GeV_pos175T
+  beamProbK_08_pos175: @local::beamProbKaons_08GeV_pos175T
+  beamProbProt_08_pos175: @local::beamProbProtons_08GeV_pos175T
   
-  beamProbE_08_neg175: @local::beamProbElectrons_08GeV_neg0.175T
-  beamProbMu_08_neg175: @local::beamProbMuons_08GeV_neg0.175T
-  beamProbPi_08_neg175: @local::beamProbPions_08GeV_neg0.175T
-  beamProbK_08_neg175: @local::beamProbKaons_08GeV_neg0.175T
-  beamProbProt_08_neg175: @local::beamProbProtons_08GeV_neg0.175T
+  beamProbE_08_neg175: @local::beamProbElectrons_08GeV_neg175T
+  beamProbMu_08_neg175: @local::beamProbMuons_08GeV_neg175T
+  beamProbPi_08_neg175: @local::beamProbPions_08GeV_neg175T
+  beamProbK_08_neg175: @local::beamProbKaons_08GeV_neg175T
+  beamProbProt_08_neg175: @local::beamProbProtons_08GeV_neg175T
   
-  beamProbE_08_neg350: @local::beamProbElectrons_08GeV_neg0.350T
-  beamProbMu_08_neg350: @local::beamProbMuons_08GeV_neg0.350T
-  beamProbPi_08_neg350: @local::beamProbPions_08GeV_neg0.350T
-  beamProbK_08_neg350: @local::beamProbKaons_08GeV_neg0.350T
-  beamProbProt_08_neg350: @local::beamProbProtons_08GeV_neg0.350T
+  beamProbE_08_neg350: @local::beamProbElectrons_08GeV_neg350T
+  beamProbMu_08_neg350: @local::beamProbMuons_08GeV_neg350T
+  beamProbPi_08_neg350: @local::beamProbPions_08GeV_neg350T
+  beamProbK_08_neg350: @local::beamProbKaons_08GeV_neg350T
+  beamProbProt_08_neg350: @local::beamProbProtons_08GeV_neg350T
   
-  beamProbE_32_pos350: @local::beamProbElectrons_32GeV_pos0.350T
-  beamProbMu_32_pos350: @local::beamProbMuons_32GeV_pos0.350T
-  beamProbPi_32_pos350: @local::beamProbPions_32GeV_pos0.350T
-  beamProbK_32_pos350: @local::beamProbKaons_32GeV_pos0.350T
-  beamProbProt_32_pos350: @local::beamProbProtons_32GeV_pos0.350T
+  beamProbE_32_pos350: @local::beamProbElectrons_32GeV_pos350T
+  beamProbMu_32_pos350: @local::beamProbMuons_32GeV_pos350T
+  beamProbPi_32_pos350: @local::beamProbPions_32GeV_pos350T
+  beamProbK_32_pos350: @local::beamProbKaons_32GeV_pos350T
+  beamProbProt_32_pos350: @local::beamProbProtons_32GeV_pos350T
  
-  beamProbE_32_pos175: @local::beamProbElectrons_32GeV_pos0.175T
-  beamProbMu_32_pos175: @local::beamProbMuons_32GeV_pos0.175T
-  beamProbPi_32_pos175: @local::beamProbPions_32GeV_pos0.175T
-  beamProbK_32_pos175: @local::beamProbKaons_32GeV_pos0.175T
-  beamProbProt_32_pos175: @local::beamProbProtons_32GeV_pos0.175T
+  beamProbE_32_pos175: @local::beamProbElectrons_32GeV_pos175T
+  beamProbMu_32_pos175: @local::beamProbMuons_32GeV_pos175T
+  beamProbPi_32_pos175: @local::beamProbPions_32GeV_pos175T
+  beamProbK_32_pos175: @local::beamProbKaons_32GeV_pos175T
+  beamProbProt_32_pos175: @local::beamProbProtons_32GeV_pos175T
   
-  beamProbE_32_neg175: @local::beamProbElectrons_32GeV_neg0.175T
-  beamProbMu_32_neg175: @local::beamProbMuons_32GeV_neg0.175T
-  beamProbPi_32_neg175: @local::beamProbPions_32GeV_neg0.175T
-  beamProbK_32_neg175: @local::beamProbKaons_32GeV_neg0.175T
-  beamProbProt_32_neg175: @local::beamProbProtons_32GeV_neg0.175T
+  beamProbE_32_neg175: @local::beamProbElectrons_32GeV_neg175T
+  beamProbMu_32_neg175: @local::beamProbMuons_32GeV_neg175T
+  beamProbPi_32_neg175: @local::beamProbPions_32GeV_neg175T
+  beamProbK_32_neg175: @local::beamProbKaons_32GeV_neg175T
+  beamProbProt_32_neg175: @local::beamProbProtons_32GeV_neg175T
 
-  penetrationDepthPiPlus:  @local::penetration_depth_info_piplus
-  penetrationDepthPiMinus: @local::penetration_depth_info_piminus
-  penetrationDepthMuPlus:  @local::penetration_depth_info_muplus
-  penetrationDepthMuMinus: @local::penetration_depth_info_muminus	
-  
+  ### MC INFORMATION ABOUT RANGE STACK PENETRATION DEPTH ### 
+  penetrationDepthPiPlus:   @local::penetration_depth_info_piplus
+  penetrationDepthPiMinus:  @local::penetration_depth_info_piminus
+  penetrationDepthMuPlus:   @local::penetration_depth_info_muplus
+  penetrationDepthMuMinus:  @local::penetration_depth_info_muminus	
+  penetrationDepthKPlus:    @local::penetration_depth_info_kplus
+  penetrationDepthKMinus:   @local::penetration_depth_info_kminus
+  penetrationDepthProton:   @local::penetration_depth_info_prot
+  penetrationDepthElectron: @local::penetration_depth_info_E
+
 
 } 
 
