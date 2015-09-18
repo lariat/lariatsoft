@@ -8,6 +8,9 @@
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"
 #include "particleid.fcl"
+#include "showerreco3d.fcl"
+#include "showerquality.fcl"
+
 
 process_name: Reco2D
 
@@ -23,7 +26,7 @@ services:
   #user:         @local::lariat_simulation_services
 }
 #services.user.DatabaseUtil.ShouldConnect: false
-
+services.scheduler.SkipEvent: [ ProductNotFound ]
 #source is now a root file
 source:
 {
@@ -59,7 +62,7 @@ physics:
 #  rffhit:              @local::lariat_rffhitfinder   
 
   ### cluster-finder producers
-  cccluster:		@local::standard_clustercrawler
+  #cccluster:		@local::standard_clustercrawler
   linecluster:          @local::standard_linecluster
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
@@ -67,12 +70,19 @@ physics:
   #dbcluster:            @local::lariat_dbcluster
   #hough:                @local::lariat_houghlinefinder
 
+  ### Shower-Finder producers
+ showerreco:  	 	@local::standard_showerreco3d
   ### pandora
 #  pandora:             @local::standard_pandora
 
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
  }
+# analyzers:
+#{
+
+ #showerquality: 	@local::standard_showerquality
+#}
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
@@ -81,10 +91,12 @@ physics:
          #FragmentToDigit,
          caldata,
          cchit,
+        # cccluster,
 	 linecluster,
-         costrk,
+         showerreco,
+         #costrk,
          pmtrack,
-         cctrack,
+         #cctrack
          calo,
          pid
          #gaushit
@@ -93,6 +105,7 @@ physics:
 	 #hough 
  #        pandora
           ]
+#ana: [ showerquality ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -155,6 +168,8 @@ physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 
 physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 20
 physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.35,0.35,0.35]
+physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3
+physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0
 
 #physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 0
 #physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  5555
@@ -186,3 +201,5 @@ physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
 physics.producers.calo.CaloAlg.CalAreaConstants: [0.0068,0.0153]
+physics.producers.showerreco.InputProducer:        "linecluster"
+

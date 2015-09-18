@@ -149,34 +149,34 @@ public:
                     double            coarseRange[2],
                     double            fineEps[2]);
 
-  uint32_t triggerBits               (std::vector<CAENFragment>     const& caenFrags);   				  
-  void     makeTPCRawDigits          (std::vector<CAENFragment>     const& caenFrags,    	
-			     	      std::vector<raw::RawDigit>         & tpcDigits);   	
-  float    findPedestal              (const std::vector<short>           & adcVec);	     
-  void     makeOpDetPulses           (std::vector<CAENFragment>     const& caenFrags,    	       
-       	   			      std::vector<raw::OpDetPulse>       & opDetPulse);  	       
-  void 	   makeMuonRangeDigits	     (std::vector<CAENFragment>     const& caenFrags,    	       
-				      std::vector<raw::AuxDetDigit>      & mrAuxDigits); 	       
-  void 	   makeTOFDigits             (std::vector<CAENFragment>     const& caenFrags,    	       
-				      std::vector<raw::AuxDetDigit>      & tofAuxDigits);	       
-  void 	   makeAeroGelDigits         (std::vector<CAENFragment>     const& caenFrags,    	       
-				      std::vector<raw::AuxDetDigit>      & agAuxDigits); 	       
-  void 	   makeHaloDigits            (std::vector<CAENFragment>     const& caenFrags,    	       
-				      std::vector<raw::AuxDetDigit>      & hAuxDigits); 	       
-  void 	   makeTriggerDigits         (std::vector<CAENFragment>     const& caenFrags,    	       
-				      std::vector<raw::AuxDetDigit>      & trAuxDigits); 	       
-  void 	   caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,	       
-				      std::vector<raw::AuxDetDigit>      & auxDetDigits,	       
-				      uint32_t                      const& boardId,		       
-				      std::set<uint32_t>            const& boardChans,	       
-				      uint32_t                      const& chanOffset,	       
-				      std::string                   const& detName);	       
+  uint32_t triggerBits               (std::vector<CAENFragment>     const& caenFrags);
+  void     makeTPCRawDigits          (std::vector<CAENFragment>     const& caenFrags,
+                                      std::vector<raw::RawDigit>         & tpcDigits);
+  float    findPedestal              (const std::vector<short>           & adcVec);
+  void     makeOpDetPulses           (std::vector<CAENFragment>     const& caenFrags,
+                                      std::vector<raw::OpDetPulse>       & opDetPulse);
+  void 	   makeMuonRangeDigits	     (std::vector<CAENFragment>     const& caenFrags,
+                                      std::vector<raw::AuxDetDigit>      & mrAuxDigits);
+  void 	   makeTOFDigits             (std::vector<CAENFragment>     const& caenFrags,
+                                      std::vector<raw::AuxDetDigit>      & tofAuxDigits);
+  void 	   makeAeroGelDigits         (std::vector<CAENFragment>     const& caenFrags,
+                                      std::vector<raw::AuxDetDigit>      & agAuxDigits);
+  void 	   makeHaloDigits            (std::vector<CAENFragment>     const& caenFrags,
+                                      std::vector<raw::AuxDetDigit>      & hAuxDigits);
+  void 	   makeTriggerDigits         (std::vector<CAENFragment>     const& caenFrags,
+                                      std::vector<raw::AuxDetDigit>      & trAuxDigits);
+  void 	   caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,
+                                      std::vector<raw::AuxDetDigit>      & auxDetDigits,
+                                      uint32_t                      const& boardId,
+                                      std::set<uint32_t>            const& boardChans,
+                                      uint32_t                      const& chanOffset,
+                                      std::string                   const& detName);
   void 	   makeMWPCDigits            (std::vector<TDCFragment::TdcEventData> const& tdcFrags,      
-				      std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
-
+                                      std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
+  
   void     LinFitUnweighted(const std::vector<double>& x,
-			    const std::vector<double>& y,
-			    double& m, double& c);
+                            const std::vector<double>& y,
+                            double& m, double& c);
 
   void     InitializeMWPCContainers();
   void     CleanUpMWPCContainers();
@@ -365,9 +365,9 @@ void FragmentToDigit::produce(art::Event & evt)
 
       tdcDataPresent = true;
       if(!caenDataPresent){
-	auto tdc = trigToTDC->second.front();
-	triggerVec->push_back(raw::Trigger(trigNum, tdc.front().tdcEventHeader.tdcTimeStamp, 
-					   eventTime, this->triggerBits(caenFrags)));
+        auto tdc = trigToTDC->second.front();
+        triggerVec->push_back(raw::Trigger(trigNum, tdc.front().tdcEventHeader.tdcTimeStamp,
+                                           eventTime, this->triggerBits(caenFrags)));
       }
     }
     else
