@@ -421,6 +421,9 @@ namespace rdu
     fCollections.clear();
     fCollections = fSlicerAlg.Slice(fLariatFragment);
 
+    // we are done with this file if there are no data blocks
+    if (fCollections.size() < 1) fDoneWithFile = true;
+
     delete fLariatFragment;
 
     return true;
