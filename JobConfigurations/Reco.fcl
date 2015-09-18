@@ -185,6 +185,7 @@ physics.producers.costrk.ClusterMatch.KSCut:  0.5
 physics.producers.pmtrack.ClusterModuleLabel: "linecluster"
 physics.producers.pmtrack.HitModuleLabel:     "linecluster"
 physics.producers.pmtrack.MinSeedSize2ndPass: 3
+physics.producers.pmtrack.FlipToBeam: true
 physics.producers.cctrack.HitModuleLabel:     "linecluster"
 physics.producers.cctrack.ClusterModuleLabel: "linecluster"
 physics.producers.cctrack.VertexModuleLabel:  "linecluster"
