@@ -42,6 +42,7 @@
 #include "Simulation/SimChannel.h"
 #include "AnalysisBase/Calorimetry.h"
 #include "AnalysisBase/ParticleID.h"
+#include "RecoAlg/TrackMomentumCalculator.h"
 
 // ROOT includes
 #include "TTree.h"
@@ -91,6 +92,10 @@ private:
   double trkenddcosx[kMaxTrack];
   double trkenddcosy[kMaxTrack];
   double trkenddcosz[kMaxTrack];
+  double trklen[kMaxTrack];
+  double trkmomrange[kMaxTrack];
+  double trkmommschi2[kMaxTrack];
+  double trkmommsllhd[kMaxTrack];
   int    ntrkhits[kMaxTrack];
   double trkx[kMaxTrack][kMaxTrackHits];
   double trky[kMaxTrack][kMaxTrackHits];
@@ -98,6 +103,7 @@ private:
   double trkpitch[kMaxTrack][2];
   int    trkhits[kMaxTrack][2];
   double trkpida[kMaxTrack][2];
+  double trkke[kMaxTrack][2];
   double trkdedx[kMaxTrack][2][1000];
   double trkpitchhit[kMaxTrack][2][1000];
   int    nhits;
@@ -207,6 +213,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
   }
 
   //track information
+  trkf::TrackMomentumCalculator trkm;
   ntracks_reco=tracklist.size();
   double larStart[3];
   double larEnd[3];
@@ -231,6 +238,10 @@ void bo::AnaTree::analyze(art::Event const & evt)
     trkenddcosx[i]    = larEnd[0];
     trkenddcosy[i]    = larEnd[1];
     trkenddcosz[i]    = larEnd[2];
+    trklen[i]         = tracklist[i]->Length();
+    trkmomrange[i]    = trkm.GetTrackMomentum(trklen[i],13);
+    trkmommschi2[i]   = trkm.GetMomentumMultiScatterChi2(tracklist[i]);
+    trkmommsllhd[i]   = trkm.GetMomentumMultiScatterLLHD(tracklist[i]);
     ntrkhits[i] = fmsp.at(i).size();
     std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(i);
     for (size_t j = 0; j<spts.size(); ++j){
@@ -257,6 +268,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
 	int pl = calos[j]->PlaneID().Plane;
 	if (pl<0||pl>1) continue;
 	trkhits[i][pl] = calos[j]->dEdx().size();
+	trkke[i][pl] = calos[j]->KineticEnergy();
 	for (size_t k = 0; k<calos[j]->dEdx().size(); ++k){
 	  if (k>=1000) continue;
 	  trkdedx[i][pl][k] = calos[j]->dEdx()[k];
@@ -392,6 +404,10 @@ void bo::AnaTree::beginJob()
   fTree->Branch("trkenddcosx",trkenddcosx,"trkenddcosx[ntracks_reco]/D");
   fTree->Branch("trkenddcosy",trkenddcosy,"trkenddcosy[ntracks_reco]/D");
   fTree->Branch("trkenddcosz",trkenddcosz,"trkenddcosz[ntracks_reco]/D");
+  fTree->Branch("trklen",trklen,"trklen[ntracks_reco]/D");
+  fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/D");
+  fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/D");
+  fTree->Branch("trkmommsllhd",trkmommsllhd,"trkmommsllhd[ntracks_reco]/D");
   fTree->Branch("ntrkhits",ntrkhits,"ntrkhits[ntracks_reco]/I");
   fTree->Branch("trkx",trkx,"trkx[ntracks_reco][1000]/D");
   fTree->Branch("trky",trky,"trky[ntracks_reco][1000]/D");
@@ -400,6 +416,7 @@ void bo::AnaTree::beginJob()
   fTree->Branch("trkhits",trkhits,"trkhits[ntracks_reco][2]/I");
   fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/D");
   fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
   fTree->Branch("nhits",&nhits,"nhits/I");
   fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
@@ -452,6 +469,10 @@ void bo::AnaTree::ResetVars(){
     trkenddcosx[i] = -99999;
     trkenddcosy[i] = -99999;
     trkenddcosz[i] = -99999;
+    trklen[i] = -99999;
+    trkmomrange[i] = -99999;
+    trkmommschi2[i] = -99999;
+    trkmommsllhd[i] = -99999;
     ntrkhits[i] = -99999;
     for (int j = 0; j<kMaxTrackHits; ++j){
       trkx[i][j] = -99999;
@@ -461,6 +482,7 @@ void bo::AnaTree::ResetVars(){
     for (int j = 0; j<2; ++j){
       trkpitch[i][j] = -99999;
       trkhits[i][j] = -99999; 
+      trkke[i][j] = -99999;
       trkpida[i][j] = -99999;
       for (int k = 0; k<1000; ++k){
 	trkdedx[i][j][k] = -99999;
