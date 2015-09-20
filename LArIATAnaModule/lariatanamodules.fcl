@@ -4,7 +4,7 @@ lariat_anatree:
 {
     module_type:              "AnaTreeT1034"
     TriggerUtility:           "SlicerInput"
-    HitsModuleLabel:          "cchit"
+    HitsModuleLabel:          "linecluster"
     TrackModuleLabel:         "pmtrack"
     CalorimetryModuleLabel:   "calo"
     ParticleIDModuleLabel:    "pid"

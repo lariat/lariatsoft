@@ -69,7 +69,7 @@
 #include "TTimeStamp.h"
 
 const int kMaxTrack      = 1000;  //maximum number of tracks
-const int kMaxHits       = 10000; //maximum number of hits
+const int kMaxHits       = 20000; //maximum number of hits
 const int kMaxTrackHits  = 1000;  //maximum number of space points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
