@@ -50,7 +50,7 @@
 
 const int kMaxTrack      = 1000;  //maximum number of tracks
 const int kMaxCluster    = 1000;  //maximum number of clusters
-const int kMaxHits       = 10000; //maximum number of hits
+const int kMaxHits       = 20000; //maximum number of hits
 const int kMaxTrackHits  = 1000;  //maximum number of space points
 
 namespace bo {
