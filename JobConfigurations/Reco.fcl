@@ -156,8 +156,8 @@ physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 #physics.producers.cccluster.CalDataModuleLabel:                 "caldata"
 physics.producers.cchit.CCHitFinderAlg.MinSigInd:  4
 physics.producers.cchit.CCHitFinderAlg.MinSigCol:  4
-physics.producers.cchit.CCHitFinderAlg.MinRMSInd:  7.9
-physics.producers.cchit.CCHitFinderAlg.MinRMSCol:  7.9
+physics.producers.cchit.CCHitFinderAlg.MinRMSInd:  6.0
+physics.producers.cchit.CCHitFinderAlg.MinRMSCol:  8.0
 physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 #physics.producers.cchit.CCHitFinderAlg.CrudeHitWidth:  0
 #physics.producers.cchit.CCHitFinderAlg.StudyHits: false
@@ -168,6 +168,7 @@ physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 
 physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 20
 physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.35,0.35,0.35]
+physics.producers.linecluster.ClusterCrawlerAlg.MaxHitsFit: [10, 8, 4]
 physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3
 physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0
 
