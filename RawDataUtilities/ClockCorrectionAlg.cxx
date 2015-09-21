@@ -20,6 +20,7 @@
 #include <iostream>
 #include <iterator>
 #include <limits>
+#include <set>
 
 namespace rdu {
 
@@ -31,14 +32,12 @@ namespace rdu {
   // constructor
   ClockCorrectionAlg::ClockCorrectionAlg(fhicl::ParameterSet const& pset)
   {
-
     // since we can't use infinity here, this will have to do
     fMaxDouble = std::numeric_limits<double>::max();
     fMaxSize_T = std::numeric_limits<size_t>::max();
 
     // read in parameters from .fcl files
     this->reconfigure(pset);
-
   }
 
   //-----------------------------------------------------------------------
@@ -54,15 +53,20 @@ namespace rdu {
     fStopSampleNumber             = pset.get< size_t >("StopSampleNumber",             fMaxSize_T);
     fStopResidualsSum             = pset.get< double >("StopResidualsSum",             0);
     fStopProbability              = pset.get< double >("StopProbability",              1);
-    fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e5);
+    fTimeStampDifferenceThreshold = pset.get< double >("TimeStampDifferenceThreshold", 1e4);
     fSampleSlopeCutLower          = pset.get< double >("SampleSlopeCutLower",          0.9);
     fSampleSlopeCutUpper          = pset.get< double >("SampleSlopeCutUpper",          1.1);
+    fMaxContinuations             = pset.get< size_t >("MaxContinuations",             fMaxSize_T);
+    fMinNumberTimeStamps          = pset.get< size_t >("MinNumberTimeStamps",          3);
+    fMinNumberDataPoints          = pset.get< size_t >("MinNumberDataPoints",          3);
+
+    return;
   }
 
   //-----------------------------------------------------------------------
-  void ClockCorrectionAlg::UnweightedLinearFit(std::vector< std::pair< double, double> > const& Data,
-                                               double                                         & Slope,
-                                               double                                         & Intercept)
+  void ClockCorrectionAlg::UnweightedLinearFit(std::vector< std::pair<double, double> > const& Data,
+                                               double                                        & Slope,
+                                               double                                        & Intercept)
   {
     const size_t NumberDataPoints = Data.size();
 
@@ -176,6 +180,7 @@ namespace rdu {
                                         double                                        & Slope,
                                         double                                        & Intercept)
   {
+
     // random seed for random thoughts
     std::srand(std::time(0));
 
@@ -199,6 +204,9 @@ namespace rdu {
     size_t ConvergenceSteps = 0;
     // trial number of convergence
     size_t ConvergenceTrialNumber = 0;
+
+    // number of continuations
+    size_t NumberContinuations = 0;
 
     // initialize iteration bookkeeper
     size_t TrialNumber = 0;
@@ -248,6 +256,8 @@ namespace rdu {
       }
       catch (cet::exception &e) {
         // if fit fails, continue
+        std::cout << "Fit failed, continuing." << std::endl;
+        NumberContinuations += 1;
         continue;
       }
 
@@ -255,12 +265,16 @@ namespace rdu {
       if (std::isnan(SampleSlope) or std::isinf(SampleSlope)
           or std::isnan(SampleIntercept) or std::isinf(SampleIntercept)
           or std::isnan(SampleResidualsSum) or std::isinf(SampleResidualsSum)) {
+        NumberContinuations += 1;
         continue;
       }
 
       // only allow slope in range (fSampleSlopeCutLower, fSampleSlopeCutUpper)
       if (SampleSlope < fSampleSlopeCutLower
-          or SampleSlope > fSampleSlopeCutUpper) continue;
+          or SampleSlope > fSampleSlopeCutUpper) {
+        //NumberContinuations += 1;
+        continue;
+      }
 
       // get sample inliers that is within ResidualThreshold of model
       for (size_t datum_idx = 0; datum_idx < NumberDataPoints; ++datum_idx) {
@@ -284,7 +298,10 @@ namespace rdu {
 
       // only allow real, finite values
       if (std::isnan(SampleInlierNumber)
-          or std::isinf(SampleInlierNumber)) continue;
+          or std::isinf(SampleInlierNumber)) {
+        NumberContinuations += 1;
+        continue;
+      }
 
       // choose as new best model if number of inliers is maximal
       if ((SampleInlierNumber > BestInlierNumber)
@@ -336,9 +353,9 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  //void ClockCorrectionAlg::ClockCorrection(std::map< unsigned int, std::vector< double > > const& TimeStampMap)
-  void ClockCorrectionAlg::GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >  const& TimeStampMap,
-                                                        std::map< unsigned int, std::pair< double, double > > & ClockCorrectionParameters)
+  void ClockCorrectionAlg::GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >       const& TimeStampMap,
+                                                        std::map< unsigned int, std::pair< double, double > >      & ClockCorrectionParameters,
+                                                        unsigned int                                               & ReferenceClockDeviceID)
   {
     // Container for clock correction parameters. The key is the device
     // ID, the mapped value is a pair. The first value of the pair is the
@@ -350,7 +367,7 @@ namespace rdu {
     std::vector<unsigned int> DeviceIDs;
 
     // device ID of reference clock
-    unsigned int ReferenceClockDeviceID = 999;
+    ReferenceClockDeviceID = 999;
 
     // get device IDs that have at least one data block and get the
     // device ID of the reference clock
@@ -362,7 +379,9 @@ namespace rdu {
 
       DeviceIDs.push_back(DeviceID);
 
-      if (NumberDataBlocks > 0) {
+      // the reference clock device should have at least
+      // fMinNumberTimeStamps timestamps
+      if (NumberDataBlocks > fMinNumberTimeStamps) {
         if (DeviceID == 8) {
           ReferenceClockDeviceID = DeviceID;
         }
@@ -372,6 +391,9 @@ namespace rdu {
       }
 
     } // end loop over TimeStampMap
+
+    // return if there is no reference clock
+    if (TimeStampMap.count(ReferenceClockDeviceID) < 1) return;
 
     // get reference timestamps
     std::vector<double> const& TimeStampsA = TimeStampMap.at(ReferenceClockDeviceID);
@@ -385,6 +407,16 @@ namespace rdu {
 
       std::vector<double> const& TimeStampsB = TimeStampMap.at(DeviceID);
 
+      // skip if there are less than fMinNumberTimeStamps timestamps
+      if (TimeStampsA.size() < fMinNumberTimeStamps or
+          TimeStampsB.size() < fMinNumberTimeStamps)
+        continue;
+
+      // set of timestamp indices that make the timestamp
+      // difference threshold cut
+      std::set<size_t> TimeStampsAIndices;
+      std::set<size_t> TimeStampsBIndices;
+
       std::vector< std::pair< double, double > > Data;
 
       for (size_t m = 0; m < TimeStampsA.size(); ++m) {
@@ -393,15 +425,31 @@ namespace rdu {
           if (std::abs(TimeStampsA.at(m) - TimeStampsB.at(n)) > fTimeStampDifferenceThreshold) continue;
 
           Data.push_back(std::make_pair(TimeStampsA.at(m), TimeStampsB.at(n)));
+
           mf::LogDebug("ClockCorrectionAlg")
               << "(" << TimeStampsA.at(m) << ", " << TimeStampsB.at(n) << ")";
+
+          TimeStampsAIndices.insert(m);
+          TimeStampsBIndices.insert(n);
 
         } // end loop over TimeStampsB
       } // end loop over TimeStampsA
 
+      // skip if there are less than fMinNumberTimeStamps timestamps that make the cut
+      if (TimeStampsAIndices.size() < fMinNumberTimeStamps or
+          TimeStampsBIndices.size() < fMinNumberTimeStamps)
+        continue;
+
+      // skip if there are less than fMinNumberDataPoints data points
+      if (Data.size() < fMinNumberDataPoints) continue;
+
       // clock correction parameters
-      double Slope = 0;
+      double Slope     = 1;
       double Intercept = 0;
+
+      mf::LogInfo("ClockCorrectionAlg")
+          << "Performing linear RANSAC on device IDs: ("
+          << ReferenceClockDeviceID << ", " << DeviceID << ")";
 
       // RANSAC
       this->LinearRANSAC(Data,
@@ -416,9 +464,6 @@ namespace rdu {
 
       // copy clock correction parameters to container
       ClockCorrectionParameters[DeviceID] = std::make_pair(Slope, Intercept);
-
-      mf::LogInfo("ClockCorrectionAlg")
-          << "Device IDs: (" << ReferenceClockDeviceID << ", " << DeviceID << ")";
 
     } // end loop over device IDs
 
@@ -443,8 +488,14 @@ namespace rdu {
                                       << numberCaenFrags
                                       << " CAEN fragments";
 
-    if (numberCaenFrags > 0)
+    if (numberCaenFrags > 0) {
       mf::LogInfo("ClockCorrectionAlg") << "Looking at CAEN fragments...";
+    }
+    //else {
+    //  // continue to the next file if no CAEN fragments are found
+    //  throw art::Exception(art::errors::NotFound)
+    //    << "No CAEN fragments found.";
+    //}
 
     for (size_t i = 0; i < numberCaenFrags; ++i) {
 
@@ -544,9 +595,12 @@ namespace rdu {
         std::map<int, unsigned int> tdcTimeStampCounts;
 
         for (size_t tdc_index = 0; tdc_index < TDCFragment::MAX_TDCS; ++tdc_index) {
+
+          if (tdcEvents[j].size() < TDCFragment::MAX_TDCS) break;
+
           TDCFragment::TdcEventData tdcEventData = tdcEvents[j].at(tdc_index);
 
-          // each TDC Time Stamp count is 1/106.208 microseconds
+          // each TDC Time Stamp count is 1/106.2064 microseconds
           int tdcTimeStamp = static_cast <int> (tdcEventData.tdcEventHeader.tdcTimeStamp);
 
           tdcTimeStampCounts[tdcTimeStamp] += 1;
@@ -568,8 +622,8 @@ namespace rdu {
 
         ///////////////////////////////////////////////////////////////////////
 
-        // each TDC Time Stamp count is 1/106.208 microseconds
-        double timestamp = tdcTimeStamp / 106.208;  // convert to microseconds
+        // each TDC Time Stamp count is 1/106.2064 microseconds
+        double timestamp = tdcTimeStamp / 106.2064;  // convert to microseconds
 
         // create DataBlock struct and add to vector of DataBlocks
         DataBlock tdcBlock;
@@ -604,66 +658,8 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  std::vector< DataBlockCollection > ClockCorrectionAlg::GroupCollections(const LariatFragment * data)
-  {
-    std::vector< DataBlockCollection > Collections;
-
-    // get vector of data blocks and timestamp map
-    std::vector< DataBlock > DataBlocks;
-    std::map< unsigned int, std::vector< double > > TimeStampMap;
-    this->GetDataBlocksTimeStampMap(data, DataBlocks, TimeStampMap);
-
-    for (std::map< unsigned int, std::vector< double> >::const_iterator
-         iter = TimeStampMap.begin(); iter != TimeStampMap.end(); ++iter) {
-      mf::LogVerbatim("ClockCorrectionAlg") << "Device ID: "
-                                            << iter->first
-                                            << "; number of data blocks: "
-                                            << iter->second.size();
-    }
-
-    // get clock correction parameters
-    std::map< unsigned int, std::pair< double, double > > ClockCorrectionParameters;
-    this->GetClockCorrectionParameters(TimeStampMap, ClockCorrectionParameters);
-
-    // apply clock correction to DataBlock timestamps
-    for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
-      DataBlock & block = DataBlocks.at(block_idx);
-
-      unsigned int DeviceID = block.deviceId;
-
-      // correction parameters
-      double Slope = ClockCorrectionParameters[DeviceID].first;
-      double Intercept = ClockCorrectionParameters[DeviceID].second;
-
-      // apply correction
-      block.correctedTimestamp = (block.timestamp - Intercept) / Slope;
-    } // end loop over data blocks
-
-    // sort data blocks by their corrected timestamps
-    std::sort(DataBlocks.begin(), DataBlocks.end(),
-              [] (DataBlock const& a, DataBlock const& b) {
-                return a.correctedTimestamp < b.correctedTimestamp;
-              });
-
-    //for (size_t block_idx = 0; block_idx < DataBlocks.size(); ++block_idx) {
-    //  DataBlock const& block = DataBlocks.at(block_idx);
-    //  std::cout << block.timestamp << ", " << block.correctedTimestamp << ", " << block.deviceId << std::endl;
-    //} // end loop over data blocks
-
-    for (std::vector< DataBlock >::const_reverse_iterator
-         block = DataBlocks.rbegin(); block != DataBlocks.rend(); ++block) {
-      std::cout << std::setfill(' ') << std::setw(3)
-                << block->deviceId << "; " << block->correctedTimestamp
-                << std::endl;
-    } // end loop over data blocks
-
-    return Collections;
-  }
-
-  //-----------------------------------------------------------------------
   void ClockCorrectionAlg::hello_world()
   {
-
     mf::LogVerbatim("ClockCorrectionAlg")
         << "\n///////////////////////////////////////////////////////////\n"
         << "Hello, World!\n"

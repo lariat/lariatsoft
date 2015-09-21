@@ -166,15 +166,16 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
 
     for(size_t chan = minChan; chan < maxChan; ++chan){ 
       if(chan > frag.waveForms.size() )
-	throw cet::exception("FragmentToDigitAlg") << "attempting to access channel "
+      throw cet::exception("FragmentToDigitAlg") << "attempting to access channel "
 						<< chan << " from 1740 fragment with only "
 						<< frag.waveForms.size() << " channels";
       
       // only look at the specific tick of the waveform where the trigger decision is taken
       if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1)
-	// the trigger waveform goes below the pedestal (low) if the trigger is on
-	if(fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick] > fTrigger1740Threshold) 
-	   triggerBits.set(chan - minChan);
+      
+      // the trigger waveform goes below the pedestal (low) if the trigger is on
+      if(fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick] > fTrigger1740Threshold)
+      triggerBits.set(chan - minChan);
 
     } // end loop over channels on the board
   } // end loop over caen fragments
@@ -184,7 +185,7 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
 
 //===============================================================----------
 void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
-				       std::vector<raw::RawDigit>     & tpcDigits)
+                                          std::vector<raw::RawDigit>     & tpcDigits)
 {
   raw::ChannelID_t tpcChan = 0;
   size_t maxChan = 64;
@@ -210,36 +211,36 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
       if(boardId < 7) maxChan = 64;
       else maxChan = 32;
       for(size_t chan = 0; chan < maxChan; ++chan){ 
-	if(chan > frag.waveForms.size() )
-	  throw cet::exception("FragmentToDigitAlg") << "attempting to access channel "
+        if(chan > frag.waveForms.size() )
+        throw cet::exception("FragmentToDigitAlg") << "attempting to access channel "
 						  << chan << " from 1740 fragment with only "
 						  << frag.waveForms.size() << " channels";
-
-	// get TPC channel for the induction plane
-	if( boardId < 3 || (boardId == 3 && chan < 48) )
-	  tpcChan = startWireInd[boardId] - chan;
-	// get TPC Channel for the collection plane
-	else if( boardId > 3)
-	  tpcChan = 240 + startWireCol[boardId] - chan;
-	else if(boardId == 3 && chan > 47)
-	  tpcChan = 240 + startWireCol[boardId] - chan + 48;
-
-	// as of v04_13_00 of LArSoft, the event display no longer takes the
-	// pedestal value from the RawDigit and uses an interface to a database instead
-	// that doesn't really work for LArIAT, so pre-pedestal subtract the data
-	// and keep the pedestal value for reference in the RawDigit
-	std::vector<short> const padc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
-	ped = this->findPedestal(padc);
-	//REL	fRawDigitPedestals->Fill(ped);
-	std::vector<short> adc(padc.size());
+        
+        // get TPC channel for the induction plane
+        if( boardId < 3 || (boardId == 3 && chan < 48) )
+        tpcChan = startWireInd[boardId] - chan;
+        // get TPC Channel for the collection plane
+        else if( boardId > 3)
+        tpcChan = 240 + startWireCol[boardId] - chan;
+        else if(boardId == 3 && chan > 47)
+        tpcChan = 240 + startWireCol[boardId] - chan + 48;
+        
+        // as of v04_13_00 of LArSoft, the event display no longer takes the
+        // pedestal value from the RawDigit and uses an interface to a database instead
+        // that doesn't really work for LArIAT, so pre-pedestal subtract the data
+        // and keep the pedestal value for reference in the RawDigit
+        std::vector<short> const padc(frag.waveForms[chan].data.begin(), frag.waveForms[chan].data.end());
+        ped = this->findPedestal(padc);
+        //REL	fRawDigitPedestals->Fill(ped);
+        std::vector<short> adc(padc.size());
         for(size_t a = 0; a < adc.size(); ++a){
-	  adc[a] = padc[a] - (short)ped;
-	  //REL	  fRawDigitADC->Fill(adc[a]);
-	}
+          adc[a] = padc[a] - (short)ped;
+          //REL	  fRawDigitADC->Fill(adc[a]);
+        }
 
-	raw::RawDigit rd(tpcChan, adc.size(), adc);
-	rd.SetPedestal(ped);
-	tpcDigits.push_back(rd);
+        raw::RawDigit rd(tpcChan, adc.size(), adc);
+        rd.SetPedestal(ped);
+        tpcDigits.push_back(rd);
       } // end loop to fill channels from this board
     }// end if it is a TPC board      
   }// end loop over caen fragments
@@ -281,27 +282,27 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
       // loop over the channels on this board connected to optical detectors
       for(auto ch : fOpticalDetChannels.find(boardId)->second){
 
-	// check that the current channel, ch, is a valid one for grabbing a waveform
-	if(ch > caenFrag.waveForms.size() )
-	  throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch 
+        // check that the current channel, ch, is a valid one for grabbing a waveform
+        if(ch > caenFrag.waveForms.size() )
+        throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch
 						  << " from board "        << boardId
 						  << " is beyond the scope of the waveform vector";
-
-	std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
-   
-	// LOG_VERBATIM("FragmentToDigitAlg") << "Writing opdetpulses " 
-	// 			       << " boardID : " << boardId 
-	// 			       << " channel " << ch 
-	// 			       << " size of wvform data " << waveForm.size()
-	// 			       << " fOpDetChID[boardId] size() " << fOpDetChID[boardId].size();
-
-	opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (ch),
-					     waveForm,
-					     0,
-					     static_cast <unsigned int> (triggerTimeTag)
-					     )
-			     );
-
+        
+        std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
+        
+        // LOG_VERBATIM("FragmentToDigitAlg") << "Writing opdetpulses "
+        // 			       << " boardID : " << boardId
+        // 			       << " channel " << ch
+        // 			       << " size of wvform data " << waveForm.size()
+        // 			       << " fOpDetChID[boardId] size() " << fOpDetChID[boardId].size();
+        
+        opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (ch),
+                                             waveForm,
+                                             0,
+                                             static_cast <unsigned int> (triggerTimeTag)
+                                             )
+                             );
+        
       } // end loop over channels on this board
     } // end if this board has optical channels on it
   } // end loop over fragments
@@ -648,6 +649,44 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
   } // end loops to create AuxDetDigits
 
   return;
+}
+
+//===============================================================----------
+std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t                                    const& EventNumber,
+                                                              std::vector<CAENFragment>                             const& caenFrags,
+                                                              std::vector< std::vector<TDCFragment::TdcEventData> > const& tdcDataBlocks)
+{
+  //Hardcoded for now until I can find out how to
+  //extract this from the raw event root file
+  float eventTime = 0;
+
+  bool caenDataPresent = false;
+  std::vector<raw::Trigger> triggerVector;
+
+  //If there are caen fragments present, set the trigger info
+  //based on the caen data block information
+  if (caenFrags.size() > 0) {
+    triggerVector.push_back(raw::Trigger(EventNumber, caenFrags.front().header.triggerTimeTag, eventTime, this->triggerBits(caenFrags)));
+    caenDataPresent = true;
+  }
+  else
+    LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for event " << EventNumber
+                                   << " that may be OK, so continue";
+
+  //If there are no caen fragments present, then set the trigger info
+  //based on the TDCDataBlock information
+  if (tdcDataBlocks.size() > 0) {
+    if (!caenDataPresent) {
+      triggerVector.push_back(raw::Trigger(EventNumber, tdcDataBlocks.front().front().tdcEventHeader.tdcTimeStamp,
+                              eventTime, this->triggerBits(caenFrags)));
+    }
+  }
+  else
+    LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for event " << EventNumber
+                   << " that may be OK, so continue";
+
+  return triggerVector;
+
 }
 
 //===============================================================----------

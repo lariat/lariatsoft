@@ -6,7 +6,11 @@
 #include "hitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
-#include "lariatbeamlinereco.fcl"
+#include "calorimetry.fcl"
+#include "particleid.fcl"
+#include "showerreco3d.fcl"
+#include "showerquality.fcl"
+
 
 process_name: Reco2D
 
@@ -22,7 +26,7 @@ services:
   #user:         @local::lariat_simulation_services
 }
 #services.user.DatabaseUtil.ShouldConnect: false
-
+services.scheduler.SkipEvent: [ ProductNotFound ]
 #source is now a root file
 source:
 {
@@ -58,7 +62,7 @@ physics:
 #  rffhit:              @local::lariat_rffhitfinder   
 
   ### cluster-finder producers
-  cccluster:		@local::standard_clustercrawler
+  #cccluster:		@local::standard_clustercrawler
   linecluster:          @local::standard_linecluster
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
@@ -66,18 +70,19 @@ physics:
   #dbcluster:            @local::lariat_dbcluster
   #hough:                @local::lariat_houghlinefinder
 
+  ### Shower-Finder producers
+ showerreco:  	 	@local::standard_showerreco3d
   ### pandora
 #  pandora:             @local::standard_pandora
 
-
-  ### wire chamber tracks
-  wctrack: 		@local::lariat_wctrackbuilder
-  
-  ### time of flight
-  tof:			@local::lariat_tof
-  
-
+  calo:                 @local::standard_calodata
+  pid:                  @local::standard_chi2pid
  }
+# analyzers:
+#{
+
+ #showerquality: 	@local::standard_showerquality
+#}
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
@@ -86,18 +91,21 @@ physics:
          #FragmentToDigit,
          caldata,
          cchit,
+        # cccluster,
 	 linecluster,
-         costrk,
+         showerreco,
+         #costrk,
          pmtrack,
-	 wctrack,
-	 tof
          #cctrack
+         calo,
+         pid
          #gaushit
          #corner,
          #dbcluster,
 	 #hough 
  #        pandora
           ]
+#ana: [ showerquality ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -148,8 +156,8 @@ physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 #physics.producers.cccluster.CalDataModuleLabel:                 "caldata"
 physics.producers.cchit.CCHitFinderAlg.MinSigInd:  4
 physics.producers.cchit.CCHitFinderAlg.MinSigCol:  4
-physics.producers.cchit.CCHitFinderAlg.MinRMSInd:  7.9
-physics.producers.cchit.CCHitFinderAlg.MinRMSCol:  7.9
+physics.producers.cchit.CCHitFinderAlg.MinRMSInd:  6.0
+physics.producers.cchit.CCHitFinderAlg.MinRMSCol:  8.0
 physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 #physics.producers.cchit.CCHitFinderAlg.CrudeHitWidth:  0
 #physics.producers.cchit.CCHitFinderAlg.StudyHits: false
@@ -158,10 +166,19 @@ physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 #physics.producers.cchit.CCHitFinderAlg.VWireRange: [45, 85]
 #physics.producers.cchit.CCHitFinderAlg.VTickRange: [1500, 1800]
 
+physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 20
+physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.35,0.35,0.35]
+physics.producers.linecluster.ClusterCrawlerAlg.MaxHitsFit: [10, 8, 4]
+physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3
+physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0
+
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 0
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  5555
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: -1
+
 #physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 1
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  132
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 1535
-physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 100
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  126
+#physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 600
 
 physics.producers.costrk.ClusterModuleLabel:  "linecluster"
 physics.producers.costrk.VertexModuleLabel:   "linecluster"
@@ -169,6 +186,7 @@ physics.producers.costrk.ClusterMatch.KSCut:  0.5
 physics.producers.pmtrack.ClusterModuleLabel: "linecluster"
 physics.producers.pmtrack.HitModuleLabel:     "linecluster"
 physics.producers.pmtrack.MinSeedSize2ndPass: 3
+physics.producers.pmtrack.FlipToBeam: true
 physics.producers.cctrack.HitModuleLabel:     "linecluster"
 physics.producers.cctrack.ClusterModuleLabel: "linecluster"
 physics.producers.cctrack.VertexModuleLabel:  "linecluster"
@@ -179,3 +197,11 @@ services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
 services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
 
 services.DetectorProperties.TimeOffsetV: -13.2
+services.LArProperties.Electronlifetime: 1600
+physics.producers.calo.TrackModuleLabel:      "pmtrack"
+physics.producers.calo.SpacePointModuleLabel: "pmtrack"
+physics.producers.calo.UseArea:               "true"
+physics.producers.pid.TrackModuleLabel:       "pmtrack"
+physics.producers.calo.CaloAlg.CalAreaConstants: [0.0068,0.0153]
+physics.producers.showerreco.InputProducer:        "linecluster"
+
