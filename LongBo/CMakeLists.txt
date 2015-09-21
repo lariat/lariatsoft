@@ -10,6 +10,7 @@ art_make( MODULE_LIBRARIES Geometry
 			RawData
 			RecoBase
 			RecoObjects  
+			RecoAlg
                         ${SIMULATIONBASE}
                         ${LARRECO_LIB}
                         ${LARDATA_LIB}

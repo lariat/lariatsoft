@@ -92,6 +92,10 @@ class FragmentToDigitAlg{
   void makeMWPCDigits(std::vector<TDCFragment::TdcEventData> const& tdcEventData,
                       std::vector<raw::AuxDetDigit>               & mwpcAuxDigits);
 
+  std::vector<raw::Trigger> makeTheTriggers(art::EventNumber_t                                    const& EventNumber,
+                                            std::vector<CAENFragment>                             const& caenFrags,
+                                            std::vector< std::vector<TDCFragment::TdcEventData> > const& tdcDataBlocks);
+
   void InitializeRun( art::RunNumber_t runNumber );
   
 
