@@ -134,7 +134,7 @@ outputs:
 
 #physics.producers.FragmentToDigit.pmt_channel_ids:[[9,0,1]]
 #physics.producers.FragmentToDigit.pmt_test:true
-physics.producers.caldata.DigitModuleLabel:                     "SlicerInput"
+physics.producers.caldata.DigitModuleLabel:                     "daq"
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 #physics.producers.rffhit.CalDataModuleLabel:                    "caldata"
