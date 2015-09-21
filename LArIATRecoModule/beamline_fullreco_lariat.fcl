@@ -71,3 +71,5 @@ outputs:
    fileName:      "reconstructed_beamline.root"
  }
 }
+
+physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: false

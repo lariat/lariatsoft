@@ -54,6 +54,8 @@ TOFBuilderAlg::~TOFBuilderAlg()
 void TOFBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
 
+  fMissingNanoseconds = pset.get<int>("MissingNanoseconds",10);
+
 }
 
 //--------------------------------------------------------------
@@ -183,7 +185,7 @@ std::pair <std::vector<short>, std::vector<long> > TOFBuilderAlg::get_TOF_and_Ti
 	if(differ > 20 and differ < 100) {
 	  
 	  // Adds the calculated TOF to the vector tof
-	  tof.insert(tof.end(),differ);
+	  tof.insert(tof.end(),differ-fMissingNanoseconds);
 	  
 	  
 	  // Adds the timestamp for each downstream hit to the vector timeStampDst
@@ -196,7 +198,7 @@ std::pair <std::vector<short>, std::vector<long> > TOFBuilderAlg::get_TOF_and_Ti
 	  timeStampDst.insert(timeStampDst.end(), time);
 	  
 	  // Fills debug histos with tof, timestamp, and hit time for the ust hits
-	  tof_counts->Fill(differ);
+	  tof_counts->Fill(differ-fMissingNanoseconds);
 	  timestamp_histo->Fill(time);
 	  ustof_histo->Fill(ustof_hits[ust_hit]); // only ust_hits that matched with dst hits   
 	  

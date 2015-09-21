@@ -72,7 +72,7 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
       fY_cntr_3 = centerOfDet[1] * CLHEP::cm;
       fZ_cntr_3 = centerOfDet[2] * CLHEP::cm;
     }
-   if(iDet == 6){ //WC2
+   if(iDet == 4){ //WC2
       fX_cntr_4 = centerOfDet[0] * CLHEP::cm;
       fY_cntr_4 = centerOfDet[1] * CLHEP::cm;
       fZ_cntr_4 = centerOfDet[2] * CLHEP::cm;
@@ -153,10 +153,10 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fDBSCANEpsilon        = pset.get<float >("DBSCANEpsilon",       1.0/16.0  );
   fDBSCANMinHits        = pset.get<int   >("DBSCANMinHits",       1         );
 
-  fCentralYKink         = pset.get<float >("CentralYKink",        -0.004    ); //These four are parameters from histos I produced from picky-good tracks
-  fSigmaYKink           = pset.get<float >("SigmaYKink",          0.04      );
-  fCentralYDist         = pset.get<float >("CentralYDist",        0.98      );
-  fSigmaYDist           = pset.get<float >("SigmaYDist",          24.0      );
+  fCentralYKink         = pset.get<float >("CentralYKink",        -0.01    ); //These four are parameters from histos I produced from picky-good tracks
+  fSigmaYKink           = pset.get<float >("SigmaYKink",          0.03      );
+  fCentralYDist         = pset.get<float >("CentralYDist",        0.69      );
+  fSigmaYDist           = pset.get<float >("SigmaYDist",          18.0      );
 
   fPrintDisambiguation = false;
   fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );

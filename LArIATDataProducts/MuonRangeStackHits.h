@@ -27,11 +27,12 @@ namespace ldp{
     
   public:
     //Constructors
-    MuonRangeStackHits();
+    MuonRangeStackHits();    
 
   private:
     std::map<int, std::vector<int> > fPaddleTimeTickMap;
     std::vector<MuRSTrack> fMuRSTrackVector;
+    bool fIsInitializedEmpty;
 
 #ifndef __GCCXML__
 
@@ -45,6 +46,7 @@ namespace ldp{
     MuRSTrack              GetTrack(int iTrack);
     int                    GetPenetrationDepth(int iTrack) const; 
     int                    GetArrivalTime(int iTrack) const;
+    bool                   WasItInitializedEmpty();
 
 #endif
     

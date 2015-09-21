@@ -25,7 +25,9 @@
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/MuonRangeStackHits.h"
 #include "LArIATDataProducts/AGCounter.h"
+#include "LArIATDataProducts/AuxDetParticleID.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
+#include "Geometry/Geometry.h"
 
 //C++ includes
 #include <vector>
@@ -79,7 +81,7 @@ public:
 
   void doTheMuRSPionMuonSeparation( float thePenetrationDepth,
 				    float reco_momentum,
-				    std::vector<float> & pion_muon_likelihood_ratios );
+				    float & pion_muon_likelihood_ratio );
 
   void fillCharacterizationHistos( art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle,
 				   art::Handle< std::vector<ldp::TOF> > TOFColHandle,
@@ -91,8 +93,18 @@ public:
 
 
   void setPriors( float momentum );
-  void pullPriorsFromTable( float momentum );
+  void pullAllPPriorsFromTable();
+  void pullSpecificPPriorsFromTable( float momentum );
   std::string parseMCPriorString( std::string theString );
+  int generatePDGCode( std::vector<float> proton_kaon_pimu_likelihood_ratios,
+		       float pion_muon_likelihood_ratio,
+		       bool foundGoodMuRSTrack );
+
+  void fillPIDHistos( int finalPDGCode,
+		      float momentum,
+		      float TOF );
+
+
   void queryDataBaseForMagnetAndEnergy();
   void makeMCPriorMap();
 
@@ -114,10 +126,12 @@ private:
   float fPathLength;
   int   fTriggerWindowFirstTick;
   int   fTriggerWindowLastTick;
-  float fMissingNanoseconds;
 
   //Database Utility for getting run/subrun beam setting info
   art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
+  
+  //Geometry serviece handle
+  art::ServiceHandle<geo::Geometry> fGeo;
 
   //Priors storage
   float fMuonPrior;
@@ -132,9 +146,12 @@ private:
   bool              fVerbose;
   bool              fGenerateFitsForMassDistribution;
 
+  
+
   //Histogramming and distribution generation
   //parameters and hists
   TH2F*             fPzVsTOF;
+  TH2F*             fPzVsTOFGood;
   TH1F*             fNTOF;
   TH1F*             fPz;
   TH1F*             fY_Kink;
@@ -160,10 +177,17 @@ private:
   TH1F*             fNMuRSHitsObjectHist;
   TH1F*             fNMuRSTrackHist;
 
+  TH2F*             fPzVsTOFProtons;
+  TH2F*             fPzVsTOFKaons;
+  TH2F*             fPzVsTOFPiMu;
+  TH2F*             fPzVsTOFPions;
+  TH2F*             fPzVsTOFMuons;
+  TH1F*             fPDGCodes;
 
   std::vector<size_t>  fKaonRun;
   std::vector<size_t>  fKaonSubRun;
   std::vector<size_t>  fKaonEvent;
+  int                  fGoodMuRSCounter;
 
   //Gaussian parameters for mass fits
   float             fPiMuMassMean;
@@ -189,42 +213,49 @@ private:
   std::vector<float> fBeamProbPi_08_pos350;
   std::vector<float> fBeamProbK_08_pos350;
   std::vector<float> fBeamProbProt_08_pos350;
+  std::vector<float> fBeamProbAll_08_pos350;
  
   std::vector<float> fBeamProbE_08_pos175;
   std::vector<float> fBeamProbMu_08_pos175;
   std::vector<float> fBeamProbPi_08_pos175;
   std::vector<float> fBeamProbK_08_pos175;
   std::vector<float> fBeamProbProt_08_pos175;
+  std::vector<float> fBeamProbAll_08_pos175;
   
   std::vector<float> fBeamProbE_08_neg175;
   std::vector<float> fBeamProbMu_08_neg175;
   std::vector<float> fBeamProbPi_08_neg175;
   std::vector<float> fBeamProbK_08_neg175;
   std::vector<float> fBeamProbProt_08_neg175;
+  std::vector<float> fBeamProbAll_08_neg175;
   
   std::vector<float> fBeamProbE_08_neg350;
   std::vector<float> fBeamProbMu_08_neg350;
   std::vector<float> fBeamProbPi_08_neg350;
   std::vector<float> fBeamProbK_08_neg350;
   std::vector<float> fBeamProbProt_08_neg350;
-  
+  std::vector<float> fBeamProbAll_08_neg350;  
+
   std::vector<float> fBeamProbE_32_pos350;
   std::vector<float> fBeamProbMu_32_pos350;
   std::vector<float> fBeamProbPi_32_pos350;
   std::vector<float> fBeamProbK_32_pos350;
   std::vector<float> fBeamProbProt_32_pos350;
+  std::vector<float> fBeamProbAll_32_pos350;
  
   std::vector<float> fBeamProbE_32_pos175;
   std::vector<float> fBeamProbMu_32_pos175;
   std::vector<float> fBeamProbPi_32_pos175;
   std::vector<float> fBeamProbK_32_pos175;
   std::vector<float> fBeamProbProt_32_pos175;
-  
+  std::vector<float> fBeamProbAll_32_pos175;  
+
   std::vector<float> fBeamProbE_32_neg175;
   std::vector<float> fBeamProbMu_32_neg175;
   std::vector<float> fBeamProbPi_32_neg175;
   std::vector<float> fBeamProbK_32_neg175;
   std::vector<float> fBeamProbProt_32_neg175;
+  std::vector<float> fBeamProbAll_32_neg175;
 
   //Intermediate stage that allows for parsing of the vector
   //name to find the particle type.
@@ -238,7 +269,12 @@ private:
   float              fCorrectPProtMCPrior;
   float              fCorrectPEMCPrior;
 
-
+  float              fAllPPiMCPrior;
+  float              fAllPMuMCPrior;
+  float              fAllPKMCPrior;
+  float              fAllPProtMCPrior;
+  float              fAllPEMCPrior;
+  
 
   /////////////////////////////////////////////////////////////////
   //            MURS MONTE CARLO STORAGE VARIABLES               //
@@ -272,6 +308,8 @@ ParticleIdentificationSlicing::ParticleIdentificationSlicing(fhicl::ParameterSet
 {
   // Call appropriate produces<>() functions here.
   this->reconfigure(p);
+
+  produces<std::vector<ldp::AuxDetParticleID> >();
   
 }
 
@@ -282,6 +320,9 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
     std::cout << "Polarity is zero. Skipping this event." << std::endl;
     return;
   }
+
+  //Collection of particle id objects
+  std::unique_ptr<std::vector<ldp::AuxDetParticleID> > AuxDetParticleIDCol(new std::vector<ldp::AuxDetParticleID>  );
 
   //Get the collection of WCTracks produced by the WCTrackBuilder module
   art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle;
@@ -310,6 +351,9 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   float reco_momentum = WCTrackColHandle->at(0).Momentum();
   setPriors( reco_momentum );
 
+  //Fill the Pz vs. TOF histo before making the momentum cut
+  fPzVsTOF->Fill(reco_momentum,reco_TOF);
+
   //Make a cut to reduce ambiguity in particle species based on mass distributions
   if(reco_momentum > fMaxMomentumForPID ){ return; }
 
@@ -320,15 +364,15 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 			       MuRSColHandle );
 
   
-  /*
+  
   //Tag possible kaon
-  if((WCTrackColHandle->at(0).Momentum() < 700 && WCTrackColHandle->at(0).Momentum() > 500 ) &&
-     (TOFColHandle->at(0).SingleTOF(0) < 45 && TOFColHandle->at(0).SingleTOF(0) > 37) ){
+  if((WCTrackColHandle->at(0).Momentum() < 950 && WCTrackColHandle->at(0).Momentum() > 500 ) &&
+     (TOFColHandle->at(0).SingleTOF(0) < 42 && TOFColHandle->at(0).SingleTOF(0) > 37) ){
     fKaonRun.push_back(size_t(e.run()));
     fKaonSubRun.push_back(size_t(e.subRun()));
     fKaonEvent.push_back(size_t(e.event()));
   }
-  */
+  
   
 
   ///////////////// PARTICLE ID Pz vs. TOF/////////////////////////////
@@ -350,7 +394,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //Note that the size might still be zero after the
   //following function if cuts aren't passed. Careful!
   std::vector<float> proton_kaon_pimu_likelihood_ratios;
-  std::vector<float> pion_muon_likelihood_ratios;
+  float pion_muon_likelihood_ratio;
   doThePiMu_Proton_KaonSeparation( reco_momentum,
 				   reco_TOF,
 				   proton_kaon_pimu_likelihood_ratios );
@@ -359,7 +403,10 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 
   //Now we check to see if the pimu likelihood ratio is above some 
   //parametrized threshold. If it is, run pi/mu separation on it.
-  if( proton_kaon_pimu_likelihood_ratios.at(2) > fPiMuLRThreshold ){
+  bool foundGoodMuRSTrack = false;
+  ldp::MuonRangeStackHits theMuRS = MuRSColHandle->at(0);
+  if( fVerbose ) std::cout << "PiMu likelihood: " << proton_kaon_pimu_likelihood_ratios.at(2) << std::endl;
+  if( proton_kaon_pimu_likelihood_ratios.at(2) > fPiMuLRThreshold && theMuRS.WasItInitializedEmpty() == false ){
     
     ///////////////// PARTICLE ID Pion Vs. Muon /////////////////////////
     // We start with the assumption that there is only one good WCTrack,
@@ -370,21 +417,45 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
     // matches the WCTrack to the MuRS track.
     //
     
+    if( fVerbose )std::cout << "PiMu probability above threshold." << std::endl;
+    
+    
     MuRSTrack theGoodMuRSTrack;
     int thePenetrationDepth = 9989;
     bool goodMuRS = isThereAGoodMuRSTrack( MuRSColHandle, thePenetrationDepth );
+    foundGoodMuRSTrack = goodMuRS;
     if( goodMuRS ){
+      fGoodMuRSCounter++;
       doTheMuRSPionMuonSeparation( thePenetrationDepth, 
 				   reco_momentum,
-				   pion_muon_likelihood_ratios );
+				   pion_muon_likelihood_ratio );
     }
     
   }
   
-  
-  
-  //Now fill in the AuxDetParticle with the likelihoods
-  
+
+  //Generate the PDG code corresponding to the most likely particle
+  int finalPDGCode = generatePDGCode( proton_kaon_pimu_likelihood_ratios,
+				      pion_muon_likelihood_ratio,
+				      foundGoodMuRSTrack);
+
+  //Plot stuff about particle ID
+  fillPIDHistos( finalPDGCode, reco_momentum, reco_TOF );
+
+  //Build probabilities for pions and muons based on pion_muon_likelihood_ratio
+  float pion_prob = pion_muon_likelihood_ratio/(pion_muon_likelihood_ratio+1);
+  float muon_prob = 1/(pion_muon_likelihood_ratio+1);
+
+  //Now fill in the AuxDetParticle with the likelihoods  
+  ldp::AuxDetParticleID thePID( proton_kaon_pimu_likelihood_ratios.at(0),
+				proton_kaon_pimu_likelihood_ratios.at(1),
+				proton_kaon_pimu_likelihood_ratios.at(2),
+				proton_kaon_pimu_likelihood_ratios.at(2)*pion_prob,
+				proton_kaon_pimu_likelihood_ratios.at(2)*muon_prob,
+				finalPDGCode );
+  (*AuxDetParticleIDCol).push_back(thePID);
+  e.put(std::move(AuxDetParticleIDCol));
+						     			       
 }
 
 
@@ -416,7 +487,7 @@ void ParticleIdentificationSlicing::plotTheGoodTracksAndTOFInfo( art::Handle< st
 								 art::Handle< std::vector<ldp::TOF> > TOFColHandle,
 								 art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSMuRSColHandle )
 {
-  fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0)-fMissingNanoseconds);
+  fPzVsTOFGood->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
   fPz->Fill(WCTrackColHandle->at(0).Momentum());
   fTOF->Fill(TOFColHandle->at(0).SingleTOF(0));
   fY_Kink->Fill(WCTrackColHandle->at(0).YKink());
@@ -428,7 +499,7 @@ void ParticleIdentificationSlicing::plotTheGoodTracksAndTOFInfo( art::Handle< st
   fTheta_Dist->Fill(WCTrackColHandle->at(0).Theta());
   fPhi_Dist->Fill(WCTrackColHandle->at(0).Phi());
         
-  float mass = pow(pow((fSpeedOfLight*(TOFColHandle->at(0).SingleTOF(0)-fMissingNanoseconds)*1e-9/fDistanceTraveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
+  float mass = pow(pow((fSpeedOfLight*(TOFColHandle->at(0).SingleTOF(0))*1e-9/fDistanceTraveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
   fParticleMass->Fill(mass);
   std::cout << "mass: " << mass << std::endl;
 
@@ -453,19 +524,50 @@ void ParticleIdentificationSlicing::setPriors(float momentum)
   fCorrectPProtMCPrior = 0;
   fCorrectPEMCPrior = 0;
 
+  fAllPPiMCPrior = 0;
+  fAllPMuMCPrior = 0;
+  fAllPKMCPrior = 0;
+  fAllPProtMCPrior = 0;
+  fAllPEMCPrior = 0;
 
+
+
+  //Two prior types: all momentum:
+  pullAllPPriorsFromTable();
+  
+  //And specific momentum range
   //We have a magnet and energy setting. Use these with momentum to identify:
   //1. Which priors histogram file's associated vector to use (based on B field and Energy )
   //2. Which momentum range to draw our priors from
   //Now dig through the prior table (which is at the moment unfinished) using the momentum,
   //magnet settings, and energy settings
-  pullPriorsFromTable( momentum );
+  pullSpecificPPriorsFromTable( momentum );
+}
+
+
+//============================================================================================
+//Extracts all-momentum priors about beamline populations
+void ParticleIdentificationSlicing::pullAllPPriorsFromTable()
+{
+  std::map< std::string, std::vector<float> >::iterator iter;
+  for( iter = fMCPriorMap.begin(); iter != fMCPriorMap.end(); ++iter ){
+    std::string particle = parseMCPriorString( iter->first );
+    if( particle == "All" ){
+      //Look for the right momentum
+      std::vector<float> particleTypeProbs = iter->second;
+      fAllPEMCPrior = particleTypeProbs.at(0);
+      fAllPMuMCPrior = particleTypeProbs.at(1);
+      fAllPPiMCPrior = particleTypeProbs.at(2);
+      fAllPKMCPrior = particleTypeProbs.at(3);
+      fAllPProtMCPrior = particleTypeProbs.at(4);
+    }
+  }
 }
 
 						       
 //============================================================================================
-//Extracts the prior information about beamline populations and MuRS penetration depth from vectors built from MC simulation
-void ParticleIdentificationSlicing::pullPriorsFromTable( float momentum )
+//Extracts the p-specific prior information about beamline populations and MuRS penetration depth from vectors built from MC simulation
+void ParticleIdentificationSlicing::pullSpecificPPriorsFromTable( float momentum )
 {
   //Hard coded qualities about the MuRS and  MC information (shouldn't be parameters because
   //parameters are too tempting to tweak without understanding that you must tweak and
@@ -478,6 +580,7 @@ void ParticleIdentificationSlicing::pullPriorsFromTable( float momentum )
   
   //Loop through the mc prior map and identify which beam setting vector to use
   std::map< std::string, std::vector<float> >::iterator iter;
+  std::cout << "Momentum: " << momentum << " MeV/c " << std::endl;
   for( iter = fMCPriorMap.begin(); iter != fMCPriorMap.end(); ++iter ){
     std::string particle = parseMCPriorString( iter->first );
     if( particle == "Pi" ){
@@ -631,17 +734,34 @@ void ParticleIdentificationSlicing::doThePiMu_Proton_KaonSeparation( float reco_
 								     std::vector<float> & proton_kaon_pimu_likelihood_ratios )
 {
   //Finding the mass
-  float mass = pow(pow((fSpeedOfLight*(reco_TOF-fMissingNanoseconds)*1e-9/fDistanceTraveled)*reco_momentum,2)-pow(reco_momentum,2),0.5);
+  float mass = pow(pow((fSpeedOfLight*(reco_TOF)*1e-9/fDistanceTraveled)*reco_momentum,2)-pow(reco_momentum,2),0.5);
+
+  //Sanity check
+  if( fVerbose ){
+    std::cout << "Integrated Proton Prior: " << fAllPProtMCPrior << std::endl;
+    std::cout << "Integrated Kaon Prior: " << fAllPKMCPrior << std::endl;
+    std::cout << "Integrated Pi Prior: " << fAllPPiMCPrior << std::endl;
+    std::cout << "Integrated Mu Prior: " << fAllPMuMCPrior << std::endl;
+  }
+    
   
   //Finding values of pdf for mass given proton, kaon, pi/mu distributions
-  float proton_prob = fCorrectPProtMCPrior*(1/pow(2*3.1415926,0.5)/fProtonMassSigma)*exp(-0.5*pow((mass-fProtonMassMean)/fProtonMassSigma,2));
-  float kaon_prob = fCorrectPKMCPrior*(1/pow(2*3.1415926,0.5)/fKaonMassSigma)*exp(-0.5*pow((mass-fKaonMassMean)/fKaonMassSigma,2));
-  float pimu_prob = (fCorrectPMuMCPrior+fCorrectPPiMCPrior)*(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
+  float proton_prob = fAllPProtMCPrior*(1/pow(2*3.1415926,0.5)/fProtonMassSigma)*exp(-0.5*pow((mass-fProtonMassMean)/fProtonMassSigma,2));
+  float kaon_prob = fAllPKMCPrior*(1/pow(2*3.1415926,0.5)/fKaonMassSigma)*exp(-0.5*pow((mass-fKaonMassMean)/fKaonMassSigma,2));
+  float pimu_prob = (fAllPMuMCPrior+fAllPPiMCPrior)*(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
   
   //These ^ are likelihoods, so find the likelihood ratio of each to the total
   float proton_likelihood = proton_prob/(proton_prob+kaon_prob+pimu_prob);
   float kaon_likelihood = kaon_prob/(proton_prob+kaon_prob+pimu_prob);
   float pimu_likelihood = pimu_prob/(proton_prob+kaon_prob+pimu_prob);
+
+  //Account for resolution of TOF system: make these cases default to pimu
+  if(pow((fSpeedOfLight*(reco_TOF)*1e-9/fDistanceTraveled)*reco_momentum,2)-pow(reco_momentum,2) < 0 ){
+    pimu_likelihood = 1.0;
+    proton_likelihood = 0;
+    kaon_likelihood = 0;
+  }
+
   
   proton_kaon_pimu_likelihood_ratios.push_back(proton_likelihood);
   proton_kaon_pimu_likelihood_ratios.push_back(kaon_likelihood);
@@ -669,7 +789,10 @@ bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack( art::Handle< std::vec
     
   }
 
-  if( counter == 1 ) return true;
+  if( counter == 1 ){
+    std::cout << "There was a good MuRS track." << std::endl;
+    return true;
+  }
   else if( counter == 0 ) return false;
   else{
     std::cout << "I'm not sure what to do here. There were 2+ good murs tracks. Returning true." << std::endl;
@@ -682,8 +805,10 @@ bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack( art::Handle< std::vec
 //Finding the likelihood ratio of pions and muons
 void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetrationDepth,
 								 float reco_momentum,
-								 std::vector<float> & pion_muon_likelihood_ratios )
+								 float & pion_muon_likelihood_ratio )
 {
+  if( fVerbose )
+    std::cout << "Doing the pion muon separation." << std::endl;
 
   //Calculate the final likelihood ratio for pions/muons for positive polarity
   if( fPolaritySetting == 1 ){
@@ -735,7 +860,9 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 								     P_depth_given_prot*P_prot_given_murs );
 							       */    
 
-    pion_muon_likelihood_ratios.push_back(P_pi_given_depth/P_mu_given_depth);
+    if( fVerbose ) std::cout << "Pi/mu ratio: " << pion_muon_likelihood_ratio << std::endl;
+    
+    pion_muon_likelihood_ratio = P_pi_given_depth/P_mu_given_depth;
 
   }
 
@@ -789,7 +916,7 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 								     P_depth_given_E*P_E_given_murs );
     */    
 
-    pion_muon_likelihood_ratios.push_back(P_pi_given_depth/P_mu_given_depth);
+    pion_muon_likelihood_ratio = P_pi_given_depth/P_mu_given_depth;
 
   }
 
@@ -805,6 +932,85 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
   float P_muon_given_depth = (P_depth_given_muon*P_muon)/(P_depth_given_pion*P_pion+P_depth_given_muon*P_muon);
   
   pion_muon_likelihood_ratios.push_back(P_pion_given_depth,P_muon_given_depth);*/
+}
+
+//============================================================================================
+int ParticleIdentificationSlicing::generatePDGCode( std::vector<float> proton_kaon_pimu_likelihood_ratios,
+						    float pion_muon_likelihood_ratio,
+						    bool foundGoodMuRSTrack )
+{
+  float p_prob = proton_kaon_pimu_likelihood_ratios.at(0);
+  float k_prob = proton_kaon_pimu_likelihood_ratios.at(1);
+  float pimu_prob = proton_kaon_pimu_likelihood_ratios.at(2);
+  float pi_g_pimu_prob = pion_muon_likelihood_ratio/(pion_muon_likelihood_ratio+1);
+  float mu_g_pimu_prob = 1/(pion_muon_likelihood_ratio+1);
+
+  std::cout << "pi_g_pimu_prob: " << pi_g_pimu_prob << ", mu_g_pimu_prob: " << mu_g_pimu_prob << std::endl;
+  
+
+  int pdgCode = 9999999;
+
+  //Setting the particle ID
+  if( p_prob > k_prob && p_prob > pimu_prob ){
+    if( fPolaritySetting == 1 ) pdgCode = 2212;
+    else if( fPolaritySetting == -1 ) pdgCode = -2212;
+    else{ pdgCode = 9999999; }
+  }
+  else if( k_prob > p_prob && k_prob > pimu_prob ){
+    if( fPolaritySetting == 1 ) pdgCode = 321;
+    else if( fPolaritySetting == -1 ) pdgCode = -321;
+    else{ pdgCode = 9999999; }
+  }
+  else if( pimu_prob > p_prob && pimu_prob > k_prob ){
+    //Taking care of a bad default case when there is no MuRSTrack
+    if( !foundGoodMuRSTrack ) return 9999990;
+    else if( fPolaritySetting == 1 ){
+      if( pi_g_pimu_prob > mu_g_pimu_prob ) pdgCode = 211;
+      else if( pi_g_pimu_prob < mu_g_pimu_prob )pdgCode = -13;
+      //      else if( pi_g_pimu_prob == mu_g_pimu_prob && pi_g_pimu_prob != 0 ) pdgCode = -13;
+      else{ std::cout << "It seems as if no murs was run. The muon and pion probs are equal." << std::endl; }
+    }
+    else if( fPolaritySetting == -1 ){
+      if( pi_g_pimu_prob > mu_g_pimu_prob ) pdgCode = -211;
+      else if( pi_g_pimu_prob < mu_g_pimu_prob )pdgCode = 13;
+      // else if( pi_g_pimu_prob == mu_g_pimu_prob && pi_g_pimu_prob != 0 ) pdgCode = 13;
+      else{ std::cout << "It seems as if no murs was run. The muon and pion probs are equal." << std::endl; }
+
+    }
+    else{ pdgCode = 9999999; }
+  }
+  
+  return pdgCode;
+
+}
+
+//============================================================================================
+void ParticleIdentificationSlicing::fillPIDHistos( int finalPDGCode,
+						   float momentum,
+						   float TOF )
+						   
+						   
+{
+  std::cout << "TOF: " << TOF << ", P: " << momentum << std::endl;
+
+  if( finalPDGCode == 2212 || finalPDGCode == -2212 ){
+    fPzVsTOFProtons->Fill(momentum,TOF);
+  }
+  if( finalPDGCode == 321 || finalPDGCode == -321 ){
+    fPzVsTOFKaons->Fill(momentum,TOF);
+  }
+  if( finalPDGCode == 9999990 ){
+    fPzVsTOFPiMu->Fill(momentum,TOF);
+  } 
+  if( finalPDGCode == 211 || finalPDGCode == -211 ){
+    fPzVsTOFPions->Fill(momentum,TOF);
+  }
+  if( finalPDGCode == 13 || finalPDGCode == -13 ){
+    fPzVsTOFMuons->Fill(momentum,TOF);
+  }
+
+  fPDGCodes->Fill(finalPDGCode);
+ 
 }
 
 //============================================================================================
@@ -878,49 +1084,54 @@ void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
 //============================================================================================  
 void ParticleIdentificationSlicing::makeMCPriorMap()
 {
-
   fMCPriorMap.emplace("E_8_+_350",fBeamProbE_08_pos350);
   fMCPriorMap.emplace("Mu_8_+_350",fBeamProbMu_08_pos350);
   fMCPriorMap.emplace("Pi_8_+_350",fBeamProbPi_08_pos350);
   fMCPriorMap.emplace("K_8_+_350",fBeamProbK_08_pos350);
   fMCPriorMap.emplace("Prot_8_+_350",fBeamProbProt_08_pos350);
+  fMCPriorMap.emplace("All_8_+_350",fBeamProbAll_08_pos350);
  
   fMCPriorMap.emplace("E_8_+_175",fBeamProbE_08_pos175);
   fMCPriorMap.emplace("Mu_8_+_175",fBeamProbMu_08_pos175);
   fMCPriorMap.emplace("Pi_8_+_175",fBeamProbPi_08_pos175);
   fMCPriorMap.emplace("K_8_+_175",fBeamProbK_08_pos175);
   fMCPriorMap.emplace("Prot_8_+_175",fBeamProbProt_08_pos175);
+  fMCPriorMap.emplace("All_8_+_175",fBeamProbAll_08_pos175);
   
   fMCPriorMap.emplace("E_8_-_175",fBeamProbE_08_neg175);
   fMCPriorMap.emplace("Mu_8_-_175",fBeamProbMu_08_neg175);
   fMCPriorMap.emplace("Pi_8_-_175",fBeamProbPi_08_neg175);
   fMCPriorMap.emplace("K_8_-_175",fBeamProbK_08_neg175);
   fMCPriorMap.emplace("Prot_8_-_175",fBeamProbProt_08_neg175);
+  fMCPriorMap.emplace("All_8_-_175",fBeamProbAll_08_neg175);
 
   fMCPriorMap.emplace("E_8_-_350",fBeamProbE_08_neg350);
   fMCPriorMap.emplace("Mu_8_-_350",fBeamProbMu_08_neg350);
   fMCPriorMap.emplace("Pi_8_-_350",fBeamProbPi_08_neg350);
   fMCPriorMap.emplace("K_8_-_350",fBeamProbK_08_neg350);
   fMCPriorMap.emplace("Prot_8_-_350",fBeamProbProt_08_neg350);
+  fMCPriorMap.emplace("All_8_-_350",fBeamProbAll_08_neg350);
 
   fMCPriorMap.emplace("E_32_+_350",fBeamProbE_32_pos350);
   fMCPriorMap.emplace("Mu_32_+_350",fBeamProbMu_32_pos350);
   fMCPriorMap.emplace("Pi_32_+_350",fBeamProbPi_32_pos350);
   fMCPriorMap.emplace("K_32_+_350",fBeamProbK_32_pos350);
   fMCPriorMap.emplace("Prot_32_+_350",fBeamProbProt_32_pos350);
+  fMCPriorMap.emplace("All_32_+_350",fBeamProbAll_32_pos350);
 
   fMCPriorMap.emplace("E_32_+_175",fBeamProbE_32_pos175);
   fMCPriorMap.emplace("Mu_32_+_175",fBeamProbMu_32_pos175);
   fMCPriorMap.emplace("Pi_32_+_175",fBeamProbPi_32_pos175);
   fMCPriorMap.emplace("K_32_+_175",fBeamProbK_32_pos175);
   fMCPriorMap.emplace("Prot_32_+_175",fBeamProbProt_32_pos175);
+  fMCPriorMap.emplace("All_32_+_175",fBeamProbAll_32_pos175);
 
   fMCPriorMap.emplace("E_32_-_175",fBeamProbE_32_neg175);
   fMCPriorMap.emplace("Mu_32_-_175",fBeamProbMu_32_neg175);
   fMCPriorMap.emplace("Pi_32_-_175",fBeamProbPi_32_neg175);
   fMCPriorMap.emplace("K_32_-_175",fBeamProbK_32_neg175);
   fMCPriorMap.emplace("Prot_32_-_175",fBeamProbProt_32_neg175);
-
+  fMCPriorMap.emplace("All_32_-_175",fBeamProbAll_32_neg175);
 }
 
 //============================================================================================  
@@ -928,7 +1139,8 @@ void ParticleIdentificationSlicing::beginJob()
 {
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
-  fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz vs. Time of Flight",160,0,1600,60,20,80);
+  fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz vs. Time of Flight",160,0,1600,70,10,80);
+  fPzVsTOFGood = tfs->make<TH2F>("PzVsTOFGood","Pz vs. Time of Flight for used events",160,0,1600,70,10,80);
   fNTOF = tfs->make<TH1F>("NTOF","Number of TOF values per TOF object",10,0,10);
   fPz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum",180,0,1800);
   fTOF = tfs->make<TH1F>("Reco_TOF","Reconstructed Time of Flight",70,20,90);
@@ -954,6 +1166,14 @@ void ParticleIdentificationSlicing::beginJob()
   fNWCTrackHist = tfs->make<TH1F>("NWCTracks","Number of WCTracks per event",10,0,10);
   fNMuRSHitsObjectHist = tfs->make<TH1F>("MuRSHitObjects","Number of MuRSHits Objects in the event",5,0,5);
   fNMuRSTrackHist = tfs->make<TH1F>("NMuRSTracks","Number of MuRSTracks per event",15,0,15);
+
+
+  fPzVsTOFProtons = tfs->make<TH2F>("PzVsTOFProtons","Pz Vs. TOF for Protons",160,0,1600,70,10,80);
+  fPzVsTOFKaons = tfs->make<TH2F>("PzVsTOFKaons","Pz Vs. TOF for Kaons",160,0,1600,70,10,80);
+  fPzVsTOFPiMu = tfs->make<TH2F>("PzVsTOFPiMu","Pz Vs. TOF for Pions/Muons",160,0,1600,70,10,80);
+  fPzVsTOFPions = tfs->make<TH2F>("PzVsTOFPions","Pz Vs. TOF for Pions",160,0,1600,70,10,80);
+  fPzVsTOFMuons = tfs->make<TH2F>("PzVsTOFMuons","Pz Vs. TOF for Muons",160,0,1600,70,10,80);
+  fPDGCodes = tfs->make<TH1F>("PDGCodes","PDG Codes", 4425,-2212,2213);
   
   
   
@@ -979,10 +1199,71 @@ void ParticleIdentificationSlicing::beginJob()
   fParticleMass->GetYaxis()->SetTitle("Counts");
   fPzVsTOF->GetXaxis()->SetTitle("Momentum (MeV/c)");
   fPzVsTOF->GetYaxis()->SetTitle("TOF (ns)");
+  fPzVsTOFGood->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPzVsTOFGood->GetYaxis()->SetTitle("TOF (ns)");
+  fPzVsTOFProtons->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPzVsTOFProtons->GetYaxis()->SetTitle("TOF (ns)");
+  fPzVsTOFKaons->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPzVsTOFKaons->GetYaxis()->SetTitle("TOF (ns)");
+  fPzVsTOFPiMu->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPzVsTOFPiMu->GetYaxis()->SetTitle("TOF (ns)");
+  fPzVsTOFPions->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPzVsTOFPions->GetYaxis()->SetTitle("TOF (ns)");
+  fPzVsTOFMuons->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPzVsTOFMuons->GetYaxis()->SetTitle("TOF (ns)");
+
+
+
 
  
   //Setting the distance traveled by a particle via the geometry service
-  fDistanceTraveled = 6.7; //Temporarily hacked together
+  float usTOFctr[3] = {0,0,0};
+  float dsTOFctr[3] = {0,0,0};
+
+  //Testing the AuxDetGeo capabilitites
+  std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
+  double centerOfDet[3] = {0,0,0};
+  for( size_t iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
+    geo::AuxDetGeo* anAuxDetGeo = theAuxDetGeoVect.at(iDet);
+    anAuxDetGeo->GetCenter(centerOfDet);
+
+    //    std::cout << "AuxDetGeo " << iDet << " center: (" << centerOfDet[0] << "," << centerOfDet[1] << "," << centerOfDet[2] << ")" << std::endl;
+    //0 and 6 are US and DS TOF
+    if( iDet == 0 ){
+      usTOFctr[0] = centerOfDet[0] * CLHEP::cm;
+      usTOFctr[1] = centerOfDet[1] * CLHEP::cm;
+      usTOFctr[2] = centerOfDet[2] * CLHEP::cm; 
+    }
+    if( iDet == 6 ){
+      dsTOFctr[0] = centerOfDet[0] * CLHEP::cm;
+      dsTOFctr[1] = centerOfDet[1] * CLHEP::cm;
+      dsTOFctr[2] = centerOfDet[2] * CLHEP::cm; 
+    }
+
+  }
+
+  //Since there's no Bending magnet info in the geometry file, we assume that it is 
+  //sufficient to say that there is a 13 degree bend at the target and a 10 degree bend
+  //in the bending magnets. We then just use the law of sines to get the total distance
+  float rad2deg = 180/3.1415926539;
+  TVector3 us2ds(dsTOFctr[0]-usTOFctr[0],
+		 dsTOFctr[1]-usTOFctr[1],
+		 dsTOFctr[2]-usTOFctr[2]);
+  TVector3 zHat(0,0,1);
+  float us2dsAngle = acos(us2ds.Dot(zHat)/us2ds.Mag());
+  float angle1 = 13-rad2deg*us2dsAngle;
+  float angle2 = 170;
+  float angle3 = 180-angle1-angle2;
+  float shortDist1 = sin(angle3/rad2deg)/sin(angle2/rad2deg)*us2ds.Mag();
+  float shortDist2 = sin(angle1/rad2deg)/sin(angle2/rad2deg)*us2ds.Mag();
+
+
+  
+  fDistanceTraveled = (shortDist1+shortDist2)/1000;
+
+  if( fVerbose ){
+    std::cout << "us2dsAngle: " << us2dsAngle*rad2deg << "\nangle1: " << angle1 << "\nangle3: " << angle3 << "\nshortDist1: " << shortDist1 << "\nshortDist2: " << shortDist2 << "\nDistanceTraveled: " << fDistanceTraveled << std::endl; 
+  }
 
 }
 
@@ -997,7 +1278,10 @@ void ParticleIdentificationSlicing::beginSubRun(art::SubRun & sr)
   fRun = sr.run();
   fSubRun = sr.subRun();
 
-  //Draw information from database on the beam settings
+  //Reset and draw information from database on the beam settings
+  fMagnetSetting = 0;
+  fEnergySetting = 0;
+  fPolaritySetting = 0;
   queryDataBaseForMagnetAndEnergy();
 }
 
@@ -1007,13 +1291,14 @@ void ParticleIdentificationSlicing::endJob()
   for( size_t iKaon = 0; iKaon < fKaonRun.size() ; ++iKaon ){
     std::cout << "Kaon Run: " << fKaonRun.at(iKaon) << ", SubRun: " << fKaonSubRun.at(iKaon) << ", Event: " << fKaonEvent.at(iKaon) << std::endl;
   }
-  
+  std::cout << "Good MuRS Tracks: " << fGoodMuRSCounter << std::endl;
+
   //Fitting the mass histogram in the appropriate regions to get the
   //parameters used for likelihood estimation of particle flavor
   if( fGenerateFitsForMassDistribution ){
     TF1 * f1 = new TF1("f1","[2]/pow(2*3.14159265,0.5)*exp(-pow((x-[0])/[1],2)/2)",0,400);
     TF1 * f2 = new TF1("f2","[2]/pow(2*3.14159265,0.5)*exp(-pow((x-[0])/[1],2)/2)",400,700);
-    TF1 * f3 = new TF1("f3","[2]/pow(2*3.14159265,0.5)*exp(-pow((x-[0])/[1],2)/2)",700,1200);
+    TF1 * f3 = new TF1("f3","[2]/pow(2*3.14159265,0.5)*exp(-pow((x-[0])/[1],2)/2)",700,1300);
     f1->SetParameter(0,140);
     f1->SetParameter(1,50);
     f1->SetParameter(2,50);
@@ -1060,16 +1345,15 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fGenerateFitsForMassDistribution = p.get< bool >("GenerateFitsForMassDistribution",false);
 
   //OLD VALUES
-  fPiMuMassMean                    =p.get< float >("PiMuMassMean",1.892e+2);
-  fPiMuMassSigma                   =p.get< float >("PiMuMassSigma",4.646e+1);
-  fKaonMassMean                    =p.get< float >("KaonMassMean",5.56e+2);
-  fKaonMassSigma                   =p.get< float >("KaonMassSigma",8.39e+1);
-  fProtonMassMean                  =p.get< float >("ProtonMassMean",9.16e+2);
-  fProtonMassSigma                 =p.get< float >("ProtonMassSigma",9.85e+1);
+  fPiMuMassMean                    =p.get< float >("PiMuMassMean",1.900e+2);
+  fPiMuMassSigma                   =p.get< float >("PiMuMassSigma",8.818e+1);
+  fKaonMassMean                    =p.get< float >("KaonMassMean",5.49e+2);
+  fKaonMassSigma                   =p.get< float >("KaonMassSigma",2.65e+2);
+  fProtonMassMean                  =p.get< float >("ProtonMassMean",1.042e+3);
+  fProtonMassSigma                 =p.get< float >("ProtonMassSigma",1.08e+2);
   
   fMaxMomentumForPID               =p.get< float >("MaxMomentumForPID",1000);
   fPiMuLRThreshold                 =p.get< float >("PiMuLikelihoodRatioThreshold",0.5);
-  fMissingNanoseconds              =p.get< float >("MissingNanoseconds",10);
 
   //Beam Probabilities (priors) initialization
   fBeamProbE_08_pos350 = p.get< std::vector<float> >("beamProbE_08_pos350");
@@ -1077,42 +1361,49 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fBeamProbPi_08_pos350 = p.get< std::vector<float> >("beamProbPi_08_pos350");
   fBeamProbK_08_pos350 = p.get< std::vector<float> >("beamProbK_08_pos350");
   fBeamProbProt_08_pos350 = p.get< std::vector<float> >("beamProbProt_08_pos350");
+  fBeamProbAll_08_pos350 = p.get< std::vector<float> >("beamProbAll_08_pos350");
   
   fBeamProbE_08_pos175 = p.get< std::vector<float> >("beamProbE_08_pos175");
   fBeamProbMu_08_pos175 = p.get< std::vector<float> >("beamProbMu_08_pos175");
   fBeamProbPi_08_pos175 = p.get< std::vector<float> >("beamProbPi_08_pos175");
   fBeamProbK_08_pos175 = p.get< std::vector<float> >("beamProbK_08_pos175");
   fBeamProbProt_08_pos175 = p.get< std::vector<float> >("beamProbProt_08_pos175");
+  fBeamProbAll_08_pos175 = p.get< std::vector<float> >("beamProbAll_08_pos175");
   
   fBeamProbE_08_neg175 = p.get< std::vector<float> >("beamProbE_08_neg175");
   fBeamProbMu_08_neg175 = p.get< std::vector<float> >("beamProbMu_08_neg175");
   fBeamProbPi_08_neg175 = p.get< std::vector<float> >("beamProbPi_08_neg175");
   fBeamProbK_08_neg175 = p.get< std::vector<float> >("beamProbK_08_neg175");
   fBeamProbProt_08_neg175 = p.get< std::vector<float> >("beamProbProt_08_neg175");
-  
+  fBeamProbAll_08_neg175 = p.get< std::vector<float> >("beamProbAll_08_neg175");  
+
   fBeamProbE_08_neg350 = p.get< std::vector<float> >("beamProbE_08_neg350");
   fBeamProbMu_08_neg350 = p.get< std::vector<float> >("beamProbMu_08_neg350");
   fBeamProbPi_08_neg350 = p.get< std::vector<float> >("beamProbPi_08_neg350");
   fBeamProbK_08_neg350 = p.get< std::vector<float> >("beamProbK_08_neg350");
   fBeamProbProt_08_neg350 = p.get< std::vector<float> >("beamProbProt_08_neg350");
+  fBeamProbAll_08_neg350 = p.get< std::vector<float> >("beamProbAll_08_neg350");
   
   fBeamProbE_32_pos350 = p.get< std::vector<float> >("beamProbE_32_pos350");
   fBeamProbMu_32_pos350 = p.get< std::vector<float> >("beamProbMu_32_pos350");
   fBeamProbPi_32_pos350 = p.get< std::vector<float> >("beamProbPi_32_pos350");
   fBeamProbK_32_pos350 = p.get< std::vector<float> >("beamProbK_32_pos350");
   fBeamProbProt_32_pos350 = p.get< std::vector<float> >("beamProbProt_32_pos350");
+  fBeamProbAll_32_pos350 = p.get< std::vector<float> >("beamProbAll_32_pos350");
   
   fBeamProbE_32_pos175 = p.get< std::vector<float> >("beamProbE_32_pos175");
   fBeamProbMu_32_pos175 = p.get< std::vector<float> >("beamProbMu_32_pos175");
   fBeamProbPi_32_pos175 = p.get< std::vector<float> >("beamProbPi_32_pos175");
   fBeamProbK_32_pos175 = p.get< std::vector<float> >("beamProbK_32_pos175");
   fBeamProbProt_32_pos175 = p.get< std::vector<float> >("beamProbProt_32_pos175");
+  fBeamProbAll_32_pos175 = p.get< std::vector<float> >("beamProbAll_32_pos175");
   
   fBeamProbE_32_neg175 = p.get< std::vector<float> >("beamProbE_32_neg175");
   fBeamProbMu_32_neg175 = p.get< std::vector<float> >("beamProbMu_32_neg175");
   fBeamProbPi_32_neg175 = p.get< std::vector<float> >("beamProbPi_32_neg175");
   fBeamProbK_32_neg175 = p.get< std::vector<float> >("beamProbK_32_neg175");
   fBeamProbProt_32_neg175 = p.get< std::vector<float> >("beamProbProt_32_neg175");
+  fBeamProbAll_32_neg175 = p.get< std::vector<float> >("beamProbAll_32_neg175");
 
   makeMCPriorMap();
 
@@ -1124,6 +1415,8 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fKMinusPenetrationDepth = p.get< std::vector<float> >("penetrationDepthKMinus");
   fEPenetrationDepth = p.get< std::vector<float> >("penetrationDepthElectron");
   fProtPenetrationDepth = p.get< std::vector<float> >("penetrationDepthProton");
+
+  fGoodMuRSCounter = 0;
   
 }
 

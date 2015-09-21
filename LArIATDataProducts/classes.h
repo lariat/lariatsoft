@@ -34,13 +34,17 @@
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/AGCounter.h"
 #include "LArIATDataProducts/MuonRangeStackHits.h"
-
+#include "LArIATDataProducts/AuxDetParticleID.h"
 
 //
 // Only include objects that we would like to be able to put into the event.
 // Do not include the objects they contain internally.
 //
 
+//Stuff regarding AuxDetParticleID
+template class std::vector<ldp::AuxDetParticleID>;
+template class art::Wrapper<ldp::AuxDetParticleID>;
+template class art::Wrapper<std::vector<ldp::AuxDetParticleID> >;
 
 //Stuff regarding/belonging to TOF
 template class std::vector<ldp::TOF>;
@@ -109,4 +113,5 @@ template class art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>;
 template class art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >;
+
 
