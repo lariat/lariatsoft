@@ -25,10 +25,13 @@
 #include "RawDataUtilities/ClockCorrectionAlg.h"
 #include "RawDataUtilities/FragmentUtility.h"
 
+// ROOT includes
+#include "TTree.h"
+
 // C++ includes
+#include <algorithm>
 #include <iomanip>
 #include <iostream>
-#include <limits>
 #include <map>
 #include <string>
 #include <utility>
@@ -62,14 +65,33 @@ namespace ClockCorrectionCheck {
     void reconfigure(fhicl::ParameterSet const& pset);
 
     // The analysis routine, called once per event. 
-    void analyze (const art::Event& evt); 
+    void analyze(const art::Event& evt); 
 
    private:
 
     std::string fRawFragmentLabel;    ///< label for module producing artdaq fragments
     std::string fRawFragmentInstance; ///< instance label for artdaq fragments
 
+    // run number
+    //int fRun;
+
+    // clock correction algorithm
     rdu::ClockCorrectionAlg fClockCorrectionAlg;
+
+    // TTree for TFile... T, T, T. T is the fruit of the ROOT.
+    // TKabobs, TCreole. TGumbo... PineappleT, LemonT, CoconutT,
+    // PepperT. TSoup, TStew, TSalad, T and Potatoes, TBurger,
+    // TSandwich. Th-that's about it.
+    TTree * fClockCorrectionTree;
+
+    // variables that will go into the n-tuples
+    int    fRun;
+    int    fSubRun;
+    int    fDeviceID;
+    int    fReferenceClockDeviceID;
+    double fSlope;
+    double fIntercept;
+    double fClockDrift;
 
   }; // class ClockCorrectionCheck
 
@@ -97,6 +119,20 @@ namespace ClockCorrectionCheck {
   void ClockCorrectionCheck::beginJob()
   {
     fClockCorrectionAlg.hello_world();
+
+    art::ServiceHandle<art::TFileService> tfs;
+
+    fClockCorrectionTree = tfs->make<TTree>("ClockCorrectionTree", "ClockCorrectionTree");
+
+    fClockCorrectionTree->Branch("Run",        &fRun,        "Run/I");
+    fClockCorrectionTree->Branch("SubRun",     &fSubRun,     "SubRun/I");
+    fClockCorrectionTree->Branch("Slope",      &fSlope,      "Slope/D");
+    fClockCorrectionTree->Branch("Intercept",  &fIntercept,  "Intercept/D");
+    fClockCorrectionTree->Branch("ClockDrift", &fClockDrift, "ClockDrift/D");
+    fClockCorrectionTree->Branch("DeviceID",   &fDeviceID,   "DeviceID/I");
+    fClockCorrectionTree->Branch("ReferenceClockDeviceID", &fReferenceClockDeviceID, "ReferenceClockDeviceID/I");
+
+    return;
   }
 
   //-----------------------------------------------------------------------
@@ -113,18 +149,55 @@ namespace ClockCorrectionCheck {
     fClockCorrectionAlg.reconfigure(pset.get<fhicl::ParameterSet>("ClockCorrectionAlg"));
     fRawFragmentLabel    = pset.get< std::string >("RawFragmentLabel",    "daq"  );
     fRawFragmentInstance = pset.get< std::string >("RawFragmentInstance", "SPILL");
+
+    return;
   }
 
   //-----------------------------------------------------------------------
   void ClockCorrectionCheck::analyze(const art::Event& event) 
   {
+    fRun = event.run();
+    fSubRun = event.subRun();
 
     // make the utility to access the fragments from the event record
     rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
 
-    std::vector<rdu::DataBlockCollection> collections;
+    std::vector< rdu::DataBlock > DataBlocks;
+    std::map< unsigned int, std::vector< double > > TimeStampMap;
+    fClockCorrectionAlg.GetDataBlocksTimeStampMap(&fragUtil.DAQFragment(), DataBlocks, TimeStampMap);
 
-    collections = fClockCorrectionAlg.GroupCollections(&fragUtil.DAQFragment());
+    for (std::map< unsigned int, std::vector< double> >::const_iterator
+         iter = TimeStampMap.begin(); iter != TimeStampMap.end(); ++iter) {
+      mf::LogVerbatim("ClockCorrectionAlg") << "Device ID: "
+                                            << iter->first
+                                            << "; number of data blocks: "
+                                            << iter->second.size();
+    }
+
+    // get clock correction parameters
+    std::map< unsigned int, std::pair< double, double > > ClockCorrectionParameters;
+    unsigned int ReferenceClockDeviceID;
+    fClockCorrectionAlg.GetClockCorrectionParameters(TimeStampMap, ClockCorrectionParameters, ReferenceClockDeviceID);
+
+    fReferenceClockDeviceID = static_cast <int> (ReferenceClockDeviceID);
+
+    std::cout << "Reference clock device ID: " << ReferenceClockDeviceID << std::endl;
+
+    for (std::map< unsigned int, std::pair< double, double > >::const_iterator
+         iter = ClockCorrectionParameters.begin(); iter != ClockCorrectionParameters.end(); ++iter) {
+
+      fDeviceID = iter->first;
+      fSlope = iter->second.first;
+      fIntercept = iter->second.second;
+      fClockDrift = 1 - fSlope;
+
+      std::cout << "Device ID: " << fDeviceID << std::endl;
+      std::cout << "  Slope: " << fSlope << std::endl;
+      std::cout << "  Intercept: " << fIntercept << std::endl;
+      std::cout << "  Clock drift [s/s]: " << fClockDrift << std::endl;
+
+      fClockCorrectionTree->Fill();
+    }
 
     return;
   }

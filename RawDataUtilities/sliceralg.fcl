@@ -1,0 +1,13 @@
+#include "clockcorrectionalg.fcl"
+
+BEGIN_PROLOG
+
+standard_sliceralg:
+{
+    ClockCorrectionAlg:   @local::standard_clockcorrectionalg
+
+    TPCReadoutBufferLow:  0.256
+    TPCReadoutBufferHigh: 0.256
+}
+
+END_PROLOG

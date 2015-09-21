@@ -5,6 +5,7 @@ bo_anatree:
     module_type:              "AnaTree"
     HitsModuleLabel:          "hit"
     TrigModuleLabel:          "daq"
+    ClusterModuleLabel:       "linecluster"
     TrackModuleLabel:         "track3d"
     CalorimetryModuleLabel:   "calo"
     ParticleIDModuleLabel:    "pid"

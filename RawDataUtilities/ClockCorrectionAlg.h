@@ -3,9 +3,39 @@
 // Date:      15 July 2015
 // Author:    Everybody is an author!
 //////////////////////////////////////////////////////////////
+//
 // Clock correction algorithm for LArIAT. This corrects the
 // timestamps of data blocks from the CAEN digitizers and
 // wire chambers.
+//
+// The algorithm "corrects" the timestamps of all the devices
+// accordingly to a reference device. Given two devices, A
+// and B, each timestamp of device A is plotted against each
+// timestamp of device B.
+//
+//////////////////////////////////////////////////////////////
+//
+// RANSAC algorithm:
+//
+//   1. Randomly choose a minimal subset of data
+//   2. Use this subset to estimate the parameters of the
+//      model
+//   3. Compute the number of inliers for this model
+//   4. Repeat steps 1-3 a fixed number of times
+//   5. Re-estimate the model using inliers from the best
+//      fit
+//
+//////////////////////////////////////////////////////////////
+//
+// NOTE:
+// -----
+// This algorithm does not care about the absolute time of
+// when a trigger signal is received by a device. This means
+// that the time difference between the fast and delayed
+// triggers, along with the pre-/post-trigger windows of the
+// CAEN V1740 and V1751 acquisition windows, does not affect
+// the clock-drift correction.
+//
 //////////////////////////////////////////////////////////////
 
 #ifndef CLOCKCORRECTIONALG_H
@@ -30,30 +60,30 @@
 #include <utility>
 #include <vector>
 
-enum {
-  TDC_DEVICE_ID = 32,
-};
-
 namespace rdu {
+
+  enum {
+    TDC_DEVICE_ID = 32,
+  };
 
   struct DataBlock {
 
-    unsigned int deviceId;
-    double timestamp;
-    double correctedTimestamp;
+    unsigned int deviceId = 999;
+    double timestamp = -1;
+    double correctedTimestamp = -1;
 
     // there should only be one data block in only one of these vectors
     std::vector< const CAENFragment * > caenBlocks;
     std::vector< const std::vector< TDCFragment::TdcEventData > * > tdcBlocks;
-    //std::vector< const V1494Fragment* > v1495Blocks;
-    //std::vector< const WUTFragment* > wutBlocks;
-    //std::vector< const LARASICFragment* > larasicBlocks;
-    //std::vector< const ReadoutError* > errorBlocks;
+    //std::vector< const V1494Fragment * > v1495Blocks;
+    //std::vector< const WUTFragment * > wutBlocks;
+    //std::vector< const LARASICFragment * > larasicBlocks;
+    //std::vector< const ReadoutError * > errorBlocks;
 
     void clear()
     {
-      timestamp = 0;
-      correctedTimestamp = 0;
+      timestamp = -1;
+      correctedTimestamp = -1;
       deviceId = 999;
       caenBlocks.clear();
       tdcBlocks.clear();
@@ -66,21 +96,37 @@ namespace rdu {
   };
 
   struct DataBlockCollection {
-  //struct Slice {
 
-    double timestamp;
-    std::vector< const CAENFragment * > caenBlocks;
-    std::vector< const std::vector<TDCFragment::TdcEventData> * > tdcBlocks;
+    std::pair< double, double > interval;
+    size_t numberTPCReadouts;
+
+    // vector of pairs where the first is the corrected timestamp
+    // and the second is a pointer to the data block
+    //std::vector< std::pair< double, const CAENFragment * > > caenBlocks;
+    //std::vector< std::pair< double, const std::vector<TDCFragment::TdcEventData> * > > tdcBlocks;
+    //std::vector< const CAENFragment * > caenBlocks;
+    //std::vector< const std::vector<TDCFragment::TdcEventData> * > tdcBlocks;
     //std::vector< const V1494Fragment * > v1495Blocks;
     //std::vector< const WUTFragment * > wutBlocks;
     //std::vector< const LARASICFragment * > larasicBlocks;
     //std::vector< const ReadoutError * > errorBlocks;
 
+    // vectors of data blocks
+    std::vector< CAENFragment > caenBlocks;
+    std::vector< std::vector<TDCFragment::TdcEventData> > tdcBlocks;
+
+    // vectors of timestamps of data blocks
+    std::vector< double > caenBlockTimeStamps;
+    std::vector< double > tdcBlockTimeStamps;
+
     void clear()
     {
-      timestamp = 0;
+      interval = std::make_pair(0.0, 0.0);
+      numberTPCReadouts = 0;
       caenBlocks.clear();
       tdcBlocks.clear();
+      caenBlockTimeStamps.clear();
+      tdcBlockTimeStamps.clear();
       //v1495Blocks.clear();
       //wutBlocks.clear();
       //larasicBlocks.clear();
@@ -119,11 +165,9 @@ namespace rdu {
                                    std::map< unsigned int, std::vector< double > > & TimeStampMap);
 
     // get clock correction parameters
-    void GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >  const& TimeStampMap,
-                                      std::map< unsigned int, std::pair< double, double > > & ClockCorrectionParameters);
-
-    // return a vector of data block collections
-    std::vector< DataBlockCollection > GroupCollections(const LariatFragment * data);
+    void GetClockCorrectionParameters(std::map< unsigned int, std::vector< double > >       const& TimeStampMap,
+                                      std::map< unsigned int, std::pair< double, double > >      & ClockCorrectionParameters,
+                                      unsigned int                                               & ReferenceClockDeviceID);
 
     // this method is used for testing porpoises
     void hello_world();
@@ -142,9 +186,9 @@ namespace rdu {
     ///////////////////////////////////////////////////////////////////////////
 
     // unweighted linear fit
-    void UnweightedLinearFit(std::vector< std::pair< double, double> > const& Data,
-                             double                                         & Slope,
-                             double                                         & Intercept);
+    void UnweightedLinearFit(std::vector< std::pair<double, double> > const& Data,
+                             double                                        & Slope,
+                             double                                        & Intercept);
 
     // get residuals and residuals sum
     void GetLinearResiduals(std::vector< std::pair<double, double> > const& Data,
@@ -172,6 +216,9 @@ namespace rdu {
     size_t fStopSampleNumber;
     double fStopResidualsSum;
     double fStopProbability;
+    size_t fMaxContinuations;
+    size_t fMinNumberTimeStamps;
+    size_t fMinNumberDataPoints;
 
     // restrict the linear fit for RANSAC
     double fTimeStampDifferenceThreshold;  // microseconds

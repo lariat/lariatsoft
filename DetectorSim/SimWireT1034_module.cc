@@ -320,7 +320,12 @@ namespace detsim {
 	  adcval = 0;
 
 	
-	adcvec.at(i) = (unsigned short)(adcval);
+    // as of v04_13_00 of LArSoft, the event display no longer takes the
+    // pedestal value from the RawDigit and uses an interface to a database instead
+    // that doesn't really work for LArIAT, so pre-pedestal subtract the data
+    // and keep the pedestal value for reference in the RawDigit
+    //adcvec.at(i) = (unsigned short)(adcval);
+    adcvec.at(i) = (unsigned short)(adcval - ped_mean);
 
       }// end loop over signal size
 
