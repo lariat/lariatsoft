@@ -30,6 +30,7 @@
 
 // ROOT includes
 #include <TF1.h>
+#include <TGraph.h>
 
 
 //--------------------------------------------------------------
@@ -56,6 +57,10 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fGradientHitThreshold       = pset.get< Double_t >("GradientHitThreshold",-10);
   fGradientRMSFilterThreshold = pset.get< Double_t >("GradientRMSFilterThreshold",5); 
   fMinHitSeparation           = pset.get< Double_t >("MinHitSeparation",100);
+  fBaselineWindowLength       = pset.get< short >("BaselineWindowLength",1000);
+  fPrePulseBaselineFit        = pset.get< short >("PrePulseBaselineFit",300);
+  fPromptWindowLength         = pset.get< short >("PromptWindowLength",100);
+  fMvPerADC                   = pset.get< double>("MvPerADC",0.2);
 }
 
 
@@ -189,47 +194,62 @@ Double_t OpHitBuilderAlg::GetLocalRMS( std::vector<Double_t> wfm, short x1, shor
   return sqrt(sumSquares/N);
 }
 
-//--------------------------------------------------------------
-// CalcHitInfo: returns a vector<vector<double>>, where each sub-vector stores
-// (a) the hit amplitude,
-// (b) the hit's prompt integral (100ns nominally) 
-// UNDER CONSTRUCTION!!!
-std::vector<std::vector<double>> OpHitBuilderAlg::CalcHitInfo( std::vector<short> wfm, std::vector<short> hit_times )
+// ----------------------
+// Prompt pulse integral
+std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short hit )
 {
-  // initialize supervector to store all the waveform info
-  std::vector<std::vector<double>> hitamps( hit_times.size(), std::vector<double> (2,0));
+  // create the vector to fill in subsequent steps
+  std::vector<double> hit_info(2);
 
-  // if hit vector is empty, end here
-  if ( hit_times.size() == 0 ) {
-    return hitamps;
-  } else {
-
-      // otherwise, proceed...
-      // first find baseline
-      size_t baseline_win_size = std::min(1000,int(hit_times[0]));
-      Double_t baseline = 0;
-      for ( size_t i = 0; i < baseline_win_size; i++ ){
-        baseline += wfm[i];
-      }
-      baseline = baseline/double(baseline_win_size);
-      
-      std::cout << "Baseline == " << baseline << "  (win size: "<<baseline_win_size<<")\n";
-
-      // loop through each of the hits; for each, define an integration window 
-      // including some pre-hit region and 100ns of post-hit
-      for ( size_t hit_index = 0; hit_index < hit_times.size(); hit_index++ ){
-      
-      }
-
-      // fit exponential fall to pre-pulse region and extrapolate
-      // forward in the integration window; use this as running baseline
-      prepulse_exp_fit->FixParameter(0,baseline);
-      
-
-
-      return hitamps;
+  size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
+  Double_t baseline = 0;
+  for( size_t i = 0; i < baseline_win_size; i++){
+    baseline += wfm[i];
   }
+  baseline = baseline/double(baseline_win_size);
+
+  std::cout << "Baseline = " << baseline << " (win size: " << baseline_win_size << ")\n";
   
+  short x1,x2;
+  x1 = std::max(int(hit - fPrePulseBaselineFit),0);
+  x2 = std::min(int(hit + fPromptWindowLength),int(wfm.size()));
+  const int prepulse_bins = int(hit) - 5 - int(x1);
+
+  int x[prepulse_bins];
+  int y[prepulse_bins];
+  for( int i = 0; i < prepulse_bins; i++) {
+    x[i] = int(x1)+i;
+    y[i] = int(wfm[x1+short(i)]);
+  }
+
+  graph = new TGraph(prepulse_bins,x,y);
+
+  prepulse_exp_fit->FixParameter(0,baseline);
+  prepulse_exp_fit->FixParameter(2,hit);
+  prepulse_exp_fit->SetParLimits(3,1400,1600);
+  graph->Fit(prepulse_exp_fit,"N0");
+
+  std::cout<<"Hit was fit.  Parameters: \n";
+  std::cout<<"    Norm            : "<<prepulse_exp_fit->GetParameter(1)<<"\n";
+  std::cout<<"    Tau             : "<<prepulse_exp_fit->GetParameter(3)<<"\n";
+  std::cout<<"    value at hit    : "<<prepulse_exp_fit->Eval(int(hit))<<"\n";
+  std::cout<<"    actual hit value: "<<wfm[hit]<<"\n";
+
+  double integral = 0;
+  double amplitude = 0;
+  // now integrate
+  for( int i = 0; i < fPromptWindowLength + 5; i++){
+    short xx    = hit - 5 + i;
+    short dInt  = prepulse_exp_fit->Eval(xx) - wfm[xx];  
+    integral += dInt;
+    if ( dInt > amplitude ) amplitude = dInt;
+  }
+
+  hit_info[0] = amplitude*fMvPerADC;
+  hit_info[1] = integral;
+
+  return hit_info;
+
 }
 
 

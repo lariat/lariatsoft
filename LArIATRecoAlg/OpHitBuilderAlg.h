@@ -27,6 +27,7 @@
 
 //ROOT
 #include <TH1F.h>
+#include <TGraph.h>
 
 
 //--------------------------------------------
@@ -42,16 +43,21 @@ class OpHitBuilderAlg{
   std::vector<short>                GetHits( std::vector<short>&);
   std::vector<Double_t>             MakeGradient( std::vector<short> );
   Double_t                          GetLocalRMS( std::vector<Double_t>, short, short);
-  std::vector<std::vector<double>>  CalcHitInfo( std::vector<short>, std::vector<short> );
+  std::vector<double>               IntegrateHit( std::vector<short>, short );
   
  private:
   
   Double_t  fGradientHitThreshold;
   Double_t  fGradientRMSFilterThreshold;
   Double_t  fMinHitSeparation;  
+  short     fBaselineWindowLength;
+  short     fPrePulseBaselineFit;
+  short     fPromptWindowLength;
+  double    fMvPerADC;
  
   // ROOT objects
   TF1 *prepulse_exp_fit;
+  TGraph *graph;
   
 };
 

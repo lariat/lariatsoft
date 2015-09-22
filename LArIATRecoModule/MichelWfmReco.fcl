@@ -24,7 +24,7 @@ outputs:
   {
     module_type: RootOutput
     fileName:    "MichelWfmReco_output.root" #default file name, can override from command line with -o or --output
-   } # This part of the .fcl is not working right now, the only way of getting a .root output with the objects is by -o fileName.root
+   } 
 }
 
 physics:
@@ -37,10 +37,9 @@ physics:
     }
   }
   analysis:  [ MichelWfmReco ]
-  end_paths: [ analysis ]
-  
+
   #define the output stream, there could be more than one if using filters
-  stream1:  [ out1 ]
+  #stream1:  [ out1 ]
 
  #trigger_paths is a keyword and contains the paths that modify the art::event,
  # #ie filters and producers
@@ -48,14 +47,17 @@ physics:
 
  #end_paths is a keyword and contains the paths that do not modify the art::Event,                                                                                            
  # #ie analyzers and output streams.  these all run simultaneously 
- end_paths: [ analysis , stream1]
+ # (Add "stream1" to end_paths list to produce output data file with added objects)
+ end_paths: [ analysis ]
+ #end_paths: [ stream1 ]
+
 
 }
 
-physics.producers.MichelWfmReco.Verbosity: "true"
-physics.producers.MichelWfmReco.UseTriggerFilter: "false"
-physics.producers.MichelWfmReco.OpHitBuilderAlg.GradientHitThreshold: -10
-physics.producers.MichelWfmReco.OpHitBuilderAlg.GradientRMSFilterThreshold: 5
-physics.producers.MichelWfmReco.OpHitBuilderAlg.MinHitSeparation: 100 #samples (ns)
+physics.producers.MichelWfmReco.V1751PostPercent: 0.3
+physics.producers.MichelWfmReco.UseTriggerFilter: "false"   
+physics.producers.MichelWfmReco.GradientHitThreshold: -10   # default -10
+physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1us
 physics.producers.MichelWfmReco.TriggerUtility: "FragmentToDigit"
+physics.producers.MichelWfmReco.InputModule: "daq"
 physics.producers.MichelWfmReco.TriggerFilterAlg.Verbosity: true
