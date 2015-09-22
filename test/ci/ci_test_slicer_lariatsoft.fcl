@@ -1,7 +1,7 @@
-#include "SlicerInput.fcl"
+#include "standard_slicer.fcl"
 
-services.SeedService.policy: "preDefinedSeed"
-services.SeedService.baseSeed: 1234
+services.user.SeedService.policy: "preDefinedSeed"
+services.user.SeedService.baseSeed: 1234
 
 #services.RandomNumberGenerator.restoreFrom: "SlicerRandomSeeds_Ref.dat"
 services.RandomNumberGenerator.saveTo: "SlicerRandomSeeds.dat"
