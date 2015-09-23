@@ -34,7 +34,7 @@ physics:
     {
       module_type: WCTrackAnalyzerSlicing
       WCTrackLabel: "WCTrackBuilder"
-      WCDigLabel: "SlicerInput"
+      WCDigLabel: "daq"
       WCScale: 0.1 
       NWC: 4     
       XBins: 600.    
