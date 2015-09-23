@@ -106,7 +106,7 @@ void TriggerPatternFilter::endJob()
 void TriggerPatternFilter::reconfigure(fhicl::ParameterSet const & p)
 {
   // Implementation of optional member function here.
-  fSlicerSourceLabel          = p.get<std::string>("SourceLabel","SlicerInput");
+  fSlicerSourceLabel          = p.get<std::string>("SourceLabel", "daq");
   fFilterPattern              = p.get<std::string>("TriggerPattern");
 }
 

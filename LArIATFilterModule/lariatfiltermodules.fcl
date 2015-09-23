@@ -7,8 +7,8 @@ lariat_triggerpattern:
 {
   module_type:        TriggerPatternFilter
   TriggerFilterAlg:   @local::lariat_triggerfilteralg
-  SourceLabel:        SlicerInput
-  TriggerPattern:      "<+BEAMON-PILEUP>"
+  SourceLabel:        "daq"
+  TriggerPattern:     "<+BEAMON-PILEUP>"
 }
 
 END_PROLOG

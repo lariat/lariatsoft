@@ -36,7 +36,7 @@ physics:
     WCTrackBuilder:
     {
       module_type:         WCTrackBuilderSlicing
-      SourceLabel:         SlicerInput		
+      SourceLabel:         "daq"
       WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg  
       TriggerUtility: "FragmentToDigit"
       NWC: 4

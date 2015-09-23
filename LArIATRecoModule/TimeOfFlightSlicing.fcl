@@ -33,7 +33,7 @@ physics:
     TimeOfFlight:
     {
       module_type:         TimeOfFlightSlicing
-      SourceLabel:         SlicerInput			
+      SourceLabel:         "daq"
       MakeHistograms:      true
     }
   }
