@@ -195,7 +195,7 @@ void lrm::TimeOfFlightSlicing::reconfigure(fhicl::ParameterSet const & p)
    
    // Implementing the ability to pass the name of the TriggerUtililty 
    fMakeHistograms     = p.get< bool >("MakeHistograms", true);
-   fSlicerSourceLabel  = p.get< std::string >("SourceLabel","SlicerInput");
+   fSlicerSourceLabel  = p.get< std::string >("SourceLabel", "daq");
 }
 
 void lrm::TimeOfFlightSlicing::respondToCloseInputFile(art::FileBlock const & fb)
