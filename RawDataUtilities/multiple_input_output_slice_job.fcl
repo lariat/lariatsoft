@@ -78,7 +78,7 @@ outputs:
 {
  out1:
  {
-  fileName: "lariat_slice_%r_%s.root"
+  fileName: "lariat_slice_r%r_sr%s.root"
   module_type: "RootOutput"
  }
 }

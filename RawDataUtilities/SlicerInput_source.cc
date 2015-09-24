@@ -365,11 +365,12 @@ namespace rdu
       fSubRunNumber = std::stoul(matches[2]);
     }
 
-    std::cout << "\n////////////////////////////////////" << std::endl;
-    std::cout << "fRunNumber:       " << fRunNumber       << std::endl;
-    std::cout << "fSubRunNumber:    " << fSubRunNumber    << std::endl;
-    std::cout << "fCachedRunNumber: " << fCachedRunNumber << std::endl;
-    std::cout << "////////////////////////////////////\n" << std::endl;
+    LOG_VERBATIM("SlicerInput")
+    << "\n////////////////////////////////////"
+    << "\nfRunNumber:       " << fRunNumber
+    << "\nfSubRunNumber:    " << fSubRunNumber
+    << "\nfCachedRunNumber: " << fCachedRunNumber
+    << "\n////////////////////////////////////\n";
 
     // get database parameters
     // TODO: Check to see if the current run number is the same as the
@@ -451,7 +452,7 @@ namespace rdu
       // fEventNumber = 0ul;
     }
 
-    std::cout << "fCollections.size(): " << fCollections.size() << std::endl;
+    LOG_VERBATIM("SlicerInput") << "fCollections.size(): " << fCollections.size();
 
     this->makeEventAndPutDigits_(outEvent);
 
@@ -552,16 +553,16 @@ namespace rdu
 
     size_t const& NumberTPCReadouts = Collection.numberTPCReadouts;
 
-    std::cout << "fCollectionIndex: " << fCollectionIndex << std::endl;
-    std::cout << "NumberTPCReadouts: " << NumberTPCReadouts << std::endl;
-    std::cout << "Collection.numberTPCReadouts: " << Collection.numberTPCReadouts << std::endl;
-    std::cout << "Collection.caenBlocks.size(): " << Collection.caenBlocks.size() << std::endl;
-    std::cout << "Collection.tdcBlocks.size(): " << Collection.tdcBlocks.size() << std::endl;
-
-    std::cout << "Adding digits to run " << fRunNumber
-              << ", sub-run "            << fSubRunNumber
-              <<  ", event "             << fEventNumber
-              << "..."                   << std::endl;
+    LOG_VERBATIM("SlicerInput")
+    << "fCollectionIndex: " << fCollectionIndex
+    << "\nNumberTPCReadouts: " << NumberTPCReadouts
+    << "\nCollection.numberTPCReadouts: " << Collection.numberTPCReadouts
+    << "\nCollection.caenBlocks.size(): " << Collection.caenBlocks.size()
+    << "\nCollection.tdcBlocks.size(): " << Collection.tdcBlocks.size()
+    << "\n\nAdding digits to run " << fRunNumber
+    << ", sub-run "                << fSubRunNumber
+    <<  ", event "                 << fEventNumber
+    << "...";
 
     std::vector< CAENFragment > caenDataBlocks = Collection.caenBlocks;
     std::vector< std::vector<TDCFragment::TdcEventData> > tdcDataBlocks = Collection.tdcBlocks;
@@ -614,19 +615,20 @@ namespace rdu
     fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams,
                                                       static_cast <int> (RunNumber));
 
-    std::cout << "//////////////////////////////////////////////"                                       << std::endl;
-    std::cout << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           << std::endl;
-    std::cout << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            << std::endl;
-    std::cout << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           << std::endl;
-    std::cout << "V1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            << std::endl;
-    std::cout << "V1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           << std::endl;
-    std::cout << "V1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          << std::endl;
-    std::cout << "V1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           << std::endl;
-    std::cout << "V1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  << std::endl;
-    std::cout << "V1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] << std::endl;
-    std::cout << "fTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             << std::endl;
-    std::cout << "fTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 << std::endl;
-    std::cout << "//////////////////////////////////////////////"                                       << std::endl;
+    LOG_VERBATIM("SlicerInput")
+    << "//////////////////////////////////////////////"
+    << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           
+    << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            
+    << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           
+    << "V1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            
+    << "V1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           
+    << "V1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          
+    << "V1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           
+    << "V1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  
+    << "V1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] 
+    << "fTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             
+    << "fTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 
+    << "//////////////////////////////////////////////";
 
     // cast from string to size_t
     fV1495DelayTicks       = this->castToSizeT_(fConfigValues["v1495_config_v1495_delay_ticks"]);
@@ -674,22 +676,23 @@ namespace rdu
     if (fTDCPostAcquisitionWindow    < 0) fTDCPostAcquisitionWindow    = 0;
     if (fTDCAcquisitionWindow        < 0) fTDCAcquisitionWindow        = fTDCReadoutWindow;
 
-    std::cout << "//////////////////////////////////////////////"                << std::endl;
-    std::cout << "V1495DelayTicks:             " << fV1495DelayTicks             << std::endl;
-    std::cout << "V1495Delay:                  " << fV1495Delay                  << std::endl;
-    std::cout << "V1740PreAcquisitionWindow:   " << fV1740PreAcquisitionWindow   << std::endl;
-    std::cout << "V1740PostAcquisitionWindow:  " << fV1740PostAcquisitionWindow  << std::endl;
-    std::cout << "V1740AcquisitionWindow:      " << fV1740AcquisitionWindow      << std::endl;
-    std::cout << "V1740BPreAcquisitionWindow:  " << fV1740BPreAcquisitionWindow  << std::endl;
-    std::cout << "V1740BPostAcquisitionWindow: " << fV1740BPostAcquisitionWindow << std::endl;
-    std::cout << "V1740BAcquisitionWindow:     " << fV1740BAcquisitionWindow     << std::endl;
-    std::cout << "V1751PreAcquisitionWindow:   " << fV1751PreAcquisitionWindow   << std::endl;
-    std::cout << "V1751PostAcquisitionWindow:  " << fV1751PostAcquisitionWindow  << std::endl;
-    std::cout << "V1751AcquisitionWindow:      " << fV1751AcquisitionWindow      << std::endl;
-    std::cout << "TDCPreAcquisitionWindow:     " << fTDCPreAcquisitionWindow     << std::endl;
-    std::cout << "TDCPostAcquisitionWindow:    " << fTDCPostAcquisitionWindow    << std::endl;
-    std::cout << "TDCAcquisitionWindow:        " << fTDCAcquisitionWindow        << std::endl;
-    std::cout << "//////////////////////////////////////////////"                << std::endl;
+    LOG_VERBATIM("SlicerInput")
+    << "//////////////////////////////////////////////"
+    << "\nV1495DelayTicks:             " << fV1495DelayTicks
+    << "\nV1495Delay:                  " << fV1495Delay
+    << "\nV1740PreAcquisitionWindow:   " << fV1740PreAcquisitionWindow
+    << "\nV1740PostAcquisitionWindow:  " << fV1740PostAcquisitionWindow
+    << "\nV1740AcquisitionWindow:      " << fV1740AcquisitionWindow
+    << "\nV1740BPreAcquisitionWindow:  " << fV1740BPreAcquisitionWindow
+    << "\nV1740BPostAcquisitionWindow: " << fV1740BPostAcquisitionWindow
+    << "\nV1740BAcquisitionWindow:     " << fV1740BAcquisitionWindow
+    << "\nV1751PreAcquisitionWindow:   " << fV1751PreAcquisitionWindow
+    << "\nV1751PostAcquisitionWindow:  " << fV1751PostAcquisitionWindow
+    << "\nV1751AcquisitionWindow:      " << fV1751AcquisitionWindow
+    << "\nTDCPreAcquisitionWindow:     " << fTDCPreAcquisitionWindow
+    << "\nTDCPostAcquisitionWindow:    " << fTDCPostAcquisitionWindow
+    << "\nTDCAcquisitionWindow:        " << fTDCAcquisitionWindow
+    << "//////////////////////////////////////////////";
 
     return;
   }
