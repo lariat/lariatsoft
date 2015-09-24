@@ -5,7 +5,7 @@
 
 process_name: mergerTest
 
-services :
+services:
 {
  scheduler:
  {
@@ -18,6 +18,8 @@ services :
 
 source:
 {
+ module_type: "SlicerInput"
+
   # Number of events to analyze; "-1" means all of the events in the input
   # file. You can override this value with the "-n" option on the command line.
  maxEvents:    -1
@@ -65,7 +67,9 @@ outputs:
 {
  out1:
  {
-  fileName: "lariat_slice_r%r_sr%s.root"
   module_type: "RootOutput"
+  fileName:    "lariat_slice_r%r_sr%s.root"
+  dataTier:    "raw"
+  streamName:  "all"
  }
 }
