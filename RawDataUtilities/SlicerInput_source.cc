@@ -16,7 +16,6 @@
 #include "art/Framework/IO/Sources/SourceHelper.h"
 #include "art/Framework/IO/Sources/SourceTraits.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Persistency/Provenance/EventID.h"
 #include "art/Persistency/Provenance/MasterProductRegistry.h"
 #include "art/Persistency/Provenance/RunID.h"

@@ -1,0 +1,84 @@
+#include "databaseutility_lariat.fcl"
+#include "geometry_lariat.fcl"
+
+process_name: mergerTest
+
+services :
+{
+ scheduler:
+ {
+  fileMode: NOMERGE
+ }
+ ExptGeoHelperInterface: @local::lariat_geometry_helper
+ Geometry:               @local::lariat_geo
+ DatabaseUtilityT1034:   @local::lariat_databaseutility
+}
+
+source:
+{
+ module_type: "SlicerInput"
+ FragmentToDigitAlg:
+ {
+  MaxNumberFitIterations: 5
+  RawFragmentInstance: "SPILL"
+  RawFragmentLabel: "daq"
+  Trigger1740Pedestal: 2000
+  Trigger1740Threshold: 0
+  TriggerDecisionTick: 137
+  pmt_channel_ids: [ [], [], [], [], [], [], [], [], [],
+                     [ 0, 1, 2, 3, 4] ]
+ }
+ MaxTPCReadoutsPerEvent: 100
+ MinTPCReadoutsPerEvent: 0
+ SlicerAlg:
+ {
+  ClockCorrectionAlg:
+  {
+   MaxContinuations: 1.5e19
+   MaxTrials: 10000
+   MinNumberDataPoints: 3
+   MinNumberTimeStamps: 3
+   MinSamples: 2
+   ResidualThreshold: 1
+   SampleSlopeCutLower: 9e-1
+   SampleSlopeCutUpper: 1.1
+   StopProbability: 1
+   StopResidualsSum: 0
+   StopSampleNumber: 1.5e19
+   TimeStampDifferenceThreshold: 100000
+  }
+  TPCReadoutBufferHigh: 2.56e-1
+  TPCReadoutBufferLow: 2.56e-1
+ }
+  
+ SourceName: "daq"
+ TDCAcquisitionWindow: -1
+ TDCPostAcquisitionWindow: -1
+ TDCPreAcquisitionWindow: -1
+ V1740AcquisitionWindow: -1
+ V1740BAcquisitionWindow: -1
+ V1740BPostAcquisitionWindow: -1
+ V1740BPreAcquisitionWindow: -1
+ V1740PostAcquisitionWindow: -1
+ V1740PreAcquisitionWindow: -1
+ V1751AcquisitionWindow: -1
+ V1751PostAcquisitionWindow: -1
+ V1751PreAcquisitionWindow: -1
+}
+
+physics:
+{
+ producers: {}
+  
+ stream1: [ out1 ]
+ end_paths: [ stream1 ]
+}
+
+outputs:
+{
+ out1:
+ {
+  fileName: "lariat_slice_%r_%s.root"
+  module_type: "RootOutput"
+ }
+}
