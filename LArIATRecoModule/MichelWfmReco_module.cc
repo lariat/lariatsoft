@@ -48,7 +48,8 @@
 
 //ROOT Includes
 #include <TH1F.h>
-#include <TH1D.h>
+#include <TH1I.h>
+#include <TH2F.h>
 #include <TH3F.h>
 #include <TTree.h>
 
@@ -94,6 +95,9 @@ public:
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const & fb) override;
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
+  
+  // Custom functions
+  bool IsPointInFiducialVolume(TVector3);
 
 private:
 
@@ -103,12 +107,15 @@ private:
   // Tunable parameters from fcl
   bool            bUseTriggerFilter;
   bool            bVerbose;
-  float           V1751PostPercent;
+  float           fV1751PostPercent;
   std::string     fDAQModule;
   std::string     fTrackModule;
   std::string     fTrackCalModule;
   std::string     fInstanceName;
-  short           fBaselineWindowLength; 
+  short           fBaselineWindowLength;
+  double          fFiducialMargin_X;
+  double          fFiducialMargin_Y;
+  double          fFiducialMargin_Z; 
 
   // Alg objects
   OpHitBuilderAlg   fOpHitBuilderAlg; 
@@ -116,24 +123,33 @@ private:
 
   // Variables/vectors
   bool                  GotETL;
+  bool                  flag;
   std::vector<short>    ETL_waveform;
   short                 PostPercentMark;
   int                   NSamples;
   std::vector<TVector3> TrackVertex;
   std::vector<TVector3> TrackEnd;
-  std::vector<TVector3> MuCandidateTrackVertex;
-  std::vector<TVector3> MuCandidateTrackEnd;
+  int                   MuTrackIndex;
+  TVector3              MuCandidateTrackVertex;
+  TVector3              MuCandidateTrackEnd;
+  TVector3              region_centerpoint;
+  double                region_radius;
   std::vector<double>   TrackEnergy;
+  
 
   // Histograms
-  TH1F* h_NumOpHits;
-  TH1F* h_NumOpHits_beam;
-  TH1F* h_NumOpHits_offbeam;
+  TH1I* h_FilterStages;
+  TH1I* h_NumOpHits;
+  TH2I* h_NumOpHits_vs_NumTracks;
+  TH1I* h_NumOpHits_beam;
+  TH1I* h_NumOpHits_offbeam;
   TH1F* h_DeltaTime_chargeCut;
   TH1F* h_DeltaTime_stoppingMu;
 
   TH1F* h_Amplitude;
   TH1F* h_Charge100ns;
+  TH1F* h_Charge100ns_stoppingMu;
+  TH1F* h_Charge100ns_region;
   TH1F* h_TrackVertex_x;
   TH1F* h_TrackVertex_y;
   TH1F* h_TrackVertex_z;
@@ -142,6 +158,10 @@ private:
   TH1F* h_TrackEnd_y;
   TH1F* h_TrackEnd_z;
   //TH3F* h_TrackEnd;
+  TH2F* h_TrackNode_zx;
+  TH2F* h_TrackNode_zy;
+  TH2I* h_InFiducialVolume;
+  TH1F* h_SecondTrackOffset;
 
   // Variables for Tree
   Int_t       iEvent = -1;
@@ -153,6 +173,8 @@ private:
   Double_t    Amplitude;
   Double_t    Charge_100ns; 
   Int_t       NumTracks;
+  Int_t       IsSingleStoppingTrack;
+  Double_t    StoppingTrackZenithAngle;
   Double_t    MuTrackVertex_x;
   Double_t    MuTrackVertex_y;
   Double_t    MuTrackVertex_z;
@@ -173,6 +195,8 @@ private:
   TBranch* b_Amplitude;
   TBranch* b_Charge_100ns;
   TBranch* b_NumTracks;
+  TBranch* b_IsSingleStoppingTrack;
+  TBranch* b_StoppingTrackZenithAngle;
   TBranch* b_MuTrackVertex_x;
   TBranch* b_MuTrackVertex_y;
   TBranch* b_MuTrackVertex_z;
@@ -195,6 +219,10 @@ MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & p)
   
   // Produces the LArSoft object to be outputted
   // (none for now!) 
+ 
+  // TO DO: make this a fcl parameter 
+  region_centerpoint.SetXYZ(23.5,0.,45.);
+  region_radius = 5.;
   
 }
 
@@ -202,11 +230,24 @@ MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & p)
 void MichelWfmReco::produce(art::Event & e)
 {
   iEvent++;
+  h_FilterStages->Fill(0);
   std::cout<<"---------- Starting event "<<iEvent<<" -----------------\n";
   
+
   // Initialize variables and vectors
   Timestamp         = -9.; 
   NumHits           = -9;
+  NumTracks         = -9;
+  IsSingleStoppingTrack   = 0;
+  StoppingTrackZenithAngle = -9;
+  MuTrackVertex_x   = -99.;
+  MuTrackVertex_y   = -99.;
+  MuTrackVertex_z   = -99.;
+  MuTrackEnd_x      = -99.;
+  MuTrackEnd_y      = -99.;
+  MuTrackEnd_z      = -99.;
+  MuTrackLength     = -9.;
+  MuTrackEnergy     = -9.;
   DeltaTime         = -99.;
   Amplitude         = -99.;
   Charge_100ns      = -99.;
@@ -255,7 +296,7 @@ void MichelWfmReco::produce(art::Event & e)
         // hacky convention: Timestamp stored in FirstSample:
         Timestamp = (double(ThePulse.FirstSample())*8.)/1.0e09;
         NSamples = ETL_waveform.size();
-        PostPercentMark = short(V1751PostPercent*NSamples);
+        PostPercentMark = short(fV1751PostPercent*NSamples);
 
         // updated convention (once it's working upstream): 
         //Timestamp = (double(ThePulse.PMTFrame())*8.)/1.0e09;
@@ -272,6 +313,7 @@ void MichelWfmReco::produce(art::Event & e)
 
   // If we somehow didn't get the ETL, skip the event
   if( !GotETL ) return;
+  h_FilterStages->Fill(1);
 
 
   // Get the tracks and their associated energy
@@ -293,35 +335,127 @@ void MichelWfmReco::produce(art::Event & e)
     << TheTrack.Vertex().X() <<"," 
     << TheTrack.Vertex().Y() << "," 
     << TheTrack.Vertex().Z() << ")\n"; 
-
-    std::cout<<"Now to fill histograms...\n";
-
-    // Fill histograms
-    h_TrackEnd_x->Fill((float)TheTrack.End().X());
-    h_TrackEnd_y->Fill((float)TheTrack.End().Y());
-    h_TrackEnd_z->Fill((float)TheTrack.End().Z());
-    //h_TrackEnd  ->Fill((float)TheTrack.End().X(),(float)TheTrack.End().Y(),(float)TheTrack.End().Z());
+    std::cout<<"  Track endpoint: ("
+    << TheTrack.End().X() <<"," 
+    << TheTrack.End().Y() << "," 
+    << TheTrack.End().Z() << ")\n"; 
+    std::cout<<"  Track length: "<<(TheTrack.Vertex() - TheTrack.End()).Mag()<<std::endl;
     
-    std::cout<<"halfway there...\n";
-    h_TrackVertex_x->Fill((float)TheTrack.Vertex().X());
-    h_TrackVertex_y->Fill((float)TheTrack.Vertex().Y());
-    h_TrackVertex_z->Fill((float)TheTrack.Vertex().Z());
-    //h_TrackVertex  ->Fill((float)TheTrack.Vertex().X(),(float)TheTrack.Vertex().Y(),(float)TheTrack.Vertex().Z());
+    std::cout<<"Vertex in fiducial vol?  "<<IsPointInFiducialVolume(TheTrack.Vertex())<<std::endl;
+    
+    h_InFiducialVolume->Fill(
+      IsPointInFiducialVolume(TheTrack.Vertex()),
+      IsPointInFiducialVolume(TheTrack.End()));
 
-    std::cout<<"Done.\n";
+    h_TrackNode_zx->Fill((float)TheTrack.Vertex().Z(),(float)TheTrack.Vertex().X());
+    h_TrackNode_zx->Fill((float)TheTrack.End().Z(),(float)TheTrack.End().X());
+    h_TrackNode_zy->Fill((float)TheTrack.Vertex().Z(),(float)TheTrack.Vertex().Y());
+    h_TrackNode_zy->Fill((float)TheTrack.End().Z(),(float)TheTrack.End().Y());
+    
 
     // Get measured track energy (if possible)
     if( fmcal.isValid() ){
-        std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(track_index);
-        // calos[0] is from induction plane
-        // calos[1] is from collection plane
-        TrackEnergy.push_back(calos[1]->KineticEnergy());
-        std::cout<<"  Energy = "<<calos[1]->KineticEnergy()<<"\n"; 
+      std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(track_index);
+      // calos[0] is from induction plane
+      // calos[1] is from collection plane
+      TrackEnergy.push_back(calos[1]->KineticEnergy());
+      std::cout<<"  Energy = "<<calos[1]->KineticEnergy()<<"\n"; 
+    } else {
+      std::cout<<"  Energy = undefined\n";
     }
+  
   }  
 
 
-  // Determine if there were any "stopping" tracks. 
+  // --------------------------------------
+  // Higher-level track filtering:
+  
+  // Require no more than two tracks in the event:
+  if( NumTracks <= 2 ) {
+    
+    flag = false;
+
+    // Cycle through tracks
+    for( int i=0; i<NumTracks; i++){
+        
+      // Since we don't want to blindly trust that the endpoint and 
+      // vertex have been assigned correctly, let's say whichever 
+      // has a higher Y-value is the vertex (pretty reasonable 
+      // assumption for cosmic muons).
+      TVector3 vertex;
+      TVector3 end;
+      if( TrackVertex[i].Y() > TrackEnd[i].Y()  ) { 
+        vertex  = TrackVertex[i]; 
+        end     = TrackEnd[i];
+      } else {
+        vertex  = TrackEnd[i];
+        end     = TrackVertex[i];
+      }
+    
+      // Fill histograms
+      h_TrackEnd_x->Fill((float)end.X());
+      h_TrackEnd_y->Fill((float)end.Y());
+      h_TrackEnd_z->Fill((float)end.Z());
+      //h_TrackEnd  ->Fill(..,..,..); 
+      h_TrackVertex_x->Fill((float)vertex.X());
+      h_TrackVertex_y->Fill((float)vertex.Y());
+      h_TrackVertex_z->Fill((float)vertex.Z());
+      //h_TrackVertex  ->Fill(..,..,..);
+
+      // Check that vertex is outside fiducial volume and endpoint is 
+      // inside fiducial volume.
+      if( (!flag) && (IsPointInFiducialVolume(end)) && (!IsPointInFiducialVolume(vertex))) {
+        
+        // If there was already a stopping track, this disqualifies 
+        // the event.
+        if( IsSingleStoppingTrack ){
+          IsSingleStoppingTrack = 0;
+          flag = true;
+          MuTrackVertex_x   = -99.;
+          MuTrackVertex_y   = -99.;
+          MuTrackVertex_z   = -99.;
+          MuTrackEnd_x      = -99.;
+          MuTrackEnd_y      = -99.;
+          MuTrackEnd_z      = -99.;
+          MuTrackLength     = -9.;
+          MuTrackEnergy     = -9.;
+          StoppingTrackZenithAngle = -9.;
+        } else { 
+          MuTrackIndex = i;
+          MuCandidateTrackVertex  = vertex;
+          MuCandidateTrackEnd     = end;
+          IsSingleStoppingTrack = 1;
+          MuTrackVertex_x = vertex.X();
+          MuTrackVertex_y = vertex.Y();
+          MuTrackVertex_z = vertex.Z();
+          MuTrackEnd_x    = end.X();
+          MuTrackEnd_y    = end.Y();
+          MuTrackEnd_z    = end.Z();
+          MuTrackLength   = (vertex-end).Mag();
+          MuTrackEnergy   = TrackEnergy[i];
+
+          TVector3 vert(0.,1.,0.);
+          TVector3 tmp = (vertex-end);
+          StoppingTrackZenithAngle = tmp.Angle(vert);
+        }
+      
+      }
+    } 
+  }
+
+  // If there was a stopping "muon" and a second track, check
+  // to see if either of its endpoints is close to muon endpoint.
+  if( IsSingleStoppingTrack && NumTracks == 2 ) {
+    for( int i=0; i<NumTracks; i++){
+      if( i != MuTrackIndex ){
+        double proximity = std::min( 
+          (TrackVertex[i] - MuCandidateTrackEnd).Mag(),
+          (TrackEnd[i]   - MuCandidateTrackEnd).Mag());
+        h_SecondTrackOffset->Fill(proximity);
+      }
+    }  
+  }
+
 
   // ---------------------------------------
   // Analysis:
@@ -340,31 +474,43 @@ void MichelWfmReco::produce(art::Event & e)
 
   // Fill NumOpHits histo (beam vs. offbeam)
   h_NumOpHits ->Fill(NumHits);
+  h_NumOpHits_vs_NumTracks->Fill(NumHits,NumTracks);
   if(Timestamp < 5.2)   h_NumOpHits_beam    ->Fill(NumHits);
   if(Timestamp >= 5.3)  h_NumOpHits_offbeam ->Fill(NumHits);
+  if(Timestamp >= 5.3)  h_FilterStages      ->Fill(2);
         
   // Event quality control:
   // Require 2 hits (one before PostPercent, one within 1% of PostPercent) 
   if( (NumHits == 2) && (hit_times[0] < PostPercentMark) && ( abs(hit_times[1]-PostPercentMark) <= 0.01*NSamples) && (Timestamp >= 5.3)){
     std::cout << "    passes Michel cut \n";
+    h_FilterStages->Fill(3);
+
+    // Measure time difference
     DeltaTime = hit_times[1] - hit_times[0];
         
-    // Integral of Michel candidate pulse
+    // Integral/amplitude of Michel candidate pulse
     std::vector<double> hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1]);
-    
     Amplitude     = hit_info[0];
     Charge_100ns  = hit_info[1];
     
     h_Amplitude->Fill(Amplitude);
     h_Charge100ns->Fill(Charge_100ns); 
-   
     if( Charge_100ns > 1600. ) h_DeltaTime_chargeCut->Fill(DeltaTime);
   
+    if( IsSingleStoppingTrack ) {
+      h_FilterStages->Fill(4);
+      h_Charge100ns_stoppingMu->Fill(Charge_100ns);
+      h_DeltaTime_stoppingMu->Fill(DeltaTime);
+
+      
+      if( (MuCandidateTrackEnd-region_centerpoint).Mag() <= region_radius) h_Charge100ns_region->Fill(Charge_100ns);
+    }
   }
         
   MichelDataTree->Fill();
     
 }
+
 
 void MichelWfmReco::beginJob()
 {
@@ -373,32 +519,40 @@ void MichelWfmReco::beginJob()
 
   MichelDataTree        = tfs->make<TTree>("MichelDataTree","MichelDataTree");
   b_iEvent              = MichelDataTree->Branch("iEvent",&iEvent,"iEvent/I");
-  b_Timestamp           = MichelDataTree->Branch("Timestamp",&Timestamp,"Timestamp/D");
-  b_WaveformBaseline    = MichelDataTree->Branch("WaveformBaseline",&WaveformBaseline,"WaveformBaseline/D");
-  b_WaveformBaselineRMS = MichelDataTree->Branch("WaveformBaselineRMS",&WaveformBaselineRMS,"WaveformBaselineRMS/D");
+  b_Timestamp           = MichelDataTree->Branch("Timestamp (s)",&Timestamp,"Timestamp/D");
+  b_WaveformBaseline    = MichelDataTree->Branch("WaveformBaseline (ADC)",&WaveformBaseline,"WaveformBaseline/D");
+  b_WaveformBaselineRMS = MichelDataTree->Branch("WaveformBaselineRMS (ADC)",&WaveformBaselineRMS,"WaveformBaselineRMS/D");
   b_NumHits             = MichelDataTree->Branch("NumHits",&NumHits,"NumHits/I");
-  b_DeltaTime           = MichelDataTree->Branch("DeltaTime",&DeltaTime,"DeltaTime/D");
-  b_Amplitude           = MichelDataTree->Branch("Amplitude",&Amplitude,"Amplitude/D");
-  b_Charge_100ns        = MichelDataTree->Branch("Charge_100ns",&Charge_100ns,"Charge_100ns/D");
+  b_DeltaTime           = MichelDataTree->Branch("DeltaTime (ns)",&DeltaTime,"DeltaTime/D");
+  b_Amplitude           = MichelDataTree->Branch("Amplitude (mv)",&Amplitude,"Amplitude/D");
+  b_Charge_100ns        = MichelDataTree->Branch("Charge_100ns (ADC)",&Charge_100ns,"Charge_100ns/D");
   b_NumTracks           = MichelDataTree->Branch("NumTracks",&NumTracks,"NumTracks/I");
+  b_IsSingleStoppingTrack     = MichelDataTree->Branch("IsSingleStoppingTrack",&IsSingleStoppingTrack,"IsStoppingTrack/I");
+  b_StoppingTrackZenithAngle = MichelDataTree->Branch("StoppingTrackZenithAngle (rad)",&StoppingTrackZenithAngle,"StoppingTrackZenithAngle/D");
   b_MuTrackVertex_x     = MichelDataTree->Branch("MuTrackVertex_x",&MuTrackVertex_x,"MuTrackVertex_x/D");
   b_MuTrackVertex_y     = MichelDataTree->Branch("MuTrackVertex_y",&MuTrackVertex_y,"MuTrackVertex_y/D");
   b_MuTrackVertex_z     = MichelDataTree->Branch("MuTrackVertex_z",&MuTrackVertex_z,"MuTrackVertex_z/D");
   b_MuTrackEnd_x        = MichelDataTree->Branch("MuTrackEnd_x",&MuTrackEnd_x,"MuTrackEnd_x/D");
   b_MuTrackEnd_y        = MichelDataTree->Branch("MuTrackEnd_y",&MuTrackEnd_y,"MuTrackEnd_y/D");
   b_MuTrackEnd_z        = MichelDataTree->Branch("MuTrackEnd_z",&MuTrackEnd_z,"MuTrackEnd_z/D");
-  b_MuTrackLength        = MichelDataTree->Branch("MuTrackLength",&MuTrackLength,"MuTrackLength/D");
-  b_MuTrackEnergy        = MichelDataTree->Branch("MuTrackEnergy",&MuTrackEnergy,"MuTrackEnergy/D");
+  b_MuTrackLength        = MichelDataTree->Branch("MuTrackLength (cm)",&MuTrackLength,"MuTrackLength/D");
+  b_MuTrackEnergy        = MichelDataTree->Branch("MuTrackEnergy (MeV)",&MuTrackEnergy,"MuTrackEnergy/D");
   
-  h_NumOpHits           = tfs->make<TH1F>("OpHitsPerEvent", "Optical hits per event", 10, 0., 10.);
+  h_FilterStages        = tfs->make<TH1I>("FilterStages", "Sample filtering;filter stage;Events remaining",5,0,5);
+  h_FilterStages        ->SetMinimum(0);
+  h_NumOpHits           = tfs->make<TH1I>("OpHitsPerEvent", "Optical hits per event", 10, 0, 10);
   h_NumOpHits           ->GetXaxis()->SetTitle("Num hits");
   h_NumOpHits           ->GetYaxis()->SetTitle("Counts");
-  h_NumOpHits_beam      = tfs->make<TH1F>("OpHitsPerEvent_beam", "Optical hits per event (beam)",  10, 0., 10.);
+  h_NumOpHits_beam      = tfs->make<TH1I>("OpHitsPerEvent_beam", "Optical hits per event (beam)",  10, 0, 10);
   h_NumOpHits_beam      ->GetXaxis()->SetTitle("Num hits");
   h_NumOpHits_beam      ->GetYaxis()->SetTitle("Counts");
-  h_NumOpHits_offbeam   = tfs->make<TH1F>("OpHitsPerEvent_offbeam", "Optical hits per event (off-beam)", 10, 0., 10.);
+  h_NumOpHits_offbeam   = tfs->make<TH1I>("OpHitsPerEvent_offbeam", "Optical hits per event (off-beam)", 10, 0, 10);
   h_NumOpHits_offbeam   ->GetXaxis()->SetTitle("Num hits");
   h_NumOpHits_offbeam   ->GetYaxis()->SetTitle("Counts");
+  h_NumOpHits_vs_NumTracks = tfs->make<TH2I>("NumOpHits_vs_NumTracks", "Optical hits vs. number of tracks in event", 10, 0,10, 30,0,30);
+  h_NumOpHits_vs_NumTracks ->GetXaxis()->SetTitle("Num optical hits");
+  h_NumOpHits_vs_NumTracks ->GetYaxis()->SetTitle("Num tracks");
+  h_NumOpHits_vs_NumTracks ->SetOption("colz");
 
   h_DeltaTime_chargeCut = tfs->make<TH1F>("DeltaTime_chargeCutoff", "#Delta t (integral > 1600 ADC)", 700,0., 7000.);
   h_DeltaTime_chargeCut ->GetXaxis()->SetTitle("ns");
@@ -412,9 +566,27 @@ void MichelWfmReco::beginJob()
   h_Amplitude           ->GetXaxis()->SetTitle("Amplitude of Michel PMT pulse [mv]");
   h_Amplitude           ->GetYaxis()->SetTitle("Counts");
   
-  h_Charge100ns          = tfs->make<TH1F>("Charge100ns", "Prompt light integral (100ns)",  1200,  0., 12000.);
+  h_Charge100ns          = tfs->make<TH1F>("Charge100ns", "Prompt light integral (100ns)",  240,  0., 12000.);
   h_Charge100ns          ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
   h_Charge100ns          ->GetYaxis()->SetTitle("Counts");
+
+  h_Charge100ns_stoppingMu = tfs->make<TH1F>("Charge100ns_stoppingMu","Prompt light integral (100ns) in events with a stopping track",240,0.,12000.);
+  h_Charge100ns_stoppingMu ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
+  h_Charge100ns_stoppingMu ->GetYaxis()->SetTitle("Counts");
+
+  h_Charge100ns_region    = tfs->make<TH1F>("Charge100ns_region","Prompt light integral (100ns), limited region",240,0.,12000.);
+  h_Charge100ns_region    ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
+  h_Charge100ns_region    ->GetYaxis()->SetTitle("Counts");
+
+  h_TrackNode_zx          = tfs->make<TH2F>("TrackNode_zx","TrackNode_zx",500,0.,90.,500,0.,47.);
+  h_TrackNode_zx          ->GetXaxis()->SetTitle("z [cm]");
+  h_TrackNode_zx          ->GetYaxis()->SetTitle("x [cm]");
+  h_TrackNode_zx          ->SetMarkerStyle(7);
+
+  h_TrackNode_zy          = tfs->make<TH2F>("TrackNode_zy","TrackNode_zy",500,0.,90.,500,-20.,20.);
+  h_TrackNode_zy          ->GetXaxis()->SetTitle("z [cm]");
+  h_TrackNode_zy          ->GetYaxis()->SetTitle("y [cm]");
+  h_TrackNode_zy          ->SetMarkerStyle(7);
 
   h_TrackEnd_x            = tfs->make<TH1F>("TrackEnd_x","TrackEnd_x",100,-10.,60.);
   h_TrackEnd_y            = tfs->make<TH1F>("TrackEnd_y","TrackEnd_y",100,-25.,25.);
@@ -424,6 +596,11 @@ void MichelWfmReco::beginJob()
   h_TrackVertex_z         = tfs->make<TH1F>("TrackVertex_z","TrackVertex_z",100,-10.,100.);
   //h_TrackEnd              = tfs->make<TH3F>("TrackEnd","TrackEnd",  1000,0.,47.,  1000, -20.,20.,  1000, 0.,90.);
   //h_TrackVertex           = tfs->make<TH3F>("TrackVertex","TrackVertex",  1000,0.,47.,  1000, -20.,20.,  1000, 0.,90.);
+  
+  h_InFiducialVolume      = tfs->make<TH2I>("InFiducialVolume",";Vertex in fiducial volume;End in fiducial volume",2,0.,2.,2,0.,2.);
+  h_InFiducialVolume      ->SetOption("colz");
+  
+  h_SecondTrackOffset     = tfs->make<TH1F>("SecondTrackOffset","Primary / secondary track endpoint offset;cm",100,0.,30.);
 }
 
 void MichelWfmReco::beginRun(art::Run & r)
@@ -457,9 +634,12 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & p)
   fTrackModule            = p.get< std::string >("TrackModule","pmtrack");
   fTrackCalModule         = p.get< std::string >("TrackCalModule","calo");
   fInstanceName           = p.get< std::string >("InstanceName","");
-  V1751PostPercent        = p.get< float >("V1751PostPercent",0.3);
+  fV1751PostPercent        = p.get< float >("V1751PostPercent",0.3);
   fBaselineWindowLength   = p.get< short >("BaselineWindowLength",1000);
-  
+  fFiducialMargin_X       = p.get< double>("FiducialMargin_X",5.);
+  fFiducialMargin_Y       = p.get< double>("FiducialMargin_Y",4.);
+  fFiducialMargin_Z       = p.get< double>("FiducialMargin_Z",5.);
+
 }
 
 void MichelWfmReco::respondToCloseInputFile(art::FileBlock const & fb)
@@ -476,6 +656,23 @@ void MichelWfmReco::respondToOpenInputFile(art::FileBlock const & fb)
 
 void MichelWfmReco::respondToOpenOutputFiles(art::FileBlock const & fb)
 {
+}
+
+// Function for determining if a point is inside or outside
+// predefined fiducial volume
+bool MichelWfmReco::IsPointInFiducialVolume(TVector3 p)
+{
+  double Lx = 47.;
+  double Ly = 40.;
+  double Lz = 90.;
+  if( (fabs(p.Y()       ) > Ly/2. - fFiducialMargin_Y) ||
+      (fabs(p.X()-Lx/2. ) > Lx/2. - fFiducialMargin_X) ||
+      (fabs(p.Z()-Lz/2. ) > Lz/2. - fFiducialMargin_Z) )
+  {
+    return false;
+  } else {
+    return true;
+  }
 }
 
 DEFINE_ART_MODULE(MichelWfmReco)

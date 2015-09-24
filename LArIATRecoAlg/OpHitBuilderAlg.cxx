@@ -184,10 +184,7 @@ std::vector<double> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<short> wfm, 
   double sumSquares = 0;
   int N = x2 - x1;
 
-  // find mean over interval
-  for ( int i = x1; i < x2; i++ ) mean += wfm[i]/N;
-
-  // now get sum of squares
+  for ( int i = x1; i < x2; i++ ) mean += double(wfm[i])/N;
   for ( int i = x1; i < x2; i++ ) sumSquares += pow(wfm[i]-mean,2);
   
   std::vector<double> out(2);
@@ -220,25 +217,27 @@ Double_t OpHitBuilderAlg::GetLocalRMSOfGradient( std::vector<Double_t> wfm, shor
 // Prompt pulse integral
 std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short hit )
 {
-  // create the vector to fill in subsequent steps
-  std::vector<double> hit_info(2);
-
-  size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
-  Double_t baseline = 0;
-  for( size_t i = 0; i < baseline_win_size; i++){
-    baseline += wfm[i];
-  }
-  baseline = baseline/double(baseline_win_size);
-
-  std::cout << "Baseline = " << baseline << " (win size: " << baseline_win_size << ")\n";
+  // Create vector to be returned 
+  std::vector<double> hit_info {0.,0.};
   
-  short x1,x2,x3;
-  x1 = std::max(int(hit - fPrePulseBaselineFit),0);
-  x2 = std::min(int(x1) + int(fPromptWindowLength),int(wfm.size()));
-  x3 = std::max(int(hit)-5,0);
-  const int prepulse_bins = int(x3) - int(x1);
-  const int integral_bins = int(x2) - int(x3);
+  // If the hit is too early to reliably calculate 
+  // a baseline, stop now and return zero
+  if( hit < 100 ) return hit_info;
 
+  // Get baseline
+  size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
+  std::vector<double> tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
+  double baseline = tmp[0];
+ 
+  // Determine bounds for fit and integration 
+  short x1,x2,x3;
+  x2 = hit - 10;
+  x1 = std::max(int(x2 - fPrePulseBaselineFit),0);
+  x3 = std::min(int(x2 + fPromptWindowLength+10),int(wfm.size()));
+  const int prepulse_bins = int(x2) - int(x1);
+  const int integral_bins = int(x3) - int(x2);
+
+  // Fill x,y arrays
   int x[prepulse_bins];
   int y[prepulse_bins];
   for( int i = 0; i < prepulse_bins; i++) {
@@ -246,25 +245,27 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
     y[i] = int(wfm[x1+short(i)]);
   }
 
+  // Put these arrays into a TGraph for exponential fit
+  // to prepulse region
   graph = new TGraph(prepulse_bins,x,y);
-
   prepulse_exp_fit->FixParameter(0,baseline);
   prepulse_exp_fit->FixParameter(2,hit);
   prepulse_exp_fit->SetParLimits(3,1400,1600);
   graph->Fit(prepulse_exp_fit,"N0");
 
-  std::cout<<"Hit was fit.  Parameters: \n";
-  std::cout<<"    Norm            : "<<prepulse_exp_fit->GetParameter(1)<<"\n";
-  std::cout<<"    Tau             : "<<prepulse_exp_fit->GetParameter(3)<<"\n";
-  std::cout<<"    value at hit    : "<<prepulse_exp_fit->Eval(int(hit))<<"\n";
-  std::cout<<"    actual hit value: "<<wfm[hit]<<"\n";
+  std::cout<<"Parameters of fitted prepulse region: \n";
+  std::cout<<"    Norm                : "<<prepulse_exp_fit->GetParameter(1)<<"\n";
+  std::cout<<"    Tau                 : "<<prepulse_exp_fit->GetParameter(3)<<"\n";
+  std::cout<<"    fit baseline at hit : "<<prepulse_exp_fit->Eval(int(hit))<<"\n";
+  std::cout<<"    waveform baseline   : "<<baseline<<"\n";
+  std::cout<<"    actual hit value    : "<<wfm[hit]<<"\n";
 
-  double integral = 0;
-  double amplitude = 0;
-  // now integrate
+  // Integrate using the fitted function as running baseline
+  double integral = 0.;
+  double amplitude = 0.;
   for( int i = 0; i < integral_bins; i++){
-    short xx    = hit - 5 + i;
-    short dInt  = prepulse_exp_fit->Eval(xx) - wfm[xx];  
+    short xx    = hit - 5 + short(i);
+    double dInt = prepulse_exp_fit->Eval(xx) - (double)wfm[xx];  
     integral += dInt;
     if ( dInt > amplitude ) amplitude = dInt;
   }
