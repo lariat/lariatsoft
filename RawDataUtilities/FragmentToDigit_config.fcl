@@ -4,7 +4,7 @@ standard_fragmenttodigit:
 {
 module_type:           "FragmentToDigit"
 
-pmt_channel_ids:[[],[],[],[],[],[],[],[],[],[0,1,2,3,4]] #currently v1751 CAEN boards are nr 8 and 9 in DAQ, only ch 0-4 on board 9 reserved for PMTs and SiPMs now
+pmt_channel_ids:[[9,0,1]] #currently v1751 CAEN boards are nr 8 and 9 in DAQ, only ch 0-4 on board 9 reserved for PMTs and SiPMs now
 
 }
 

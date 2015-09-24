@@ -5,7 +5,7 @@ BEGIN_PROLOG
 lariat_calroi:
 {
  module_type:        "CalWireROIT1034"
- DigitModuleLabel:   "SlicerInput"
+ DigitModuleLabel:   "daq"
  PostsampleBins:     0	
  DoBaselineSub:   false # subtract baseline after deconvolution?
  DoROI: false
