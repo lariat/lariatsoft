@@ -1,12 +1,11 @@
 #include "databaseutility_lariat.fcl"
 #include "geometry_lariat.fcl"
 #include "sliceralg.fcl"
-#include "FragmentToDigit_config.fcl"
 #include "RawDataUtilities_algs.fcl"
 
 process_name: mergerTest
 
-services :
+services:
 {
  scheduler:
  {
@@ -19,15 +18,17 @@ services :
 
 source:
 {
+ module_type: "SlicerInput"
+
   # Number of events to analyze; "-1" means all of the events in the input
   # file. You can override this value with the "-n" option on the command line.
  maxEvents:    -1
-  
+
  SourceName:   "daq"  # RawDataLabel
  SlicerAlg:    @local::standard_sliceralg
-  
+
  FragmentToDigitAlg: @local::lariat_fragmenttodigit_alg
-  
+
   # Events with number of TPC readouts outside the range of
   #
   #   [ MinTPCReadoutPerEvent, MaxTPCReadoutPerEvent ]
@@ -36,7 +37,7 @@ source:
   # can also be taken care of in a filter module downstream.
  MinTPCReadoutsPerEvent:       0
  MaxTPCReadoutsPerEvent:       100
-  
+
   # Parameters for the slicing algorithm. A value of "-1" means that the
   # values will be obtained from the lariat_prd database. This is what
   # we want 99.9% of the time.
@@ -57,7 +58,7 @@ source:
 physics:
 {
  producers: {}
-  
+
  stream1: [ out1 ]
  end_paths: [ stream1 ]
 }
@@ -66,7 +67,9 @@ outputs:
 {
  out1:
  {
-  fileName: "lariat_slice_r%r_sr%s.root"
   module_type: "RootOutput"
+  fileName:    "lariat_slice_r%r_sr%s.root"
+  dataTier:    "raw"
+  streamName:  "all"
  }
 }
