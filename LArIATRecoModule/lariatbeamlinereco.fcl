@@ -19,7 +19,7 @@ lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Ryan Linehan
 {
   module_type:        WCTrackBuilderSlicing
   WCTrackBuilderAlg:  @local::lariat_wctrackbuilderalg
-  SourceLabel:        SlicerInput
+  SourceLabel:        "daq"
   NWC:                4
   NWperTDC:           64
   Verbose:            false
@@ -35,7 +35,7 @@ lariat_murs:            #Taken from MuonRangeStackHitsSlicing.fcl by Greg Pullia
 {
   module_type:           MuonRangeStackHitsSlicing
   Threshold:             2020
-  SourceLabel:           SlicerInput
+  SourceLabel:           "daq"
   EpsilonTime:           3
   Verbose:               false	
   NumberEventsToPlotWFs: 40	
@@ -46,7 +46,7 @@ lariat_aerogel:
 {
   module_type:           AerogelCherenkovCounterSlicing
   AGBuilderAlg:          @local::lariat_aerogel
-  SourceLabel:           SlicerInput
+  SourceLabel:           "daq"
 }
 
 lariat_pid:

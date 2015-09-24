@@ -8,44 +8,24 @@
 //                                                            //
 ////////////////////////////////////////////////////////////////
 
-//C++ includes
-#include <vector>
-#include <cmath>
-#include <iostream>
-
-//Framework includes
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-
-// artdaq
-#include "artdaq-core/Data/Fragments.hh"
-#include "artdaq-core/Data/Fragment.hh"
-
-// lardata
-#include "RawData/RawDigit.h"
+#include <bitset>
 
 // LArIAT
 #include "LArIATFragments/LariatFragment.h"
 #include "LArIATFragments/WUTFragment.h"
 #include "LArIATFragments/CAENFragment.h"
-#include "LArIATFragments/TDCFragment.h"
 #include "LArIATFragments/V1495Fragment.h"
 #include "SimpleTypesAndConstants/RawTypes.h"
 
-
-
+// LArSoft
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
 #include "RawData/OpDetPulse.h"
 #include "RawData/TriggerData.h"
-#include "SummaryData/RunData.h"
-#include "Geometry/Geometry.h"
-#include "Utilities/AssociationUtil.h"
 
-#include "FragmentToDigitAlg.h"
+#include "RawDataUtilities/FragmentToDigitAlg.h"
 
-
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 enum {
   V1740_N_CHANNELS = 64,

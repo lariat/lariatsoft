@@ -3,7 +3,7 @@ BEGIN_PROLOG
 lariat_anatree:
 {
     module_type:              "AnaTreeT1034"
-    TriggerUtility:           "SlicerInput"
+    TriggerUtility:           "FragmentToDigit"
     HitsModuleLabel:          "linecluster"
     TrackModuleLabel:         "pmtrack"
     CalorimetryModuleLabel:   "calo"

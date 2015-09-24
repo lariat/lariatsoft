@@ -167,8 +167,8 @@ physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 #physics.producers.cchit.CCHitFinderAlg.VTickRange: [1500, 1800]
 
 physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 20
-physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.35,0.35,0.35]
-physics.producers.linecluster.ClusterCrawlerAlg.MaxHitsFit: [10, 8, 4]
+physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.2,0.2,0.2]
+physics.producers.linecluster.ClusterCrawlerAlg.MaxHitsFit: [20, 8, 4]
 physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3
 physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0
 

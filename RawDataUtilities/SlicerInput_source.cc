@@ -16,7 +16,6 @@
 #include "art/Framework/IO/Sources/SourceHelper.h"
 #include "art/Framework/IO/Sources/SourceTraits.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
-#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Persistency/Provenance/EventID.h"
 #include "art/Persistency/Provenance/MasterProductRegistry.h"
 #include "art/Persistency/Provenance/RunID.h"
@@ -134,8 +133,8 @@ namespace rdu
 
     // Constructor and destructor.
     explicit Slicer(fhicl::ParameterSet        const& pset,
-                      art::ProductRegistryHelper      & prhelper,
-                      art::SourceHelper               & shelper);
+                    art::ProductRegistryHelper      & prhelper,
+                    art::SourceHelper               & shelper);
     virtual ~Slicer();
 
     ///////////////////////////////////////////////////////////////////
@@ -284,7 +283,7 @@ namespace rdu
   Slicer::Slicer(fhicl::ParameterSet        const& pset,
                  art::ProductRegistryHelper      & prhelper,
                  art::SourceHelper               & shelper)
-    : fSourceName("SlicerInput")
+    : fSourceName("daq")
     , fLastFileName(pset.get< std::vector< std::string > >("fileNames", {}).back())
     , fFile()
     , fDoneWithFile(false)
@@ -303,8 +302,6 @@ namespace rdu
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
 
-    // Will use same instance name for the outgoing products as for the
-    // incoming ones.
     prhelper.reconstitutes<std::vector<raw::AuxDetDigit>, art::InEvent>(fSourceName);
     prhelper.reconstitutes<std::vector<raw::RawDigit>,    art::InEvent>(fSourceName);
     prhelper.reconstitutes<std::vector<raw::OpDetPulse>,  art::InEvent>(fSourceName);
