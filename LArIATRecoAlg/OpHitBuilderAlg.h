@@ -42,8 +42,9 @@ class OpHitBuilderAlg{
 
   std::vector<short>                GetHits( std::vector<short>&);
   std::vector<Double_t>             MakeGradient( std::vector<short> );
-  Double_t                          GetLocalRMS( std::vector<Double_t>, short, short);
-  std::vector<double>               IntegrateHit( std::vector<short>, short );
+  std::vector<Double_t>             GetBaselineAndRMS( std::vector<short>, short, short);
+  Double_t                          GetLocalRMSOfGradient( std::vector<Double_t>, short, short);
+  std::vector<Double_t>               IntegrateHit( std::vector<short>, short );
   
  private:
   

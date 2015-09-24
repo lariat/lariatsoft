@@ -42,7 +42,7 @@ OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
   
   // Function to fit prepulse regions
   prepulse_exp_fit = new TF1("prepulse_exp_fit","[0] + [1]*exp(-(x-[2])/[3])",0.,10000.);
-  prepulse_exp_fit->SetParLimits(3,1200,2000);
+  prepulse_exp_fit->SetParLimits(3,0.,1600.);
 }
 
 //--------------------------------------------------------------  
@@ -141,7 +141,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short>& wfm)
     rms_window_size = rms_window_end - rms_window_start;
 
     // Find local RMS for the hit using this window
-    rms = GetLocalRMS( g, rms_window_start, rms_window_end );
+    rms = GetLocalRMSOfGradient( g, rms_window_start, rms_window_end );
 
     // Find lowest point of gradient in neighborhood of each hit
     Double_t low = 9999.;
@@ -177,8 +177,30 @@ std::vector<double> OpHitBuilderAlg::MakeGradient( std::vector<short> wfm )
 }
 
 //--------------------------------------------------------------
-// GetLocalRMS
-Double_t OpHitBuilderAlg::GetLocalRMS( std::vector<Double_t> wfm, short x1, short x2 )
+// Get (baseline,rms) of a segment of an std::vector<short>
+std::vector<double> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<short> wfm, short x1, short x2 )
+{
+  double mean = 0;
+  double sumSquares = 0;
+  int N = x2 - x1;
+
+  // find mean over interval
+  for ( int i = x1; i < x2; i++ ) mean += wfm[i]/N;
+
+  // now get sum of squares
+  for ( int i = x1; i < x2; i++ ) sumSquares += pow(wfm[i]-mean,2);
+  
+  std::vector<double> out(2);
+  out[0] = mean;
+  out[1] = sqrt(sumSquares/N);
+  
+  return out;
+}
+
+
+//--------------------------------------------------------------
+// GetLocalRMS of a segment of std::vector<double>
+Double_t OpHitBuilderAlg::GetLocalRMSOfGradient( std::vector<Double_t> wfm, short x1, short x2 )
 {
   Double_t mean = 0;
   Double_t sumSquares = 0;
@@ -210,10 +232,12 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
 
   std::cout << "Baseline = " << baseline << " (win size: " << baseline_win_size << ")\n";
   
-  short x1,x2;
+  short x1,x2,x3;
   x1 = std::max(int(hit - fPrePulseBaselineFit),0);
-  x2 = std::min(int(hit + fPromptWindowLength),int(wfm.size()));
-  const int prepulse_bins = int(hit) - 5 - int(x1);
+  x2 = std::min(int(x1) + int(fPromptWindowLength),int(wfm.size()));
+  x3 = std::max(int(hit)-5,0);
+  const int prepulse_bins = int(x3) - int(x1);
+  const int integral_bins = int(x2) - int(x3);
 
   int x[prepulse_bins];
   int y[prepulse_bins];
@@ -238,7 +262,7 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
   double integral = 0;
   double amplitude = 0;
   // now integrate
-  for( int i = 0; i < fPromptWindowLength + 5; i++){
+  for( int i = 0; i < integral_bins; i++){
     short xx    = hit - 5 + i;
     short dInt  = prepulse_exp_fit->Eval(xx) - wfm[xx];  
     integral += dInt;

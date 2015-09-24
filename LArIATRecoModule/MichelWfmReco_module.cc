@@ -12,10 +12,12 @@
 //
 // Output histograms include:
 //  - # hits found in each waveform
-//  - amplitude of Michel-candidate pulses
+//  - amplitude of Michel candidate pulses
 //  - integrated charge of Michel candidates (100ns window)
 //  - time difference between 1st and 2nd pulse
 //    when exactly two pulses are found
+//  - information for reconstructed tracks associated with
+//    Michel candidate events
 //
 // Authors: William Foreman, wforeman@uchicago.edu
 //
@@ -46,11 +48,15 @@
 
 //ROOT Includes
 #include <TH1F.h>
+#include <TH1D.h>
+#include <TH3F.h>
 #include <TTree.h>
 
 // LArSoft Includes
 #include "Utilities/AssociationUtil.h"
 #include "RawData/TriggerData.h"
+#include "RecoBase/Track.h"
+#include "AnalysisBase/Calorimetry.h"
 
 //LAriatSoft Includes
 #include "RawDataUtilities/TriggerDigitUtility.h"
@@ -94,37 +100,87 @@ private:
   // Name of the module producing the triggers
   std::string fTriggerUtility;
 
-  // Switch to use the trigger filter or not
+  // Tunable parameters from fcl
   bool            bUseTriggerFilter;
   bool            bVerbose;
   float           V1751PostPercent;
-  std::string     fInputModule;
+  std::string     fDAQModule;
+  std::string     fTrackModule;
+  std::string     fTrackCalModule;
   std::string     fInstanceName;
+  short           fBaselineWindowLength; 
 
   // Alg objects
   OpHitBuilderAlg   fOpHitBuilderAlg; 
   TriggerFilterAlg  fTrigFiltAlg;
 
-  // Variables
+  // Variables/vectors
+  bool                  GotETL;
+  std::vector<short>    ETL_waveform;
+  short                 PostPercentMark;
+  int                   NSamples;
+  std::vector<TVector3> TrackVertex;
+  std::vector<TVector3> TrackEnd;
+  std::vector<TVector3> MuCandidateTrackVertex;
+  std::vector<TVector3> MuCandidateTrackEnd;
+  std::vector<double>   TrackEnergy;
+
+  // Histograms
+  TH1F* h_NumOpHits;
+  TH1F* h_NumOpHits_beam;
+  TH1F* h_NumOpHits_offbeam;
+  TH1F* h_DeltaTime_chargeCut;
+  TH1F* h_DeltaTime_stoppingMu;
+
+  TH1F* h_Amplitude;
+  TH1F* h_Charge100ns;
+  TH1F* h_TrackVertex_x;
+  TH1F* h_TrackVertex_y;
+  TH1F* h_TrackVertex_z;
+  //TH3F* h_TrackVertex;
+  TH1F* h_TrackEnd_x;
+  TH1F* h_TrackEnd_y;
+  TH1F* h_TrackEnd_z;
+  //TH3F* h_TrackEnd;
+
+  // Variables for Tree
+  Int_t       iEvent = -1;
+  Double_t    WaveformBaseline;
+  Double_t    WaveformBaselineRMS;
   Double_t    Timestamp;
   Double_t    DeltaTime;
   Int_t       NumHits;
   Double_t    Amplitude;
   Double_t    Charge_100ns; 
-
-  // Histograms
-  TH1F* h_NumOpHits;
-  TH1F* h_DeltaTime;
-  TH1F* h_Amplitude;
-  TH1F* h_Charge100ns;
+  Int_t       NumTracks;
+  Double_t    MuTrackVertex_x;
+  Double_t    MuTrackVertex_y;
+  Double_t    MuTrackVertex_z;
+  Double_t    MuTrackEnd_x;
+  Double_t    MuTrackEnd_y;
+  Double_t    MuTrackEnd_z;
+  Double_t    MuTrackLength;
+  Double_t    MuTrackEnergy;
   
   // TTree info
   TTree* MichelDataTree;
+  TBranch* b_iEvent;
   TBranch* b_Timestamp;
+  TBranch* b_WaveformBaseline;
+  TBranch* b_WaveformBaselineRMS;
   TBranch* b_NumHits;
   TBranch* b_DeltaTime;
   TBranch* b_Amplitude;
   TBranch* b_Charge_100ns;
+  TBranch* b_NumTracks;
+  TBranch* b_MuTrackVertex_x;
+  TBranch* b_MuTrackVertex_y;
+  TBranch* b_MuTrackVertex_z;
+  TBranch* b_MuTrackEnd_x;
+  TBranch* b_MuTrackEnd_y;
+  TBranch* b_MuTrackEnd_z;
+  TBranch* b_MuTrackLength;
+  TBranch* b_MuTrackEnergy;
 
 };
 
@@ -145,86 +201,155 @@ MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & p)
 
 void MichelWfmReco::produce(art::Event & e)
 {
-
-  std::cout<<"New event --------------------------------\n";
-
-  // Set up loop over triggers in the inputted ROOT file
-  //rdu::TriggerDigitUtility tdu(e, fTriggerUtility);
-
-  // Defint the vector of associations to be saved
-  // (none yet!)
-
-  std::vector<short> ETL_waveform;
-  short PostPercentMark;
-  Int_t NSamples;
-
-  // get the OpDetPulses; skip if empty
-  art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
-  e.getByLabel(fInputModule,fInstanceName,WaveformHandle);
+  iEvent++;
+  std::cout<<"---------- Starting event "<<iEvent<<" -----------------\n";
   
-  //art::PtrVector<raw::OpDetPulse> OpPulses = e.TriggerOpDetPulsesPtr(trig);
+  // Initialize variables and vectors
+  Timestamp         = -9.; 
+  NumHits           = -9;
+  DeltaTime         = -99.;
+  Amplitude         = -99.;
+  Charge_100ns      = -99.;
+  WaveformBaseline  = -99.;
+  WaveformBaselineRMS = -9.;
+  TrackVertex.clear();
+  TrackEnd.clear();
+  TrackEnergy.clear();
   
-  if( (int)WaveformHandle->size() == 0 )
-  {
-    std::cout<<"OpDetPulses size = 0 -- skipping event\n";
-    return;
-  }
-
-  std::cout<<"WaveformHandle->size() = "<<WaveformHandle->size()<<"\n";
-
-  // loop through pulse and grab the ETL
-  for( int pulse_index = 0; pulse_index < (int)WaveformHandle->size(); pulse_index++){
-    art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle,pulse_index);
-    raw::OpDetPulse ThePulse = *ThePulsePtr;
-    if( ThePulse.OpChannel() == 1) {
-      ETL_waveform = ThePulse.Waveform();
-      Timestamp = (double(ThePulse.FirstSample())*8.)/1.0e09;
-      NSamples = ETL_waveform.size();
-      PostPercentMark = NSamples*V1751PostPercent;
-      std::cout<<"ETL pulse recorded: Nsamples = "<<NSamples<<", trigger time at "<<PostPercentMark<<"  Timestamp: "<<Timestamp<<"\n";
-    }
-  }
-    
-  // filter for the MICHEL trigger pattern (note that for some runs,
-  // particularly for those with the optimized Michel trigger setup, 
-  // unfortunately the trigger inputs were not being saved and thus 
-  // the filter won't work).
   
-  bool isMichel = 1; 
+  // Filter for the MICHEL trigger pattern (note that for some runs, particularly for 
+  // those with the optimized Michel trigger setup, unfortunately the trigger inputs 
+  // were not being saved and thus the filter won't work).
   /*
+  bool isMichel = 1; 
   if (bUseTriggerFilter){
     std::string myFilter = "+MICHEL";
     isMichel = fTrigFiltAlg.doesTriggerPassFilter( thisTrigger, myFilter ); 
   } else {
     isMichel = 1;
   }
-  */
-  
   if ( !isMichel ) return;
+  */
 
-  // Initialize variables to be added to tree
-  NumHits     = -9;
-  DeltaTime   = -99.;
-  Amplitude   = -99.;
-  Charge_100ns= -99.;
 
-  // perform hit-finding/filtering
+  // Define the vector of associations to be saved
+  // (none yet!)
+
+
+  // Get the OpDetPulses; skip event if empty
+  art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
+  e.getByLabel(fDAQModule,fInstanceName,WaveformHandle);
+  if( (int)WaveformHandle->size() == 0 ) {
+    std::cout<<"No optical detector data found -- skipping the event\n";
+    return;
+  } else {
+    
+    // If not empty, store ETL waveform
+    GotETL = false;
+    for( int ipulse = 0; ipulse < (int)WaveformHandle->size(); ipulse++){
+      art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle,ipulse);
+      raw::OpDetPulse ThePulse = *ThePulsePtr;
+      if( ThePulse.OpChannel() == 1) {
+        ETL_waveform = ThePulse.Waveform();
+
+        // hacky convention: Timestamp stored in FirstSample:
+        Timestamp = (double(ThePulse.FirstSample())*8.)/1.0e09;
+        NSamples = ETL_waveform.size();
+        PostPercentMark = short(V1751PostPercent*NSamples);
+
+        // updated convention (once it's working upstream): 
+        //Timestamp = (double(ThePulse.PMTFrame())*8.)/1.0e09;
+        //NSamples = ETL_waveform.size();
+        //PostPercentMark = short(ThePulse.FirstSample());
+
+        std::cout<<"ETL pulse recorded: Nsamples = "<<NSamples
+        <<", trigger time at "<<PostPercentMark<<"  Timestamp: "<<Timestamp<<"\n";
+        GotETL = true;
+      }
+    }
+  }
+
+
+  // If we somehow didn't get the ETL, skip the event
+  if( !GotETL ) return;
+
+
+  // Get the tracks and their associated energy
+  art::Handle< std::vector< recob::Track >> TrackHandle;
+  e.getByLabel(fTrackModule,TrackHandle);
+  art::FindManyP<anab::Calorimetry> fmcal(TrackHandle, e, fTrackCalModule);
+  NumTracks = (int)TrackHandle->size();
+  std::cout<<"Number of tracks: "<<NumTracks<<"\n";
+  
+  // Loop through the track list and store their properties
+  for( int track_index = 0; track_index < NumTracks; track_index++){
+
+    // Get the recob::Track object and record its endpoint/vertex
+    art::Ptr< recob::Track > TheTrackPtr(TrackHandle,track_index);
+    recob::Track TheTrack = *TheTrackPtr;
+    TrackEnd.push_back(TheTrack.End());
+    TrackVertex.push_back(TheTrack.Vertex());
+    std::cout<<"  Track vertex: ("
+    << TheTrack.Vertex().X() <<"," 
+    << TheTrack.Vertex().Y() << "," 
+    << TheTrack.Vertex().Z() << ")\n"; 
+
+    std::cout<<"Now to fill histograms...\n";
+
+    // Fill histograms
+    h_TrackEnd_x->Fill((float)TheTrack.End().X());
+    h_TrackEnd_y->Fill((float)TheTrack.End().Y());
+    h_TrackEnd_z->Fill((float)TheTrack.End().Z());
+    //h_TrackEnd  ->Fill((float)TheTrack.End().X(),(float)TheTrack.End().Y(),(float)TheTrack.End().Z());
+    
+    std::cout<<"halfway there...\n";
+    h_TrackVertex_x->Fill((float)TheTrack.Vertex().X());
+    h_TrackVertex_y->Fill((float)TheTrack.Vertex().Y());
+    h_TrackVertex_z->Fill((float)TheTrack.Vertex().Z());
+    //h_TrackVertex  ->Fill((float)TheTrack.Vertex().X(),(float)TheTrack.Vertex().Y(),(float)TheTrack.Vertex().Z());
+
+    std::cout<<"Done.\n";
+
+    // Get measured track energy (if possible)
+    if( fmcal.isValid() ){
+        std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(track_index);
+        // calos[0] is from induction plane
+        // calos[1] is from collection plane
+        TrackEnergy.push_back(calos[1]->KineticEnergy());
+        std::cout<<"  Energy = "<<calos[1]->KineticEnergy()<<"\n"; 
+    }
+  }  
+
+
+  // Determine if there were any "stopping" tracks. 
+
+  // ---------------------------------------
+  // Analysis:
+
+  // Perform hit-finding/filtering
   std::vector<short> hit_times = fOpHitBuilderAlg.GetHits(ETL_waveform);
   NumHits = hit_times.size();
   std::cout << "We found "<<NumHits<<" hits\n";
   for (int i=0; i<NumHits; i++) std::cout<<"   "<<i<<"    t = "<<hit_times[i]<<"\n";
 
-  // fill Nhits histo
+  // Save the baseline/RMS
+  std::vector<double> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(ETL_waveform,0,fBaselineWindowLength);
+  WaveformBaseline = tmp[0];
+  WaveformBaselineRMS = tmp[1];
+  std::cout<<"Baseline: "<<WaveformBaseline<<"  RMS: "<<WaveformBaselineRMS<<"\n";
+
+  // Fill NumOpHits histo (beam vs. offbeam)
   h_NumOpHits ->Fill(NumHits);
+  if(Timestamp < 5.2)   h_NumOpHits_beam    ->Fill(NumHits);
+  if(Timestamp >= 5.3)  h_NumOpHits_offbeam ->Fill(NumHits);
         
-  // Filter:
-  // if there were only 2 hits (one before PostPercent, one ~at PostPercent within 1%) 
+  // Event quality control:
+  // Require 2 hits (one before PostPercent, one within 1% of PostPercent) 
   if( (NumHits == 2) && (hit_times[0] < PostPercentMark) && ( abs(hit_times[1]-PostPercentMark) <= 0.01*NSamples) && (Timestamp >= 5.3)){
     std::cout << "    passes Michel cut \n";
     DeltaTime = hit_times[1] - hit_times[0];
-    h_DeltaTime->Fill(DeltaTime);
         
-    // calculate integral of Michel candidate pulse
+    // Integral of Michel candidate pulse
     std::vector<double> hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1]);
     
     Amplitude     = hit_info[0];
@@ -232,7 +357,9 @@ void MichelWfmReco::produce(art::Event & e)
     
     h_Amplitude->Fill(Amplitude);
     h_Charge100ns->Fill(Charge_100ns); 
-
+   
+    if( Charge_100ns > 1600. ) h_DeltaTime_chargeCut->Fill(DeltaTime);
+  
   }
         
   MichelDataTree->Fill();
@@ -245,27 +372,58 @@ void MichelWfmReco::beginJob()
   art::ServiceHandle<art::TFileService> tfs;
 
   MichelDataTree        = tfs->make<TTree>("MichelDataTree","MichelDataTree");
+  b_iEvent              = MichelDataTree->Branch("iEvent",&iEvent,"iEvent/I");
   b_Timestamp           = MichelDataTree->Branch("Timestamp",&Timestamp,"Timestamp/D");
+  b_WaveformBaseline    = MichelDataTree->Branch("WaveformBaseline",&WaveformBaseline,"WaveformBaseline/D");
+  b_WaveformBaselineRMS = MichelDataTree->Branch("WaveformBaselineRMS",&WaveformBaselineRMS,"WaveformBaselineRMS/D");
   b_NumHits             = MichelDataTree->Branch("NumHits",&NumHits,"NumHits/I");
   b_DeltaTime           = MichelDataTree->Branch("DeltaTime",&DeltaTime,"DeltaTime/D");
   b_Amplitude           = MichelDataTree->Branch("Amplitude",&Amplitude,"Amplitude/D");
   b_Charge_100ns        = MichelDataTree->Branch("Charge_100ns",&Charge_100ns,"Charge_100ns/D");
+  b_NumTracks           = MichelDataTree->Branch("NumTracks",&NumTracks,"NumTracks/I");
+  b_MuTrackVertex_x     = MichelDataTree->Branch("MuTrackVertex_x",&MuTrackVertex_x,"MuTrackVertex_x/D");
+  b_MuTrackVertex_y     = MichelDataTree->Branch("MuTrackVertex_y",&MuTrackVertex_y,"MuTrackVertex_y/D");
+  b_MuTrackVertex_z     = MichelDataTree->Branch("MuTrackVertex_z",&MuTrackVertex_z,"MuTrackVertex_z/D");
+  b_MuTrackEnd_x        = MichelDataTree->Branch("MuTrackEnd_x",&MuTrackEnd_x,"MuTrackEnd_x/D");
+  b_MuTrackEnd_y        = MichelDataTree->Branch("MuTrackEnd_y",&MuTrackEnd_y,"MuTrackEnd_y/D");
+  b_MuTrackEnd_z        = MichelDataTree->Branch("MuTrackEnd_z",&MuTrackEnd_z,"MuTrackEnd_z/D");
+  b_MuTrackLength        = MichelDataTree->Branch("MuTrackLength",&MuTrackLength,"MuTrackLength/D");
+  b_MuTrackEnergy        = MichelDataTree->Branch("MuTrackEnergy",&MuTrackEnergy,"MuTrackEnergy/D");
   
-  h_NumOpHits           = tfs->make<TH1F>("OpHitsPerEvent"    , "OpHitsPerEvent",     10,    0., 10.);
+  h_NumOpHits           = tfs->make<TH1F>("OpHitsPerEvent", "Optical hits per event", 10, 0., 10.);
   h_NumOpHits           ->GetXaxis()->SetTitle("Num hits");
   h_NumOpHits           ->GetYaxis()->SetTitle("Counts");
+  h_NumOpHits_beam      = tfs->make<TH1F>("OpHitsPerEvent_beam", "Optical hits per event (beam)",  10, 0., 10.);
+  h_NumOpHits_beam      ->GetXaxis()->SetTitle("Num hits");
+  h_NumOpHits_beam      ->GetYaxis()->SetTitle("Counts");
+  h_NumOpHits_offbeam   = tfs->make<TH1F>("OpHitsPerEvent_offbeam", "Optical hits per event (off-beam)", 10, 0., 10.);
+  h_NumOpHits_offbeam   ->GetXaxis()->SetTitle("Num hits");
+  h_NumOpHits_offbeam   ->GetYaxis()->SetTitle("Counts");
 
-  h_DeltaTime           = tfs->make<TH1F>("DeltaTime"         , "DeltaTime",          700,    0., 7000.);
-  h_DeltaTime           ->GetXaxis()->SetTitle("Time difference in two-hit events");
-  h_DeltaTime           ->GetYaxis()->SetTitle("Counts");
+  h_DeltaTime_chargeCut = tfs->make<TH1F>("DeltaTime_chargeCutoff", "#Delta t (integral > 1600 ADC)", 700,0., 7000.);
+  h_DeltaTime_chargeCut ->GetXaxis()->SetTitle("ns");
+  h_DeltaTime_chargeCut ->GetYaxis()->SetTitle("Counts");
+  
+  h_DeltaTime_stoppingMu = tfs->make<TH1F>("DeltaTime_stoppingMu", "#Delta t (stopping track)", 700,0., 7000.);
+  h_DeltaTime_stoppingMu ->GetXaxis()->SetTitle("ns");
+  h_DeltaTime_stoppingMu ->GetYaxis()->SetTitle("Counts");
 
-  h_Amplitude           = tfs->make<TH1F>("Amplitude"         , "Amplitude",          5000,   0., 500.);
-  h_Amplitude           ->GetXaxis()->SetTitle("Amplitude of Michel pulse (ADC)");
+  h_Amplitude           = tfs->make<TH1F>("Amplitude", "Amplitude", 500,   0., 100.);
+  h_Amplitude           ->GetXaxis()->SetTitle("Amplitude of Michel PMT pulse [mv]");
   h_Amplitude           ->GetYaxis()->SetTitle("Counts");
   
-  h_Charge100ns          = tfs->make<TH1F>("Charge100ns"         , "Charge100ns",      1000,  0., 20000.);
-  h_Charge100ns          ->GetXaxis()->SetTitle("Integrated prompt light, 100ns (ADC*ns)");
+  h_Charge100ns          = tfs->make<TH1F>("Charge100ns", "Prompt light integral (100ns)",  1200,  0., 12000.);
+  h_Charge100ns          ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
   h_Charge100ns          ->GetYaxis()->SetTitle("Counts");
+
+  h_TrackEnd_x            = tfs->make<TH1F>("TrackEnd_x","TrackEnd_x",100,-10.,60.);
+  h_TrackEnd_y            = tfs->make<TH1F>("TrackEnd_y","TrackEnd_y",100,-25.,25.);
+  h_TrackEnd_z            = tfs->make<TH1F>("TrackEnd_z","TrackEnd_z",100,-10.,100.);
+  h_TrackVertex_x         = tfs->make<TH1F>("TrackVertex_x","TrackVertex_x",100,-10.,60.);
+  h_TrackVertex_y         = tfs->make<TH1F>("TrackVertex_y","TrackVertex_y",100,-25.,25.);
+  h_TrackVertex_z         = tfs->make<TH1F>("TrackVertex_z","TrackVertex_z",100,-10.,100.);
+  //h_TrackEnd              = tfs->make<TH3F>("TrackEnd","TrackEnd",  1000,0.,47.,  1000, -20.,20.,  1000, 0.,90.);
+  //h_TrackVertex           = tfs->make<TH3F>("TrackVertex","TrackVertex",  1000,0.,47.,  1000, -20.,20.,  1000, 0.,90.);
 }
 
 void MichelWfmReco::beginRun(art::Run & r)
@@ -295,9 +453,12 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & p)
   fTriggerUtility         = p.get< std::string >("TriggerUtility","FragmentToDigit");
   bUseTriggerFilter       = p.get< bool >("UseTriggerFilter","false");
   bVerbose                = p.get< bool >("Verbosity","false");
-  fInputModule            = p.get< std::string >("InputModule","daq");
+  fDAQModule              = p.get< std::string >("DAQModule","daq");
+  fTrackModule            = p.get< std::string >("TrackModule","pmtrack");
+  fTrackCalModule         = p.get< std::string >("TrackCalModule","calo");
   fInstanceName           = p.get< std::string >("InstanceName","");
   V1751PostPercent        = p.get< float >("V1751PostPercent",0.3);
+  fBaselineWindowLength   = p.get< short >("BaselineWindowLength",1000);
   
 }
 
