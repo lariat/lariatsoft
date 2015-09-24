@@ -1,9 +1,11 @@
 #include "databaseutility_lariat.fcl"
 #include "geometry_lariat.fcl"
+#include "sliceralg.fcl"
+#include "RawDataUtilities_algs.fcl"
 
 process_name: mergerTest
 
-services :
+services:
 {
  scheduler:
  {
@@ -17,59 +19,46 @@ services :
 source:
 {
  module_type: "SlicerInput"
- FragmentToDigitAlg:
- {
-  MaxNumberFitIterations: 5
-  RawFragmentInstance: "SPILL"
-  RawFragmentLabel: "daq"
-  Trigger1740Pedestal: 2000
-  Trigger1740Threshold: 0
-  TriggerDecisionTick: 137
-  pmt_channel_ids: [ [], [], [], [], [], [], [], [], [],
-                     [ 0, 1, 2, 3, 4] ]
- }
- MaxTPCReadoutsPerEvent: 100
- MinTPCReadoutsPerEvent: 0
- SlicerAlg:
- {
-  ClockCorrectionAlg:
-  {
-   MaxContinuations: 1.5e19
-   MaxTrials: 10000
-   MinNumberDataPoints: 3
-   MinNumberTimeStamps: 3
-   MinSamples: 2
-   ResidualThreshold: 1
-   SampleSlopeCutLower: 9e-1
-   SampleSlopeCutUpper: 1.1
-   StopProbability: 1
-   StopResidualsSum: 0
-   StopSampleNumber: 1.5e19
-   TimeStampDifferenceThreshold: 100000
-  }
-  TPCReadoutBufferHigh: 2.56e-1
-  TPCReadoutBufferLow: 2.56e-1
- }
-  
- SourceName: "daq"
- TDCAcquisitionWindow: -1
- TDCPostAcquisitionWindow: -1
- TDCPreAcquisitionWindow: -1
- V1740AcquisitionWindow: -1
- V1740BAcquisitionWindow: -1
+
+  # Number of events to analyze; "-1" means all of the events in the input
+  # file. You can override this value with the "-n" option on the command line.
+ maxEvents:    -1
+
+ SourceName:   "daq"  # RawDataLabel
+ SlicerAlg:    @local::standard_sliceralg
+
+ FragmentToDigitAlg: @local::lariat_fragmenttodigit_alg
+
+  # Events with number of TPC readouts outside the range of
+  #
+  #   [ MinTPCReadoutPerEvent, MaxTPCReadoutPerEvent ]
+  #
+  # will not be written to the resulting ROOT file. This
+  # can also be taken care of in a filter module downstream.
+ MinTPCReadoutsPerEvent:       0
+ MaxTPCReadoutsPerEvent:       100
+
+  # Parameters for the slicing algorithm. A value of "-1" means that the
+  # values will be obtained from the lariat_prd database. This is what
+  # we want 99.9% of the time.
+ V1740PreAcquisitionWindow:   -1
+ V1740PostAcquisitionWindow:  -1
+ V1740AcquisitionWindow:      -1
+ V1740BPreAcquisitionWindow:  -1
  V1740BPostAcquisitionWindow: -1
- V1740BPreAcquisitionWindow: -1
- V1740PostAcquisitionWindow: -1
- V1740PreAcquisitionWindow: -1
- V1751AcquisitionWindow: -1
- V1751PostAcquisitionWindow: -1
- V1751PreAcquisitionWindow: -1
+ V1740BAcquisitionWindow:     -1
+ V1751PreAcquisitionWindow:   -1
+ V1751PostAcquisitionWindow:  -1
+ V1751AcquisitionWindow:      -1
+ TDCPreAcquisitionWindow:     -1
+ TDCPostAcquisitionWindow:    -1
+ TDCAcquisitionWindow:        -1
 }
 
 physics:
 {
  producers: {}
-  
+
  stream1: [ out1 ]
  end_paths: [ stream1 ]
 }
@@ -78,7 +67,9 @@ outputs:
 {
  out1:
  {
-  fileName: "lariat_slice_r%r_sr%s.root"
   module_type: "RootOutput"
+  fileName:    "lariat_slice_r%r_sr%s.root"
+  dataTier:    "raw"
+  streamName:  "all"
  }
 }
