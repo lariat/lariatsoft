@@ -79,10 +79,10 @@ void FragmentToDigitAlg::reconfigure( fhicl::ParameterSet const& pset )
 
 //=====================================================================
 void FragmentToDigitAlg::makeTheDigits( std::vector<CAENFragment> caenFrags,
-					std::vector<TDCDataBlock> tdcDataBlocks,
-					std::vector<raw::AuxDetDigit> & auxDigits,
-					std::vector<raw::RawDigit> & rawDigits,
-					std::vector<raw::OpDetPulse> & opPulses )
+                                       std::vector<TDCDataBlock> tdcDataBlocks,
+                                       std::vector<raw::AuxDetDigit> & auxDigits,
+                                       std::vector<raw::RawDigit> & rawDigits,
+                                       std::vector<raw::OpDetPulse> & opPulses )
 
 {
   //Resetting the digits
@@ -246,7 +246,7 @@ float FragmentToDigitAlg::findPedestal(const std::vector<short> & adcVec)
 
 //===============================================================----------
 void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& caenFrags,
-				      std::vector<raw::OpDetPulse>      & opDetPulse)
+                                         std::vector<raw::OpDetPulse>      & opDetPulse)
 {
   // loop over the caenFrags
   uint32_t boardId        = 0;
@@ -300,11 +300,11 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
 // caen board)
 // detName is the name of the detector
 void FragmentToDigitAlg::caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,
-						 std::vector<raw::AuxDetDigit>      & auxDetDigits,
-						 uint32_t                      const& boardId,
-						 std::set<uint32_t>            const& boardChans,
-						 uint32_t                      const& chanOffset,
-						 std::string                   const& detName)
+                                                    std::vector<raw::AuxDetDigit>      & auxDetDigits,
+                                                    uint32_t                      const& boardId,
+                                                    std::set<uint32_t>            const& boardChans,
+                                                    uint32_t                      const& chanOffset,
+                                                    std::string                   const& detName)
 {
   // loop over the fragments and grab the one corresponding to this board ID
   for(auto const& frag : caenFrags){
@@ -316,23 +316,23 @@ void FragmentToDigitAlg::caenFragmentToAuxDetDigits(std::vector<CAENFragment>   
       
       // check that ch is larger than chanOffset
       if(ch < chanOffset)
-	throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch
-						<< " is smaller than the requested offest "
-						<< chanOffset;
+        throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch
+        << " is smaller than the requested offest "
+        << chanOffset;
 
       // check that there is a waveform for the chosen channel
       if(ch > frag.waveForms.size() )
-	throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch 
-						<< " from board "        << boardId
-						<< " is beyond the scope of the waveform vector";
+        throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch
+        << " from board "        << boardId
+        << " is beyond the scope of the waveform vector";
       
       std::vector<short> waveForm(frag.waveForms[ch].data.begin(), frag.waveForms[ch].data.end());
 	
       // place the AuxDetDigit in the vector
       auxDetDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short> (ch - chanOffset),
-					      waveForm,
-					      detName,
-					      static_cast<unsigned long long>(frag.header.triggerTimeTag))
+                                              waveForm,
+                                              detName,
+                                              static_cast<unsigned long long>(frag.header.triggerTimeTag))
 			     );
 
     } // end loop over channels on the board
@@ -343,7 +343,7 @@ void FragmentToDigitAlg::caenFragmentToAuxDetDigits(std::vector<CAENFragment>   
 
 //===============================================================----------
 void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const& caenFrags,
-					  std::vector<raw::AuxDetDigit>      & mrAuxDigits)
+                                             std::vector<raw::AuxDetDigit>      & mrAuxDigits)
 {
   // The Muon Range Stack channels are all on the V1740 board in slot 7
   // The channels are 32 <= ch < 48
@@ -368,7 +368,7 @@ void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const
 
 //===============================================================----------
 void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caenFrags,
-				    std::vector<raw::AuxDetDigit>      & tofAuxDigits)
+                                       std::vector<raw::AuxDetDigit>      & tofAuxDigits)
 {
   // TOF inputs are all sent to board 8
   uint32_t boardId = 8;
@@ -388,7 +388,7 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
 
 //===============================================================----------
 void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& caenFrags,
-					std::vector<raw::AuxDetDigit>      & agAuxDigits)
+                                           std::vector<raw::AuxDetDigit>      & agAuxDigits)
 {
   // Aerogel inputs are all sent to board 8
   uint32_t boardId = 8;
@@ -410,7 +410,7 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
 //===============================================================----------
 // Halo paddles are currently (Jun 4, 2015) attached to board 9, channels 5 and 6
 void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& caenFrags,
-				     std::vector<raw::AuxDetDigit>      & hAuxDigits)
+                                        std::vector<raw::AuxDetDigit>      & hAuxDigits)
 {
   // Halo inputs are all sent to board 8
   uint32_t boardId = 9;
@@ -426,7 +426,7 @@ void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& cae
 
 //===============================================================----------
 void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& caenFrags,
-					std::vector<raw::AuxDetDigit>      & trAuxDigits)
+                                           std::vector<raw::AuxDetDigit>      & trAuxDigits)
 {
   // The trigger waveforms all come on board 7, channels 48-63
   uint32_t boardId = 7;
@@ -565,7 +565,7 @@ void FragmentToDigitAlg::CleanUpMWPCContainers()
 // set the name of the detector in the AuxDetDigit to be of the form
 // MWPCXX where XX is the controller Number
 void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> const& tdcEventData,
-				     std::vector<raw::AuxDetDigit>               & mwpcAuxDigits)
+                                        std::vector<raw::AuxDetDigit>               & mwpcAuxDigits)
 {
 
   size_t channelsPerChamber = TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER;
@@ -593,12 +593,12 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
     
     for(auto const& hit : tdced.tdcHits){
       if(chitr->second >= TDCFragment::MAX_CHAMBERS || 
-	 switr->second + (size_t)hit.channel >= channelsPerChamber
-	 )
-	throw cet::exception("FragmentToDigitAlg") << "Chamber is " << chitr->second << "/" << TDCFragment::MAX_CHAMBERS
-						<< " hit channel is " << (size_t)hit.channel
-						<< " first wire in tdc is " << switr->second << "/" 
-						<< channelsPerChamber;
+         switr->second + (size_t)hit.channel >= channelsPerChamber
+         )
+        throw cet::exception("FragmentToDigitAlg") << "Chamber is " << chitr->second << "/" << TDCFragment::MAX_CHAMBERS
+        << " hit channel is " << (size_t)hit.channel
+        << " first wire in tdc is " << switr->second << "/"
+        << channelsPerChamber;
 
       chamberHits      [chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)].push_back(hit.timeBin);
       chamberTimeStamps[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
@@ -619,10 +619,10 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
       if(chamberHits[cham*channelsPerChamber + chan].size() < 1) continue;
       
       mwpcAuxDigits.push_back(raw::AuxDetDigit(static_cast <unsigned short> (chan),
-					       chamberHits[cham*channelsPerChamber + chan],
-					       fMWPCNames[cham],
-					       static_cast <unsigned long long> (chamberTimeStamps[cham*channelsPerChamber + chan]))
-			      );
+                                               chamberHits[cham*channelsPerChamber + chan],
+                                               fMWPCNames[cham],
+                                               static_cast <unsigned long long> (chamberTimeStamps[cham*channelsPerChamber + chan]))
+                              );
 
     }
     
