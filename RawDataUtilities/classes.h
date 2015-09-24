@@ -84,22 +84,22 @@ template class art::Wrapper<art::Assns<raw::Trigger, std::vector<recob::Vertex>,
 template class art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit, void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,  void> >;
 
-template class art::Wrapper<raw::AuxDetDigit>;
-template class std::vector<raw::AuxDetDigit>;
-template class art::Wrapper<std::vector<raw::AuxDetDigit> >;
-
-template class art::Wrapper<raw::RawDigit>;
-template class std::vector<raw::RawDigit>;
-template class art::Wrapper<std::vector<raw::RawDigit> >;
-
-template class art::Wrapper<raw::OpDetPulse>;
-template class std::vector<raw::OpDetPulse>;
-template class art::Wrapper<std::vector<raw::OpDetPulse> >;
-
-template class art::Wrapper<sumdata::RunData>;
-template class std::vector<sumdata::RunData>;
-template class art::Wrapper<std::vector<sumdata::RunData> >;
-
-template class art::Wrapper<raw::Trigger>;
-template class std::vector<raw::Trigger>;
-template class art::Wrapper<std::vector<raw::Trigger> >;
+//template class art::Wrapper<raw::AuxDetDigit>;
+//template class std::vector<raw::AuxDetDigit>;
+//template class art::Wrapper<std::vector<raw::AuxDetDigit> >;
+//
+//template class art::Wrapper<raw::RawDigit>;
+//template class std::vector<raw::RawDigit>;
+//template class art::Wrapper<std::vector<raw::RawDigit> >;
+//
+//template class art::Wrapper<raw::OpDetPulse>;
+//template class std::vector<raw::OpDetPulse>;
+//template class art::Wrapper<std::vector<raw::OpDetPulse> >;
+//
+//template class art::Wrapper<sumdata::RunData>;
+//template class std::vector<sumdata::RunData>;
+//template class art::Wrapper<std::vector<sumdata::RunData> >;
+//
+//template class art::Wrapper<raw::Trigger>;
+//template class std::vector<raw::Trigger>;
+//template class art::Wrapper<std::vector<raw::Trigger> >;

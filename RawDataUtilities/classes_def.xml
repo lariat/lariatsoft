@@ -25,7 +25,7 @@
   <class name="art::Wrapper< std::vector<V1495ChannelData> >"       />
   <class name="art::Wrapper<std::vector<V1495TriggerPatternData> >" />
   -->
-
+ <!--
   <class name="raw::Trigger" ClassVersion="10">
    <version ClassVersion="10" checksum="2734695139"/>
   </class>
@@ -63,7 +63,8 @@
   <class name="art::Wrapper<sumdata::RunData>"/>
   <class name="std::vector<sumdata::RunData>"/>
   <class name="art::Wrapper<std::vector<sumdata::RunData> >"/>
-
+-->
+ 
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>    >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Wire>      >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Hit>       >"/>
