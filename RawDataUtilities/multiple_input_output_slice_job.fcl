@@ -68,7 +68,7 @@ outputs:
  out1:
  {
   module_type: "RootOutput"
-  fileName:    "lariat_slice_r%r_sr%s.root"
+  fileName:    "lariat_slice_r%06r_sr%04s.root"
   dataTier:    "raw"
   streamName:  "all"
  }
