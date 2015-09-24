@@ -1,3 +1,6 @@
+#include "databaseutility_lariat.fcl"
+#include "geometry_lariat.fcl"
+
 process_name: mergerTest
 
 services :
@@ -6,6 +9,9 @@ services :
  {
   fileMode: NOMERGE
  }
+ ExptGeoHelperInterface: @local::lariat_geometry_helper
+ Geometry:               @local::lariat_geo
+ DatabaseUtilityT1034:   @local::lariat_databaseutility
 }
 
 source:
