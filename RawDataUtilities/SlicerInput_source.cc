@@ -365,7 +365,8 @@ namespace rdu
       fSubRunNumber = std::stoul(matches[2]);
     }
 
-    LOG_VERBATIM("SlicerInput") << "\n////////////////////////////////////"
+    LOG_VERBATIM("SlicerInput")
+    << "\n////////////////////////////////////"
     << "\nfRunNumber:       " << fRunNumber
     << "\nfSubRunNumber:    " << fSubRunNumber
     << "\nfCachedRunNumber: " << fCachedRunNumber
@@ -552,7 +553,8 @@ namespace rdu
 
     size_t const& NumberTPCReadouts = Collection.numberTPCReadouts;
 
-    LOG_VERBATIM("SlicerInput") << "fCollectionIndex: " << fCollectionIndex
+    LOG_VERBATIM("SlicerInput")
+    << "fCollectionIndex: " << fCollectionIndex
     << "\nNumberTPCReadouts: " << NumberTPCReadouts
     << "\nCollection.numberTPCReadouts: " << Collection.numberTPCReadouts
     << "\nCollection.caenBlocks.size(): " << Collection.caenBlocks.size()
@@ -613,7 +615,8 @@ namespace rdu
     fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams,
                                                       static_cast <int> (RunNumber));
 
-    LOG_VERBATIM("SlicerInput") << "//////////////////////////////////////////////"
+    LOG_VERBATIM("SlicerInput")
+    << "//////////////////////////////////////////////"
     << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           
     << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            
     << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           
@@ -673,7 +676,8 @@ namespace rdu
     if (fTDCPostAcquisitionWindow    < 0) fTDCPostAcquisitionWindow    = 0;
     if (fTDCAcquisitionWindow        < 0) fTDCAcquisitionWindow        = fTDCReadoutWindow;
 
-    LOG_VERBATIM("SlicerInput") << "//////////////////////////////////////////////"
+    LOG_VERBATIM("SlicerInput")
+    << "//////////////////////////////////////////////"
     << "\nV1495DelayTicks:             " << fV1495DelayTicks
     << "\nV1495Delay:                  " << fV1495Delay
     << "\nV1740PreAcquisitionWindow:   " << fV1740PreAcquisitionWindow
