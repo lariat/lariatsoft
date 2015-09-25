@@ -1025,7 +1025,7 @@ void ParticleIdentificationSlicing::fillPIDHistos( int finalPDGCode,
   if( finalPDGCode == 321 || finalPDGCode == -321 ){
     fPzVsTOFKaons->Fill(momentum,TOF);
   }
-  if( finalPDGCode == 9999990 ){
+  if( finalPDGCode == 21113 ){
     fPzVsTOFPiMu->Fill(momentum,TOF);
   } 
   if( finalPDGCode == 211 || finalPDGCode == -211 ){
