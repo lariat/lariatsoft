@@ -107,7 +107,6 @@ private:
   // Tunable parameters from fcl
   bool            bUseTriggerFilter;
   bool            bVerbose;
-  float           fV1751PostPercent;
   std::string     fDAQModule;
   std::string     fTrackModule;
   std::string     fTrackCalModule;
@@ -292,20 +291,17 @@ void MichelWfmReco::produce(art::Event & e)
       raw::OpDetPulse ThePulse = *ThePulsePtr;
       if( ThePulse.OpChannel() == 1) {
         ETL_waveform = ThePulse.Waveform();
-
-        // hacky convention: Timestamp stored in FirstSample:
-        Timestamp = (double(ThePulse.FirstSample())*8.)/1.0e09;
         NSamples = ETL_waveform.size();
-        PostPercentMark = short(fV1751PostPercent*NSamples);
+        Timestamp = (double(ThePulse.PMTFrame())*8.)/1.0e09;
+        PostPercentMark = short(ThePulse.FirstSample); 
 
-        // updated convention (once it's working upstream): 
-        //Timestamp = (double(ThePulse.PMTFrame())*8.)/1.0e09;
-        //NSamples = ETL_waveform.size();
-        //PostPercentMark = short(ThePulse.FirstSample());
-
-        std::cout<<"ETL pulse recorded: Nsamples = "<<NSamples
-        <<", trigger time at "<<PostPercentMark<<"  Timestamp: "<<Timestamp<<"\n";
+        std::cout<<"ETL pulse recorded: Nsamples = "<<NSamples<<std::endl;
+        std::cout<<"   OpDetPulse PMTFrame = "<<ThePulse.PMTFrame()<<
+          "  ("Timestamp<<" sec\n";
+        std::cout<<"   OpDetPulse FirstSample = "<<ThePulse.FirstSample()<<std::endl;
         GotETL = true;
+
+
       }
     }
   }
@@ -314,8 +310,8 @@ void MichelWfmReco::produce(art::Event & e)
   // If we somehow didn't get the ETL, skip the event
   if( !GotETL ) return;
   h_FilterStages->Fill(1);
-
-
+  
+  
   // Get the tracks and their associated energy
   art::Handle< std::vector< recob::Track >> TrackHandle;
   e.getByLabel(fTrackModule,TrackHandle);
@@ -455,6 +451,7 @@ void MichelWfmReco::produce(art::Event & e)
       }
     }  
   }
+
 
 
   // ---------------------------------------
@@ -634,7 +631,6 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & p)
   fTrackModule            = p.get< std::string >("TrackModule","pmtrack");
   fTrackCalModule         = p.get< std::string >("TrackCalModule","calo");
   fInstanceName           = p.get< std::string >("InstanceName","");
-  fV1751PostPercent        = p.get< float >("V1751PostPercent",0.3);
   fBaselineWindowLength   = p.get< short >("BaselineWindowLength",1000);
   fFiducialMargin_X       = p.get< double>("FiducialMargin_X",5.);
   fFiducialMargin_Y       = p.get< double>("FiducialMargin_Y",4.);

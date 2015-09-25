@@ -54,7 +54,6 @@ physics:
 
 }
 
-physics.producers.MichelWfmReco.V1751PostPercent: 0.3
 physics.producers.MichelWfmReco.UseTriggerFilter: "false"   
 physics.producers.MichelWfmReco.GradientHitThreshold: -10   # default -10
 physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1us
@@ -63,3 +62,7 @@ physics.producers.MichelWfmReco.DAQModule: "daq"
 physics.producers.MichelWfmReco.TrackModule: "pmtrack"
 physics.producers.MichelWfmReco.TrackCalModule: "calo"
 physics.producers.MichelWfmReco.TriggerFilterAlg.Verbosity: true
+physics.producers.MichelWfmReco.FiducialMargin_X: 5.
+physics.producers.MichelWfmReco.FiducialMargin_Y: 4.
+physics.producers.MichelWfmReco.FiducialMargin_Z: 5.
+
