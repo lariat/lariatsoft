@@ -85,11 +85,11 @@ public:
 
   void fillCharacterizationHistos( art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle,
 				   art::Handle< std::vector<ldp::TOF> > TOFColHandle,
-				   art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSMuRSColHandle );
+				   art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSColHandle );
 
   void plotTheGoodTracksAndTOFInfo( art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle,
 				    art::Handle< std::vector<ldp::TOF> > TOFColHandle,
-				    art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSMuRSColHandle );
+				    art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSColHandle );
 
 
   void setPriors( float momentum );
@@ -183,6 +183,12 @@ private:
   TH2F*             fPzVsTOFPions;
   TH2F*             fPzVsTOFMuons;
   TH1F*             fPDGCodes;
+
+  TH1F*             fMuRSTracks;
+
+  TH1F*             fPiMuProb;
+  TH1F*             fKaonProb;
+  TH1F*             fProtonProb;
 
   std::vector<size_t>  fKaonRun;
   std::vector<size_t>  fKaonSubRun;
@@ -365,7 +371,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 
   
   
-  //Tag possible kaon
+  //Tag possible kaon (for by-eye scans - not to be used in module)
   if((WCTrackColHandle->at(0).Momentum() < 950 && WCTrackColHandle->at(0).Momentum() > 500 ) &&
      (TOFColHandle->at(0).SingleTOF(0) < 42 && TOFColHandle->at(0).SingleTOF(0) > 37) ){
     fKaonRun.push_back(size_t(e.run()));
@@ -383,12 +389,9 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //to the likelihood of the associated particle being the correct one
   //given the mass. We normalize these three probabilities and store them
   //for future use.
-  //NOTE: If I can get my mitts on MC beam information, we can also weight
-  //these with priors (relative beam composition of pions, protons, kaons,
-  //and improve our likelihood estimates)
 
   //Indices after filling:
-  //0: proton likelihood ratio
+  //0: proton likelihood ratio (probability of proton/(probability of anything))
   //1: kaon likelihood ratio
   //2: pimu likelihood ratio
   //Note that the size might still be zero after the
@@ -400,7 +403,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 				   proton_kaon_pimu_likelihood_ratios );
   ///////////////// PARTICLE ID ENDING Pz vs. TOF /////////////////////
 
-
+  
   //Now we check to see if the pimu likelihood ratio is above some 
   //parametrized threshold. If it is, run pi/mu separation on it.
   bool foundGoodMuRSTrack = false;
@@ -416,6 +419,9 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
     // found within a reasonable distance of tick 136. This very roughly
     // matches the WCTrack to the MuRS track.
     //
+
+    //One way to improve this PID is to look at incoming times of WCTracks and MuRSTracks and match them,
+    //rather than relying on the above assumption.
     
     if( fVerbose )std::cout << "PiMu probability above threshold." << std::endl;
     
@@ -445,6 +451,11 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //Build probabilities for pions and muons based on pion_muon_likelihood_ratio
   float pion_prob = pion_muon_likelihood_ratio/(pion_muon_likelihood_ratio+1);
   float muon_prob = 1/(pion_muon_likelihood_ratio+1);
+
+  //Histos for checking proton/pimu/kaon probabilitites
+  fPiMuProb->Fill(proton_kaon_pimu_likelihood_ratios.at(2));
+  fKaonProb->Fill(proton_kaon_pimu_likelihood_ratios.at(1));
+  fProtonProb->Fill(proton_kaon_pimu_likelihood_ratios.at(0));
 
   //Now fill in the AuxDetParticle with the likelihoods  
   ldp::AuxDetParticleID thePID( proton_kaon_pimu_likelihood_ratios.at(0),
@@ -485,7 +496,7 @@ void ParticleIdentificationSlicing::fillCharacterizationHistos( art::Handle< std
 //============================================================================================
 void ParticleIdentificationSlicing::plotTheGoodTracksAndTOFInfo( art::Handle< std::vector<ldp::WCTrack> > WCTrackColHandle,
 								 art::Handle< std::vector<ldp::TOF> > TOFColHandle,
-								 art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSMuRSColHandle )
+								 art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSColHandle )
 {
   fPzVsTOFGood->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
   fPz->Fill(WCTrackColHandle->at(0).Momentum());
@@ -502,6 +513,15 @@ void ParticleIdentificationSlicing::plotTheGoodTracksAndTOFInfo( art::Handle< st
   float mass = pow(pow((fSpeedOfLight*(TOFColHandle->at(0).SingleTOF(0))*1e-9/fDistanceTraveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
   fParticleMass->Fill(mass);
   std::cout << "mass: " << mass << std::endl;
+
+
+  ldp::MuonRangeStackHits murs = MuRSColHandle->at(0);
+  for( size_t iTrack = 0; iTrack < murs.NTracks(); ++iTrack ){
+    fMuRSTracks->Fill(murs.GetArrivalTime(iTrack));
+  }
+
+  
+		    
 
 }
 
@@ -706,7 +726,8 @@ std::string ParticleIdentificationSlicing::parseMCPriorString( std::string theSt
   }
 
   //Sanity check
-  if( fVerbose ){
+  //  if( fVerbose ){
+  if(0){
     std::cout << "In parseMCPriorString, we find " << tempStringVect.size() << " strings. These are: " << std::endl;
     for( size_t iString = 0; iString < tempStringVect.size(); ++iString ){
       std::cout << "String " << iString << ": " << tempStringVect.at(iString) << std::endl;
@@ -722,7 +743,7 @@ std::string ParticleIdentificationSlicing::parseMCPriorString( std::string theSt
     }
   }
   
-  std::cout << "Something not matched. Returning abort string." << std::endl;
+  //  std::cout << "Something not matched. Returning abort string." << std::endl;
   return "abort";
   
 }
@@ -762,10 +783,17 @@ void ParticleIdentificationSlicing::doThePiMu_Proton_KaonSeparation( float reco_
     kaon_likelihood = 0;
   }
 
+  //Account for terrible kaon peak fitting (initial stages only)
+  if( mass > fProtonMassMean && kaon_likelihood > proton_likelihood && kaon_likelihood > pimu_likelihood ){
+    pimu_likelihood = 0;
+    proton_likelihood = 0;
+    kaon_likelihood = 0;
+  }
   
   proton_kaon_pimu_likelihood_ratios.push_back(proton_likelihood);
   proton_kaon_pimu_likelihood_ratios.push_back(kaon_likelihood);
   proton_kaon_pimu_likelihood_ratios.push_back(pimu_likelihood);
+ 
  
 }
 
@@ -948,22 +976,22 @@ int ParticleIdentificationSlicing::generatePDGCode( std::vector<float> proton_ka
   std::cout << "pi_g_pimu_prob: " << pi_g_pimu_prob << ", mu_g_pimu_prob: " << mu_g_pimu_prob << std::endl;
   
 
-  int pdgCode = 9999999;
+  int pdgCode = 0; //Zero is unsuccessful decision of PDG code
 
   //Setting the particle ID
   if( p_prob > k_prob && p_prob > pimu_prob ){
     if( fPolaritySetting == 1 ) pdgCode = 2212;
     else if( fPolaritySetting == -1 ) pdgCode = -2212;
-    else{ pdgCode = 9999999; }
+    else{ pdgCode = 0; }
   }
   else if( k_prob > p_prob && k_prob > pimu_prob ){
     if( fPolaritySetting == 1 ) pdgCode = 321;
     else if( fPolaritySetting == -1 ) pdgCode = -321;
-    else{ pdgCode = 9999999; }
+    else{ pdgCode = 0; }
   }
   else if( pimu_prob > p_prob && pimu_prob > k_prob ){
     //Taking care of a bad default case when there is no MuRSTrack
-    if( !foundGoodMuRSTrack ) return 9999990;
+    if( !foundGoodMuRSTrack ) return 21113; //21113 is for Pi: 211, Mu: 13, so this is PiMu.
     else if( fPolaritySetting == 1 ){
       if( pi_g_pimu_prob > mu_g_pimu_prob ) pdgCode = 211;
       else if( pi_g_pimu_prob < mu_g_pimu_prob )pdgCode = -13;
@@ -977,7 +1005,7 @@ int ParticleIdentificationSlicing::generatePDGCode( std::vector<float> proton_ka
       else{ std::cout << "It seems as if no murs was run. The muon and pion probs are equal." << std::endl; }
 
     }
-    else{ pdgCode = 9999999; }
+    else{ pdgCode = 0; }
   }
   
   return pdgCode;
@@ -1153,7 +1181,7 @@ void ParticleIdentificationSlicing::beginJob()
   fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
   fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
   fTOFType = tfs->make<TH1F>("TOFType","Number of valid times of flight per event",10,0,10);
-  fParticleMass = tfs->make<TH1F>("Mass","Particle Mass",50,0,2000);
+  fParticleMass = tfs->make<TH1F>("Mass","Particle Mass",200,0,2000);
   
   fMagnetSettingHist = tfs->make<TH1F>("MagnetSetting","Magnet Setting",1,0,-1);
   fPolaritySettingHist = tfs->make<TH1F>("PolaritySetting","Polarity Setting",4,-2,2);
@@ -1167,7 +1195,6 @@ void ParticleIdentificationSlicing::beginJob()
   fNMuRSHitsObjectHist = tfs->make<TH1F>("MuRSHitObjects","Number of MuRSHits Objects in the event",5,0,5);
   fNMuRSTrackHist = tfs->make<TH1F>("NMuRSTracks","Number of MuRSTracks per event",15,0,15);
 
-
   fPzVsTOFProtons = tfs->make<TH2F>("PzVsTOFProtons","Pz Vs. TOF for Protons",160,0,1600,70,10,80);
   fPzVsTOFKaons = tfs->make<TH2F>("PzVsTOFKaons","Pz Vs. TOF for Kaons",160,0,1600,70,10,80);
   fPzVsTOFPiMu = tfs->make<TH2F>("PzVsTOFPiMu","Pz Vs. TOF for Pions/Muons",160,0,1600,70,10,80);
@@ -1175,6 +1202,11 @@ void ParticleIdentificationSlicing::beginJob()
   fPzVsTOFMuons = tfs->make<TH2F>("PzVsTOFMuons","Pz Vs. TOF for Muons",160,0,1600,70,10,80);
   fPDGCodes = tfs->make<TH1F>("PDGCodes","PDG Codes", 4425,-2212,2213);
   
+  fMuRSTracks = tfs->make<TH1F>("GoodTrackTimes","Good MuRS Track Times",3072,0,3072);
+
+  fPiMuProb = tfs->make<TH1F>("PiMuProb","Probability of a PiMu for each event.",100,0,1);
+  fKaonProb = tfs->make<TH1F>("KaonProb","Probability of a Kaon for each event.",100,0,1);
+  fProtonProb = tfs->make<TH1F>("ProtonProb","Probability of a Proton for each event.",100,0,1);
   
   
   fPz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");

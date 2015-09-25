@@ -20,7 +20,7 @@ namespace ldp{
     fPiMuProbability = 0;
     fPionProbability = 0;
     fMuonProbability = 0;
-    fPDGCode = 9999999;
+    fPDGCode = 0;
 
   }
 

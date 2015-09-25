@@ -29,6 +29,7 @@ lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini
 {
   module_type:        TimeOfFlightSlicing
   TOFBuilderAlg:      @local::lariat_tofbuilderalg
+  SourceLabel:        "daq"		
 }
 
 lariat_murs:            #Taken from MuonRangeStackHitsSlicing.fcl by Greg Pulliam
