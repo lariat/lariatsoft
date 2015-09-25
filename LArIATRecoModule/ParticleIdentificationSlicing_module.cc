@@ -800,29 +800,29 @@ void ParticleIdentificationSlicing::doThePiMu_Proton_KaonSeparation( float reco_
 
 //============================================================================================
 //Finding whether there is a MuRSTrack at the appropriate time
-bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack( art::Handle< std::vector<ldp::MuonRangeStackHits> > & MuRSColHandle,
-							   int & thePenetrationDepth )
+bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack(art::Handle< std::vector<ldp::MuonRangeStackHits> > & MuRSColHandle,
+                                                          int & thePenetrationDepth)
 {
   //Loop through the MuRS objects
   int counter = 0;
-  for( size_t iMuRS; iMuRS < MuRSColHandle->size(); ++iMuRS ){
+  for (size_t iMuRS = 0; iMuRS < MuRSColHandle->size(); ++iMuRS) {
     ldp::MuonRangeStackHits theMuRS = MuRSColHandle->at(iMuRS);
-    for( size_t iTrack = 0; iTrack < theMuRS.NTracks(); ++iTrack ){
+    for (size_t iTrack = 0; iTrack < theMuRS.NTracks(); ++iTrack) {
       float theTrackTime = theMuRS.GetArrivalTime(iTrack);
-      if( theTrackTime >= fTriggerWindowFirstTick && theTrackTime <= fTriggerWindowLastTick ){
-	thePenetrationDepth = theMuRS.GetPenetrationDepth(iTrack);
-	counter++;
+      if (theTrackTime >= fTriggerWindowFirstTick && theTrackTime <= fTriggerWindowLastTick) {
+        thePenetrationDepth = theMuRS.GetPenetrationDepth(iTrack);
+        counter++;
       }
     }
-    
+
   }
 
-  if( counter == 1 ){
+  if (counter == 1) {
     std::cout << "There was a good MuRS track." << std::endl;
     return true;
   }
-  else if( counter == 0 ) return false;
-  else{
+  else if (counter == 0) return false;
+  else {
     std::cout << "I'm not sure what to do here. There were 2+ good murs tracks. Returning true." << std::endl;
     return true;
   }
