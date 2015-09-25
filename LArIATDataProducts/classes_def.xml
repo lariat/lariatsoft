@@ -38,8 +38,6 @@
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,     void> >"/>
  <class name="art::Wrapper<art::Assns<ldp::TOF,     raw::Trigger,     void> >"/>
 
- 
- 
  <class name="ldp::WCTrack" ClassVersion="11"                                      >
   <version ClassVersion="11" checksum="167827337"/>
   <version ClassVersion="10" checksum="4212739596"                                />
@@ -62,23 +60,6 @@
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >"/>
  <class name="art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >"/>
 
- 
- <class name="ldp::AGCounter" ClassVersion="14"                                    >
-  <version ClassVersion="14" checksum="3899263165"/>
-  <version ClassVersion="13" checksum="894412250"/>
-  <version ClassVersion="12" checksum="194513558"/>
-  
- </class>
- <class name="AGCHits"                                                            />
- <class name="std::vector<ldp::AGCounter>"                                        />
- <class name="std::vector<AGCHits>"                                               />
- <class name="std::vector<std::vector<AGCHits> >"                                 />
- 
- <class name="art::Wrapper<ldp::AGCounter>"                                       />
- <class name="art::Wrapper<std::vector<ldp::AGCounter> >"                         />
- <class name="art::Wrapper<std::vector<AGCHits> >"                                />
- <class name="art::Wrapper<std::vector<std::vector<AGCHits> > >"                  />
- <class name="art::Wrapper<AGCHits >"                                             />
 
  <class name="ldp::MuonRangeStackHits" ClassVersion="15"                           >
   <version ClassVersion="15" checksum="4162642674"/>
@@ -108,5 +89,28 @@
   <version ClassVersion="10" checksum="2354193908"/>
  </class>
  <class name="art::Wrapper<ldp::ConditionsSummary>"                               />
+ 
+  <class name="ldp::Edge" ClassVersion="12"                                      >
+  <version ClassVersion="12" checksum="1464557753"/>
+  <version ClassVersion="11" checksum="167827337"/>
+  <version ClassVersion="10" checksum="4212739596"                                />
+ </class>
+ <class name="std::vector<ldp::Edge>"                                          />
+ <class name="art::Wrapper<ldp::Edge>"                                         />
+ <class name="art::Wrapper<std::vector<ldp::Edge> >"                           />
+
+ <class name="std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::Edge> >"    />
+ <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::Edge> >"    />
+  
+ <class name="std::pair< art::Ptr<ldp::Edge>,     art::Ptr<raw::Trigger> >"    />
+ <class name="std::pair< art::Ptr<ldp::Edge>,     art::Ptr<raw::AuxDetDigit> >"/>
+
+ <class name="art::Assns<ldp::Edge,     raw::Trigger,      void>"              />
+ <class name="art::Assns<raw::Trigger,     ldp::Edge,      void>"              />
+ <class name="art::Assns<raw::AuxDetDigit, ldp::Edge,      void>"              />
+ 
+ <class name="art::Wrapper<art::Assns<raw::Trigger,     ldp::Edge,     void> >"/>
+ <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::Edge,     void> >"/>
+ <class name="art::Wrapper<art::Assns<ldp::Edge,     raw::Trigger,     void> >"/>
 
 </lcgdict>
