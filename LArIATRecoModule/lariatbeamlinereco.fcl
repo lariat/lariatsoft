@@ -58,6 +58,12 @@ lariat_pid:
   MuRSModuleLabel:                 murs
   Verbose:                         true
   GenerateFitsForMassDistribution: true
+  PiMuMassMean:  		   190.
+  PiMuMassSigma: 		   88.2
+  KaonMassMean: 		   549.
+  KaonMassSigma: 		   265.
+  ProtonMassMean: 		   1042.
+  ProtonMassSigma: 		   108.
 
 
   ### MC INFORMATION ABOUT TERTIARY BEAM COMPOSITION ###
