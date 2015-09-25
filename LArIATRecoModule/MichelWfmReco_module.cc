@@ -293,11 +293,11 @@ void MichelWfmReco::produce(art::Event & e)
         ETL_waveform = ThePulse.Waveform();
         NSamples = ETL_waveform.size();
         Timestamp = (double(ThePulse.PMTFrame())*8.)/1.0e09;
-        PostPercentMark = short(ThePulse.FirstSample); 
+        PostPercentMark = short(ThePulse.FirstSample()); 
 
         std::cout<<"ETL pulse recorded: Nsamples = "<<NSamples<<std::endl;
         std::cout<<"   OpDetPulse PMTFrame = "<<ThePulse.PMTFrame()<<
-          "  ("Timestamp<<" sec\n";
+          "  ("<<Timestamp<<" sec\n";
         std::cout<<"   OpDetPulse FirstSample = "<<ThePulse.FirstSample()<<std::endl;
         GotETL = true;
 
