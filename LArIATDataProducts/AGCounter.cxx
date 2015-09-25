@@ -15,20 +15,21 @@
 
 int iHit;
 namespace ldp {
-	AGCounter::AGCounter() {}
-	AGCounter::~AGCounter() {}
-	
-//	AGCounter::AGCounter(std::vector<std::vector<AGCHits> > AGCHits) { fAGCHits = AGCHits; }
-	
-	AGCounter::AGCounter(std::vector<AGCHits> AGCHits) { fAGCHits = AGCHits; }
-	
-/*	void AGCounter::Linearize() {
-		fAGCHitsLinearized.clear();
-		for (size_t i = 0; i < fAGCHits.size(); i++) {
-			fAGCHitsLinearized.insert(fAGCHitsLinearized.end(), fAGCHits.at(i).begin(), fAGCHits.at(i).end());
-		}
+  
+  AGCounter::AGCounter() {}
+  AGCounter::~AGCounter() {}
+  
+  //	AGCounter::AGCounter(std::vector<std::vector<AGCHits> > AGCHits) { fAGCHits = AGCHits; }
+  
+  AGCounter::AGCounter(std::vector<AGCHits> AGCHits) { fAGCHits = AGCHits; }
+  
+  /*	void AGCounter::Linearize() {
+	fAGCHitsLinearized.clear();
+	for (size_t i = 0; i < fAGCHits.size(); i++) {
+	fAGCHitsLinearized.insert(fAGCHitsLinearized.end(), fAGCHits.at(i).begin(), fAGCHits.at(i).end());
 	}
-
+	}
+	
 	
 	short unsigned int AGCounter::GetNHits() { return fAGCHitsLinearized.size(); }
 	
@@ -48,20 +49,20 @@ namespace ldp {
 	bool 			AGCounter::GetHitExistDS2(int iHit) { return fAGCHitsLinearized.at(iHit).HitExistDS2; }
 */
 	
-	short unsigned int 	AGCounter::GetNHits() { return fAGCHits.size(); }
-	
-	long unsigned int 	AGCounter::GetHitTimeStampUSE(int iHit) { return fAGCHits.at(iHit).HitTimeStampUSE; }
-	long unsigned int 	AGCounter::GetHitTimeStampUSW(int iHit) { return fAGCHits.at(iHit).HitTimeStampUSW; }
-	long unsigned int 	AGCounter::GetHitTimeStampDS1(int iHit) { return fAGCHits.at(iHit).HitTimeStampDS1; }
-	long unsigned int 	AGCounter::GetHitTimeStampDS2(int iHit) { return fAGCHits.at(iHit).HitTimeStampDS2; }
-	
-	float			AGCounter::GetHitPulseAreaUSE(int iHit) { return fAGCHits.at(iHit).HitPulseAreaUSE;}
-	float			AGCounter::GetHitPulseAreaUSW(int iHit) { return fAGCHits.at(iHit).HitPulseAreaUSW;}
-	float			AGCounter::GetHitPulseAreaDS1(int iHit) { return fAGCHits.at(iHit).HitPulseAreaDS1;}
-	float			AGCounter::GetHitPulseAreaDS2(int iHit) { return fAGCHits.at(iHit).HitPulseAreaDS2;}
-	
-	bool 			AGCounter::GetHitExistUSE(int iHit) { return fAGCHits.at(iHit).HitExistUSE; }
-	bool 			AGCounter::GetHitExistUSW(int iHit) { return fAGCHits.at(iHit).HitExistUSW; }
-	bool 			AGCounter::GetHitExistDS1(int iHit) { return fAGCHits.at(iHit).HitExistDS1; }
-	bool 			AGCounter::GetHitExistDS2(int iHit) { return fAGCHits.at(iHit).HitExistDS2; }
+  short unsigned int 	AGCounter::GetNHits() { return fAGCHits.size(); }
+  
+  long unsigned int 	AGCounter::GetHitTimeStampUSE(int iHit) { return fAGCHits.at(iHit).HitTimeStampUSE; }
+  long unsigned int 	AGCounter::GetHitTimeStampUSW(int iHit) { return fAGCHits.at(iHit).HitTimeStampUSW; }
+  long unsigned int 	AGCounter::GetHitTimeStampDS1(int iHit) { return fAGCHits.at(iHit).HitTimeStampDS1; }
+  long unsigned int 	AGCounter::GetHitTimeStampDS2(int iHit) { return fAGCHits.at(iHit).HitTimeStampDS2; }
+  
+  float			AGCounter::GetHitPulseAreaUSE(int iHit) { return fAGCHits.at(iHit).HitPulseAreaUSE;}
+  float			AGCounter::GetHitPulseAreaUSW(int iHit) { return fAGCHits.at(iHit).HitPulseAreaUSW;}
+  float			AGCounter::GetHitPulseAreaDS1(int iHit) { return fAGCHits.at(iHit).HitPulseAreaDS1;}
+  float			AGCounter::GetHitPulseAreaDS2(int iHit) { return fAGCHits.at(iHit).HitPulseAreaDS2;}
+  
+  bool 			AGCounter::GetHitExistUSE(int iHit) { return fAGCHits.at(iHit).HitExistUSE; }
+  bool 			AGCounter::GetHitExistUSW(int iHit) { return fAGCHits.at(iHit).HitExistUSW; }
+  bool 			AGCounter::GetHitExistDS1(int iHit) { return fAGCHits.at(iHit).HitExistDS1; }
+  bool 			AGCounter::GetHitExistDS2(int iHit) { return fAGCHits.at(iHit).HitExistDS2; }
 }

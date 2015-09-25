@@ -25,12 +25,16 @@ namespace ldp{
       
       paddlemap.emplace(i,blank1);
     }
+
   }
   
   //##########################################
   MuonRangeStackHits::MuonRangeStackHits(std::map<int, std::vector<int> > paddlemap,
 					 std::vector<MuRSTrack> trackVector )
   {
+    if( paddlemap.size() == 0 && trackVector.size() == 0 ) fIsInitializedEmpty = true;
+    else{ fIsInitializedEmpty = false; }
+    
     //Setting the data members with the reconstructed input
     fPaddleTimeTickMap=paddlemap;
     fMuRSTrackVector=trackVector;
@@ -90,5 +94,9 @@ namespace ldp{
 
   //########################################  
   size_t MuonRangeStackHits::NTracks(){ return fMuRSTrackVector.size(); }
+
+  //########################################  
+  bool MuonRangeStackHits::WasItInitializedEmpty(){ return fIsInitializedEmpty; }
+
   
 }// end namespace
