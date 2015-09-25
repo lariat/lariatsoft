@@ -700,6 +700,4 @@ void FragmentToDigitAlg::InitializeRun( art::RunNumber_t runNumber )
   fConfigValues.clear();
   fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));
   fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
-  //fV1751PostPercent = fConfigValues["v1751_config_caen_postpercent"];
-  //SizeT = static_cast <double> (std::stoi(fConfigValues["v1751_config_caen_postpercent"]));
 }
