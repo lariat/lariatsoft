@@ -16,6 +16,7 @@
 #include "LArIATFragments/CAENFragment.h"
 #include "LArIATFragments/V1495Fragment.h"
 #include "SimpleTypesAndConstants/RawTypes.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
 // LArSoft
 #include "RawData/RawDigit.h"
@@ -75,6 +76,8 @@ void FragmentToDigitAlg::reconfigure( fhicl::ParameterSet const& pset )
 				      << opChans[i][j];
     }
   }
+
+
 }
 
 //=====================================================================
@@ -251,6 +254,7 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
   // loop over the caenFrags
   uint32_t boardId        = 0;
   uint32_t triggerTimeTag = 0;
+  int      firstSample    = 0;
 
   for(auto const& caenFrag : caenFrags){
 
@@ -270,6 +274,9 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
         
         std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
         
+        // calculate first sample
+        firstSample = (int)((100.-fV1751PostPercent) * 0.01 * (float)waveForm.size());
+        
         // LOG_VERBATIM("FragmentToDigitAlg") << "Writing opdetpulses "
         // 			       << " boardID : " << boardId
         // 			       << " channel " << ch
@@ -278,8 +285,8 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
         
         opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (ch),
                                              waveForm,
-                                             0,
-                                             static_cast <unsigned int> (triggerTimeTag)
+                                             static_cast <unsigned int> (triggerTimeTag),
+                                             static_cast <unsigned int> (firstSample)
                                              )
                              );
         
@@ -674,4 +681,23 @@ void FragmentToDigitAlg::InitializeRun( art::RunNumber_t runNumber )
 {
   fRunNumber = runNumber;
   InitializeMWPCContainers();
+  
+  // Set config parameters to get from the lariat_prd database
+  fConfigParams.clear();
+  fConfigParams.push_back("v1495_config_v1495_delay_ticks");
+  fConfigParams.push_back("v1740_config_caen_postpercent");
+  fConfigParams.push_back("v1740_config_caen_recordlength");
+  fConfigParams.push_back("v1740b_config_caen_postpercent");
+  fConfigParams.push_back("v1740b_config_caen_recordlength");
+  fConfigParams.push_back("v1751_config_caen_postpercent");
+  fConfigParams.push_back("v1751_config_caen_recordlength");
+  fConfigParams.push_back("v1740_config_caen_v1740_samplereduction");
+  fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
+  fConfigParams.push_back("tdc_config_tdc_pipelinedelay");
+  fConfigParams.push_back("tdc_config_tdc_gatewidth");
+  
+  // Get V1751 PostPercent settings from database
+  fConfigValues.clear();
+  fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));
+  fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
 }

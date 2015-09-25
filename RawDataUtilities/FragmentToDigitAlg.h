@@ -30,6 +30,7 @@ namespace raw{
 }
 
 #include "LArIATFragments/TDCFragment.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
 class CAENFragment;
 
@@ -99,7 +100,10 @@ class FragmentToDigitAlg{
   size_t                                     fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
   float                                      fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
   float                                      fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
-
+  float                                      fV1751PostPercent;        ///< 1751 PostPercent setting (ranges 0-100)
+  art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;     ///< handle to the DatabaseUtility1034
+  std::map< std::string, std::string >       fConfigValues;            ///< (key, value) pair for the database query result
+  std::vector<std::string>                   fConfigParams;            ///< vector of parameter names to be queried
 
 };
 
