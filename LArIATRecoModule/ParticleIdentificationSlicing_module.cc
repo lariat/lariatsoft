@@ -995,13 +995,11 @@ int ParticleIdentificationSlicing::generatePDGCode( std::vector<float> proton_ka
     else if( fPolaritySetting == 1 ){
       if( pi_g_pimu_prob > mu_g_pimu_prob ) pdgCode = 211;
       else if( pi_g_pimu_prob < mu_g_pimu_prob )pdgCode = -13;
-      //      else if( pi_g_pimu_prob == mu_g_pimu_prob && pi_g_pimu_prob != 0 ) pdgCode = -13;
       else{ std::cout << "It seems as if no murs was run. The muon and pion probs are equal." << std::endl; }
     }
     else if( fPolaritySetting == -1 ){
       if( pi_g_pimu_prob > mu_g_pimu_prob ) pdgCode = -211;
       else if( pi_g_pimu_prob < mu_g_pimu_prob )pdgCode = 13;
-      // else if( pi_g_pimu_prob == mu_g_pimu_prob && pi_g_pimu_prob != 0 ) pdgCode = 13;
       else{ std::cout << "It seems as if no murs was run. The muon and pion probs are equal." << std::endl; }
 
     }
