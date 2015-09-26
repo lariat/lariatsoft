@@ -1,13 +1,9 @@
-#include "geometry_lariat.fcl"
-
 BEGIN_PROLOG
 
 lariat_pionscxsimfilter:
 {
   module_type:      PionSCXSimFilter
   SimulationLabel:  "largeant"
-  #Geometry:               @local::lariat_geo
-  #ExptGeoHelperInterface: @local::lariat_geometry_helper
 }
 
 END_PROLOG
