@@ -21,10 +21,7 @@
 // LArSoft includes
 #include "Geometry/Geometry.h"
 #include "Geometry/GeometryCore.h"
-#include "Simulation/sim.h"
-#include "Simulation/SimChannel.h"
 #include "SimulationBase/MCParticle.h"
-#include "SimulationBase/MCTruth.h"
 
 // ROOT includes
 #include "TLorentzVector.h"
