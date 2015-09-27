@@ -11,4 +11,14 @@ lariat_triggerpattern:
   TriggerPattern:     "<+BEAMON-PILEUP>"
 }
 
+lariat_kaonfilter:
+{
+  module_type:                 KaonFilter
+  KaonProbabilityThreshold:    0.8
+  ParticleIDModuleLabel:       "pid"
+  WCTrackModuleLabel:          "wctrack"
+  TOFModuleLabel:              "tof"
+}
+
+
 END_PROLOG
