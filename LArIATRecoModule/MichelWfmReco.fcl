@@ -9,6 +9,7 @@ services:
   TFileService: { fileName: "MichelWfmReco_histo.root" }
   message:      @local::standard_info
   user:         @local::lariat_simulation_services
+  scheduler:    { }
 }
 
 source:
@@ -54,10 +55,12 @@ physics:
 
 }
 
+services.scheduler.SkipEvent: [ ProductNotFound ]
 physics.producers.MichelWfmReco.UseTriggerFilter: "false"   
 physics.producers.MichelWfmReco.GradientHitThreshold: -10   # default -10
 physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1us
 physics.producers.MichelWfmReco.TriggerUtility: "FragmentToDigit"
+physics.producers.MichelWfmReco.UseTrackInformation: "true"
 physics.producers.MichelWfmReco.DAQModule: "daq"
 physics.producers.MichelWfmReco.TrackModule: "pmtrack"
 physics.producers.MichelWfmReco.TrackCalModule: "calo"

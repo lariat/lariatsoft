@@ -251,14 +251,16 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
   prepulse_exp_fit->FixParameter(0,baseline);
   prepulse_exp_fit->FixParameter(2,hit);
   prepulse_exp_fit->SetParLimits(3,1400,1600);
-  graph->Fit(prepulse_exp_fit,"N0");
+  graph->Fit(prepulse_exp_fit,"QN0");
 
+  /* 
   std::cout<<"Parameters of fitted prepulse region: \n";
   std::cout<<"    Norm                : "<<prepulse_exp_fit->GetParameter(1)<<"\n";
   std::cout<<"    Tau                 : "<<prepulse_exp_fit->GetParameter(3)<<"\n";
   std::cout<<"    fit baseline at hit : "<<prepulse_exp_fit->Eval(int(hit))<<"\n";
   std::cout<<"    waveform baseline   : "<<baseline<<"\n";
   std::cout<<"    actual hit value    : "<<wfm[hit]<<"\n";
+  */
 
   // Integrate using the fitted function as running baseline
   double integral = 0.;
