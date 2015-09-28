@@ -29,7 +29,15 @@ util::SignalShapingServiceT1034::SignalShapingServiceT1034(const fhicl::Paramete
 //----------------------------------------------------------------------
 // Destructor.
 util::SignalShapingServiceT1034::~SignalShapingServiceT1034()
-{}
+{
+  if(fColFilterFunc) delete fColFilterFunc;
+  if(fIndFilterFunc) delete fIndFilterFunc;
+  if(fColFieldFunc)  delete fColFieldFunc;
+  if(fIndFieldFunc)  delete fIndFieldFunc;
+  
+  if(fFieldResponseHist[0]) delete fFieldResponsseHist[0];
+  if(fFieldResponseHist[1]) delete fFieldResponsseHist[1];
+}
 
 
 //----------------------------------------------------------------------

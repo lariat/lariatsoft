@@ -25,8 +25,8 @@ namespace rdu{
   // The triggerModuleLabel is the label of the module creating both the triggers
   // and the associations to the triggers
   FragmentUtility::FragmentUtility(art::Event  const& evt,
-				   std::string const& daqModuleLabel,
-				   std::string const& daqInstanceLabel)
+                                   std::string const& daqModuleLabel,
+                                   std::string const& daqInstanceLabel)
     : fLariatFragment(nullptr)
   {
 
@@ -50,14 +50,15 @@ namespace rdu{
 
   LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
 
-  LOG_VERBATIM("FragmentUtility") << "evt.run(): "               << evt.run()   
-				  << "; evt.subRun(): " 	 << evt.subRun()
-				  << "; evt.event(): "  	 << evt.event() 
-				  << "; evt.time().timeLow(): "  << evt.time().timeLow()
-				  << "; evt.time().timeHigh(): " << evt.time().timeHigh()
-				  << "\nrunNumber: "             << spillTrailer.runNumber  
-				  << "; spillNumber: " 		 << spillTrailer.spillNumber
-				  << "; timeStamp: "   		 << spillTrailer.timeStamp; 
+  LOG_VERBATIM("FragmentUtility")
+    << "evt.run(): "               << evt.run()
+    << "; evt.subRun(): " 	 << evt.subRun()
+    << "; evt.event(): "  	 << evt.event()
+    << "; evt.time().timeLow(): "  << evt.time().timeLow()
+    << "; evt.time().timeHigh(): " << evt.time().timeHigh()
+    << "\nrunNumber: "             << spillTrailer.runNumber
+    << "; spillNumber: " 		 << spillTrailer.spillNumber
+    << "; timeStamp: "   		 << spillTrailer.timeStamp;
     return;
   }
 
