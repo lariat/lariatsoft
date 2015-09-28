@@ -35,8 +35,8 @@ util::SignalShapingServiceT1034::~SignalShapingServiceT1034()
   if(fColFieldFunc)  delete fColFieldFunc;
   if(fIndFieldFunc)  delete fIndFieldFunc;
   
-  if(fFieldResponseHist[0]) delete fFieldResponsseHist[0];
-  if(fFieldResponseHist[1]) delete fFieldResponsseHist[1];
+  if(fFieldResponseHist[0]) delete fFieldResponseHist[0];
+  if(fFieldResponseHist[1]) delete fFieldResponseHist[1];
 }
 
 
