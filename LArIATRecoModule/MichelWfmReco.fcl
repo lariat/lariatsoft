@@ -63,7 +63,9 @@ physics.producers.MichelWfmReco.MinHitSeparation: 20        # default 20ns
 physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1000ns
 physics.producers.MichelWfmReco.PromptWindowLength: 100     # default 100ns
 physics.producers.MichelWfmReco.FullWindowLength: 7000      # default 7000ns
-physics.producers.MichelWfmReco.UsePrepulseFit: "true"     # default true
+physics.producers.MichelWfmReco.GateDelay: 300
+physics.producers.MichelWfmReco.UsePrepulseFit: "true"      # default true
+physics.producers.MichelWfmReco.DtIntegralCut: 0            # default 0
 physics.producers.MichelWfmReco.TriggerUtility: "FragmentToDigit"
 physics.producers.MichelWfmReco.UseTrackInformation: "true"
 physics.producers.MichelWfmReco.DAQModule: "daq"

@@ -39,14 +39,16 @@ OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
   art::ServiceHandle<art::TFileService> tfs;
-  
-  // Function to fit prepulse regions
-  prepulse_exp_fit = new TF1("prepulse_exp_fit","[0] + [1]*exp(-(x-[2])/[3])",0.,10000.);
-  //prepulse_exp_fit = new TF1("prepulse_exp_fit","[0] + [1]*exp(-(x)/[2])",0.,10000.);
  
-  AverageWaveform = new std::vector<double>(fPrePulseBaselineFit + fFullWindowLength); 
-  //AverageWaveform.resize(fPrePulseBaselineFit + fFullWindowLeng
+  // Set size of vector to hold summed waveforms 
+  AverageWaveform.resize(fPrePulseBaselineFit + fFullWindowLength);
   AverageWaveform_count = 0; 
+  
+  // Initialize some variables
+  prepulse_baseline = 0.;
+  prepulse_rms      = 0.;
+  fit_norm          = 0.;
+  fit_tau           = 0.;
   
 }
 
@@ -54,7 +56,6 @@ OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
 //Destructor
 OpHitBuilderAlg::~OpHitBuilderAlg()
 {
-
 }
 
 //--------------------------------------------------------------
@@ -121,7 +122,6 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short>& wfm)
 
   } // <-- endloop over the gradient
 
-  //std::cout<<"   found "<<hits.size()<<" hits on first pass.\n";
 
   // So now we have a list of hits, but clusters of these could be
   // fakes due to a "noisy" gradient. Filter out the hits that
@@ -237,6 +237,7 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
   size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
   std::vector<double> tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
   double baseline = tmp[0];
+  double rms      = tmp[1];
 
   //std::cout<<"Baseline: "<<baseline<<"\n";
  
@@ -265,33 +266,57 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
     mean += (y[i] - baseline)/20.;
   }
 
-  // Put these arrays into a TGraph for exponential fit
-  // to prepulse region
-  if(fUsePrepulseFit){
-    graph = new TGraph(prepulse_bins,x,y);
-    prepulse_exp_fit->FixParameter(0,baseline);
-    prepulse_exp_fit->SetParameter(1,wfm[x2]-baseline);
-    //prepulse_exp_fit->SetParLimits(1,0.8*mean,1.2*mean);
-    prepulse_exp_fit->FixParameter(2,x2);
-    prepulse_exp_fit->FixParameter(3,1600);
-    //prepulse_exp_fit->SetParLimits(3,1200,1800);
-    graph->Fit(prepulse_exp_fit,"QN0");
+  // Find overall prepulse baseline/RMS
+  std::vector<double> prepulse_info = GetBaselineAndRMS(wfm,x1,x2);
+  prepulse_baseline  = prepulse_info[0];
+  prepulse_rms       = prepulse_info[1];
+  double diff        = prepulse_baseline - baseline;
+
+  std::cout<<"Prepulse baseline "<<prepulse_baseline<<"   rms "<<prepulse_rms<<std::endl;
+  std::cout<<"Waveform baseline "<<baseline<<"   rms "<<rms<<std::endl;
+  std::cout<<"Difference        "<<diff<<"   ("<<diff/rms<<" * rms)"<<std::endl;
+
+  // Function for exponential pre-pulse baseline fit
+  TF1 prepulse_exp_fit("prepulse_exp_fit","[0] + [1]*exp(-(x-[2])/[3])",0.,10000.);
+
+  if(fUsePrepulseFit){ 
+    // If the prepulse baseline is consistent with
+    // overall waveform baseline, don't do fit
+    if( fabs(prepulse_baseline-baseline) < 0.5*rms ){
+      std::cout<<"Prepulse region consistent with baseline -- no fit used.\n";
+      prepulse_exp_fit.FixParameter(0,baseline);
+      prepulse_exp_fit.FixParameter(1,0.);
+      prepulse_exp_fit.FixParameter(2,x2);
+      prepulse_exp_fit.FixParameter(3,1600.);
+    } else {
+      // Otherwise, fit it
+      TGraph graph(prepulse_bins,x,y);
+      prepulse_exp_fit.FixParameter(0,baseline);
+      prepulse_exp_fit.SetParameter(1,wfm[x2]-baseline);
+      prepulse_exp_fit.FixParameter(2,x2);
+      prepulse_exp_fit.FixParameter(3,1600);
+      graph.Fit("prepulse_exp_fit","QN0");
+    }
   } else {
-    prepulse_exp_fit->FixParameter(0,baseline);
-    prepulse_exp_fit->FixParameter(1,0.);
-    prepulse_exp_fit->FixParameter(2,x2);
-    prepulse_exp_fit->FixParameter(3,1600.);
+    // Prepulse fit turned OFF; just use baseline
+    prepulse_exp_fit.FixParameter(0,baseline);
+    prepulse_exp_fit.FixParameter(1,0.);
+    prepulse_exp_fit.FixParameter(2,x2);
+    prepulse_exp_fit.FixParameter(3,1600.);
   }
-  
+
+  // Save fit info into publicly-accessible members   
+  fit_norm  = prepulse_exp_fit.GetParameter(1);
+  fit_tau   = prepulse_exp_fit.GetParameter(3);
    
   std::cout<<"Parameters of fitted prepulse region: \n";
-  std::cout<<"    - Norm                : "<<prepulse_exp_fit->GetParameter(1)<<"\n";
-  std::cout<<"    - Tau                 : "<<prepulse_exp_fit->GetParameter(3)<<"\n";
-  std::cout<<"    - fit baseline at hit : "<<prepulse_exp_fit->Eval(double(hit))<<"\n";
-  std::cout<<"    - waveform baseline   : "<<baseline<<"\n";
-  std::cout<<"    - actual hit value    : "<<wfm[hit]<<"\n";
-  std::cout<<"    - mean first 20ns     : "<<mean<<"\n";
-  std::cout<<"    - f(x1)               : "<<prepulse_exp_fit->Eval(x1)<<"\n";
+  std::cout<<"    Norm                : "<<fit_norm<<"\n";
+  std::cout<<"    Tau                 : "<<fit_tau<<"\n";
+  std::cout<<"    fit baseline at hit : "<<prepulse_exp_fit.Eval(double(hit))<<"\n";
+  std::cout<<"    waveform baseline   : "<<baseline<<"\n";
+  std::cout<<"    actual hit value    : "<<wfm[hit]<<"\n";
+  std::cout<<"    mean first 20ns     : "<<mean<<"\n";
+  std::cout<<"    f(x1)               : "<<prepulse_exp_fit.Eval(x1)<<"\n";
 
 
   // Add to average waveform vector
@@ -301,25 +326,21 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
     // Subtract fitted baseline
     for( int i = 0; i < total_bins; i++){
       xx  = x1 + short(i);
-      yy  = prepulse_exp_fit->Eval((double)xx) - (double)wfm[xx];
-      AverageWaveform->at(i) += yy*double(fMvPerADC);
+      yy  = prepulse_exp_fit.Eval((double)xx) - (double)wfm[xx];
+      AverageWaveform.at(i) += yy*double(fMvPerADC);
     }
     AverageWaveform_count++;
-    //std::cout<<"AverageWaveform_count "<<AverageWaveform_count<<std::endl;
-    //std::cout<<"AverageWaveform.size  "<<AverageWaveform->size()<<std::endl;
   }
   
   
   // Integrate using the fitted function as running baseline
   double integral = 0.;
   double amplitude = 0.;
-  //std::cout<<"Starting integration...\n";
   for( int i = 0; i < integral_bins; i++){
     xx    = x2 + short(i);
-    yy    = prepulse_exp_fit->Eval((double)xx) - (double)wfm[xx];  
+    yy    = prepulse_exp_fit.Eval((double)xx) - (double)wfm[xx];  
     integral += yy;
     if ( yy > amplitude ) amplitude = yy;
-    //std::cout<<"   "<<xx<<"  integral "<<integral<<std::endl;
   }
 
   hit_info[0] = amplitude*fMvPerADC;

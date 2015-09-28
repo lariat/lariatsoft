@@ -114,6 +114,8 @@ private:
   std::string     fTrackCalModule;
   std::string     fInstanceName;
   double          fTimestampCut;
+  short           fGateDelay;
+  short           fDtIntegralCut;
   short           fBaselineWindowLength;
   short           fPromptWindowLength;
   short           fFullWindowLength;
@@ -125,9 +127,6 @@ private:
   // Alg objects
   OpHitBuilderAlg   fOpHitBuilderAlg; 
   TriggerFilterAlg  fTrigFiltAlg;
-
-  // ROOT objects
-  TF1 *f_PopulationCut;
 
   // Variables/vectors
   int                   iEvent;
@@ -152,7 +151,7 @@ private:
   TH2I* h_NumOpHits_vs_NumTracks;
   TH1I* h_NumOpHits_beam;
   TH1I* h_NumOpHits_offbeam;
-  TH1F* h_DeltaTime_populationCut;
+  TH1F* h_DeltaTime_chargeCut;
   TH1F* h_DeltaTime_stoppingMu;
 
   TH1F* h_Amplitude;
@@ -163,6 +162,7 @@ private:
   TH1F* h_Charge100ns_region;
   TH1F* h_ChargeFull_populationCut;
   TH1F* h_ChargeFull_populationCut_DtCut;
+  TH1F* h_ChargeFull_region;
   TH2F* h_Amplitude_vs_Charge100ns;
   TH1F* h_TrackVertex_x;
   TH1F* h_TrackVertex_y;
@@ -184,6 +184,10 @@ private:
   Double_t    Timestamp;
   Double_t    DeltaTime;
   Int_t       NumHits;
+  Double_t    PrepulseBaseline;
+  Double_t    PrepulseRMS;
+  Double_t    PrepulseNorm;
+  Double_t    PrepulseTau;
   Double_t    Amplitude;
   Double_t    Charge_100ns; 
   Double_t    Charge_Full;
@@ -206,6 +210,10 @@ private:
   TBranch* b_WaveformBaselineRMS;
   TBranch* b_NumHits;
   TBranch* b_DeltaTime;
+  TBranch* b_PrepulseBaseline;
+  TBranch* b_PrepulseRMS;
+  TBranch* b_PrepulseNorm;
+  TBranch* b_PrepulseTau;
   TBranch* b_Amplitude;
   TBranch* b_Charge_100ns;
   TBranch* b_Charge_Full;
@@ -253,7 +261,7 @@ void MichelWfmReco::produce(art::Event & e)
   NumHits           = -9;
   NumTracks         = -9;
   IsSingleStoppingTrack   = 0;
-  StoppingTrackZenithAngle = -9;
+  StoppingTrackZenithAngle = -1;
   MuTrackVertex_x   = -99.;
   MuTrackVertex_y   = -99.;
   MuTrackVertex_z   = -99.;
@@ -262,10 +270,14 @@ void MichelWfmReco::produce(art::Event & e)
   MuTrackEnd_z      = -99.;
   MuTrackLength     = -99.;
   MuTrackEnergy     = -99.;
+  PrepulseBaseline  = -99.;
+  PrepulseRMS       = -9.;
+  PrepulseNorm      = 999.;
+  PrepulseTau       = -99.;
   DeltaTime         = -99.;
   Amplitude         = -99.;
-  Charge_100ns      = -99.;
-  Charge_Full       = -9999.;
+  Charge_100ns      = -9999.;
+  Charge_Full       = -99999.;
   WaveformBaseline  = -99.;
   WaveformBaselineRMS = -9.;
   TrackVertex.clear();
@@ -296,7 +308,7 @@ void MichelWfmReco::produce(art::Event & e)
   art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
   e.getByLabel(fDAQModule,fInstanceName,WaveformHandle);
   if( (int)WaveformHandle->size() == 0 ) {
-    //std::cout<<"No optical detector data found -- skipping the event\n";
+    std::cout<<"No optical detector data found -- skipping the event\n";
     return;
   } else {
     
@@ -313,10 +325,11 @@ void MichelWfmReco::produce(art::Event & e)
         GotETL = true;
 
        
-        std::cout<<"ETL pulse recorded: Nsamples = "<<NSamples<<std::endl;
-        std::cout<<"   OpDetPulse PMTFrame = "<<ThePulse.PMTFrame()<<
-          "  ("<<Timestamp<<" sec\n";
-        std::cout<<"   OpDetPulse FirstSample = "<<ThePulse.FirstSample()<<std::endl;
+        std::cout<<"ETL pulse recorded."<<std::endl;
+        std::cout<<"  Nsamples = "<<NSamples<<std::endl;
+        std::cout<<"  PMTFrame = "<<ThePulse.PMTFrame()<<std::endl;
+        std::cout<<"  FirstSample = "<<ThePulse.FirstSample()<<std::endl;
+        std::cout<<"  Timestamp = "<<Timestamp<<" sec"<<std::endl;
       
 
       }
@@ -342,7 +355,7 @@ void MichelWfmReco::produce(art::Event & e)
 
     NumTracks = (int)TrackHandle->size();
 
-    //std::cout<<"Number of tracks: "<<NumTracks<<"\n";
+    std::cout<<"Number of tracks: "<<NumTracks<<"\n";
   
     art::FindManyP<anab::Calorimetry> fmcal(TrackHandle, e, fTrackCalModule);
   
@@ -356,18 +369,16 @@ void MichelWfmReco::produce(art::Event & e)
       TrackVertex.push_back(TheTrack.Vertex());
       
      
-     /* 
-      std::cout<<"  Track vertex: ("
+      std::cout<<"  track "<<track_index<<" vertex("
       << TheTrack.Vertex().X() <<"," 
       << TheTrack.Vertex().Y() << "," 
-      << TheTrack.Vertex().Z() << ")\n"; 
-      std::cout<<"  Track endpoint: ("
+      << TheTrack.Vertex().Z() << ")->InFiducial()="
+      << IsPointInFiducialVolume(TheTrack.Vertex())
+      << "   end("
       << TheTrack.End().X() <<"," 
       << TheTrack.End().Y() << "," 
-      << TheTrack.End().Z() << ")\n"; 
-      std::cout<<"  Track length: "<<(TheTrack.Vertex() - TheTrack.End()).Mag()<<std::endl;
-      std::cout<<"Vertex in fiducial vol?  "<<IsPointInFiducialVolume(TheTrack.Vertex())<<std::endl;
-      */
+      << TheTrack.End().Z() << ")->InFiducial()="
+      << IsPointInFiducialVolume(TheTrack.End()) << std::endl;
 
       h_InFiducialVolume->Fill(
         IsPointInFiducialVolume(TheTrack.Vertex()),
@@ -385,9 +396,9 @@ void MichelWfmReco::produce(art::Event & e)
         // calos[0] is from induction plane
         // calos[1] is from collection plane
         TrackEnergy.push_back(calos[1]->KineticEnergy());
-        //std::cout<<"  Energy = "<<calos[1]->KineticEnergy()<<"\n"; 
+        std::cout<<"  KE = "<<calos[1]->KineticEnergy()<<std::endl; 
       } else {
-        //std::cout<<"  Energy = undefined\n";
+        std::cout<<"  KE = undefined"<<std::endl;
       }
     
     }  
@@ -480,6 +491,8 @@ void MichelWfmReco::produce(art::Event & e)
         }
       }  
     }
+  
+  std::cout<<"IsSingleStoppingTrack? "<<IsSingleStoppingTrack<<std::endl;
 
 
   } //endif bUseTrackInformation
@@ -487,73 +500,99 @@ void MichelWfmReco::produce(art::Event & e)
   // ---------------------------------------
   // Analysis:
 
-  // Perform hit-finding/filtering
-  std::vector<short> hit_times = fOpHitBuilderAlg.GetHits(ETL_waveform);
-  NumHits = hit_times.size();
-  
-  
-  std::cout << "We found "<<NumHits<<" hits\n";
-  for (int i=0; i<NumHits; i++) std::cout<<"   "<<i<<"    t = "<<hit_times[i]<<"\n";
-  
-
-  // Save the baseline/RMS
+  //  Waveform baseline/RMS
   std::vector<double> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(ETL_waveform,0,fBaselineWindowLength);
   WaveformBaseline = tmp[0];
   WaveformBaselineRMS = tmp[1];
-  
   std::cout<<"Baseline: "<<WaveformBaseline<<"  RMS: "<<WaveformBaselineRMS<<"\n";
-
+  
+  // Perform hit-finding/filtering
+  std::vector<short> hit_times = fOpHitBuilderAlg.GetHits(ETL_waveform);
+  NumHits = hit_times.size();
+  std::cout << "Performing optical hitfinding...\n"; 
+  std::cout << "We found "<<NumHits<<" hits\n";
+  for (int i=0; i<NumHits; i++) std::cout<<"   "<<i<<"    t = "<<hit_times[i]<<"\n";
+  
   // Fill NumOpHits histo (beam vs. offbeam)
   h_NumOpHits ->Fill(NumHits);
   h_NumOpHits_vs_NumTracks->Fill(NumHits,NumTracks);
   if(Timestamp < fTimestampCut)   h_NumOpHits_beam    ->Fill(NumHits);
   if(Timestamp >= fTimestampCut)  h_NumOpHits_offbeam ->Fill(NumHits);
   if(Timestamp >= fTimestampCut)  h_FilterStages      ->Fill(2);
+  
         
   // Event quality control:
   // Require 2 hits (one before PostPercent, one within 1% of PostPercent) 
-  if( (NumHits == 2) && (hit_times[0] < PostPercentMark-300) && ( abs(hit_times[1]-PostPercentMark) <= 0.01*NSamples) && (Timestamp >= fTimestampCut)){
-    std::cout << "    passes Michel cut \n";
+  if( (NumHits == 2) && (hit_times[0] < hit_times[1]-fGateDelay) && ( abs(hit_times[1]-PostPercentMark) <= 0.01*NSamples) && (Timestamp >= fTimestampCut)){
+    
+    std::cout << "--> passes Michel cut. \n";
     h_FilterStages->Fill(3);
 
     // Measure time difference
     DeltaTime = double(hit_times[1]) - double(hit_times[0]);
     std::cout<<"    DeltaT = "<<DeltaTime<<std::endl;
 
-    // Integral/amplitude of Michel candidate pulse (prompt)
-    std::vector<double> hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1], fPromptWindowLength);
-    Amplitude     = hit_info[0];
-    Charge_100ns  = hit_info[1];
+    // Only proceed to calculate charge/amplitude information if 
+    // the pulses are far enough apart such that the tail of the
+    // first does not contiminate the second (fcl setting, default 0)
+    if (DeltaTime > fDtIntegralCut){
 
-    // Integral of Michel candidate pulse (full)
-    if(DeltaTime > 3000.){
-    hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1], fFullWindowLength);
-    Charge_Full   = hit_info[1];
-    std::cout<<"    Charge full = "<<Charge_Full<<" \n";
-    }
-    h_Amplitude->Fill(Amplitude);
-    h_Charge100ns->Fill(Charge_100ns); 
-    h_Amplitude_vs_Charge100ns->Fill(Amplitude,Charge_100ns);
+      // Integral/amplitude of Michel candidate pulse (prompt)
+      std::vector<double> hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1], fPromptWindowLength);
+      Amplitude     = hit_info[0];
+      Charge_100ns  = hit_info[1];
+      std::cout<<"    Amplitude = "<<Amplitude<<std::endl;
+      std::cout<<"    Charge prompt = "<<Charge_100ns<<std::endl;
 
-    if( Charge_100ns > f_PopulationCut->Eval(Amplitude) ) {
-      h_DeltaTime_populationCut->Fill(DeltaTime);
-      h_Charge100ns_populationCut->Fill(Charge_100ns);
-      h_ChargeFull_populationCut->Fill(Charge_Full);
-      if( DeltaTime > 3000. ){
-        h_Charge100ns_populationCut_DtCut->Fill(Charge_100ns);
-        h_ChargeFull_populationCut_DtCut->Fill(Charge_Full);
+      // Integral of Michel candidate pulse (full)
+      // (To do: extract both prompt and full integral from single
+      // function call to minimize redundant calculations)
+      hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1], fFullWindowLength);
+      Charge_Full   = hit_info[1];
+      std::cout<<"    Charge full = "<<Charge_Full<<" \n";
+     
+      // Get information from the prepulse fit
+      PrepulseBaseline  = fOpHitBuilderAlg.prepulse_baseline;
+      PrepulseRMS       = fOpHitBuilderAlg.prepulse_rms;
+      PrepulseNorm      = fOpHitBuilderAlg.fit_norm;
+      PrepulseTau       = fOpHitBuilderAlg.fit_tau;
+      
+      h_Amplitude->Fill(Amplitude);
+      h_Charge100ns->Fill(Charge_100ns); 
+      h_Amplitude_vs_Charge100ns->Fill(Amplitude,Charge_100ns);
+      if( Charge_100ns > 1600. ) h_DeltaTime_chargeCut ->Fill(DeltaTime);
+
+      
+      TF1 f_PopulationCut("f_PopulationCut","48.04*x + 404.9",0.,150.);
+
+      if( Charge_100ns > f_PopulationCut.Eval(Amplitude) ) {
+        h_Charge100ns_populationCut->Fill(Charge_100ns);
+        h_ChargeFull_populationCut->Fill(Charge_Full);
+        
+        if( DeltaTime > 3000. ){
+          h_Charge100ns_populationCut_DtCut->Fill(Charge_100ns);
+          h_ChargeFull_populationCut_DtCut->Fill(Charge_Full);
+        } 
       }
-    }
   
-    if( IsSingleStoppingTrack ) {
-      h_FilterStages->Fill(4);
-      h_Charge100ns_stoppingMu->Fill(Charge_100ns);
-      h_DeltaTime_stoppingMu->Fill(DeltaTime);
-      if( (MuCandidateTrackEnd-region_centerpoint).Mag() <= region_radius) h_Charge100ns_region->Fill(Charge_100ns);
-    }
-  }
+      if( IsSingleStoppingTrack ) {
+        h_FilterStages->Fill(4);
+        h_Charge100ns_stoppingMu->Fill(Charge_100ns);
+        h_DeltaTime_stoppingMu->Fill(DeltaTime);
+        if( (MuCandidateTrackEnd-region_centerpoint).Mag() <= region_radius) {
+          h_Charge100ns_region->Fill(Charge_100ns);
+          h_ChargeFull_region->Fill(Charge_Full);
+        }
+      }
+    
+    } // end DtIntegralCut
+  
+  } // end quality cut condition
   
   MichelDataTree->Fill();
+  
+  // Add space in printout to separate events (for easier debugging)
+  std::cout<<std::endl;
 }
 
 
@@ -568,6 +607,10 @@ void MichelWfmReco::beginJob()
   b_WaveformBaselineRMS = MichelDataTree->Branch("WaveformBaselineRMS",&WaveformBaselineRMS,"WaveformBaselineRMS/D");
   b_NumHits             = MichelDataTree->Branch("NumHits",&NumHits,"NumHits/I");
   b_DeltaTime           = MichelDataTree->Branch("DeltaTime",&DeltaTime,"DeltaTime/D");
+  b_PrepulseBaseline           = MichelDataTree->Branch("PrepulseBaseline",&PrepulseBaseline,"PrepulseBaseline/D");
+  b_PrepulseRMS           = MichelDataTree->Branch("PrepulseRMS",&PrepulseRMS,"PrepulseRMS/D");
+  b_PrepulseNorm           = MichelDataTree->Branch("PrepulseNorm",&PrepulseNorm,"PrepulseNorm/D");
+  b_PrepulseTau           = MichelDataTree->Branch("PrepulseTau",&PrepulseTau,"PrepulseTau/D");
   b_Amplitude           = MichelDataTree->Branch("Amplitude",&Amplitude,"Amplitude/D");
   b_Charge_100ns        = MichelDataTree->Branch("Charge_100ns",&Charge_100ns,"Charge_100ns/D");
   b_Charge_Full         = MichelDataTree->Branch("Charge_Full",&Charge_Full,"Charge_Full/D");
@@ -599,11 +642,11 @@ void MichelWfmReco::beginJob()
   h_NumOpHits_vs_NumTracks ->GetYaxis()->SetTitle("Num tracks");
   h_NumOpHits_vs_NumTracks ->SetOption("colz");
 
-  h_DeltaTime_populationCut = tfs->make<TH1F>("DeltaTime_populationCut", "#Delta t (BG population cut)", 700,0., 7000.);
-  h_DeltaTime_populationCut ->GetXaxis()->SetTitle("ns");
-  h_DeltaTime_populationCut ->GetYaxis()->SetTitle("Counts");
+  h_DeltaTime_chargeCut = tfs->make<TH1F>("DeltaTime_chargeCut", "#Delta t (prompt integral > 1600ADC)", 700,0., 7000.);
+  h_DeltaTime_chargeCut ->GetXaxis()->SetTitle("ns");
+  h_DeltaTime_chargeCut ->GetYaxis()->SetTitle("Counts");
   
-  h_DeltaTime_stoppingMu = tfs->make<TH1F>("DeltaTime_stoppingMu", "#Delta t (1 stopping track in event)", 700,0., 7000.);
+  h_DeltaTime_stoppingMu = tfs->make<TH1F>("DeltaTime_stoppingMu", "#Delta t (1 stopping track, prompt integral > 1600ADC)", 700,0., 7000.);
   h_DeltaTime_stoppingMu ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_stoppingMu ->GetYaxis()->SetTitle("Counts");
 
@@ -638,6 +681,10 @@ void MichelWfmReco::beginJob()
   h_ChargeFull_populationCut_DtCut    = tfs->make<TH1F>("ChargeFull_populationCut_DtCut", "Full light integral (7us), BG population cut, #Delta t > 3us",  300,  0., 30000.);
   h_ChargeFull_populationCut_DtCut    ->GetXaxis()->SetTitle("Integrated light, 7us [ADC]");
   h_ChargeFull_populationCut_DtCut    ->GetYaxis()->SetTitle("Counts");
+  
+  h_ChargeFull_region    = tfs->make<TH1F>("ChargeFull_region","Full light integral (7us), limited region",300,0.,30000.);
+  h_ChargeFull_region    ->GetXaxis()->SetTitle("Integrated light, 7us [ADC]");
+  h_ChargeFull_region    ->GetYaxis()->SetTitle("Counts");
 
   h_Amplitude_vs_Charge100ns = tfs->make<TH2F>("Amplitude_vs_Charge100ns","Pulse amplitude vs. prompt charge (100ns);mV;ADC",100,0.,100.,100,0.,12000.);
   h_Amplitude_vs_Charge100ns ->GetXaxis()->SetTitle("Amplitude of Michel-candidate PMT pulse [mV]");
@@ -699,8 +746,8 @@ void MichelWfmReco::endJob()
   double integral_total = 0.;
   
   if( N_entries > 0 ){
-    for( int i = 0; i < (int)fOpHitBuilderAlg.AverageWaveform->size(); i++) {
-      double w = fOpHitBuilderAlg.AverageWaveform->at(i) / double(N_entries); 
+    for( int i = 0; i < (int)fOpHitBuilderAlg.AverageWaveform.size(); i++) {
+      double w = fOpHitBuilderAlg.AverageWaveform.at(i) / double(N_entries); 
       h_AverageWaveform->Fill(i,w);
   
       if( (i>fPrePulseBaselineFit)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
@@ -744,9 +791,9 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & p)
   fFiducialMargin_X       = p.get< double>("FiducialMargin_X",5.);
   fFiducialMargin_Y       = p.get< double>("FiducialMargin_Y",4.);
   fFiducialMargin_Z       = p.get< double>("FiducialMargin_Z",5.);
-  fTimestampCut           = p.get< double>("TimestampCut",5.5);
-
-  f_PopulationCut = new TF1("f_PopulationCut","48.04*x + 404.9",0.,150.);
+  fTimestampCut           = p.get< double>("TimestampCut",5.3);
+  fGateDelay              = p.get< short>("GateDelay",300);
+  fDtIntegralCut          = p.get< short>("DtIntegralCut",0);
 
 }
 

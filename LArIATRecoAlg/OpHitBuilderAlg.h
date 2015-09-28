@@ -29,7 +29,6 @@
 #include <TH1F.h>
 #include <TGraph.h>
 
-
 //--------------------------------------------
 class OpHitBuilderAlg{
  public:
@@ -48,10 +47,15 @@ class OpHitBuilderAlg{
   std::vector<Double_t>               GetSinglePEs( std::vector<short> );
 
    
-  // Average waveform vectors
-  std::vector<double>   *AverageWaveform;
+  // Average waveform vector
+  std::vector<double>   AverageWaveform;
   Int_t                 AverageWaveform_count;
-  
+
+  // Fit parameters
+  double prepulse_baseline;
+  double prepulse_rms;
+  double fit_norm;
+  double fit_tau;
 
  private:
   
@@ -64,10 +68,6 @@ class OpHitBuilderAlg{
   short     fFullWindowLength;
   double    fMvPerADC;
   bool      fUsePrepulseFit;
- 
-  // ROOT objects
-  TF1 *prepulse_exp_fit;
-  TGraph *graph;
   
 };
 
