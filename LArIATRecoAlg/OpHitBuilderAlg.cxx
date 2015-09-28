@@ -294,7 +294,8 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
       prepulse_exp_fit.FixParameter(0,baseline);
       prepulse_exp_fit.SetParameter(1,wfm[x2]-baseline);
       prepulse_exp_fit.FixParameter(2,x2);
-      prepulse_exp_fit.FixParameter(3,1600);
+      prepulse_exp_fit.SetParameter(3,1600);
+      prepulse_exp_fit.SetParLimits(3,800,1800);
       graph.Fit("prepulse_exp_fit","QN0");
     }
   } else {
