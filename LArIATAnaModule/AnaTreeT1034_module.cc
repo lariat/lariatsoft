@@ -155,6 +155,10 @@ private:
    double hit_tstart[kMaxHits];	//<---Start time of the hit (in drift ticks)
    double hit_tend[kMaxHits];	//<---End time of the hit (in drift ticks)
    int    hit_trkid[kMaxHits];	//<---The track ID associated with this hit (NEED TO CHECK IF THIS IS RIGHT)
+   int    hit_pk[kMaxHits];	//<---This stores the raw ADC value (pedestal subtracted) for this hit
+   int    hit_t[kMaxHits];	//<---Stores the time tick value for the current hit
+   int    hit_ch[kMaxHits];	//<---Stores the hits "charge" in integrated raw ADC (pedestal subtracted)
+   int    hit_fwhh[kMaxHits];	//<---Calculated Full width / half max value for the hit
    
    // === Storing 2-d Cluster Information ===
    int    nclus;
@@ -183,10 +187,9 @@ private:
    
    
    // ==== NEED TO FIX THESE VARIABLES....FILLED WITH DUMMY VALUES FOR NOW ===
-   int    hit_pk[kMaxHits];
-   int    hit_t[kMaxHits];
-   int    hit_ch[kMaxHits];
-   int    hit_fwhh[kMaxHits];
+   
+   
+   
    double hit_rms[kMaxHits];
    double hit_nelec[kMaxHits];
    double hit_energy[kMaxHits];
@@ -397,40 +400,22 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
           }//<---End chIt loop
       
-      //wct_count++;
       }//<---end wctrack auto loop
       
-      
-      /*std::cout<<"wctrack.Momentum() = "<<wctrack.Momentum()<<std::endl;
-      // ##############################################
-      // ### Filling Wire Chamber Track information ###
-      // ##############################################
-      wctrk_XFaceCoor[wct_count] = wctrack.XYFace(0); //indices are 0 for x and 1 for y according to header for WCTrack
-      wctrk_YFaceCoor[wct_count] = wctrack.XYFace(1); //indices are 0 for x and 1 for y according to header for WCTrack
-      
-      wctrk_momentum[wct_count] = wctrack.Momentum();
-      wctrk_theta[wct_count] = wctrack.Theta();
-      wctrk_phi[wct_count] = wctrack.Phi();
-      wctrk_XDist[wct_count] = wctrack.DeltaDist(0);
-      wctrk_YDist[wct_count] = wctrack.DeltaDist(1);
-      wctrk_ZDist[wct_count] = wctrack.DeltaDist(2);
-      Y_Kink[wct_count] = wctrack.YKink();
-      
-      // === Getting individual channel information ===
-      for(size_t chIt = 0; 2*chIt+1 < wctrack.NHits(); ++chIt)
-         {
-	 XWireHist[wct_count][chIt] = wctrack.HitWire(2*chIt);
-	 YWireHist[wct_count][chIt] = wctrack.HitWire(2*chIt+1);
 	 
-	 XAxisHist[wct_count][chIt] = wctrack.WC(2*chIt);
-	 YAxisHist[wct_count][chIt] = wctrack.WC(2*chIt+1);*/
-	 
-	 
-    
-   //std::cout<<"Check4"<<std::endl;
-   //cluster information
+   
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   //							FILLING THE 2-D CLUSTER INFORMATION
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   
+   // ### Saving the number of clusters in this event ###
    nclus = clusterlist.size();
-  for (size_t i = 0; i<clusterlist.size(); ++i)
+   // ######################################################
+   // ### Looping over the all the clusters in the event ###
+   // ######################################################
+   for (size_t i = 0; i<clusterlist.size(); ++i)
      {
      clustertwire[i] = clusterlist[i]->StartWire();
      clusterttick[i] = clusterlist[i]->StartTick();
@@ -439,82 +424,186 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
      cluplane[i] = clusterlist[i]->Plane().Plane;
      }
      
-   //std::cout<<"Check5"<<std::endl; 
-  //track information
-  trkf::TrackMomentumCalculator trkm;
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   //							FILLING THE 3-D TRACK INFORMATION
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   
+   // ### Calling the track momentum calculator ###
+   trkf::TrackMomentumCalculator trkm;
+  
+  // === Saving the number of tracks per event ===
   ntracks_reco=tracklist.size();
   double larStart[3];
   double larEnd[3];
   std::vector<double> trackStart;
   std::vector<double> trackEnd;
-  for(size_t i=0; i<tracklist.size();++i){
+  
+  // ### Looping over tracks ###
+  for(size_t i=0; i<tracklist.size();++i)
+    {
+    // ### Clearing the vectors for each track ###
     trackStart.clear();
     trackEnd.clear();
+    
+    // ### Setting the track information into memory ###
     memset(larStart, 0, 3);
     memset(larEnd, 0, 3);
     tracklist[i]->Extent(trackStart,trackEnd); 
     tracklist[i]->Direction(larStart,larEnd);
+    
+    // ### Recording the track vertex x, y, z location ###
     trkvtxx[i]        = trackStart[0];
     trkvtxy[i]        = trackStart[1];
     trkvtxz[i]        = trackStart[2];
+    
+    // ### Recording the track end point x, y, z location ###
     trkendx[i]        = trackEnd[0];
     trkendy[i]        = trackEnd[1];
     trkendz[i]        = trackEnd[2];
+    
+    // ### Recording the directional cosine at the start of the track ###
     trkstartdcosx[i]  = larStart[0];
     trkstartdcosy[i]  = larStart[1];
     trkstartdcosz[i]  = larStart[2];
+    
+    // ### Recording the directional cosine at the end of the track ###
     trkenddcosx[i]    = larEnd[0];
     trkenddcosy[i]    = larEnd[1];
     trkenddcosz[i]    = larEnd[2];
+    
+    // ### Recording the track length as calculated by the tracking module ###
+    // ####                (each one may do it differently                 ###
     trklength[i]         = tracklist[i]->Length();
+    
+    // ### Calculating the track momentum using the momentum calculator ###
     trkmomrange[i]    = trkm.GetTrackMomentum(trklength[i],13);
     trkmommschi2[i]   = trkm.GetMomentumMultiScatterChi2(tracklist[i]);
     trkmommsllhd[i]   = trkm.GetMomentumMultiScatterLLHD(tracklist[i]);
+    
+    // ### Grabbing the SpacePoints associated with this track ###
     ntrkhits[i] = fmsp.at(i).size();
     std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(i);
-    for (size_t j = 0; j<spts.size(); ++j){
+    
+    // ########################################
+    // ### Looping over all the SpacePoints ###
+    // ########################################
+    for (size_t j = 0; j<spts.size(); ++j)
+      {
+      // ### Recording the x, y, z location of every spacepoint in the track ###
       trkx[i][j] = spts[j]->XYZ()[0];
       trky[i][j] = spts[j]->XYZ()[1];
       trkz[i][j] = spts[j]->XYZ()[2];
-    }
-    for (int j = 0; j<2; ++j){
-      try{
+      }//<----End SpacePoint loop (j)
+
+
+    // ###########################################
+    // ### Calculating the pitch for the track ###
+    // ###########################################
+    // === Looping over our two planes (0 == Induction, 1 == Collection) ===
+    for (int j = 0; j<2; ++j)
+      {
+      // ### Putting in a protective try in case we can't set the pitch ###
+      try
+        {
+	// ### If we are in the induction plane calculate the tracks pitch in that view ###
 	if (j==0)
 	  trkpitch[i][j] = tracklist[i]->PitchInView(geo::kU);
+	// ### If we are in the collection plane calculate the tracks pitch in that view ###
 	else if (j==1)
 	  trkpitch[i][j] = tracklist[i]->PitchInView(geo::kV);
-      }
-      catch( cet::exception &e){
-	mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
+        }//<---End Try statement
+      catch( cet::exception &e)
+        {mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
 	trkpitch[i][j] = 0;
-      }
-    }
-    if (fmcal.isValid()){
+        }//<---End catch statement
+    }// <---End looping over planes (j)
+     
+
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
+//							CALORIMERTY FROM THIS TRACK INFORMATION
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------      
+    
+    // ########################################################## 
+    // ### Looping over Calorimetry information for the track ###
+    // ########################################################## 
+    if (fmcal.isValid())
+      {
+      // ### Putting calo information for this track (i) into pointer vector ###
       std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(i);
-      for (size_t j = 0; j<calos.size(); ++j){
+      
+      // ### Looping over each calorimetry point (similar to SpacePoint) ###
+      for (size_t j = 0; j<calos.size(); ++j)
+        {
+	// ### If we don't have calorimetry information for this plane skip ###
 	if (!calos[j]->PlaneID().isValid) continue;
+	
+	// ### Grabbing this calorimetry points plane number (0 == induction, 1 == collection) ###
 	int pl = calos[j]->PlaneID().Plane;
+	
+	// ### Skipping this point if the plane number doesn't make sense ###
 	if (pl<0||pl>1) continue;
+	
+	// ### Recording the number of calorimetry points for this track in this plane ####
 	trkhits[i][pl] = calos[j]->dEdx().size();
+	
+	// #### Recording the kinetic energy for this track in this plane ###
 	trkke[i][pl] = calos[j]->KineticEnergy();
-	for (size_t k = 0; k<calos[j]->dEdx().size(); ++k){
+	
+	// ###############################################
+	// ### Looping over all the calorimetry points ###
+	// ###############################################
+	for (size_t k = 0; k<calos[j]->dEdx().size(); ++k)
+	  {
+	  // ### If we go over 1000 points just skip them ###
 	  if (k>=1000) continue;
+	  
+	  // ### Recording the dE/dX information for this calo point along the track in this plane ###
 	  trkdedx[i][pl][k] = calos[j]->dEdx()[k];
+	  
+	  // ### Recording the residual range for this calo point along the track in this plane ###
 	  trkrr[i][pl][k] = calos[j]->ResidualRange()[k];
+	  
+	  // ### Recording the pitch of this calo point along the track in this plane ###
 	  trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
-	}
-      }
-    }
-    if (fmpid.isValid()){
+	  }//<---End calo points (k)
+	  
+       }//<---End looping over calo points (j)
+       
+     }//<---End checking Calo info is valid  
+    
+
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
+//						PARTICLE ID INFOR FROM THIS TRACK INFORMATION
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------      
+    
+    
+    // ################################################## 
+    // ### Looping over PID information for the track ###
+    // ################################################## 
+    if (fmpid.isValid())
+      {
+      // ### Putting PID information for this track (i) into pointer vector ###
       std::vector<art::Ptr<anab::ParticleID> > pids = fmpid.at(i);
-      for (size_t j = 0; j<pids.size(); ++j){
+      for (size_t j = 0; j<pids.size(); ++j)
+        {
+	// ### Skip this PID info if not valid for this plane ###
 	if (!pids[j]->PlaneID().isValid) continue;
 	int pl = pids[j]->PlaneID().Plane;
+	// ### Skipping this point if the plane number doesn't make sense ###
 	if (pl<0||pl>1) continue;
 	trkpida[i][pl] = pids[j]->PIDA();
-      }
-    }
-  }
+        
+	}//<---End PID loop (j)
+
+      }//<---End checking PID info
+      
+  }//<---End track loop (i)
 
   nhits = hitlist.size();
   for (size_t i = 0; i<hitlist.size(); ++i){
