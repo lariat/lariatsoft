@@ -1,0 +1,9 @@
+BEGIN_PROLOG
+
+lariat_pionscxsimfilter:
+{
+  module_type:      PionSCXSimFilter
+  SimulationLabel:  "largeant"
+}
+
+END_PROLOG

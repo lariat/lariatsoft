@@ -14,39 +14,25 @@
 
 //C++ includes
 #include <vector>
+#include <set>
 #include <cmath>
 #include <iostream>
 
 //Framework includes
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Persistency/Provenance/EventID.h"
 
-// artdaq
-#include "artdaq-core/Data/Fragments.hh"
-#include "artdaq-core/Data/Fragment.hh"
+namespace raw{
+  class RawDigit;
+  class AuxDetDigit;
+  class OpDetPulse;
+  class TriggerData;
+}
 
-// lardata
-#include "RawData/RawDigit.h"
-
-// LArIAT
-#include "LArIATFragments/LariatFragment.h"
-#include "LArIATFragments/WUTFragment.h"
-#include "LArIATFragments/CAENFragment.h"
 #include "LArIATFragments/TDCFragment.h"
-#include "LArIATFragments/V1495Fragment.h"
-#include "SimpleTypesAndConstants/RawTypes.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
-#include "RawData/RawDigit.h"
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/TriggerData.h"
-#include "SummaryData/RunData.h"
-#include "Geometry/Geometry.h"
-#include "Utilities/AssociationUtil.h"
-
-
-
+class CAENFragment;
 
 typedef std::vector<TDCFragment::TdcEventData> TDCDataBlock; 
 
@@ -101,7 +87,6 @@ class FragmentToDigitAlg{
 
  private:
 
-  art::ServiceHandle<art::TFileService>      tfs;                      ///< handle to the TFileService
   std::string                                fRawFragmentLabel;        ///< label for module producing artdaq fragments
   std::string                                fRawFragmentInstance;     ///< instance label for artdaq fragments        
   size_t                                     fMaxNumberFitIterations;  ///< number of fit iterations before stopping
@@ -115,7 +100,10 @@ class FragmentToDigitAlg{
   size_t                                     fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
   float                                      fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
   float                                      fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
-
+  float                                      fV1751PostPercent;        ///< 1751 PostPercent setting (ranges 0-100)
+  art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;     ///< handle to the DatabaseUtility1034
+  std::map< std::string, std::string >       fConfigValues;            ///< (key, value) pair for the database query result
+  std::vector<std::string>                   fConfigParams;            ///< vector of parameter names to be queried
 
 };
 

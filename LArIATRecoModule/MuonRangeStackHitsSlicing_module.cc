@@ -151,7 +151,15 @@ void MuonRangeStackHitsSlicing::produce(art::Event & e)
   if( PunchthroughDigits.size() == 1 && MuRSDigits.size() == 0 ) fMuRS_PT_Logic_Events->Fill(1);
   else if( PunchthroughDigits.size() == 0 && MuRSDigits.size() > 0 ) fMuRS_PT_Logic_Events->Fill(2);
   else if( PunchthroughDigits.size() == 1 && MuRSDigits.size() > 0 ) fMuRS_PT_Logic_Events->Fill(3);
-  if( PunchthroughDigits.size() == 0 || MuRSDigits.size() == 0 ) return;
+  //Actually, don't kill. We're testing something right meow to see if providing empty MuRS objects increases efficiency
+  if( PunchthroughDigits.size() == 0 || MuRSDigits.size() == 0 ){
+    std::vector<MuRSTrack> mursTrackVector;
+    std::map<int,std::vector<int> > theMap;
+    ldp::MuonRangeStackHits the_MuRS(theMap,mursTrackVector);
+    (*MuonRangeStackCol).push_back(the_MuRS);		
+    e.put(std::move(MuonRangeStackCol));	   
+    return;
+  }
 
   ////////////////// PUNCHTHROUGH INFO GETTING ///////////////////
   //Sanity check: should only be one digit for the Punchthrough
