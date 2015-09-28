@@ -44,8 +44,15 @@ class OpHitBuilderAlg{
   std::vector<Double_t>             MakeGradient( std::vector<short> );
   std::vector<Double_t>             GetBaselineAndRMS( std::vector<short>, short, short);
   Double_t                          GetLocalRMSOfGradient( std::vector<Double_t>, short, short);
-  std::vector<Double_t>               IntegrateHit( std::vector<short>, short );
+  std::vector<Double_t>               IntegrateHit( std::vector<short>, short, short);
+  std::vector<Double_t>               GetSinglePEs( std::vector<short> );
+
+   
+  // Average waveform vectors
+  std::vector<double>   *AverageWaveform;
+  Int_t                 AverageWaveform_count;
   
+
  private:
   
   Double_t  fGradientHitThreshold;
@@ -54,7 +61,9 @@ class OpHitBuilderAlg{
   short     fBaselineWindowLength;
   short     fPrePulseBaselineFit;
   short     fPromptWindowLength;
+  short     fFullWindowLength;
   double    fMvPerADC;
+  bool      fUsePrepulseFit;
  
   // ROOT objects
   TF1 *prepulse_exp_fit;

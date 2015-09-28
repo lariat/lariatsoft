@@ -113,7 +113,11 @@ private:
   std::string     fTrackModule;
   std::string     fTrackCalModule;
   std::string     fInstanceName;
+  double          fTimestampCut;
   short           fBaselineWindowLength;
+  short           fPromptWindowLength;
+  short           fFullWindowLength;
+  short           fPrePulseBaselineFit;
   double          fFiducialMargin_X;
   double          fFiducialMargin_Y;
   double          fFiducialMargin_Z; 
@@ -154,8 +158,11 @@ private:
   TH1F* h_Amplitude;
   TH1F* h_Charge100ns;
   TH1F* h_Charge100ns_populationCut;
+  TH1F* h_Charge100ns_populationCut_DtCut;
   TH1F* h_Charge100ns_stoppingMu;
   TH1F* h_Charge100ns_region;
+  TH1F* h_ChargeFull_populationCut;
+  TH1F* h_ChargeFull_populationCut_DtCut;
   TH2F* h_Amplitude_vs_Charge100ns;
   TH1F* h_TrackVertex_x;
   TH1F* h_TrackVertex_y;
@@ -169,6 +176,7 @@ private:
   TH2F* h_TrackNode_zy;
   TH2I* h_InFiducialVolume;
   TH1F* h_SecondTrackOffset;
+  TH1F* h_AverageWaveform;
 
   // Variables for Tree
   Double_t    WaveformBaseline;
@@ -178,6 +186,7 @@ private:
   Int_t       NumHits;
   Double_t    Amplitude;
   Double_t    Charge_100ns; 
+  Double_t    Charge_Full;
   Int_t       NumTracks;
   Int_t       IsSingleStoppingTrack;
   Double_t    StoppingTrackZenithAngle;
@@ -199,6 +208,7 @@ private:
   TBranch* b_DeltaTime;
   TBranch* b_Amplitude;
   TBranch* b_Charge_100ns;
+  TBranch* b_Charge_Full;
   TBranch* b_NumTracks;
   TBranch* b_IsSingleStoppingTrack;
   TBranch* b_StoppingTrackZenithAngle;
@@ -227,8 +237,9 @@ MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & p)
  
   // TO DO: make this a fcl parameter 
   region_centerpoint.SetXYZ(23.5,0.,45.);
-  region_radius = 5.;
+  region_radius = 10.;
   
+
 }
 
 
@@ -254,6 +265,7 @@ void MichelWfmReco::produce(art::Event & e)
   DeltaTime         = -99.;
   Amplitude         = -99.;
   Charge_100ns      = -99.;
+  Charge_Full       = -9999.;
   WaveformBaseline  = -99.;
   WaveformBaselineRMS = -9.;
   TrackVertex.clear();
@@ -284,7 +296,7 @@ void MichelWfmReco::produce(art::Event & e)
   art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
   e.getByLabel(fDAQModule,fInstanceName,WaveformHandle);
   if( (int)WaveformHandle->size() == 0 ) {
-    std::cout<<"No optical detector data found -- skipping the event\n";
+    //std::cout<<"No optical detector data found -- skipping the event\n";
     return;
   } else {
     
@@ -330,7 +342,7 @@ void MichelWfmReco::produce(art::Event & e)
 
     NumTracks = (int)TrackHandle->size();
 
-    std::cout<<"Number of tracks: "<<NumTracks<<"\n";
+    //std::cout<<"Number of tracks: "<<NumTracks<<"\n";
   
     art::FindManyP<anab::Calorimetry> fmcal(TrackHandle, e, fTrackCalModule);
   
@@ -343,7 +355,8 @@ void MichelWfmReco::produce(art::Event & e)
       TrackEnd.push_back(TheTrack.End());
       TrackVertex.push_back(TheTrack.Vertex());
       
-      
+     
+     /* 
       std::cout<<"  Track vertex: ("
       << TheTrack.Vertex().X() <<"," 
       << TheTrack.Vertex().Y() << "," 
@@ -354,7 +367,7 @@ void MichelWfmReco::produce(art::Event & e)
       << TheTrack.End().Z() << ")\n"; 
       std::cout<<"  Track length: "<<(TheTrack.Vertex() - TheTrack.End()).Mag()<<std::endl;
       std::cout<<"Vertex in fiducial vol?  "<<IsPointInFiducialVolume(TheTrack.Vertex())<<std::endl;
-      
+      */
 
       h_InFiducialVolume->Fill(
         IsPointInFiducialVolume(TheTrack.Vertex()),
@@ -493,24 +506,31 @@ void MichelWfmReco::produce(art::Event & e)
   // Fill NumOpHits histo (beam vs. offbeam)
   h_NumOpHits ->Fill(NumHits);
   h_NumOpHits_vs_NumTracks->Fill(NumHits,NumTracks);
-  if(Timestamp < 5.2)   h_NumOpHits_beam    ->Fill(NumHits);
-  if(Timestamp >= 5.3)  h_NumOpHits_offbeam ->Fill(NumHits);
-  if(Timestamp >= 5.3)  h_FilterStages      ->Fill(2);
+  if(Timestamp < fTimestampCut)   h_NumOpHits_beam    ->Fill(NumHits);
+  if(Timestamp >= fTimestampCut)  h_NumOpHits_offbeam ->Fill(NumHits);
+  if(Timestamp >= fTimestampCut)  h_FilterStages      ->Fill(2);
         
   // Event quality control:
   // Require 2 hits (one before PostPercent, one within 1% of PostPercent) 
-  if( (NumHits == 2) && (hit_times[0] < PostPercentMark) && ( abs(hit_times[1]-PostPercentMark) <= 0.01*NSamples) && (Timestamp >= 5.3)){
+  if( (NumHits == 2) && (hit_times[0] < PostPercentMark-300) && ( abs(hit_times[1]-PostPercentMark) <= 0.01*NSamples) && (Timestamp >= fTimestampCut)){
     std::cout << "    passes Michel cut \n";
     h_FilterStages->Fill(3);
 
     // Measure time difference
-    DeltaTime = hit_times[1] - hit_times[0];
-        
-    // Integral/amplitude of Michel candidate pulse
-    std::vector<double> hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1]);
+    DeltaTime = double(hit_times[1]) - double(hit_times[0]);
+    std::cout<<"    DeltaT = "<<DeltaTime<<std::endl;
+
+    // Integral/amplitude of Michel candidate pulse (prompt)
+    std::vector<double> hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1], fPromptWindowLength);
     Amplitude     = hit_info[0];
     Charge_100ns  = hit_info[1];
-    
+
+    // Integral of Michel candidate pulse (full)
+    if(DeltaTime > 3000.){
+    hit_info = fOpHitBuilderAlg.IntegrateHit(ETL_waveform, hit_times[1], fFullWindowLength);
+    Charge_Full   = hit_info[1];
+    std::cout<<"    Charge full = "<<Charge_Full<<" \n";
+    }
     h_Amplitude->Fill(Amplitude);
     h_Charge100ns->Fill(Charge_100ns); 
     h_Amplitude_vs_Charge100ns->Fill(Amplitude,Charge_100ns);
@@ -518,6 +538,11 @@ void MichelWfmReco::produce(art::Event & e)
     if( Charge_100ns > f_PopulationCut->Eval(Amplitude) ) {
       h_DeltaTime_populationCut->Fill(DeltaTime);
       h_Charge100ns_populationCut->Fill(Charge_100ns);
+      h_ChargeFull_populationCut->Fill(Charge_Full);
+      if( DeltaTime > 3000. ){
+        h_Charge100ns_populationCut_DtCut->Fill(Charge_100ns);
+        h_ChargeFull_populationCut_DtCut->Fill(Charge_Full);
+      }
     }
   
     if( IsSingleStoppingTrack ) {
@@ -527,9 +552,8 @@ void MichelWfmReco::produce(art::Event & e)
       if( (MuCandidateTrackEnd-region_centerpoint).Mag() <= region_radius) h_Charge100ns_region->Fill(Charge_100ns);
     }
   }
-        
+  
   MichelDataTree->Fill();
-    
 }
 
 
@@ -546,6 +570,7 @@ void MichelWfmReco::beginJob()
   b_DeltaTime           = MichelDataTree->Branch("DeltaTime",&DeltaTime,"DeltaTime/D");
   b_Amplitude           = MichelDataTree->Branch("Amplitude",&Amplitude,"Amplitude/D");
   b_Charge_100ns        = MichelDataTree->Branch("Charge_100ns",&Charge_100ns,"Charge_100ns/D");
+  b_Charge_Full         = MichelDataTree->Branch("Charge_Full",&Charge_Full,"Charge_Full/D");
   b_NumTracks           = MichelDataTree->Branch("NumTracks",&NumTracks,"NumTracks/I");
   b_IsSingleStoppingTrack     = MichelDataTree->Branch("IsSingleStoppingTrack",&IsSingleStoppingTrack,"IsStoppingTrack/I");
   b_StoppingTrackZenithAngle = MichelDataTree->Branch("StoppingTrackZenithAngle",&StoppingTrackZenithAngle,"StoppingTrackZenithAngle/D");
@@ -574,11 +599,11 @@ void MichelWfmReco::beginJob()
   h_NumOpHits_vs_NumTracks ->GetYaxis()->SetTitle("Num tracks");
   h_NumOpHits_vs_NumTracks ->SetOption("colz");
 
-  h_DeltaTime_populationCut = tfs->make<TH1F>("DeltaTime_populationCutoff", "#Delta t (integral > 1600 ADC)", 700,0., 7000.);
+  h_DeltaTime_populationCut = tfs->make<TH1F>("DeltaTime_populationCut", "#Delta t (BG population cut)", 700,0., 7000.);
   h_DeltaTime_populationCut ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_populationCut ->GetYaxis()->SetTitle("Counts");
   
-  h_DeltaTime_stoppingMu = tfs->make<TH1F>("DeltaTime_stoppingMu", "#Delta t (stopping track)", 700,0., 7000.);
+  h_DeltaTime_stoppingMu = tfs->make<TH1F>("DeltaTime_stoppingMu", "#Delta t (1 stopping track in event)", 700,0., 7000.);
   h_DeltaTime_stoppingMu ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_stoppingMu ->GetYaxis()->SetTitle("Counts");
 
@@ -590,17 +615,29 @@ void MichelWfmReco::beginJob()
   h_Charge100ns          ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
   h_Charge100ns          ->GetYaxis()->SetTitle("Counts");
 
-  h_Charge100ns_populationCut          = tfs->make<TH1F>("Charge100ns_populationCut", "Prompt light integral (100ns) with BG population cut",  240,  0., 12000.);
+  h_Charge100ns_populationCut          = tfs->make<TH1F>("Charge100ns_populationCut", "Prompt light integral (100ns), BG population cut",  240,  0., 12000.);
   h_Charge100ns_populationCut          ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
   h_Charge100ns_populationCut          ->GetYaxis()->SetTitle("Counts");
+ 
+  h_Charge100ns_populationCut_DtCut    = tfs->make<TH1F>("Charge100ns_populationCut_DtCut", "Prompt light integral (100ns), BG population cut, #Delta t > 3us",  240,  0., 12000.);
+  h_Charge100ns_populationCut_DtCut    ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
+  h_Charge100ns_populationCut_DtCut    ->GetYaxis()->SetTitle("Counts");
   
-  h_Charge100ns_stoppingMu = tfs->make<TH1F>("Charge100ns_stoppingMu","Prompt light integral (100ns) in events with a stopping track",240,0.,12000.);
+  h_Charge100ns_stoppingMu = tfs->make<TH1F>("Charge100ns_stoppingMu","Prompt light integral (100ns) in events with 1 stopping track",240,0.,12000.);
   h_Charge100ns_stoppingMu ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
   h_Charge100ns_stoppingMu ->GetYaxis()->SetTitle("Counts");
 
   h_Charge100ns_region    = tfs->make<TH1F>("Charge100ns_region","Prompt light integral (100ns), limited region",240,0.,12000.);
   h_Charge100ns_region    ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
   h_Charge100ns_region    ->GetYaxis()->SetTitle("Counts");
+  
+  h_ChargeFull_populationCut          = tfs->make<TH1F>("ChargeFull_populationCut", "Full light integral (7us), BG population cut",  300,  0., 30000.);
+  h_ChargeFull_populationCut          ->GetXaxis()->SetTitle("Integrated light, 7us [ADC]");
+  h_ChargeFull_populationCut          ->GetYaxis()->SetTitle("Counts");
+  
+  h_ChargeFull_populationCut_DtCut    = tfs->make<TH1F>("ChargeFull_populationCut_DtCut", "Full light integral (7us), BG population cut, #Delta t > 3us",  300,  0., 30000.);
+  h_ChargeFull_populationCut_DtCut    ->GetXaxis()->SetTitle("Integrated light, 7us [ADC]");
+  h_ChargeFull_populationCut_DtCut    ->GetYaxis()->SetTitle("Counts");
 
   h_Amplitude_vs_Charge100ns = tfs->make<TH2F>("Amplitude_vs_Charge100ns","Pulse amplitude vs. prompt charge (100ns);mV;ADC",100,0.,100.,100,0.,12000.);
   h_Amplitude_vs_Charge100ns ->GetXaxis()->SetTitle("Amplitude of Michel-candidate PMT pulse [mV]");
@@ -632,6 +669,15 @@ void MichelWfmReco::beginJob()
   h_InFiducialVolume      ->SetOption("colz");
   
   h_SecondTrackOffset     = tfs->make<TH1F>("SecondTrackOffset","Primary / secondary track endpoint offset;cm",100,0.,30.);
+
+
+  h_AverageWaveform       = tfs->make<TH1F>("AverageWaveform","Average waveform of Michel pulse",
+    int(fFullWindowLength)+int(fPrePulseBaselineFit),
+    0.,
+    double(fFullWindowLength)+double(fPrePulseBaselineFit));
+  h_AverageWaveform ->GetXaxis()->SetTitle("ns");
+  h_AverageWaveform  ->GetYaxis()->SetTitle("mV");
+  
 }
 
 void MichelWfmReco::beginRun(art::Run & r)
@@ -646,6 +692,30 @@ void MichelWfmReco::beginSubRun(art::SubRun & sr)
 
 void MichelWfmReco::endJob()
 {
+
+  // Make the average waveforms
+  int N_entries = fOpHitBuilderAlg.AverageWaveform_count;
+  double integral_prompt = 0.;
+  double integral_total = 0.;
+  
+  if( N_entries > 0 ){
+    for( int i = 0; i < (int)fOpHitBuilderAlg.AverageWaveform->size(); i++) {
+      double w = fOpHitBuilderAlg.AverageWaveform->at(i) / double(N_entries); 
+      h_AverageWaveform->Fill(i,w);
+  
+      if( (i>fPrePulseBaselineFit)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
+      if( (i>fPrePulseBaselineFit) ) integral_total += w; 
+
+    }
+  
+  std::cout<<"================================\n";
+  std::cout<<"Average of "<<N_entries<<" waveforms.\n";
+  std::cout<<"   prompt ("<<fPromptWindowLength<<" ns): "<<integral_prompt<<std::endl;
+  std::cout<<"   total ("<<fFullWindowLength<<" ns): "<<integral_total<<std::endl;
+  std::cout<<"   ratio: "<< integral_prompt / integral_total<<std::endl;
+  std::cout<<"================================\n";
+  
+  } 
 }
 
 void MichelWfmReco::endRun(art::Run & r)
@@ -668,9 +738,13 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & p)
   fTrackCalModule         = p.get< std::string >("TrackCalModule","calo");
   fInstanceName           = p.get< std::string >("InstanceName","");
   fBaselineWindowLength   = p.get< short >("BaselineWindowLength",1000);
+  fPromptWindowLength     = p.get< short >("PromptWindowLength",100);
+  fFullWindowLength       = p.get< short >("FullWindowLength",7000);
+  fPrePulseBaselineFit    = p.get< short >("PrePulseBaselineFit",300);
   fFiducialMargin_X       = p.get< double>("FiducialMargin_X",5.);
   fFiducialMargin_Y       = p.get< double>("FiducialMargin_Y",4.);
   fFiducialMargin_Z       = p.get< double>("FiducialMargin_Z",5.);
+  fTimestampCut           = p.get< double>("TimestampCut",5.5);
 
   f_PopulationCut = new TF1("f_PopulationCut","48.04*x + 404.9",0.,150.);
 

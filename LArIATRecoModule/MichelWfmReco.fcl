@@ -57,8 +57,13 @@ physics:
 
 services.scheduler.SkipEvent: [ ProductNotFound ]
 physics.producers.MichelWfmReco.UseTriggerFilter: "false"   
+physics.producers.MichelWfmReco.TimestampCut: 5.5           # default 5.5 sec
 physics.producers.MichelWfmReco.GradientHitThreshold: -10   # default -10
-physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1us
+physics.producers.MichelWfmReco.MinHitSeparation: 20        # default 20ns
+physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1000ns
+physics.producers.MichelWfmReco.PromptWindowLength: 100     # default 100ns
+physics.producers.MichelWfmReco.FullWindowLength: 7000      # default 7000ns
+physics.producers.MichelWfmReco.UsePrepulseFit: "true"     # default true
 physics.producers.MichelWfmReco.TriggerUtility: "FragmentToDigit"
 physics.producers.MichelWfmReco.UseTrackInformation: "true"
 physics.producers.MichelWfmReco.DAQModule: "daq"

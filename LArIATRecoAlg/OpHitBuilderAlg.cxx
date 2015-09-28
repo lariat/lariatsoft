@@ -42,7 +42,12 @@ OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
   
   // Function to fit prepulse regions
   prepulse_exp_fit = new TF1("prepulse_exp_fit","[0] + [1]*exp(-(x-[2])/[3])",0.,10000.);
-  prepulse_exp_fit->SetParLimits(3,0.,1600.);
+  //prepulse_exp_fit = new TF1("prepulse_exp_fit","[0] + [1]*exp(-(x)/[2])",0.,10000.);
+ 
+  AverageWaveform = new std::vector<double>(fPrePulseBaselineFit + fFullWindowLength); 
+  //AverageWaveform.resize(fPrePulseBaselineFit + fFullWindowLeng
+  AverageWaveform_count = 0; 
+  
 }
 
 //--------------------------------------------------------------  
@@ -56,11 +61,13 @@ OpHitBuilderAlg::~OpHitBuilderAlg()
 void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fGradientHitThreshold       = pset.get< Double_t >("GradientHitThreshold",-10);
   fGradientRMSFilterThreshold = pset.get< Double_t >("GradientRMSFilterThreshold",5); 
-  fMinHitSeparation           = pset.get< Double_t >("MinHitSeparation",100);
+  fMinHitSeparation           = pset.get< Double_t >("MinHitSeparation",20);
   fBaselineWindowLength       = pset.get< short >("BaselineWindowLength",1000);
   fPrePulseBaselineFit        = pset.get< short >("PrePulseBaselineFit",300);
   fPromptWindowLength         = pset.get< short >("PromptWindowLength",100);
+  fFullWindowLength           = pset.get< short >("FullWindowLength",7000);
   fMvPerADC                   = pset.get< double>("MvPerADC",0.2);
+  fUsePrepulseFit             = pset.get< bool >("UsePrepulseFit","true");
 }
 
 
@@ -125,7 +132,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short>& wfm)
   for( size_t i = 0; i < hits.size(); i++ ) {
 
     Double_t  rms = 0;
-    short     rms_window_size = 1000;
+    short     rms_window_size = 100;
     short     rms_window_start = 0;
     short     rms_window_end  = rms_window_size;
 
@@ -140,7 +147,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short>& wfm)
     }
     rms_window_size = rms_window_end - rms_window_start;
 
-    // Find local RMS for the hit using this window
+    // Find gradient's local RMS for the hit using this window
     rms = GetLocalRMSOfGradient( g, rms_window_start, rms_window_end );
 
     // Find lowest point of gradient in neighborhood of each hit
@@ -214,11 +221,13 @@ Double_t OpHitBuilderAlg::GetLocalRMSOfGradient( std::vector<Double_t> wfm, shor
 }
 
 // ----------------------
-// Prompt pulse integral
-std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short hit )
+// Prompt pulse amplitude and integral
+std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short hit, short n)
 {
   // Create vector to be returned 
   std::vector<double> hit_info {0.,0.};
+  short xx;
+  double yy;
   
   // If the hit is too early to reliably calculate 
   // a baseline, stop now and return zero
@@ -228,14 +237,18 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
   size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
   std::vector<double> tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
   double baseline = tmp[0];
+
+  //std::cout<<"Baseline: "<<baseline<<"\n";
  
   // Determine bounds for fit and integration 
   short x1,x2,x3;
-  x2 = hit - 10;
-  x1 = std::max(int(x2 - fPrePulseBaselineFit),0);
-  x3 = std::min(int(x2 + fPromptWindowLength+10),int(wfm.size()));
+  x2 = hit - 5;
+  x1 = std::max(int(hit - fPrePulseBaselineFit),0);
+  x3 = std::min(int(hit + n),int(wfm.size()));
   const int prepulse_bins = int(x2) - int(x1);
   const int integral_bins = int(x3) - int(x2);
+  const int total_bins    = int(x3) - int(x1);
+  //std::cout<<"Integration limits: x1,x2,x3 "<<x1<<"   "<<x2<<"  "<<x3<<std::endl;
 
   // Fill x,y arrays
   int x[prepulse_bins];
@@ -245,31 +258,68 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
     y[i] = int(wfm[x1+short(i)]);
   }
 
+  // Find mean of first 20ns -- use this as a limit
+  // later in the fit
+  double mean = 0;
+  for( int i = 0; i < 20; i++){
+    mean += (y[i] - baseline)/20.;
+  }
+
   // Put these arrays into a TGraph for exponential fit
   // to prepulse region
-  graph = new TGraph(prepulse_bins,x,y);
-  prepulse_exp_fit->FixParameter(0,baseline);
-  prepulse_exp_fit->FixParameter(2,hit);
-  prepulse_exp_fit->SetParLimits(3,1400,1600);
-  graph->Fit(prepulse_exp_fit,"QN0");
-
-  /* 
+  if(fUsePrepulseFit){
+    graph = new TGraph(prepulse_bins,x,y);
+    prepulse_exp_fit->FixParameter(0,baseline);
+    prepulse_exp_fit->SetParameter(1,wfm[x2]-baseline);
+    //prepulse_exp_fit->SetParLimits(1,0.8*mean,1.2*mean);
+    prepulse_exp_fit->FixParameter(2,x2);
+    prepulse_exp_fit->FixParameter(3,1600);
+    //prepulse_exp_fit->SetParLimits(3,1200,1800);
+    graph->Fit(prepulse_exp_fit,"QN0");
+  } else {
+    prepulse_exp_fit->FixParameter(0,baseline);
+    prepulse_exp_fit->FixParameter(1,0.);
+    prepulse_exp_fit->FixParameter(2,x2);
+    prepulse_exp_fit->FixParameter(3,1600.);
+  }
+  
+   
   std::cout<<"Parameters of fitted prepulse region: \n";
-  std::cout<<"    Norm                : "<<prepulse_exp_fit->GetParameter(1)<<"\n";
-  std::cout<<"    Tau                 : "<<prepulse_exp_fit->GetParameter(3)<<"\n";
-  std::cout<<"    fit baseline at hit : "<<prepulse_exp_fit->Eval(int(hit))<<"\n";
-  std::cout<<"    waveform baseline   : "<<baseline<<"\n";
-  std::cout<<"    actual hit value    : "<<wfm[hit]<<"\n";
-  */
+  std::cout<<"    - Norm                : "<<prepulse_exp_fit->GetParameter(1)<<"\n";
+  std::cout<<"    - Tau                 : "<<prepulse_exp_fit->GetParameter(3)<<"\n";
+  std::cout<<"    - fit baseline at hit : "<<prepulse_exp_fit->Eval(double(hit))<<"\n";
+  std::cout<<"    - waveform baseline   : "<<baseline<<"\n";
+  std::cout<<"    - actual hit value    : "<<wfm[hit]<<"\n";
+  std::cout<<"    - mean first 20ns     : "<<mean<<"\n";
+  std::cout<<"    - f(x1)               : "<<prepulse_exp_fit->Eval(x1)<<"\n";
 
+
+  // Add to average waveform vector
+  std::vector<double> wfm_corrected(total_bins);
+  if( n==fFullWindowLength ){
+
+    // Subtract fitted baseline
+    for( int i = 0; i < total_bins; i++){
+      xx  = x1 + short(i);
+      yy  = prepulse_exp_fit->Eval((double)xx) - (double)wfm[xx];
+      AverageWaveform->at(i) += yy*double(fMvPerADC);
+    }
+    AverageWaveform_count++;
+    //std::cout<<"AverageWaveform_count "<<AverageWaveform_count<<std::endl;
+    //std::cout<<"AverageWaveform.size  "<<AverageWaveform->size()<<std::endl;
+  }
+  
+  
   // Integrate using the fitted function as running baseline
   double integral = 0.;
   double amplitude = 0.;
+  //std::cout<<"Starting integration...\n";
   for( int i = 0; i < integral_bins; i++){
-    short xx    = hit - 5 + short(i);
-    double dInt = prepulse_exp_fit->Eval(xx) - (double)wfm[xx];  
-    integral += dInt;
-    if ( dInt > amplitude ) amplitude = dInt;
+    xx    = x2 + short(i);
+    yy    = prepulse_exp_fit->Eval((double)xx) - (double)wfm[xx];  
+    integral += yy;
+    if ( yy > amplitude ) amplitude = yy;
+    //std::cout<<"   "<<xx<<"  integral "<<integral<<std::endl;
   }
 
   hit_info[0] = amplitude*fMvPerADC;
@@ -279,4 +329,11 @@ std::vector<double> OpHitBuilderAlg::IntegrateHit( std::vector<short> wfm, short
 
 }
 
+// --------------------------------------------
+// Return vector of single p.e. window integrals
+std::vector<double> OpHitBuilderAlg::GetSinglePEs( std::vector<short> wfm )
+{  
+  std::vector<double> integrals;
 
+  return integrals;
+}
