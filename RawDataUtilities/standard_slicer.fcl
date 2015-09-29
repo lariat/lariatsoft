@@ -6,7 +6,6 @@ process_name: Slicer
 
 services:
 {
-  TFileService: { fileName: "slicer_hist.root" }
   Timing:       {}
   RandomNumberGenerator: {} 
   message:      @local::standard_info
