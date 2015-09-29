@@ -1,7 +1,7 @@
 #include "services_lariat.fcl"
 #include "lariatfilegen.fcl"
-#include "largeantmodules.fcl"
-#include "detsimmodules.fcl"
+#include "largeantmodules_lariat.fcl"
+#include "detsimmodules_lariat.fcl"
 
 process_name: SinglesGen
 
@@ -32,9 +32,9 @@ physics:
 
  producers:
  {
-   generator: @local::lariat_filegen	  
-   largeant:  @local::argoneut_largeant	  
-   daq:       @local::argoneut_simwire       
+   generator: @local::lariat_filegen
+   largeant:  @local::lariat_largeant
+   daq:       @local::lariat_simwire
    rns:       { module_type: "RandomNumberSaver" }
  }
 
