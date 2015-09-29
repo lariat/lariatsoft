@@ -1,13 +1,11 @@
 #include "services_lariat.fcl"
 #include "sliceralg.fcl"
-#include "FragmentToDigit_config.fcl"
 #include "RawDataUtilities_algs.fcl"
 
 process_name: Slicer
 
 services:
 {
-  TFileService: { fileName: "slicer_hist.root" }
   Timing:       {}
   RandomNumberGenerator: {} 
   message:      @local::standard_info
@@ -59,6 +57,8 @@ outputs:
   {
     module_type: RootOutput
     fileName:    "standard_slicer.root" # default file name, can override from command line with -o or --output
+    dataTier:    "raw"
+    streamName:  "all"
   }
 }
 
@@ -84,7 +84,7 @@ source.SlicerAlg.ClockCorrectionAlg.MaxTrials:                    10000
 source.SlicerAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
 source.SlicerAlg.ClockCorrectionAlg.StopResidualsSum:             0
 source.SlicerAlg.ClockCorrectionAlg.StopProbability:              1
-source.SlicerAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e5  # microseconds
+source.SlicerAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e4  # microseconds
 source.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
 source.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
 source.SlicerAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000

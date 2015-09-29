@@ -62,6 +62,8 @@ class TOFBuilderAlg{
   TH1F* ustof_histo;
   TH1F* timestamp_histo;
   
+  int  fMissingNanoseconds;
+  
   std::vector<short> tof;
   std::vector<long> timeStampDst;
    

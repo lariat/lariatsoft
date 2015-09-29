@@ -338,7 +338,7 @@ namespace caldata {
 	  throw art::Exception(art::errors::InsertFailure)
 	    << "Can't associate wire #" << (wirecol->size() - 1)
 	    << " with raw digit #" << digitVec.key();
-	} // if failed to add association  
+  } // if failed to add association
       }
     }
     

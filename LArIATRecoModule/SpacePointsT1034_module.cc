@@ -306,10 +306,10 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
       
     for (unsigned int j = 0; j<endpointlist.size();j++){
       if (endpointlist[j]->View() == cl->View()){
-	vtx2d_w = endpointlist[j]->WireID().Wire;  //for update to EndPoint2D ... WK 4/22/13
-	vtx2d_t = endpointlist[j]->DriftTime();
-	found2dvtx = true;
-	break;
+        vtx2d_w = endpointlist[j]->WireID().Wire;  //for update to EndPoint2D ... WK 4/22/13
+        vtx2d_t = endpointlist[j]->DriftTime();
+        found2dvtx = true;
+        break;
       }
     }
     if (found2dvtx){
@@ -348,16 +348,16 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
 	
 		
       if(geom->SignalType((*theHit)->Channel()) == geo::kCollection) 
-	time -= tIC;   // Collection
-      //transform hit wire and time into cm
-      double wire_cm = 0.; 
+        time -= tIC;   // Collection
+                       //transform hit wire and time into cm
+      double wire_cm = 0.;
       if(geom->SignalType((*theHit)->Channel()) == geo::kInduction)
-	//wire_cm = (double)(((*theHit)->WireID().Wire+3.95) * wire_pitch);   
-        wire_cm = (double)(((*theHit)->WireID().Wire) * wire_pitch);       
+        //wire_cm = (double)(((*theHit)->WireID().Wire+3.95) * wire_pitch);
+        wire_cm = (double)(((*theHit)->WireID().Wire) * wire_pitch);
       else
-	//wire_cm = (double)(((*theHit)->WireID().Wire+1.84) * wire_pitch);
-	wire_cm = (double)(((*theHit)->WireID().Wire) * wire_pitch);
-      //double time_cm = (double)(time * timepitch);
+        //wire_cm = (double)(((*theHit)->WireID().Wire+1.84) * wire_pitch);
+        wire_cm = (double)(((*theHit)->WireID().Wire) * wire_pitch);
+        //double time_cm = (double)(time * timepitch);
       double time_cm;
       if(time>tSI) time_cm = (double)( (time-tSI)*timepitch + tSI*driftvelocity_SI*timetick);
       else time_cm = time*driftvelocity_SI*timetick;
@@ -420,14 +420,15 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
       break;
     }
     delete pol1;
+    delete the2Dtrack;
   }// end of loop over all input clusters
   
-   /////////////////////////////////////////////////////
-   /////// 2D Track Matching and 3D Track Reconstruction
-   /////////////////////////////////////////////////////
-   
-   //std::cout << "CCluster size " << CclusHitlists.size() << std::endl;
-   //std::cout << "ICluster size " << IclusHitlists.size() << std::endl;
+  /////////////////////////////////////////////////////
+  /////// 2D Track Matching and 3D Track Reconstruction
+  /////////////////////////////////////////////////////
+  
+  //std::cout << "CCluster size " << CclusHitlists.size() << std::endl;
+  //std::cout << "ICluster size " << IclusHitlists.size() << std::endl;
   std::vector< art::Ptr<recob::Hit> > hitsCtrk;
   hitsCtrk.clear();
   std::vector< art::Ptr<recob::Hit> > hitsItrk;

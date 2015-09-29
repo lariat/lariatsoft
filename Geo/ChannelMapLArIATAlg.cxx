@@ -53,13 +53,13 @@ namespace geo{
       cgeo[c]->SortSubVolumes(fSorter);
     
     fNTPC.resize(fNcryostat);
-    fWireCounts.resize(fNcryostat);
-    fNPlanes.resize(fNcryostat);
-    fFirstWireProj.resize(fNcryostat);
-    fOrthVectorsY.resize(fNcryostat);
-    fOrthVectorsZ.resize(fNcryostat);
-    fPlaneBaselines.resize(fNcryostat);
-    fWiresPerPlane.resize(fNcryostat);
+    fWireCounts             .resize(fNcryostat);
+    fNPlanes                .resize(fNcryostat);
+    fFirstWireProj          .resize(fNcryostat);
+    fOrthVectorsY           .resize(fNcryostat);
+    fOrthVectorsZ           .resize(fNcryostat);
+    fPlaneBaselines         .resize(fNcryostat);
+    fWiresPerPlane          .resize(fNcryostat);
     fFirstChannelInNextPlane.resize(fNcryostat);
     fFirstChannelInThisPlane.resize(fNcryostat);
     fViews.clear();
@@ -74,76 +74,76 @@ namespace geo{
       
       // Size up all the vectors 
       fWireCounts[cs]             .resize(fNTPC[cs]);
-      fFirstWireProj[cs] 	  .resize(fNTPC[cs]);
-      fOrthVectorsY[cs]  	  .resize(fNTPC[cs]);
-      fOrthVectorsZ[cs]  	  .resize(fNTPC[cs]);
-      fPlaneBaselines[cs]	  .resize(fNTPC[cs]);
-      fWiresPerPlane[cs] 	  .resize(fNTPC[cs]);
-      fNPlanes[cs] 	  	  .resize(fNTPC[cs]);
+      fFirstWireProj[cs] 	        .resize(fNTPC[cs]);
+      fOrthVectorsY[cs]  	        .resize(fNTPC[cs]);
+      fOrthVectorsZ[cs]  	        .resize(fNTPC[cs]);
+      fPlaneBaselines[cs]	        .resize(fNTPC[cs]);
+      fWiresPerPlane[cs] 	        .resize(fNTPC[cs]);
+      fNPlanes[cs] 	  	          .resize(fNTPC[cs]);
       fFirstChannelInThisPlane[cs].resize(fNTPC[cs]);
       fFirstChannelInNextPlane[cs].resize(fNTPC[cs]);
 
       for(unsigned int TPCCount = 0; TPCCount != fNTPC[cs]; ++TPCCount){
-	unsigned int PlanesThisTPC = cgeo[cs]->TPC(TPCCount).Nplanes();
-	fWireCounts[cs][TPCCount]   .resize(PlanesThisTPC);
-	fFirstWireProj[cs][TPCCount].resize(PlanesThisTPC);
-	fOrthVectorsY[cs][TPCCount] .resize(PlanesThisTPC);
-	fOrthVectorsZ[cs][TPCCount] .resize(PlanesThisTPC);
-	fNPlanes[cs][TPCCount]=PlanesThisTPC;
-	for(unsigned int PlaneCount = 0; PlaneCount != PlanesThisTPC; ++PlaneCount){
+        unsigned int PlanesThisTPC = cgeo[cs]->TPC(TPCCount).Nplanes();
+        fWireCounts[cs][TPCCount]   .resize(PlanesThisTPC);
+        fFirstWireProj[cs][TPCCount].resize(PlanesThisTPC);
+        fOrthVectorsY[cs][TPCCount] .resize(PlanesThisTPC);
+        fOrthVectorsZ[cs][TPCCount] .resize(PlanesThisTPC);
+        fNPlanes[cs][TPCCount]=PlanesThisTPC;
+        for(unsigned int PlaneCount = 0; PlaneCount != PlanesThisTPC; ++PlaneCount){
 
-	  fViews.emplace(cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).View());
-	  fPlaneIDs.emplace(PlaneID(cs, TPCCount, PlaneCount));
-	  double ThisWirePitch = cgeo[cs]->TPC(TPCCount).WirePitch(0, 1, PlaneCount);
-	  fWireCounts[cs][TPCCount][PlaneCount] = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
+          fViews.emplace(cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).View());
+          fPlaneIDs.emplace(PlaneID(cs, TPCCount, PlaneCount));
+          double ThisWirePitch = cgeo[cs]->TPC(TPCCount).WirePitch(0, 1, PlaneCount);
+          fWireCounts[cs][TPCCount][PlaneCount] = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
+          
+          double  WireCentre1[3] = {0.,0.,0.};
+          double  WireCentre2[3] = {0.,0.,0.};
+          
+          const geo::WireGeo& firstWire = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(0);
+          const double sth = firstWire.SinThetaZ(), cth = firstWire.CosThetaZ();
+          
+          firstWire.GetCenter(WireCentre1,0);
+          cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(1).GetCenter(WireCentre2,0);
+          
+          // figure out if we need to flip the orthogonal vector
+          // (should point from wire n -> n+1)
+          double OrthY = cth, OrthZ = -sth;
+          if(((WireCentre2[1] - WireCentre1[1])*OrthY
+              + (WireCentre2[2] - WireCentre1[2])*OrthZ) < 0){
+            OrthZ *= -1;
+            OrthY *= -1;
+          }
 	  
-	  double  WireCentre1[3] = {0.,0.,0.};
-	  double  WireCentre2[3] = {0.,0.,0.};
-	  
-	  const geo::WireGeo& firstWire = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(0);
-	  const double sth = firstWire.SinThetaZ(), cth = firstWire.CosThetaZ();
-	  
-	  firstWire.GetCenter(WireCentre1,0);
-	  cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(1).GetCenter(WireCentre2,0);
-	  
-	  // figure out if we need to flip the orthogonal vector 
-	  // (should point from wire n -> n+1)
-	  double OrthY = cth, OrthZ = -sth;
-	  if(((WireCentre2[1] - WireCentre1[1])*OrthY 
-	      + (WireCentre2[2] - WireCentre1[2])*OrthZ) < 0){
-	    OrthZ *= -1;
-	    OrthY *= -1;
-	  }
-	  
-	  // Overall we are trying to build an expression that looks like
-	  //  int NearestWireNumber = round((worldPos.OrthVector - FirstWire.OrthVector)/WirePitch);     
-	  // That runs as fast as humanly possible.
-	  //
-	  // Casting to an int is much faster than c rounding commands like floor().  We have to add 0.5
-	  // to account for rounding up as well as down.  floor(A) ~ (int)(A+0.5).  We account for the
-	  // 0.5 in the first wire constant to avoid adding it every time.
-	  //
-	  // We can also predivide everything by the wire pitch so we don't do this in the loop
-	  //
-	  // Putting this together into the useful constants we will use later per plane and tpc:
-	  fOrthVectorsY[cs][TPCCount][PlaneCount] = OrthY / ThisWirePitch;
-	  fOrthVectorsZ[cs][TPCCount][PlaneCount] = OrthZ / ThisWirePitch;
-	  
-	  fFirstWireProj[cs][TPCCount][PlaneCount]  = WireCentre1[1]*OrthY + WireCentre1[2]*OrthZ;
-	  fFirstWireProj[cs][TPCCount][PlaneCount] /= ThisWirePitch;
-	  
-	  // now to count up wires in each plane and get first channel in each plane
-	  int WiresThisPlane = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();	
-	  fWiresPerPlane[cs] .at(TPCCount).push_back(WiresThisPlane);
-	  fPlaneBaselines[cs].at(TPCCount).push_back(RunningTotal);
-	  
-	  RunningTotal += WiresThisPlane;
-
-	  fFirstChannelInThisPlane[cs].at(TPCCount).push_back(fTopChannel);
-	  fTopChannel += WiresThisPlane;
-	  fFirstChannelInNextPlane[cs].at(TPCCount).push_back(fTopChannel);
-
-	}// end loop over planes
+          // Overall we are trying to build an expression that looks like
+          //  int NearestWireNumber = round((worldPos.OrthVector - FirstWire.OrthVector)/WirePitch);
+          // That runs as fast as humanly possible.
+          //
+          // Casting to an int is much faster than c rounding commands like floor().  We have to add 0.5
+          // to account for rounding up as well as down.  floor(A) ~ (int)(A+0.5).  We account for the
+          // 0.5 in the first wire constant to avoid adding it every time.
+          //
+          // We can also predivide everything by the wire pitch so we don't do this in the loop
+          //
+          // Putting this together into the useful constants we will use later per plane and tpc:
+          fOrthVectorsY[cs][TPCCount][PlaneCount] = OrthY / ThisWirePitch;
+          fOrthVectorsZ[cs][TPCCount][PlaneCount] = OrthZ / ThisWirePitch;
+          
+          fFirstWireProj[cs][TPCCount][PlaneCount]  = WireCentre1[1]*OrthY + WireCentre1[2]*OrthZ;
+          fFirstWireProj[cs][TPCCount][PlaneCount] /= ThisWirePitch;
+          
+          // now to count up wires in each plane and get first channel in each plane
+          int WiresThisPlane = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
+          fWiresPerPlane[cs] .at(TPCCount).push_back(WiresThisPlane);
+          fPlaneBaselines[cs].at(TPCCount).push_back(RunningTotal);
+          
+          RunningTotal += WiresThisPlane;
+          
+          fFirstChannelInThisPlane[cs].at(TPCCount).push_back(fTopChannel);
+          fTopChannel += WiresThisPlane;
+          fFirstChannelInNextPlane[cs].at(TPCCount).push_back(fTopChannel);
+          
+        }// end loop over planes
       }// end loop over TPCs
     }// end loop over cryostats
 
@@ -174,9 +174,9 @@ namespace geo{
     for(auto const& id : fPlaneIDs ){
       
       if(channel < fFirstChannelInNextPlane[id.Cryostat][id.TPC][id.Plane]){
-    	wire  = channel - fFirstChannelInThisPlane[id.Cryostat][id.TPC][id.Plane];
-	AllSegments.push_back(geo::WireID(id.Cryostat, id.TPC, id.Plane, wire));
-    	break;
+        wire  = channel - fFirstChannelInThisPlane[id.Cryostat][id.TPC][id.Plane];
+        AllSegments.push_back(geo::WireID(id.Cryostat, id.TPC, id.Plane, wire));
+        break;
       }	    
 
     }// end loop over PlaneIDs
@@ -266,10 +266,11 @@ namespace geo{
     }
     
     // made it here, that shouldn't happen, return raw::InvalidChannelID
-    mf::LogWarning("ChannelMapLArIATAlg") << "should not be at the point in the function, returning "
-					  << "invalid channel";
+    LOG_WARNING("ChannelMapLArIATAlg")
+    << "should not be at the point in the function, returning "
+    << "invalid channel";
+  
     return raw::InvalidChannelID;
-
   }
 
 
@@ -290,9 +291,10 @@ namespace geo{
     else if( (channel >= fFirstChannelInThisPlane[0][tpc][PlanesThisTPC-1]) &&
              (channel <  fFirstChannelInNextPlane[0][tpc][PlanesThisTPC-1])    ){ sigt = geo::kCollection; }
     else
-      mf::LogWarning("BadChannelSignalType") << "Channel " << channel
-					     << " not given signal type." << std::endl;
-            
+      LOG_WARNING("BadChannelSignalType")
+      << "Channel " << channel
+      << " not given signal type." << std::endl;
+    
     return sigt;
   }
 
@@ -314,8 +316,9 @@ namespace geo{
     else if( (channel >= fFirstChannelInThisPlane[0][tpc][2]) &&
              (channel <  fFirstChannelInNextPlane[0][tpc][2])    ){ view = geo::kZ; }
     else
-      mf::LogWarning("BadChannelSignalType") << "Channel " << channel
-					     << " not given view type.";
+      LOG_WARNING("BadChannelSignalType")
+      << "Channel " << channel
+      << " not given view type.";
 
     return view;
   }  

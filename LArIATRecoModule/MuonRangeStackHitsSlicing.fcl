@@ -25,7 +25,7 @@ physics:
     MuonRangeStackHitsSlicing:
     {
       module_type: 	MuonRangeStackHitsSlicing
-      SourceLabel:	SlicerInput
+      SourceLabel:	"daq"
       Threshold: 	2020
       TriggerUtility: "FragmentToDigit"
     }

@@ -3,9 +3,14 @@ BEGIN_PROLOG
 lariat_anatree:
 {
     module_type:              "AnaTreeT1034"
-    HitsModuleLabel:          "cccluster"
-    TrackModuleLabel:         "ct"
     TriggerUtility:           "FragmentToDigit"
+    HitsModuleLabel:          "linecluster"
+    TrackModuleLabel:         "pmtrack"
+    CalorimetryModuleLabel:   "calo"
+    ParticleIDModuleLabel:    "pid"
+    ClusterModuleLabel:       "linecluster"
+    WCTrackLabel:             "wctrack"
+    
 }
 
 END_PROLOG
