@@ -20,5 +20,14 @@ lariat_kaonfilter:
   TOFModuleLabel:              "tof"
 }
 
+lariat_pimufilter:
+{
+ module_type: 			PiMuFilter
+ SourceLabel:   		"daq"
+ PiMuProbabilityThreshold: 	0.8
+ ParticleIDModuleLabel: 	"pid"
+ WCTrackModuleLabel: 		"wctrack"
+ TOFModuleLabel: 		"tof"
+}
 
 END_PROLOG
