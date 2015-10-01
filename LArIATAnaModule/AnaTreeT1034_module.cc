@@ -55,6 +55,7 @@
 #include "AnalysisBase/ParticleID.h"
 #include "RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
+#include "LArIATDataProducts/TOF.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
 
 
@@ -73,6 +74,8 @@ const int kMaxHits       = 20000; //maximum number of hits
 const int kMaxTrackHits  = 1000;  //maximum number of space points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
+const int kMaxTOF        = 100;   //maximum number of TOF objects
+
 namespace lariat 
 {
    class AnaTreeT1034;
@@ -186,6 +189,12 @@ private:
    double Y_Kink[kMaxWCTracks];     		//<---angle in Y between upstream and downstream tracks.
    
    
+   // === Storing Time of Flight information ===
+   int ntof;
+   double tofObject[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
+   double tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
+   
+   
    // ==== NEED TO FIX THESE VARIABLES....FILLED WITH DUMMY VALUES FOR NOW ===
    
    
@@ -204,6 +213,7 @@ private:
    std::string fCalorimetryModuleLabel;
    std::string fParticleIDModuleLabel;
    std::string fWCTrackLabel; 		// The name of the producer that made tracks through the MWPCs
+   std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
 };
 
 
@@ -332,6 +342,15 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    
    if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
       {art::fill_ptr_vector(wctrack, wctrackHandle);}
+      
+   // ####################################################
+   // ### Getting the Time of Flight (TOF) Information ###
+   // ####################################################
+   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
+   std::vector<art::Ptr<ldp::TOF> > tof;
+   
+   if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
+      {art::fill_ptr_vector(tof, TOFColHandle);}
    
    // ##########################################################
    // ### Grabbing associations for use later in the AnaTool ###
@@ -365,7 +384,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    nwctrks = wctrack.size();
    
    //int wct_count = 0;
-   std::cout<<nwctrks<<std::endl;
+   //std::cout<<nwctrks<<std::endl;
    // ########################################
    // ### Looping over Wire Chamber Tracks ###
    // ########################################
@@ -374,7 +393,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     //the vector, then use each "track" as a ldp::WCTrack
       {
       
-      std::cout<<"wctrack[wct_count]->Momentum() = "<<wctrack[wct_count]->Momentum()<<std::endl;
+      //std::cout<<"wctrack[wct_count]->Momentum() = "<<wctrack[wct_count]->Momentum()<<std::endl;
       // ##############################################
       // ### Filling Wire Chamber Track information ###
       // ##############################################
@@ -403,6 +422,25 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       }//<---end wctrack auto loop
       
 	 
+   
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   //							FILLING THE TIME OF FLIGHT INFORMATION
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   ntof = tof.size();
+   // ################################
+   // ### Looping over TOF objects ###
+   // ################################
+   for(size_t tof_count = 0; tof_count < tof.size(); tof_count++)
+      {
+      
+      tofObject[tof_count] =  tof[tof_count]->SingleTOF(tof_count);
+      tof_timestamp[tof_count] = tof[tof_count]->TimeStamp(tof_count);
+      
+      
+      
+      }//<---End tof_count loop
    
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
@@ -773,8 +811,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("hit_nelec",hit_nelec,"hit_nelec[nhits]/D");
   fTree->Branch("hit_energy",hit_energy,"hit_energy[nhits]/D");
   
-   //std::cout<<"Check-0.5"<<std::endl;
-   fTree->Branch("nwctrks",&nwctrks,"nwctrks/I");
+  fTree->Branch("nwctrks",&nwctrks,"nwctrks/I");
    fTree->Branch("wctrk_XFaceCoor",wctrk_XFaceCoor,"wctrk_XFaceCoor[nwctrks]/D");
    fTree->Branch("wctrk_YFaceCoor",wctrk_YFaceCoor,"wctrk_YFaceCoor[nwctrks]/D");
    fTree->Branch("wctrk_momentum",wctrk_momentum,"wctrk_momentum[nwctrks]/D");
@@ -788,8 +825,11 @@ void lariat::AnaTreeT1034::beginJob()
    fTree->Branch("XAxisHist",XAxisHist,"XAxisHist[nwctrks][1000]/D");
    fTree->Branch("YAxisHist",YAxisHist,"YAxisHist[nwctrks][1000]/D");
    fTree->Branch("Y_Kink",Y_Kink,"Y_Kink[nwctrks]/D");
-   
-   //std::cout<<"Check0"<<std::endl;
+  
+  fTree->Branch("ntof", &ntof, "ntof/I");
+  fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
+  fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
+
    
 }
 
@@ -896,6 +936,14 @@ void lariat::AnaTreeT1034::ResetVars()
    
    	}//<---End I loop
   
+  ntof = -99999;
+  for (int i = 0; i < kMaxTOF; i++)
+  	{
+	tofObject[i] = -99999;
+	tof_timestamp[i] = -99999;
+	
+	
+	}//<---End i loop
   
 }
 
