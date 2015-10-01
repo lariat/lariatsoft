@@ -236,6 +236,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
    fParticleIDModuleLabel  	= pset.get< std::string >("ParticleIDModuleLabel");
    fClusterModuleLabel          = pset.get< std::string >("ClusterModuleLabel");
    fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
+   fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
    
    return;
 }
@@ -432,22 +433,26 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    // ################################
    // ### Looping over TOF objects ###
    // ################################
-   for(size_t tof_count = 0; tof_count < tof.size(); tof_count++)
+   size_t tof_counter = 0; // book-keeping
+   for(size_t i = 0; i < tof.size(); i++)
       {
-      
-      tofObject[tof_count] =  tof[tof_count]->SingleTOF(tof_count);
-      tof_timestamp[tof_count] = tof[tof_count]->TimeStamp(tof_count);
-      
-      
-      
+
+        size_t number_tof = tof[i]->NTOF();
+
+        for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
+          tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
+          tof_timestamp[tof_counter] = tof[i]->TimeStamp(tof_idx);
+          ++tof_counter;
+        } // loop over TOF
+
       }//<---End tof_count loop
-   
+
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
    //							FILLING THE 2-D CLUSTER INFORMATION
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
-   
+
    // ### Saving the number of clusters in this event ###
    nclus = clusterlist.size();
    // ######################################################
