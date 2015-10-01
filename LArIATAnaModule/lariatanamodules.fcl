@@ -10,6 +10,7 @@ lariat_anatree:
     ParticleIDModuleLabel:    "pid"
     ClusterModuleLabel:       "linecluster"
     WCTrackLabel:             "wctrack"
+    TOFModuleLabel:	      "tof"
     
 }
 
