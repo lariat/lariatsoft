@@ -24,6 +24,7 @@
 // LArSoft includes
 #include "Geometry/Geometry.h"
 #include "RawData/AuxDetDigit.h"
+#include "RawData/OpDetPulse.h"
 
 //ROOT
 #include <TH1F.h>
@@ -43,9 +44,10 @@ class OpHitBuilderAlg{
   std::vector<Double_t>             MakeGradient( std::vector<short> );
   std::vector<Double_t>             GetBaselineAndRMS( std::vector<short>, short, short);
   Double_t                          GetLocalRMSOfGradient( std::vector<Double_t>, short, short);
-  std::vector<Double_t>               IntegrateHit( std::vector<short>, short, short);
-  std::vector<Double_t>               GetSinglePEs( std::vector<short> );
-
+  std::vector<Double_t>             GetHitInfo( std::vector<short>, short, short);
+  Double_t                          GetHitAmplitude( std::vector<short>, short);
+  Double_t                          GetHitIntegral( std::vector<short>, short, int);  
+  bool                              IsCleanBeamWaveform( raw::OpDetPulse );
    
   // Average waveform vector
   std::vector<double>   AverageWaveform;
@@ -60,6 +62,7 @@ class OpHitBuilderAlg{
  private:
   
   Double_t  fGradientHitThreshold;
+  Double_t  fPulseHitThreshold;
   Double_t  fGradientRMSFilterThreshold;
   Double_t  fMinHitSeparation;  
   short     fBaselineWindowLength;
@@ -68,6 +71,7 @@ class OpHitBuilderAlg{
   short     fFullWindowLength;
   double    fMvPerADC;
   bool      fUsePrepulseFit;
+  double    fTimestampCut;
   
 };
 

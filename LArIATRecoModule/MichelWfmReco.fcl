@@ -56,14 +56,16 @@ physics:
 }
 
 services.scheduler.SkipEvent: [ ProductNotFound ]
+physics.producers.MichelWfmReco.Verbosity: "true"
 physics.producers.MichelWfmReco.UseTriggerFilter: "false"   
-physics.producers.MichelWfmReco.TimestampCut: 5.5           # default 5.5 sec
-physics.producers.MichelWfmReco.GradientHitThreshold: -10   # default -10
-physics.producers.MichelWfmReco.MinHitSeparation: 20        # default 20ns
+physics.producers.MichelWfmReco.TimestampCut: 5.25           # default 5.25 sec
+physics.producers.MichelWfmReco.OpHitBuilderAlg.PulseHitThreshold: 0.;
+physics.producers.MichelWfmReco.OpHitBuilderAlg.GradientHitThreshold: -10   # default -10
+physics.producers.MichelWfmReco.OpHitBuilderAlg.MinHitSeparation: 50       # default 50ns
 physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1000ns
 physics.producers.MichelWfmReco.PromptWindowLength: 100     # default 100ns
 physics.producers.MichelWfmReco.FullWindowLength: 7000      # default 7000ns
-physics.producers.MichelWfmReco.GateDelay: 300
+physics.producers.MichelWfmReco.GateDelay: 320
 physics.producers.MichelWfmReco.UsePrepulseFit: "true"      # default true
 physics.producers.MichelWfmReco.DtIntegralCut: 0            # default 0
 physics.producers.MichelWfmReco.TriggerUtility: "FragmentToDigit"
