@@ -69,7 +69,7 @@ OpHitBuilderAlg::~OpHitBuilderAlg()
 //--------------------------------------------------------------
 void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fGradientHitThreshold       = pset.get< Double_t >("GradientHitThreshold",-10);
-  fPulseHitThreshold          = pset.get< Double_t >("PulseHitThreshold",0);
+  fPulseHitThreshold          = pset.get< Double_t >("PulseHitThreshold",0.);
   fGradientRMSFilterThreshold = pset.get< Double_t >("GradientRMSFilterThreshold",5); 
   fMinHitSeparation           = pset.get< Double_t >("MinHitSeparation",50);
   fBaselineWindowLength       = pset.get< short >("BaselineWindowLength",1000);
