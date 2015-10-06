@@ -101,7 +101,8 @@
  <class name="std::vector<std::pair<int,int> >"                                   />
  <class name="art::Wrapper<std::vector<std::pair<int,int> > >"                    />
 
- <class name="ldp::ConditionsSummary" ClassVersion="10"                            >
+ <class name="ldp::ConditionsSummary" ClassVersion="11"                            >
+  <version ClassVersion="11" checksum="1404195153"/>
   <version ClassVersion="10" checksum="2354193908"/>
  </class>
  <class name="art::Wrapper<ldp::ConditionsSummary>"                               />

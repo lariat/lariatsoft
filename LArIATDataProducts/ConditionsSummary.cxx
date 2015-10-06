@@ -6,6 +6,7 @@
 //
 
 #include <limits>
+#include <complex>
 
 #include "cetlib/exception.h"
 
@@ -16,29 +17,83 @@ namespace ldp {
   
   //-------------------------------------------------------------------
   ConditionsSummary::ConditionsSummary()
-  : fBeamOn       (false)
-  , fMagnetCurrent(std::numeric_limits<float>::max())
-  , fTPCHV        (std::numeric_limits<float>::max())
-  , fMWPCVoltage  (std::vector<float>(4, std::numeric_limits<float>::max()))
-  , fPMTHV        (std::numeric_limits<float>::max())
-  , fSiPMHV       (std::numeric_limits<float>::max())
+  : fSecondaryIntensity    (std::numeric_limits<float>::max())
+  , fSecondaryMomentum     (std::numeric_limits<float>::max())
+  , fSecondaryPolarity     (std::numeric_limits<float>::max())
+  , fMagnetCurrent         (std::numeric_limits<float>::max())
+  , fMagnetPolarity        (std::numeric_limits<float>::max())
+  , fTPCCathodeHV          (std::numeric_limits<float>::max())
+  , fTPCCollectionV        (std::numeric_limits<float>::max())
+  , fTPCInductionV         (std::numeric_limits<float>::max())
+  , fTPCShieldV            (std::numeric_limits<float>::max())
+  , fETLPMTHV              (std::numeric_limits<float>::max())
+  , fHamamatsuPMTHV        (std::numeric_limits<float>::max())
+  , fHamamatsuSiPMHV       (std::numeric_limits<float>::max())
+  , fSenslSiPMHV           (std::numeric_limits<float>::max())
+  , fTertiaryBeamCounters  (std::numeric_limits<float>::max())
+  , fTertiaryCherenkov1    (std::numeric_limits<float>::max())
+  , fTertiaryCherenkov2    (std::numeric_limits<float>::max())
+  , fTertiaryCosmicCounters(std::numeric_limits<float>::max())
+  , fDSTOF                 (std::numeric_limits<float>::max())
+  , fUSTOF                 (std::numeric_limits<float>::max())
+  , fHaloPaddle            (std::numeric_limits<float>::max())
+  , fMuonRangeStack        (std::numeric_limits<float>::max())
+  , fNumberMuRS            (std::numeric_limits<float>::max())
+  , fPunchThrough          (std::numeric_limits<float>::max())
+  , fMWPCVoltages          (std::vector<float>(4, std::numeric_limits<float>::max()) )
   {
     return;
   }
   
   //-------------------------------------------------------------------
-  ConditionsSummary::ConditionsSummary(bool               const& beamOn,
+  ConditionsSummary::ConditionsSummary(float              const& secondaryIntensity,
+                                       float              const& secondaryMomentum,
+                                       float              const& secondaryPolarity,
                                        float              const& magnetCurrent,
-                                       float              const& tpchv,
-                                       float              const& pmthv,
-                                       float              const& sipmhv,
+                                       float              const& magnetPolarity,
+                                       float              const& tpcCathodeHV,
+                                       float              const& tpcCollectionV,
+                                       float              const& tpcInductionV,
+                                       float              const& tpcShieldV,
+                                       float              const& etlPMTHV,
+                                       float              const& hamamatsuPMTHV,
+                                       float              const& hamamatsuSiPMHV,
+                                       float              const& senslSiPMHV,
+                                       float              const& tertiaryBeamCounters,
+                                       float              const& tertiaryCherenkov1,
+                                       float              const& tertiaryCherenkov2,
+                                       float              const& tertiaryCosmicCounters,
+                                       float              const& dsTOF,
+                                       float              const& usTOF,
+                                       float              const& haloPaddle,
+                                       float              const& muonRangeStack,
+                                       float              const& numberMuRS,
+                                       float              const& punchThrough,
                                        std::vector<float> const& mwpcVoltages)
-  : fBeamOn       (beamOn)
-  , fMagnetCurrent(magnetCurrent)
-  , fTPCHV        (tpchv)
-  , fMWPCVoltage  (mwpcVoltages)
-  , fPMTHV        (pmthv)
-  , fSiPMHV       (sipmhv)
+  : fSecondaryIntensity    (secondaryIntensity    )
+  , fSecondaryMomentum     (secondaryMomentum     )
+  , fSecondaryPolarity     (secondaryPolarity     )
+  , fMagnetCurrent         (magnetCurrent         )
+  , fMagnetPolarity        (magnetPolarity        )
+  , fTPCCathodeHV          (tpcCathodeHV          )
+  , fTPCCollectionV        (tpcCollectionV        )
+  , fTPCInductionV         (tpcInductionV         )
+  , fTPCShieldV            (tpcShieldV            )
+  , fETLPMTHV              (etlPMTHV              )
+  , fHamamatsuPMTHV        (hamamatsuPMTHV        )
+  , fHamamatsuSiPMHV       (hamamatsuSiPMHV       )
+  , fSenslSiPMHV           (senslSiPMHV           )
+  , fTertiaryBeamCounters  (tertiaryBeamCounters  )
+  , fTertiaryCherenkov1    (tertiaryCherenkov1    )
+  , fTertiaryCherenkov2    (tertiaryCherenkov2    )
+  , fTertiaryCosmicCounters(tertiaryCosmicCounters)
+  , fDSTOF                 (dsTOF                 )
+  , fUSTOF                 (usTOF                 )
+  , fHaloPaddle            (haloPaddle            )
+  , fMuonRangeStack        (muonRangeStack        )
+  , fNumberMuRS            (numberMuRS            )
+  , fPunchThrough          (punchThrough          )
+  , fMWPCVoltages          (mwpcVoltages          )
   {
     return;
   }
@@ -46,12 +101,19 @@ namespace ldp {
   //-------------------------------------------------------------------
   float const& ConditionsSummary::MWPCVoltage(size_t const& mwpc) const
   {
-    if(mwpc > fMWPCVoltage.size() - 1)
+    if(mwpc > fMWPCVoltages.size() - 1)
       throw cet::exception("ConditionsSummary")
       << "requests voltage for mwpc: " << mwpc
-      << " while only " << fMWPCVoltage.size()
+      << " while only " << fMWPCVoltages.size()
       << " MWPCs in experiment";
     
-    return fMWPCVoltage[mwpc];
+    return fMWPCVoltages[mwpc];
   }
-}
+  
+  //-------------------------------------------------------------------
+  bool ConditionsSummary::BeamOn() const
+  {
+    return (fSecondaryIntensity > 0. && std::abs(fSecondaryMomentum) > 0.);
+  }
+  
+} // end namespace

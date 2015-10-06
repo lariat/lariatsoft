@@ -18,43 +18,116 @@ namespace ldp {
     
   private:
     
-    bool  fBeamOn;                   ///< is the beam on or off
-    float fMagnetCurrent;            ///< value of the current supplied to the magnet
-    float fTPCHV;                    ///< High voltage of the field cage
-    std::vector<float> fMWPCVoltage; ///< voltage supplied to MWPCs
-    float fPMTHV;                    ///< HV for the PMT
-    float fSiPMHV;                   ///< HV for the SiPM
+    float              fSecondaryIntensity;       ///< secondary beam intensity
+    float              fSecondaryMomentum;        ///< secondary beam momentum
+    float              fSecondaryPolarity;        ///< secondary beam polarity
+    float              fMagnetCurrent;            ///< value of the current supplied to the magnet
+    float              fMagnetPolarity;           ///< polarity of the magnet
+    float              fTPCCathodeHV;             ///< High voltage on the cathode
+    float              fTPCCollectionV;           ///< voltage on the collection plane
+    float              fTPCInductionV;            ///< voltage on the induction plane
+    float              fTPCShieldV;               ///< voltage on the shield plane
+    float              fETLPMTHV;                 ///< HV for the ETL PMT
+    float              fHamamatsuPMTHV;           ///< HV for the Hamamatsu PMT
+    float              fHamamatsuSiPMHV;          ///< HV for the Hamamatsu SiPM
+    float              fSenslSiPMHV;              ///< HV for the Sensl SiPM
+    float              fTertiaryBeamCounters;     ///< something about the beam counters
+    float              fTertiaryCherenkov1;       ///< something about cherenkov 1
+    float              fTertiaryCherenkov2;       ///< something about cherenkov 2
+    float              fTertiaryCosmicCounters;   ///< something about the cosmic counters
+    float              fDSTOF;                    ///< something about the downstream Time of Flight
+    float              fUSTOF;                    ///< something about the downstream Time of Flight
+    float              fHaloPaddle;               ///< something about the halo paddle
+    float              fMuonRangeStack;           ///< something about the muon range stack
+    float              fNumberMuRS;               ///< number of paddles in muon range stack?
+    float              fPunchThrough;             ///< something about the punch through
+    std::vector<float> fMWPCVoltages;             ///< voltage supplied to MWPCs
 
 #ifndef __GCCXML__
     
   public:
     
-    ConditionsSummary(bool               const& beamOn,
+    ConditionsSummary(float              const& secondaryIntensity,
+                      float              const& secondaryMomentum,
+                      float              const& secondaryPolarity,
                       float              const& magnetCurrent,
-                      float              const& tpchv,
-                      float              const& pmthv,
-                      float              const& sipmhv,
+                      float              const& magnetPolarity,
+                      float              const& tpcCathodeHV,
+                      float              const& tpcCollectionV,
+                      float              const& tpcInductionV,
+                      float              const& tpcShieldV,
+                      float              const& etlPMTHV,
+                      float              const& hamamatsuPMTHV,
+                      float              const& hamamatsuSiPMHV,
+                      float              const& senslSiPMHV,
+                      float              const& tertiaryBeamCounters,
+                      float              const& tertiaryCherenkov1,
+                      float              const& tertiaryCherenkov2,
+                      float              const& tertiaryCosmicCounters,
+                      float              const& dsTOF,
+                      float              const& usTOF,
+                      float              const& haloPaddle,
+                      float              const& muonRangeStack,
+                      float              const& numberMuRS,
+                      float              const& punchThrough,
                       std::vector<float> const& mwpcVoltages);
     
-    bool  const& BeamOn()                        const;
+    bool         BeamOn()                        const;
+    float const& SecondaryIntensity()            const;
+    float const& SecondaryMomentum()             const;
+    float const& SecondaryPolarity()             const;
     float const& MagnetCurrent()                 const;
-    float const& TPCHV()                         const;
+    float const& MagnetPolarity()                const;
+    float const& TPCCathodeHV()                  const;
+    float const& TPCCollectionV()                const;
+    float const& TPCInductionV()                 const;
+    float const& TPCShieldV()                    const;
     float const& MWPCVoltage(size_t const& mwpc) const;
-    float const& PMTHV()                         const;
-    float const& SiPMHV()                        const;
+    float const& ETLPMTHV()                      const;
+    float const& HamamatsuPMTHV()                const;
+    float const& HamamatsuSiPMHV()               const;
+    float const& SenslSiPMHV()                   const;
+    float const& TertiaryBeamCounters()          const;
+    float const& TertiaryCherenkov1()            const;
+    float const& TertiaryCherenkov2()            const;
+    float const& TertiaryCosmicCounters()        const;
+    float const& DownStreamTOF()                 const;
+    float const& UpStreamTOF()                   const;
+    float const& HaloPaddle()                    const;
+    float const& MuonRangeStack()                const;
+    float const& NumberMuRS()                    const;
+    float const& PunchThrough()                  const;
     
 #endif
     
   };
-}
+} // end namespace
 
 #ifndef __GCCXML__
 
-inline bool  const& ldp::ConditionsSummary::BeamOn()                        const { return fBeamOn;        }
-inline float const& ldp::ConditionsSummary::MagnetCurrent()                 const { return fMagnetCurrent; }
-inline float const& ldp::ConditionsSummary::TPCHV()                         const { return fTPCHV;         }
-inline float const& ldp::ConditionsSummary::PMTHV()                         const { return fPMTHV;         }
-inline float const& ldp::ConditionsSummary::SiPMHV()                        const { return fSiPMHV;        }
+inline float const& ldp::ConditionsSummary::SecondaryIntensity()     const { return fSecondaryIntensity;     }
+inline float const& ldp::ConditionsSummary::SecondaryMomentum()      const { return fSecondaryMomentum;      }
+inline float const& ldp::ConditionsSummary::SecondaryPolarity()      const { return fSecondaryPolarity;      }
+inline float const& ldp::ConditionsSummary::MagnetCurrent()          const { return fMagnetCurrent;          }
+inline float const& ldp::ConditionsSummary::MagnetPolarity()         const { return fMagnetPolarity;         }
+inline float const& ldp::ConditionsSummary::TPCCathodeHV()           const { return fTPCCathodeHV;           }
+inline float const& ldp::ConditionsSummary::TPCCollectionV()         const { return fTPCCollectionV;         }
+inline float const& ldp::ConditionsSummary::TPCInductionV()          const { return fTPCInductionV;          }
+inline float const& ldp::ConditionsSummary::TPCShieldV()             const { return fTPCShieldV;             }
+inline float const& ldp::ConditionsSummary::ETLPMTHV()               const { return fETLPMTHV;               }
+inline float const& ldp::ConditionsSummary::HamamatsuPMTHV()         const { return fHamamatsuPMTHV;         }
+inline float const& ldp::ConditionsSummary::HamamatsuSiPMHV()        const { return fHamamatsuSiPMHV;        }
+inline float const& ldp::ConditionsSummary::SenslSiPMHV()            const { return fSenslSiPMHV;            }
+inline float const& ldp::ConditionsSummary::TertiaryBeamCounters()   const { return fTertiaryBeamCounters;   }
+inline float const& ldp::ConditionsSummary::TertiaryCherenkov1()     const { return fTertiaryCherenkov1;     }
+inline float const& ldp::ConditionsSummary::TertiaryCherenkov2()     const { return fTertiaryCherenkov2;     }
+inline float const& ldp::ConditionsSummary::TertiaryCosmicCounters() const { return fTertiaryCosmicCounters; }
+inline float const& ldp::ConditionsSummary::DownStreamTOF()          const { return fDSTOF;                  }
+inline float const& ldp::ConditionsSummary::UpStreamTOF()            const { return fUSTOF;                  }
+inline float const& ldp::ConditionsSummary::HaloPaddle()             const { return fHaloPaddle;             }
+inline float const& ldp::ConditionsSummary::MuonRangeStack()         const { return fMuonRangeStack;         }
+inline float const& ldp::ConditionsSummary::NumberMuRS()             const { return fNumberMuRS;             }
+inline float const& ldp::ConditionsSummary::PunchThrough()           const { return fPunchThrough;           }
 
 #endif
 

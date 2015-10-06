@@ -456,18 +456,54 @@ namespace rdu
       
       // the following values are just place holders until I know how to access
       // the DB to get them.
-      bool beamOn = true;
-      float magnetCurrent = 1.;
-      float tpchv = 1.;
-      float pmthv = 1.;
-      float sipmhv = 1.;
-      std::vector<float> mwpcVoltages(4, 1.);
+      float              secondaryIntensity     = 0.;
+      float              secondaryMomentum      = 0.;
+      float              secondaryPolarity      = 0.;
+      float              magnetCurrent          = 0.;
+      float              magnetPolarity         = 0.;
+      float              tpcCathodeHV           = 0.;
+      float              tpcCollectionV         = 0.;
+      float              tpcInductionV          = 0.;
+      float              tpcShieldV             = 0.;
+      float              etlPMTHV               = 0.;
+      float              hamamatsuPMTHV         = 0.;
+      float              hamamatsuSiPMHV        = 0.;
+      float              senslSiPMHV            = 0.;
+      float              tertiaryBeamCounters   = 0.;
+      float              tertiaryCherenkov1     = 0.;
+      float              tertiaryCherenkov2     = 0.;
+      float              tertiaryCosmicCounters = 0.;
+      float              dsTOF                  = 0.;
+      float              usTOF                  = 0.;
+      float              haloPaddle             = 0.;
+      float              muonRangeStack         = 0.;
+      float              numberMuRS             = 0.;
+      float              punchThrough           = 0.;
+      std::vector<float> mwpcVoltages(4, 0.);
       
-      std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(beamOn,
+      std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(secondaryIntensity,
+                                                                                           secondaryMomentum,
+                                                                                           secondaryPolarity,
                                                                                            magnetCurrent,
-                                                                                           tpchv,
-                                                                                           pmthv,
-                                                                                           sipmhv,
+                                                                                           magnetPolarity,
+                                                                                           tpcCathodeHV,
+                                                                                           tpcCollectionV,
+                                                                                           tpcInductionV,
+                                                                                           tpcShieldV,
+                                                                                           etlPMTHV,
+                                                                                           hamamatsuPMTHV,
+                                                                                           hamamatsuSiPMHV,
+                                                                                           senslSiPMHV,
+                                                                                           tertiaryBeamCounters,
+                                                                                           tertiaryCherenkov1,
+                                                                                           tertiaryCherenkov2,
+                                                                                           tertiaryCosmicCounters,
+                                                                                           dsTOF,
+                                                                                           usTOF,
+                                                                                           haloPaddle,
+                                                                                           muonRangeStack,
+                                                                                           numberMuRS,
+                                                                                           punchThrough,
                                                                                            mwpcVoltages));
       art::put_product_in_principal(std::move(conditionsSummary), *outSubRun, fSourceName);
       
