@@ -40,7 +40,7 @@ namespace ldp {
   , fMuonRangeStack        (std::numeric_limits<float>::max())
   , fNumberMuRS            (std::numeric_limits<float>::max())
   , fPunchThrough          (std::numeric_limits<float>::max())
-  , fMWPCVoltages          (std::vector<float>(4, std::numeric_limits<float>::max()) )
+  , fMWPC                  (std::vector<bool>(4, false) )
   {
     return;
   }
@@ -69,7 +69,7 @@ namespace ldp {
                                        float              const& muonRangeStack,
                                        float              const& numberMuRS,
                                        float              const& punchThrough,
-                                       std::vector<float> const& mwpcVoltages)
+                                       std::vector<bool>  const& mwpc)
   : fSecondaryIntensity    (secondaryIntensity    )
   , fSecondaryMomentum     (secondaryMomentum     )
   , fSecondaryPolarity     (secondaryPolarity     )
@@ -93,21 +93,21 @@ namespace ldp {
   , fMuonRangeStack        (muonRangeStack        )
   , fNumberMuRS            (numberMuRS            )
   , fPunchThrough          (punchThrough          )
-  , fMWPCVoltages          (mwpcVoltages          )
+  , fMWPC                  (mwpc                  )
   {
     return;
   }
 
   //-------------------------------------------------------------------
-  float const& ConditionsSummary::MWPCVoltage(size_t const& mwpc) const
+  bool ConditionsSummary::MWPC(size_t const& mwpc) const
   {
-    if(mwpc > fMWPCVoltages.size() - 1)
+    if(mwpc > fMWPC.size() - 1)
       throw cet::exception("ConditionsSummary")
-      << "requests voltage for mwpc: " << mwpc
-      << " while only " << fMWPCVoltages.size()
+      << "requests for mwpc: " << mwpc
+      << " while only " << fMWPC.size()
       << " MWPCs in experiment";
     
-    return fMWPCVoltages[mwpc];
+    return fMWPC[mwpc];
   }
   
   //-------------------------------------------------------------------

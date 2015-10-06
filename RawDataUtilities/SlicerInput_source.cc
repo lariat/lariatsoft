@@ -61,6 +61,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <initializer_list>
 
 //-------------------------------------------------------------------------
 // unnamed namespace
@@ -206,8 +207,12 @@ namespace rdu
     // fragment-to-digit algorithm (?)
     FragmentToDigitAlg fFragmentToDigitAlg;
 
+    // load up the RunPrincipal
     void commenceRun(art::RunPrincipal * & outRun);
 
+    // load up the SubRunPrincipal
+    void commenceSubRun(art::SubRunPrincipal * & outSubRun);
+    
     // get parameters from lariat_prd database
     void getDatabaseParameters_(art::RunNumber_t const& RunNumber);
 
@@ -452,61 +457,7 @@ namespace rdu
       fCachedSubRunNumber = fSubRunNumber;
       // fEventNumber = 0ul;
       
-      // create the ConditionsSummary object and put it into the subrun
-      
-      // the following values are just place holders until I know how to access
-      // the DB to get them.
-      float              secondaryIntensity     = 0.;
-      float              secondaryMomentum      = 0.;
-      float              secondaryPolarity      = 0.;
-      float              magnetCurrent          = 0.;
-      float              magnetPolarity         = 0.;
-      float              tpcCathodeHV           = 0.;
-      float              tpcCollectionV         = 0.;
-      float              tpcInductionV          = 0.;
-      float              tpcShieldV             = 0.;
-      float              etlPMTHV               = 0.;
-      float              hamamatsuPMTHV         = 0.;
-      float              hamamatsuSiPMHV        = 0.;
-      float              senslSiPMHV            = 0.;
-      float              tertiaryBeamCounters   = 0.;
-      float              tertiaryCherenkov1     = 0.;
-      float              tertiaryCherenkov2     = 0.;
-      float              tertiaryCosmicCounters = 0.;
-      float              dsTOF                  = 0.;
-      float              usTOF                  = 0.;
-      float              haloPaddle             = 0.;
-      float              muonRangeStack         = 0.;
-      float              numberMuRS             = 0.;
-      float              punchThrough           = 0.;
-      std::vector<float> mwpcVoltages(4, 0.);
-      
-      std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(secondaryIntensity,
-                                                                                           secondaryMomentum,
-                                                                                           secondaryPolarity,
-                                                                                           magnetCurrent,
-                                                                                           magnetPolarity,
-                                                                                           tpcCathodeHV,
-                                                                                           tpcCollectionV,
-                                                                                           tpcInductionV,
-                                                                                           tpcShieldV,
-                                                                                           etlPMTHV,
-                                                                                           hamamatsuPMTHV,
-                                                                                           hamamatsuSiPMHV,
-                                                                                           senslSiPMHV,
-                                                                                           tertiaryBeamCounters,
-                                                                                           tertiaryCherenkov1,
-                                                                                           tertiaryCherenkov2,
-                                                                                           tertiaryCosmicCounters,
-                                                                                           dsTOF,
-                                                                                           usTOF,
-                                                                                           haloPaddle,
-                                                                                           muonRangeStack,
-                                                                                           numberMuRS,
-                                                                                           punchThrough,
-                                                                                           mwpcVoltages));
-      art::put_product_in_principal(std::move(conditionsSummary), *outSubRun, fSourceName);
-      
+      this->commenceSubRun(outSubRun);
     }
 
     LOG_VERBATIM("SlicerInput") << "fCollections.size(): " << fCollections.size();
@@ -784,6 +735,106 @@ namespace rdu
 
     return;
   }
+  
+  //-----------------------------------------------------------------------
+  void Slicer::commenceSubRun(art::SubRunPrincipal * & outSubRun)
+  {
+    std::initializer_list<std::string> il_params = {
+      "detector.cathode_voltage",
+      "detector.collection_voltage",
+      "detector.induction_voltage",
+      "detector.pmt_etl",
+      "detector.pmt_ham",
+      "detector.shield_voltage",
+      "detector.sipm_ham",
+      "detector.sipm_sensl",
+      "secondary.intensity",
+      "secondary.momentum",
+      "secondary.polarity",
+      "tertiary.beam_counters",
+      "tertiary.cherenkov1",
+      "tertiary.cherenkov2",
+      "tertiary.cosmic_counters",
+      "tertiary.DSTOF",
+      "tertiary.USTOF",
+      "tertiary.halo_paddle",
+      "tertiary.magnet_current",
+      "tertiary.magnet_polarity",
+      "tertiary.muon_range_stack",
+      "tertiary.MWPC1",
+      "tertiary.MWPC2",
+      "tertiary.MWPC3",
+      "tertiary.MWPC4",
+      "tertiary.number_MuRS",
+      "tertiary.punch_through"};
+   
+    std::vector<std::string> params(il_params);
+    
+    // get the relevant information from the database
+    auto dbValues = fDatabaseUtility->GetConfigValues(params, static_cast <int> (fRunNumber));
+
+    // create the ConditionsSummary object and put it into the subrun
+    float              secondaryIntensity     = 1.*this->castToSizeT_(dbValues["secondary.intensity"]);
+    float              secondaryMomentum      = 1.*this->castToSizeT_(dbValues["secondary.momentum"]);
+    float              secondaryPolarity      = (strcmp(dbValues["secondary.polarity"].c_str(), "Negative") == 0) ? -1. : 1.;
+    float              magnetCurrent          = 1.*this->castToSizeT_(dbValues["tertiary.magnet_current"]);
+    float              magnetPolarity         = (strcmp(dbValues["tertiary.magnet_polarity"].c_str(), "Negative") == 0) ? -1. : 1.;
+    float              tpcCathodeHV           = 1.*this->castToSizeT_(dbValues["detector.cathode_voltage"]);
+    float              tpcCollectionV         = 1.*this->castToSizeT_(dbValues["detector.collection_voltage"]);
+    float              tpcInductionV          = 1.*this->castToSizeT_(dbValues["detector.induction_voltage"]);
+    float              tpcShieldV             = 1.*this->castToSizeT_(dbValues["detector.shield_voltage"]);
+    float              etlPMTHV               = 0.;
+    float              hamamatsuPMTHV         = 0.;
+    float              hamamatsuSiPMHV        = 0.;
+    float              senslSiPMHV            = 0.;
+    float              tertiaryBeamCounters   = 0.;
+    float              tertiaryCherenkov1     = 0.;
+    float              tertiaryCherenkov2     = 0.;
+    float              tertiaryCosmicCounters = 0.;
+    float              dsTOF                  = 0.;
+    float              usTOF                  = 0.;
+    float              haloPaddle             = 0.;
+    float              muonRangeStack         = 0.;
+    float              numberMuRS             = 1.*this->castToSizeT_(dbValues["tertiary.number_MuRS"]);
+    float              punchThrough           = 0.;
+    
+    std::initializer_list<bool> il_mwpcV = {
+      (strcmp(dbValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false,
+      (strcmp(dbValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false,
+      (strcmp(dbValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false,
+      (strcmp(dbValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false};
+    
+    std::vector<bool> mwpc(il_mwpcV);
+    
+    std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(secondaryIntensity,
+                                                                                         secondaryMomentum,
+                                                                                         secondaryPolarity,
+                                                                                         magnetCurrent,
+                                                                                         magnetPolarity,
+                                                                                         tpcCathodeHV,
+                                                                                         tpcCollectionV,
+                                                                                         tpcInductionV,
+                                                                                         tpcShieldV,
+                                                                                         etlPMTHV,
+                                                                                         hamamatsuPMTHV,
+                                                                                         hamamatsuSiPMHV,
+                                                                                         senslSiPMHV,
+                                                                                         tertiaryBeamCounters,
+                                                                                         tertiaryCherenkov1,
+                                                                                         tertiaryCherenkov2,
+                                                                                         tertiaryCosmicCounters,
+                                                                                         dsTOF,
+                                                                                         usTOF,
+                                                                                         haloPaddle,
+                                                                                         muonRangeStack,
+                                                                                         numberMuRS,
+                                                                                         punchThrough,
+                                                                                         mwpc));
+    art::put_product_in_principal(std::move(conditionsSummary), *outSubRun, fSourceName);
+
+    return;
+  }
+
 
   DEFINE_ART_INPUT_SOURCE(art::Source<rdu::Slicer>)
 

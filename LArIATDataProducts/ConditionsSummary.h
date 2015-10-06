@@ -20,9 +20,9 @@ namespace ldp {
     
     float              fSecondaryIntensity;       ///< secondary beam intensity
     float              fSecondaryMomentum;        ///< secondary beam momentum
-    float              fSecondaryPolarity;        ///< secondary beam polarity
+    float              fSecondaryPolarity;        ///< secondary beam polarity, > 0 --> Positive
     float              fMagnetCurrent;            ///< value of the current supplied to the magnet
-    float              fMagnetPolarity;           ///< polarity of the magnet
+    float              fMagnetPolarity;           ///< polarity of the magnet, > 0 --> Positive
     float              fTPCCathodeHV;             ///< High voltage on the cathode
     float              fTPCCollectionV;           ///< voltage on the collection plane
     float              fTPCInductionV;            ///< voltage on the induction plane
@@ -41,7 +41,7 @@ namespace ldp {
     float              fMuonRangeStack;           ///< something about the muon range stack
     float              fNumberMuRS;               ///< number of paddles in muon range stack?
     float              fPunchThrough;             ///< something about the punch through
-    std::vector<float> fMWPCVoltages;             ///< voltage supplied to MWPCs
+    std::vector<bool>  fMWPC;                     ///< which MWPCs are on
 
 #ifndef __GCCXML__
     
@@ -70,7 +70,7 @@ namespace ldp {
                       float              const& muonRangeStack,
                       float              const& numberMuRS,
                       float              const& punchThrough,
-                      std::vector<float> const& mwpcVoltages);
+                      std::vector<bool> const& mwpc);
     
     bool         BeamOn()                        const;
     float const& SecondaryIntensity()            const;
@@ -82,7 +82,7 @@ namespace ldp {
     float const& TPCCollectionV()                const;
     float const& TPCInductionV()                 const;
     float const& TPCShieldV()                    const;
-    float const& MWPCVoltage(size_t const& mwpc) const;
+    bool         MWPC(size_t const& mwpc)        const;
     float const& ETLPMTHV()                      const;
     float const& HamamatsuPMTHV()                const;
     float const& HamamatsuSiPMHV()               const;
