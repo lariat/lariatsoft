@@ -45,6 +45,7 @@
 #include "LArIATFragments/WUTFragment.h"
 
 // LArIATSoft includes
+#include "LArIATDataProducts/ConditionsSummary.h"
 #include "RawDataUtilities/SlicerAlg.h"
 #include "RawDataUtilities/FragmentToDigitAlg.h"
 #include "Utilities/DatabaseUtilityT1034.h"
@@ -450,6 +451,26 @@ namespace rdu
       outSubRun = fSourceHelper.makeSubRunPrincipal(fRunNumber, fSubRunNumber, timestamp);
       fCachedSubRunNumber = fSubRunNumber;
       // fEventNumber = 0ul;
+      
+      // create the ConditionsSummary object and put it into the subrun
+      
+      // the following values are just place holders until I know how to access
+      // the DB to get them.
+      bool beamOn = true;
+      float magnetCurrent = 1.;
+      float tpchv = 1.;
+      float pmthv = 1.;
+      float sipmhv = 1.;
+      std::vector<float> mwpcVoltages(4, 1.);
+      
+      std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(beamOn,
+                                                                                           magnetCurrent,
+                                                                                           tpchv,
+                                                                                           pmthv,
+                                                                                           sipmhv,
+                                                                                           mwpcVoltages));
+      art::put_product_in_principal(std::move(conditionsSummary), *outSubRun, fSourceName);
+      
     }
 
     LOG_VERBATIM("SlicerInput") << "fCollections.size(): " << fCollections.size();

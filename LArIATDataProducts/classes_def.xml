@@ -12,13 +12,13 @@
   <version ClassVersion="11" checksum="185134695"/>
  </class>
  
- <class name="std::vector<ldp::AuxDetParticleID>"                              />
- <class name="art::Wrapper<ldp::AuxDetParticleID>"                             />
- <class name="art::Wrapper<std::vector<ldp::AuxDetParticleID> >"               />
+ <class name="std::vector<ldp::AuxDetParticleID>"                             />
+ <class name="art::Wrapper<ldp::AuxDetParticleID>"                            />
+ <class name="art::Wrapper<std::vector<ldp::AuxDetParticleID> >"              />
 
  <class name="ldp::TOF" ClassVersion="11"                                      >
   <version ClassVersion="11" checksum="1589017684"/>
-  <version ClassVersion="10" checksum="4212739596"                                />
+  <version ClassVersion="10" checksum="4212739596"                            />
  </class>
  <class name="std::vector<ldp::TOF>"                                          />
  <class name="art::Wrapper<ldp::TOF>"                                         />
@@ -87,18 +87,23 @@
   <version ClassVersion="12" checksum="1722931573"/>
   <version ClassVersion="11" checksum="2124238595"/>
  </class>
- <class name="std::vector<ldp::MuonRangeStackHits>"                                          />
- <class name="art::Wrapper<ldp::MuonRangeStackHits>"                                         />
- <class name="art::Wrapper<std::vector<ldp::MuonRangeStackHits> >"                           />
- <class name="std::map<int,std::vector<int> >"                                               />
- <class name="art::Wrapper<std::map<int,std::vector<int> > >"                                />
- <class name="MuRSTrack"                                                                     />
- <class name="art::Wrapper<MuRSTrack>"                                                       />
- <class name="std::vector<MuRSTrack>"                                                        />
- <class name="art::Wrapper<std::vector<MuRSTrack> >"                                         />
- <class name="std::pair<int,int>"                                                            />
- <class name="art::Wrapper<std::pair<int,int> >"                                             />
- <class name="std::vector<std::pair<int,int> >"                                              />
- <class name="art::Wrapper<std::vector<std::pair<int,int> > >"                               />
+ <class name="std::vector<ldp::MuonRangeStackHits>"                               />
+ <class name="art::Wrapper<ldp::MuonRangeStackHits>"                              />
+ <class name="art::Wrapper<std::vector<ldp::MuonRangeStackHits> >"                />
+ <class name="std::map<int,std::vector<int> >"                                    />
+ <class name="art::Wrapper<std::map<int,std::vector<int> > >"                     />
+ <class name="MuRSTrack"                                                          />
+ <class name="art::Wrapper<MuRSTrack>"                                            />
+ <class name="std::vector<MuRSTrack>"                                             />
+ <class name="art::Wrapper<std::vector<MuRSTrack> >"                              />
+ <class name="std::pair<int,int>"                                                 />
+ <class name="art::Wrapper<std::pair<int,int> >"                                  />
+ <class name="std::vector<std::pair<int,int> >"                                   />
+ <class name="art::Wrapper<std::vector<std::pair<int,int> > >"                    />
+
+ <class name="ldp::ConditionsSummary" ClassVersion="10"                            >
+  <version ClassVersion="10" checksum="2354193908"/>
+ </class>
+ <class name="art::Wrapper<ldp::ConditionsSummary>"                               />
 
 </lcgdict>
