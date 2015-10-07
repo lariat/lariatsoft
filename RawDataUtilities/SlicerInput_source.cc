@@ -739,7 +739,7 @@ namespace rdu
   //-----------------------------------------------------------------------
   void Slicer::commenceSubRun(art::SubRunPrincipal * & outSubRun)
   {
-    std::initializer_list<std::string> il_params = {
+    std::initializer_list<std::string> run_params = {
       "detector.cathode_voltage",
       "detector.collection_voltage",
       "detector.induction_voltage",
@@ -766,45 +766,70 @@ namespace rdu
       "tertiary.MWPC3",
       "tertiary.MWPC4",
       "tertiary.number_MuRS",
-      "tertiary.punch_through"};
-   
-    std::vector<std::string> params(il_params);
+      "tertiary.punch_through",
+      "v1751_config_caen_enablereadout",
+      "larasic_config_larasic_collection_filter",
+      "larasic_config_larasic_collection_gain",
+      "larasic_config_larasic_enablereadout",
+      "larasic_config_larasic_pulseron",
+      "larasic_config_larasic_channelscan",
+      "v1740_config_caen_recordlength",
+      "file_format"
+    };
+
+    std::initializer_list<std::string> subrun_params = {
+      "end_f_mc7sc1",
+    };
+
+    std::vector<std::string> runparams(run_params);
+    std::vector<std::string> subrunparams(subrun_params);
     
     // get the relevant information from the database
-    auto dbValues = fDatabaseUtility->GetConfigValues(params, static_cast <int> (fRunNumber));
+    auto runValues    = fDatabaseUtility->GetConfigValues(runparams,
+                                                          static_cast <int> (fRunNumber));
+    auto subrunValues = fDatabaseUtility->GetIFBeamValues(subrunparams,
+                                                          static_cast <int> (fRunNumber),
+                                                          static_cast <int> (fSubRunNumber));
 
     // create the ConditionsSummary object and put it into the subrun
-    float              secondaryIntensity     = 1.*this->castToSizeT_(dbValues["secondary.intensity"]);
-    float              secondaryMomentum      = 1.*this->castToSizeT_(dbValues["secondary.momentum"]);
-    float              secondaryPolarity      = (strcmp(dbValues["secondary.polarity"].c_str(), "Negative") == 0) ? -1. : 1.;
-    float              magnetCurrent          = 1.*this->castToSizeT_(dbValues["tertiary.magnet_current"]);
-    float              magnetPolarity         = (strcmp(dbValues["tertiary.magnet_polarity"].c_str(), "Negative") == 0) ? -1. : 1.;
-    float              tpcCathodeHV           = 1.*this->castToSizeT_(dbValues["detector.cathode_voltage"]);
-    float              tpcCollectionV         = 1.*this->castToSizeT_(dbValues["detector.collection_voltage"]);
-    float              tpcInductionV          = 1.*this->castToSizeT_(dbValues["detector.induction_voltage"]);
-    float              tpcShieldV             = 1.*this->castToSizeT_(dbValues["detector.shield_voltage"]);
-    float              etlPMTHV               = 0.;
-    float              hamamatsuPMTHV         = 0.;
-    float              hamamatsuSiPMHV        = 0.;
-    float              senslSiPMHV            = 0.;
-    float              tertiaryBeamCounters   = 0.;
-    float              tertiaryCherenkov1     = 0.;
-    float              tertiaryCherenkov2     = 0.;
-    float              tertiaryCosmicCounters = 0.;
-    float              dsTOF                  = 0.;
-    float              usTOF                  = 0.;
-    float              haloPaddle             = 0.;
-    float              muonRangeStack         = 0.;
-    float              numberMuRS             = 1.*this->castToSizeT_(dbValues["tertiary.number_MuRS"]);
-    float              punchThrough           = 0.;
+    size_t              secondaryIntensity     = this->castToSizeT_(runValues["secondary.intensity"]);
+    size_t              secondaryMomentum      = this->castToSizeT_(runValues["secondary.momentum"]);
+    size_t              secondaryPolarity      = (strcmp(runValues["secondary.polarity"].c_str(), "Negative") == 0) ? -1 : 1;
+    size_t              magnetCurrent          = this->castToSizeT_(runValues["tertiary.magnet_current"]);
+    size_t              magnetPolarity         = (strcmp(runValues["tertiary.magnet_polarity"].c_str(), "Negative") == 0) ? -1 : 1;
+    size_t              tpcCathodeHV           = this->castToSizeT_(runValues["detector.cathode_voltage"]);
+    size_t              tpcCollectionV         = this->castToSizeT_(runValues["detector.collection_voltage"]);
+    size_t              tpcInductionV          = this->castToSizeT_(runValues["detector.induction_voltage"]);
+    size_t              tpcShieldV             = this->castToSizeT_(runValues["detector.shield_voltage"]);
+    size_t              etlPMTHV               = 0;
+    size_t              hamamatsuPMTHV         = 0;
+    size_t              hamamatsuSiPMHV        = 0;
+    size_t              senslSiPMHV            = 0;
+    size_t              tertiaryBeamCounters   = 0;
+    size_t              tertiaryCherenkov1     = 0;
+    size_t              tertiaryCherenkov2     = 0;
+    size_t              tertiaryCosmicCounters = 0;
+    size_t              dsTOF                  = 0;
+    size_t              usTOF                  = 0;
+    size_t              haloPaddle             = 0;
+    size_t              muonRangeStack         = 0;
+    size_t              numberMuRS             = this->castToSizeT_(runValues["tertiary.number_MuRS"]);
+    size_t              punchThrough           = 0;
+    size_t              endMC7SC1              = 0;
+    bool                v1751CaenEnableReadout = false;
+    size_t              asicCollectionFilter   = 0;
+    size_t              asicCollectionGain     = 0;
+    bool                asicEnableReadout      = false;
+    bool                asicPulserOn           = false;
+    bool                asicChannelScan        = false;
+    size_t              v1740RecordLength      = 0;
+    bool                correctFileFormat      = false;
     
-    std::initializer_list<bool> il_mwpcV = {
-      (strcmp(dbValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false,
-      (strcmp(dbValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false,
-      (strcmp(dbValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false,
-      (strcmp(dbValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false};
-    
-    std::vector<bool> mwpc(il_mwpcV);
+    std::vector<bool> mwpc(4);
+    mwpc[0] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+    mwpc[1] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+    mwpc[2] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+    mwpc[3] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
     
     std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(secondaryIntensity,
                                                                                          secondaryMomentum,
@@ -829,7 +854,17 @@ namespace rdu
                                                                                          muonRangeStack,
                                                                                          numberMuRS,
                                                                                          punchThrough,
-                                                                                         mwpc));
+                                                                                         endMC7SC1,
+                                                                                         v1751CaenEnableReadout,
+                                                                                         asicCollectionFilter,
+                                                                                         asicCollectionGain,
+                                                                                         asicEnableReadout,
+                                                                                         asicPulserOn,
+                                                                                         asicChannelScan,
+                                                                                         v1740RecordLength,
+                                                                                         correctFileFormat,
+                                                                                         mwpc)
+                                                              );
     art::put_product_in_principal(std::move(conditionsSummary), *outSubRun, fSourceName);
 
     return;
