@@ -794,9 +794,9 @@ namespace rdu
     // create the ConditionsSummary object and put it into the subrun
     size_t              secondaryIntensity     = this->castToSizeT_(runValues["secondary.intensity"]);
     size_t              secondaryMomentum      = this->castToSizeT_(runValues["secondary.momentum"]);
-    size_t              secondaryPolarity      = (strcmp(runValues["secondary.polarity"].c_str(), "Negative") == 0) ? -1 : 1;
+    size_t              secondaryPolarity      = (strcmp(runValues["secondary.polarity"].c_str(), "Negative") == 0) ? 0 : 1;
     size_t              magnetCurrent          = this->castToSizeT_(runValues["tertiary.magnet_current"]);
-    size_t              magnetPolarity         = (strcmp(runValues["tertiary.magnet_polarity"].c_str(), "Negative") == 0) ? -1 : 1;
+    size_t              magnetPolarity         = (strcmp(runValues["tertiary.magnet_polarity"].c_str(), "Negative") == 0) ? 0 : 1;
     size_t              tpcCathodeHV           = this->castToSizeT_(runValues["detector.cathode_voltage"]);
     size_t              tpcCollectionV         = this->castToSizeT_(runValues["detector.collection_voltage"]);
     size_t              tpcInductionV          = this->castToSizeT_(runValues["detector.induction_voltage"]);
