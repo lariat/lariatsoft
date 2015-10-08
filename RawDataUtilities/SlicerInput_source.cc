@@ -739,34 +739,38 @@ namespace rdu
   //-----------------------------------------------------------------------
   void Slicer::commenceSubRun(art::SubRunPrincipal * & outSubRun)
   {
+//    std::initializer_list<std::string> sam_params = {
+//      "detector.cathode_voltage",
+//      "detector.collection_voltage",
+//      "detector.induction_voltage",
+//      "detector.pmt_etl",
+//      "detector.pmt_ham",
+//      "detector.shield_voltage",
+//      "detector.sipm_ham",
+//      "detector.sipm_sensl",
+//      "secondary.intensity",
+//      "secondary.momentum",
+//      "secondary.polarity",
+//      "tertiary.beam_counters",
+//      "tertiary.cherenkov1",
+//      "tertiary.cherenkov2",
+//      "tertiary.cosmic_counters",
+//      "tertiary.DSTOF",
+//      "tertiary.USTOF",
+//      "tertiary.halo_paddle",
+//      "tertiary.magnet_current",
+//      "tertiary.magnet_polarity",
+//      "tertiary.muon_range_stack",
+//      "tertiary.MWPC1",
+//      "tertiary.MWPC2",
+//      "tertiary.MWPC3",
+//      "tertiary.MWPC4",
+//      "tertiary.number_MuRS",
+//      "tertiary.punch_through",
+//      "file_format"
+//    };
+    
     std::initializer_list<std::string> run_params = {
-      "detector.cathode_voltage",
-      "detector.collection_voltage",
-      "detector.induction_voltage",
-      "detector.pmt_etl",
-      "detector.pmt_ham",
-      "detector.shield_voltage",
-      "detector.sipm_ham",
-      "detector.sipm_sensl",
-      "secondary.intensity",
-      "secondary.momentum",
-      "secondary.polarity",
-      "tertiary.beam_counters",
-      "tertiary.cherenkov1",
-      "tertiary.cherenkov2",
-      "tertiary.cosmic_counters",
-      "tertiary.DSTOF",
-      "tertiary.USTOF",
-      "tertiary.halo_paddle",
-      "tertiary.magnet_current",
-      "tertiary.magnet_polarity",
-      "tertiary.muon_range_stack",
-      "tertiary.MWPC1",
-      "tertiary.MWPC2",
-      "tertiary.MWPC3",
-      "tertiary.MWPC4",
-      "tertiary.number_MuRS",
-      "tertiary.punch_through",
       "v1751_config_caen_enablereadout",
       "larasic_config_larasic_collection_filter",
       "larasic_config_larasic_collection_gain",
@@ -774,11 +778,10 @@ namespace rdu
       "larasic_config_larasic_pulseron",
       "larasic_config_larasic_channelscan",
       "v1740_config_caen_recordlength",
-      "file_format"
     };
 
     std::initializer_list<std::string> subrun_params = {
-      "end_f_mc7sc1",
+      "end_f_mc7sc1"
     };
 
     std::vector<std::string> runparams(run_params);
@@ -792,46 +795,51 @@ namespace rdu
                                                           static_cast <int> (fSubRunNumber));
 
     // create the ConditionsSummary object and put it into the subrun
-    size_t              secondaryIntensity     = this->castToSizeT_(runValues["secondary.intensity"]);
-    size_t              secondaryMomentum      = this->castToSizeT_(runValues["secondary.momentum"]);
-    size_t              secondaryPolarity      = (strcmp(runValues["secondary.polarity"].c_str(), "Negative") == 0) ? 0 : 1;
-    size_t              magnetCurrent          = this->castToSizeT_(runValues["tertiary.magnet_current"]);
-    size_t              magnetPolarity         = (strcmp(runValues["tertiary.magnet_polarity"].c_str(), "Negative") == 0) ? 0 : 1;
-    size_t              tpcCathodeHV           = this->castToSizeT_(runValues["detector.cathode_voltage"]);
-    size_t              tpcCollectionV         = this->castToSizeT_(runValues["detector.collection_voltage"]);
-    size_t              tpcInductionV          = this->castToSizeT_(runValues["detector.induction_voltage"]);
-    size_t              tpcShieldV             = this->castToSizeT_(runValues["detector.shield_voltage"]);
-    size_t              etlPMTHV               = 0;
-    size_t              hamamatsuPMTHV         = 0;
-    size_t              hamamatsuSiPMHV        = 0;
-    size_t              senslSiPMHV            = 0;
-    size_t              tertiaryBeamCounters   = 0;
-    size_t              tertiaryCherenkov1     = 0;
-    size_t              tertiaryCherenkov2     = 0;
-    size_t              tertiaryCosmicCounters = 0;
-    size_t              dsTOF                  = 0;
-    size_t              usTOF                  = 0;
-    size_t              haloPaddle             = 0;
-    size_t              muonRangeStack         = 0;
-    size_t              numberMuRS             = this->castToSizeT_(runValues["tertiary.number_MuRS"]);
-    size_t              punchThrough           = 0;
-    size_t              endMC7SC1              = 0;
-    bool                v1751CaenEnableReadout = false;
-    size_t              asicCollectionFilter   = 0;
-    size_t              asicCollectionGain     = 0;
-    bool                asicEnableReadout      = false;
-    bool                asicPulserOn           = false;
-    bool                asicChannelScan        = false;
-    size_t              v1740RecordLength      = 0;
-    bool                correctFileFormat      = false;
+    // for the time being, several parameters are accessible from the
+    // SAM database, and we don't yet know how to get those, so comment them out
     
-    std::vector<bool> mwpc(4);
-    mwpc[0] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
-    mwpc[1] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
-    mwpc[2] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
-    mwpc[3] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    std::vector<bool> mwpc(4);
+//    mwpc[0] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    mwpc[1] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    mwpc[2] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    mwpc[3] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    
+//    size_t              secondaryIntensity     = this->castToSizeT_(runValues["secondary.intensity"]);
+//    size_t              secondaryMomentum      = this->castToSizeT_(runValues["secondary.momentum"]);
+//    size_t              secondaryPolarity      = (strcmp(runValues["secondary.polarity"].c_str(), "Negative") == 0) ? 0 : 1;
+//    size_t              magnetCurrent          = this->castToSizeT_(runValues["tertiary.magnet_current"]);
+//    size_t              magnetPolarity         = (strcmp(runValues["tertiary.magnet_polarity"].c_str(), "Negative") == 0) ? 0 : 1;
+//    size_t              tpcCathodeHV           = this->castToSizeT_(runValues["detector.cathode_voltage"]);
+//    size_t              tpcCollectionV         = this->castToSizeT_(runValues["detector.collection_voltage"]);
+//    size_t              tpcInductionV          = this->castToSizeT_(runValues["detector.induction_voltage"]);
+//    size_t              tpcShieldV             = this->castToSizeT_(runValues["detector.shield_voltage"]);
+//    size_t              etlPMTHV               = 0;
+//    size_t              hamamatsuPMTHV         = 0;
+//    size_t              hamamatsuSiPMHV        = 0;
+//    size_t              senslSiPMHV            = 0;
+//    size_t              tertiaryBeamCounters   = 0;
+//    size_t              tertiaryCherenkov1     = 0;
+//    size_t              tertiaryCherenkov2     = 0;
+//    size_t              tertiaryCosmicCounters = 0;
+//    size_t              dsTOF                  = 0;
+//    size_t              usTOF                  = 0;
+//    size_t              haloPaddle             = 0;
+//    size_t              muonRangeStack         = 0;
+//    size_t              numberMuRS             = this->castToSizeT_(runValues["tertiary.number_MuRS"]);
+//    size_t              punchThrough           = 0;
+//    bool                correctFileFormat      = false;
+    size_t              endMC7SC1              = this->castToSizeT_(subrunValues["end_f_mc7sc1"]);
+    bool                v1751CaenEnableReadout = this->castToSizeT_(runValues["v1751_config_caen_enablereadout"]);
+    size_t              asicCollectionFilter   = this->castToSizeT_(runValues["larasic_config_larasic_collection_filter"]);
+    size_t              asicCollectionGain     = this->castToSizeT_(runValues["larasic_config_larasic_collection_gain"]);
+    bool                asicEnableReadout      = this->castToSizeT_(runValues["larasic_config_larasic_enablereadout"]);
+    bool                asicPulserOn           = this->castToSizeT_(runValues["larasic_config_larasic_pulseron"]);
+    bool                asicChannelScan        = this->castToSizeT_(runValues["larasic_config_larasic_channelscan"]);
+    size_t              v1740RecordLength      = this->castToSizeT_(runValues["v1740_config_caen_recordlength"]);
     
-    std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(secondaryIntensity,
+    
+
+    std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(/*secondaryIntensity,
                                                                                          secondaryMomentum,
                                                                                          secondaryPolarity,
                                                                                          magnetCurrent,
@@ -853,7 +861,9 @@ namespace rdu
                                                                                          haloPaddle,
                                                                                          muonRangeStack,
                                                                                          numberMuRS,
-                                                                                         punchThrough,
+                                                                                         punchThrough,,
+                                                                                         correctFileFormat,
+                                                                                         mwpc,*/
                                                                                          endMC7SC1,
                                                                                          v1751CaenEnableReadout,
                                                                                          asicCollectionFilter,
@@ -861,9 +871,7 @@ namespace rdu
                                                                                          asicEnableReadout,
                                                                                          asicPulserOn,
                                                                                          asicChannelScan,
-                                                                                         v1740RecordLength,
-                                                                                         correctFileFormat,
-                                                                                         mwpc)
+                                                                                         v1740RecordLength)
                                                               );
     art::put_product_in_principal(std::move(conditionsSummary), *outSubRun, fSourceName);
 

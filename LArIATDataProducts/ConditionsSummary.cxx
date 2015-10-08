@@ -17,30 +17,32 @@ namespace ldp {
   
   //-------------------------------------------------------------------
   ConditionsSummary::ConditionsSummary()
-  : fSecondaryIntensity    (std::numeric_limits<unsigned int>::max())
-  , fSecondaryMomentum     (std::numeric_limits<unsigned int>::max())
-  , fSecondaryPolarity     (std::numeric_limits<unsigned int>::max())
-  , fMagnetCurrent         (std::numeric_limits<unsigned int>::max())
-  , fMagnetPolarity        (std::numeric_limits<unsigned int>::max())
-  , fTPCCathodeHV          (std::numeric_limits<unsigned int>::max())
-  , fTPCCollectionV        (std::numeric_limits<unsigned int>::max())
-  , fTPCInductionV         (std::numeric_limits<unsigned int>::max())
-  , fTPCShieldV            (std::numeric_limits<unsigned int>::max())
-  , fETLPMTHV              (std::numeric_limits<unsigned int>::max())
-  , fHamamatsuPMTHV        (std::numeric_limits<unsigned int>::max())
-  , fHamamatsuSiPMHV       (std::numeric_limits<unsigned int>::max())
-  , fSenslSiPMHV           (std::numeric_limits<unsigned int>::max())
-  , fTertiaryBeamCounters  (std::numeric_limits<unsigned int>::max())
-  , fTertiaryCherenkov1    (std::numeric_limits<unsigned int>::max())
-  , fTertiaryCherenkov2    (std::numeric_limits<unsigned int>::max())
-  , fTertiaryCosmicCounters(std::numeric_limits<unsigned int>::max())
-  , fDSTOF                 (std::numeric_limits<unsigned int>::max())
-  , fUSTOF                 (std::numeric_limits<unsigned int>::max())
-  , fHaloPaddle            (std::numeric_limits<unsigned int>::max())
-  , fMuonRangeStack        (std::numeric_limits<unsigned int>::max())
-  , fNumberMuRS            (std::numeric_limits<unsigned int>::max())
-  , fPunchThrough          (std::numeric_limits<unsigned int>::max())
-  , fEndMC7SC1             (std::numeric_limits<unsigned int>::max())
+//  : fSecondaryIntensity    (std::numeric_limits<unsigned int>::max())
+//  , fSecondaryMomentum     (std::numeric_limits<unsigned int>::max())
+//  , fSecondaryPolarity     (std::numeric_limits<unsigned int>::max())
+//  , fMagnetCurrent         (std::numeric_limits<unsigned int>::max())
+//  , fMagnetPolarity        (std::numeric_limits<unsigned int>::max())
+//  , fTPCCathodeHV          (std::numeric_limits<unsigned int>::max())
+//  , fTPCCollectionV        (std::numeric_limits<unsigned int>::max())
+//  , fTPCInductionV         (std::numeric_limits<unsigned int>::max())
+//  , fTPCShieldV            (std::numeric_limits<unsigned int>::max())
+//  , fETLPMTHV              (std::numeric_limits<unsigned int>::max())
+//  , fHamamatsuPMTHV        (std::numeric_limits<unsigned int>::max())
+//  , fHamamatsuSiPMHV       (std::numeric_limits<unsigned int>::max())
+//  , fSenslSiPMHV           (std::numeric_limits<unsigned int>::max())
+//  , fTertiaryBeamCounters  (std::numeric_limits<unsigned int>::max())
+//  , fTertiaryCherenkov1    (std::numeric_limits<unsigned int>::max())
+//  , fTertiaryCherenkov2    (std::numeric_limits<unsigned int>::max())
+//  , fTertiaryCosmicCounters(std::numeric_limits<unsigned int>::max())
+//  , fDSTOF                 (std::numeric_limits<unsigned int>::max())
+//  , fUSTOF                 (std::numeric_limits<unsigned int>::max())
+//  , fHaloPaddle            (std::numeric_limits<unsigned int>::max())
+//  , fMuonRangeStack        (std::numeric_limits<unsigned int>::max())
+//  , fNumberMuRS            (std::numeric_limits<unsigned int>::max())
+//  , fPunchThrough          (std::numeric_limits<unsigned int>::max())
+//  , fCorrectFileFormat     (false                                   )
+//  , fMWPC                  (std::vector<bool>(4, false)             )
+  : fEndMC7SC1             (std::numeric_limits<unsigned int>::max())
   , fV1751CaenEnableReadout(false                                   )
   , fASICCollectionFilter  (std::numeric_limits<unsigned int>::max())
   , fASICCollectionGain    (std::numeric_limits<unsigned int>::max())
@@ -48,14 +50,12 @@ namespace ldp {
   , fASICPulserOn          (false                                   )
   , fASICChannelScan       (false                                   )
   , fV1740RecordLength     (std::numeric_limits<unsigned int>::max())
-  , fCorrectFileFormat     (false                                   )
-  , fMWPC                  (std::vector<bool>(4, false)             )
   {
     return;
   }
   
   //-------------------------------------------------------------------
-  ConditionsSummary::ConditionsSummary(size_t             const& secondaryIntensity,
+  ConditionsSummary::ConditionsSummary(/*size_t             const& secondaryIntensity,
                                        size_t             const& secondaryMomentum,
                                        size_t             const& secondaryPolarity,
                                        size_t             const& magnetCurrent,
@@ -78,6 +78,8 @@ namespace ldp {
                                        size_t             const& muonRangeStack,
                                        size_t             const& numberMuRS,
                                        size_t             const& punchThrough,
+                                       bool               const& correctFileFormat,
+                                       std::vector<bool>  const& mwpc*/
                                        size_t             const& endMC7SC1,
                                        bool               const& v1751EnableReadout,
                                        size_t             const& asicCollectionFilter,
@@ -85,33 +87,33 @@ namespace ldp {
                                        bool               const& asicEnableReadout,
                                        bool               const& asicPulserOn,
                                        bool               const& asicChannelScan,
-                                       size_t             const& v1740RecordLength,
-                                       bool               const& correctFileFormat,
-                                       std::vector<bool>  const& mwpc)
-  : fSecondaryIntensity    (secondaryIntensity    )
-  , fSecondaryMomentum     (secondaryMomentum     )
-  , fSecondaryPolarity     (secondaryPolarity     )
-  , fMagnetCurrent         (magnetCurrent         )
-  , fMagnetPolarity        (magnetPolarity        )
-  , fTPCCathodeHV          (tpcCathodeHV          )
-  , fTPCCollectionV        (tpcCollectionV        )
-  , fTPCInductionV         (tpcInductionV         )
-  , fTPCShieldV            (tpcShieldV            )
-  , fETLPMTHV              (etlPMTHV              )
-  , fHamamatsuPMTHV        (hamamatsuPMTHV        )
-  , fHamamatsuSiPMHV       (hamamatsuSiPMHV       )
-  , fSenslSiPMHV           (senslSiPMHV           )
-  , fTertiaryBeamCounters  (tertiaryBeamCounters  )
-  , fTertiaryCherenkov1    (tertiaryCherenkov1    )
-  , fTertiaryCherenkov2    (tertiaryCherenkov2    )
-  , fTertiaryCosmicCounters(tertiaryCosmicCounters)
-  , fDSTOF                 (dsTOF                 )
-  , fUSTOF                 (usTOF                 )
-  , fHaloPaddle            (haloPaddle            )
-  , fMuonRangeStack        (muonRangeStack        )
-  , fNumberMuRS            (numberMuRS            )
-  , fPunchThrough          (punchThrough          )
-  , fEndMC7SC1             (endMC7SC1             )
+                                       size_t             const& v1740RecordLength)
+//  : fSecondaryIntensity    (secondaryIntensity    )
+//  , fSecondaryMomentum     (secondaryMomentum     )
+//  , fSecondaryPolarity     (secondaryPolarity     )
+//  , fMagnetCurrent         (magnetCurrent         )
+//  , fMagnetPolarity        (magnetPolarity        )
+//  , fTPCCathodeHV          (tpcCathodeHV          )
+//  , fTPCCollectionV        (tpcCollectionV        )
+//  , fTPCInductionV         (tpcInductionV         )
+//  , fTPCShieldV            (tpcShieldV            )
+//  , fETLPMTHV              (etlPMTHV              )
+//  , fHamamatsuPMTHV        (hamamatsuPMTHV        )
+//  , fHamamatsuSiPMHV       (hamamatsuSiPMHV       )
+//  , fSenslSiPMHV           (senslSiPMHV           )
+//  , fTertiaryBeamCounters  (tertiaryBeamCounters  )
+//  , fTertiaryCherenkov1    (tertiaryCherenkov1    )
+//  , fTertiaryCherenkov2    (tertiaryCherenkov2    )
+//  , fTertiaryCosmicCounters(tertiaryCosmicCounters)
+//  , fDSTOF                 (dsTOF                 )
+//  , fUSTOF                 (usTOF                 )
+//  , fHaloPaddle            (haloPaddle            )
+//  , fMuonRangeStack        (muonRangeStack        )
+//  , fNumberMuRS            (numberMuRS            )
+//  , fPunchThrough          (punchThrough          )
+//  , fCorrectFileFormat     (correctFileFormat     )
+//  , fMWPC                  (mwpc                  )
+  : fEndMC7SC1             (endMC7SC1             )
   , fV1751CaenEnableReadout(v1751EnableReadout    )
   , fASICCollectionFilter  (asicCollectionFilter  )
   , fASICCollectionGain    (asicCollectionGain    )
@@ -119,28 +121,26 @@ namespace ldp {
   , fASICPulserOn          (asicPulserOn          )
   , fASICChannelScan       (asicChannelScan       )
   , fV1740RecordLength     (v1740RecordLength     )
-  , fCorrectFileFormat     (correctFileFormat     )
-  , fMWPC                  (mwpc                  )
   {
     return;
   }
 
-  //-------------------------------------------------------------------
-  bool ConditionsSummary::MWPC(size_t const& mwpc) const
-  {
-    if(mwpc > fMWPC.size() - 1)
-      throw cet::exception("ConditionsSummary")
-      << "requests for mwpc: " << mwpc
-      << " while only " << fMWPC.size()
-      << " MWPCs in experiment";
-    
-    return fMWPC[mwpc];
-  }
-  
-  //-------------------------------------------------------------------
-  bool ConditionsSummary::BeamOn() const
-  {
-    return (fSecondaryIntensity > 0. && std::abs(fSecondaryMomentum) > 0.);
-  }
+//  //-------------------------------------------------------------------
+//  bool ConditionsSummary::MWPC(size_t const& mwpc) const
+//  {
+//    if(mwpc > fMWPC.size() - 1)
+//      throw cet::exception("ConditionsSummary")
+//      << "requests for mwpc: " << mwpc
+//      << " while only " << fMWPC.size()
+//      << " MWPCs in experiment";
+//    
+//    return fMWPC[mwpc];
+//  }
+//  
+//  //-------------------------------------------------------------------
+//  bool ConditionsSummary::BeamOn() const
+//  {
+//    return (fSecondaryIntensity > 0. && std::abs(fSecondaryMomentum) > 0.);
+//  }
   
 } // end namespace
