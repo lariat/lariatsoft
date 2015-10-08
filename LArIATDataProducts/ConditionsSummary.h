@@ -41,6 +41,8 @@ namespace ldp {
 //    size_t             fMuonRangeStack;           ///< something about the muon range stack
 //    size_t             fNumberMuRS;               ///< number of paddles in muon range stack?
 //    size_t             fPunchThrough;             ///< something about the punch through
+//    bool               fCorrectFileFormat;        ///< ARTDAQ or other
+//    std::vector<bool>  fMWPC;                     ///< which MWPCs are on
     size_t             fEndMC7SC1;                ///< MC7SC1
     bool               fV1751CaenEnableReadout;   ///< Was the 1751 Readout enabled
     size_t             fASICCollectionFilter;     ///< ASIC collection filter
@@ -49,8 +51,6 @@ namespace ldp {
     bool               fASICPulserOn;             ///< ASIC pulser on
     bool               fASICChannelScan;          ///< ASIC channel scan
     size_t             fV1740RecordLength;        ///< 1740 Record length
-    bool               fCorrectFileFormat;        ///< ARTDAQ or other
-    std::vector<bool>  fMWPC;                     ///< which MWPCs are on
 
 #ifndef __GCCXML__
     
