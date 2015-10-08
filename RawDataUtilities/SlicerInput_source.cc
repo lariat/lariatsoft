@@ -795,6 +795,12 @@ namespace rdu
                                                           static_cast <int> (fRunNumber),
                                                           static_cast <int> (fSubRunNumber));
 
+    for(auto itr : runValues) 
+      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
+
+    for(auto itr : subrunValues) 
+      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
+
     // create the ConditionsSummary object and put it into the subrun
     // for the time being, several parameters are accessible from the
     // SAM database, and we don't yet know how to get those, so comment them out
@@ -829,6 +835,9 @@ namespace rdu
 //    size_t              numberMuRS             = this->castToSizeT_(runValues["tertiary.number_MuRS"]);
 //    size_t              punchThrough           = 0;
 //    bool                correctFileFormat      = false;
+
+    LOG_VERBATIM("SlicerInput") << subrunValues["end_f_mc7sc1"];
+
     size_t              endMC7SC1              = this->castToSizeT_(subrunValues["end_f_mc7sc1"]);
     bool                v1751CaenEnableReadout = this->castToSizeT_(runValues["v1751_config_caen_enablereadout"]);
     size_t              asicCollectionFilter   = this->castToSizeT_(runValues["larasic_config_larasic_collection_filter"]);
