@@ -308,11 +308,12 @@ namespace rdu
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
 
-    prhelper.reconstitutes<std::vector<raw::AuxDetDigit>, art::InEvent>(fSourceName);
-    prhelper.reconstitutes<std::vector<raw::RawDigit>,    art::InEvent>(fSourceName);
-    prhelper.reconstitutes<std::vector<raw::OpDetPulse>,  art::InEvent>(fSourceName);
-    prhelper.reconstitutes<std::vector<raw::Trigger>,     art::InEvent>(fSourceName);
-    prhelper.reconstitutes<sumdata::RunData,              art::InRun  >(fSourceName);
+    prhelper.reconstitutes<std::vector<raw::AuxDetDigit>, art::InEvent >(fSourceName);
+    prhelper.reconstitutes<std::vector<raw::RawDigit>,    art::InEvent >(fSourceName);
+    prhelper.reconstitutes<std::vector<raw::OpDetPulse>,  art::InEvent >(fSourceName);
+    prhelper.reconstitutes<std::vector<raw::Trigger>,     art::InEvent >(fSourceName);
+    prhelper.reconstitutes<sumdata::RunData,              art::InRun   >(fSourceName);
+    prhelper.reconstitutes<ldp::ConditionsSummary,        art::InSubRun>(fSourceName);
 
     // set config parameters to get from the lariat_prd database
     fConfigParams.clear();
