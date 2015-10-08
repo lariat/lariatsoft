@@ -74,6 +74,9 @@ namespace util {
     std::map< std::string, std::string > GetAllIFBeamValues(int const& RunNumber,
                                                             int const& SubRunNumber);
 
+    // retrive entire row from the lariat_hardware_connections table
+    std::map< std::string, std::string > GetHardwareConnections(std::string DateTime);
+
     //////////////////////////////////////////////////////////
 
     // this method is used for testing porpoises
@@ -98,7 +101,7 @@ namespace util {
 
     std::string fConfigTableName;
     std::string fIFBeamTableName;
-    std::string fLHCdbTableName;
+    std::string fHardwareConnectionsTableName;
 
     std::string fConnectionInfo;
 
