@@ -383,6 +383,9 @@ namespace util {
   //-----------------------------------------------------------------------
   std::map< std::string, std::string > DatabaseUtilityT1034::GetHardwareConnections(std::string DateTime) {
 
+    // DateTime format should be 'YYYY-MM-DD HH24:MI:SS'
+    // e.g., '2015-06-17 14:16:00'
+
     // vector of column names
     std::vector< std::string > ColumnNames;
 
