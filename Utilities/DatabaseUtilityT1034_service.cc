@@ -421,7 +421,7 @@ namespace util {
     // set query
     std::string query = "select " + column_names +
                         " from " + schema_name + "." + table_name +
-                        " where date_time < " + DateTime +
+                        " where date_time < '" + DateTime + "'::timestamp"
                         " order by date_time desc limit 1;";
 
     // get values with query
