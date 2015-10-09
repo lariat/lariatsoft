@@ -26,10 +26,11 @@
 #include "Utilities/DatabaseUtilityT1034.h"
 
 // C++ includes
-#include <map>
-#include <vector>
+#include <ctime>
 #include <iostream>
+#include <map>
 #include <string>
+#include <vector>
 
 namespace DatabaseExample {
 
@@ -70,6 +71,12 @@ namespace DatabaseExample {
     int fEvent;
     int fRun;
     int fSubRun;
+
+    // run timestamp
+    std::uint32_t fRunTimestamp;
+    std::string   fRunDateTime;
+
+    std::string TimestampToString(std::time_t const& Timestamp);
 
     // DatabaseUtilityT1034 service handle
     art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
@@ -114,6 +121,9 @@ namespace DatabaseExample {
     // containter for entire row from the lariat_ifbeam_database
     // table for a specified sub-run
     std::map< std::string, std::string > fAllIFBeamValues;
+    // containter for entire row from the lariat_hardware_connections
+    // table for a specified datetime
+    std::map< std::string, std::string > fHardwareConnectionsValues;
     //////////////////////////////////////////////////////////
 
   }; // class DatabaseExample
@@ -236,6 +246,45 @@ namespace DatabaseExample {
       << "\nEnd dump.\n"
       << "///////////////////////////////////////////////////////////////////";
 
+    ///////////////////////////////////////////////////////////////////
+    // dump an entire row of lariat_hardware_connections for closest
+    // datetime before specified datetime
+    ///////////////////////////////////////////////////////////////////
+
+    fRunTimestamp = run.beginTime().timeLow();  // Unix time
+    fRunDateTime = this->TimestampToString(fRunTimestamp);  // 'YYYY-MM-DD HH24:MI:SS'
+
+    std::cout << "fRunTimestamp: " << fRunTimestamp << std::endl;
+    std::cout << "fRunDateTime: "  << fRunDateTime  << std::endl;
+
+    // get results as a map where the key is the parameter name and the
+    // mapped value is the parameter value
+    fHardwareConnectionsValues = fDatabaseUtility->GetHardwareConnections(fRunDateTime);
+    // fRunDateTime format should be 'YYYY-MM-DD HH24:MI:SS'
+    // e.g., '2015-06-17 14:16:00'
+
+    // iterate over the results and print them out
+    std::map< std::string, std::string >::const_iterator all_connections_iter;
+
+    mf::LogVerbatim("DatabaseExample")
+      << "///////////////////////////////////////////////////////////////////"
+      << "\nBegin dump of lariat_hardware_connections table for " << fRunDateTime << "\n"
+      << "///////////////////////////////////////////////////////////////////";
+
+    for (all_connections_iter = fHardwareConnectionsValues.begin();
+         all_connections_iter != fHardwareConnectionsValues.end();
+         ++all_connections_iter) {
+
+      mf::LogVerbatim("DatabaseExample")
+        << "Column: " << all_connections_iter->first << "; Value: " << all_connections_iter->second;
+
+    }
+
+    mf::LogVerbatim("DatabaseExample")
+      << "///////////////////////////////////////////////////////////////////"
+      << "\nEnd dump.\n"
+      << "///////////////////////////////////////////////////////////////////";
+
     //========================================================
     // End database shenanigans.
     //========================================================
@@ -318,6 +367,15 @@ namespace DatabaseExample {
     // do stuff with the art::Event here
 
     return;
+  }
+
+  //-----------------------------------------------------------------------
+  std::string DatabaseExample::TimestampToString(std::time_t const& Timestamp) {
+    struct tm * TimeInfo;
+    char Buffer[30];
+    TimeInfo = std::localtime(&Timestamp);
+    std::strftime(Buffer, 30, "%Y-%m-%d %H:%M", TimeInfo);
+    return std::string(Buffer);
   }
 
   // This macro has to be defined for this module to be invoked from a
