@@ -422,8 +422,7 @@ namespace util {
     std::string query = "select " + column_names +
                         " from " + schema_name + "." + table_name +
                         " where date_time < " + DateTime +
-                        " order by date_time desc" + 
-                        "limit 1;";
+                        " order by date_time desc limit 1;";
 
     // get values with query
     std::map< std::string, std::string > values = this->GetValues(query);
