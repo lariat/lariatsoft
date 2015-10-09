@@ -795,11 +795,11 @@ namespace rdu
                                                           static_cast <int> (fRunNumber),
                                                           static_cast <int> (fSubRunNumber));
 
-    for(auto itr : runValues) 
-      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
-
-    for(auto itr : subrunValues) 
-      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
+//    for(auto itr : runValues) 
+//      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
+//
+//    for(auto itr : subrunValues) 
+//      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
 
     // create the ConditionsSummary object and put it into the subrun
     // for the time being, several parameters are accessible from the
