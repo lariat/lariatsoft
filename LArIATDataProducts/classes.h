@@ -91,9 +91,9 @@ template class art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void>
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >;
 
-template class art::Wrapper<ldp::ConditionsSummary>;
 
 
+//Stuff regarding/belonging to Edge Rec
 template class std::vector<ldp::Edge>;
 template class art::Wrapper< ldp::Edge                  >;
 template class art::Wrapper< std::vector<ldp::Edge >    >;
@@ -112,3 +112,21 @@ template class art::Wrapper<art::Assns<raw::Trigger,     ldp::Edge,     void> >;
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::Edge,     void> >;
 template class art::Wrapper<art::Assns<ldp::Edge,     raw::Trigger,     void> >;
 
+
+
+//Stuff regarding/belonging to Muon Range Stack Reco
+template class std::vector<ldp::MuonRangeStackHits >;
+template class art::Wrapper< ldp::MuonRangeStackHits               >;
+template class art::Wrapper< std::vector<ldp::MuonRangeStackHits >    >;
+template class std::map<int,std::vector<int> >;
+template class art::Wrapper<std::map<int,std::vector<int> > >;
+template class art::Wrapper<MuRSTrack>;
+template class std::vector<MuRSTrack>;
+template class art::Wrapper<std::vector<MuRSTrack> >;
+template class std::pair<int,int>;
+template class art::Wrapper<std::pair<int,int> >;
+template class std::vector<std::pair<int,int> >;
+template class art::Wrapper<std::vector<std::pair<int,int> > >;
+
+
+template class art::Wrapper<ldp::ConditionsSummary>;
