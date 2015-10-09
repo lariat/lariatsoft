@@ -63,6 +63,9 @@ class FragmentToDigitAlg{
                                   std::set<uint32_t>            const& boardChans,
                                   uint32_t                      const& chanOffset,
                                   std::string                   const& detName);
+
+
+//<<-------------------------------THESE NEED TO BE CHANGED TO ADD CALL TO DATABASE----------------------------------------->>
   void makeMuonRangeDigits(std::vector<CAENFragment>     const& caenFrags,
                            std::vector<raw::AuxDetDigit>      & mrAuxDigits);
   void makeTOFDigits(std::vector<CAENFragment>     const& caenFrags,
@@ -87,23 +90,23 @@ class FragmentToDigitAlg{
 
  private:
 
-  std::string                                fRawFragmentLabel;        ///< label for module producing artdaq fragments
-  std::string                                fRawFragmentInstance;     ///< instance label for artdaq fragments        
-  size_t                                     fMaxNumberFitIterations;  ///< number of fit iterations before stopping
-  std::map<uint32_t, std::set<uint32_t> >    fOpticalDetChannels;      ///< key is the board ID, set are channels on that board
-  std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks; ///< map trigger ID to vector of CAEN blocks
-  std::map< int, std::vector<TDCDataBlock> > fTriggerToTDCDataBlocks;  ///< map trigger ID to vector of TDC blocks
-  std::map<size_t, size_t>                   fTDCToStartWire;          ///< map TDCs to first wire attached to TDC
-  std::map<size_t, size_t>                   fTDCToChamber;            ///< map TDCs to the chamber they are attached
-  std::vector<std::string>                   fMWPCNames;               ///< vector to hold detector names of the MWPCs
-  int                                        fRunNumber;               ///< current run number
-  size_t                                     fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
-  float                                      fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
-  float                                      fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
-  float                                      fV1751PostPercent;        ///< 1751 PostPercent setting (ranges 0-100)
-  art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;     ///< handle to the DatabaseUtility1034
-  std::map< std::string, std::string >       fConfigValues;            ///< (key, value) pair for the database query result
-  std::vector<std::string>                   fConfigParams;            ///< vector of parameter names to be queried
+  std::string                                		fRawFragmentLabel;        ///< label for module producing artdaq fragments
+  std::string                                		fRawFragmentInstance;     ///< instance label for artdaq fragments        
+  size_t                                     		fMaxNumberFitIterations;  ///< number of fit iterations before stopping
+  std::map<uint32_t, std::set<uint32_t> >    		fOpticalDetChannels;      ///< key is the board ID, set are channels on that board
+  std::map< int, std::vector<CAENFragment> > 		fTriggerToCAENDataBlocks; ///< map trigger ID to vector of CAEN blocks
+  std::map< int, std::vector<TDCDataBlock> > 		fTriggerToTDCDataBlocks;  ///< map trigger ID to vector of TDC blocks
+  std::map<size_t, size_t>                   		fTDCToStartWire;          ///< map TDCs to first wire attached to TDC
+  std::map<size_t, size_t>                   		fTDCToChamber;            ///< map TDCs to the chamber they are attached
+  std::vector<std::string>                   		fMWPCNames;               ///< vector to hold detector names of the MWPCs
+  int                                        		fRunNumber;               ///< current run number
+  size_t                                     		fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
+  float                                      		fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
+  float                                      		fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
+  float                                      		fV1751PostPercent;        ///< 1751 PostPercent setting (ranges 0-100)
+  art::ServiceHandle<util::DatabaseUtilityT1034> 	fDatabaseUtility;     ///< handle to the DatabaseUtility1034
+  std::map< std::string, std::string >       		fConfigValues;            ///< (key, value) pair for the database query result
+  std::vector<std::string>                   		fConfigParams;            ///< vector of parameter names to be queried
 
 };
 
