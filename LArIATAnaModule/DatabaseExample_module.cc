@@ -73,9 +73,10 @@ namespace DatabaseExample {
     int fSubRun;
 
     // run timestamp
-    std::uint32_t fRunTimestamp;
-    std::string   fRunDateTime;
+    std::uint32_t fRunTimestamp;  // Unix timestamp
+    std::string   fRunDateTime;   // datetime string
 
+    // convert Unix timestamp to string with format 'YYYY-MM-DD HH24:MI:SS'
     std::string TimestampToString(std::time_t const& Timestamp);
 
     // DatabaseUtilityT1034 service handle
@@ -251,8 +252,10 @@ namespace DatabaseExample {
     // datetime before specified datetime
     ///////////////////////////////////////////////////////////////////
 
+    // Unix timestamp
     fRunTimestamp = run.beginTime().timeLow();  // Unix time
-    fRunDateTime = this->TimestampToString(fRunTimestamp);  // 'YYYY-MM-DD HH24:MI:SS'
+    // convert Unix timestamp to string with format 'YYYY-MM-DD HH24:MI:SS'
+    fRunDateTime = this->TimestampToString(fRunTimestamp);
 
     std::cout << "fRunTimestamp: " << fRunTimestamp << std::endl;
     std::cout << "fRunDateTime: "  << fRunDateTime  << std::endl;
