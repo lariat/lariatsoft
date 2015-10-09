@@ -5,11 +5,13 @@
 ##include "triggeralgo_service.fcl"
 #include "hitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
+#include "showerfindermodules.fcl"
+#include "showerreco3d.fcl"
+#include "showerquality.fcl"
+#include "clustermodules.fcl"
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"
 #include "particleid.fcl"
-#include "showerreco3d.fcl"
-#include "showerquality.fcl"
 
 
 process_name: Reco2D
@@ -27,6 +29,7 @@ services:
 }
 #services.user.DatabaseUtil.ShouldConnect: false
 services.scheduler.SkipEvent: [ ProductNotFound ]
+
 #source is now a root file
 source:
 {
@@ -62,7 +65,9 @@ physics:
 #  rffhit:              @local::lariat_rffhitfinder   
 
   ### cluster-finder producers
-  #cccluster:		@local::standard_clustercrawler
+  cccluster:		@local::standard_clustercrawler
+  fuzzycluster:		@local::standard_fuzzycluster
+  fuzzyclustermerger:	@local::standard_fuzzyclustermerger
   linecluster:          @local::standard_linecluster
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
@@ -72,6 +77,7 @@ physics:
 
   ### Shower-Finder producers
  showerreco:  	 	@local::standard_showerreco3d
+# shower: 	 	@local::standard_shower
   ### pandora
 #  pandora:             @local::standard_pandora
 
@@ -91,9 +97,12 @@ physics:
          #FragmentToDigit,
          caldata,
          cchit,
-        # cccluster,
+         cccluster,
+         fuzzycluster,
+         fuzzyclustermerger, 
 	 linecluster,
          showerreco,
+#         shower,
          #costrk,
          pmtrack,
          #cctrack
@@ -150,14 +159,15 @@ physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 #physics.producers.corner.CornerAlgParamSet.RawDataModuleLabel:  "daq"
 #physics.producers.corner.CornerAlgParamSet.CalDataModuleLabel:  "caldata"
 
-#physics.producers.fuzzycluster.HitsModuleLabel:                 "gaushit"
-#physics.producers.fuzzycluster.CalDataModuleLabel:              "caldata"
+physics.producers.fuzzycluster.HitsModuleLabel:                 "cchit"
+physics.producers.fuzzycluster.CalDataModuleLabel:              "caldata"
 
+physics.producers.fuzzyclustermerger.InputClusterLabel:        "fuzzycluster"
 #physics.producers.cccluster.CalDataModuleLabel:                 "caldata"
 physics.producers.cchit.CCHitFinderAlg.MinSigInd:  4
 physics.producers.cchit.CCHitFinderAlg.MinSigCol:  4
-physics.producers.cchit.CCHitFinderAlg.MinRMSInd:  6.0
-physics.producers.cchit.CCHitFinderAlg.MinRMSCol:  8.0
+physics.producers.cchit.CCHitFinderAlg.MinRMSInd:  6.0 
+physics.producers.cchit.CCHitFinderAlg.MinRMSCol:  8.0 
 physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 #physics.producers.cchit.CCHitFinderAlg.CrudeHitWidth:  0
 #physics.producers.cchit.CCHitFinderAlg.StudyHits: false
@@ -169,8 +179,8 @@ physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
 physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 20
 physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.2,0.2,0.2]
 physics.producers.linecluster.ClusterCrawlerAlg.MaxHitsFit: [20, 8, 4]
-physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3
-physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0
+physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3 
+physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0 
 
 #physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 0
 #physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  5555
@@ -198,10 +208,13 @@ services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
 
 services.DetectorProperties.TimeOffsetV: -13.2
 services.LArProperties.Electronlifetime: 1600
-physics.producers.calo.TrackModuleLabel:      "pmtrack"
-physics.producers.calo.SpacePointModuleLabel: "pmtrack"
-physics.producers.calo.UseArea:               "true"
-physics.producers.pid.TrackModuleLabel:       "pmtrack"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.0068,0.0153]
-physics.producers.showerreco.InputProducer:        "linecluster"
-
+physics.producers.calo.TrackModuleLabel:      		"pmtrack"
+physics.producers.calo.SpacePointModuleLabel: 		"pmtrack"
+physics.producers.calo.UseArea:               		"true"
+physics.producers.pid.TrackModuleLabel:       		"pmtrack"
+physics.producers.calo.CaloAlg.CalAreaConstants: 	[0.0068,0.0153]
+physics.producers.showerreco.InputProducer:        	"fuzzyclustermerger"
+physics.producers.showerreco.MinHits:       		0 
+physics.producers.showerreco.Verbosity:       	 	true	
+#physics.producers.showerreco.UsePFParticle:   	 	true	
+#physics.producers.shower.ClusterModuleLabel:   		"cccluster" 
