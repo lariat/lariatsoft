@@ -1,0 +1,80 @@
+#include "services_lariat.fcl"
+#include "lariat_reco_algs.fcl"
+#include "databaseutility_lariat.fcl" 
+
+process_name: MichelWfmReco
+
+services:
+{
+  TFileService: { fileName: "MichelWfmReco_histo.root" }
+  message:      @local::standard_info
+  user:         @local::lariat_simulation_services
+  scheduler:    { }
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:   -1 
+  # fileNames: ["input.root"]
+}
+
+outputs: 
+{
+ out1:
+  {
+    module_type: RootOutput
+    fileName:    "MichelWfmReco_output.root" #default file name, can override from command line with -o or --output
+   } 
+}
+
+physics:
+{
+  producers:
+  {
+    MichelWfmReco:
+    {
+      module_type: MichelWfmReco
+    }
+  }
+  analysis:  [ MichelWfmReco ]
+
+  #define the output stream, there could be more than one if using filters
+  #stream1:  [ out1 ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event,
+ # #ie filters and producers
+ #trigger_paths: [LariatProducer] #DO WE NEED THIS??? 
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event,                                                                                            
+ # #ie analyzers and output streams.  these all run simultaneously 
+ # (Add "stream1" to end_paths list to produce output data file with added objects)
+ end_paths: [ analysis ]
+ #end_paths: [ stream1 ]
+
+
+}
+
+services.scheduler.SkipEvent: [ ProductNotFound ]
+physics.producers.MichelWfmReco.Verbosity: "true"
+physics.producers.MichelWfmReco.UseTriggerFilter: "false"   
+physics.producers.MichelWfmReco.TimestampCut: 5.25           # default 5.25 sec
+physics.producers.MichelWfmReco.OpHitBuilderAlg.PulseHitThreshold: 0.
+physics.producers.MichelWfmReco.OpHitBuilderAlg.GradientHitThreshold: -10   # default -10
+physics.producers.MichelWfmReco.OpHitBuilderAlg.MinHitSeparation: 50       # default 50ns
+physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1000ns
+physics.producers.MichelWfmReco.PromptWindowLength: 100     # default 100ns
+physics.producers.MichelWfmReco.FullWindowLength: 7000      # default 7000ns
+physics.producers.MichelWfmReco.GateDelay: 320
+physics.producers.MichelWfmReco.UsePrepulseFit: "true"      # default true
+physics.producers.MichelWfmReco.DtIntegralCut: 0            # default 0
+physics.producers.MichelWfmReco.TriggerUtility: "FragmentToDigit"
+physics.producers.MichelWfmReco.UseTrackInformation: "true"
+physics.producers.MichelWfmReco.DAQModule: "daq"
+physics.producers.MichelWfmReco.TrackModule: "pmtrack"
+physics.producers.MichelWfmReco.TrackCalModule: "calo"
+physics.producers.MichelWfmReco.TriggerFilterAlg.Verbosity: true
+physics.producers.MichelWfmReco.FiducialMargin_X: 5.
+physics.producers.MichelWfmReco.FiducialMargin_Y: 4.
+physics.producers.MichelWfmReco.FiducialMargin_Z: 5.
+
