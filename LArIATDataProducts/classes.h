@@ -30,11 +30,12 @@
 #include "RawData/ExternalTrigger.h"
 #include "RawData/TriggerData.h"
 #include "RawData/OpDetWaveform.h"
+#include "LArIATDataProducts/AGCounter.h"
+#include "LArIATDataProducts/AuxDetParticleID.h"
+#include "LArIATDataProducts/ConditionsSummary.h"
+#include "LArIATDataProducts/MuonRangeStackHits.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/WCTrack.h"
-#include "LArIATDataProducts/AGCounter.h"
-#include "LArIATDataProducts/MuonRangeStackHits.h"
-#include "LArIATDataProducts/AuxDetParticleID.h"
 
 //
 // Only include objects that we would like to be able to put into the event.
@@ -113,5 +114,7 @@ template class art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>;
 template class art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >;
+
+template class art::Wrapper<ldp::ConditionsSummary>;
 
 
