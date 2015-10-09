@@ -700,6 +700,8 @@ void FragmentToDigitAlg::InitializeRun( art::RunNumber_t runNumber )
   
   // Get V1751 PostPercent settings from database
   fConfigValues.clear();
-  fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));
+  fHardwareConnections.clear();											//jess lines
+  fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fDateTime);					//jess lines
+  fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
   fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
 }
