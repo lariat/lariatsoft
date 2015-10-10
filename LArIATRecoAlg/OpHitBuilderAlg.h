@@ -44,20 +44,24 @@ class OpHitBuilderAlg{
   std::vector<Double_t>             MakeGradient( std::vector<short> );
   std::vector<Double_t>             GetBaselineAndRMS( std::vector<short>, short, short);
   Double_t                          GetLocalRMSOfGradient( std::vector<Double_t>, short, short);
-  std::vector<Double_t>             GetHitInfo( std::vector<short>, short, short);
+  std::vector<Double_t>             GetHitInfo( std::vector<short>, short);
   Double_t                          GetHitAmplitude( std::vector<short>, short);
-  Double_t                          GetHitIntegral( std::vector<short>, short, int);  
+  Double_t                          GetHitPromptIntegral( std::vector<short>, short);
+  Double_t                          GetHitFullIntegral(   std::vector<short>, short);  
   bool                              IsCleanBeamWaveform( raw::OpDetPulse );
+  short                             GetLocalMinimum( std::vector<short>, short);
+  Double_t                          GetLocalMinimum( std::vector<double>, short);
    
   // Average waveform vector
   std::vector<double>   AverageWaveform;
   Int_t                 AverageWaveform_count;
+  Int_t                 AddHitToAverageWaveform;
 
   // Fit parameters
-  double prepulse_baseline;
-  double prepulse_rms;
-  double fit_norm;
-  double fit_tau;
+  Double_t prepulse_baseline;
+  Double_t prepulse_rms;
+  Double_t fit_norm;
+  Double_t fit_tau;
 
  private:
   
@@ -72,6 +76,7 @@ class OpHitBuilderAlg{
   double    fMvPerADC;
   bool      fUsePrepulseFit;
   double    fTimestampCut;
+  int       bVerbose;
   
 };
 

@@ -73,6 +73,7 @@ physics.producers.MichelWfmReco.UseTrackInformation: "true"
 physics.producers.MichelWfmReco.DAQModule: "daq"
 physics.producers.MichelWfmReco.TrackModule: "pmtrack"
 physics.producers.MichelWfmReco.TrackCalModule: "calo"
+physics.producers.MichelWfmReco.TrackPIDModule: "pid"
 physics.producers.MichelWfmReco.TriggerFilterAlg.Verbosity: true
 physics.producers.MichelWfmReco.FiducialMargin_X: 5.
 physics.producers.MichelWfmReco.FiducialMargin_Y: 4.
