@@ -40,43 +40,50 @@ class OpHitBuilderAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
 
-  std::vector<short>                GetHits( std::vector<short>&);
-  std::vector<Double_t>             MakeGradient( std::vector<short> );
-  std::vector<Double_t>             GetBaselineAndRMS( std::vector<short>, short, short);
-  Double_t                          GetLocalRMSOfGradient( std::vector<Double_t>, short, short);
-  std::vector<Double_t>             GetHitInfo( std::vector<short>, short);
-  Double_t                          GetHitAmplitude( std::vector<short>, short);
-  Double_t                          GetHitPromptIntegral( std::vector<short>, short);
-  Double_t                          GetHitFullIntegral(   std::vector<short>, short);  
+  std::vector<short>              GetHits( std::vector<short>);
+  std::vector<short>              HitMerger( std::vector<short>, short, int);
+  std::vector<double>             MakeGradient( std::vector<short> );
+  std::vector<double>             GetBaselineAndRMS( std::vector<short>, short, short);
+  std::vector<double>               GetBaselineAndRMS( std::vector<double>, short, short);
+  std::vector<double>             GetHitInfo( std::vector<short>, short);
+  double                          GetHitAmplitude( std::vector<short>, short);
+  double                          GetHitPromptIntegral( std::vector<short>, short);
+  double                          GetHitFullIntegral(   std::vector<short>, short);  
   bool                              IsCleanBeamWaveform( raw::OpDetPulse );
   short                             GetLocalMinimum( std::vector<short>, short);
-  Double_t                          GetLocalMinimum( std::vector<double>, short);
-   
+  double                          GetLocalMinimum( std::vector<double>, short);
+  
   // Average waveform vector
   std::vector<double>   AverageWaveform;
-  Int_t                 AverageWaveform_count;
-  Int_t                 AddHitToAverageWaveform;
+  int                   AverageWaveform_count;
+  int                   AddHitToAverageWaveform;
 
   // Fit parameters
-  Double_t prepulse_baseline;
-  Double_t prepulse_rms;
-  Double_t fit_norm;
-  Double_t fit_tau;
+  double prepulse_baseline;
+  double prepulse_rms;
+  double fit_FastNorm;
+  double fit_FastTau;
+  double fit_SlowNorm;
+  double fit_SlowTau;
+  double fit_ReducedChi2;
+
+  bool bVerbose;
+  bool      fUsePrepulseFit;
 
  private:
   
-  Double_t  fGradientHitThreshold;
-  Double_t  fPulseHitThreshold;
-  Double_t  fGradientRMSFilterThreshold;
-  Double_t  fMinHitSeparation;  
+  double  fGradientHitThreshold;
+  double  fPulseHitThreshold;
+  double  fGradientRMSFilterThreshold;
+  double  fMinHitSeparation;  
   short     fBaselineWindowLength;
   short     fPrePulseBaselineFit;
   short     fPromptWindowLength;
   short     fFullWindowLength;
   double    fMvPerADC;
-  bool      fUsePrepulseFit;
   double    fTimestampCut;
-  int       bVerbose;
+  double    fPrePulseTau1;
+  double    fPrePulseTau2;
   
 };
 

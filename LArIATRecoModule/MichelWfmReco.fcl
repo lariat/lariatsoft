@@ -56,17 +56,20 @@ physics:
 }
 
 services.scheduler.SkipEvent: [ ProductNotFound ]
-physics.producers.MichelWfmReco.Verbosity: "true"
-physics.producers.MichelWfmReco.UseTriggerFilter: "false"   
-physics.producers.MichelWfmReco.TimestampCut: 5.25           # default 5.25 sec
-physics.producers.MichelWfmReco.OpHitBuilderAlg.PulseHitThreshold: 0.
-physics.producers.MichelWfmReco.OpHitBuilderAlg.GradientHitThreshold: -10   # default -10
-physics.producers.MichelWfmReco.OpHitBuilderAlg.MinHitSeparation: 50       # default 50ns
+physics.producers.MichelWfmReco.Verbosity: "false"
+physics.producers.MichelWfmReco.AveWfmCut_Dt: 5000
+physics.producers.MichelWfmReco.OpHitBuilderAlg.UsePrepulseFit: "true"  # default true
+physics.producers.MichelWfmReco.PrePulseTau1: 1400
+physics.producers.MichelWfmReco.PrePulseTau2: 1600
+physics.producers.MichelWfmReco.PrePulseBaselineFit: 250
+physics.producers.MichelWfmReco.TimestampCut: 5.3           # default 5.25 sec
+physics.producers.MichelWfmReco.PulseHitThreshold: 0.
+physics.producers.MichelWfmReco.GradientHitThreshold: -10   # default -10
+physics.producers.MichelWfmReco.MinHitSeparation: 20       # default 20ns
 physics.producers.MichelWfmReco.BaselineWindowLength: 1000  # default 1000ns
 physics.producers.MichelWfmReco.PromptWindowLength: 100     # default 100ns
 physics.producers.MichelWfmReco.FullWindowLength: 7000      # default 7000ns
-physics.producers.MichelWfmReco.GateDelay: 320
-physics.producers.MichelWfmReco.UsePrepulseFit: "true"      # default true
+physics.producers.MichelWfmReco.GateDelay: 300
 physics.producers.MichelWfmReco.DtIntegralCut: 0            # default 0
 physics.producers.MichelWfmReco.TriggerUtility: "FragmentToDigit"
 physics.producers.MichelWfmReco.UseTrackInformation: "true"
@@ -74,8 +77,7 @@ physics.producers.MichelWfmReco.DAQModule: "daq"
 physics.producers.MichelWfmReco.TrackModule: "pmtrack"
 physics.producers.MichelWfmReco.TrackCalModule: "calo"
 physics.producers.MichelWfmReco.TrackPIDModule: "pid"
-physics.producers.MichelWfmReco.TriggerFilterAlg.Verbosity: true
 physics.producers.MichelWfmReco.FiducialMargin_X: 5.
 physics.producers.MichelWfmReco.FiducialMargin_Y: 4.
 physics.producers.MichelWfmReco.FiducialMargin_Z: 5.
-
+physics.producers.MichelWfmReco.UseTriggerFilter: "false"   
