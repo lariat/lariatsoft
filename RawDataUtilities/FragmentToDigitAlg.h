@@ -21,6 +21,7 @@
 //Framework includes
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Persistency/Provenance/EventID.h"
+#include "art/Framework/Principal/RunPrincipal.h"
 
 namespace raw{
   class RawDigit;
@@ -47,8 +48,6 @@ class FragmentToDigitAlg{
   void reconfigure( fhicl::ParameterSet const& pset );
   
   
-  std::string TimestampToString(std::time_t const& Timestamp); 
-  void InitializeRun(const art::Run& run, art::RunNumber_t runNumber);
   
 
   void makeTheDigits(std::vector<CAENFragment> caenFrags,
@@ -90,12 +89,13 @@ class FragmentToDigitAlg{
                                             std::vector<CAENFragment>                             const& caenFrags,
                                             std::vector< std::vector<TDCFragment::TdcEventData> > const& tdcDataBlocks);
 
+  void InitializeRun(art::RunPrincipal* const & run, art::RunNumber_t runNumber);
+  std::string TimestampToString(std::time_t const& Timestamp); 
   
 
  private:
 
   int                                        		fRunNumber;               	///< current run number
-  int                                        		fRun;               	///< current run number
   std::string                                		fRawFragmentLabel;        	///< label for module producing artdaq fragments
   std::string                                		fRawFragmentInstance;     	///< instance label for artdaq fragments        
   size_t                                     		fMaxNumberFitIterations;  	///< number of fit iterations before stopping

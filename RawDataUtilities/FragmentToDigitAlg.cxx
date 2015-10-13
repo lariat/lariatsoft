@@ -676,13 +676,12 @@ std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t
 
 }
 
-
 //===============================================================----------
-void FragmentToDigitAlg::InitializeRun( const art::Run& run, art::RunNumber_t runNumber)
+void FragmentToDigitAlg::InitializeRun(art::RunPrincipal* const& run, art::RunNumber_t runNumber)
 {
-  //fRunNumber=runNumber;
-  ///fRunTimestamp = run.beginTime().timeLow();	//jess lines
- // fRunDateTime = this->TimestampToString(fRunTimestamp);	//jess lines
+  fRunNumber=runNumber;
+  fRunTimestamp = run->beginTime().timeLow();	//jess lines
+  fRunDateTime = this->TimestampToString(fRunTimestamp);	//jess lines
   InitializeMWPCContainers();
   
   // Set config parameters to get from the lariat_prd database
@@ -702,7 +701,7 @@ void FragmentToDigitAlg::InitializeRun( const art::Run& run, art::RunNumber_t ru
   // Get V1751 PostPercent settings from database
   fConfigValues.clear();
   fHardwareConnections.clear();											//jess lines
-  //fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
+  fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
   fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
   fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
 }
