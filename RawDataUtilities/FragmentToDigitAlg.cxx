@@ -8,7 +8,9 @@
 //                                                            //
 ////////////////////////////////////////////////////////////////
 
+// C++ includes
 #include <bitset>
+#include <string>
 
 // LArIAT
 #include "LArIATFragments/LariatFragment.h"
@@ -592,7 +594,7 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
     auto chitr = fTDCToChamber.find(tdced.tdcEventHeader.tdcNumber);
 
     if( chitr == fTDCToChamber.end() || switr == fTDCToStartWire.end() )
-      throw cet::exception("FragmentToDigitAlg") << "TDC number " << tdced.tdcEventHeader.tdcNumber
+      throw cet::exception("FragmentToDigitAlg") << "TDC number " << std::to_string(tdced.tdcEventHeader.tdcNumber)
 					      << " is not present in map to chamber number or start wire";
 
     // LOG_VERBATIM("FragmentToDigitAlg") << "there are " << tdced.tdcHits.size() << " tdc hit objects in the vector for chamber "
