@@ -80,45 +80,6 @@ void FragmentToDigitAlg::reconfigure( fhicl::ParameterSet const& pset )
 
 
 }
-//-------------------jess lines
-//=====================================================================
-  std::string FragmentToDigitAlg::TimestampToString(std::time_t const& Timestamp) {
-    struct tm * TimeInfo;
-    char Buffer[30];
-    TimeInfo = std::localtime(&Timestamp);
-    std::strftime(Buffer, 30, "%Y-%m-%d %H:%M", TimeInfo);
-    return std::string(Buffer);
-  }
-
-//===============================================================----------
-void FragmentToDigitAlg::InitializeRun( const art::Run run, art::RunNumber_t runNumber)
-{
-  fRunNumber=runNumber;
-  fRunTimestamp = run.beginTime().timeLow();	//jess lines
-  fRunDateTime = this->TimestampToString(fRunTimestamp);	//jess lines
-  InitializeMWPCContainers();
-  
-  // Set config parameters to get from the lariat_prd database
-  fConfigParams.clear();
-  fConfigParams.push_back("v1495_config_v1495_delay_ticks");
-  fConfigParams.push_back("v1740_config_caen_postpercent");
-  fConfigParams.push_back("v1740_config_caen_recordlength");
-  fConfigParams.push_back("v1740b_config_caen_postpercent");
-  fConfigParams.push_back("v1740b_config_caen_recordlength");
-  fConfigParams.push_back("v1751_config_caen_postpercent");
-  fConfigParams.push_back("v1751_config_caen_recordlength");
-  fConfigParams.push_back("v1740_config_caen_v1740_samplereduction");
-  fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
-  fConfigParams.push_back("tdc_config_tdc_pipelinedelay");
-  fConfigParams.push_back("tdc_config_tdc_gatewidth");
-  
-  // Get V1751 PostPercent settings from database
-  fConfigValues.clear();
-  fHardwareConnections.clear();											//jess lines
-  fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
-  fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
-  fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
-}
 //=====================================================================
 void FragmentToDigitAlg::makeTheDigits( std::vector<CAENFragment> caenFrags,
                                        std::vector<TDCDataBlock> tdcDataBlocks,
@@ -722,4 +683,43 @@ std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t
 
 }
 
+
+//===============================================================----------
+void FragmentToDigitAlg::InitializeRun( const art::Run& run, art::RunNumber_t runNumber)
+{
+  //fRunNumber=runNumber;
+  ///fRunTimestamp = run.beginTime().timeLow();	//jess lines
+ // fRunDateTime = this->TimestampToString(fRunTimestamp);	//jess lines
+  InitializeMWPCContainers();
+  
+  // Set config parameters to get from the lariat_prd database
+  fConfigParams.clear();
+  fConfigParams.push_back("v1495_config_v1495_delay_ticks");
+  fConfigParams.push_back("v1740_config_caen_postpercent");
+  fConfigParams.push_back("v1740_config_caen_recordlength");
+  fConfigParams.push_back("v1740b_config_caen_postpercent");
+  fConfigParams.push_back("v1740b_config_caen_recordlength");
+  fConfigParams.push_back("v1751_config_caen_postpercent");
+  fConfigParams.push_back("v1751_config_caen_recordlength");
+  fConfigParams.push_back("v1740_config_caen_v1740_samplereduction");
+  fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
+  fConfigParams.push_back("tdc_config_tdc_pipelinedelay");
+  fConfigParams.push_back("tdc_config_tdc_gatewidth");
+  
+  // Get V1751 PostPercent settings from database
+  fConfigValues.clear();
+  fHardwareConnections.clear();											//jess lines
+  //fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
+  fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
+  fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
+}
+//-------------------jess lines
+//=====================================================================
+  std::string FragmentToDigitAlg::TimestampToString(std::time_t const& Timestamp) {
+    struct tm * TimeInfo;
+    char Buffer[30];
+    TimeInfo = std::localtime(&Timestamp);
+    std::strftime(Buffer, 30, "%Y-%m-%d %H:%M", TimeInfo);
+    return std::string(Buffer);
+  }
 
