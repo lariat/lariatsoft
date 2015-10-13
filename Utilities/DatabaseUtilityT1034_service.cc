@@ -383,6 +383,9 @@ namespace util {
   //-----------------------------------------------------------------------
   std::map< std::string, std::string > DatabaseUtilityT1034::GetHardwareConnections(std::string DateTime) {
 
+    // DateTime format should be 'YYYY-MM-DD HH24:MI:SS'
+    // e.g., '2015-06-17 14:16:00'
+
     // vector of column names
     std::vector< std::string > ColumnNames;
 
@@ -421,9 +424,8 @@ namespace util {
     // set query
     std::string query = "select " + column_names +
                         " from " + schema_name + "." + table_name +
-                        " where date_time < " + DateTime +
-                        " order by date_time desc" + 
-                        "limit 1;";
+                        " where date_time < '" + DateTime + "'::timestamp"
+                        " order by date_time desc limit 1;";
 
     // get values with query
     std::map< std::string, std::string > values = this->GetValues(query);

@@ -74,8 +74,10 @@ namespace util {
     std::map< std::string, std::string > GetAllIFBeamValues(int const& RunNumber,
                                                             int const& SubRunNumber);
 
-    // retrive entire row from the lariat_hardware_connections table
+    // retrieve entire row from the lariat_hardware_connections table
     std::map< std::string, std::string > GetHardwareConnections(std::string DateTime);
+    // DateTime format should be 'YYYY-MM-DD HH24:MI:SS'
+    // e.g., '2015-06-17 14:16:00'
 
     //////////////////////////////////////////////////////////
 
