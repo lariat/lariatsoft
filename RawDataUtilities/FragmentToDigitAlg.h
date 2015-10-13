@@ -48,7 +48,7 @@ class FragmentToDigitAlg{
   
   
   std::string TimestampToString(std::time_t const& Timestamp); 
-  void InitializeRun(const art::Run run, art::RunNumber_t runNumber);
+  void InitializeRun(const art::Run& run, art::RunNumber_t runNumber);
   
 
   void makeTheDigits(std::vector<CAENFragment> caenFrags,
@@ -112,6 +112,7 @@ class FragmentToDigitAlg{
   art::ServiceHandle<util::DatabaseUtilityT1034> 	fDatabaseUtility;     		///< handle to the DatabaseUtility1034
   std::map< std::string, std::string >       		fConfigValues;            	///< (key, value) pair for the database query result
   std::map< std::string, std::string >       		fHardwareConnections;          	///< (key, value) pair for the hardware database query result----------------jess lines
+  std::vector<std::string>                   		fHardwareParams;            	///< vector of parameter names to be queried---------------------------------jess lines
   std::vector<std::string>                   		fConfigParams;            	///< vector of parameter names to be queried
   std::string		                   		fRunDateTime;  	           	///< string of Date/Time to use to querry HardwareConnectionsTable-----------jess lines
   std::uint32_t		                   		fRunTimestamp; 	           	///<Timestamp from runNumber to use to querry HardwareConnectionsTable-------jess lines
