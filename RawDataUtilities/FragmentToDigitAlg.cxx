@@ -460,6 +460,7 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
   trigNames.push_back("MuRS");
 
   // Starting in run 6155 the trigger channels were read out by boardID 24
+  // IMPORTANT: Runs 6155 to 6304 do not have the waveforms recorded in the V1740B (CAEN boardId 24).
   if(fRunNumber > 6154){
     boardId = 24;
     chanOff = 48;
