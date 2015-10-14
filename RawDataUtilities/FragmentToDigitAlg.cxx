@@ -351,17 +351,34 @@ void FragmentToDigitAlg::caenFragmentToAuxDetDigits(std::vector<CAENFragment>   
 void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const& caenFrags,
                                              std::vector<raw::AuxDetDigit>      & mrAuxDigits)
 {
-  uint32_t boardId;
+   uint32_t boardId; 
+   uint32_t chanOff;
+   uint32_t maxChan;
+   std::set<uint32_t> boardChans;
   for( std::map<std::string,std::string>::iterator hardwareIter=fHardwareConnections.begin(); hardwareIter!=fHardwareConnections.end(); hardwareIter++) 
     {
       if( (*hardwareIter).second =="MURS1")
       {
-        boardId = atoi(((*hardwareIter).first).c_str()); //call (*hardwareIter).first and pull number after caen_board_
-        //uint32_t chanoff = ; //call (*hardwareIter).first and pull number after caen_board_**_channel_
-       // uint32_t maxChan = +1; //call "MURS16"and pull number after caen_board_**_channel_
+
+        std::string str ("d_"); 
+        std::string str2 ("_c"); 
+        std::string str3 ("l_"); 
+        std::size_t found = hardwareIter->first.find(str);
+        std::size_t found2 = hardwareIter->first.find(str2);
+        std::size_t found3 = hardwareIter->first.find(str3);
+        if(found !=std::string::npos)
+        {
+	  std::string strboardId (hardwareIter->first,found+2,found2-(found+2) );
+	  std::string strchannelId (hardwareIter->first,found3+2,hardwareIter->first.size()-found3);
       	
+          boardId = stoi(strboardId); //call (*hardwareIter).first and pull number after caen_board_
+          chanOff = stoi(strchannelId); //call (*hardwareIter).first and pull number after caen_board_**_channel_
+          maxChan = 48; //call "MURS16"and pull number after caen_board_**_channel_
+        }
       }
     }
+ 
+/*
   // The Muon Range Stack channels are all on the V1740 board in slot 7
   // The channels are 32 <= ch < 48
   //uint32_t boardId = 7;
@@ -375,6 +392,7 @@ void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const
     chanOff = 32;
     maxChan = 48;
   }
+*/
 
   for(uint32_t bc = chanOff; bc < maxChan; ++bc) boardChans.insert(bc);
 

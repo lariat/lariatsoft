@@ -279,14 +279,20 @@ namespace DatabaseExample {
          ++all_connections_iter) {
 
 
-
-      //   std::string numbers = "0123456789";
-         //std::size_t found = all_connections_iter->first.find_first_of(numbers.c_str());
-       //  std::size_t found = all_connections_iter->first.find(numbers); 
-      mf::LogVerbatim("DatabaseExample")
-        << "Column: " << all_connections_iter->first << "; Value: " << all_connections_iter->second/*<< "; boardId:"<< uint32_t (found)*/ ;
-     
-    }
+        std::string str ("d_"); 
+        std::string str2 ("_c"); 
+        std::string str3 ("l_"); 
+        std::size_t found = all_connections_iter->first.find(str);
+        std::size_t found2 = all_connections_iter->first.find(str2);
+        std::size_t found3 = all_connections_iter->first.find(str3);
+        if(found !=std::string::npos){
+	std::string boardId (all_connections_iter->first,found+2,found2-(found+2) );
+	std::string channelId (all_connections_iter->first,found3+2,all_connections_iter->first.size()-found3);
+    mf::LogVerbatim("DatabaseExample")
+        << "Column: " << all_connections_iter->first << "; Value: " << all_connections_iter->second<< "; boardId: "<<boardId<<"; channelId: "<<channelId;
+       } 
+       
+     }
 
     mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
