@@ -286,8 +286,10 @@ namespace DatabaseExample {
         std::size_t found2 = all_connections_iter->first.find(str2);
         std::size_t found3 = all_connections_iter->first.find(str3);
         if(found !=std::string::npos){
-	std::string boardId (all_connections_iter->first,found+2,found2-(found+2) );
-	std::string channelId (all_connections_iter->first,found3+2,all_connections_iter->first.size()-found3);
+	std::string strboardId (all_connections_iter->first,found+2,found2-(found+2) );
+	std::string strchannelId (all_connections_iter->first,found3+2,all_connections_iter->first.size()-found3);
+        uint32_t boardId =stoi(strboardId );
+        uint32_t channelId =stoi(strchannelId );
     mf::LogVerbatim("DatabaseExample")
         << "Column: " << all_connections_iter->first << "; Value: " << all_connections_iter->second<< "; boardId: "<<boardId<<"; channelId: "<<channelId;
        } 
