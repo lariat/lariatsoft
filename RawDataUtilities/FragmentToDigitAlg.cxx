@@ -351,9 +351,20 @@ void FragmentToDigitAlg::caenFragmentToAuxDetDigits(std::vector<CAENFragment>   
 void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const& caenFrags,
                                              std::vector<raw::AuxDetDigit>      & mrAuxDigits)
 {
+  uint32_t boardId;
+  for( std::map<std::string,std::string>::iterator hardwareIter=fHardwareConnections.begin(); hardwareIter!=fHardwareConnections.end(); hardwareIter++) 
+    {
+      if( (*hardwareIter).second =="MURS1")
+      {
+        boardId = atoi(((*hardwareIter).first).c_str()); //call (*hardwareIter).first and pull number after caen_board_
+        //uint32_t chanoff = ; //call (*hardwareIter).first and pull number after caen_board_**_channel_
+       // uint32_t maxChan = +1; //call "MURS16"and pull number after caen_board_**_channel_
+      	
+      }
+    }
   // The Muon Range Stack channels are all on the V1740 board in slot 7
   // The channels are 32 <= ch < 48
-  uint32_t boardId = 7;
+  //uint32_t boardId = 7;
   uint32_t chanOff = 32;
   uint32_t maxChan = 48;
   std::set<uint32_t> boardChans;

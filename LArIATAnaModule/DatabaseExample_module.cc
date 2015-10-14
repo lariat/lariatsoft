@@ -278,9 +278,14 @@ namespace DatabaseExample {
          all_connections_iter != fHardwareConnectionsValues.end();
          ++all_connections_iter) {
 
-      mf::LogVerbatim("DatabaseExample")
-        << "Column: " << all_connections_iter->first << "; Value: " << all_connections_iter->second;
 
+
+      //   std::string numbers = "0123456789";
+         //std::size_t found = all_connections_iter->first.find_first_of(numbers.c_str());
+       //  std::size_t found = all_connections_iter->first.find(numbers); 
+      mf::LogVerbatim("DatabaseExample")
+        << "Column: " << all_connections_iter->first << "; Value: " << all_connections_iter->second/*<< "; boardId:"<< uint32_t (found)*/ ;
+     
     }
 
     mf::LogVerbatim("DatabaseExample")
