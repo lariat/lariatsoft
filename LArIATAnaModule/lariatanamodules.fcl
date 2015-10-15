@@ -11,7 +11,7 @@ lariat_anatree:
     ClusterModuleLabel:       "linecluster"
     WCTrackLabel:             "wctrack"
     TOFModuleLabel:	      "tof"
-    
+    G4ModuleLabel:            "largeant"
 }
 
 END_PROLOG
