@@ -50,6 +50,7 @@
 #include "RawData/raw.h"
 #include "MCCheater/BackTracker.h"
 #include "Simulation/SimChannel.h"
+#include "SimulationBase/MCTruth.h"
 #include "Filters/ChannelFilter.h"
 #include "AnalysisBase/Calorimetry.h"
 #include "AnalysisBase/ParticleID.h"
@@ -75,6 +76,7 @@ const int kMaxTrackHits  = 1000;  //maximum number of space points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;   //maximum number of TOF objects
+const int kMaxPrimaries  = 20000;  //maximum number of primary particles
 
 namespace lariat 
 {
@@ -195,6 +197,29 @@ private:
    double tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
    
    
+   // === Storing Geant4 MC Truth Information ===
+   int no_primaries;
+    int geant_list_size;
+    int pdg[kMaxPrimaries];
+    double Eng[kMaxPrimaries];
+    double Px[kMaxPrimaries];
+    double Py[kMaxPrimaries];
+    double Pz[kMaxPrimaries];
+    double StartPointx[kMaxPrimaries];
+    double StartPointy[kMaxPrimaries];
+    double StartPointz[kMaxPrimaries];
+    double EndPointx[kMaxPrimaries];
+    double EndPointy[kMaxPrimaries];
+    double EndPointz[kMaxPrimaries];
+    int NumberDaughters[kMaxPrimaries];
+    int TrackId[kMaxPrimaries];
+    int Mother[kMaxPrimaries];
+    int process_primary[kMaxPrimaries];
+   
+   
+   
+   
+   
    // ==== NEED TO FIX THESE VARIABLES....FILLED WITH DUMMY VALUES FOR NOW ===
    
    
@@ -214,6 +239,7 @@ private:
    std::string fParticleIDModuleLabel;
    std::string fWCTrackLabel; 		// The name of the producer that made tracks through the MWPCs
    std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
+   std::string fG4ModuleLabel;
 };
 
 
@@ -237,6 +263,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
    fClusterModuleLabel          = pset.get< std::string >("ClusterModuleLabel");
    fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
    fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
+   fG4ModuleLabel               = pset.get< std::string >("G4ModuleLabel");
    
    return;
 }
@@ -260,7 +287,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    art::ServiceHandle<util::DetectorProperties> detprop;
    // === BackTracker service ===
    art::ServiceHandle<cheat::BackTracker> bt;
-  
+   const sim::ParticleList& plist = bt->ParticleList();
+   
+   
    // === Run Number ===
    run = evt.run();
    // === Sub-Run Number ===
@@ -352,6 +381,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    
    if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
       {art::fill_ptr_vector(tof, TOFColHandle);}
+      
+   
+   
    
    // ##########################################################
    // ### Grabbing associations for use later in the AnaTool ###
@@ -376,7 +408,106 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    try
       {evt.getView("largeant", fSimChannels);}
    catch (art::Exception const&e){ }
+   
+   bool isdata = false;
+   if (evt.isRealData()){
+    isdata = true;
+  }
+  else isdata = false;
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   //							FILLING THE MCTruth Geant4 INFORMATION
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
 
+if(!isdata)
+{   
+   std::vector<const simb::MCParticle* > geant_part;
+	for(size_t p = 0; p < plist.size(); ++p) geant_part.push_back(plist.Particle(p)); 
+	
+	std::cout<<"No of geant part= "<<geant_part.size()<<std::endl;
+	std::string pri("primary");
+	int primary=0;
+	int geant_particle=0;
+	//determine the number of primary particles from geant:
+	
+	for( unsigned int i = 0; i < geant_part.size(); ++i ){
+	  geant_particle++;
+	  if(geant_part[i]->Process()==pri){
+	    primary++;
+	  }
+	}
+	
+   no_primaries=primary;
+   geant_list_size=geant_particle;
+	
+   std::cout<<"Geant4 list: "<<std::endl;
+	
+   for( unsigned int i = 0; i < geant_part.size(); ++i ){
+ 
+   std::cout<<"pdg= "<<geant_part[i]->PdgCode()<<" Process= "<<geant_part[i]->Process()<<" trackId= "<<geant_part[i]->TrackId()<<" E= "<<geant_part[i]->E()<<" P= "<<geant_part[i]->P()<<" "<<sqrt(geant_part[i]->Px()*geant_part[i]->Px() + geant_part[i]->Py()*geant_part[i]->Py()+ geant_part[i]->Pz()*geant_part[i]->Pz())<<" Mother= "<<geant_part[i]->Mother()<<" Vertex= ("<<geant_part[i]->Vx()<<","<<geant_part[i]->Vy()<<","<<geant_part[i]->Vz()<<" ) end=("<<geant_part[i]->EndPosition()[0]<<","<<geant_part[i]->EndPosition()[1]<<","<<geant_part[i]->EndPosition()[2]<<")"<<std::endl;
+   
+   if(geant_part[i]->Process()==pri){
+   process_primary[i]=1;
+   }
+   else{
+   process_primary[i]=0;
+   }
+   
+    Mother[i]=geant_part[i]->Mother();
+    TrackId[i]=geant_part[i]->TrackId();
+    
+    
+    
+    pdg[i]=geant_part[i]->PdgCode();
+    
+    Eng[i]=geant_part[i]->E();
+    Px[i]=geant_part[i]->Px();
+   
+    Py[i]=geant_part[i]->Py();
+    Pz[i]=geant_part[i]->Pz();
+    
+   StartPointx[i]=geant_part[i]->Vx();
+   StartPointy[i]=geant_part[i]->Vy();
+   StartPointz[i]=geant_part[i]->Vz();
+   EndPointx[i]=geant_part[i]->EndPosition()[0];
+   EndPointy[i]=geant_part[i]->EndPosition()[1];
+   EndPointz[i]=geant_part[i]->EndPosition()[2];
+   
+   NumberDaughters[i]=geant_part[i]->NumberDaughters();
+   
+   
+   std::cout<<"length= "<<sqrt((EndPointx[i]-StartPointx[i])*(EndPointx[i]-StartPointx[i]) + (EndPointy[i]-StartPointy[i])*(EndPointy[i]-StartPointy[i])+ (EndPointz[i]-StartPointz[i])*(EndPointz[i]-StartPointz[i]))<<std::endl;
+   
+ // std::cout<<"pdg= "<<geant_part[i]->PdgCode()<<" trackId= "<<geant_part[i]->TrackId()<<" mother= "<<geant_part[i]->Mother()<<" NumberDaughters()= "<<geant_part[i]->NumberDaughters()<<" process= "<<geant_part[i]->Process()<<std::endl;
+     
+     
+     
+     } //geant particles
+   
+   
+   
+   
+}//<---End checking if this is data   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
+   
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
    //							FILLING THE WIRE CHAMBER TRACK INFORMATION
@@ -834,7 +965,26 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("ntof", &ntof, "ntof/I");
   fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
   fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
-
+  
+  fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
+  fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
+  
+  fTree->Branch("pdg",pdg,"pdg[geant_list_size]/I");
+  fTree->Branch("Eng",Eng,"Eng[geant_list_size]/D");
+  fTree->Branch("Px",Px,"Px[geant_list_size]/D");
+  fTree->Branch("Py",Py,"Py[geant_list_size]/D");
+  fTree->Branch("Pz",Pz,"Pz[geant_list_size]/D");
+  fTree->Branch("StartPointx",StartPointx,"StartPointx[geant_list_size]/D");
+  fTree->Branch("StartPointy",StartPointy,"StartPointy[geant_list_size]/D");
+  fTree->Branch("StartPointz",StartPointz,"StartPointz[geant_list_size]/D");
+  fTree->Branch("EndPointx",EndPointx,"EndPointx[geant_list_size]/D");
+  fTree->Branch("EndPointy",EndPointy,"EndPointy[geant_list_size]/D");
+  fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/D");
+  fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
+  fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
+  fTree->Branch("TrackId",TrackId,"TrackId[geant_list_size]/I");
+  fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
+      
    
 }
 
@@ -949,6 +1099,26 @@ void lariat::AnaTreeT1034::ResetVars()
 	
 	
 	}//<---End i loop
+  
+  no_primaries = -99999;
+  geant_list_size=-999;
+  for (int i = 0; i<kMaxPrimaries; ++i){
+    pdg[i] = -99999;
+    Eng[i] = -99999;
+    Px[i] = -99999;
+    Py[i] = -99999;
+    Pz[i] = -99999;
+    StartPointx[i] = -99999;
+    StartPointy[i] = -99999;
+    StartPointz[i] = -99999;
+    EndPointx[i] = -99999;
+    EndPointy[i] = -99999;
+    EndPointz[i] = -99999;
+    NumberDaughters[i] = -99999;
+    Mother[i] = -99999;
+    TrackId[i] = -99999;
+    process_primary[i] = -99999;}
+  
   
 }
 
