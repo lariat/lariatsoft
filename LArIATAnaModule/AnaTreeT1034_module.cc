@@ -198,23 +198,23 @@ private:
    
    
    // === Storing Geant4 MC Truth Information ===
-   int no_primaries;
-    int geant_list_size;
-    int pdg[kMaxPrimaries];
-    double Eng[kMaxPrimaries];
-    double Px[kMaxPrimaries];
-    double Py[kMaxPrimaries];
-    double Pz[kMaxPrimaries];
-    double StartPointx[kMaxPrimaries];
-    double StartPointy[kMaxPrimaries];
-    double StartPointz[kMaxPrimaries];
-    double EndPointx[kMaxPrimaries];
-    double EndPointy[kMaxPrimaries];
-    double EndPointz[kMaxPrimaries];
-    int NumberDaughters[kMaxPrimaries];
-    int TrackId[kMaxPrimaries];
-    int Mother[kMaxPrimaries];
-    int process_primary[kMaxPrimaries];
+   int no_primaries;				//<---Number of primary Geant4 particles in the event
+   int geant_list_size;				//<---Number of Geant4 particles tracked
+   int pdg[kMaxPrimaries];			//<---PDG Code number of this particle
+   double Eng[kMaxPrimaries];			//<---Energy of the particle
+   double Px[kMaxPrimaries];			//<---Px momentum of the particle
+   double Py[kMaxPrimaries];			//<---Py momentum of the particle
+   double Pz[kMaxPrimaries];			//<---Pz momentum of the particle
+   double StartPointx[kMaxPrimaries];		//<---X position that this Geant4 particle started at
+   double StartPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle started at
+   double StartPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle started at
+   double EndPointx[kMaxPrimaries];		//<---X position that this Geant4 particle ended at
+   double EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
+   double EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
+   int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
+   int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
+   int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
+   int process_primary[kMaxPrimaries];		//<---Is this particle primary (primary = 1, non-primary = 1)
    
    
    
@@ -409,86 +409,100 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       {evt.getView("largeant", fSimChannels);}
    catch (art::Exception const&e){ }
    
+   // ###################################################################
+   // ### Setting a boolian to only output MC info if this is MC-info ###
+   // ###################################################################
    bool isdata = false;
-   if (evt.isRealData()){
-    isdata = true;
-  }
-  else isdata = false;
+   if (evt.isRealData())
+   	{isdata = true;}
+	
+   else isdata = false;
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
    //							FILLING THE MCTruth Geant4 INFORMATION
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
 
-if(!isdata)
-{   
-   std::vector<const simb::MCParticle* > geant_part;
-	for(size_t p = 0; p < plist.size(); ++p) geant_part.push_back(plist.Particle(p)); 
+   if(!isdata)
+      {
+      // ######################################
+      // ### Making a vector of MCParticles ###
+      // ######################################   
+      std::vector<const simb::MCParticle* > geant_part;
+      
+      // ### Looping over all the Geant4 particles from the BackTracker ###
+      for(size_t p = 0; p < plist.size(); ++p) 
+         {
+	 // ### Filling the vector with MC Particles ###
+	 geant_part.push_back(plist.Particle(p)); 
+	 }
 	
-	std::cout<<"No of geant part= "<<geant_part.size()<<std::endl;
-	std::string pri("primary");
-	int primary=0;
-	int geant_particle=0;
-	//determine the number of primary particles from geant:
+      //std::cout<<"No of geant part= "<<geant_part.size()<<std::endl;
+      
+      // ### Setting a string for primary ###
+      std::string pri("primary");
+      
+      int primary=0;
+      int geant_particle=0;
+      
+      // ############################################################
+      // ### Determine the number of primary particles from geant ###
+      // ############################################################
+      for( unsigned int i = 0; i < geant_part.size(); ++i )
+         {
+	 geant_particle++;
+	 // ### Counting the number of primary particles ###
+	 if(geant_part[i]->Process()==pri)
+	    { primary++;}
+	 }//<---End i loop
+	 
 	
-	for( unsigned int i = 0; i < geant_part.size(); ++i ){
-	  geant_particle++;
-	  if(geant_part[i]->Process()==pri){
-	    primary++;
-	  }
-	}
-	
-   no_primaries=primary;
-   geant_list_size=geant_particle;
-	
-   std::cout<<"Geant4 list: "<<std::endl;
-	
-   for( unsigned int i = 0; i < geant_part.size(); ++i ){
- 
-   std::cout<<"pdg= "<<geant_part[i]->PdgCode()<<" Process= "<<geant_part[i]->Process()<<" trackId= "<<geant_part[i]->TrackId()<<" E= "<<geant_part[i]->E()<<" P= "<<geant_part[i]->P()<<" "<<sqrt(geant_part[i]->Px()*geant_part[i]->Px() + geant_part[i]->Py()*geant_part[i]->Py()+ geant_part[i]->Pz()*geant_part[i]->Pz())<<" Mother= "<<geant_part[i]->Mother()<<" Vertex= ("<<geant_part[i]->Vx()<<","<<geant_part[i]->Vy()<<","<<geant_part[i]->Vz()<<" ) end=("<<geant_part[i]->EndPosition()[0]<<","<<geant_part[i]->EndPosition()[1]<<","<<geant_part[i]->EndPosition()[2]<<")"<<std::endl;
+       // ### Saving the number of primary particles ###
+       no_primaries=primary;
+       // ### Saving the number of Geant4 particles ###
+       geant_list_size=geant_particle;
+       
+       // ### Looping over all the Geant4 particles ###
+       for( unsigned int i = 0; i < geant_part.size(); ++i )
+          {
+	  //std::cout<<"pdg= "<<geant_part[i]->PdgCode()<<" Process= "<<geant_part[i]->Process()<<" trackId= "<<geant_part[i]->TrackId()<<" E= "<<geant_part[i]->E()<<" P= "<<geant_part[i]->P()<<" "<<sqrt(geant_part[i]->Px()*geant_part[i]->Px() + geant_part[i]->Py()*geant_part[i]->Py()+ geant_part[i]->Pz()*geant_part[i]->Pz())<<" Mother= "<<geant_part[i]->Mother()<<" Vertex= ("<<geant_part[i]->Vx()<<","<<geant_part[i]->Vy()<<","<<geant_part[i]->Vz()<<" ) end=("<<geant_part[i]->EndPosition()[0]<<","<<geant_part[i]->EndPosition()[1]<<","<<geant_part[i]->EndPosition()[2]<<")"<<std::endl;
    
-   if(geant_part[i]->Process()==pri){
-   process_primary[i]=1;
-   }
-   else{
-   process_primary[i]=0;
-   }
+          // ### If this particle is primary, set = 1 ###
+	  if(geant_part[i]->Process()==pri)
+	     {process_primary[i]=1;}
+          // ### If this particle is not-primary, set = 0 ###
+	  else
+	     {process_primary[i]=0;}
    
-    Mother[i]=geant_part[i]->Mother();
-    TrackId[i]=geant_part[i]->TrackId();
-    
-    
-    
-    pdg[i]=geant_part[i]->PdgCode();
-    
-    Eng[i]=geant_part[i]->E();
-    Px[i]=geant_part[i]->Px();
-   
-    Py[i]=geant_part[i]->Py();
-    Pz[i]=geant_part[i]->Pz();
-    
-   StartPointx[i]=geant_part[i]->Vx();
-   StartPointy[i]=geant_part[i]->Vy();
-   StartPointz[i]=geant_part[i]->Vz();
-   EndPointx[i]=geant_part[i]->EndPosition()[0];
-   EndPointy[i]=geant_part[i]->EndPosition()[1];
-   EndPointz[i]=geant_part[i]->EndPosition()[2];
-   
-   NumberDaughters[i]=geant_part[i]->NumberDaughters();
-   
-   
-   std::cout<<"length= "<<sqrt((EndPointx[i]-StartPointx[i])*(EndPointx[i]-StartPointx[i]) + (EndPointy[i]-StartPointy[i])*(EndPointy[i]-StartPointy[i])+ (EndPointz[i]-StartPointz[i])*(EndPointz[i]-StartPointz[i]))<<std::endl;
-   
- // std::cout<<"pdg= "<<geant_part[i]->PdgCode()<<" trackId= "<<geant_part[i]->TrackId()<<" mother= "<<geant_part[i]->Mother()<<" NumberDaughters()= "<<geant_part[i]->NumberDaughters()<<" process= "<<geant_part[i]->Process()<<std::endl;
-     
-     
-     
-     } //geant particles
-   
-   
-   
-   
-}//<---End checking if this is data   
+          // ### Saving the particles mother TrackID ###
+	  Mother[i]=geant_part[i]->Mother();
+	  // ### Saving the particles TrackID ###
+	  TrackId[i]=geant_part[i]->TrackId();
+	  // ### Saving the PDG Code ###
+	  pdg[i]=geant_part[i]->PdgCode();
+	  // ### Saving the particles Energy ###
+	  Eng[i]=geant_part[i]->E();
+	  
+	  // ### Saving the Px, Py, Pz info ###
+	  Px[i]=geant_part[i]->Px();
+	  Py[i]=geant_part[i]->Py();
+	  Pz[i]=geant_part[i]->Pz();
+	  
+	  // ### Saving the Start and End Point for this particle ###
+	  StartPointx[i]=geant_part[i]->Vx();
+	  StartPointy[i]=geant_part[i]->Vy();
+	  StartPointz[i]=geant_part[i]->Vz();
+	  EndPointx[i]=geant_part[i]->EndPosition()[0];
+	  EndPointy[i]=geant_part[i]->EndPosition()[1];
+	  EndPointz[i]=geant_part[i]->EndPosition()[2];
+	  
+	  // ### Saving the number of Daughters for this particle ###
+	  NumberDaughters[i]=geant_part[i]->NumberDaughters();
+	  
+	  //std::cout<<"length= "<<sqrt((EndPointx[i]-StartPointx[i])*(EndPointx[i]-StartPointx[i]) + (EndPointy[i]-StartPointy[i])*(EndPointy[i]-StartPointy[i])+ (EndPointz[i]-StartPointz[i])*(EndPointz[i]-StartPointz[i]))<<std::endl;
+          } //geant particles
+	  
+      }//<---End checking if this is data   
    
    
    
