@@ -451,6 +451,10 @@ bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
   }
   
   //Loop through all combinations of tracks
+  int total_possible_tracks=0;
+  int track_counter=0;
+  total_possible_tracks=good_hits[0][0].hits.size()*good_hits[1][0].hits.size()*good_hits[2][0].hits.size()*good_hits[3][0].hits.size()*good_hits[0][1].hits.size()*good_hits[2][1].hits.size()*good_hits[1][1].hits.size()*good_hits[3][1].hits.size();
+  std::cout<<"Total number of track combos: "<<total_possible_tracks<<std::endl;
   for( size_t iHit0 = 0; iHit0 < good_hits[0][0].hits.size(); ++iHit0 ){
     for( size_t iHit1 = 0; iHit1 < good_hits[0][1].hits.size(); ++iHit1 ){
       for( size_t iHit2 = 0; iHit2 < good_hits[1][0].hits.size(); ++iHit2 ){
