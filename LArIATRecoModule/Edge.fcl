@@ -1,0 +1,14 @@
+#include "services_lariat.fcl"
+
+
+BEGIN_PROLOG
+
+lariat_edge:              
+{
+  module_type:        		Edge 
+  TriggerUtility:   		"SlicerInput"
+  CalDataModuleLabel:   	"caldata"
+  TimeBins:  			256 
+}
+
+END_PROLOG

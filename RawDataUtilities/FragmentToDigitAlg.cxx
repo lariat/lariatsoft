@@ -521,7 +521,7 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
 void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& caenFrags,
                                         std::vector<raw::AuxDetDigit>      & hAuxDigits)
 {
-  // Halo inputs are all sent to board 8
+  // Halo inputs are all sent to board 9
   uint32_t boardId;
   uint32_t chanOff;
   uint32_t maxChan;
