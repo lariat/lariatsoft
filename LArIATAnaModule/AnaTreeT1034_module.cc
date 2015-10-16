@@ -58,7 +58,8 @@
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
-
+#include "RecoBase/Shower.h"
+#include "RecoBase/EndPoint2D.h"
 
 // #####################
 // ### ROOT includes ###
@@ -77,6 +78,7 @@ const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;   //maximum number of TOF objects
 const int kMaxPrimaries  = 20000;  //maximum number of primary particles
+const int kMaxShower = 100;
 
 namespace lariat 
 {
@@ -217,6 +219,22 @@ private:
    int process_primary[kMaxPrimaries];		//<---Is this particle primary (primary = 1, non-primary = 1)
    
    
+   // === Storing Shower Reco Information using ShowerReco3D ===
+
+  int nshowers; ///number of showers per event
+  int shwID[kMaxShower];//ID of the reco shower
+  double CosStartShw[3][kMaxShower];
+  double CosStartSigmaShw[3][kMaxShower];
+  double CosStartXYZShw[3][kMaxShower];
+  double CosStartXYZSigmaShw[3][kMaxShower];
+  double TotalEShw[2][kMaxShower];/// total energy of the shower (under investigation...)
+  //double TotalESigmaShw[2][kMaxShower];// not working
+  double dEdxPerPlaneShw[2][kMaxShower];
+  //double dEdxSigmaPerPlaneShw[2][kMaxShower];//not working
+  double TotalMIPEShw[2][kMaxShower];
+  //double TotalMIPESigmaShw[2][kMaxShower];//not working
+  int BestPlaneShw[kMaxShower];	
+  double LengthShw[kMaxShower];
    
    
    
@@ -231,15 +249,17 @@ private:
    int    hit_clukey[kMaxHits];
    
    
-   std::string fTrigModuleLabel;
-   std::string fClusterModuleLabel;
-   std::string fHitsModuleLabel;
-   std::string fTrackModuleLabel;
-   std::string fCalorimetryModuleLabel;
-   std::string fParticleIDModuleLabel;
-   std::string fWCTrackLabel; 		// The name of the producer that made tracks through the MWPCs
-   std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
-   std::string fG4ModuleLabel;
+  std::string fTrigModuleLabel;
+  std::string fClusterModuleLabel;
+  std::string fHitsModuleLabel;
+  std::string fTrackModuleLabel;
+  std::string fCalorimetryModuleLabel;
+  std::string fParticleIDModuleLabel;
+  std::string fWCTrackLabel; 		// The name of the producer that made tracks through the MWPCs
+  std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
+  std::string fG4ModuleLabel;
+  std::string fShowerModuleLabel;       // Producer that makes showers from clustering
+
 };
 
 
@@ -264,7 +284,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
    fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
    fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
    fG4ModuleLabel               = pset.get< std::string >("G4ModuleLabel");
-   
+   fShowerModuleLabel           = pset.get< std::string >("ShowerModuleLabel");
    return;
 }
 
@@ -382,8 +402,16 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
       {art::fill_ptr_vector(tof, TOFColHandle);}
       
+   // #####################################
+   // ### Getting the Shower Information ###
+   // #####################################
+   art::Handle< std::vector<recob::Shower> > shwListHandle; 
+   std::vector<art::Ptr<recob::Shower> > shwlist;
    
-   
+   // === Filling the shwlist from the shwlistHandle ===
+   if (evt.getByLabel(fShowerModuleLabel,shwListHandle))
+      {art::fill_ptr_vector(shwlist, shwListHandle);}
+
    
    // ##########################################################
    // ### Grabbing associations for use later in the AnaTool ###
@@ -401,6 +429,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    art::FindManyP<anab::ParticleID>  fmpid(trackListHandle, evt, fParticleIDModuleLabel);
    // ==== Association between Clusters and Hits ===
    art::FindManyP<recob::Cluster>     fmc(hitListHandle,   evt, fClusterModuleLabel);
+   // ==== Association between Clusters and Showers ===
+   art::FindManyP<recob::Shower> fms (clusterListHandle, evt, fShowerModuleLabel);
   
    
    // ### Something to do with SimChannels...need to come back to ###
@@ -612,6 +642,38 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
      cluplane[i] = clusterlist[i]->Plane().Plane;
      }
      
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   //							FILLING THE SHOWER RECO INFORMATION
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+
+   nshowers = shwlist.size();
+
+   for (size_t i = 0; i<shwlist.size(); ++i)  // loop over showers
+     {
+       shwID[i] = shwlist[i]->ID();
+       BestPlaneShw[i] = shwlist[i]->best_plane();
+       LengthShw[i] = shwlist[i]->Length();
+
+       for (size_t j = 0; j<3; ++j)
+	 {
+	   CosStartShw[j][i] = shwlist[i]->Direction()[j];
+	   // CosStartSigmaShw[j][i] = shwlist[i]->DirectionErr()[j];
+	   CosStartXYZShw[j][i] = shwlist[i]->ShowerStart()[j];
+	   //CosStartXYZSigmaShw[j][i] =  shwlist[i]->ShowerStartErr()[j];
+	 }
+
+       for (int j = 0; j<2; ++j)/// looping over the 2 planes
+	 {
+	   TotalEShw[j][i] = shwlist[i]->Energy()[j];
+	   //TotalESigmaShw[j][i] = shwlist[i]->EnergyErr()[j];
+	   dEdxPerPlaneShw[j][i] = shwlist[i]->dEdx()[j];
+	   TotalMIPEShw[j][i] = shwlist[i]->MIPEnergy()[j];
+	 } 
+     }    // end loop over showers
+
+
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
    //							FILLING THE 3-D TRACK INFORMATION
@@ -1000,6 +1062,21 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
       
    
+  fTree->Branch("nshowers",&nshowers,"nshowers/I");
+  fTree->Branch("shwID",shwID,"shwI[nshowers]/I");
+  fTree->Branch("BestPlaneShw",BestPlaneShw,"BestPlaneShw[nshowers]/I");
+  fTree->Branch("LengthShw",LengthShw,"LengthShw[nshowers]/D");
+  fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][nshowers]/D");
+  // fTree->Branch("CosStartSigmaShw",CosStartSigmaShw,"CosStartSigmaShw[3][nshowers]/D");
+  fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][nshowers]/D");
+  //fTree->Branch("CosStartXYZSigmaShw",CosStartXYZSigmaShw,"CosStartXYZSigmaShw[3][nshowers]/D");
+  fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][nshowers]/D");
+  //fTree->Branch("TotalESigmaShw",TotalESigmaShw,"TotalESigmaShw[2][nshowers]/D");
+  fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][nshowers]/D");
+  //fTree->Branch("dEdxSigmaPerPlaneShw",dEdxSigmaPerPlaneShw,"dEdxSigmaPerPlaneShw[2][nshowers]/D");
+  fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][nshowers]/D");
+  //fTree->Branch("TotalMIPESigmaShw",TotalMIPESigmaShw,"TotalMIPESigmaShw[2][nshowers]/D");
+
 }
 
 void lariat::AnaTreeT1034::ResetVars()
@@ -1132,7 +1209,34 @@ void lariat::AnaTreeT1034::ResetVars()
     Mother[i] = -99999;
     TrackId[i] = -99999;
     process_primary[i] = -99999;}
-  
+
+
+  nshowers = -99999;
+
+  for (int i = 0; i<kMaxShower; ++i) 
+    {
+      shwID[i] = -99999;
+      BestPlaneShw[i] = -99999;
+      LengthShw[i] = -99999;
+      for (int j = 0; j<3; ++j) 
+	{
+	  CosStartShw[j][i] = -99999;
+	  //CosStartSigmaShw[j][i] = -99999;
+	  CosStartXYZShw[j][i] = -99999;
+	  // 	 CosStartXYZSigmaShw[j][i] = -99999;
+	  // CosStartXYZSigmaShw[j][i] = -99999;
+       }
+      for (int j = 0; j<2; ++j) 
+	{
+	  TotalEShw[j][i] = -99999;
+	  //TotalESigmaShw[j][i] = -99999;
+	  //TotalESigmaShw[j][i] = -99999;
+	  dEdxPerPlaneShw[j][i] = -99999;
+	  //dEdxSigmaPerPlaneShw[j][i] = -99999;
+	  TotalMIPEShw[j][i] = -99999;
+	  //TotalMIPESigmaShw[j][i] = -99999;
+	}
+    }
   
 }
 

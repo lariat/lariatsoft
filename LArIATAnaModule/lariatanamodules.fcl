@@ -12,6 +12,7 @@ lariat_anatree:
     WCTrackLabel:             "wctrack"
     TOFModuleLabel:	      "tof"
     G4ModuleLabel:            "largeant"
+    ShowerModuleLabel:        "showerreco"
 }
 
 END_PROLOG
