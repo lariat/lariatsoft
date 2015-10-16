@@ -429,14 +429,14 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
       	
           boardId = stoi(strboardId); 
           chanOff = stoi(strchannelId);
-  	  for(uint32_t bc = chanOff; bc < 2; ++bc) boardChans.insert(bc);
+  	  for(uint32_t bc = chanOff; bc < chanOff+2; ++bc) boardChans.insert(bc);
   	  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOFUS");
   
           mf::LogVerbatim("DatabaseExample")
 	    << "Column: "<< hardwareIter->first << " Value: "<<hardwareIter->second << " BoardId: "<< boardId <<" ChannelId: "<< chanOff;
     	  boardChans.clear();
   	  chanOff = chanOff+2;
-  	  for(uint32_t bc = chanOff; bc < 4; ++bc) boardChans.insert(bc);
+  	  for(uint32_t bc = chanOff; bc < chanOff+2; ++bc) boardChans.insert(bc);
   	  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOFDS");
           
           mf::LogVerbatim("DatabaseExample")
@@ -490,12 +490,12 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
      	  mf::LogVerbatim("DatabaseExample")
              << "Column: "<< hardwareIter->first << " Value: "<<hardwareIter->second << " BoardId: "<< boardId <<" ChannelId: "<< chanOff;
   	  // Call this for each AeroGel counter
-  	  for(uint32_t bc = chanOff; bc < 6; ++bc) boardChans.insert(bc);
+  	  for(uint32_t bc = chanOff; bc < chanOff+2; ++bc) boardChans.insert(bc);
   	  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelUS");
 
   	  boardChans.clear();
   	  chanOff =chanOff+2;
-  	  for(uint32_t bc = chanOff; bc < 8; ++bc) boardChans.insert(bc);
+  	  for(uint32_t bc = chanOff; bc < chanOff+2; ++bc) boardChans.insert(bc);
   	  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelDS");
        	  mf::LogVerbatim("DatabaseExample")
        	     << " BoardId: "<< boardId <<" ChannelId: "<< chanOff;
