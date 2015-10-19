@@ -96,7 +96,7 @@ private:
   // Declare member data here.
 
     //Algorithm object for track building
-    WCTrackBuilderAlg fWCTrackBuilderAlg;
+    WCTrackBuilderAlg_new fWCTrackBuilderAlg;
     std::string       fSlicerSourceLabel;
     WCHitFinderAlg    fWCHitFinderAlg;
 
@@ -123,8 +123,8 @@ private:
 
 
 WCTrackBuilder::WCTrackBuilder(fhicl::ParameterSet const & p)
-// :
-// Initialize member data here.
+ : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg_new")) // these should be initialized
+ , fWCHitFinderAlg(p.get< fhicl::ParameterSet >("WCHitFinderAlg"))            // here instead of reconfigure()
 {
   // Call appropriate produces<>() functions here.
       this->reconfigure(p);
@@ -189,15 +189,15 @@ void WCTrackBuilder::produce(art::Event & e)
     std::vector<WCHitList> hitListAxis;
     for( int iAx = 0; iAx < 2; ++iAx ){ hitListAxis.push_back(hitList); }
     for( int iWC = 0; iWC < fNumber_wire_chambers; ++iWC ){ good_hits.push_back(hitListAxis); }
-    int good_trigger_counter = 0;
+    //int good_trigger_counter = 0;
     int track_count_pre = track_count;
     fWCHitFinderAlg.createHits(tdc_number_vect,
     			       hit_channel_vect,
 			       hit_time_bin_vect,
 			       good_hits,
 			       fVerbose);
-			       
-			       
+
+
   fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
 				         y_kink_list,
 				         x_dist_list,
@@ -211,8 +211,11 @@ void WCTrackBuilder::produce(art::Event & e)
 					 good_hits,
 					 fVerbose,
 					 track_count);			       
-			       
-fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());
+
+//fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
+//fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCHitFinderAlg_new::getTrackType()
+                                                        // but WCHitFinderAlg::getTrackType() exists!
+
      //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
     for( int iNewTrack = 0; iNewTrack < track_count-track_count_pre; ++iNewTrack ){
@@ -437,8 +440,6 @@ void WCTrackBuilder::reconfigure(fhicl::ParameterSet const & p)
     fNumber_wires_per_tdc = p.get<int>("NWperTDC"); //64;
     fVerbose = p.get<bool>("Verbose", false);
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
-    fWCTrackBuilderAlg = p.get<WCTrackBuilderAlg>("WCTrackBuilderAlg");
-    fWCHitFinderAlg    = p.get<WCHitFinderAlg>("WCHitFinderAlg");
 }
 // 
 // void WCTrackBuilder::respondToCloseInputFile(art::FileBlock const & fb)
