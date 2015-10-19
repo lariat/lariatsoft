@@ -1,15 +1,13 @@
-////////////////////////////////////////////////////////////////
-//                                                            //
-// This is a class definition for the wire chamber track      //
-// builder algorithm, used to reconstruct momentum and other  //
-// geometrical properties of test-beam particles passing      //
-// through LArIAT's four wire chambers                        //
-//                                                            //
-// Authors: Ryan Linehan, rlinehan@stanford.edu               //                           
-//          Johnny Ho, johnnyho@uchicago.edu                  //
-//          Jason St. John, stjohn@fnal.gov                   //
-//                                                            //
-////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////
+// This Alg takes in the good hits from WCHitFinderAlg and creates    //
+// a track with various kinematic and geometric values.  In effect,   //
+// this alg is the track building part of WCTrackBuilderAlg_new.cxx       //
+// in functions run after "FinalizeGoodHits".                         //
+// Other algs can be created in lieu of this one if a better track    //
+// is developed.  This is merely the version we used when hit finding //
+// and track builder were run together in WCTrackBuilderAlg_new.cxx       //
+// Author: Greg Pulliam gkpullia@syr.edu                              //
+//////////////////////////////////////////////////////////////////////// 
 
 //Framework includes
 #include "art/Framework/Principal/Event.h"
@@ -21,7 +19,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // LArIAT includes
-#include "LArIATRecoAlg/WCTrackBuilderAlg.h"
+#include "LArIATRecoAlg/WCTrackBuilderAlg_new.h"
 
 
 #include <iostream>
@@ -32,7 +30,7 @@
 
 //--------------------------------------------------------------
 //Constructor  TRACK
-WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
+WCTrackBuilderAlg_new::WCTrackBuilderAlg_new( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
 
@@ -134,24 +132,17 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
 
 //--------------------------------------------------------------  
 //Destructor //BOTH
-WCTrackBuilderAlg::~WCTrackBuilderAlg()
+WCTrackBuilderAlg_new::~WCTrackBuilderAlg_new()
 {
 
 }
 
 //--------------------------------------------------------------
-void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )  //BOTH
+void WCTrackBuilderAlg_new::reconfigure( fhicl::ParameterSet const& pset )  //BOTH
 {
-  fNumber_tdcs          = pset.get<int   >("NumberTDCs",         16         );
-  fNumber_wire_chambers = pset.get<int   >("NumberWireChambers", 4          );
+
   fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
 
-  fTime_bin_scaling     = pset.get<double>("TimeBinScaling",      1.0/1280.0);
-  fWire_scaling         = pset.get<double>("WireScaling",         1.0/64.0  ); 
-  fGoodHitAveragingEps 	= pset.get<double>("GotHitAveragingEps",  2.0       );
-
-  fDBSCANEpsilon        = pset.get<float >("DBSCANEpsilon",       1.0/16.0  );
-  fDBSCANMinHits        = pset.get<int   >("DBSCANMinHits",       1         );
 
   fCentralYKink         = pset.get<float >("CentralYKink",        -0.01    ); //These four are parameters from histos I produced from picky-good tracks
   fSigmaYKink           = pset.get<float >("SigmaYKink",          0.03      );
@@ -168,20 +159,12 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )  //BOTH
   fmm_to_m    		= pset.get<float >("MMtoM",        	  0.001     );	
   fGeV_to_MeV 		= pset.get<float >("GeVToMeV",    	  1000.0    );   
 
-  fTrack_Type = 9999;
   
   return;
 }
-
-//--------------------------------------------------------------
-int WCTrackBuilderAlg::getTrackType() //HIT but need to pull parts from shouldSkiptrigger
-{
-  return fTrack_Type;
-}
-
 //--------------------------------------------------------------
 //This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginSubRun() method of your analysis module
-void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun ) //TRACK
+void WCTrackBuilderAlg_new::loadXMLDatabaseTableForBField( int run, int subrun ) //TRACK
 {
   fRun = run;
   fSubRun = subrun;
@@ -191,11 +174,7 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun ) //T
 
 //--------------------------------------------------------------
 //Main function called for each trigger
-void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
-					   std::vector<float> hit_channel_vect,
-					   std::vector<float> hit_time_bin_vect,
-					   std::vector<std::vector<double> > & reco_pz_array,
-					   std::vector<double> & reco_pz_list,               
+void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list,               
 					   std::vector<double> & y_kink_list,
 					   std::vector<double> & x_dist_list,
 					   std::vector<double> & y_dist_list,
@@ -207,81 +186,18 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 					   std::vector<WCHitList> & trigger_final_tracks,
 					   std::vector<std::vector<WCHitList> > & good_hits,
 					   bool verbose,
-					   int & good_trigger_counter,
-					   int trigger_number,
 					   int & track_count)
-{
-  fVerbose = verbose;
-  
-  //Initialize hit/cluster time/channel buffers that are only defined for one trigger value
-  std::vector<std::vector<float> > hit_time_buffer;
-  std::vector<std::vector<float> > hit_wire_buffer;
-  std::vector<std::vector<float> > cluster_time_buffer;
-  std::vector<std::vector<float> > cluster_wire_buffer;
-
-  //Create a set of buffers with 1st-Dim length of 8 (for 8 wire chamber axes: 1X, 1Y, 2X, 2Y, etc.)
-  initializeBuffers( hit_time_buffer, hit_wire_buffer, cluster_time_buffer, cluster_wire_buffer );
-  
-  //Fill the buffers with the hit times and wires for this trigger value
-  fillTimeAndWireBuffers( tdc_number_vect, hit_time_buffer, hit_wire_buffer, hit_time_bin_vect, hit_channel_vect );
-  
-  //Create a vector of clusters with DBSCAN, where each entry into cluster_time_buffer/cluster_wire_buffer is a different cluster
-  createClusters( trigger_number, hit_time_buffer, hit_wire_buffer, cluster_time_buffer, cluster_wire_buffer );
-  
-  //Finding the hits to be used in momentum reconstruction
-  //Note here that only one hit may be accepted from a cluster. The idea is that a particle passing through the MWPC causes noise
-  //that is spatially and temporally clustered around the initial hit of the particle. 
-  //In addition, if sufficiently close together, two or more good hits can be averaged  
-  findGoodHits(cluster_time_buffer,cluster_wire_buffer,good_hits);
-  //BEFORE GOES TO HITS, AFTER GOES TO TRACKS
-    //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-      //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-        //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-
-  //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-  //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-    //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-      //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-        //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-	  //BEFORE GOES TO HITS, AFTER GOES TO TRACK
-
-  
-  
-  
-  
-  
-  
-  
-  //Determine if one should skip this trigger based on whether there is at least one good hit in each wire chamber and axis
-  //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer
-  //If there is, then move on with the function 
-
-  /*  
-  //Sanity check
-  std::cout << "Good hit check: ";
-  for( int iWC = 0; iWC < 4 ; ++iWC ){
-    for (int iAx = 0; iAx < 2 ; ++iAx ){
-      if( good_hits.at(iWC).at(iAx).hits.size() > 0 ) std::cout << good_hits.at(iWC).at(iAx).hits.size();
-      else std::cout << "0";
-    }
-  }
-  std::cout << std::endl;
-  */  
-
-  
+{					   
+  fVerbose = verbose;					 	
   //Determine if one should skip this trigger based on whether there is exactly one good hit in each wire chamber and axis
   //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer.
   //If there is, then move on with the function.
   //This can be modified to permit more than one good hit in each wire chamber axis - see comments in function
-  bool skip = shouldSkipTrigger(good_hits,reco_pz_array);
-  if( fVerbose ){
-    if( skip == false ){ 
-      std::cout << "Trigger: " << trigger_number << " is a good trigger." << std::endl;
-      good_trigger_counter++;
-    }
-  }
+  bool skip = shouldSkipTrigger(good_hits);
+
   if( skip == true ) return;
   
+    
   
   //At this point, we should have a list of good hits with at least one good hit in X,Y for each WC.
   //Now find all possible combinations of these hits that could form a track, sans consideration
@@ -289,7 +205,6 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   //step, this won't matter, but if you want to set the condition to "at least one hit in each WC axis,
   //this will give many combinations.
   bool lonely_hit_bool = buildTracksFromHits(good_hits,
-					     reco_pz_array,
 					     reco_pz_list,
 					     y_kink_list,
 					     x_dist_list,
@@ -301,7 +216,6 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
 					     incoming_theta_list,
 					     incoming_phi_list,
 					     trigger_final_tracks);
-  
   //Need to use the cut information to whittle down track candidates
   if( !fPickyTracks ){
     disambiguateTracks( reco_pz_list,
@@ -319,10 +233,9 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   }
 }
 
-
 //=====================================================================
 //Find the ykink, x/y/z_dist variables, and reco_pz TRACK
-void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
+void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
 					     float & reco_pz,
 					     float & y_kink,
 					     float (&dist_array)[3])
@@ -376,7 +289,7 @@ void WCTrackBuilderAlg::getTrackMom_Kink_End(WCHitList track,
 
 //=====================================================================
 //More geometry //TRACK
-void WCTrackBuilderAlg::midPlaneExtrapolation(std::vector<float> x_wires,
+void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 					      std::vector<float> y_wires,
 					      float (&pos_us)[3],
 					      float (&pos_ds)[3])
@@ -437,8 +350,7 @@ void WCTrackBuilderAlg::midPlaneExtrapolation(std::vector<float> x_wires,
 //Taking the set of good hits and finding all combinations of possible tracks. These may not be physically
 //reasonable, but could just be anything with a hit on each wire plane axis.
 //TRACK!!!!!!!!!!!!!!!!!!!!!
-bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
-					    std::vector<std::vector<double> > & reco_pz_array,
+bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 					    std::vector<double> & reco_pz_list,
 					    std::vector<double> & y_kink_list,
 					    std::vector<double> & x_dist_list,
@@ -565,8 +477,6 @@ bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
   }
   std::cout<<"Track Counter: "<<track_counter<<std::endl;
 
-  //Fill the array with the found tracks' reconstructed momenta //AGAIN, OBSOLETE, BUT IT DOESN'T HURT ANYTHING TECHNICALLY
-  reco_pz_array.push_back(reco_pz_buffer);
   
   //Clear the hit lists for each WC/axis
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
@@ -581,27 +491,8 @@ bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
 
 //=====================================================================
 //See if trigger has a good enough hit set to continue //TRACK!!!
-bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
-					    std::vector<std::vector<double> > & reco_pz_array)
+bool WCTrackBuilderAlg_new::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits)
 {
-  //Check to see if there is only a single hit on one of the WCAxes
-  bool lonely_hit_bool = false;   //Single hit on at most 7 WCAxes, at least 1
-  bool unique_hit_bool = true;   //Single hit on all WCAxes
-  bool missing_hit_bool = false;  //Missing hit on 1 or more WCAxes
-  for( size_t iWC = 0; iWC < 4 ; ++iWC ){
-    for( size_t iAx = 0; iAx < 2 ; ++iAx ){
-      if( good_hits.at(iWC).at(iAx).hits.size() == 0 ) missing_hit_bool = true;
-      if( good_hits.at(iWC).at(iAx).hits.size() == 1 ) lonely_hit_bool = true;
-      if( good_hits.at(iWC).at(iAx).hits.size() > 1 ) unique_hit_bool = false;
-    }
-  }
-  if( missing_hit_bool ) fTrack_Type = 0;
-  else if( lonely_hit_bool && unique_hit_bool ) fTrack_Type = 1;
-  else if( lonely_hit_bool && !unique_hit_bool ) fTrack_Type = 2;
-  else if( !lonely_hit_bool && !unique_hit_bool ) fTrack_Type = 3;
-  else{ std::cout << "Unknown track condition. Check me." << std::endl;
-  }
-
   //Now determine if we want to skip
   bool skip = false;
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
@@ -631,9 +522,6 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
 	good_hits.at(iWC).at(iAx).hits.clear();
       }
     }
-    //Push back a placeholder vect into the reco_pz_array
-    std::vector<double> emptyRecoPVect;
-    reco_pz_array.push_back(emptyRecoPVect);
     return true;
   }
   else return false;
@@ -641,388 +529,8 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
 }
 
 //=====================================================================
-//NOTE: BE CAREFUL ABOUT REFERENCING STRUCTS - MIGHT NOT REFERENCE STUFF INSIDE? CHECK
-//HITS!!!
-void WCTrackBuilderAlg::findGoodHits( std::vector<std::vector<float> > cluster_time_buffer,
-				      std::vector<std::vector<float> > cluster_wire_buffer,
-				      std::vector<std::vector<WCHitList> > & good_hits)
-{
-  //Loop through wire chamber axes (remember, 0-7)
-  for( int iWCAx = 0; iWCAx < fNumber_wire_chambers*2 ; ++iWCAx ){
-    
-    //Sanity check
-    if(fVerbose){
-      if( cluster_time_buffer.at(iWCAx).size() != cluster_wire_buffer.at(iWCAx).size() ){
-	std::cout << "Cluster wire/time buffer size mismatch! Error!" << std::endl;
-	return;
-      }
-    }    
-    size_t number_clusters = cluster_time_buffer.at(iWCAx).size();   
-    
-
-    //  std::cout << "number clusters WCAx: " << iWCAx << " is " << number_clusters << std::endl;
- 
-    //Loop through clusters
-    for( size_t iClust = 0; iClust < number_clusters; ++iClust ){
-      float time = float(cluster_time_buffer.at(iWCAx).at(iClust));
-      float wire = float(cluster_wire_buffer.at(iWCAx).at(iClust));
-      //Convert back to wire chamber and axis for good hits. Lack of foresight on my part (as everywhere here)
-      int wire_chamber = int(iWCAx/2);
-      int axis = iWCAx % 2;
-      finalizeGoodHits(wire,time,good_hits.at(wire_chamber).at(axis));
-    }
-  }
-  
-  if( fVerbose ){
-    std::cout << "Number of good hits in each wire plane: "; 
-    for( int iWC = 0; iWC < 4 ; ++iWC ){
-      for (int iAx = 0; iAx < 2 ; ++iAx ){
-	std::cout << good_hits.at(iWC).at(iAx).hits.size() << ", ";
-      }
-    }
-    std::cout << std::endl;
-  }
-}
-
-//=====================================================================
-//Finalize the hits and place them into the final good hit list
-//HITS!!!!!
-void WCTrackBuilderAlg::finalizeGoodHits(float wire,
-					 float time,
-					 WCHitList & finalGoodHitList)
-{
-  //Loop through the existing good hit list
-  for( size_t iHit = 0; iHit < finalGoodHitList.hits.size(); ++iHit ){
-    WCHit hit = finalGoodHitList.hits.at(iHit);
-    //If there are good hits close enough to each other, average them and get rid of the old hit
-    if( fabs(hit.wire-wire) < fGoodHitAveragingEps && fabs(hit.time-time) < fGoodHitAveragingEps ){
-      float average_wire = (hit.wire+wire)/2;
-      float average_time = (hit.time+time)/2;
-      finalGoodHitList.hits.erase(finalGoodHitList.hits.begin()+iHit);
-      wire = average_wire;
-      time = average_time;
-    }
-  }
-  //Now that we have averaged, push back the final good hit list with the (possibly) averaged hit
-  WCHit finalGoodHit;
-  finalGoodHit.wire = wire;
-  finalGoodHit.time = time;
-  finalGoodHitList.hits.push_back(finalGoodHit);
-}
-
-
-
-
-//=====================================================================
-//Take in tdc and channel and convert to wire number and axis
-//UPDATED
-//HITS!!!
-void WCTrackBuilderAlg::convertToWireNumber(int channel,
-			 int TDC_index,
-			 float & wire)
-{
-  wire = ((TDC_index+1) % 2) *64 - channel;                  //Want wire number to be zero in middle
-}
-
-//=====================================================================
-//Use DBSCAN to create clusters of hits that are spatially and temporally close
-//UPDATED
-//HITS!!!!
-void WCTrackBuilderAlg::createClusters( int trigger_number,
-					std::vector<std::vector<float> > hit_time_buffer,
-					std::vector<std::vector<float> > hit_wire_buffer,
-					std::vector<std::vector<float> > & cluster_time_buffer,
-					std::vector<std::vector<float> > & cluster_wire_buffer)
-{
-
-  //Parameter for clusters being too large
-  size_t max_hits = 10;
-
-  //Loop through WC Axes
-  for( int iWCAx = 0; iWCAx < fNumber_wire_chambers*2; ++iWCAx ){
-
-    //Create hit and scaled hit vectors for use in DBSCAN's clustering
-    WCHitList hits;
-    WCHitList scaled_hits;
-    createHitAndScaledHitVectors( iWCAx, hit_time_buffer, hit_wire_buffer, scaled_hits ); //(fill the above vectors with scaled/hits)
-   
-    std::vector<WCHitList> cluster_list;
-    if( scaled_hits.hits.size() != 0 )
-      run_DBSCAN( trigger_number, iWCAx, scaled_hits,cluster_list);
-    
-    //Loop through clusters and see if they are too big (pancake-like cross-talk)
-    for( size_t iClust = 0; iClust < cluster_list.size(); ++iClust ){
-      if( cluster_list.at(iClust).hits.size() > max_hits ){ continue; }
-      float wire = 9999;
-      float time = 9998;
-      findLowestTimeHitInCluster( cluster_list.at(iClust), wire, time );
-      cluster_time_buffer.at(iWCAx).push_back(time/fTime_bin_scaling);
-      cluster_wire_buffer.at(iWCAx).push_back(wire/fWire_scaling);
-    }
-  }
-}
-
-//=====================================================================
-//Finding the one hit with the first time to represent the true
-//passing point of the particle
-//HITS!!!!
-void WCTrackBuilderAlg::findLowestTimeHitInCluster( WCHitList cluster,
-				 float & wire,
-				 float & time )
-{
-  float lowest_time = 9997;
-  float lowest_time_index = 9996;
-  for( size_t iHit = 0; iHit < cluster.hits.size() ; ++iHit ){
-    if( cluster.hits.at(iHit).time < lowest_time ){
-      lowest_time = cluster.hits.at(iHit).time;
-      lowest_time_index = iHit;
-    }
-  }
-  wire = cluster.hits.at(lowest_time_index).wire;
-  time = cluster.hits.at(lowest_time_index).time;
-}
-
-
-//=====================================================================
-//function that runs dbscan algorithm on the hit wire/time set
-//Input is ^
-//Output is vector of same length as # of hits with labels
-//HITS!!!!!
-void WCTrackBuilderAlg::run_DBSCAN( int trigger_number,
-				    int WCAx_number,
-				    WCHitList scaled_hits, 
-				    std::vector<WCHitList> & cluster_list )
-{
-  //Parameters for algorithim
-  float epsilon = fDBSCANEpsilon;
-  size_t min_hits = fDBSCANMinHits;
-
-  //Create matrix of neighborhoods of hits, given epsilon
-  std::vector<WCHitList> neighborhood_matrix = createNeighborhoodMatrix( scaled_hits, epsilon );
-  
-  //Cluster counter
-  int cluster_counter = 0;
-  for( size_t iSH = 0; iSH < scaled_hits.hits.size(); ++iSH ){
-    //If hit has been visited, ignore it
-    if( scaled_hits.hits.at(iSH).isVisited == true ){ continue; }
-    scaled_hits.hits.at(iSH).isVisited = true;
-    WCHitList neighbor_hits = regionQuery( neighborhood_matrix, scaled_hits.hits.at(iSH), scaled_hits, epsilon );
-    
-    //If there aren't enough nearest neighbors, count this hit as noise for now
-    if( neighbor_hits.hits.size() < min_hits ){ scaled_hits.hits.at(iSH).cluster_index = -1; }
-    
-    //Otherwise, create a new cluster from it
-    else{ 
-      cluster_counter++;
-      scaled_hits.hits.at(iSH).cluster_index = cluster_counter-1;
-      expandCluster( neighborhood_matrix, scaled_hits.hits.at(iSH), scaled_hits, neighbor_hits, epsilon, min_hits, cluster_counter-1 );
-      
-    }
-  }
-  
- 
-   //Extract cluster info from scaled_hits and put into clusters
-   for( int iClust = 0; iClust < cluster_counter; ++iClust ){
-     WCHitList cluster;
-     cluster_list.push_back(cluster);
-   }
-   for( size_t iSH = 0; iSH < scaled_hits.hits.size(); ++iSH ){
-     if( scaled_hits.hits.at(iSH).cluster_index == -1 ){ 
-       continue;
-     }   
-     cluster_list.at(scaled_hits.hits.at(iSH).cluster_index).hits.push_back(scaled_hits.hits.at(iSH));
-   }
-}
-
-//=====================================================================
-//Creating a matrix of neighbors for use in efficient DBSCAN operation
-//HITS!!!!
-std::vector<WCHitList> WCTrackBuilderAlg::createNeighborhoodMatrix( WCHitList scaled_hits,
-						 float epsilon )
-{
-  //Final vector
-  std::vector<WCHitList> neighborhoods_vector;
-
-  //Loop through all hits
-  for( size_t iHit = 0; iHit < scaled_hits.hits.size() ; ++iHit ){
-    //Create a hit list representing all hits (including itself) that are within epsilon of that hit
-    WCHitList neighborhood_hits;
-    for( size_t iSubHit = 0; iSubHit < scaled_hits.hits.size(); ++iSubHit ){
-      float distance = pow(pow(scaled_hits.hits.at(iHit).wire-scaled_hits.hits.at(iSubHit).wire,2) + pow(scaled_hits.hits.at(iHit).time-scaled_hits.hits.at(iSubHit).time,2),0.5);
-      if( distance < epsilon ){ neighborhood_hits.hits.push_back(scaled_hits.hits.at(iSubHit)); }
-    }
-    neighborhoods_vector.push_back(neighborhood_hits);
-  }
-  return neighborhoods_vector;
-}
-
-//=====================================================================
-//DBSCAN function - once a cluster is seeded, reach out from it and find
-//other hits that are also in this cluster
-//HITS!!!!!
-void WCTrackBuilderAlg::expandCluster( std::vector<WCHitList> neighborhood_matrix,
-		    WCHit the_hit,
-		    WCHitList & scaled_hits,
-		    WCHitList neighbor_hits,
-		    float epsilon,
-		    size_t min_hits,
-		    int cluster_index)
-{
-
-   //Loop through neighbors
-  for( size_t iNB = 0; iNB < neighbor_hits.hits.size() ; ++iNB ){
-    if( neighbor_hits.hits.at(iNB).isVisited == false ){
-      //Need to do each setting for the neighbor hit and the scaled hits cluster (scaled hits retains all info)
-      neighbor_hits.hits.at(iNB).isVisited = true;
-      scaled_hits.hits.at(neighbor_hits.hits.at(iNB).hit_index).isVisited = true;
-      WCHitList next_neighbors = regionQuery( neighborhood_matrix, neighbor_hits.hits.at(iNB), scaled_hits, epsilon );
-      //If there are enough next-neighbors for this neighbor, append the neighbor hits list
-      if( next_neighbors.hits.size() >= min_hits ){
-	for( size_t iNN = 0; iNN < next_neighbors.hits.size() ; ++iNN ){
-	  //If the hit already exists in the neighbors vector, then continue
-	  bool isAlreadyFound = false;
-	  for( size_t iHit2 = 0; iHit2 < neighbor_hits.hits.size() ; ++iHit2 ){
-	    if( next_neighbors.hits.at(iNN).hit_index == neighbor_hits.hits.at(iHit2).hit_index ){
-	      isAlreadyFound = true;
-	    }
-	  }
-	  if( isAlreadyFound == false ){
-	    // if( scaled_hits.hits.at(next_neighbors.hits.at(iNN).hit_index).isVisited == false ){
-	    neighbor_hits.hits.push_back(next_neighbors.hits.at(iNN));
-	  }
-	}
-      }
-    }
-    
-    //    std::cout << "Scaled hits size: " << scaled_hits.hits.size() << ", searched hit index: " << neighbor_hits.hits.at(iNB).hit_index << std::endl;
-    
-    //If this neighbor hit is not yet part of a cluster, add it
-    if( neighbor_hits.hits.at(iNB).cluster_index == -1 ){ 
-      neighbor_hits.hits.at(iNB).cluster_index = cluster_index;
-      scaled_hits.hits.at(neighbor_hits.hits.at(iNB).hit_index).cluster_index = cluster_index;
-    }
-    
-  }
-}
-
-
- 
-//=====================================================================
-//DBSCAN function - finds hits within epsilon of the central hit
-//HITS!!!!!!
-WCHitList WCTrackBuilderAlg::regionQuery( std::vector<WCHitList> neighborhood_matrix,
-					  WCHit the_hit,
-					  WCHitList & scaled_hits,
-					  float epsilon )
-{
-  //Create a final hit list to return
-  WCHitList neighbor_hit_list;
-
-  for( size_t iNH = 0; iNH < neighborhood_matrix.at(the_hit.hit_index).hits.size(); ++iNH ){
-    //    if( scaled_hits.hits.at(neighborhood_matrix.at(the_hit.hit_index).hits.at(iNH).hit_index).isVisited == true ){ continue; }
-    neighbor_hit_list.hits.push_back(scaled_hits.hits.at(neighborhood_matrix.at(the_hit.hit_index).hits.at(iNH).hit_index));
-  }
-  return neighbor_hit_list;
-}
-
-
-//=====================================================================
-//Create hit vectors for convenient use in DBSCAN's clustering
-//HITS!!!!!
-void WCTrackBuilderAlg::createHitAndScaledHitVectors( int WCAx_number,
-						      const std::vector<std::vector<float> > hit_time_buffer,
-						      const std::vector<std::vector<float> > hit_wire_buffer,
-						      WCHitList & scaled_hit_list)
-{
-  //Sanity Check
-  if( fVerbose ){
-    if( hit_time_buffer.size() != hit_wire_buffer.size() ){ std::cout << "Error: vector size mismatch." << std::endl; }
-    if( hit_time_buffer.at(WCAx_number).size() != hit_wire_buffer.at(WCAx_number).size() ){ std::cout << "Error: sub-vector size mismatch." << std::endl; }
-  }
-
-  //For each element in the hit time buffer (for each hit)
-  for( size_t iHit = 0; iHit < hit_time_buffer.at(WCAx_number).size(); ++iHit ){
-    //Create a scaled hit and fill it with time, wire number, and whether it has been visited
-    //Also with a hit index and cluster index (-1 means noise cluster)
-    WCHit scaled_hit;
-    scaled_hit.time = hit_time_buffer.at(WCAx_number).at(iHit)*fTime_bin_scaling;
-    scaled_hit.wire = hit_wire_buffer.at(WCAx_number).at(iHit)*fWire_scaling;
-    scaled_hit.isVisited = false;
-    scaled_hit.hit_index = iHit;
-    scaled_hit.cluster_index = -1;
-    scaled_hit_list.hits.push_back(scaled_hit);
-  }
-}
-
-//=====================================================================
-//Fill buffers that are indexed by wire chamber # (0-7)
-//Here, 0 is WC1X, 1 is WC1Y, 2 is WC2X, and so on...
-//This standard is used throughout this file
-//UPDATED
-//HITS!!!!
-void WCTrackBuilderAlg::fillTimeAndWireBuffers( const std::vector<int> & tdc_number_vect,
-						std::vector<std::vector<float> > & hit_time_buffer,
-						std::vector<std::vector<float> > & hit_wire_buffer,
-						const std::vector<float> & hit_time_vect,
-						const std::vector<float> & hit_channel_vect)
-{
-  //Sanity check
-  //if( fVerbose ){
-  //  std::cout << "*************** Buffer Filling Info *****************" << std::endl;
-  // }
-
-  //Loop over the wire plane axes
-  for( int iWCAx = 0; iWCAx < fNumber_wire_chambers*2 ; ++iWCAx ){
-    //Loop over the tdc labels (possibly repeated) within this trigger and find those with the WCAxis = iWCAx
-    for( size_t iTDC = 0; iTDC < tdc_number_vect.size(); ++iTDC ){
-
-      int hit_wire_chamber_axis = int((tdc_number_vect.at(iTDC)-1)/2); //-1 is for tdc index
-      //      std::cout << "TEST: tdc: " << tdc_number_vect.at(iTDC)-1 << ", WCAx: " << hit_wire_chamber_axis << ", iWCAx: " << iWCAx << std::endl;
-      if( hit_wire_chamber_axis == iWCAx ){
-	float wire = 0;
-	convertToWireNumber( hit_channel_vect.at(iTDC), tdc_number_vect.at(iTDC)-1, wire );
-	hit_wire_buffer.at(iWCAx).push_back(wire);
-	hit_time_buffer.at(iWCAx).push_back(float(hit_time_vect.at(iTDC)));
-
-	//Sanity Check
-	//	if( fVerbose ){
-	//  std::cout << "(iTDC,Channel): (" << tdc_number_vect.at(iTDC)-1 << "," << hit_channel_vect.at(trigger_number).at(iTDC) << "), (WCAx,Wire): (" << iWCAx << "," << wire << ")" << ", time: " << hit_time_vect.at(trigger_number).at(iTDC) << std::endl;
-	//	}
-      }
-    }
-  }
-}	       
-
-//=====================================================================
-//Set the length of the time and wire buffers to hold 8 arrays (the number of the wire chamber axes)
-//UPDATED
-//HITS!!!!!
-void WCTrackBuilderAlg::initializeBuffers( std::vector<std::vector<float> > & hit_time_buffer,
-					   std::vector<std::vector<float> > & hit_wire_buffer,
-					   std::vector<std::vector<float> > & cluster_time_buffer,
-					   std::vector<std::vector<float> > & cluster_wire_buffer ) 
-{
-  std::vector<float> temp_buffer;
-  for( int iWCAx = 0; iWCAx < fNumber_wire_chambers*2 ; ++iWCAx ){
-    hit_time_buffer.push_back(temp_buffer);
-    hit_wire_buffer.push_back(temp_buffer);
-    cluster_time_buffer.push_back(temp_buffer);
-    cluster_wire_buffer.push_back(temp_buffer);
-  }
-  
-  //Sanity check
-  //  if( fVerbose == true ){
-  //  std::cout << "Length of the hit time buffer: " << hit_time_buffer.size() << std::endl;
-  //}
-
-}
-
-
-
-
-//=====================================================================
 //TRACKS!!!
-void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, float &theta, float &phi )
+void WCTrackBuilderAlg_new::findTrackOnTPCInfo(WCHitList track, float &x, float &y, float &theta, float &phi )
 {
   
   //Get position vectors of the points on WC3 and WC4
@@ -1087,7 +595,7 @@ void WCTrackBuilderAlg::findTrackOnTPCInfo(WCHitList track, float &x, float &y, 
 //=====================================================================
 //Transform these into the coordinate system of the TPC
 //TRACKS!!!!!
-void WCTrackBuilderAlg::transformWCHits( float (&WC3_point)[3],
+void WCTrackBuilderAlg_new::transformWCHits( float (&WC3_point)[3],
 		      float (&WC4_point)[3])
 {
   //First transformation: a translation by the location of the TPC
@@ -1102,7 +610,7 @@ void WCTrackBuilderAlg::transformWCHits( float (&WC3_point)[3],
 //Take a look at the track produced by the combinations of hits and determine
 //if it's good enough to be considered a track.
 //TRACKS!!!!
-bool WCTrackBuilderAlg::cutOnGoodTracks( WCHitList track,
+bool WCTrackBuilderAlg_new::cutOnGoodTracks( WCHitList track,
 					 float & y_kink,
 					 float (&dist_array)[3],
 					 size_t track_index)
@@ -1127,7 +635,7 @@ bool WCTrackBuilderAlg::cutOnGoodTracks( WCHitList track,
 //For all tracks passing the hard cuts, narrow down on those with identical hits
 //in any of the WCAxes
 //TRACKS!!!!
-void WCTrackBuilderAlg::disambiguateTracks( std::vector<double> & reco_pz_list,
+void WCTrackBuilderAlg_new::disambiguateTracks( std::vector<double> & reco_pz_list,
 					    std::vector<double> & y_kink_list,
 					    std::vector<double> & x_dist_list,
 					    std::vector<double> & y_dist_list,
@@ -1310,3 +818,4 @@ void WCTrackBuilderAlg::disambiguateTracks( std::vector<double> & reco_pz_list,
   }
     */
 }	
+					     

@@ -7,8 +7,8 @@
 // from cetpkgsupport v1_08_06.
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef WCTRACKBUILDERSLICING_H
-#define WCTRACKBUILDERSLICING_H
+#ifndef WCTRACKBUILDER_H
+#define WCTRACKBUILDER_H
 
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -31,7 +31,8 @@
 
 //LArIAT Things
 #include "RawDataUtilities/TriggerDigitUtility.h"
-#include "LArIATRecoAlg/WCTrackBuilderAlg.h"
+#include "LArIATRecoAlg/WCTrackBuilderAlg_new.h"
+#include "LArIATRecoAlg/WCHitFinderAlg.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
@@ -97,7 +98,7 @@ private:
     //Algorithm object for track building
     WCTrackBuilderAlg fWCTrackBuilderAlg;
     std::string       fSlicerSourceLabel;
-    //WCHitFilterAlg    fWCHitFilterAlg;
+    WCHitFinderAlg    fWCHitFinderAlg;
 
     //Hardware constants
     int fNumber_wire_chambers;
@@ -121,7 +122,7 @@ private:
 };
 
 
-WCTrackBuilder::WCTrackBuilder(fhicl::ParameterSet const & p) :fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg"))
+WCTrackBuilder::WCTrackBuilder(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
 {
@@ -168,7 +169,7 @@ void WCTrackBuilder::produce(art::Event & e)
 			    hit_channel_vect,
 			    hit_time_bin_vect );   
 			    
-    //int track_count=0;			    
+    int track_count=0;			    
     std::vector<double> reco_pz_list;                  //Final reco pz result for full_track_info = true, not indexed by trigger
     std::vector<double> y_kink_list;
     std::vector<double> x_dist_list;
@@ -188,9 +189,118 @@ void WCTrackBuilder::produce(art::Event & e)
     std::vector<WCHitList> hitListAxis;
     for( int iAx = 0; iAx < 2; ++iAx ){ hitListAxis.push_back(hitList); }
     for( int iWC = 0; iWC < fNumber_wire_chambers; ++iWC ){ good_hits.push_back(hitListAxis); }
-    //int good_trigger_counter = 0;
-    //int track_count_pre = track_count;
+    int good_trigger_counter = 0;
+    int track_count_pre = track_count;
+    fWCHitFinderAlg.createHits(tdc_number_vect,
+    			       hit_channel_vect,
+			       hit_time_bin_vect,
+			       good_hits,
+			       fVerbose);
+			       
+			       
+  fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
+				         y_kink_list,
+				         x_dist_list,
+					 y_dist_list,
+					 z_dist_list,
+					 x_face_list,
+					 y_face_list,
+					 theta_list,
+					 phi_list,
+					 final_tracks,
+					 good_hits,
+					 fVerbose,
+					 track_count);			       
+			       
+fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());
+     //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
+    //(This must be done because the track/etc. lists encompass all triggers
+    for( int iNewTrack = 0; iNewTrack < track_count-track_count_pre; ++iNewTrack ){
+      std::vector<int> WC_vect;
+      std::vector<float> hit_wire_vect;
+      std::vector<float> hit_time_vect;
+      
+      WCHitList final_track = final_tracks.at(final_tracks.size()-1-iNewTrack);
+      
+      
+      //Filling as done above, but formats the WC and hit wire vectors in the WCAuxDetDigit style
+      createAuxDetStyleVectorsFromHitLists(final_track,
+					   WC_vect,
+					   hit_wire_vect,
+					   hit_time_vect);
+      
+      //WCTrack object creation and association with trigger created
+      ldp::WCTrack the_track(reco_pz_list.at(reco_pz_list.size()-1-iNewTrack),
+			     y_kink_list.at(y_kink_list.size()-1-iNewTrack),
+			     x_dist_list.at(x_dist_list.size()-1-iNewTrack),
+			     y_dist_list.at(y_dist_list.size()-1-iNewTrack),
+			     z_dist_list.at(z_dist_list.size()-1-iNewTrack),
+			     x_face_list.at(x_face_list.size()-1-iNewTrack),
+			     y_face_list.at(y_face_list.size()-1-iNewTrack),
+			     theta_list.at(theta_list.size()-1-iNewTrack),
+			     phi_list.at(phi_list.size()-1-iNewTrack),
+			     WC_vect,
+			     hit_wire_vect,
+			     hit_time_vect);
+      (*WCTrackCol).push_back( the_track );
+    }
+
+    //Plot the reconstructed momentum, y_kink, and delta X, Y, Z in histos
+    plotTheTrackInformation(reco_pz_list,
+			    y_kink_list,
+			    x_dist_list,
+			    y_dist_list,
+			    z_dist_list,
+			    x_face_list,
+			    y_face_list,
+			    theta_list,
+			    phi_list );
+    
+    
+    //Put objects into event (root file)
+    e.put(std::move(WCTrackCol));   				
 }
+  //==================================================================================================
+  void WCTrackBuilder::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
+								   std::vector<int> & WC_vect,
+								   std::vector<float> & hit_wire_vect,
+								   std::vector<float> & hit_time_vect)
+  {
+    for( size_t iHit = 0; iHit < final_track.hits.size() ; ++iHit ){
+      WC_vect.push_back(int(iHit/2)+1);          //Look at how hits are pushed into the tracks in buildTracksFromHits (alg)
+
+      float the_wire = (final_track.hits.at(iHit).wire*-1)+64+(128*(iHit%2));
+      if (fVerbose) { std::cout << "Old WCAxis/Wire: " << iHit << "/" << final_track.hits.at(iHit).wire << ", New WC/Wire: " << int(iHit/2)+1 << "/" << the_wire << std::endl; }
+      hit_wire_vect.push_back(the_wire);
+      hit_time_vect.push_back(final_track.hits.at(iHit).time);    
+    }
+  }
+
+  //===================================================================================
+  void WCTrackBuilder::plotTheTrackInformation( std::vector<double> reco_pz_list,
+							 std::vector<double> y_kink_list,
+							 std::vector<double> x_dist_list,
+							 std::vector<double> y_dist_list,
+							 std::vector<double> z_dist_list,
+							 std::vector<double> x_face_list,
+							 std::vector<double> y_face_list,
+							 std::vector<double> theta_list,
+							 std::vector<double> phi_list )
+  {
+    //Loop through the tracks and fill
+    for( size_t iTrack = 0; iTrack < reco_pz_list.size(); ++iTrack ){
+      fReco_Pz->Fill(reco_pz_list.at(iTrack));
+      fY_Kink->Fill(y_kink_list.at(iTrack));
+      fX_Dist->Fill(x_dist_list.at(iTrack));
+      fY_Dist->Fill(y_dist_list.at(iTrack));
+      fZ_Dist->Fill(z_dist_list.at(iTrack));
+      fX_Face_Dist->Fill(x_face_list.at(iTrack));
+      fY_Face_Dist->Fill(y_face_list.at(iTrack));
+      fTheta_Dist->Fill(theta_list.at(iTrack));
+      fPhi_Dist->Fill(phi_list.at(iTrack));
+    }
+    
+  }
 
 void WCTrackBuilder::beginJob()
 {
@@ -301,6 +411,8 @@ void WCTrackBuilder::beginRun(art::Run & r)
 void WCTrackBuilder::beginSubRun(art::SubRun & sr)
 {
   // Implementation of optional member function here.
+      // Implementation of optional member function here.
+    fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );
 }
 
 //void WCTrackBuilder::endJob()
@@ -325,6 +437,8 @@ void WCTrackBuilder::reconfigure(fhicl::ParameterSet const & p)
     fNumber_wires_per_tdc = p.get<int>("NWperTDC"); //64;
     fVerbose = p.get<bool>("Verbose", false);
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
+    fWCTrackBuilderAlg = p.get<WCTrackBuilderAlg>("WCTrackBuilderAlg");
+    fWCHitFinderAlg    = p.get<WCHitFinderAlg>("WCHitFinderAlg");
 }
 // 
 // void WCTrackBuilder::respondToCloseInputFile(art::FileBlock const & fb)

@@ -5,6 +5,9 @@ lariat_wctrackbuilderalg:
   PickyTracks: false
 }
 
+lariat_wchitfinderalg:
+{
+}
 lariat_triggerfilteralg:
 {
   Verbosity: false
@@ -19,7 +22,8 @@ lariat_aerogel:
 {
 
 
-
 }
-
+lariat_wctrackbuilderalgnew:
+{
+}
 END_PROLOG
