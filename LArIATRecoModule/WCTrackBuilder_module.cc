@@ -213,8 +213,8 @@ void WCTrackBuilder::produce(art::Event & e)
 					 track_count);			       
 
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
-//fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCHitFinderAlg_new::getTrackType()
-                                                        // but WCHitFinderAlg::getTrackType() exists!
+//fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCTrackBuilderAlg_new::getTrackType()
+                                                        // but WCTrackBuilderAlg::getTrackType() exists!
 
      //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
