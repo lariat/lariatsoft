@@ -120,6 +120,7 @@ namespace wct {
   //===============================================================================================
   WCTrackBuilderSlicing::WCTrackBuilderSlicing(fhicl::ParameterSet const & p) :fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg"))
   // :
+ 
   // Initialize member data here.
   {      
     this->reconfigure(p);
@@ -175,7 +176,8 @@ namespace wct {
 
   //===============================================================================================
   void WCTrackBuilderSlicing::produce(art::Event & e)
-  {    
+  { 
+    
     //Creating the WCTrack Collection
     std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
 

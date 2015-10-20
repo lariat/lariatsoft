@@ -36,6 +36,7 @@
 #include "LArIATDataProducts/WCTrack.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
+
 #include <memory>
 #include <utility>
 #include <string>
@@ -135,6 +136,7 @@ WCTrackBuilder::WCTrackBuilder(fhicl::ParameterSet const & p)
 
 void WCTrackBuilder::produce(art::Event & e)
 {
+ 
   // Implementation of required member function here.
     //Creating the WCTrack Collection
     std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
@@ -191,12 +193,13 @@ void WCTrackBuilder::produce(art::Event & e)
     for( int iWC = 0; iWC < fNumber_wire_chambers; ++iWC ){ good_hits.push_back(hitListAxis); }
     //int good_trigger_counter = 0;
     int track_count_pre = track_count;
+    //int Track_Type=0;
     fWCHitFinderAlg.createHits(tdc_number_vect,
     			       hit_channel_vect,
 			       hit_time_bin_vect,
 			       good_hits,
 			       fVerbose);
-
+fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 
   fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
 				         y_kink_list,
@@ -211,10 +214,11 @@ void WCTrackBuilder::produce(art::Event & e)
 					 good_hits,
 					 fVerbose,
 					 track_count);			       
-
-//fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
+//Track_Type=fWCHitFinderAlg.getTrackType(good_hits);
+//fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(std::vector<std::vector<WCHitList> > good_hits));    // WCHitFinderAlg::getTrackType() does not exist
 //fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCTrackBuilderAlg_new::getTrackType()
                                                         // but WCTrackBuilderAlg::getTrackType() exists!
+//fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 
      //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
@@ -438,7 +442,7 @@ void WCTrackBuilder::reconfigure(fhicl::ParameterSet const & p)
   // Implementation of optional member function here.
       fNumber_wire_chambers = p.get<int>("NWC"); //4;  
     fNumber_wires_per_tdc = p.get<int>("NWperTDC"); //64;
-    fVerbose = p.get<bool>("Verbose", false);
+    fVerbose = p.get<bool>("Verbose", true);
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
 }
 // 
