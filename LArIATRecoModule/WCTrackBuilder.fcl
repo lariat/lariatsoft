@@ -37,7 +37,7 @@ physics:
     {
       module_type:         WCTrackBuilder
       SourceLabel:         "daq"
-      WCTrackBuilderAlg_new:   @local::lariat_wctrackbuilderalgnew
+      WCTrackBuilderAlg_base:   @local::lariat_wctrackbuilderalgbase
       WCHitFinderAlg:      @local::lariat_wchitfinderalg  
       TriggerUtility: "FragmentToDigit"
       NWC: 4

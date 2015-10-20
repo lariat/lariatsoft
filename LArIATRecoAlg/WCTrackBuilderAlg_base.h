@@ -1,6 +1,6 @@
 
-#ifndef WCTRACKBUILDERALG_NEW_H
-#define WCTRACKBUILDERALG_NEW_H
+#ifndef WCTRACKBUILDERALG_BASE_H
+#define WCTRACKBUILDERALG_BASE_H
 
 //C++ includes
 #include <vector>
@@ -28,12 +28,12 @@
 
 
 //--------------------------------------------
-class WCTrackBuilderAlg_new{
+class WCTrackBuilderAlg_base{
  public:
   
   //Constructor/destructor
-  WCTrackBuilderAlg_new( fhicl::ParameterSet const& pset );
-  ~WCTrackBuilderAlg_new();
+  WCTrackBuilderAlg_base( fhicl::ParameterSet const& pset );
+  ~WCTrackBuilderAlg_base();
   
   
   void reconfigure( fhicl::ParameterSet const& pset );

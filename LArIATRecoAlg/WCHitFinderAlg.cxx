@@ -51,7 +51,7 @@ void WCHitFinderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fDBSCANMinHits        = pset.get<int   >("DBSCANMinHits",       1         );
 
   fPrintDisambiguation = false;
-
+  
   fTrack_Type = 9999;
   
   return;
@@ -59,23 +59,26 @@ void WCHitFinderAlg::reconfigure( fhicl::ParameterSet const& pset )
 //----------------------------------------------------------------------------------
 int WCHitFinderAlg::getTrackType(std::vector<std::vector<WCHitList> > & good_hits) //HIT but need to pull parts of shouldSkipTrigger
 {
+int fTrack_Type;
   //Check to see if there is only a single hit on one of the WCAxes
   bool lonely_hit_bool = false;   //Single hit on at most 7 WCAxes, at least 1
   bool unique_hit_bool = true;   //Single hit on all WCAxes
   bool missing_hit_bool = false;  //Missing hit on 1 or more WCAxes
-  for( size_t iWC = 0; iWC < 4 ; ++iWC ){
+   for( size_t iWC = 0; iWC < 4 ; ++iWC ){
     for( size_t iAx = 0; iAx < 2 ; ++iAx ){
+    //std::cout<<"IAx= "<<iAx<<" iWC= "<<iWC<<" size= "<<good_hits.at(iWC).at(iAx).hits.size()<<std::endl;
       if( good_hits.at(iWC).at(iAx).hits.size() == 0 ) missing_hit_bool = true;
       if( good_hits.at(iWC).at(iAx).hits.size() == 1 ) lonely_hit_bool = true;
       if( good_hits.at(iWC).at(iAx).hits.size() > 1 ) unique_hit_bool = false;
     }
-  }
+  } 
   if( missing_hit_bool ) fTrack_Type = 0;
   else if( lonely_hit_bool && unique_hit_bool ) fTrack_Type = 1;
   else if( lonely_hit_bool && !unique_hit_bool ) fTrack_Type = 2;
   else if( !lonely_hit_bool && !unique_hit_bool ) fTrack_Type = 3;
   else{ std::cout << "Unknown track condition. Check me." << std::endl;
   }
+  
   return fTrack_Type;
 }
 
@@ -109,6 +112,7 @@ void WCHitFinderAlg::createHits( std::vector<int> tdc_number_vect,
   //that is spatially and temporally clustered around the initial hit of the particle. 
   //In addition, if sufficiently close together, two or more good hits can be averaged  
   findGoodHits(cluster_time_buffer,cluster_wire_buffer,good_hits);
+  getTrackType(good_hits);
 }
 //------------------------------------------------------------------------------------------
 //Set the length of the time and wire buffers to hold 8 arrays (the number of the wire chamber axes)
@@ -125,10 +129,10 @@ void WCHitFinderAlg::initializeBuffers( std::vector<std::vector<float> > & hit_t
     cluster_wire_buffer.push_back(temp_buffer);
   }
   
-  //Sanity check
-  //  if( fVerbose == true ){
-  //  std::cout << "Length of the hit time buffer: " << hit_time_buffer.size() << std::endl;
-  //}
+//Sanity check
+ if( fVerbose == true ){
+ std::cout << "Length of the hit time buffer: " << hit_time_buffer.size() << std::endl;
+}
 
 }
 //=====================================================================
@@ -143,10 +147,10 @@ void WCHitFinderAlg::fillTimeAndWireBuffers( const std::vector<int> & tdc_number
 						const std::vector<float> & hit_time_vect,
 						const std::vector<float> & hit_channel_vect)
 {
-  //Sanity check
-  //if( fVerbose ){
-  //  std::cout << "*************** Buffer Filling Info *****************" << std::endl;
-  // }
+//Sanity check
+if( fVerbose ){
+ std::cout << "*************** Buffer Filling Info *****************" << std::endl;
+}
 
   //Loop over the wire plane axes
   for( int iWCAx = 0; iWCAx < fNumber_wire_chambers*2 ; ++iWCAx ){
@@ -154,7 +158,7 @@ void WCHitFinderAlg::fillTimeAndWireBuffers( const std::vector<int> & tdc_number
     for( size_t iTDC = 0; iTDC < tdc_number_vect.size(); ++iTDC ){
 
       int hit_wire_chamber_axis = int((tdc_number_vect.at(iTDC)-1)/2); //-1 is for tdc index
-      //      std::cout << "TEST: tdc: " << tdc_number_vect.at(iTDC)-1 << ", WCAx: " << hit_wire_chamber_axis << ", iWCAx: " << iWCAx << std::endl;
+            //std::cout << "TEST: tdc: " << tdc_number_vect.at(iTDC)-1 << ", WCAx: " << hit_wire_chamber_axis << ", iWCAx: " << iWCAx << std::endl;
       if( hit_wire_chamber_axis == iWCAx ){
 	float wire = 0;
 	convertToWireNumber( hit_channel_vect.at(iTDC), tdc_number_vect.at(iTDC)-1, wire );
@@ -368,7 +372,7 @@ void WCHitFinderAlg::expandCluster( std::vector<WCHitList> neighborhood_matrix,
       }
     }
     
-    //    std::cout << "Scaled hits size: " << scaled_hits.hits.size() << ", searched hit index: " << neighbor_hits.hits.at(iNB).hit_index << std::endl;
+        //std::cout << "Scaled hits size: " << scaled_hits.hits.size() << ", searched hit index: " << neighbor_hits.hits.at(iNB).hit_index << std::endl;
     
     //If this neighbor hit is not yet part of a cluster, add it
     if( neighbor_hits.hits.at(iNB).cluster_index == -1 ){ 
@@ -417,7 +421,7 @@ void WCHitFinderAlg::findGoodHits( std::vector<std::vector<float> > cluster_time
     size_t number_clusters = cluster_time_buffer.at(iWCAx).size();   
     
 
-    //  std::cout << "number clusters WCAx: " << iWCAx << " is " << number_clusters << std::endl;
+      //std::cout << "number clusters WCAx: " << iWCAx << " is " << number_clusters << std::endl;
  
     //Loop through clusters
     for( size_t iClust = 0; iClust < number_clusters; ++iClust ){

@@ -1,11 +1,11 @@
 ////////////////////////////////////////////////////////////////////////
 // This Alg takes in the good hits from WCHitFinderAlg and creates    //
 // a track with various kinematic and geometric values.  In effect,   //
-// this alg is the track building part of WCTrackBuilderAlg_new.cxx       //
+// this alg is the track building part of WCTrackBuilderAlg.cxx       //
 // in functions run after "FinalizeGoodHits".                         //
 // Other algs can be created in lieu of this one if a better track    //
 // is developed.  This is merely the version we used when hit finding //
-// and track builder were run together in WCTrackBuilderAlg_new.cxx       //
+// and track builder were run together in WCTrackBuilderAlg.cxx       //
 // Author: Greg Pulliam gkpullia@syr.edu                              //
 //////////////////////////////////////////////////////////////////////// 
 
@@ -19,7 +19,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // LArIAT includes
-#include "LArIATRecoAlg/WCTrackBuilderAlg_new.h"
+#include "LArIATRecoAlg/WCTrackBuilderAlg_base.h"
 
 
 #include <iostream>
@@ -30,7 +30,7 @@
 
 //--------------------------------------------------------------
 //Constructor  TRACK
-WCTrackBuilderAlg_new::WCTrackBuilderAlg_new( fhicl::ParameterSet const& pset )
+WCTrackBuilderAlg_base::WCTrackBuilderAlg_base( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
 
@@ -132,13 +132,13 @@ WCTrackBuilderAlg_new::WCTrackBuilderAlg_new( fhicl::ParameterSet const& pset )
 
 //--------------------------------------------------------------  
 //Destructor //BOTH
-WCTrackBuilderAlg_new::~WCTrackBuilderAlg_new()
+WCTrackBuilderAlg_base::~WCTrackBuilderAlg_base()
 {
 
 }
 
 //--------------------------------------------------------------
-void WCTrackBuilderAlg_new::reconfigure( fhicl::ParameterSet const& pset )  //BOTH
+void WCTrackBuilderAlg_base::reconfigure( fhicl::ParameterSet const& pset )  //BOTH
 {
 
   fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
@@ -164,7 +164,7 @@ void WCTrackBuilderAlg_new::reconfigure( fhicl::ParameterSet const& pset )  //BO
 }
 //--------------------------------------------------------------
 //This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginSubRun() method of your analysis module
-void WCTrackBuilderAlg_new::loadXMLDatabaseTableForBField( int run, int subrun ) //TRACK
+void WCTrackBuilderAlg_base::loadXMLDatabaseTableForBField( int run, int subrun ) //TRACK
 {
   fRun = run;
   fSubRun = subrun;
@@ -174,7 +174,7 @@ void WCTrackBuilderAlg_new::loadXMLDatabaseTableForBField( int run, int subrun )
 
 //--------------------------------------------------------------
 //Main function called for each trigger
-void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list,               
+void WCTrackBuilderAlg_base::reconstructTracks(std::vector<double> & reco_pz_list,               
 					   std::vector<double> & y_kink_list,
 					   std::vector<double> & x_dist_list,
 					   std::vector<double> & y_dist_list,
@@ -235,7 +235,7 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 
 //=====================================================================
 //Find the ykink, x/y/z_dist variables, and reco_pz TRACK
-void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
+void WCTrackBuilderAlg_base::getTrackMom_Kink_End(WCHitList track,
 					     float & reco_pz,
 					     float & y_kink,
 					     float (&dist_array)[3])
@@ -289,7 +289,7 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
 
 //=====================================================================
 //More geometry //TRACK
-void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
+void WCTrackBuilderAlg_base::midPlaneExtrapolation(std::vector<float> x_wires,
 					      std::vector<float> y_wires,
 					      float (&pos_us)[3],
 					      float (&pos_ds)[3])
@@ -350,7 +350,7 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 //Taking the set of good hits and finding all combinations of possible tracks. These may not be physically
 //reasonable, but could just be anything with a hit on each wire plane axis.
 //TRACK!!!!!!!!!!!!!!!!!!!!!
-bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
+bool WCTrackBuilderAlg_base::buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 					    std::vector<double> & reco_pz_list,
 					    std::vector<double> & y_kink_list,
 					    std::vector<double> & x_dist_list,
@@ -382,10 +382,10 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
   }
   
   //Loop through all combinations of tracks
-  int total_possible_tracks=0;
+  //int total_possible_tracks=0;
   int track_counter=0;
-  total_possible_tracks=good_hits[0][0].hits.size()*good_hits[1][0].hits.size()*good_hits[2][0].hits.size()*good_hits[3][0].hits.size()*good_hits[0][1].hits.size()*good_hits[2][1].hits.size()*good_hits[1][1].hits.size()*good_hits[3][1].hits.size();
-  std::cout<<"Total number of track combos: "<<total_possible_tracks<<std::endl;
+  //total_possible_tracks=good_hits[0][0].hits.size()*good_hits[1][0].hits.size()*good_hits[2][0].hits.size()*good_hits[3][0].hits.size()*good_hits[0][1].hits.size()*good_hits[2][1].hits.size()*good_hits[1][1].hits.size()*good_hits[3][1].hits.size();
+  //std::cout<<"Total number of track combos: "<<total_possible_tracks<<std::endl;
   for( size_t iHit0 = 0; iHit0 < good_hits[0][0].hits.size(); ++iHit0 ){
     for( size_t iHit1 = 0; iHit1 < good_hits[0][1].hits.size(); ++iHit1 ){
       for( size_t iHit2 = 0; iHit2 < good_hits[1][0].hits.size(); ++iHit2 ){
@@ -475,7 +475,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
       }  
     }
   }
-  std::cout<<"Track Counter: "<<track_counter<<std::endl;
+  //std::cout<<"Track Counter: "<<track_counter<<std::endl;
 
   
   //Clear the hit lists for each WC/axis
@@ -491,7 +491,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 
 //=====================================================================
 //See if trigger has a good enough hit set to continue //TRACK!!!
-bool WCTrackBuilderAlg_new::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits)
+bool WCTrackBuilderAlg_base::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits)
 {
   //Now determine if we want to skip
   bool skip = false;
@@ -530,7 +530,7 @@ bool WCTrackBuilderAlg_new::shouldSkipTrigger(std::vector<std::vector<WCHitList>
 
 //=====================================================================
 //TRACKS!!!
-void WCTrackBuilderAlg_new::findTrackOnTPCInfo(WCHitList track, float &x, float &y, float &theta, float &phi )
+void WCTrackBuilderAlg_base::findTrackOnTPCInfo(WCHitList track, float &x, float &y, float &theta, float &phi )
 {
   
   //Get position vectors of the points on WC3 and WC4
@@ -595,7 +595,7 @@ void WCTrackBuilderAlg_new::findTrackOnTPCInfo(WCHitList track, float &x, float 
 //=====================================================================
 //Transform these into the coordinate system of the TPC
 //TRACKS!!!!!
-void WCTrackBuilderAlg_new::transformWCHits( float (&WC3_point)[3],
+void WCTrackBuilderAlg_base::transformWCHits( float (&WC3_point)[3],
 		      float (&WC4_point)[3])
 {
   //First transformation: a translation by the location of the TPC
@@ -610,7 +610,7 @@ void WCTrackBuilderAlg_new::transformWCHits( float (&WC3_point)[3],
 //Take a look at the track produced by the combinations of hits and determine
 //if it's good enough to be considered a track.
 //TRACKS!!!!
-bool WCTrackBuilderAlg_new::cutOnGoodTracks( WCHitList track,
+bool WCTrackBuilderAlg_base::cutOnGoodTracks( WCHitList track,
 					 float & y_kink,
 					 float (&dist_array)[3],
 					 size_t track_index)
@@ -635,7 +635,7 @@ bool WCTrackBuilderAlg_new::cutOnGoodTracks( WCHitList track,
 //For all tracks passing the hard cuts, narrow down on those with identical hits
 //in any of the WCAxes
 //TRACKS!!!!
-void WCTrackBuilderAlg_new::disambiguateTracks( std::vector<double> & reco_pz_list,
+void WCTrackBuilderAlg_base::disambiguateTracks( std::vector<double> & reco_pz_list,
 					    std::vector<double> & y_kink_list,
 					    std::vector<double> & x_dist_list,
 					    std::vector<double> & y_dist_list,

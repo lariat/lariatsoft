@@ -233,6 +233,7 @@ void WCTrackBuilderAlg::reconstructTracks( std::vector<int> tdc_number_vect,
   //that is spatially and temporally clustered around the initial hit of the particle. 
   //In addition, if sufficiently close together, two or more good hits can be averaged  
   findGoodHits(cluster_time_buffer,cluster_wire_buffer,good_hits);
+
   //BEFORE GOES TO HITS, AFTER GOES TO TRACKS
     //BEFORE GOES TO HITS, AFTER GOES TO TRACK
       //BEFORE GOES TO HITS, AFTER GOES TO TRACK
@@ -470,10 +471,10 @@ bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
   }
   
   //Loop through all combinations of tracks
-  int total_possible_tracks=0;
+  //int total_possible_tracks=0;
   int track_counter=0;
-  total_possible_tracks=good_hits[0][0].hits.size()*good_hits[1][0].hits.size()*good_hits[2][0].hits.size()*good_hits[3][0].hits.size()*good_hits[0][1].hits.size()*good_hits[2][1].hits.size()*good_hits[1][1].hits.size()*good_hits[3][1].hits.size();
-  std::cout<<"Total number of track combos: "<<total_possible_tracks<<std::endl;
+  //total_possible_tracks=good_hits[0][0].hits.size()*good_hits[1][0].hits.size()*good_hits[2][0].hits.size()*good_hits[3][0].hits.size()*good_hits[0][1].hits.size()*good_hits[2][1].hits.size()*good_hits[1][1].hits.size()*good_hits[3][1].hits.size();
+  //std::cout<<"Total number of track combos: "<<total_possible_tracks<<std::endl;
   for( size_t iHit0 = 0; iHit0 < good_hits[0][0].hits.size(); ++iHit0 ){
     for( size_t iHit1 = 0; iHit1 < good_hits[0][1].hits.size(); ++iHit1 ){
       for( size_t iHit2 = 0; iHit2 < good_hits[1][0].hits.size(); ++iHit2 ){
@@ -563,7 +564,7 @@ bool WCTrackBuilderAlg::buildTracksFromHits(std::vector<std::vector<WCHitList> >
       }  
     }
   }
-  std::cout<<"Track Counter: "<<track_counter<<std::endl;
+ // std::cout<<"Track Counter: "<<track_counter<<std::endl;
 
   //Fill the array with the found tracks' reconstructed momenta //AGAIN, OBSOLETE, BUT IT DOESN'T HURT ANYTHING TECHNICALLY
   reco_pz_array.push_back(reco_pz_buffer);
@@ -941,6 +942,7 @@ void WCTrackBuilderAlg::createHitAndScaledHitVectors( int WCAx_number,
   }
 
   //For each element in the hit time buffer (for each hit)
+ 
   for( size_t iHit = 0; iHit < hit_time_buffer.at(WCAx_number).size(); ++iHit ){
     //Create a scaled hit and fill it with time, wire number, and whether it has been visited
     //Also with a hit index and cluster index (-1 means noise cluster)
@@ -967,9 +969,9 @@ void WCTrackBuilderAlg::fillTimeAndWireBuffers( const std::vector<int> & tdc_num
 						const std::vector<float> & hit_channel_vect)
 {
   //Sanity check
-  //if( fVerbose ){
-  //  std::cout << "*************** Buffer Filling Info *****************" << std::endl;
-  // }
+  if( fVerbose ){
+    std::cout << "*************** Buffer Filling Info *****************" << std::endl;
+   }
 
   //Loop over the wire plane axes
   for( int iWCAx = 0; iWCAx < fNumber_wire_chambers*2 ; ++iWCAx ){
@@ -977,7 +979,7 @@ void WCTrackBuilderAlg::fillTimeAndWireBuffers( const std::vector<int> & tdc_num
     for( size_t iTDC = 0; iTDC < tdc_number_vect.size(); ++iTDC ){
 
       int hit_wire_chamber_axis = int((tdc_number_vect.at(iTDC)-1)/2); //-1 is for tdc index
-      //      std::cout << "TEST: tdc: " << tdc_number_vect.at(iTDC)-1 << ", WCAx: " << hit_wire_chamber_axis << ", iWCAx: " << iWCAx << std::endl;
+            //std::cout << "TEST: tdc: " << tdc_number_vect.at(iTDC)-1 << ", WCAx: " << hit_wire_chamber_axis << ", iWCAx: " << iWCAx << std::endl;
       if( hit_wire_chamber_axis == iWCAx ){
 	float wire = 0;
 	convertToWireNumber( hit_channel_vect.at(iTDC), tdc_number_vect.at(iTDC)-1, wire );
@@ -985,9 +987,9 @@ void WCTrackBuilderAlg::fillTimeAndWireBuffers( const std::vector<int> & tdc_num
 	hit_time_buffer.at(iWCAx).push_back(float(hit_time_vect.at(iTDC)));
 
 	//Sanity Check
-	//	if( fVerbose ){
-	//  std::cout << "(iTDC,Channel): (" << tdc_number_vect.at(iTDC)-1 << "," << hit_channel_vect.at(trigger_number).at(iTDC) << "), (WCAx,Wire): (" << iWCAx << "," << wire << ")" << ", time: " << hit_time_vect.at(trigger_number).at(iTDC) << std::endl;
-	//	}
+		//if( fVerbose ){
+	  //std::cout << "(iTDC,Channel): (" << tdc_number_vect.at(iTDC)-1 << "," << hit_channel_vect.at(trigger_number).at(iTDC) << "), (WCAx,Wire): (" << iWCAx << "," << wire << ")" << ", time: " << hit_time_vect.at(trigger_number).at(iTDC) << std::endl;
+		//}
       }
     }
   }
@@ -1011,9 +1013,9 @@ void WCTrackBuilderAlg::initializeBuffers( std::vector<std::vector<float> > & hi
   }
   
   //Sanity check
-  //  if( fVerbose == true ){
-  //  std::cout << "Length of the hit time buffer: " << hit_time_buffer.size() << std::endl;
-  //}
+    if( fVerbose == true ){
+    std::cout << "Length of the hit time buffer: " << hit_time_buffer.size() << std::endl;
+  }
 
 }
 
