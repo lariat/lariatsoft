@@ -107,18 +107,22 @@ private:
   std::string     fParticleIDModule;
   std::string     fTrackCalModule;
   std::string     fInstanceName;
-  double          fTimestampCut;
+  float          fTimestampCut;
   short           fGateDelay;
-  short           fDtIntegralCut;
   short           fBaselineWindowLength;
   short           fPromptWindowLength;
   short           fFullWindowLength;
   short           fPrePulseBaselineFit;
-  double          fFiducialMargin_X;
-  double          fFiducialMargin_Y;
-  double          fFiducialMargin_Z; 
-  double          fSinglePE;
-  double          fAveWfmCut_Dt;
+  float          fFiducialMargin_X;
+  float          fFiducialMargin_Y;
+  float          fFiducialMargin_Z; 
+  float          fSinglePE;
+  float          fAveWfmCut_Dt;
+  bool            fCorrectAveWfms;
+  bool            fSaveHitWfmsToTree;
+  bool            fSaveAllTrackInfoToTree;
+  float           fHitTimeCutoffLow;
+  float           fHitTimeCutoffHigh;
 
   // Alg objects
   OpHitBuilderAlg   fOpHitBuilderAlg; 
@@ -137,8 +141,8 @@ private:
   int                   NSamples;
   int                   MuTrackIndex;
   TVector3              region_centerpoint;
-  double                region_radius;
-  std::vector<double>   hit_info;
+  float                region_radius;
+  std::vector<float>   hit_info;
   std::vector<TVector3> vTrackVertex;
   std::vector<TVector3> vTrackEnd;
   TVector3              MuTrackVertex;
@@ -169,6 +173,7 @@ private:
   TH1F* h_PromptPE;
   TH1F* h_PromptPE_region;
   TH1F* h_FullPE_region;
+  TH2F* h_PromptFraction_vs_Amplitude;
   TH2F* h_PromptPE_vs_Amplitude;
   TH1F* h_TrackVertex_x;
   TH1F* h_TrackVertex_y;
@@ -190,69 +195,71 @@ private:
   int                     RunNumber;
   int                     SubRunNumber;
   int                     EventNumber;
-  double                  Timestamp;
+  float                  Timestamp;
 
   // Storing optical hit information
   int                     NumHits;
   std::vector<short>      vHitTimes;
-  std::vector<double>     vHitAmplitude;
-  std::vector<double>     vHitPromptLight;
-  std::vector<double>     vHitFullLight;
-  std::vector<double>     vHitPE_Prompt;
-  std::vector<double>     vHitPE_Full;
-  std::vector<double>     vPrepulseBaseline;
-  std::vector<double>     vPrepulseRMS;
-  std::vector<double>     vPrepulseFastNorm;
-  std::vector<double>     vPrepulseFastTau;
-  std::vector<double>     vPrepulseSlowNorm;
-  std::vector<double>     vPrepulseSlowTau;
-  std::vector<double>     vPrepulseReducedChi2;
+  std::vector<float>     vHitAmplitude;
+  std::vector<float>     vHitPromptLight;
+  std::vector<float>     vHitFullLight;
+  std::vector<float>     vHitPE_Prompt;
+  std::vector<float>     vHitPE_Full;
+  std::vector<float>     vPrepulseBaseline;
+  std::vector<float>     vPrepulseRMS;
+  std::vector<float>     vPrepulseFastNorm;
+  std::vector<float>     vPrepulseFastTau;
+  std::vector<float>     vPrepulseSlowNorm;
+  std::vector<float>     vPrepulseSlowTau;
+  std::vector<float>     vPrepulseReducedChi2;
+  std::vector<float>     vHitPromptFraction;
   std::vector<int>        vIsInBGPopulation; 
-  std::vector<short>      HitWaveform;
+  std::vector<short>      HitWaveform; 
   int                     HitWaveformIndex;
-  double                  WaveformBaseline;
-  double                  WaveformBaselineRMS;
+  float                  WaveformBaseline;
+  float                  WaveformBaselineRMS;
   int                     IsBeamEvent;
   int                     IsCleanBeamWaveform;
-  double                  DeltaTime;
-  double                  Amplitude;
-  double                  Charge_100ns; 
-  double                  Charge_Full;
-  double                  PE_Prompt; 
-  double                  PE_Full;
+  float                  DeltaTime;
+  float                  Amplitude;
+  float                  Charge_100ns; 
+  float                  Charge_Full;
+  float                  PE_Prompt; 
+  float                  PE_Full;
+  float                  PromptFraction;
   
   // Storing track infornatuib
   int                     NumTracks;
-  std::vector<double>     vTrackVertex_x;
-  std::vector<double>     vTrackVertex_y;
-  std::vector<double>     vTrackVertex_z;
-  std::vector<double>     vTrackEnd_x;
-  std::vector<double>     vTrackEnd_y;
-  std::vector<double>     vTrackEnd_z;
+  std::vector<float>     vTrackVertex_x;
+  std::vector<float>     vTrackVertex_y;
+  std::vector<float>     vTrackVertex_z;
+  std::vector<float>     vTrackEnd_x;
+  std::vector<float>     vTrackEnd_y;
+  std::vector<float>     vTrackEnd_z;
   std::vector<int>        vIsTrackStopping;
   std::vector<int>        vIsTrackPassing;
   std::vector<int>        vIsTrackContained;
   std::vector<int>        vTrackPID;
-  std::vector<double>     vTrackPIDA;
-  std::vector<double>     vTrackEnergy;
-  std::vector<double>     vTrackLength;
+  std::vector<float>     vTrackPIDA;
+  std::vector<float>     vTrackEnergy;
+  std::vector<float>     vTrackLength;
   int                     IsSinglePassingTrack;
   int                     IsSingleStoppingTrack;
-  double                  StoppingTrackZenithAngle;
-  double                  PassingTrackZenithAngle;
-  double                  MuTrackVertex_x;
-  double                  MuTrackVertex_y;
-  double                  MuTrackVertex_z;
-  double                  MuTrackEnd_x;
-  double                  MuTrackEnd_y;
-  double                  MuTrackEnd_z;
-  double                  MuTrackLength;
-  double                  MuTrackEnergy;
+  float                  StoppingTrackZenithAngle;
+  float                  PassingTrackZenithAngle;
+  float                  MuTrackVertex_x;
+  float                  MuTrackVertex_y;
+  float                  MuTrackVertex_z;
+  float                  MuTrackEnd_x;
+  float                  MuTrackEnd_y;
+  float                  MuTrackEnd_z;
+  float                  MuTrackLength;
+  float                  MuTrackEnergy;
   int                     MuAmplitude;
-  double                  MuCharge_100ns;
-  double                  SecondTrackProximity;
-  double                  SecondTrackLength;
-  double                  SecondTrackEnergy;
+  float                  MuCharge_100ns;
+  float                  SecondTrackProximity;
+  float                  SecondTrackLength;
+  float                  SecondTrackEnergy;
   int                     IsSecondTrackContained;
   
   // TTree info
@@ -276,15 +283,26 @@ MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & pset)
   region_centerpoint.SetXYZ(23.5,0.,45.);
   region_radius = 10.;
 
+  // Some instances of OpHitBuilder were created solely 
+  // to save summed/average waveforms:
   fOpHitBuilderAlg_ave1.AddHitToAverageWaveform = 1;  
   fOpHitBuilderAlg_ave2.AddHitToAverageWaveform = 1;  
   fOpHitBuilderAlg_aveMIP.AddHitToAverageWaveform = 1;  
   fOpHitBuilderAlg_aveProton.AddHitToAverageWaveform = 1;  
-  
-  fOpHitBuilderAlg_ave1.fUsePrepulseFit = 0;  
-  fOpHitBuilderAlg_ave2.fUsePrepulseFit = 0;  
-  fOpHitBuilderAlg_aveMIP.fUsePrepulseFit = 0;  
-  fOpHitBuilderAlg_aveProton.fUsePrepulseFit = 0;  
+ 
+  // Switch to apply baseline correction (prepulse
+  // expeonential fit method) to averaged waveforms:
+  if(fCorrectAveWfms){ 
+    fOpHitBuilderAlg_ave1.fUsePrepulseFit = true;  
+    fOpHitBuilderAlg_ave2.fUsePrepulseFit = true;  
+    fOpHitBuilderAlg_aveMIP.fUsePrepulseFit = true;  
+    fOpHitBuilderAlg_aveProton.fUsePrepulseFit = true; 
+  } else {
+    fOpHitBuilderAlg_ave1.fUsePrepulseFit = false;  
+    fOpHitBuilderAlg_ave2.fUsePrepulseFit = false;  
+    fOpHitBuilderAlg_aveMIP.fUsePrepulseFit = false;  
+    fOpHitBuilderAlg_aveProton.fUsePrepulseFit = false; 
+  }
 
   HitWaveformBins = (int)fPrePulseBaselineFit+(int)fFullWindowLength;
   HitWaveform.reserve(HitWaveformBins);
@@ -338,6 +356,7 @@ void MichelWfmReco::produce(art::Event & e)
   Charge_Full       = -99999.;
   PE_Prompt         = -9.;
   PE_Full           = -99.;
+  PromptFraction    = -9.;
   WaveformBaseline  = -99.;
   WaveformBaselineRMS = -9.;
   SecondTrackLength = -9.;
@@ -358,11 +377,14 @@ void MichelWfmReco::produce(art::Event & e)
   vPrepulseSlowNorm.clear();
   vPrepulseSlowTau.clear();
   vPrepulseReducedChi2.clear();
+  vHitPromptFraction.clear();
   vTrackVertex.clear();
   vTrackEnd.clear();
 
-  for(unsigned int i=0; i<HitWaveform.size(); i++) HitWaveform[i] = 0;
-  HitWaveformIndex = -9;
+  if(fSaveHitWfmsToTree){
+    for(unsigned int i=0; i<HitWaveform.size(); i++) HitWaveform[i] = 0;
+    HitWaveformIndex = -9;
+  }
 
   // Get run and event number
   RunNumber     = (int)e.run();
@@ -399,7 +421,7 @@ void MichelWfmReco::produce(art::Event & e)
       if( ThePulse.OpChannel() == 1) {
         ETL_waveform = ThePulse.Waveform();
         NSamples = ETL_waveform.size();
-        Timestamp = (double(ThePulse.PMTFrame())*8.)/1.0e09;
+        Timestamp = (float(ThePulse.PMTFrame())*8.)/1.0e09;
         PostPercentMark = short(ThePulse.FirstSample()); 
         GotETL = true;
         
@@ -424,7 +446,7 @@ void MichelWfmReco::produce(art::Event & e)
   else if (Timestamp >= fTimestampCut+0.1) { IsBeamEvent = 0;}
 
   //  Get waveform baseline/RMS
-  std::vector<double> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(ETL_waveform,0,fBaselineWindowLength);
+  std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(ETL_waveform,0,fBaselineWindowLength);
   WaveformBaseline = tmp[0];
   WaveformBaselineRMS = tmp[1];
   if(bVerbose) std::cout<<"Baseline: "<<WaveformBaseline<<"  RMS: "<<WaveformBaselineRMS<<"\n";
@@ -439,7 +461,7 @@ void MichelWfmReco::produce(art::Event & e)
   
   // If exactly 2 hits, measure their time difference
   if(NumHits == 2){
-    DeltaTime = double(vHitTimes[1] - vHitTimes[0]);
+    DeltaTime = float(vHitTimes[1] - vHitTimes[0]);
     if(bVerbose) std::cout<<"    DeltaT = "<<DeltaTime<<std::endl;
   }
   
@@ -463,21 +485,26 @@ void MichelWfmReco::produce(art::Event & e)
     vPrepulseSlowNorm.push_back(fOpHitBuilderAlg.fit_SlowNorm);
     vPrepulseSlowTau.push_back(fOpHitBuilderAlg.fit_SlowTau); 
     vPrepulseReducedChi2.push_back(fOpHitBuilderAlg.fit_ReducedChi2);
+    vHitPromptFraction.push_back(hit_info[1]/hit_info[2]);
+
+    if( fabs(vHitTimes[i]-PostPercentMark) <= 0.015*(float)NSamples ){
+      h_PromptFraction_vs_Amplitude->Fill(vHitPromptFraction[i],vHitAmplitude[i]);
+    }
     
-    // Line in amplitude (mV,x) vs. charge (ADC,y) space to cut out background. 
-    TF1 f_PopulationCut("f_PopulationCut","48.04*x + 404.9",0.,150.);
-    if( vHitPromptLight[i] > 0.){
-      if( vHitPromptLight[i] > f_PopulationCut.Eval(vHitAmplitude[i])){ 
-        vIsInBGPopulation.push_back(0);
+    // Line in PE (#,x) vs. amplitude (mV,y) space to cut out background. 
+    TF1 f_PopulationCut("f_PopulationCut","1.714*x - 35.13",0.,1000.);
+    if( vHitPE_Prompt[i] > 0.){
+      if( vHitAmplitude[i] > f_PopulationCut.Eval(vHitPE_Prompt[i])){ 
+        vIsInBGPopulation.push_back(1);
       } else {
-        vIsInBGPopulation.push_back(1); 
+        vIsInBGPopulation.push_back(0); 
       }
     }
   
   }
  
   // Is clean beam waveform?
-  if( (IsBeamEvent)&&(NumHits == 1)&&( abs(vHitTimes[0]-PostPercentMark) <= 0.015*(double)NSamples) ){
+  if( (IsBeamEvent)&&(NumHits == 1)&&( abs(vHitTimes[0]-PostPercentMark) <= 0.015*(float)NSamples) ){
     IsCleanBeamWaveform = 1;
   } else {
     IsCleanBeamWaveform = 0;
@@ -710,7 +737,7 @@ void MichelWfmReco::produce(art::Event & e)
 
   } //endif bUseTrackInformation
 
-  if( (NumTracks==1)&&(NumHits==1)&&(vTrackEnergy[0]>0.)&&(vHitAmplitude[0]<190.)){
+  if( (NumTracks==1)&&(NumHits==1)&&(vTrackEnergy[0]>0.)&&(vHitAmplitude[0]<190.)&&(vIsTrackPassing[0])){
     h_TrackEnergy_vs_PromptLight->Fill(vTrackEnergy[0],vHitPE_Prompt[0]);
   }
     
@@ -722,11 +749,6 @@ void MichelWfmReco::produce(art::Event & e)
   if(!IsBeamEvent)  h_NumOpHits_offbeam ->Fill(NumHits);
   
         
-  // Only proceed to save charge/amplitude variables if 
-  // the pulses are far enough apart such that the tail of the
-  // first does not contiminate the second (fcl setting, default 0)
-  // Note: Requiring DeltaTime > 0 ensures there were only 2 hits. 
-
   if(NumHits==2){      
     // Integral/amplitude of Michel pulse
     Amplitude     = vHitAmplitude[1];
@@ -734,12 +756,15 @@ void MichelWfmReco::produce(art::Event & e)
     Charge_Full   = vHitFullLight[1];
     PE_Prompt     = Charge_100ns/fSinglePE;
     PE_Full       = Charge_Full/fSinglePE;
+    PromptFraction= vHitPromptFraction[1];
+    
     if(bVerbose) std::cout<<"    Amplitude     = "<<Amplitude<<std::endl;
     if(bVerbose) std::cout<<"    Charge prompt = "<<Charge_100ns<<" ("<<PE_Prompt<<" PEs)"<<std::endl;
     if(bVerbose) std::cout<<"    Charge full   = "<<Charge_Full<< " ("<<PE_Full<<" PEs)"<<std::endl;
+  
   }
   
-  if( (NumHits>0)&&(NumHits<=2) ){
+  if( (fSaveHitWfmsToTree)&&(NumHits>0)&&(NumHits<=2) ){
     // Save the waveform
     HitWaveformIndex = NumHits-1;
     for(int i=0; i<HitWaveformBins; i++){
@@ -829,14 +854,16 @@ void MichelWfmReco::beginJob()
   MichelDataTree  ->Branch("RunNumber",&RunNumber,"RunNumber/I");
   MichelDataTree  ->Branch("SubRunNumber",&SubRunNumber,"SubRunNumber/I");
   MichelDataTree  ->Branch("EventNumber",&EventNumber,"EventNumber/I");
-  MichelDataTree  ->Branch("Timestamp",&Timestamp,"Timestamp/D");
+  MichelDataTree  ->Branch("Timestamp",&Timestamp,"Timestamp/F");
   MichelDataTree  ->Branch("IsBeamEvent",&IsBeamEvent,"IsBeamEvent/I");
 
   // Waveform hit information
-  MichelDataTree ->Branch("HitWaveform",&HitWaveform);
-  MichelDataTree ->Branch("HitWaveformIndex",&HitWaveformIndex,"HitWaveformIndex/I");
-  MichelDataTree ->Branch("WaveformBaseline",&WaveformBaseline,"WaveformBaseline/D");
-  MichelDataTree ->Branch("WaveformBaselineRMS",&WaveformBaselineRMS,"WaveformBaselineRMS/D");
+  if(fSaveHitWfmsToTree){
+    MichelDataTree ->Branch("HitWaveform",&HitWaveform);
+    MichelDataTree ->Branch("HitWaveformIndex",&HitWaveformIndex,"HitWaveformIndex/I");
+  }
+  MichelDataTree ->Branch("WaveformBaseline",&WaveformBaseline,"WaveformBaseline/F");
+  MichelDataTree ->Branch("WaveformBaselineRMS",&WaveformBaselineRMS,"WaveformBaselineRMS/F");
   MichelDataTree ->Branch("NumHits",&NumHits,"NumHits/I");
   MichelDataTree ->Branch("HitTimes",&vHitTimes);
   MichelDataTree ->Branch("HitAmplitude",&vHitAmplitude);
@@ -853,43 +880,45 @@ void MichelWfmReco::beginJob()
   MichelDataTree ->Branch("PrepulseReducedChi2",&vPrepulseReducedChi2);
   MichelDataTree ->Branch("IsInBGPopulation",&vIsInBGPopulation);
   MichelDataTree ->Branch("IsCleanBeamWaveform",&IsCleanBeamWaveform,"IsCleanBeamWaveform/I");
-  MichelDataTree ->Branch("DeltaTime",&DeltaTime,"DeltaTime/D");
-  MichelDataTree ->Branch("Amplitude",&Amplitude,"Amplitude/D");
-  MichelDataTree ->Branch("Charge_100ns",&Charge_100ns,"Charge_100ns/D");
-  MichelDataTree ->Branch("Charge_Full",&Charge_Full,"Charge_Full/D");
-  MichelDataTree ->Branch("PE_Prompt",&PE_Prompt,"PE_Prompt/D");
-  MichelDataTree ->Branch("PE_Full",&PE_Full,"PE_Full/D");
+  MichelDataTree ->Branch("DeltaTime",&DeltaTime,"DeltaTime/F");
+  MichelDataTree ->Branch("Amplitude",&Amplitude,"Amplitude/F");
+  MichelDataTree ->Branch("Charge_100ns",&Charge_100ns,"Charge_100ns/F");
+  MichelDataTree ->Branch("Charge_Full",&Charge_Full,"Charge_Full/F");
+  MichelDataTree ->Branch("PE_Prompt",&PE_Prompt,"PE_Prompt/F");
+  MichelDataTree ->Branch("PE_Full",&PE_Full,"PE_Full/F");
   
   // Track information
   MichelDataTree ->Branch("NumTracks",&NumTracks,"NumTracks/I");
-  MichelDataTree ->Branch("TrackVertex_x",&vTrackVertex_x);
-  MichelDataTree ->Branch("TrackVertex_y",&vTrackVertex_y);
-  MichelDataTree ->Branch("TrackVertex_z",&vTrackVertex_z);
-  MichelDataTree ->Branch("TrackEnd_x",&vTrackEnd_x);
-  MichelDataTree ->Branch("TrackEnd_y",&vTrackEnd_y);
-  MichelDataTree ->Branch("TrackEnd_z",&vTrackEnd_z);
-  MichelDataTree ->Branch("IsTrackStopping",&vIsTrackStopping);
-  MichelDataTree ->Branch("IsTrackPassing",&vIsTrackPassing);
-  MichelDataTree ->Branch("IsTrackContained",&vIsTrackContained);
-  MichelDataTree ->Branch("TrackPID",&vTrackPID);
-  MichelDataTree ->Branch("TrackPIDA",&vTrackPIDA);
-  MichelDataTree ->Branch("TrackLength",&vTrackLength);
-  MichelDataTree ->Branch("TrackEnergy",&vTrackEnergy);
+  if(fSaveAllTrackInfoToTree){
+    MichelDataTree ->Branch("TrackVertex_x",&vTrackVertex_x);
+    MichelDataTree ->Branch("TrackVertex_y",&vTrackVertex_y);
+    MichelDataTree ->Branch("TrackVertex_z",&vTrackVertex_z);
+    MichelDataTree ->Branch("TrackEnd_x",&vTrackEnd_x);
+    MichelDataTree ->Branch("TrackEnd_y",&vTrackEnd_y);
+    MichelDataTree ->Branch("TrackEnd_z",&vTrackEnd_z);
+    MichelDataTree ->Branch("IsTrackStopping",&vIsTrackStopping);
+    MichelDataTree ->Branch("IsTrackPassing",&vIsTrackPassing);
+    MichelDataTree ->Branch("IsTrackContained",&vIsTrackContained);
+    MichelDataTree ->Branch("TrackPID",&vTrackPID);
+    MichelDataTree ->Branch("TrackPIDA",&vTrackPIDA);
+    MichelDataTree ->Branch("TrackLength",&vTrackLength);
+    MichelDataTree ->Branch("TrackEnergy",&vTrackEnergy);
+  }
   MichelDataTree ->Branch("IsSinglePassingTrack",&IsSinglePassingTrack,"IsSinglePassingTrack/I");
   MichelDataTree ->Branch("IsSingleStoppingTrack",&IsSingleStoppingTrack,"IsStoppingTrack/I");
-  MichelDataTree ->Branch("StoppingTrackZenithAngle",&StoppingTrackZenithAngle,"StoppingTrackZenithAngle/D");
-  MichelDataTree ->Branch("PassingTrackZenithAngle",&PassingTrackZenithAngle,"PassingTrackZenithAngle/D");
-  MichelDataTree ->Branch("MuTrackVertex_x",&MuTrackVertex_x,"MuTrackVertex_x/D");
-  MichelDataTree ->Branch("MuTrackVertex_y",&MuTrackVertex_y,"MuTrackVertex_y/D");
-  MichelDataTree ->Branch("MuTrackVertex_z",&MuTrackVertex_z,"MuTrackVertex_z/D");
-  MichelDataTree ->Branch("MuTrackEnd_x",&MuTrackEnd_x,"MuTrackEnd_x/D");
-  MichelDataTree ->Branch("MuTrackEnd_y",&MuTrackEnd_y,"MuTrackEnd_y/D");
-  MichelDataTree ->Branch("MuTrackEnd_z",&MuTrackEnd_z,"MuTrackEnd_z/D");
-  MichelDataTree ->Branch("MuTrackLength",&MuTrackLength,"MuTrackLength/D");
-  MichelDataTree ->Branch("MuTrackEnergy",&MuTrackEnergy,"MuTrackEnergy/D");
-  MichelDataTree ->Branch("SecondTrackProximity",&SecondTrackProximity,"SecondTrackProximity/D"); 
-  MichelDataTree ->Branch("SecondTrackLength",&SecondTrackLength,"SecondTrackLength/D"); 
-  MichelDataTree ->Branch("SecondTrackEnergy",&SecondTrackEnergy,"SecondTrackEnergy/D"); 
+  MichelDataTree ->Branch("StoppingTrackZenithAngle",&StoppingTrackZenithAngle,"StoppingTrackZenithAngle/F");
+  MichelDataTree ->Branch("PassingTrackZenithAngle",&PassingTrackZenithAngle,"PassingTrackZenithAngle/F");
+  MichelDataTree ->Branch("MuTrackVertex_x",&MuTrackVertex_x,"MuTrackVertex_x/F");
+  MichelDataTree ->Branch("MuTrackVertex_y",&MuTrackVertex_y,"MuTrackVertex_y/F");
+  MichelDataTree ->Branch("MuTrackVertex_z",&MuTrackVertex_z,"MuTrackVertex_z/F");
+  MichelDataTree ->Branch("MuTrackEnd_x",&MuTrackEnd_x,"MuTrackEnd_x/F");
+  MichelDataTree ->Branch("MuTrackEnd_y",&MuTrackEnd_y,"MuTrackEnd_y/F");
+  MichelDataTree ->Branch("MuTrackEnd_z",&MuTrackEnd_z,"MuTrackEnd_z/F");
+  MichelDataTree ->Branch("MuTrackLength",&MuTrackLength,"MuTrackLength/F");
+  MichelDataTree ->Branch("MuTrackEnergy",&MuTrackEnergy,"MuTrackEnergy/F");
+  MichelDataTree ->Branch("SecondTrackProximity",&SecondTrackProximity,"SecondTrackProximity/F"); 
+  MichelDataTree ->Branch("SecondTrackLength",&SecondTrackLength,"SecondTrackLength/F"); 
+  MichelDataTree ->Branch("SecondTrackEnergy",&SecondTrackEnergy,"SecondTrackEnergy/F"); 
   MichelDataTree ->Branch("IsSecondTrackContained",&IsSecondTrackContained,"IsSecondTrackContained/I"); 
  
   // Histograms 
@@ -981,6 +1010,10 @@ void MichelWfmReco::beginJob()
   h_PromptPE_vs_Amplitude     ->GetXaxis()->SetTitle("Prompt photoelectrons");
   h_PromptPE_vs_Amplitude     ->GetYaxis()->SetTitle("Amplitude [mV]");
   h_PromptPE_vs_Amplitude     ->SetOption("colz");
+  
+  h_PromoptFraction_vs_Amplitude  = tfs->make<TH1F>("PromptFraction_vs_Amplitude","Prompt light fraction vs. pulse amplitude;Prompt fraction;Amplitude [mV]",
+                                  200,0.,1., 200,0.,200);
+  
   h_TrackEnergy_vs_PromptLight   = tfs->make<TH2F>("TrackEnergy_vs_PromptLight",";Reconstructed track energy [MeV];Prompt photoelectrons",100,0.,250.,100,0.,500.);
   h_TrackEnergy_vs_PromptLight   ->SetOption("colz");
 
@@ -1010,22 +1043,22 @@ void MichelWfmReco::beginJob()
 
 
   h_AverageWaveform1      = tfs->make<TH1F>("AverageWaveform1","Average waveform of Michel pulse",
-                            HitWaveformBins,0.,(double)HitWaveformBins);
+                            HitWaveformBins,0.,(float)HitWaveformBins);
   h_AverageWaveform1      ->GetXaxis()->SetTitle("ns");
   h_AverageWaveform1      ->GetYaxis()->SetTitle("mV");
   
   h_AverageWaveform2      = tfs->make<TH1F>("AverageWaveform2","Average waveform of background pulse",
-                            HitWaveformBins,0.,(double)HitWaveformBins);
+                            HitWaveformBins,0.,(float)HitWaveformBins);
   h_AverageWaveform2      ->GetXaxis()->SetTitle("ns");
   h_AverageWaveform2      ->GetYaxis()->SetTitle("mV");
   
   h_AverageWaveformMIP    = tfs->make<TH1F>("AverageWaveformMIP","Average waveform of thru-going muons",
-                            HitWaveformBins,0.,(double)HitWaveformBins);
+                            HitWaveformBins,0.,(float)HitWaveformBins);
   h_AverageWaveformMIP    ->GetXaxis()->SetTitle("ns");
   h_AverageWaveformMIP    ->GetYaxis()->SetTitle("mV");
  
   h_AverageWaveformProton = tfs->make<TH1F>("AverageWaveformProton","Average waveform of protons",
-                            HitWaveformBins,0.,(double)HitWaveformBins);
+                            HitWaveformBins,0.,(float)HitWaveformBins);
   h_AverageWaveformProton ->GetXaxis()->SetTitle("ns");
   h_AverageWaveformProton ->GetYaxis()->SetTitle("mV");
 }
@@ -1047,11 +1080,11 @@ void MichelWfmReco::endJob()
   
   // Waveform 1 (Michel pulses)
   int N_entries = fOpHitBuilderAlg_ave1.AverageWaveform_count;
-  double integral_prompt = 0.;
-  double integral_total = 0.;
+  float integral_prompt = 0.;
+  float integral_total = 0.;
   if( N_entries > 0 ){
     for( int i = 0; i < (int)fOpHitBuilderAlg_ave1.AverageWaveform.size(); i++) {
-      double w = fOpHitBuilderAlg_ave1.AverageWaveform.at(i) / double(N_entries); 
+      float w = fOpHitBuilderAlg_ave1.AverageWaveform.at(i) / float(N_entries); 
       h_AverageWaveform1->Fill(i,w);
       if( (i>fPrePulseBaselineFit-10)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
       if( (i>fPrePulseBaselineFit-10) ) integral_total += w; 
@@ -1073,7 +1106,7 @@ void MichelWfmReco::endJob()
   integral_total = 0.;
   if( N_entries > 0 ){
     for( int i = 0; i < (int)fOpHitBuilderAlg_ave2.AverageWaveform.size(); i++) {
-      double w = fOpHitBuilderAlg_ave2.AverageWaveform.at(i) / double(N_entries); 
+      float w = fOpHitBuilderAlg_ave2.AverageWaveform.at(i) / float(N_entries); 
       h_AverageWaveform2->Fill(i,w);
       if( (i>fPrePulseBaselineFit-10)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
       if( (i>fPrePulseBaselineFit-10) ) integral_total += w; 
@@ -1094,7 +1127,7 @@ void MichelWfmReco::endJob()
   integral_total = 0.;
   if( N_entries > 0 ){
     for( int i = 0; i < (int)fOpHitBuilderAlg_aveMIP.AverageWaveform.size(); i++) {
-      double w = fOpHitBuilderAlg_aveMIP.AverageWaveform.at(i) / double(N_entries); 
+      float w = fOpHitBuilderAlg_aveMIP.AverageWaveform.at(i) / float(N_entries); 
       h_AverageWaveformMIP->Fill(i,w);
       if( (i>fPrePulseBaselineFit-10)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
       if( (i>fPrePulseBaselineFit-10) ) integral_total += w; 
@@ -1115,7 +1148,7 @@ void MichelWfmReco::endJob()
   integral_total = 0.;
   if( N_entries > 0 ){
     for( int i = 0; i < (int)fOpHitBuilderAlg_aveProton.AverageWaveform.size(); i++) {
-      double w = fOpHitBuilderAlg_aveProton.AverageWaveform.at(i) / double(N_entries); 
+      float w = fOpHitBuilderAlg_aveProton.AverageWaveform.at(i) / float(N_entries); 
       h_AverageWaveformProton->Fill(i,w);
       if( (i>fPrePulseBaselineFit-10)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
       if( (i>fPrePulseBaselineFit-10) ) integral_total += w; 
@@ -1154,14 +1187,19 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fPromptWindowLength     = pset.get< short >("PromptWindowLength",100);
   fFullWindowLength       = pset.get< short >("FullWindowLength",7000);
   fPrePulseBaselineFit    = pset.get< short >("PrePulseBaselineFit",250);
-  fFiducialMargin_X       = pset.get< double>("FiducialMargin_X",5.);
-  fFiducialMargin_Y       = pset.get< double>("FiducialMargin_Y",4.);
-  fFiducialMargin_Z       = pset.get< double>("FiducialMargin_Z",5.);
-  fTimestampCut           = pset.get< double>("TimestampCut",5.3);
+  fFiducialMargin_X       = pset.get< float>("FiducialMargin_X",5.);
+  fFiducialMargin_Y       = pset.get< float>("FiducialMargin_Y",4.);
+  fFiducialMargin_Z       = pset.get< float>("FiducialMargin_Z",5.);
+  fTimestampCut           = pset.get< float>("TimestampCut",5.3);
   fGateDelay              = pset.get< short >("GateDelay",300);
-  fDtIntegralCut          = pset.get< short >("DtIntegralCut",0);
-  fSinglePE               = pset.get< double>("SinglePE",51.);
-  fAveWfmCut_Dt           = pset.get< double>("AveWfmCut_Dt",300.);
+  fSinglePE               = pset.get< float>("SinglePE",51.);
+  fAveWfmCut_Dt           = pset.get< float>("AveWfmCut_Dt",300.);
+  fCorrectAveWfms         = pset.get< bool>("CorrectAveWfms","true");
+  fSaveHitWfmsToTree      = pset.get< bool>("SaveHitWfmsToTree","false");
+  fSaveAllTrackInfoToTree = pset.get< bool>("SaveAllTrackInfoToTree","false");
+  fUsePrepulseFit         = pset.get< bool>("UsePrepulseFit","true");
+  fHitTimeCutoffLow       = pset.get< short>("HitTimeCutoffLow",-100000);
+  fHitTimeCutoffHigh      = pset.get< short>("HitTimeCutoffHigh",100000);
 }
 
 void MichelWfmReco::respondToCloseInputFile(art::FileBlock const & fb)
@@ -1184,9 +1222,9 @@ void MichelWfmReco::respondToOpenOutputFiles(art::FileBlock const & fb)
 // predefined fiducial volume
 bool MichelWfmReco::IsPointInFiducialVolume(TVector3 p)
 {
-  double Lx = 47.;
-  double Ly = 40.;
-  double Lz = 90.;
+  float Lx = 47.;
+  float Ly = 40.;
+  float Lz = 90.;
   if( (fabs(p.Y()       ) > Ly/2. - fFiducialMargin_Y) ||
       (fabs(p.X()-Lx/2. ) > Lx/2. - fFiducialMargin_X) ||
       (fabs(p.Z()-Lz/2. ) > Lz/2. - fFiducialMargin_Z) )

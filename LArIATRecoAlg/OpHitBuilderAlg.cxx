@@ -72,20 +72,22 @@ OpHitBuilderAlg::~OpHitBuilderAlg()
 
 //--------------------------------------------------------------
 void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
-  fGradientHitThreshold       = pset.get< Double_t >("GradientHitThreshold",-10);
-  fPulseHitThreshold          = pset.get< Double_t >("PulseHitThreshold",0.);
-  fGradientRMSFilterThreshold = pset.get< Double_t >("GradientRMSFilterThreshold",5); 
-  fMinHitSeparation           = pset.get< Double_t >("MinHitSeparation",20);
+  fGradientHitThreshold       = pset.get< float >("GradientHitThreshold",-10);
+  fPulseHitThreshold          = pset.get< float >("PulseHitThreshold",0.);
+  fGradientRMSFilterThreshold = pset.get< float >("GradientRMSFilterThreshold",5); 
+  fMinHitSeparation           = pset.get< float >("MinHitSeparation",20);
   fBaselineWindowLength       = pset.get< short >("BaselineWindowLength",1000);
   fPrePulseBaselineFit        = pset.get< short >("PrePulseBaselineFit",250);
-  fPrePulseTau1               = pset.get< double>("PrePulseTau1",1400.);
-  fPrePulseTau2               = pset.get< double>("PrePulseTau1",1600.);
+  fPrePulseTau1               = pset.get< float>("PrePulseTau1",1400.);
+  fPrePulseTau2               = pset.get< float>("PrePulseTau1",1600.);
   fPromptWindowLength         = pset.get< short >("PromptWindowLength",100);
   fFullWindowLength           = pset.get< short >("FullWindowLength",7000);
-  fMvPerADC                   = pset.get< double>("MvPerADC",0.2);
+  fMvPerADC                   = pset.get< float>("MvPerADC",0.2);
   fUsePrepulseFit             = pset.get< bool >("UsePrepulseFit","true");
-  fTimestampCut               = pset.get< double>("TimestampCut",5.25);
+  fTimestampCut               = pset.get< float>("TimestampCut",5.25);
   bVerbose                    = pset.get< bool >("Verbosity","true");
+  fHitTimeCutoffLow       = pset.get< short>("HitTimeCutoffLow",-100000);
+  fHitTimeCutoffHigh      = pset.get< short>("HitTimeCutoffHigh",100000);
 }
 
 
@@ -109,7 +111,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short> wfm)
   std::vector<short> hits;
 
   // Make the gradient
-  std::vector<double> g = MakeGradient(wfm);
+  std::vector<float> g = MakeGradient(wfm);
   
   // Set rising_edge to false before starting hit finding loop
   bool rising_edge = false;
@@ -155,19 +157,19 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short> wfm)
     rms_window_size = rms_window_end - rms_window_start;
 
     // Find gradient's local RMS for the hit using this window
-    std::vector<double> tmp = GetBaselineAndRMS( g, rms_window_start, rms_window_end );
-    double    g_mean = tmp[0];
-    double    g_rms = tmp[1];
+    std::vector<float> tmp = GetBaselineAndRMS( g, rms_window_start, rms_window_end );
+    float    g_mean = tmp[0];
+    float    g_rms = tmp[1];
 
 
     // Find amplitude of gradient in neighborhood of this hit
-    double g_amp = g_mean - GetLocalMinimum(g,hits[i]);
+    float g_amp = g_mean - GetLocalMinimum(g,hits[i]);
 
     // Calculate quick amplitude of pulse to use in discrimination
     size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hits[i]-10));
     tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
-    double baseline = tmp[0];
-    double hit_amp = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
+    float baseline = tmp[0];
+    float hit_amp = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
     
     //if(bVerbose){
     //  std::cout<<"     "<<hits[i]<<": window: ("<<rms_window_start<<","<<rms_window_end<<")  rms: "<<g_rms
@@ -181,7 +183,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short> wfm)
   
   } // <-- end loop over hits
 
-  // Merge double-hits within 250 ns of first pulse
+  // Merge float-hits within 250 ns of first pulse
   std::vector<short> hits_merged = HitMerger(hits_filtered,250,0);
 
   // Now merge all remaining hits using shorter spacing
@@ -193,12 +195,12 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<short> wfm)
 
 //--------------------------------------------------------------
 // MakeGradient
-std::vector<double> OpHitBuilderAlg::MakeGradient( std::vector<short> wfm )
+std::vector<float> OpHitBuilderAlg::MakeGradient( std::vector<short> wfm )
 {
-  std::vector<double> g(wfm.size());
+  std::vector<float> g(wfm.size());
   g[0]=0; 
   g[1]=0; 
-  for(size_t i=2; i<wfm.size(); i++) g[i] = double(wfm[i] - wfm[i-2])*0.5;
+  for(size_t i=2; i<wfm.size(); i++) g[i] = float(wfm[i] - wfm[i-2])*0.5;
   return g;
 }
 
@@ -236,27 +238,27 @@ std::vector<short> OpHitBuilderAlg::HitMerger( std::vector<short> hits, short sp
 
 //--------------------------------------------------------------
 // Get (baseline,rms) of a segment of an std::vector<short>
-std::vector<double> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<short> wfm, short x1, short x2 )
+std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<short> wfm, short x1, short x2 )
 {
-  // Convert to vector<double> and send into
+  // Convert to vector<float> and send into
   // other version of function
-  std::vector<double> wfm_double(wfm.begin(),wfm.end());
-  return GetBaselineAndRMS(wfm_double,x1,x2);
+  std::vector<float> wfm_float(wfm.begin(),wfm.end());
+  return GetBaselineAndRMS(wfm_float,x1,x2);
 }
 
 
 //--------------------------------------------------------------
-// Get (baseline,rms) of a segment of an std::vector<double>
-std::vector<double> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<double> wfm, short x1, short x2 )
+// Get (baseline,rms) of a segment of an std::vector<float>
+std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<float> wfm, short x1, short x2 )
 {
-  double mean = 0;
-  double sumSquares = 0;
+  float mean = 0;
+  float sumSquares = 0;
   int N = x2 - x1;
 
   for ( int i = x1; i < x2; i++ ) mean += wfm[i]/N;
   for ( int i = x1; i < x2; i++ ) sumSquares += pow(wfm[i]-mean,2);
   
-  std::vector<double> out(2);
+  std::vector<float> out(2);
   out[0] = mean;
   out[1] = sqrt(sumSquares/N);
 
@@ -264,15 +266,15 @@ std::vector<double> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<double> wfm,
 }
 
 // -------------------------------------------------------------
-// Returns a vector<double> containing (1) the hit's amplitude,
+// Returns a vector<float> containing (1) the hit's amplitude,
 // (2) its prompt integral, and (3) its full integral
-std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hit)
+std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hit)
 {
 
   //if(bVerbose) std::cout<<"GetHitInfo(wfm,"<<hit<<")"<<std::endl;
 
   // Create vector to be returned 
-  std::vector<double> hit_info {0.,0.,0.};
+  std::vector<float> hit_info {0.,0.,0.};
   
   // If the hit is too early to reliably calculate 
   // a baseline, stop now and return zero
@@ -280,9 +282,9 @@ std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short h
 
   // Get baseline
   size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
-  std::vector<double> tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
-  double baseline = tmp[0];
-  double rms      = tmp[1];
+  std::vector<float> tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
+  float baseline = tmp[0];
+  float rms      = tmp[1];
 
   // Determine bounds for fit and integration 
   short x1,x2,x3;
@@ -303,10 +305,10 @@ std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short h
   }
 
   // Find overall prepulse baseline/RMS
-  std::vector<double> prepulse_info = GetBaselineAndRMS(wfm,x1,x2);
+  std::vector<float> prepulse_info = GetBaselineAndRMS(wfm,x1,x2);
   prepulse_baseline = prepulse_info[0];
   prepulse_rms      = prepulse_info[1];
-  double diff       = prepulse_baseline - baseline;
+  float diff       = prepulse_baseline - baseline;
   
   if(bVerbose){
     std::cout<<"Prepulse baseline "<<prepulse_baseline<<"   rms "<<prepulse_rms<<std::endl;
@@ -316,7 +318,7 @@ std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short h
 
   // Get mean of first few samples of the prepulse region
   int  nn = 10;
-  double x1_baseline = GetBaselineAndRMS(wfm,x1,x1+nn)[0];
+  float x1_baseline = GetBaselineAndRMS(wfm,x1,x1+nn)[0];
   bool PrepulseIsFlat = 0;
   // Check if prepulse baseline is flat.  If so,
   // use this as the "local" baseline and force
@@ -327,7 +329,7 @@ std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short h
   //  PrepulseIsFlat = "true";
   //}
 
-  double norm_set    = (x1_baseline - baseline);
+  float norm_set    = (x1_baseline - baseline);
   if(bVerbose) std::cout<<"Norm set: "<<norm_set<<std::endl;
   if (norm_set > 0.) norm_set = 0.;
   
@@ -360,7 +362,7 @@ std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short h
   //fit_FastNorm        = prepulse_exp_fit.GetParameter(4);
   //fit_FastTau         = prepulse_exp_fit.GetParameter(5);
   int NDF         = prepulse_exp_fit.GetNDF();
-  fit_ReducedChi2 = prepulse_exp_fit.GetChisquare()/double(NDF); 
+  fit_ReducedChi2 = prepulse_exp_fit.GetChisquare()/float(NDF); 
   
   if(bVerbose){
     std::cout<<"Parameters of fitted prepulse region: \n";
@@ -382,12 +384,12 @@ std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short h
   if(flag_ave) AverageWaveform_count++;
   
   // Integrate using the fitted function as running baseline
-  double integral = 0, integral_prompt = 0;
-  double amplitude = 0.;
+  float integral = 0, integral_prompt = 0;
+  float amplitude = 0.;
   for( int i = 0; i < total_bins; i++){
     
     short xx    = x1 + short(i);
-    double yy   = prepulse_exp_fit.Eval(xx) - (double)wfm[xx];  
+    float yy   = prepulse_exp_fit.Eval(xx) - (float)wfm[xx];  
     
     // Once past x2, start integration
     if( xx >= x2 ) integral += yy;
@@ -400,6 +402,10 @@ std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short h
 
     // Add to average waveform if specified
     if( flag_ave ) AverageWaveform.at(i) += yy*fMvPerADC;
+ 
+    //std::cout<<"   i "<<xx<<"  v:"<<yy*fMvPerADC
+    //<<"  integrating? "<<(xx>=x2)
+    //<<"  "<<integral<<"   "<<integral_prompt<<std::endl;
   
   }
 
@@ -413,19 +419,19 @@ std::vector<double> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short h
 
 //-------------------------------------------------------------
 // Performs prepulse fit on a hit and returns baseline -corrected 
-// vector<double> for easier integration or for making ave waveform
-//std::vector<double> OpHitBuilderAlg::HitBaselineCorrection( std::vector<short> wfm, short hit, int pre, int post){
+// vector<float> for easier integration or for making ave waveform
+//std::vector<float> OpHitBuilderAlg::HitBaselineCorrection( std::vector<short> wfm, short hit, int pre, int post){
 //
 //}
 
 //-------------------------------------------------------------
 // (Overloaded function, version 1/2)
-// Scans segment of vector<double> around a designated sample point
+// Scans segment of vector<float> around a designated sample point
 // and returns the local minimum
-double OpHitBuilderAlg::GetLocalMinimum(std::vector<double> v, short hit)
+float OpHitBuilderAlg::GetLocalMinimum(std::vector<float> v, short hit)
 {
   size_t neighborhood_range   = 30; 
-  double  low                 = 9999;
+  float  low                 = 9999;
   size_t x1 = hit-neighborhood_range;
   size_t x2 = hit+neighborhood_range;
     
@@ -442,9 +448,9 @@ double OpHitBuilderAlg::GetLocalMinimum(std::vector<double> v, short hit)
 // and returns the local minimum
 short OpHitBuilderAlg::GetLocalMinimum(std::vector<short> v, short hit)
 {
-  // Convert vector<short> to vector<double> and pass
+  // Convert vector<short> to vector<float> and pass
   // to the previous function
-  std::vector<double> vd(v.begin(),v.end());
+  std::vector<float> vd(v.begin(),v.end());
   return (short)GetLocalMinimum(vd,hit);
 }
 
@@ -452,27 +458,27 @@ short OpHitBuilderAlg::GetLocalMinimum(std::vector<short> v, short hit)
 //--------------------------------------------------------------
 // Get only amplitude of the specified hit (this function calls the broader
 // "GetHitInfo" function, but returns only the relevant amplitude information).
-double OpHitBuilderAlg::GetHitAmplitude(std::vector<short> wfm, short hit)
+float OpHitBuilderAlg::GetHitAmplitude(std::vector<short> wfm, short hit)
 {
-  std::vector<double> tmp = GetHitInfo(wfm,hit);
+  std::vector<float> tmp = GetHitInfo(wfm,hit);
   return tmp[0]; 
 }
 
 //--------------------------------------------------------------
 // Get only integral of the specified hit (this function calls the broader
 // "GetHitInfo" function, but returns only the relevant integral information).
-double OpHitBuilderAlg::GetHitPromptIntegral(std::vector<short> wfm, short hit)
+float OpHitBuilderAlg::GetHitPromptIntegral(std::vector<short> wfm, short hit)
 {
-  std::vector<double> tmp = GetHitInfo(wfm,hit);
+  std::vector<float> tmp = GetHitInfo(wfm,hit);
   return tmp[1];
 }
 
 //--------------------------------------------------------------
 // Get only integral of the specified hit (this function calls the broader
 // "GetHitInfo" function, but returns only the relevant integral information).
-double OpHitBuilderAlg::GetHitFullIntegral(std::vector<short> wfm, short hit)
+float OpHitBuilderAlg::GetHitFullIntegral(std::vector<short> wfm, short hit)
 {
-  std::vector<double> tmp = GetHitInfo(wfm,hit);
+  std::vector<float> tmp = GetHitInfo(wfm,hit);
   return tmp[2];
 }
 
@@ -487,7 +493,7 @@ bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse opdetpulse )
   int FirstSample = opdetpulse.FirstSample();
   int NSamples = wfm.size();
 
-  if( (hits.size() == 1) && ( fabs(int(hits[0]) - FirstSample) <= 0.01*(double)NSamples) ){
+  if( (hits.size() == 1) && ( fabs(int(hits[0]) - FirstSample) <= 0.01*(float)NSamples) ){
     return true;
   } else {
     return false;
