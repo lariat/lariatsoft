@@ -31,7 +31,7 @@
 
 //LArIAT Things
 #include "RawDataUtilities/TriggerDigitUtility.h"
-#include "LArIATRecoAlg/WCTrackBuilderAlg_base.h"
+#include "LArIATRecoAlg/WCTrackBuilderAlgBase.h"
 #include "LArIATRecoAlg/WCHitFinderAlg.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "Utilities/DatabaseUtilityT1034.h"
@@ -97,7 +97,7 @@ private:
   // Declare member data here.
 
     //Algorithm object for track building
-    WCTrackBuilderAlg_base fWCTrackBuilderAlg;
+    WCTrackBuilderAlgBase fWCTrackBuilderAlg;
     std::string       fSlicerSourceLabel;
     WCHitFinderAlg    fWCHitFinderAlg;
 
@@ -124,7 +124,7 @@ private:
 
 
 WCTrackBuilder::WCTrackBuilder(fhicl::ParameterSet const & p)
- : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg_base")) // these should be initialized
+ : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlgBase")) // these should be initialized
  , fWCHitFinderAlg(p.get< fhicl::ParameterSet >("WCHitFinderAlg"))            // here instead of reconfigure()
 {
   // Call appropriate produces<>() functions here.
@@ -216,7 +216,7 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 					 track_count);			       
 //Track_Type=fWCHitFinderAlg.getTrackType(good_hits);
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(std::vector<std::vector<WCHitList> > good_hits));    // WCHitFinderAlg::getTrackType() does not exist
-//fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCTrackBuilderAlg_base::getTrackType()
+//fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCTrackBuilderAlgBase::getTrackType()
                                                         // but WCTrackBuilderAlg::getTrackType() exists!
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 

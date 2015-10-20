@@ -19,7 +19,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // LArIAT includes
-#include "LArIATRecoAlg/WCTrackBuilderAlg_base.h"
+#include "LArIATRecoAlg/WCTrackBuilderAlgBase.h"
 
 
 #include <iostream>
@@ -30,7 +30,7 @@
 
 //--------------------------------------------------------------
 //Constructor  TRACK
-WCTrackBuilderAlg_base::WCTrackBuilderAlg_base( fhicl::ParameterSet const& pset )
+WCTrackBuilderAlgBase::WCTrackBuilderAlgBase( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
 
@@ -132,13 +132,13 @@ WCTrackBuilderAlg_base::WCTrackBuilderAlg_base( fhicl::ParameterSet const& pset 
 
 //--------------------------------------------------------------  
 //Destructor //BOTH
-WCTrackBuilderAlg_base::~WCTrackBuilderAlg_base()
+WCTrackBuilderAlgBase::~WCTrackBuilderAlgBase()
 {
 
 }
 
 //--------------------------------------------------------------
-void WCTrackBuilderAlg_base::reconfigure( fhicl::ParameterSet const& pset )  //BOTH
+void WCTrackBuilderAlgBase::reconfigure( fhicl::ParameterSet const& pset )  //BOTH
 {
 
   fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
@@ -164,7 +164,7 @@ void WCTrackBuilderAlg_base::reconfigure( fhicl::ParameterSet const& pset )  //B
 }
 //--------------------------------------------------------------
 //This is the function that is called to load correct row of the lariat_xml_database table for a run. This must be called within the beginSubRun() method of your analysis module
-void WCTrackBuilderAlg_base::loadXMLDatabaseTableForBField( int run, int subrun ) //TRACK
+void WCTrackBuilderAlgBase::loadXMLDatabaseTableForBField( int run, int subrun ) //TRACK
 {
   fRun = run;
   fSubRun = subrun;
@@ -174,7 +174,7 @@ void WCTrackBuilderAlg_base::loadXMLDatabaseTableForBField( int run, int subrun 
 
 //--------------------------------------------------------------
 //Main function called for each trigger
-void WCTrackBuilderAlg_base::reconstructTracks(std::vector<double> & reco_pz_list,               
+void WCTrackBuilderAlgBase::reconstructTracks(std::vector<double> & reco_pz_list,               
 					   std::vector<double> & y_kink_list,
 					   std::vector<double> & x_dist_list,
 					   std::vector<double> & y_dist_list,
@@ -235,7 +235,7 @@ void WCTrackBuilderAlg_base::reconstructTracks(std::vector<double> & reco_pz_lis
 
 //=====================================================================
 //Find the ykink, x/y/z_dist variables, and reco_pz TRACK
-void WCTrackBuilderAlg_base::getTrackMom_Kink_End(WCHitList track,
+void WCTrackBuilderAlgBase::getTrackMom_Kink_End(WCHitList track,
 					     float & reco_pz,
 					     float & y_kink,
 					     float (&dist_array)[3])
@@ -289,7 +289,7 @@ void WCTrackBuilderAlg_base::getTrackMom_Kink_End(WCHitList track,
 
 //=====================================================================
 //More geometry //TRACK
-void WCTrackBuilderAlg_base::midPlaneExtrapolation(std::vector<float> x_wires,
+void WCTrackBuilderAlgBase::midPlaneExtrapolation(std::vector<float> x_wires,
 					      std::vector<float> y_wires,
 					      float (&pos_us)[3],
 					      float (&pos_ds)[3])
@@ -350,7 +350,7 @@ void WCTrackBuilderAlg_base::midPlaneExtrapolation(std::vector<float> x_wires,
 //Taking the set of good hits and finding all combinations of possible tracks. These may not be physically
 //reasonable, but could just be anything with a hit on each wire plane axis.
 //TRACK!!!!!!!!!!!!!!!!!!!!!
-bool WCTrackBuilderAlg_base::buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
+bool WCTrackBuilderAlgBase::buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 					    std::vector<double> & reco_pz_list,
 					    std::vector<double> & y_kink_list,
 					    std::vector<double> & x_dist_list,
@@ -491,7 +491,7 @@ bool WCTrackBuilderAlg_base::buildTracksFromHits(std::vector<std::vector<WCHitLi
 
 //=====================================================================
 //See if trigger has a good enough hit set to continue //TRACK!!!
-bool WCTrackBuilderAlg_base::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits)
+bool WCTrackBuilderAlgBase::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits)
 {
   //Now determine if we want to skip
   bool skip = false;
@@ -530,7 +530,7 @@ bool WCTrackBuilderAlg_base::shouldSkipTrigger(std::vector<std::vector<WCHitList
 
 //=====================================================================
 //TRACKS!!!
-void WCTrackBuilderAlg_base::findTrackOnTPCInfo(WCHitList track, float &x, float &y, float &theta, float &phi )
+void WCTrackBuilderAlgBase::findTrackOnTPCInfo(WCHitList track, float &x, float &y, float &theta, float &phi )
 {
   
   //Get position vectors of the points on WC3 and WC4
@@ -595,7 +595,7 @@ void WCTrackBuilderAlg_base::findTrackOnTPCInfo(WCHitList track, float &x, float
 //=====================================================================
 //Transform these into the coordinate system of the TPC
 //TRACKS!!!!!
-void WCTrackBuilderAlg_base::transformWCHits( float (&WC3_point)[3],
+void WCTrackBuilderAlgBase::transformWCHits( float (&WC3_point)[3],
 		      float (&WC4_point)[3])
 {
   //First transformation: a translation by the location of the TPC
@@ -610,7 +610,7 @@ void WCTrackBuilderAlg_base::transformWCHits( float (&WC3_point)[3],
 //Take a look at the track produced by the combinations of hits and determine
 //if it's good enough to be considered a track.
 //TRACKS!!!!
-bool WCTrackBuilderAlg_base::cutOnGoodTracks( WCHitList track,
+bool WCTrackBuilderAlgBase::cutOnGoodTracks( WCHitList track,
 					 float & y_kink,
 					 float (&dist_array)[3],
 					 size_t track_index)
@@ -635,7 +635,7 @@ bool WCTrackBuilderAlg_base::cutOnGoodTracks( WCHitList track,
 //For all tracks passing the hard cuts, narrow down on those with identical hits
 //in any of the WCAxes
 //TRACKS!!!!
-void WCTrackBuilderAlg_base::disambiguateTracks( std::vector<double> & reco_pz_list,
+void WCTrackBuilderAlgBase::disambiguateTracks( std::vector<double> & reco_pz_list,
 					    std::vector<double> & y_kink_list,
 					    std::vector<double> & x_dist_list,
 					    std::vector<double> & y_dist_list,
