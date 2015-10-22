@@ -35,11 +35,13 @@ physics:
   {
     WCTrackBuilder:
     {
-      module_type:         WCTrackBuilder
+      module_type:         WCFactory
       SourceLabel:         "daq"
-      WCTrackBuilderAlgBase:   @local::lariat_wctrackbuilderalgbase
-      WCHitFinderAlg:      @local::lariat_wchitfinderalg  
-      TriggerUtility: "FragmentToDigit"
+      #WCTrackBuilderAlgBase:   @local::lariat_wctrackbuilderalgbase
+      #WCHitFinderAlg:      @local::lariat_wchitfinderalg  
+      #WCTrackBuilderFactory: @local::lariat_wctrackbuilderfactory
+      FactoryAlgLabel: "Picky"
+      #TriggerUtility: "FragmentToDigit"
       NWC: 4
       NWperTDC: 64
       Verbose: false
