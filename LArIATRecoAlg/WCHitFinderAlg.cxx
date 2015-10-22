@@ -59,7 +59,7 @@ void WCHitFinderAlg::reconfigure( fhicl::ParameterSet const& pset )
 //----------------------------------------------------------------------------------
 int WCHitFinderAlg::getTrackType(std::vector<std::vector<WCHitList> > & good_hits) //HIT but need to pull parts of shouldSkipTrigger
 {
-int fTrack_Type;
+  int fTrack_Type = -1;
   //Check to see if there is only a single hit on one of the WCAxes
   bool lonely_hit_bool = false;   //Single hit on at most 7 WCAxes, at least 1
   bool unique_hit_bool = true;   //Single hit on all WCAxes
