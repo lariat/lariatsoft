@@ -40,18 +40,19 @@ class OpHitBuilderAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
 
-  std::vector<short>              GetHits( std::vector<short>);
+  std::vector<short>              GetHits( raw::OpDetPulse );
   std::vector<short>              HitMerger( std::vector<short>, short, int);
   std::vector<float>             MakeGradient( std::vector<short> );
   std::vector<float>             GetBaselineAndRMS( std::vector<short>, short, short);
   std::vector<float>               GetBaselineAndRMS( std::vector<float>, short, short);
-  std::vector<float>             GetHitInfo( std::vector<short>, short);
-  float                          GetHitAmplitude( std::vector<short>, short);
-  float                          GetHitPromptIntegral( std::vector<short>, short);
-  float                          GetHitFullIntegral(   std::vector<short>, short);  
+  std::vector<float>             GetHitInfo( std::vector<short>, short, short);
+  float                          GetHitAmplitude( std::vector<short>, short, short);
+  float                          GetHitPromptIntegral( std::vector<short>, short, short);
+  float                          GetHitFullIntegral(   std::vector<short>, short, short);  
   bool                              IsCleanBeamWaveform( raw::OpDetPulse );
   short                             GetLocalMinimum( std::vector<short>, short);
   float                          GetLocalMinimum( std::vector<float>, short);
+  std::vector<float>             GetSinglePEs( raw::OpDetPulse );
   
   // Average waveform vector
   std::vector<float>   AverageWaveform;
@@ -67,23 +68,31 @@ class OpHitBuilderAlg{
   float fit_SlowTau;
   float fit_ReducedChi2;
 
-  bool bVerbose;
-  bool      fUsePrepulseFit;
+  bool  bVerbose;
+  float fPulseHitRMSThresh;
+  bool  fUsePrepulseFit;
+  float fGradHitThresh;
+  float fPulseHitThreshLow;
+  float fPulseHitThreshHigh;
+  float fGradientRMSFilterThreshold;
+  short fMinHitSeparation; 
+  short fFirstHitSeparation; 
+  short fBaselineWindowLength;
+  short fPrePulseBaselineFit;
+  short fPrePulseDisplay;
+  short fPromptWindowLength;
+  short fFullWindowLength;
+  float fMvPerADC;
+  float fTimestampCut;
+  float fPrePulseTau1;
+  float fPrePulseTau2;
+  int   fHitTimeCutoffLow;
+  int   fHitTimeCutoffHigh;
+  short fSER_PreWindow;
+  short fSER_PostWindow;
 
  private:
   
-  float  fGradientHitThreshold;
-  float  fPulseHitThreshold;
-  float  fGradientRMSFilterThreshold;
-  float  fMinHitSeparation;  
-  short     fBaselineWindowLength;
-  short     fPrePulseBaselineFit;
-  short     fPromptWindowLength;
-  short     fFullWindowLength;
-  float    fMvPerADC;
-  float    fTimestampCut;
-  float    fPrePulseTau1;
-  float    fPrePulseTau2;
   
 };
 

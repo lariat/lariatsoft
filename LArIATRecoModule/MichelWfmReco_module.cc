@@ -99,38 +99,49 @@ private:
   std::string fTriggerUtility;
 
   // Tunable parameters from fcl
-  bool            bUseTriggerFilter;
-  bool            bUseTrackInformation;
-  bool            bVerbose;
-  std::string     fDAQModule;
-  std::string     fTrackModule;
-  std::string     fParticleIDModule;
-  std::string     fTrackCalModule;
-  std::string     fInstanceName;
-  float          fTimestampCut;
-  short           fGateDelay;
-  short           fBaselineWindowLength;
-  short           fPromptWindowLength;
-  short           fFullWindowLength;
-  short           fPrePulseBaselineFit;
-  float          fFiducialMargin_X;
-  float          fFiducialMargin_Y;
-  float          fFiducialMargin_Z; 
-  float          fSinglePE;
-  float          fAveWfmCut_Dt;
-  bool            fCorrectAveWfms;
-  bool            fSaveHitWfmsToTree;
-  bool            fSaveAllTrackInfoToTree;
-  float           fHitTimeCutoffLow;
-  float           fHitTimeCutoffHigh;
+  bool                bUseTriggerFilter;
+  bool                bUseTrackInformation;
+  bool                bVerbose;
+  std::string         fDAQModule;
+  std::string         fTrackModule;
+  std::string         fParticleIDModule;
+  std::string         fTrackCalModule;
+  std::string         fInstanceName;
+  float               fTimestampCut;
+  short               fGateDelay;
+  short               fBaselineWindowLength;
+  short               fPromptWindowLength;
+  short               fFullWindowLength;
+  short               fPrePulseBaselineFit;
+  short               fPromptLightDtCut;
+  short               fPrePulseDisplay;
+  float               fFiducialMargin_X;
+  float               fFiducialMargin_Y;
+  float               fFiducialMargin_Z; 
+  float               fSinglePE;
+  float               fAveWfmCut_Dt;
+  bool                fCorrectAveWfms;
+  bool                fSaveHitWfmsToTree;
+  bool                fSaveAllTrackInfoToTree;
+  float               fHitTimeCutoffLow;
+  float               fHitTimeCutoffHigh;
+  bool                fUsePrepulseFit;
+  bool                fSER_Mode;
+  float               fSER_GradHitThresh;
+  float               fSER_GradRMSFilter;
+  float               fSER_PulseHitThreshHigh;
+  float               fSER_PulseHitThreshLow;
+  short               fSER_PostWindow;
+  short               fSER_PreWindow;
 
   // Alg objects
-  OpHitBuilderAlg   fOpHitBuilderAlg; 
-  OpHitBuilderAlg   fOpHitBuilderAlg_ave1;
-  OpHitBuilderAlg   fOpHitBuilderAlg_ave2;
-  OpHitBuilderAlg   fOpHitBuilderAlg_aveMIP;
-  OpHitBuilderAlg   fOpHitBuilderAlg_aveProton;
-  TriggerFilterAlg  fTrigFiltAlg;
+  OpHitBuilderAlg     fOpHitBuilderAlg; 
+  OpHitBuilderAlg     fOpHitBuilderAlg_ave1;
+  OpHitBuilderAlg     fOpHitBuilderAlg_ave2;
+  OpHitBuilderAlg     fOpHitBuilderAlg_aveMIP;
+  OpHitBuilderAlg     fOpHitBuilderAlg_aveProton;
+  OpHitBuilderAlg     fOpHitBuilderAlg_SER;
+  TriggerFilterAlg    fTrigFiltAlg;
 
   // Variables/vectors
   int                   iEvent;
@@ -141,15 +152,24 @@ private:
   int                   NSamples;
   int                   MuTrackIndex;
   TVector3              region_centerpoint;
-  float                region_radius;
-  std::vector<float>   hit_info;
+  float                 region_radius;
+  std::vector<float>    hit_info;
   std::vector<TVector3> vTrackVertex;
   std::vector<TVector3> vTrackEnd;
   TVector3              MuTrackVertex;
   TVector3              MuTrackEnd;
   int                   HitWaveformBins;
+  char                  buffer[200];
+  raw::OpDetPulse       ETL_opdetpulse;
+  int                 SER_region_size;
+  int                   N_Events;
+  int                   N_MichelCandidates;
+  int                   N_MichelNonBG;
+  int                   N_PEs;
+  float                 T_PEs;
 
   // Histograms
+  TH1F* h_SER;
   TH1I* h_NumOpHits;
   TH2I* h_NumOpHits_vs_NumTracks;
   TH1I* h_NumOpHits_beam;
@@ -173,7 +193,7 @@ private:
   TH1F* h_PromptPE;
   TH1F* h_PromptPE_region;
   TH1F* h_FullPE_region;
-  TH2F* h_PromptFraction_vs_Amplitude;
+  TH2F* h_PromptFraction_vs_FullLight;
   TH2F* h_PromptPE_vs_Amplitude;
   TH1F* h_TrackVertex_x;
   TH1F* h_TrackVertex_y;
@@ -191,91 +211,105 @@ private:
   TH1F* h_AverageWaveformMIP;
   TH1F* h_AverageWaveformProton;
 
+  // TTree
+  TTree* MichelDataTree;
+  
   // Storing run information
   int                     RunNumber;
   int                     SubRunNumber;
   int                     EventNumber;
-  float                  Timestamp;
+  float                   Timestamp;
 
   // Storing optical hit information
   int                     NumHits;
   std::vector<short>      vHitTimes;
-  std::vector<float>     vHitAmplitude;
-  std::vector<float>     vHitPromptLight;
-  std::vector<float>     vHitFullLight;
-  std::vector<float>     vHitPE_Prompt;
-  std::vector<float>     vHitPE_Full;
-  std::vector<float>     vPrepulseBaseline;
-  std::vector<float>     vPrepulseRMS;
-  std::vector<float>     vPrepulseFastNorm;
-  std::vector<float>     vPrepulseFastTau;
-  std::vector<float>     vPrepulseSlowNorm;
-  std::vector<float>     vPrepulseSlowTau;
-  std::vector<float>     vPrepulseReducedChi2;
-  std::vector<float>     vHitPromptFraction;
+  std::vector<float>      vHitAmplitude;
+  std::vector<float>      vHitPromptLight;
+  std::vector<float>      vHitFullLight;
+  std::vector<float>      vHitPE_Prompt;
+  std::vector<float>      vHitPE_Full;
+  std::vector<float>      vPrepulseBaseline;
+  std::vector<float>      vPrepulseRMS;
+  std::vector<float>      vPrepulseFastNorm;
+  std::vector<float>      vPrepulseFastTau;
+  std::vector<float>      vPrepulseSlowNorm;
+  std::vector<float>      vPrepulseSlowTau;
+  std::vector<float>      vPrepulseReducedChi2;
+  std::vector<float>      vHitPromptFraction;
   std::vector<int>        vIsInBGPopulation; 
   std::vector<short>      HitWaveform; 
   int                     HitWaveformIndex;
-  float                  WaveformBaseline;
-  float                  WaveformBaselineRMS;
+  float                   WaveformBaseline;
+  float                   WaveformBaselineRMS;
   int                     IsBeamEvent;
   int                     IsCleanBeamWaveform;
-  float                  DeltaTime;
-  float                  Amplitude;
-  float                  Charge_100ns; 
-  float                  Charge_Full;
-  float                  PE_Prompt; 
-  float                  PE_Full;
-  float                  PromptFraction;
+  float                   DeltaTime;
+  float                   Amplitude;
+  float                   Charge_100ns; 
+  float                   Charge_500ns;
+  float                   Charge_Full;
+  float                   PE_Prompt; 
+  float                   PE_Full;
+  float                   PromptFraction;
   
   // Storing track infornatuib
   int                     NumTracks;
-  std::vector<float>     vTrackVertex_x;
-  std::vector<float>     vTrackVertex_y;
-  std::vector<float>     vTrackVertex_z;
-  std::vector<float>     vTrackEnd_x;
-  std::vector<float>     vTrackEnd_y;
-  std::vector<float>     vTrackEnd_z;
+  std::vector<float>      vTrackVertex_x;
+  std::vector<float>      vTrackVertex_y;
+  std::vector<float>      vTrackVertex_z;
+  std::vector<float>      vTrackEnd_x;
+  std::vector<float>      vTrackEnd_y;
+  std::vector<float>      vTrackEnd_z;
   std::vector<int>        vIsTrackStopping;
   std::vector<int>        vIsTrackPassing;
   std::vector<int>        vIsTrackContained;
   std::vector<int>        vTrackPID;
-  std::vector<float>     vTrackPIDA;
-  std::vector<float>     vTrackEnergy;
-  std::vector<float>     vTrackLength;
+  std::vector<float>      vTrackPIDA;
+  std::vector<float>      vTrackEnergy;
+  std::vector<float>      vTrackLength;
   int                     IsSinglePassingTrack;
   int                     IsSingleStoppingTrack;
-  float                  StoppingTrackZenithAngle;
-  float                  PassingTrackZenithAngle;
-  float                  MuTrackVertex_x;
-  float                  MuTrackVertex_y;
-  float                  MuTrackVertex_z;
-  float                  MuTrackEnd_x;
-  float                  MuTrackEnd_y;
-  float                  MuTrackEnd_z;
-  float                  MuTrackLength;
-  float                  MuTrackEnergy;
+  float                   StoppingTrackZenithAngle;
+  float                   PassingTrackZenithAngle;
+  float                   MuTrackVertex_x;
+  float                   MuTrackVertex_y;
+  float                   MuTrackVertex_z;
+  float                   MuTrackEnd_x;
+  float                   MuTrackEnd_y;
+  float                   MuTrackEnd_z;
+  float                   MuTrackLength;
+  float                   MuTrackEnergy;
   int                     MuAmplitude;
-  float                  MuCharge_100ns;
-  float                  SecondTrackProximity;
-  float                  SecondTrackLength;
-  float                  SecondTrackEnergy;
+  float                   MuCharge_100ns;
+  float                   SecondTrackProximity;
+  float                   SecondTrackLength;
+  float                   SecondTrackEnergy;
   int                     IsSecondTrackContained;
   
-  // TTree info
-  TTree* MichelDataTree;
 
 };
 
 
 
 MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & pset)
-: fOpHitBuilderAlg(pset), fOpHitBuilderAlg_ave1(pset), fOpHitBuilderAlg_ave2(pset), fOpHitBuilderAlg_aveMIP(pset), fOpHitBuilderAlg_aveProton(pset), fTrigFiltAlg(pset)
+: fOpHitBuilderAlg(pset), 
+fOpHitBuilderAlg_ave1(pset), 
+fOpHitBuilderAlg_ave2(pset), 
+fOpHitBuilderAlg_aveMIP(pset), 
+fOpHitBuilderAlg_aveProton(pset), 
+fOpHitBuilderAlg_SER(pset),
+fTrigFiltAlg(pset)
 {
 
   // Configures the ROOT histograms
   this->reconfigure(pset);
   
+  N_Events = 0;
+  N_MichelCandidates = 0;
+  N_MichelNonBG = 0;
+  N_PEs = 0;
+  T_PEs = 0;
+
   // Produces the LArSoft object to be outputted
   // (none for now!) 
  
@@ -285,28 +319,43 @@ MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & pset)
 
   // Some instances of OpHitBuilder were created solely 
   // to save summed/average waveforms:
-  fOpHitBuilderAlg_ave1.AddHitToAverageWaveform = 1;  
-  fOpHitBuilderAlg_ave2.AddHitToAverageWaveform = 1;  
-  fOpHitBuilderAlg_aveMIP.AddHitToAverageWaveform = 1;  
-  fOpHitBuilderAlg_aveProton.AddHitToAverageWaveform = 1;  
+  fOpHitBuilderAlg_ave1.AddHitToAverageWaveform       = 1;  
+  fOpHitBuilderAlg_ave2.AddHitToAverageWaveform       = 1;  
+  fOpHitBuilderAlg_aveMIP.AddHitToAverageWaveform     = 1;  
+  fOpHitBuilderAlg_aveProton.AddHitToAverageWaveform  = 1;  
  
   // Switch to apply baseline correction (prepulse
   // expeonential fit method) to averaged waveforms:
   if(fCorrectAveWfms){ 
-    fOpHitBuilderAlg_ave1.fUsePrepulseFit = true;  
-    fOpHitBuilderAlg_ave2.fUsePrepulseFit = true;  
-    fOpHitBuilderAlg_aveMIP.fUsePrepulseFit = true;  
-    fOpHitBuilderAlg_aveProton.fUsePrepulseFit = true; 
+    fOpHitBuilderAlg_ave1.fUsePrepulseFit       = true;  
+    fOpHitBuilderAlg_ave2.fUsePrepulseFit       = true;  
+    fOpHitBuilderAlg_aveMIP.fUsePrepulseFit     = true;  
+    fOpHitBuilderAlg_aveProton.fUsePrepulseFit  = true; 
   } else {
-    fOpHitBuilderAlg_ave1.fUsePrepulseFit = false;  
-    fOpHitBuilderAlg_ave2.fUsePrepulseFit = false;  
-    fOpHitBuilderAlg_aveMIP.fUsePrepulseFit = false;  
-    fOpHitBuilderAlg_aveProton.fUsePrepulseFit = false; 
+    fOpHitBuilderAlg_ave1.fUsePrepulseFit       = false;  
+    fOpHitBuilderAlg_ave2.fUsePrepulseFit       = false;  
+    fOpHitBuilderAlg_aveMIP.fUsePrepulseFit     = false;  
+    fOpHitBuilderAlg_aveProton.fUsePrepulseFit  = false; 
   }
 
-  HitWaveformBins = (int)fPrePulseBaselineFit+(int)fFullWindowLength;
+  HitWaveformBins = (int)fPrePulseDisplay+(int)fFullWindowLength;
   HitWaveform.reserve(HitWaveformBins);
 
+  // Configure instance of OpHitBuilder dedicated to 
+  // finding single PEs
+  fOpHitBuilderAlg_SER.fUsePrepulseFit          = false;
+  fOpHitBuilderAlg_SER.fFirstHitSeparation      = 0;
+  fOpHitBuilderAlg_SER.fMinHitSeparation        = 10;
+  fOpHitBuilderAlg_SER.fPrePulseDisplay         = fSER_PreWindow;
+  fOpHitBuilderAlg_SER.fPromptWindowLength      = fSER_PostWindow;
+  fOpHitBuilderAlg_SER.fFullWindowLength        = fSER_PostWindow;
+  fOpHitBuilderAlg_SER.fHitTimeCutoffLow        = 3000;
+  fOpHitBuilderAlg_SER.fHitTimeCutoffHigh       = 28000;
+  fOpHitBuilderAlg_SER.fGradHitThresh    = fSER_GradHitThresh;
+  fOpHitBuilderAlg_SER.fGradientRMSFilterThreshold = fSER_GradRMSFilter;
+  fOpHitBuilderAlg_SER.fPulseHitThreshLow    = fSER_PulseHitThreshLow;
+  fOpHitBuilderAlg_SER.fPulseHitThreshHigh   = fSER_PulseHitThreshHigh;
+  SER_region_size = fOpHitBuilderAlg_SER.fHitTimeCutoffHigh - fOpHitBuilderAlg_SER.fHitTimeCutoffLow;
 }
 
 
@@ -315,54 +364,41 @@ void MichelWfmReco::produce(art::Event & e)
   iEvent++;
 
   // Initialize variables to be saved into tree
-  NumHits = -9;
-  RunNumber         = -9;
-  SubRunNumber      = -9;
-  EventNumber       = -9;
-  Timestamp         = -9.; 
-  IsCleanBeamWaveform = -9;
-  IsBeamEvent       = -9;
-  NumTracks         = -9;
-  IsSingleStoppingTrack   = 0;
-  IsSinglePassingTrack    = 0;
-  StoppingTrackZenithAngle = -1;
-  PassingTrackZenithAngle   = -1;
-  vTrackVertex_x.clear();
-  vTrackVertex_y.clear();
-  vTrackVertex_z.clear();
-  vTrackEnd_x.clear();
-  vTrackEnd_y.clear();
-  vTrackEnd_z.clear();
-  vTrackEnergy.clear();
-  vTrackLength.clear();
-  vTrackPID.clear();
-  vTrackPIDA.clear();
-  vIsTrackStopping.clear();
-  vIsTrackPassing.clear();
-  vIsTrackContained.clear();
-  MuTrackVertex_x   = -99.;
-  MuTrackVertex_y  = -99.;
-  MuTrackVertex_z   = -99.;
-  MuTrackEnd_x      = -99.;
-  MuTrackEnd_y      = -99.;
-  MuTrackEnd_z      = -99.;
-  MuTrackLength     = -99.;
-  MuTrackEnergy     = -99.;
-  MuAmplitude       = -99;
-  MuCharge_100ns    = -999.;
-  DeltaTime         = -99.;
-  Amplitude         = -99.;
-  Charge_100ns      = -9999.;
-  Charge_Full       = -99999.;
-  PE_Prompt         = -9.;
-  PE_Full           = -99.;
-  PromptFraction    = -9.;
-  WaveformBaseline  = -99.;
-  WaveformBaselineRMS = -9.;
-  SecondTrackLength = -9.;
-  SecondTrackEnergy = -9.;
-  SecondTrackProximity = -9.;
-  IsSecondTrackContained = -9;
+  NumHits                     = -9;
+  RunNumber                   = -9;
+  SubRunNumber                = -9;
+  EventNumber                 = -9;
+  Timestamp                   = -9.; 
+  IsCleanBeamWaveform         = -9;
+  IsBeamEvent                 = -9;
+  NumTracks                   = -9;
+  IsSingleStoppingTrack       = 0;
+  IsSinglePassingTrack        = 0;
+  StoppingTrackZenithAngle    = -1;
+  PassingTrackZenithAngle     = -1;
+  MuTrackVertex_x             = -99.;
+  MuTrackVertex_y             = -99.;
+  MuTrackVertex_z             = -99.;
+  MuTrackEnd_x                = -99.;
+  MuTrackEnd_y                = -99.;
+  MuTrackEnd_z                = -99.;
+  MuTrackLength               = -99.;
+  MuTrackEnergy               = -99.;
+  MuAmplitude                 = -99;
+  MuCharge_100ns              = -999.;
+  DeltaTime                   = -99.;
+  Amplitude                   = -99.;
+  Charge_100ns                = -9999.;
+  Charge_Full                 = -99999.;
+  PE_Prompt                   = -9.;
+  PE_Full                     = -99.;
+  PromptFraction              = -9.;
+  WaveformBaseline            = -99.;
+  WaveformBaselineRMS         = -9.;
+  SecondTrackLength           = -9.;
+  SecondTrackEnergy           = -9.;
+  SecondTrackProximity        = -9.;
+  IsSecondTrackContained      = -9;
   vHitTimes.clear();
   vHitAmplitude.clear();
   vHitPromptLight.clear();
@@ -380,6 +416,19 @@ void MichelWfmReco::produce(art::Event & e)
   vHitPromptFraction.clear();
   vTrackVertex.clear();
   vTrackEnd.clear();
+  vTrackVertex_x.clear();
+  vTrackVertex_y.clear();
+  vTrackVertex_z.clear();
+  vTrackEnd_x.clear();
+  vTrackEnd_y.clear();
+  vTrackEnd_z.clear();
+  vTrackEnergy.clear();
+  vTrackLength.clear();
+  vTrackPID.clear();
+  vTrackPIDA.clear();
+  vIsTrackStopping.clear();
+  vIsTrackPassing.clear();
+  vIsTrackContained.clear();
 
   if(fSaveHitWfmsToTree){
     for(unsigned int i=0; i<HitWaveform.size(); i++) HitWaveform[i] = 0;
@@ -419,7 +468,8 @@ void MichelWfmReco::produce(art::Event & e)
       art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle,ipulse);
       raw::OpDetPulse ThePulse = *ThePulsePtr;
       if( ThePulse.OpChannel() == 1) {
-        ETL_waveform = ThePulse.Waveform();
+        ETL_opdetpulse  = ThePulse; 
+        ETL_waveform    = ThePulse.Waveform();
         NSamples = ETL_waveform.size();
         Timestamp = (float(ThePulse.PMTFrame())*8.)/1.0e09;
         PostPercentMark = short(ThePulse.FirstSample()); 
@@ -441,9 +491,11 @@ void MichelWfmReco::produce(art::Event & e)
   // If we somehow didn't get the ETL, skip the event
   if( !GotETL ) return;
 
+  N_Events++;
+
   // Classify as beam or non-beam event (allow 0.1s buffer around cutoff just to be safe)
-  if ( (Timestamp >= 0)&&(Timestamp < fTimestampCut-0.1)){ IsBeamEvent = 1;}
-  else if (Timestamp >= fTimestampCut+0.1) { IsBeamEvent = 0;}
+  if ( (Timestamp >= 0)&&(Timestamp < fTimestampCut)){ IsBeamEvent = 1;}
+  else if (Timestamp >= fTimestampCut) { IsBeamEvent = 0;}
 
   //  Get waveform baseline/RMS
   std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(ETL_waveform,0,fBaselineWindowLength);
@@ -452,7 +504,7 @@ void MichelWfmReco::produce(art::Event & e)
   if(bVerbose) std::cout<<"Baseline: "<<WaveformBaseline<<"  RMS: "<<WaveformBaselineRMS<<"\n";
 
   // Perform hit-finding/filtering
-  vHitTimes = fOpHitBuilderAlg.GetHits(ETL_waveform);
+  vHitTimes = fOpHitBuilderAlg.GetHits(ETL_opdetpulse);
   NumHits = vHitTimes.size();
   if(bVerbose) {
     std::cout << "Performing optical hitfinding...\n"; 
@@ -468,7 +520,8 @@ void MichelWfmReco::produce(art::Event & e)
   // For each hit, do all the needed reconstruction in single function call
   for (int i=0; i<NumHits; i++){
     if(bVerbose) std::cout<<"----- Processing hit "<<i<<"    t = "<<vHitTimes[i]<<" ------\n";
-    hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i]);
+    if( i==0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i],0);
+    if( i >0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i],vHitTimes[i-1]);
     
     h_HitTime       ->Fill(vHitTimes[i]);
     vHitAmplitude.push_back(hit_info[0]);
@@ -487,12 +540,13 @@ void MichelWfmReco::produce(art::Event & e)
     vPrepulseReducedChi2.push_back(fOpHitBuilderAlg.fit_ReducedChi2);
     vHitPromptFraction.push_back(hit_info[1]/hit_info[2]);
 
-    if( fabs(vHitTimes[i]-PostPercentMark) <= 0.015*(float)NSamples ){
-      h_PromptFraction_vs_Amplitude->Fill(vHitPromptFraction[i],vHitAmplitude[i]);
+    // PSD
+    if( (vPrepulseSlowNorm[i]>-0.1)&&(fabs(vHitTimes[i]-PostPercentMark) <= 0.01*(float)NSamples) ){
+      h_PromptFraction_vs_FullLight->Fill(vHitPromptFraction[i],vHitPE_Full[i]);
     }
     
     // Line in PE (#,x) vs. amplitude (mV,y) space to cut out background. 
-    TF1 f_PopulationCut("f_PopulationCut","1.714*x - 35.13",0.,1000.);
+    TF1 f_PopulationCut("f_PopulationCut","1.714*x - 35.13",0.,10000.);
     if( vHitPE_Prompt[i] > 0.){
       if( vHitAmplitude[i] > f_PopulationCut.Eval(vHitPE_Prompt[i])){ 
         vIsInBGPopulation.push_back(1);
@@ -504,12 +558,12 @@ void MichelWfmReco::produce(art::Event & e)
   }
  
   // Is clean beam waveform?
-  if( (IsBeamEvent)&&(NumHits == 1)&&( abs(vHitTimes[0]-PostPercentMark) <= 0.015*(float)NSamples) ){
+  if( (IsBeamEvent)&&(NumHits == 1)&&( abs(vHitTimes[0]-PostPercentMark) <= 0.01*(float)NSamples) ){
     IsCleanBeamWaveform = 1;
   } else {
     IsCleanBeamWaveform = 0;
   }
-  
+ 
 
   if(bUseTrackInformation){ 
     
@@ -616,9 +670,8 @@ void MichelWfmReco::produce(art::Event & e)
         vTrackPIDA.push_back(-99);
       }
 
-    
-    
     } // End loop over tracks  
+
 
     // --------------------------------------
     // Higher-level track filtering:
@@ -768,7 +821,7 @@ void MichelWfmReco::produce(art::Event & e)
     // Save the waveform
     HitWaveformIndex = NumHits-1;
     for(int i=0; i<HitWaveformBins; i++){
-      HitWaveform[i] = ETL_waveform[vHitTimes[HitWaveformIndex]-fPrePulseBaselineFit+i]; 
+      HitWaveform[i] = ETL_waveform[vHitTimes[HitWaveformIndex]-fPrePulseDisplay+i]; 
     }
   }
   
@@ -778,17 +831,19 @@ void MichelWfmReco::produce(art::Event & e)
   if( (NumHits == 2) && (vHitTimes[0] < vHitTimes[1]-fGateDelay) && ( abs(vHitTimes[1]-PostPercentMark) <= 0.01*NSamples) && (!IsBeamEvent)){
     
     if(bVerbose) std::cout << "--> passes Michel trigger cut (off-beam) \n";
+    N_MichelCandidates++;
 
     h_Amplitude               ->Fill(Amplitude);
     h_Charge100ns             ->Fill(Charge_100ns); 
     h_PromptPE                ->Fill(PE_Prompt);
     h_PromptPE_vs_Amplitude   ->Fill(PE_Prompt,Amplitude);
     
-    if( Charge_100ns > 1800. ) {
+    if( Charge_100ns > fPromptLightDtCut ) {
       h_DeltaTime_chargeCut   ->Fill(DeltaTime);
     }
 
     if( !vIsInBGPopulation[1] ) {
+      N_MichelNonBG++;
       h_Charge100ns_populationCut->Fill(Charge_100ns);
       h_ChargeFull_populationCut->Fill(Charge_Full);
       
@@ -810,36 +865,55 @@ void MichelWfmReco::produce(art::Event & e)
     }
      
     // Make average waveform of the "good" Michel events
-    if( (DeltaTime > fAveWfmCut_Dt)&&(!vIsInBGPopulation[1])) fOpHitBuilderAlg_ave1.GetHitInfo(ETL_waveform,vHitTimes[1]);
+    if( (DeltaTime > fAveWfmCut_Dt)&&(!vIsInBGPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_ave1.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0]);
     
     // Make average waveform of the BG events
-    if( (DeltaTime > fAveWfmCut_Dt)&&(vIsInBGPopulation[1])) fOpHitBuilderAlg_ave2.GetHitInfo(ETL_waveform,vHitTimes[1]);
+    if( (DeltaTime > fAveWfmCut_Dt)&&(vIsInBGPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_ave2.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0]);
 
   } // end quality cut condition (off-beam)
 
 
   // Also look at DeltaTime of beam events where there was a delayed optical hit
   if( (NumHits == 2) && ( abs(vHitTimes[0]-PostPercentMark) <= 0.01*NSamples) && (IsBeamEvent) ){
-    if( Charge_100ns > 1800 ) h_DeltaTime_chargeCut_beam->Fill(DeltaTime);
+    if( Charge_100ns > fPromptLightDtCut ) h_DeltaTime_chargeCut_beam->Fill(DeltaTime);
   }
 
   // Make average waveform of muons
-  if( (NumHits==1)&&(NumTracks==1)&&( abs(vTrackPID[0])==13)
-    &&( abs(vHitTimes[0]-PostPercentMark) <= 0.02*NSamples)) {
-    fOpHitBuilderAlg_aveMIP.GetHitInfo(ETL_waveform,vHitTimes[0]);
+  if( (IsCleanBeamWaveform) && (NumTracks==1) && (abs(vTrackPID[0])==13) ) {
+    fOpHitBuilderAlg_aveMIP.GetHitInfo(ETL_waveform,vHitTimes[0],0);
   }
   
   // Make average waveform of beam protons
-  if( (NumHits==2)&&(NumTracks==1)&&(abs(vTrackPID[0])==2212)&&(IsBeamEvent)
-    &&( abs(vHitTimes[0]-PostPercentMark) <= 0.02*NSamples)) {
-    fOpHitBuilderAlg_aveProton.GetHitInfo(ETL_waveform,vHitTimes[0]);
+  if( (IsCleanBeamWaveform) && (NumTracks==1) && (abs(vTrackPID[0])==2212) && (IsBeamEvent)) {
+    fOpHitBuilderAlg_aveProton.GetHitInfo(ETL_waveform,vHitTimes[0],0);
   }
   
   // Done with this event so fill the tree
   MichelDataTree->Fill();
   
+
+
+  // SER-finder
+  if(fSER_Mode){
+    
+    std::cout<<"================== SER MODE =====================\n";
+
+    std::vector<float> SER_integrals = fOpHitBuilderAlg_SER.GetSinglePEs(ETL_opdetpulse);  
+   
+    std::cout<<"Found "<<SER_integrals.size()<<" single PE candidates.\n";
+    for( size_t i = 0; i < SER_integrals.size(); i++){
+      //std::cout<<"  i = "<<SER_integrals[i]<<std::endl; 
+      h_SER->Fill(SER_integrals[i]);
+    }
+
+    N_PEs += SER_integrals.size();
+    T_PEs += SER_region_size;
+  
+  }
+
   // Add space in printout to separate events (for easier debugging)
   if(bVerbose) std::cout<<std::endl;
+
 }
 
 
@@ -886,6 +960,7 @@ void MichelWfmReco::beginJob()
   MichelDataTree ->Branch("Charge_Full",&Charge_Full,"Charge_Full/F");
   MichelDataTree ->Branch("PE_Prompt",&PE_Prompt,"PE_Prompt/F");
   MichelDataTree ->Branch("PE_Full",&PE_Full,"PE_Full/F");
+  MichelDataTree ->Branch("PromptFraction",&PromptFraction,"PromptFraction/F");
   
   // Track information
   MichelDataTree ->Branch("NumTracks",&NumTracks,"NumTracks/I");
@@ -922,6 +997,9 @@ void MichelWfmReco::beginJob()
   MichelDataTree ->Branch("IsSecondTrackContained",&IsSecondTrackContained,"IsSecondTrackContained/I"); 
  
   // Histograms 
+  if(fSER_Mode) {
+    h_SER        = tfs->make<TH1F>("SER","SER;Integrated ADC;Counts",150,0.,150.);
+  }
   h_NumOpHits               = tfs->make<TH1I>("OpHitsPerEvent", "Optical hits per event", 10, 0, 10);
   h_NumOpHits               ->GetXaxis()->SetTitle("Num hits");
   h_NumOpHits               ->GetYaxis()->SetTitle("Counts");
@@ -936,15 +1014,18 @@ void MichelWfmReco::beginJob()
   h_NumOpHits_vs_NumTracks  ->GetYaxis()->SetTitle("Num tracks");
   h_NumOpHits_vs_NumTracks  ->SetOption("colz");
 
-  h_DeltaTime_chargeCut     = tfs->make<TH1F>("DeltaTime_chargeCut", "#Delta t (prompt integral > 1800ADC)", 700,0., 7000.);
+  sprintf(buffer,"#Delta t (prompt integral > %d ADC)",fPromptLightDtCut); 
+  h_DeltaTime_chargeCut     = tfs->make<TH1F>("DeltaTime_chargeCut",buffer, 700,0., 7000.);
   h_DeltaTime_chargeCut     ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_chargeCut     ->GetYaxis()->SetTitle("Counts");
   
-  h_DeltaTime_stoppingMu    = tfs->make<TH1F>("DeltaTime_stoppingMu", "#Delta t (1 stopping track, prompt integral > 1800ADC)", 700,0., 7000.);
+  sprintf(buffer,"#Delta t (1 stopping track, prompt integral > %d ADC)",fPromptLightDtCut); 
+  h_DeltaTime_stoppingMu    = tfs->make<TH1F>("DeltaTime_stoppingMu", buffer, 700,0., 7000.);
   h_DeltaTime_stoppingMu    ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_stoppingMu    ->GetYaxis()->SetTitle("Counts");
 
-  h_DeltaTime_chargeCut_beam = tfs->make<TH1F>("DeltaTime_chargeCut_beam","#Delta t (prompt integral > 1800ADC) for Michel-like beam event",700,0.,7000.);
+  sprintf(buffer,"#Delta t for Michel-like beam events (prompt integral > %d ADC)",fPromptLightDtCut); 
+  h_DeltaTime_chargeCut_beam = tfs->make<TH1F>("DeltaTime_chargeCut_beam",buffer,700,0.,7000.);
   h_DeltaTime_chargeCut_beam ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_chargeCut_beam ->GetYaxis()->SetTitle("Counts");
 
@@ -967,6 +1048,9 @@ void MichelWfmReco::beginJob()
   h_PromptPE                = tfs->make<TH1F>("PromptPE", "Prompt photoelectrons (100ns) in Michel-candidate pulses",  400,  0., 200.);
   h_PromptPE             ->GetXaxis()->SetTitle("Prompt Photoelectrons");
   h_PromptPE             ->GetYaxis()->SetTitle("Counts");
+  
+  h_PromptFraction_vs_FullLight = tfs->make<TH2F>("PromptFraction_vs_FullLight","Prompt fraction vs. full light;Prompt fraction;Light [pe]",200,0,1,200,0,1500);
+  h_PromptFraction_vs_FullLight->SetOption("colz");
 
   h_Charge100ns_populationCut = tfs->make<TH1F>("Charge100ns_populationCut", "Prompt light integral (100ns), BG population cut",  480,  0., 12000.);
   h_Charge100ns_populationCut ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
@@ -1010,9 +1094,6 @@ void MichelWfmReco::beginJob()
   h_PromptPE_vs_Amplitude     ->GetXaxis()->SetTitle("Prompt photoelectrons");
   h_PromptPE_vs_Amplitude     ->GetYaxis()->SetTitle("Amplitude [mV]");
   h_PromptPE_vs_Amplitude     ->SetOption("colz");
-  
-  h_PromoptFraction_vs_Amplitude  = tfs->make<TH1F>("PromptFraction_vs_Amplitude","Prompt light fraction vs. pulse amplitude;Prompt fraction;Amplitude [mV]",
-                                  200,0.,1., 200,0.,200);
   
   h_TrackEnergy_vs_PromptLight   = tfs->make<TH2F>("TrackEnergy_vs_PromptLight",";Reconstructed track energy [MeV];Prompt photoelectrons",100,0.,250.,100,0.,500.);
   h_TrackEnergy_vs_PromptLight   ->SetOption("colz");
@@ -1076,20 +1157,28 @@ void MichelWfmReco::beginSubRun(art::SubRun & sr)
 void MichelWfmReco::endJob()
 {
 
-  // Make the average waveforms
-  
+  TF1 ones("ones","1.",0.,1000000.);
+
+  // Add function to correct BG baseline (to do)
+
+  // Make the average waveforms 
   // Waveform 1 (Michel pulses)
   int N_entries = fOpHitBuilderAlg_ave1.AverageWaveform_count;
   float integral_prompt = 0.;
   float integral_total = 0.;
+  float ave_baseline = 0.;
   if( N_entries > 0 ){
     for( int i = 0; i < (int)fOpHitBuilderAlg_ave1.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_ave1.AverageWaveform.at(i) / float(N_entries); 
       h_AverageWaveform1->Fill(i,w);
-      if( (i>fPrePulseBaselineFit-10)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
-      if( (i>fPrePulseBaselineFit-10) ) integral_total += w; 
+      if( (i<fPrePulseDisplay-10)) ave_baseline += w/(float(fPrePulseDisplay)-10.);
+      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;// - ave_baseline;
+      if( (i>fPrePulseDisplay-10) ) integral_total += w;//- ave_baseline; 
     }
   }
+  
+  //float min = h_AverageWaveform1->GetMinimum() - 0.001;
+  h_AverageWaveform1->Add(&ones,-1.*ave_baseline+0.1);
   
   std::cout<<"=================================\n";
   std::cout<<"Michel hits (1)\n";
@@ -1104,14 +1193,18 @@ void MichelWfmReco::endJob()
   N_entries = fOpHitBuilderAlg_ave2.AverageWaveform_count;
   integral_prompt = 0.;
   integral_total = 0.;
+  ave_baseline = 0.;
   if( N_entries > 0 ){
     for( int i = 0; i < (int)fOpHitBuilderAlg_ave2.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_ave2.AverageWaveform.at(i) / float(N_entries); 
       h_AverageWaveform2->Fill(i,w);
-      if( (i>fPrePulseBaselineFit-10)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
-      if( (i>fPrePulseBaselineFit-10) ) integral_total += w; 
+      if( (i<fPrePulseDisplay-10)) ave_baseline += w/(float(fPrePulseDisplay)-10.);
+      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;// - ave_baseline;
+      if( (i>fPrePulseDisplay-10) ) integral_total += w;// - ave_baseline; 
     }
   }
+  //min = h_AverageWaveform2->GetMinimum() - 0.001;
+  h_AverageWaveform2->Add(&ones,-1.*ave_baseline+0.1);
   std::cout<<"=================================\n";
   std::cout<<"BG hits (2)\n";
   std::cout<<"Average of "<<N_entries<<" waveforms.\n";
@@ -1129,10 +1222,12 @@ void MichelWfmReco::endJob()
     for( int i = 0; i < (int)fOpHitBuilderAlg_aveMIP.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_aveMIP.AverageWaveform.at(i) / float(N_entries); 
       h_AverageWaveformMIP->Fill(i,w);
-      if( (i>fPrePulseBaselineFit-10)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
-      if( (i>fPrePulseBaselineFit-10) ) integral_total += w; 
+      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;
+      if( (i>fPrePulseDisplay-10) ) integral_total += w; 
     }
   }
+  //min = h_AverageWaveformMIP->GetMinimum() - 0.001;
+  //h_AverageWaveformMIP->Add(&ones,-1.*min);
   std::cout<<"=================================\n";
   std::cout<<"MIPs:\n";
   std::cout<<"Average of "<<N_entries<<" waveforms.\n";
@@ -1150,16 +1245,28 @@ void MichelWfmReco::endJob()
     for( int i = 0; i < (int)fOpHitBuilderAlg_aveProton.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_aveProton.AverageWaveform.at(i) / float(N_entries); 
       h_AverageWaveformProton->Fill(i,w);
-      if( (i>fPrePulseBaselineFit-10)&&(i<fPrePulseBaselineFit+fPromptWindowLength) ) integral_prompt += w;
-      if( (i>fPrePulseBaselineFit-10) ) integral_total += w; 
+      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;
+      if( (i>fPrePulseDisplay-10) ) integral_total += w; 
     }
   }
+  //min = h_AverageWaveformProton->GetMinimum() - 0.001;
+  //h_AverageWaveformProton->Add(&ones,-1.*min);
   std::cout<<"=================================\n";
   std::cout<<"Protons:\n";
   std::cout<<"Average of "<<N_entries<<" waveforms.\n";
   std::cout<<"   prompt ("<<fPromptWindowLength<<" ns): "<<integral_prompt<<std::endl;
   std::cout<<"   total ("<<fFullWindowLength<<" ns): "<<integral_total<<std::endl;
   std::cout<<"   ratio: "<< integral_prompt / integral_total<<std::endl;
+  std::cout<<"================================\n";
+
+  std::cout<<"================================\n";
+  std::cout<<"SUMMARY:\n\n";
+  std::cout<<"  total events     "<<iEvent<<std::endl;
+  std::cout<<"  -- w/ETL         "<<N_Events<<std::endl;
+  std::cout<<"  ---- Michel cand "<<N_MichelCandidates<<std::endl;
+  std::cout<<"  ------ NonBG     "<<N_MichelNonBG<<std::endl<<std::endl;
+  std::cout<<"  total PEs        "<<N_PEs<<std::endl;
+  std::cout<<"  PE rate          "<<(float)N_PEs/(T_PEs*1e-09)<<" Hz"<<std::endl;
   std::cout<<"================================\n";
 
 }
@@ -1186,7 +1293,8 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fBaselineWindowLength   = pset.get< short >("BaselineWindowLength",1000);
   fPromptWindowLength     = pset.get< short >("PromptWindowLength",100);
   fFullWindowLength       = pset.get< short >("FullWindowLength",7000);
-  fPrePulseBaselineFit    = pset.get< short >("PrePulseBaselineFit",250);
+  fPrePulseBaselineFit    = pset.get< short >("PrePulseBaselineFit",1000);
+  fPrePulseDisplay        = pset.get< short >("PrePulseDisplay",500);
   fFiducialMargin_X       = pset.get< float>("FiducialMargin_X",5.);
   fFiducialMargin_Y       = pset.get< float>("FiducialMargin_Y",4.);
   fFiducialMargin_Z       = pset.get< float>("FiducialMargin_Z",5.);
@@ -1198,8 +1306,17 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fSaveHitWfmsToTree      = pset.get< bool>("SaveHitWfmsToTree","false");
   fSaveAllTrackInfoToTree = pset.get< bool>("SaveAllTrackInfoToTree","false");
   fUsePrepulseFit         = pset.get< bool>("UsePrepulseFit","true");
-  fHitTimeCutoffLow       = pset.get< short>("HitTimeCutoffLow",-100000);
-  fHitTimeCutoffHigh      = pset.get< short>("HitTimeCutoffHigh",100000);
+  fHitTimeCutoffLow       = pset.get< int>("HitTimeCutoffLow",-100000);
+  fHitTimeCutoffHigh      = pset.get< int>("HitTimeCutoffHigh",100000);
+  fPrePulseDisplay        = pset.get< short>("PrePulseDisplay",500);
+  fPromptLightDtCut       = pset.get< short>("PromptLightDtCut",1800);
+  fSER_Mode               = pset.get< bool>("SER_Mode","false");
+  fSER_GradHitThresh      = pset.get< float >("SER_GradHitThresh",-8.);
+  fSER_GradRMSFilter      = pset.get< float> ("SER_GradRMSFilter",3);
+  fSER_PulseHitThreshLow  = pset.get< float >("SER_PulseHitThreshLow",0.);
+  fSER_PulseHitThreshHigh = pset.get< float >("SER_PulseHitThreshHigh",10.);
+  fSER_PreWindow          = pset.get< short>("SER_PreWindow",10);
+  fSER_PostWindow         = pset.get< short>("SER_PostWindow",30);
 }
 
 void MichelWfmReco::respondToCloseInputFile(art::FileBlock const & fb)
