@@ -699,62 +699,73 @@ int H1=3072;
 		
 		}
 		float rms=TMath::RMS(signal.begin(),signal.end());
-		//float sigma = sqrt(sum/signal.size());
-		//float sigmaiter = sqrt(sumiter/signal.size());
 		float iFirstBin = (centerIter-3*rms)/TicksPerBin;
 		float iLastBin = (centerIter+3*rms)/TicksPerBin;
 		
 		std::cout<<"Center: "<<center<<" CenterIter: "<<centerIter<<" RMS: "<<rms<<" iFirstBin: "<<int(std::round(iFirstBin))<<" iLastBin: "<<int(std::round(iLastBin))<<std::endl;	
 		
-               	for (float iBin = iFirstBin; iBin < iLastBin; ++iBin) 
+               	for (float iBin = iFirstBin; iBin <iLastBin; ++iBin) 
 		{
                		const float bin_center = iBin * TicksPerBin;
-			
                		wire_map[wireIter][int(std::round(iBin))] += Gaussian(bin_center, centerIter, rms);
          	}
-		
 		for(int TickIter=0; TickIter<fTimeBins; TickIter++)
 		{
 			std::cout<<"WireIter: "<<wireIter<<" TickIter: "<<TickIter<<" iFirstTick: "<<int(std::round(iFirstBin*TicksPerBin))
-				 <<" iLastTick: "<<int(std::round(iLastBin*TicksPerBin))<<" wire_map: "<<wire_map[wireIter][TickIter];	
+				 <<" iLastTick: "<<int(std::round(iLastBin*TicksPerBin))<<" wire_map: "<<wire_map[wireIter][TickIter];
+			if(int(std::round(iFirstBin))==256) 
+			{
+				iFirstBin=255;
+				iLastBin=255;
+			}
 			if(TickIter==int(std::round(iFirstBin)))
 			{
                			for (float iBin = iFirstBin; iBin <iLastBin; ++iBin) 
 				{
-					if(int(std::round(iLastBin)-std::round(iFirstBin))==0) 
+					if(int(std::round(iLastBin))-int(std::round(iFirstBin))==0) 
 					{
 						wire_map[wireIter][int(std::round(iBin))]=fabs(wire_signal[wireIter][centerIter]);
 					}
-					if(int(std::round(iLastBin)-std::round(iFirstBin))==1 && iLastBin<255) 
+
+					if(int(std::round(iLastBin))-int(std::round(iFirstBin))==1 && iLastBin<255) 
 					{
-						wire_map[wireIter][int(std::round(iBin+1))]=fabs(wire_signal[wireIter][centerIter]);
+						wire_map[wireIter][int(std::round(iBin))]=fabs(wire_signal[wireIter][centerIter]);
 						
 						if(fabs(wire_signal[wireIter][centerIter+1])<fabs(wire_signal[wireIter][centerIter-1]))
-						wire_map[wireIter][int(std::round(iBin))]=fabs(wire_signal[wireIter][centerIter-1]);
+							wire_map[wireIter][int(std::round(iBin+1))]=fabs(wire_signal[wireIter][centerIter-1]);
 						
 						else if(fabs(wire_signal[wireIter][centerIter-1])<fabs(wire_signal[wireIter][centerIter+1]))
-						wire_map[wireIter][int(std::round(iBin))]=fabs(wire_signal[wireIter][centerIter+1]);
+							wire_map[wireIter][int(std::round(iBin+1))]=fabs(wire_signal[wireIter][centerIter+1]);
 					}
-					else if(int(std::round(iLastBin)-std::round(iFirstBin))==1 && iLastBin==255) 
+					else if(int(std::round(iLastBin))-int(std::round(iFirstBin))==1 && iLastBin==255) 
 					{
 						wire_map[wireIter][int(std::round(iBin))]=fabs(wire_signal[wireIter][centerIter]);
 
 						if(fabs(wire_signal[wireIter][centerIter+1])<fabs(wire_signal[wireIter][centerIter-1]))
-						wire_map[wireIter][int(std::round(iBin-1))]=fabs(wire_signal[wireIter][centerIter-1]);
+							wire_map[wireIter][int(std::round(iBin+1))]=fabs(wire_signal[wireIter][centerIter-1]);
 						
 						else if(fabs(wire_signal[wireIter][centerIter-1])<fabs(wire_signal[wireIter][centerIter+1]))
-						wire_map[wireIter][int(std::round(iBin-1))]=fabs(wire_signal[wireIter][centerIter+1]);
+							wire_map[wireIter][int(std::round(iBin+1))]=fabs(wire_signal[wireIter][centerIter+1]);
 
 					}
 					else
-					for(float iTick=iBin*TicksPerBin; iTick<=iLastBin*TicksPerBin; iTick++)
 					{
-						if(fabs(wire_signal[wireIter][int(std::round(iTick))])<fabs(wire_signal[wireIter][int(std::round(iTick+1))]))
-						wire_map[wireIter][int(std::round(iBin))]=fabs(wire_signal[wireIter][int(std::round(iTick+1))]);
+						wire_map[wireIter][int(std::round(iBin))]=fabs(wire_signal[wireIter][int(std::round(iBin*TicksPerBin))]);
+						/*
+						for(float iTick=iBin*TicksPerBin; iTick<=iLastBin*TicksPerBin; iTick++)
+						{
+							if(fabs(wire_signal[wireIter][int(std::round(iTick))])<fabs(wire_signal[wireIter][int(std::round(iTick+1))]))
+								wire_map[wireIter][int(std::round(iBin))]=fabs(wire_signal[wireIter][int(std::round(iTick+1))]);
+						}
+						*/
 					}
+
 				}	
 			}
-			std::cout<<" wire_map_override: "<<wire_map[wireIter][TickIter]<<std::endl;	
+			std::cout<<" wire_map_centerIter: "<<wire_map[wireIter][centerIter];	
+			std::cout<<" wire_map_override: "<<wire_map[wireIter][TickIter]<<std::endl;  	//-----------LOOK HERE!!!!	
+			iFirstBin = (centerIter-3*rms)/TicksPerBin;
+		  	iLastBin = (centerIter+3*rms)/TicksPerBin;
 		}
 		
 	}
@@ -1021,8 +1032,8 @@ unsigned char *outPixind = new unsigned char [H*W];
       float cellind, pixind=0, maxCellind=0;
       for (int y = 0; y < H; ++y){
         for (int x = 0; x < W; ++x){
-          cellcol = (int)(datapiccollection[x][y]);
-          cellind =(int)(datapicinduction[x][y]);
+          cellcol = (int)(data1collection[x][y]);
+          cellind =(int)(data1induction[x][y]);
           if (cellcol > maxCellcol){
             maxCellcol = cellcol;
           }
@@ -1033,11 +1044,11 @@ unsigned char *outPixind = new unsigned char [H*W];
       }
         for (row = 0; row <H ; row++) {
         	for (col= W-1; col >=0; col--) {
-       /*                std::cout<<datapic[row][col]<<",";*/
+       /*                std::cout<<data1[row][col]<<",";*/
 			if(maxCellcol>0)
-            		pixcol = (int)((datapiccollection[col][row]/maxCellcol)*255);
+            		pixcol = (int)((data1collection[col][row]/maxCellcol)*255);
 			if(maxCellind>0)
-            		pixind = (int)((datapicinduction[col][row]/maxCellind)*255);
+            		pixind = (int)((data1induction[col][row]/maxCellind)*255);
                      	outPixcol[row*W+(W-col-1)]=pixcol;
                      	outPixind[row*W+(W-col-1)]=pixind;
                 }

@@ -374,7 +374,7 @@ void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const
           boardId = stoi(strboardId); //call (*hardwareIter).first and pull number after caen_board_
           chanOff = stoi(strchannelId); //call (*hardwareIter).first and pull number after caen_board_**_channel_
           maxChan = 48; //call "MURS16"and pull number after caen_board_**_channel_
-          mf::LogVerbatim("DatabaseExample")
+          mf::LogVerbatim("FragmentToDigitAlg")
 	   << "Column: "<< hardwareIter->first<<" Value: "<<hardwareIter->second << "BoardId: "<< boardId <<" ChannelId: "<< chanOff;
         }
       }
@@ -432,14 +432,14 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
   	  for(uint32_t bc = chanOff; bc < chanOff+2; ++bc) boardChans.insert(bc);
   	  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOFUS");
   
-          mf::LogVerbatim("DatabaseExample")
+          mf::LogVerbatim("FragmentToDigitAlg")
 	    << "Column: "<< hardwareIter->first << " Value: "<<hardwareIter->second << " BoardId: "<< boardId <<" ChannelId: "<< chanOff;
     	  boardChans.clear();
   	  chanOff = chanOff+2;
   	  for(uint32_t bc = chanOff; bc < chanOff+2; ++bc) boardChans.insert(bc);
   	  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOFDS");
           
-          mf::LogVerbatim("DatabaseExample")
+          mf::LogVerbatim("FragmentToDigitAlg")
 	    << " BoardId: "<< boardId <<" ChannelId: "<< chanOff;
         }
       }
@@ -487,7 +487,7 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
       	
           boardId = stoi(strboardId); //call (*hardwareIter).first and pull number after caen_board_
           chanOff = stoi(strchannelId); //call (*hardwareIter).first and pull number after caen_board_**_channel_
-     	  mf::LogVerbatim("DatabaseExample")
+     	  mf::LogVerbatim("FragmentToDigitAlg")
              << "Column: "<< hardwareIter->first << " Value: "<<hardwareIter->second << " BoardId: "<< boardId <<" ChannelId: "<< chanOff;
   	  // Call this for each AeroGel counter
   	  for(uint32_t bc = chanOff; bc < chanOff+2; ++bc) boardChans.insert(bc);
@@ -497,7 +497,7 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
   	  chanOff =chanOff+2;
   	  for(uint32_t bc = chanOff; bc < chanOff+2; ++bc) boardChans.insert(bc);
   	  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelDS");
-       	  mf::LogVerbatim("DatabaseExample")
+       	  mf::LogVerbatim("FragmentToDigitAlg")
        	     << " BoardId: "<< boardId <<" ChannelId: "<< chanOff;
         }
       }
@@ -546,7 +546,7 @@ void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& cae
 	  maxChan=chanOff+2;
     	  for(uint32_t bc = chanOff; bc < maxChan; ++bc) boardChans.insert(bc);
      	  this->caenFragmentToAuxDetDigits(caenFrags, hAuxDigits, boardId, boardChans, chanOff, "Halo");
-    	  mf::LogVerbatim("DatabaseExample")
+    	  mf::LogVerbatim("FragmentToDigitAlg")
       	     << "Column: "<< hardwareIter->first<<" Value: "<<hardwareIter->second << "BoardId: "<< boardId <<" ChannelId: "<< chanOff;
 	}
       }
@@ -608,14 +608,14 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
       	
           boardId = stoi(strboardId); 
           chanOff = stoi(strchannelId); 
-    	  mf::LogVerbatim("DatabaseExample")
+    	  mf::LogVerbatim("FragmentToDigitAlg")
       	     << "Column: "<< hardwareIter->first<<" Value: "<<hardwareIter->second;
     	  for(uint32_t tc = 0; tc < maxChan - chanOff; ++tc)
     	  {
       	    boardChans.clear();
             boardChans.insert(chanOff + tc);
             this->caenFragmentToAuxDetDigits(caenFrags, trAuxDigits, boardId, boardChans, chanOff, trigNames[tc]);
-    	  mf::LogVerbatim("DatabaseExample")
+    	  mf::LogVerbatim("FragmentToDigitAlg")
       	     << "BoardId: "<< boardId <<" ChannelId: "<< chanOff;
           }
 	}
