@@ -38,7 +38,7 @@ class WCTrackBuilderAlgBase{
   
   void reconfigure( fhicl::ParameterSet const& pset );
   
-  
+
   
   void reconstructTracks( std::vector<double> & reco_pz_list,               
 			  std::vector<double> & y_kink_list,

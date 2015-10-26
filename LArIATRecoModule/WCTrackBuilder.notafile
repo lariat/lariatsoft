@@ -35,6 +35,7 @@
 #include "LArIATRecoAlg/WCHitFinderAlg.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "Utilities/DatabaseUtilityT1034.h"
+#include "LArIATRecoAlg/WCTrackBuilderFactory.h"
 
 
 #include <memory>
@@ -97,9 +98,10 @@ private:
   // Declare member data here.
 
     //Algorithm object for track building
-    WCTrackBuilderAlgBase fWCTrackBuilderAlg;
-    std::string       fSlicerSourceLabel;
-    WCHitFinderAlg    fWCHitFinderAlg;
+    WCTrackBuilderAlgBase fWCTrackBuilderAlg=0; //JustTrackbuilder part from Slicer version
+    std::string       fSlicerSourceLabel; //"daq"
+    WCHitFinderAlg    fWCHitFinderAlg; //Hit Finder Alg
+    std::string WCTrackBuilderAlgName; // Alg label from the factory
 
     //Hardware constants
     int fNumber_wire_chambers;
@@ -120,17 +122,17 @@ private:
  
     //Misc
     bool fVerbose;
+    
 };
 
 
 WCTrackBuilder::WCTrackBuilder(fhicl::ParameterSet const & p)
- : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlgBase")) // these should be initialized
- , fWCHitFinderAlg(p.get< fhicl::ParameterSet >("WCHitFinderAlg"))            // here instead of reconfigure()
+ : fWCHitFinderAlg(p.get< fhicl::ParameterSet >("WCHitFinderAlg"))
+ // these should be initialized
+          // here instead of reconfigure()
 {
   // Call appropriate produces<>() functions here.
-      this->reconfigure(p);
-
-    // Call appropriate produces<>() functions here.  
+      this->reconfigure(p); 
     produces<std::vector<ldp::WCTrack> >();
 }
 
@@ -139,6 +141,7 @@ void WCTrackBuilder::produce(art::Event & e)
  
   // Implementation of required member function here.
     //Creating the WCTrack Collection
+    
     std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
 
     //Retrieving the digits from the sliced event
@@ -313,6 +316,23 @@ void WCTrackBuilder::beginJob()
 {
   // Implementation of optional member function here.
       // Implementation of optional member function here.
+      WCTrackAlgBase *pAlg = NULL;
+      pAlg = WCTrackBuilderFactory::Get()->CreateAlg(WCTrackBuilderAlgName);
+      
+      std::cout << "////////////////////////////////////////////////" << std::endl;
+      if (pAlg){
+      std::cout << "It works?" << std::endl;
+      pAlg->Hello();
+      }
+      else{
+      std::cout<<"We dun goofd"<<std::endl;
+      }
+      std::cout << "////////////////////////////////////////////////" << std::endl;
+		
+      
+      
+      
+      
     art::ServiceHandle<art::TFileService> tfs;
     fReco_Pz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum in XZ plane", 180, 0, 1800);
     fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",100,-5*3.1415926/180,5*3.141592654/180);
@@ -413,6 +433,7 @@ void WCTrackBuilder::beginJob()
 void WCTrackBuilder::beginRun(art::Run & r)
 {
   // Implementation of optional member function here.
+  
 }
 
 void WCTrackBuilder::beginSubRun(art::SubRun & sr)
@@ -444,6 +465,7 @@ void WCTrackBuilder::reconfigure(fhicl::ParameterSet const & p)
     fNumber_wires_per_tdc = p.get<int>("NWperTDC"); //64;
     fVerbose = p.get<bool>("Verbose", true);
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
+    WCTrackBuilderAlgName =p.get<std::string>("FactoryAlgLabel");
 }
 // 
 // void WCTrackBuilder::respondToCloseInputFile(art::FileBlock const & fb)

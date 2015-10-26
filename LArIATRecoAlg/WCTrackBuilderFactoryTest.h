@@ -12,36 +12,16 @@
 #include "LArIATRecoAlg/WCTrackBuilderAlgBase.h"
 
 
+
 #include <iostream>
 #include <cstdlib>
 #include <string>
 #include <map> 
-class WCTrackAlgBase
-{
-   public:
-          virtual void Hello() = 0;
-	  //virtual void reconfigure( fhicl::ParameterSet const& pset );
-	  //virtual void JumpThroughHoopFactory()=0;
-	  	 
-};
 
-typedef WCTrackAlgBase* (*CreateWCTrackBuilderAlgFn)(void);
+#include "LArIATRecoAlg/WCTrackAlgBase.h"
+#include "LArIATRecoAlg/WCTrackAlgPicky.h"
+#include "LArIATRecoAlg/WCTrackAlgNotPicky.h"
 
-class Picky : public WCTrackAlgBase
-{
-public:
-	void Hello() {std::cout<<"Picky"<<std::endl;}
-	static WCTrackAlgBase* Create() {return new Picky();}
-	//void JumpThroughHoopFactory() {this->JumpThroughHoop();}
-
-};
-class NotPicky : public WCTrackAlgBase
-{
-public:
-	void Hello() {std::cout<<"Not Picky"<<std::endl;}
-	static WCTrackAlgBase* Create() {return new NotPicky();}
-
-};
 
 
 class WCTrackBuilderFactory

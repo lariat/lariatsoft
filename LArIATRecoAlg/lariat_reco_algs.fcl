@@ -3,6 +3,7 @@ BEGIN_PROLOG
 lariat_wctrackbuilderalg:
 {
   PickyTracks: false
+  FactoryAlgLabel: Picky
 }
 
 lariat_wchitfinderalg:
@@ -26,4 +27,5 @@ lariat_aerogel:
 lariat_wctrackbuilderalgbase:
 {
 }
+
 END_PROLOG
