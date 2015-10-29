@@ -55,10 +55,9 @@ namespace PionSCXSimFilter {
    private:
 
     // returns true if point (x, y, z) is inside TPC
-    bool isInsideTPC_(geo::GeometryCore const& geometry,
-                      double            const& x,
-                      double            const& y,
-                      double            const& z);
+    bool isInsideTPC_(double const& x,
+                      double const& y,
+                      double const& z);
 
     // returns distance between two 3D points (x0, y0, z0) and (x1, y1, z1)
     double distance_(double const& x0,
@@ -187,8 +186,7 @@ namespace PionSCXSimFilter {
                               primaryEndPE);
 
         // check to see if primary charged pion track stops inside TPC
-        primaryTrackStopsInTPC = this->isInsideTPC_(*fGeometry,
-                                                    primaryEndXYZT[0],
+        primaryTrackStopsInTPC = this->isInsideTPC_(primaryEndXYZT[0],
                                                     primaryEndXYZT[1],
                                                     primaryEndXYZT[2]);
 
@@ -319,8 +317,7 @@ namespace PionSCXSimFilter {
                                 endPE);
 
           // check to see if photon converts inside TPC
-          bool photonConvertsInTPC = this->isInsideTPC_(*fGeometry,
-                                                        endXYZT[0],
+          bool photonConvertsInTPC = this->isInsideTPC_(endXYZT[0],
                                                         endXYZT[1],
                                                         endXYZT[2]);
 
@@ -352,22 +349,21 @@ namespace PionSCXSimFilter {
 
 
   //-----------------------------------------------------------------------
-  bool PionSCXSimFilter::isInsideTPC_(geo::GeometryCore const& geometry,
-                                      double            const& x,
-                                      double            const& y,
-                                      double            const& z)
+  bool PionSCXSimFilter::isInsideTPC_(double const& x,
+                                      double const& y,
+                                      double const& z)
   {
 
-    const double length =      geometry.DetLength();
-    const double width  = 2. * geometry.DetHalfWidth();
-    const double height = 2. * geometry.DetHalfHeight();
+    const double length =      fGeometry->DetLength();
+    const double width  = 2. * fGeometry->DetHalfWidth();
+    const double height = 2. * fGeometry->DetHalfHeight();
 
-    if (x > 0.         &&
-        x < width      &&
-        y > -height/2. &&
-        y < height/2.  &&
-        z > 0.         &&
-        z < length)
+    if (x >= 0.         &&
+        x <= width      &&
+        y >= -height/2. &&
+        y <= height/2.  &&
+        z >= 0.         &&
+        z <= length)
     {
       return true;
     }
