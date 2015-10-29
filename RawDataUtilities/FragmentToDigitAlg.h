@@ -22,6 +22,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Persistency/Provenance/EventID.h"
 #include "art/Framework/Principal/RunPrincipal.h"
+#include "art/Framework/Principal/Run.h"
 
 namespace raw{
   class RawDigit;
@@ -94,6 +95,12 @@ class FragmentToDigitAlg{
   
 
  private:
+
+  uint32_t						fMURSMaxChan;
+  uint32_t						fTOFMaxChan;
+  uint32_t						fAEROMaxChan;
+  uint32_t						fHALOMaxChan;
+  uint32_t						fTRIGMaxChan;
 
   int                                        		fRunNumber;               	///< current run number
   std::string                                		fRawFragmentLabel;        	///< label for module producing artdaq fragments
