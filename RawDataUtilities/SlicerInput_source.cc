@@ -725,6 +725,7 @@ namespace rdu
   //-----------------------------------------------------------------------
   void Slicer::commenceRun(art::RunPrincipal * & outRun)  // wtf is this? idk.
   {
+    
     fFragmentToDigitAlg.InitializeRun(outRun, fRunNumber);
 
     // grab the geometry object to see what geometry we are using
