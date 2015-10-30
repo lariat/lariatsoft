@@ -13,6 +13,7 @@
 #include "art/Framework/Core/ProductRegistryHelper.h"
 #include "art/Framework/IO/Root/rootNames.h"
 #include "art/Framework/IO/Sources/Source.h"
+#include "art/Framework/Principal/Run.h"
 #include "art/Framework/IO/Sources/SourceHelper.h"
 #include "art/Framework/IO/Sources/SourceTraits.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
@@ -733,7 +734,7 @@ namespace rdu
   //-----------------------------------------------------------------------
   void Slicer::commenceRun(art::RunPrincipal * & outRun)  // wtf is this? idk.
   {
-    fFragmentToDigitAlg.InitializeRun(fRunNumber);
+    fFragmentToDigitAlg.InitializeRun(outRun, fRunNumber);
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
