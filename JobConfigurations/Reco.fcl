@@ -52,13 +52,9 @@ physics:
   ### flash finders ###
   #opflash:             @local::lariat_opflash
   
-  ### Slicer To Digit ###
-  #SlicerInput:    @local::standard_sliceinput
-  
   ### calwire producers ###
   caldata:              @local::lariat_calroi
-  #caldata:             @local::lariat_calroi
-  
+
   ### hit-finder producers ###
    gaushit:             @local::gaus_hitfinder
    cchit:               @local::standard_clustercrawlerhit
