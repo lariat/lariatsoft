@@ -278,6 +278,9 @@ namespace rdu
     double fTDCPostAcquisitionWindow;
     double fTDCAcquisitionWindow;
 
+    // timestamp from SpillTrailer
+    std::uint64_t fTimestamp;
+
   }; // class Slicer
 
   //-----------------------------------------------------------------------
@@ -443,7 +446,7 @@ namespace rdu
   {
     if (fDoneWithFile) return false;
 
-    art::Timestamp timestamp; // LBNE should decide how to initialize this
+    art::Timestamp timestamp = fTimestamp;
 
     if (fRunNumber != fCachedRunNumber) {
       outRun = fSourceHelper.makeRunPrincipal(fRunNumber, timestamp);
@@ -487,6 +490,12 @@ namespace rdu
       artdaq::Fragment frag = fragments->at(0);
       const char * bytePtr = reinterpret_cast <const char *> (&*frag.dataBegin());
       LArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(unsigned long long));
+
+      // get SpillTrailer
+      LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
+
+      // get timestamp from SpillTrailer, cast as uint64_t
+      fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
     }
 
   }

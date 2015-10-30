@@ -1,0 +1,15 @@
+BEGIN_PROLOG
+
+lariat_channel_filter: {
+  # implements IChannelStatusService
+  service_provider: SimpleChannelStatusService
+
+  # list of bad channels:
+  BadChannels:   []
+
+  # list of bad noisy channels:
+  NoisyChannels: []
+
+} # lariat_channel_filter
+
+END_PROLOG
