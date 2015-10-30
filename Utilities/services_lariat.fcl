@@ -15,6 +15,7 @@
 # #include "opticaldetectorservices_lariat.fcl"
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
+#include "channelstatus_lariat.fcl"
 
 BEGIN_PROLOG
 
@@ -35,6 +36,7 @@ lariat_services:
  SeedService:               @local::standard_seedservice
  #UBOpticalChConfig:     @local::lariat_optical_ch_config
  IDetPedestalService:       @local::lariat_detpedestalservice
+ IChannelStatusService:        @local::lariat_channel_filter
 }
 
 lariat_simulation_services:
@@ -57,6 +59,7 @@ lariat_simulation_services:
  SeedService:               @local::standard_seedservice
  #OpDetResponseInterface: @local::lariat_opdetresponse 
  #UBOpticalChConfig:      @local::lariat_optical_ch_config
+ IChannelStatusService:        @local::lariat_channel_filter
 }
 
 
