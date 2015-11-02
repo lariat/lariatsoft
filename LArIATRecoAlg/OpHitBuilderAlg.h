@@ -45,7 +45,6 @@ class OpHitBuilderAlg{
   std::vector<float>            MakeGradient( std::vector<short> );
   std::vector<float>            GetBaselineAndRMS( std::vector<short>, short, short);
   std::vector<float>            GetBaselineAndRMS( std::vector<float>, short, short);
-  std::vector<float>            GetHitInfo( std::vector<short>, short, short);
   std::vector<float>            GetHitInfo( std::vector<short>, short, short, std::vector<short>);
   float                         GetHitAmplitude( std::vector<short>, short, short);
   float                         GetHitPromptIntegral( std::vector<short>, short, short);
@@ -95,6 +94,7 @@ class OpHitBuilderAlg{
   int   fHitTimeCutoffHigh;
   short fSER_PreWindow;
   short fSER_PostWindow;
+  std::vector<short> fIntegrationWindows;
 
  private:
   

@@ -127,7 +127,11 @@ private:
   float               fHitTimeCutoffLow;
   float               fHitTimeCutoffHigh;
   bool                fUsePrepulseFit;
+  float               fLY;
   bool                fSER_Mode;
+  float               fSER_mean_low;
+  float               fSER_mean_set;
+  float               fSER_mean_up;
   bool                fSER_Fit;
   short               fSER_t1;
   short               fSER_t2;
@@ -202,7 +206,11 @@ private:
   TH1F* h_PromptFraction;
   TH1F* h_PromptPE_region;
   TH1F* h_FullPE_region;
+  TH1F* h_Energy_region;
   TH2F* h_PromptFraction_vs_FullLight;
+  TH2F* h_PromptFraction_vs_Energy;
+  TH2F* h_PromptFraction_vs_Energy_LowE;
+  TH2F* h_PromptFraction_100_500_vs_FullLight;
   TH2F* h_PromptFraction_100_1000_vs_FullLight;
   TH2F* h_PromptPE_vs_Amplitude;
   TH1F* h_TrackVertex_x;
@@ -560,6 +568,12 @@ void MichelWfmReco::produce(art::Event & e)
     vHitIntegral_500ns.push_back(hit_info[3]);
     vHitIntegral_1000ns.push_back(hit_info[4]);
     vHitFullLight.push_back(hit_info[5]);
+
+    if(bVerbose){
+      std::cout<<"   amp: "<<vHitAmplitude[i]<<"   integrals: ";
+      for( size_t ii=0; ii<fIntegrationWindows.size(); ii++) std::cout<<hit_info[ii+1]<<"  ";
+      std::cout<<"\n";
+    }
     
     vHitPE_Prompt.push_back(vHitIntegral_100ns[i]/fSinglePE);
     vHitPE_Full.push_back(vHitFullLight[i]/fSinglePE); 
@@ -571,17 +585,23 @@ void MichelWfmReco::produce(art::Event & e)
     vPrepulseSlowNorm.push_back(fOpHitBuilderAlg.fit_SlowNorm);
     vPrepulseSlowTau.push_back(fOpHitBuilderAlg.fit_SlowTau); 
     vPrepulseReducedChi2.push_back(fOpHitBuilderAlg.fit_ReducedChi2);
-    vHitPromptFraction.push_back(hit_info[1]/vHitFullLight[i]);
+    vHitPromptFraction.push_back(vHitIntegral_100ns[i]/vHitFullLight[i]);
 
     // PSD
-    if( (vPrepulseRMS[i]<=2.0)&&(fabs(vHitTimes[i]-PostPercentMark) <= 0.01*(float)NSamples) ){
-      h_PromptFraction_vs_FullLight->Fill(vHitPromptFraction[i],vHitPE_Full[i]);
-      h_PromptFraction_100_1000_vs_FullLight->Fill(vHitIntegral_100ns[i]/vHitIntegral_1000ns[i],vHitPE_Full[i]);
-      h_PromptFraction->Fill(vHitPromptFraction[i]); 
+    if( (i == 0) || ( (vHitTimes[i]-vHitTimes[i-1]) > fAveWfmCut_Dt) ){
+      if( (vPrepulseRMS[i]<=2.0)&&(fabs(vHitTimes[i]-PostPercentMark) <= 0.01*(float)NSamples) ){
+        h_PromptFraction_vs_FullLight->Fill(vHitPromptFraction[i],vHitPE_Full[i]);
+        h_PromptFraction_100_500_vs_FullLight->Fill(vHitIntegral_100ns[i]/vHitIntegral_500ns[i],vHitPE_Full[i]);
+        h_PromptFraction_100_1000_vs_FullLight->Fill(vHitIntegral_100ns[i]/vHitIntegral_1000ns[i],vHitPE_Full[i]);
+        h_PromptFraction_vs_Energy->Fill(vHitPromptFraction[i],vHitPE_Full[i]/fLY);
+        h_PromptFraction_vs_Energy_LowE->Fill(vHitPromptFraction[i],vHitPE_Full[i]/fLY);
+        
+        h_PromptFraction->Fill(vHitPromptFraction[i]); 
+      }
     }
     
     // Line in PE (#,x) vs. amplitude (mV,y) space to cut out background. 
-    TF1 f_PopulationCut("f_PopulationCut","1.714*x - 35.13",0.,10000.);
+    TF1 f_PopulationCut("f_PopulationCut","1.714*x - 14.57",0.,10000.);
     if( vHitPE_Prompt[i] > 0.){
       if( vHitAmplitude[i] > f_PopulationCut.Eval(vHitPE_Prompt[i])){ 
         vIsInBGPopulation.push_back(1);
@@ -896,14 +916,15 @@ void MichelWfmReco::produce(art::Event & e)
         h_ChargeFull_region->Fill(Charge_Full);
         h_PromptPE_region->Fill(PE_Prompt);
         h_FullPE_region->Fill(PE_Full);
+        h_Energy_region->Fill(PE_Full/fLY);
       }
     }
      
     // Make average waveform of the "good" Michel events
-    if( (DeltaTime > fAveWfmCut_Dt)&&(!vIsInBGPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_ave1.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0]);
+    if( (DeltaTime > fAveWfmCut_Dt)&&(!vIsInBGPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_ave1.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
     
     // Make average waveform of the BG events
-    if( (DeltaTime > fAveWfmCut_Dt)&&(vIsInBGPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_ave2.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0]);
+    if( (DeltaTime > fAveWfmCut_Dt)&&(vIsInBGPopulation[1])&&(vHitPE_Prompt[1]<14.)&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_ave2.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
 
   } // end quality cut condition (off-beam)
 
@@ -915,12 +936,12 @@ void MichelWfmReco::produce(art::Event & e)
 
   // Make average waveform of muons
   if( (IsCleanBeamWaveform) && (NumTracks==1) && (abs(vTrackPID[0])==13) ) {
-    fOpHitBuilderAlg_aveMIP.GetHitInfo(ETL_waveform,vHitTimes[0],0);
+    fOpHitBuilderAlg_aveMIP.GetHitInfo(ETL_waveform,vHitTimes[0],0,fIntegrationWindows);
   }
   
   // Make average waveform of beam protons
   if( (IsCleanBeamWaveform) && (NumTracks==1) && (abs(vTrackPID[0])==2212) && (IsBeamEvent)) {
-    fOpHitBuilderAlg_aveProton.GetHitInfo(ETL_waveform,vHitTimes[0],0);
+    fOpHitBuilderAlg_aveProton.GetHitInfo(ETL_waveform,vHitTimes[0],0,fIntegrationWindows);
   }
   
   // Done with this event so fill the tree
@@ -1086,16 +1107,22 @@ void MichelWfmReco::beginJob()
   h_Charge100ns             ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
   h_Charge100ns             ->GetYaxis()->SetTitle("Counts");
 
-  h_PromptPE                = tfs->make<TH1F>("PromptPE", "Prompt photoelectrons (100ns) in Michel-candidate pulses",  400,  0., 200.);
+  h_PromptPE                = tfs->make<TH1F>("PromptPE", "Prompt photoelectrons (100ns) in Michel-candidate pulses",  280,  0., 140.);
   h_PromptPE             ->GetXaxis()->SetTitle("Prompt Photoelectrons");
   h_PromptPE             ->GetYaxis()->SetTitle("Counts");
  
-  h_PromptFraction        = tfs->make<TH1F>("PromptFraction","Prompt fraction for good optical hits;Prompt light fraction",120,-30,30);
+  h_PromptFraction        = tfs->make<TH1F>("PromptFraction","Prompt fraction for good optical hits;Prompt light fraction",280,-0.2,1.2);
   
-  h_PromptFraction_vs_FullLight = tfs->make<TH2F>("PromptFraction_vs_FullLight","Prompt fraction vs. full light;Prompt fraction;Light [pe]",200,0,1,200,0,2000);
+  h_PromptFraction_vs_FullLight = tfs->make<TH2F>("PromptFraction_vs_FullLight","Prompt fraction vs. full light;Prompt fraction;Light [pe]",200,0,1.2,200,0,800);
   h_PromptFraction_vs_FullLight->SetOption("colz");
-  h_PromptFraction_100_1000_vs_FullLight = tfs->make<TH2F>("PromptFraction_100_1000_vs_FullLight","Prompt fraction (100ns/1000ns) vs. full light (7us);Prompt fraction;Light [pe]",200,0,1.2,200,0,2000);
+  h_PromptFraction_100_500_vs_FullLight = tfs->make<TH2F>("PromptFraction_100_500_vs_FullLight","Prompt fraction (100ns/500ns) vs. full light (7us);Prompt fraction;Light [pe]",200,0,1.2,200,0,800);
+  h_PromptFraction_100_500_vs_FullLight ->SetOption("colz");
+  h_PromptFraction_100_1000_vs_FullLight = tfs->make<TH2F>("PromptFraction_100_1000_vs_FullLight","Prompt fraction (100ns/1000ns) vs. full light (7us);Prompt fraction;Light [pe]",200,0,1.2,200,0,800);
   h_PromptFraction_100_1000_vs_FullLight ->SetOption("colz");
+  h_PromptFraction_vs_Energy = tfs->make<TH2F>("PromptFraction_vs_Energy","Prompt fraction vs. energy (estimated from light);Prompt fraction;Energy [MeV]",200,0,1.2,200,0,320);
+  h_PromptFraction_vs_Energy ->SetOption("colz");
+  h_PromptFraction_vs_Energy_LowE = tfs->make<TH2F>("PromptFraction_vs_Energy_LowE","Prompt fraction vs. energy (estimated from light);Prompt fraction;Energy [MeV]",200,0,1.2,200,0,50);
+  h_PromptFraction_vs_Energy ->SetOption("colz");
 
   h_Charge100ns_populationCut = tfs->make<TH1F>("Charge100ns_populationCut", "Prompt light integral (100ns), BG population cut",  480,  0., 12000.);
   h_Charge100ns_populationCut ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
@@ -1130,12 +1157,15 @@ void MichelWfmReco::beginJob()
   h_PromptPE_region    ->GetXaxis()->SetTitle("Prompt photoelectrons");
   h_PromptPE_region    ->GetYaxis()->SetTitle("Counts");
   
-  h_FullPE_region    = tfs->make<TH1F>("FullPE_region","Total photoelectrons (7us), limited region",200,0.,1000.);
+  h_FullPE_region    = tfs->make<TH1F>("FullPE_region","Total photoelectrons (7us), limited region",200,0.,500.);
   h_FullPE_region    ->GetXaxis()->SetTitle("Photoelectrons");
   h_FullPE_region    ->GetYaxis()->SetTitle("Counts");
+  
+  h_Energy_region    = tfs->make<TH1F>("Energy_region","Estimated energy, Michel e's in limited region",240,0.,120.);
+  h_Energy_region    ->GetXaxis()->SetTitle("Energy [MeV]");
+  h_Energy_region    ->GetYaxis()->SetTitle("Counts");
 
-
-  h_PromptPE_vs_Amplitude     = tfs->make<TH2F>("PromptPE_vs_Amplitude","Prompt PEs (100ns) vs. amplitude",200,0.,200.,200,0.,100.);
+  h_PromptPE_vs_Amplitude     = tfs->make<TH2F>("PromptPE_vs_Amplitude","Prompt PEs (100ns) vs. amplitude",200,0.,140.,200,0.,100.);
   h_PromptPE_vs_Amplitude     ->GetXaxis()->SetTitle("Prompt photoelectrons");
   h_PromptPE_vs_Amplitude     ->GetYaxis()->SetTitle("Amplitude [mV]");
   h_PromptPE_vs_Amplitude     ->SetOption("colz");
@@ -1316,39 +1346,70 @@ void MichelWfmReco::endJob()
 
 
   if(fSER_Mode && fSER_Fit){
-  // ------------------------------------------------
+  
+// ------------------------------------------------
   // Fit out the SER
+  TF1 f_gaus("f_gaus","[0]*exp(-0.5*pow((x-[1])/[2],2))",-1000,1000);
+  TF1 SER_fit("SER_fit","[0]*exp(-0.5*pow((x-[1])/[2],2)) + [3]*exp(-0.5*pow((x-[4])/[5],2)) + [6]*exp(-0.5*pow((x-2.*[4])/[7],2)) + [8]*exp(-0.5*pow((x-3.*[4])/[9],2))",-20,300);
   
-  TF1 SER_fit("SER_fit","[0]*TMath::Landau(1) + [3]*exp(-0.5*pow((x-[4])/[5],2)) + [6]*exp(-0.5*pow((x-2.*[4])/[7],2))",-50,350);
+  //TF1 SER_fit("SER_fit","f_gaus(x,[0],[1],[2]) + f_gaus(x,[3],[4],[5]) + f_gaus(x,[6],2.*[4],[7])",-20,350);
   float max = (float)h_SER->GetMaximum();
-
-  // "Noise" component (fit by Landau)
-  SER_fit.SetParameter(0,max);
-  SER_fit.SetParLimits(0,0.,5.*max);
-  SER_fit.SetParLimits(1,-20.,20);
-  SER_fit.SetParameter(2,1.);
-  SER_fit.SetParLimits(2,0.,1000);
+  std::cout<<"histogram max: "<<max<<"\n";
   
+  SER_fit.SetParName(0,"Noise norm");
+  SER_fit.SetParName(1,"Noise mean ADC");
+  SER_fit.SetParName(2,"Noise sigma");
+  SER_fit.SetParName(3,"1PE norm");
+  SER_fit.SetParName(4,"1PE mean ADC");
+  SER_fit.SetParName(5,"1PE sigma");
+  SER_fit.SetParName(6,"2PE norm");
+  SER_fit.SetParName(7,"2PE sigma");
+  SER_fit.SetParName(8,"3PE norm");
+  SER_fit.SetParName(9,"3PE sigma");
+  
+  // "Noise" component (gaus)
+  SER_fit.SetParameter(0,max);
+  SER_fit.SetParLimits(0,0.,1.2*max);
+  SER_fit.SetParameter(1,6.5);
+  SER_fit.SetParLimits(1,-5.,10);
+  SER_fit.SetParameter(2,16.);
+  SER_fit.SetParLimits(2,5.,30.);
+
   // 1PE (gaus)
   SER_fit.SetParameter(3,max);
-  SER_fit.SetParLimits(3,0.,5.*max);
-  SER_fit.SetParameter(4,80.);
-  SER_fit.SetParLimits(4,30.,150.);
-  SER_fit.SetParameter(5,10.);
-  SER_fit.SetParLimits(5,0.,100.);
+  SER_fit.SetParLimits(3,0.,1.2*max);
+  SER_fit.SetParameter(4,fSER_mean_set);
+  SER_fit.SetParLimits(4,fSER_mean_low,fSER_mean_up);
+  SER_fit.SetParameter(5,37.4);
+  SER_fit.SetParLimits(5,10.,60.);
 
   // 2PE (gaus)
-  SER_fit.SetParameter(6,0.2*max);
-  SER_fit.SetParLimits(6,0.,1.*max);
-  SER_fit.SetParameter(7,20.);
-  SER_fit.SetParLimits(7,0.,100.);
+  SER_fit.SetParameter(6,0.1*max);
+  SER_fit.SetParLimits(6,0.,0.3*max);
+  SER_fit.SetParameter(7,58.7);
+  SER_fit.SetParLimits(7,10.,100.);
 
-  h_SER->Fit("SER_fit");
+  // 3PE (gaus)
+  SER_fit.SetParameter(8,0.05*max);
+  SER_fit.SetParLimits(8,1.,0.3*max);
+  SER_fit.SetParameter(9,50);
+  SER_fit.SetParLimits(9,30.,120.);
+  
+
+  h_SER->Fit("SER_fit","R");
   std::cout<<"SER fit results:\n";
   std::cout<<"  1PE = "<<SER_fit.GetParameter(4)<<" +/- "<<SER_fit.GetParError(4)<<"\n";
   std::cout<<"  sigma = "<<SER_fit.GetParameter(5)<<"\n";
-  std::cout<<"===================================\n";
-  
+  std::cout<<"  red Chi2 = "<<SER_fit.GetChisquare()/(SER_fit.GetNDF()-1)<<"\n";
+
+  // Draw the components
+  //TF1 f_noise("f_noise","[0]*exp(-0.5*pow((x-[1])/[2],2))",-20,350);
+  //f_noise.SetParameter(0,SER_fit.GetParameter(0));
+  //f_noise.SetParameter(1,SER_fit.GetParameter(1));
+  //f_noise.SetParameter(2,SER_fit.GetParameter(2));
+  //f_noise.SetLineColor(kBlack);
+
+  //std::cout<<"f_noise norm: "<<f_noise.GetParameter(0);
   
   }
   
@@ -1395,7 +1456,11 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fHitTimeCutoffHigh      = pset.get< int>("HitTimeCutoffHigh",100000);
   fPrePulseDisplay        = pset.get< short>("PrePulseDisplay",500);
   fPromptLightDtCut       = pset.get< short>("PromptLightDtCut",1800);
+  fLY                     = pset.get< float>("LightYield",2.3);
   fSER_Mode               = pset.get< bool>("SER_Mode","false");
+  fSER_mean_low           = pset.get< float>("SER_mean_low",40.);
+  fSER_mean_up            = pset.get< float>("SER_mean_up",150.);
+  fSER_mean_set           = pset.get< float>("SER_mean_set",90.);         
   fSER_Fit                = pset.get< bool>("SER_Fit","false");
   fSER_t1                 = pset.get< short>("SER_t1",3000);
   fSER_t2                 = pset.get< short>("SER_t2",19000);
