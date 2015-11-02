@@ -59,33 +59,40 @@ services.scheduler.SkipEvent:                         [ ProductNotFound ]
 physics.producers.MichelWfmReco.HitTimeCutoffLow:     -100000   # default -1000000
 physics.producers.MichelWfmReco.HitTimeCutoffHigh:    100000  # default  1000000
 
-physics.producers.MichelWfmReco.SER_Mode:               "true"
-#physics.producers.MichelWfmReco.SER_GradHitThresh:      -3.
-#physics.producers.MichelWfmReco.SER_GradRMSFilter:      2
-#physics.producers.MichelWfmReco.SER_PulseHitThreshLow:  2.
-physics.producers.MichelWfmReco.SER_PulseHitThreshHigh: 8.
-physics.producers.MichelWfmReco.SER_PulseHitRMSThresh:  2.
- 
+physics.producers.MichelWfmReco.SER_Verbosity:          "false"
+physics.producers.MichelWfmReco.Verbosity:              "false"
 
+physics.producers.MichelWfmReco.SER_Mode:               "true"
+physics.producers.MichelWfmReco.SER_Fit:                "false"
+physics.producers.MichelWfmReco.SER_t1:                 1000
+physics.producers.MichelWfmReco.SER_t2:                 10000
+physics.producers.MichelWfmReco.SER_PulseHitThreshHigh: 8.
+physics.producers.MichelWfmReco.SER_PulseHitRMSThresh:  2.5
+physics.producers.MichelWfmReco.SER_Grad_cut:           -4.
+physics.producers.MichelWfmReco.SER_PrePE_RMS_cut:      1.8
+physics.producers.MichelWfmReco.SER_PreWindow:          5
+physics.producers.MichelWfmReco.SER_PostWindow:         25
+ 
+physics.producers.MichelWfmReco.SinglePE:               90
 physics.producers.MichelWfmReco.SaveHitWfmsToTree:      "false"
-physics.producers.MichelWfmReco.UseTrackInformation:    "true"
+physics.producers.MichelWfmReco.UseTrackInformation:    "false"
 physics.producers.MichelWfmReco.SaveAllTrackInfoToTree: "true"
-physics.producers.MichelWfmReco.Verbosity:              "true"
-physics.producers.MichelWfmReco.AveWfmCut_Dt:           2000
+physics.producers.MichelWfmReco.AveWfmCut_Dt:           4000
 physics.producers.MichelWfmReco.CorrectAveWfms:         "true" 
 physics.producers.MichelWfmReco.UsePrepulseFit:         "true"  
 physics.producers.MichelWfmReco.PrePulseTau1:           800
-physics.producers.MichelWfmReco.PrePulseTau2:           1600
+physics.producers.MichelWfmReco.PrePulseTau2:           1500
 physics.producers.MichelWfmReco.PrePulseBaselineFit:    1000 #250
 physics.producers.MichelWfmReco.PrePulseDisplay:        500
-physics.producers.MichelWfmReco.TimestampCut:           5.25     
-physics.producers.MichelWfmReco.PulseHitThreshLow:   0.   # default 0 mV
-physics.producers.MichelWfmReco.GradHitThresh:   -10  # default -10 ADC/ns
-physics.producers.MichelWfmReco.GradientRMSFilterThreshold:   5  # default 5
+physics.producers.MichelWfmReco.TimestampCut:           5.4     
+physics.producers.MichelWfmReco.PulseHitThreshLow:      0.   # default 0 mV
+physics.producers.MichelWfmReco.GradHitThresh:          -10  # default -10 ADC/ns
+physics.producers.MichelWfmReco.GradRMSThresh:          5  # default 5
 physics.producers.MichelWfmReco.MinHitSeparation:       20   # default 20ns
 physics.producers.MichelWfmReco.BaselineWindowLength:   1000 # default 1000ns
 physics.producers.MichelWfmReco.PromptWindowLength:     100  # default 100ns
-physics.producers.MichelWfmReco.FullWindowLength:       7000  #7000 # default 7000ns
+physics.producers.MichelWfmReco.FullWindowLength:       7000 # default 7000ns
+physics.producers.MichelWfmReco.IntegrationWindows:     [100,250,500,1000,7000]
 physics.producers.MichelWfmReco.GateDelay:              300  # 300ns in r6245-6344
 physics.producers.MichelWfmReco.PromptLightDtCut:       1800 # default 1800ADC
 physics.producers.MichelWfmReco.TriggerUtility:         "FragmentToDigit"

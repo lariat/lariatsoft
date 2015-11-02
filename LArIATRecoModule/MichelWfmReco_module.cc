@@ -112,6 +112,7 @@ private:
   short               fBaselineWindowLength;
   short               fPromptWindowLength;
   short               fFullWindowLength;
+  std::vector<short>  fIntegrationWindows;
   short               fPrePulseBaselineFit;
   short               fPromptLightDtCut;
   short               fPrePulseDisplay;
@@ -127,12 +128,17 @@ private:
   float               fHitTimeCutoffHigh;
   bool                fUsePrepulseFit;
   bool                fSER_Mode;
+  bool                fSER_Fit;
+  short               fSER_t1;
+  short               fSER_t2;
   float               fSER_GradHitThresh;
-  float               fSER_GradRMSFilter;
+  float               fSER_GradRMSThresh;
   float               fSER_PulseHitThreshHigh;
   float               fSER_PulseHitThreshLow;
+  float               fSER_PulseHitRMSThresh;
   short               fSER_PostWindow;
   short               fSER_PreWindow;
+  bool                fSER_Verbosity;
 
   // Alg objects
   OpHitBuilderAlg     fOpHitBuilderAlg; 
@@ -170,6 +176,8 @@ private:
 
   // Histograms
   TH1F* h_SER;
+  TH1F* h_SER_g;
+  TH1F* h_TimeStructure;
   TH1I* h_NumOpHits;
   TH2I* h_NumOpHits_vs_NumTracks;
   TH1I* h_NumOpHits_beam;
@@ -191,9 +199,11 @@ private:
   TH1F* h_ChargeFull_populationCut_DtCut;
   TH1F* h_ChargeFull_region;
   TH1F* h_PromptPE;
+  TH1F* h_PromptFraction;
   TH1F* h_PromptPE_region;
   TH1F* h_FullPE_region;
   TH2F* h_PromptFraction_vs_FullLight;
+  TH2F* h_PromptFraction_100_1000_vs_FullLight;
   TH2F* h_PromptPE_vs_Amplitude;
   TH1F* h_TrackVertex_x;
   TH1F* h_TrackVertex_y;
@@ -224,7 +234,10 @@ private:
   int                     NumHits;
   std::vector<short>      vHitTimes;
   std::vector<float>      vHitAmplitude;
-  std::vector<float>      vHitPromptLight;
+  std::vector<float>      vHitIntegral_100ns;
+  std::vector<float>      vHitIntegral_250ns;
+  std::vector<float>      vHitIntegral_500ns;
+  std::vector<float>      vHitIntegral_1000ns;
   std::vector<float>      vHitFullLight;
   std::vector<float>      vHitPE_Prompt;
   std::vector<float>      vHitPE_Full;
@@ -245,8 +258,10 @@ private:
   int                     IsCleanBeamWaveform;
   float                   DeltaTime;
   float                   Amplitude;
-  float                   Charge_100ns; 
+  float                   Charge_100ns;
+  float                   Charge_250ns; 
   float                   Charge_500ns;
+  float                   Charge_1000ns;
   float                   Charge_Full;
   float                   PE_Prompt; 
   float                   PE_Full;
@@ -310,6 +325,10 @@ fTrigFiltAlg(pset)
   N_PEs = 0;
   T_PEs = 0;
 
+  hit_info.resize(fIntegrationWindows.size()+1);
+
+  if(!bUseTrackInformation) fSaveAllTrackInfoToTree = false;
+
   // Produces the LArSoft object to be outputted
   // (none for now!) 
  
@@ -343,18 +362,20 @@ fTrigFiltAlg(pset)
 
   // Configure instance of OpHitBuilder dedicated to 
   // finding single PEs
+  fOpHitBuilderAlg_SER.bVerbose                 = fSER_Verbosity;
   fOpHitBuilderAlg_SER.fUsePrepulseFit          = false;
   fOpHitBuilderAlg_SER.fFirstHitSeparation      = 0;
   fOpHitBuilderAlg_SER.fMinHitSeparation        = 10;
   fOpHitBuilderAlg_SER.fPrePulseDisplay         = fSER_PreWindow;
   fOpHitBuilderAlg_SER.fPromptWindowLength      = fSER_PostWindow;
   fOpHitBuilderAlg_SER.fFullWindowLength        = fSER_PostWindow;
-  fOpHitBuilderAlg_SER.fHitTimeCutoffLow        = 3000;
-  fOpHitBuilderAlg_SER.fHitTimeCutoffHigh       = 28000;
-  fOpHitBuilderAlg_SER.fGradHitThresh    = fSER_GradHitThresh;
-  fOpHitBuilderAlg_SER.fGradientRMSFilterThreshold = fSER_GradRMSFilter;
-  fOpHitBuilderAlg_SER.fPulseHitThreshLow    = fSER_PulseHitThreshLow;
-  fOpHitBuilderAlg_SER.fPulseHitThreshHigh   = fSER_PulseHitThreshHigh;
+  fOpHitBuilderAlg_SER.fHitTimeCutoffLow        = fSER_t1;
+  fOpHitBuilderAlg_SER.fHitTimeCutoffHigh       = fSER_t2;
+  fOpHitBuilderAlg_SER.fGradHitThresh           = fSER_GradHitThresh;
+  fOpHitBuilderAlg_SER.fGradRMSThresh           = fSER_GradRMSThresh;
+  fOpHitBuilderAlg_SER.fPulseHitThreshLow       = fSER_PulseHitThreshLow;
+  fOpHitBuilderAlg_SER.fPulseHitThreshHigh      = fSER_PulseHitThreshHigh;
+  fOpHitBuilderAlg_SER.fPulseHitRMSThresh       = fSER_PulseHitRMSThresh;
   SER_region_size = fOpHitBuilderAlg_SER.fHitTimeCutoffHigh - fOpHitBuilderAlg_SER.fHitTimeCutoffLow;
 }
 
@@ -389,19 +410,25 @@ void MichelWfmReco::produce(art::Event & e)
   DeltaTime                   = -99.;
   Amplitude                   = -99.;
   Charge_100ns                = -9999.;
+  Charge_250ns                = -9999.;
+  Charge_500ns                = -9999.;
+  Charge_1000ns                = -9999.;
   Charge_Full                 = -99999.;
-  PE_Prompt                   = -9.;
-  PE_Full                     = -99.;
-  PromptFraction              = -9.;
+  PE_Prompt                   = -999.;
+  PE_Full                     = -9999.;
+  PromptFraction              = -999.;
   WaveformBaseline            = -99.;
-  WaveformBaselineRMS         = -9.;
+  WaveformBaselineRMS         = 999.;
   SecondTrackLength           = -9.;
   SecondTrackEnergy           = -9.;
   SecondTrackProximity        = -9.;
   IsSecondTrackContained      = -9;
   vHitTimes.clear();
   vHitAmplitude.clear();
-  vHitPromptLight.clear();
+  vHitIntegral_100ns.clear();
+  vHitIntegral_250ns.clear();
+  vHitIntegral_500ns.clear();
+  vHitIntegral_1000ns.clear();
   vHitFullLight.clear();
   vHitPE_Prompt.clear();
   vHitPE_Full.clear();
@@ -493,9 +520,11 @@ void MichelWfmReco::produce(art::Event & e)
 
   N_Events++;
 
-  // Classify as beam or non-beam event (allow 0.1s buffer around cutoff just to be safe)
+  // Classify as beam or non-beam event
   if ( (Timestamp >= 0)&&(Timestamp < fTimestampCut)){ IsBeamEvent = 1;}
   else if (Timestamp >= fTimestampCut) { IsBeamEvent = 0;}
+
+  h_TimeStructure->Fill(Timestamp);
 
   //  Get waveform baseline/RMS
   std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(ETL_waveform,0,fBaselineWindowLength);
@@ -520,16 +549,20 @@ void MichelWfmReco::produce(art::Event & e)
   // For each hit, do all the needed reconstruction in single function call
   for (int i=0; i<NumHits; i++){
     if(bVerbose) std::cout<<"----- Processing hit "<<i<<"    t = "<<vHitTimes[i]<<" ------\n";
-    if( i==0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i],0);
-    if( i >0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i],vHitTimes[i-1]);
+    if( i==0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i], 0, fIntegrationWindows);
+    if( i >0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i], vHitTimes[i-1], fIntegrationWindows);
     
     h_HitTime       ->Fill(vHitTimes[i]);
     vHitAmplitude.push_back(hit_info[0]);
     h_HitAmplitude  ->Fill(vHitAmplitude[i]);
-    vHitPromptLight.push_back(hit_info[1]);
-    vHitFullLight.push_back(hit_info[2]);
-    vHitPE_Prompt.push_back(hit_info[1]/fSinglePE);
-    vHitPE_Full.push_back(hit_info[2]/fSinglePE); 
+    vHitIntegral_100ns.push_back(hit_info[1]);
+    vHitIntegral_250ns.push_back(hit_info[2]);
+    vHitIntegral_500ns.push_back(hit_info[3]);
+    vHitIntegral_1000ns.push_back(hit_info[4]);
+    vHitFullLight.push_back(hit_info[5]);
+    
+    vHitPE_Prompt.push_back(vHitIntegral_100ns[i]/fSinglePE);
+    vHitPE_Full.push_back(vHitFullLight[i]/fSinglePE); 
     h_HitPromptPE   ->Fill(vHitPE_Prompt[i]);
     vPrepulseBaseline.push_back(fOpHitBuilderAlg.prepulse_baseline);
     vPrepulseRMS.push_back(fOpHitBuilderAlg.prepulse_rms);
@@ -538,11 +571,13 @@ void MichelWfmReco::produce(art::Event & e)
     vPrepulseSlowNorm.push_back(fOpHitBuilderAlg.fit_SlowNorm);
     vPrepulseSlowTau.push_back(fOpHitBuilderAlg.fit_SlowTau); 
     vPrepulseReducedChi2.push_back(fOpHitBuilderAlg.fit_ReducedChi2);
-    vHitPromptFraction.push_back(hit_info[1]/hit_info[2]);
+    vHitPromptFraction.push_back(hit_info[1]/vHitFullLight[i]);
 
     // PSD
-    if( (vPrepulseSlowNorm[i]>-0.1)&&(fabs(vHitTimes[i]-PostPercentMark) <= 0.01*(float)NSamples) ){
+    if( (vPrepulseRMS[i]<=2.0)&&(fabs(vHitTimes[i]-PostPercentMark) <= 0.01*(float)NSamples) ){
       h_PromptFraction_vs_FullLight->Fill(vHitPromptFraction[i],vHitPE_Full[i]);
+      h_PromptFraction_100_1000_vs_FullLight->Fill(vHitIntegral_100ns[i]/vHitIntegral_1000ns[i],vHitPE_Full[i]);
+      h_PromptFraction->Fill(vHitPromptFraction[i]); 
     }
     
     // Line in PE (#,x) vs. amplitude (mV,y) space to cut out background. 
@@ -785,7 +820,7 @@ void MichelWfmReco::produce(art::Event & e)
     // If there was 1 stopping or 1 passing track, get light info for the "muon"
     if( (IsSingleStoppingTrack||IsSinglePassingTrack) && (NumHits > 0)&&(NumHits <= 2) ) {
       MuAmplitude = vHitAmplitude[0];
-      MuCharge_100ns = vHitPromptLight[0];
+      MuCharge_100ns = vHitIntegral_100ns[0];
     }
 
   } //endif bUseTrackInformation
@@ -805,7 +840,7 @@ void MichelWfmReco::produce(art::Event & e)
   if(NumHits==2){      
     // Integral/amplitude of Michel pulse
     Amplitude     = vHitAmplitude[1];
-    Charge_100ns  = vHitPromptLight[1];
+    Charge_100ns  = vHitIntegral_100ns[1];
     Charge_Full   = vHitFullLight[1];
     PE_Prompt     = Charge_100ns/fSinglePE;
     PE_Full       = Charge_Full/fSinglePE;
@@ -896,14 +931,15 @@ void MichelWfmReco::produce(art::Event & e)
   // SER-finder
   if(fSER_Mode){
     
-    std::cout<<"================== SER MODE =====================\n";
+    if(bVerbose) std::cout<<"================== SER MODE =====================\n";
 
-    std::vector<float> SER_integrals = fOpHitBuilderAlg_SER.GetSinglePEs(ETL_opdetpulse);  
+    std::vector<std::pair<float,float>> SER_integrals = fOpHitBuilderAlg_SER.GetSinglePEs(ETL_opdetpulse);  
    
-    std::cout<<"Found "<<SER_integrals.size()<<" single PE candidates.\n";
+    if(bVerbose) std::cout<<"Found "<<SER_integrals.size()<<" single PE candidates.\n";
     for( size_t i = 0; i < SER_integrals.size(); i++){
       //std::cout<<"  i = "<<SER_integrals[i]<<std::endl; 
-      h_SER->Fill(SER_integrals[i]);
+      h_SER->Fill(SER_integrals[i].first);
+      h_SER_g->Fill(SER_integrals[i].second);
     }
 
     N_PEs += SER_integrals.size();
@@ -941,7 +977,10 @@ void MichelWfmReco::beginJob()
   MichelDataTree ->Branch("NumHits",&NumHits,"NumHits/I");
   MichelDataTree ->Branch("HitTimes",&vHitTimes);
   MichelDataTree ->Branch("HitAmplitude",&vHitAmplitude);
-  MichelDataTree ->Branch("HitPromptLight",&vHitPromptLight);
+  MichelDataTree ->Branch("HitIntegral_100ns",&vHitIntegral_100ns);
+  MichelDataTree ->Branch("HitIntegral_250ns",&vHitIntegral_250ns);
+  MichelDataTree ->Branch("HitIntegral_500ns",&vHitIntegral_500ns);
+  MichelDataTree ->Branch("HitIntegral_1000ns",&vHitIntegral_1000ns);
   MichelDataTree ->Branch("HitFullLight",&vHitFullLight); 
   MichelDataTree ->Branch("HitPE_Prompt",&vHitPE_Prompt);
   MichelDataTree ->Branch("HitPE_Full",&vHitPE_Full);
@@ -998,8 +1037,10 @@ void MichelWfmReco::beginJob()
  
   // Histograms 
   if(fSER_Mode) {
-    h_SER        = tfs->make<TH1F>("SER","SER;Integrated ADC;Counts",150,0.,150.);
+    h_SER        = tfs->make<TH1F>("SER","SER;Integrated ADC;Counts",400,-50.,350.);
+    h_SER_g        = tfs->make<TH1F>("SER_g","SER_g;Gradient at SER candidate hit;Counts",64,-8,8.);
   }
+  h_TimeStructure           = tfs->make<TH1F>("TimeStructure", "Event timestamp (per spill);s",200,3.2,3.3);
   h_NumOpHits               = tfs->make<TH1I>("OpHitsPerEvent", "Optical hits per event", 10, 0, 10);
   h_NumOpHits               ->GetXaxis()->SetTitle("Num hits");
   h_NumOpHits               ->GetYaxis()->SetTitle("Counts");
@@ -1048,9 +1089,13 @@ void MichelWfmReco::beginJob()
   h_PromptPE                = tfs->make<TH1F>("PromptPE", "Prompt photoelectrons (100ns) in Michel-candidate pulses",  400,  0., 200.);
   h_PromptPE             ->GetXaxis()->SetTitle("Prompt Photoelectrons");
   h_PromptPE             ->GetYaxis()->SetTitle("Counts");
+ 
+  h_PromptFraction        = tfs->make<TH1F>("PromptFraction","Prompt fraction for good optical hits;Prompt light fraction",120,-30,30);
   
-  h_PromptFraction_vs_FullLight = tfs->make<TH2F>("PromptFraction_vs_FullLight","Prompt fraction vs. full light;Prompt fraction;Light [pe]",200,0,1,200,0,1500);
+  h_PromptFraction_vs_FullLight = tfs->make<TH2F>("PromptFraction_vs_FullLight","Prompt fraction vs. full light;Prompt fraction;Light [pe]",200,0,1,200,0,2000);
   h_PromptFraction_vs_FullLight->SetOption("colz");
+  h_PromptFraction_100_1000_vs_FullLight = tfs->make<TH2F>("PromptFraction_100_1000_vs_FullLight","Prompt fraction (100ns/1000ns) vs. full light (7us);Prompt fraction;Light [pe]",200,0,1.2,200,0,2000);
+  h_PromptFraction_100_1000_vs_FullLight ->SetOption("colz");
 
   h_Charge100ns_populationCut = tfs->make<TH1F>("Charge100ns_populationCut", "Prompt light integral (100ns), BG population cut",  480,  0., 12000.);
   h_Charge100ns_populationCut ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
@@ -1269,6 +1314,45 @@ void MichelWfmReco::endJob()
   std::cout<<"  PE rate          "<<(float)N_PEs/(T_PEs*1e-09)<<" Hz"<<std::endl;
   std::cout<<"================================\n";
 
+
+  if(fSER_Mode && fSER_Fit){
+  // ------------------------------------------------
+  // Fit out the SER
+  
+  TF1 SER_fit("SER_fit","[0]*TMath::Landau(1) + [3]*exp(-0.5*pow((x-[4])/[5],2)) + [6]*exp(-0.5*pow((x-2.*[4])/[7],2))",-50,350);
+  float max = (float)h_SER->GetMaximum();
+
+  // "Noise" component (fit by Landau)
+  SER_fit.SetParameter(0,max);
+  SER_fit.SetParLimits(0,0.,5.*max);
+  SER_fit.SetParLimits(1,-20.,20);
+  SER_fit.SetParameter(2,1.);
+  SER_fit.SetParLimits(2,0.,1000);
+  
+  // 1PE (gaus)
+  SER_fit.SetParameter(3,max);
+  SER_fit.SetParLimits(3,0.,5.*max);
+  SER_fit.SetParameter(4,80.);
+  SER_fit.SetParLimits(4,30.,150.);
+  SER_fit.SetParameter(5,10.);
+  SER_fit.SetParLimits(5,0.,100.);
+
+  // 2PE (gaus)
+  SER_fit.SetParameter(6,0.2*max);
+  SER_fit.SetParLimits(6,0.,1.*max);
+  SER_fit.SetParameter(7,20.);
+  SER_fit.SetParLimits(7,0.,100.);
+
+  h_SER->Fit("SER_fit");
+  std::cout<<"SER fit results:\n";
+  std::cout<<"  1PE = "<<SER_fit.GetParameter(4)<<" +/- "<<SER_fit.GetParError(4)<<"\n";
+  std::cout<<"  sigma = "<<SER_fit.GetParameter(5)<<"\n";
+  std::cout<<"===================================\n";
+  
+  
+  }
+  
+
 }
 
 void MichelWfmReco::endRun(art::Run & r)
@@ -1293,14 +1377,15 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fBaselineWindowLength   = pset.get< short >("BaselineWindowLength",1000);
   fPromptWindowLength     = pset.get< short >("PromptWindowLength",100);
   fFullWindowLength       = pset.get< short >("FullWindowLength",7000);
+  fIntegrationWindows     = pset.get< std::vector<short> >("IntegrationWindows");
   fPrePulseBaselineFit    = pset.get< short >("PrePulseBaselineFit",1000);
   fPrePulseDisplay        = pset.get< short >("PrePulseDisplay",500);
   fFiducialMargin_X       = pset.get< float>("FiducialMargin_X",5.);
   fFiducialMargin_Y       = pset.get< float>("FiducialMargin_Y",4.);
   fFiducialMargin_Z       = pset.get< float>("FiducialMargin_Z",5.);
-  fTimestampCut           = pset.get< float>("TimestampCut",5.3);
+  fTimestampCut           = pset.get< float>("TimestampCut",5.4);
   fGateDelay              = pset.get< short >("GateDelay",300);
-  fSinglePE               = pset.get< float>("SinglePE",51.);
+  fSinglePE               = pset.get< float>("SinglePE",90.);
   fAveWfmCut_Dt           = pset.get< float>("AveWfmCut_Dt",300.);
   fCorrectAveWfms         = pset.get< bool>("CorrectAveWfms","true");
   fSaveHitWfmsToTree      = pset.get< bool>("SaveHitWfmsToTree","false");
@@ -1311,12 +1396,17 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fPrePulseDisplay        = pset.get< short>("PrePulseDisplay",500);
   fPromptLightDtCut       = pset.get< short>("PromptLightDtCut",1800);
   fSER_Mode               = pset.get< bool>("SER_Mode","false");
+  fSER_Fit                = pset.get< bool>("SER_Fit","false");
+  fSER_t1                 = pset.get< short>("SER_t1",3000);
+  fSER_t2                 = pset.get< short>("SER_t2",19000);
   fSER_GradHitThresh      = pset.get< float >("SER_GradHitThresh",-8.);
-  fSER_GradRMSFilter      = pset.get< float> ("SER_GradRMSFilter",3);
+  fSER_GradRMSThresh      = pset.get< float> ("SER_GradRMSThresh",3);
   fSER_PulseHitThreshLow  = pset.get< float >("SER_PulseHitThreshLow",0.);
   fSER_PulseHitThreshHigh = pset.get< float >("SER_PulseHitThreshHigh",10.);
+  fSER_PulseHitRMSThresh  = pset.get< float >("SER_PulseHitRMSThresh",3.);
   fSER_PreWindow          = pset.get< short>("SER_PreWindow",10);
   fSER_PostWindow         = pset.get< short>("SER_PostWindow",30);
+  fSER_Verbosity          = pset.get< bool> ("SER_Verbosity","false");
 }
 
 void MichelWfmReco::respondToCloseInputFile(art::FileBlock const & fb)
