@@ -90,17 +90,11 @@ class FragmentToDigitAlg{
                                             std::vector<CAENFragment>                             const& caenFrags,
                                             std::vector< std::vector<TDCFragment::TdcEventData> > const& tdcDataBlocks);
 
-  void InitializeRun(art::RunPrincipal* const & run, art::RunNumber_t runNumber);
+  void InitializeRun(art::RunPrincipal* const & run, art::RunNumber_t runNumber, std::uint64_t timestamp);
   std::string TimestampToString(std::time_t const& Timestamp); 
   
 
  private:
-
-  uint32_t						fMURSMaxChan;
-  uint32_t						fTOFMaxChan;
-  uint32_t						fAEROMaxChan;
-  uint32_t						fHALOMaxChan;
-  uint32_t						fTRIGMaxChan;
 
   int                                        		fRunNumber;               	///< current run number
   std::string                                		fRawFragmentLabel;        	///< label for module producing artdaq fragments
