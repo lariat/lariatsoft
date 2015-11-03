@@ -59,30 +59,11 @@ FragmentToDigitAlg::~FragmentToDigitAlg()
 //=====================================================================
 void FragmentToDigitAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
-  //fMURSMaxChan            = pset.get< uint32_t    >("MURSMaxChan",            48  );
-  //fTOFMaxChan             = pset.get< uint32_t    >("TOFMaxChan",             48  );
-  //fAEROMaxChan            = pset.get< uint32_t    >("AEROMaxChan",            48  );
-  //fHALOMaxChan            = pset.get< uint32_t    >("HALOMaxChan",            48  );
-  //fTRIGMaxChan            = pset.get< uint32_t    >("TRIGMaxChan",            64  );
   fRawFragmentLabel       = pset.get< std::string >("RawFragmentLabel",       "daq"  );
   fRawFragmentInstance    = pset.get< std::string >("RawFragmentInstance",    "SPILL");
   fTriggerDecisionTick    = pset.get< unsigned int>("TriggerDecisionTick",    100    ); 
   fTrigger1740Pedestal    = pset.get< float       >("Trigger1740Pedestal",    2000.  );
   fTrigger1740Threshold   = pset.get< float       >("Trigger1740Threshold",   0.     );
-
-  std::vector<std::vector<unsigned int> > opChans = pset.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
-
-  for(size_t i = 0; i < opChans.size(); ++i){
-    if(opChans[i].size() < 1) continue;
-    for(size_t j = 1; j < opChans[i].size(); ++j){
-      fOpticalDetChannels[opChans[i][0]].insert(opChans[i][j]);
-      LOG_VERBATIM("SliceToDigit") << "board " << opChans[i][0] 
-				      << " has optical detector on channel " 
-				      << opChans[i][j];
-    }
-  }
-
-
 }
 //=====================================================================
 void FragmentToDigitAlg::makeTheDigits( std::vector<CAENFragment> caenFrags,
@@ -256,47 +237,74 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
 {
   // loop over the caenFrags
   uint32_t boardId        = 0;
+  uint32_t boardIdquery   = 0;
+  uint32_t chanOff        = 0;
+  std::string value("CRYO");
+  std::string board("board_");
+  std::string channel("_channel_");
+  size_t boardLoc;
+  size_t channelLoc;
+  size_t temp;
   uint32_t triggerTimeTag = 0;
   int      firstSample    = 0;
 
-  for(auto const& caenFrag : caenFrags){
-
+  for(auto const& caenFrag : caenFrags)
+  {
     boardId        = caenFrag.header.boardId;
     triggerTimeTag = caenFrag.header.triggerTimeTag;
 
-    if(fOpticalDetChannels.count(boardId) > 0){
+    for(auto hardwareIter : fHardwareConnections)
+    {
+      temp  = hardwareIter.second.find(value);
+      if(temp != std::string::npos)
+      {
+        boardLoc   = hardwareIter.first.find(board) + board.size();				//location in string where board ID is
+        channelLoc = hardwareIter.first.find(channel) + channel.size();				//location in string where channel ID is
+     
+        if(boardLoc !=std::string::npos)
+        {
+          std::string strboardId (hardwareIter.first, boardLoc, channelLoc - channel.size());
+	  std::string strchannelId (hardwareIter.first, channelLoc, hardwareIter.first.size());
+      	
+          boardIdquery = stoi(strboardId); 							//convert string boardID to uint32
+          chanOff = stoi(strchannelId); 							//convert string channel to uint32
+        }//end setting board/channel ID
 
-      // loop over the channels on this board connected to optical detectors
-      for(auto ch : fOpticalDetChannels.find(boardId)->second){
 
-        // check that the current channel, ch, is a valid one for grabbing a waveform
-        if(ch > caenFrag.waveForms.size() )
-        throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch
-						  << " from board "        << boardId
-						  << " is beyond the scope of the waveform vector";
+        if(boardId == boardIdquery)
+        {
+          // loop over the channels on this board connected to optical detectors
+          // check that the current channel, ch, is a valid one for grabbing a waveform
+          if(chanOff > caenFrag.waveForms.size() )
+          throw cet::exception("FragmentToDigitAlg") << "requested channel, " << chanOff
+	 				  	     << " from board "        << boardId
+	  					     << " is beyond the scope of the waveform vector";
         
-        std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
+          std::vector<short> waveForm(caenFrag.waveForms[chanOff].data.begin(), caenFrag.waveForms[chanOff].data.end());
         
-        // calculate first sample
-        firstSample = (int)((100.-fV1751PostPercent) * 0.01 * (float)waveForm.size());
+          // calculate first sample
+          firstSample = (int)((100.-fV1751PostPercent) * 0.01 * (float)waveForm.size());
         
-        // LOG_VERBATIM("FragmentToDigitAlg") << "Writing opdetpulses "
-        // 			       << " boardID : " << boardId
-        // 			       << " channel " << ch
-        // 			       << " size of wvform data " << waveForm.size()
-        // 			       << " fOpDetChID[boardId] size() " << fOpDetChID[boardId].size();
+          LOG_VERBATIM("FragmentToDigitAlg") <<"Found CRYO";
+          LOG_VERBATIM("FragmentToDigitAlg") << " Writing opdetpulses "
+                                             << " boardID : " << boardId
+         	    		             << " channel " << chanOff
+         			             << " size of wvform data " << waveForm.size()
+            				     << " Column: "<< hardwareIter.first<<" Value: "<<hardwareIter.second 
+                                             << " BoardId: "<< boardId <<" ChannelId: "<< chanOff
+                                             << " firstSample: "<< firstSample << " triggerTimeTag: " << triggerTimeTag;
         
-        opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (ch),
-                                             waveForm,
-                                             static_cast <unsigned int> (triggerTimeTag),
-                                             static_cast <unsigned int> (firstSample)
-                                             )
-                             );
+          opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (chanOff),
+                                               waveForm,
+                                               static_cast <unsigned int> (triggerTimeTag),
+                                               static_cast <unsigned int> (firstSample)
+                                               )
+                               );
         
-      } // end loop over channels on this board
-    } // end if this board has optical channels on it
-  } // end loop over fragments
-
+        } // end if this board has optical channels on it
+      } // end if boardLoc found
+    } // end loop over HardwareConnections
+  }// end loop over fragments
   return;
 }
 
