@@ -348,12 +348,12 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 			      MuRSColHandle );
 
   //we want to know the Pz vs. TOF, so make sure that there is only one TOF object with one TOF within. Find the TOF
-  if( TOFColHandle->size() != 1 ) return;
-  if( TOFColHandle->at(0).NTOF() != 1 ) return;
+  if( TOFColHandle->size() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
+  if( TOFColHandle->at(0).NTOF() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
   float reco_TOF = TOFColHandle->at(0).SingleTOF(0);
 
   //Assume that there is only one good WCTrack. Identify the WCTrack's momentum.
-  if( WCTrackColHandle->size() != 1 ) return;
+  if( WCTrackColHandle->size() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
   float reco_momentum = WCTrackColHandle->at(0).Momentum();
   setPriors( reco_momentum );
 
@@ -361,7 +361,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   fPzVsTOF->Fill(reco_momentum,reco_TOF);
 
   //Make a cut to reduce ambiguity in particle species based on mass distributions
-  if(reco_momentum > fMaxMomentumForPID ){ return; }
+  if(reco_momentum > fMaxMomentumForPID ){ e.put(std::move(AuxDetParticleIDCol)); return; }
 
   //Plot essential information about the incoming data products that passed the
   //cuts. Also, plot THE MASS!!!!
