@@ -169,6 +169,7 @@ private:
   TVector3              MuTrackVertex;
   TVector3              MuTrackEnd;
   int                   HitWaveformBins;
+  int                   SERWaveformBins;
   char                  buffer[200];
   raw::OpDetPulse       ETL_opdetpulse;
   int                 SER_region_size;
@@ -187,6 +188,8 @@ private:
   TH1I* h_NumOpHits_beam;
   TH1I* h_NumOpHits_offbeam;
   TH1F* h_DeltaTime_chargeCut;
+  TH1F* h_DeltaTime_chargeCutLow;
+  TH1F* h_DeltaTime_chargeBelow1500;
   TH1F* h_DeltaTime_stoppingMu;
   TH1F* h_DeltaTime_chargeCut_beam;
 
@@ -221,13 +224,14 @@ private:
   TH1F* h_TrackEnd_z;
   TH2F* h_TrackNode_zx;
   TH2F* h_TrackNode_zy;
-  TH2F* h_TrackEnergy_vs_PromptLight;
+  TH2F* h_TrackEnergy_vs_FullLight;
   TH2I* h_InFiducialVolume;
   TH1F* h_SecondTrackOffset;
   TH1F* h_AverageWaveform1;
   TH1F* h_AverageWaveform2;
   TH1F* h_AverageWaveformMIP;
   TH1F* h_AverageWaveformProton;
+  TH1F* h_AverageWaveformSER;
 
   // TTree
   TTree* MichelDataTree;
@@ -364,9 +368,12 @@ fTrigFiltAlg(pset)
     fOpHitBuilderAlg_aveMIP.fUsePrepulseFit     = false;  
     fOpHitBuilderAlg_aveProton.fUsePrepulseFit  = false; 
   }
+  
 
   HitWaveformBins = (int)fPrePulseDisplay+(int)fFullWindowLength;
   HitWaveform.reserve(HitWaveformBins);
+
+  SERWaveformBins = (int)fSER_PreWindow + (int)fSER_PostWindow;
 
   // Configure instance of OpHitBuilder dedicated to 
   // finding single PEs
@@ -393,6 +400,7 @@ void MichelWfmReco::produce(art::Event & e)
   iEvent++;
 
   // Initialize variables to be saved into tree
+  TVector3              vInit(-99.,-99.,-99.);
   NumHits                     = -9;
   RunNumber                   = -9;
   SubRunNumber                = -9;
@@ -405,6 +413,8 @@ void MichelWfmReco::produce(art::Event & e)
   IsSinglePassingTrack        = 0;
   StoppingTrackZenithAngle    = -1;
   PassingTrackZenithAngle     = -1;
+  MuTrackVertex               = vInit;
+  MuTrackEnd                  = vInit;
   MuTrackVertex_x             = -99.;
   MuTrackVertex_y             = -99.;
   MuTrackVertex_z             = -99.;
@@ -588,17 +598,14 @@ void MichelWfmReco::produce(art::Event & e)
     vHitPromptFraction.push_back(vHitIntegral_100ns[i]/vHitFullLight[i]);
 
     // PSD
-    if( (i == 0) || ( (vHitTimes[i]-vHitTimes[i-1]) > fAveWfmCut_Dt) ){
-      if( (vPrepulseRMS[i]<=2.0)&&(fabs(vHitTimes[i]-PostPercentMark) <= 0.01*(float)NSamples) ){
+      if( (vPrepulseRMS[i]<=2.2)&&(fabs(vHitTimes[i]-PostPercentMark) <= 0.015*(float)NSamples) ){
         h_PromptFraction_vs_FullLight->Fill(vHitPromptFraction[i],vHitPE_Full[i]);
         h_PromptFraction_100_500_vs_FullLight->Fill(vHitIntegral_100ns[i]/vHitIntegral_500ns[i],vHitPE_Full[i]);
         h_PromptFraction_100_1000_vs_FullLight->Fill(vHitIntegral_100ns[i]/vHitIntegral_1000ns[i],vHitPE_Full[i]);
         h_PromptFraction_vs_Energy->Fill(vHitPromptFraction[i],vHitPE_Full[i]/fLY);
         h_PromptFraction_vs_Energy_LowE->Fill(vHitPromptFraction[i],vHitPE_Full[i]/fLY);
-        
         h_PromptFraction->Fill(vHitPromptFraction[i]); 
       }
-    }
     
     // Line in PE (#,x) vs. amplitude (mV,y) space to cut out background. 
     TF1 f_PopulationCut("f_PopulationCut","1.714*x - 14.57",0.,10000.);
@@ -613,7 +620,7 @@ void MichelWfmReco::produce(art::Event & e)
   }
  
   // Is clean beam waveform?
-  if( (IsBeamEvent)&&(NumHits == 1)&&( abs(vHitTimes[0]-PostPercentMark) <= 0.01*(float)NSamples) ){
+  if( (IsBeamEvent)&&(NumHits == 1)&&( abs(vHitTimes[0]-PostPercentMark) <= 0.015*(float)NSamples) ){
     IsCleanBeamWaveform = 1;
   } else {
     IsCleanBeamWaveform = 0;
@@ -770,6 +777,8 @@ void MichelWfmReco::produce(art::Event & e)
           if( IsSingleStoppingTrack ){
             IsSingleStoppingTrack = 0;
             flag = true;
+            MuTrackVertex     = vInit;
+            MuTrackEnd        = vInit; 
             MuTrackVertex_x   = -99.;
             MuTrackVertex_y   = -99.;
             MuTrackVertex_z   = -99.;
@@ -782,16 +791,16 @@ void MichelWfmReco::produce(art::Event & e)
           } else { 
             MuTrackIndex = i;
             IsSingleStoppingTrack = 1;
-            MuTrackVertex   = vertex;
-            MuTrackEnd      = end;
+            MuTrackVertex     = vertex;
+            MuTrackEnd        = end;
             MuTrackVertex_x   = MuTrackVertex.X();
             MuTrackVertex_y   = MuTrackVertex.Y();
             MuTrackVertex_z   = MuTrackVertex.Z();
             MuTrackEnd_x      = MuTrackEnd.X();
             MuTrackEnd_y      = MuTrackEnd.Y();
             MuTrackEnd_z      = MuTrackEnd.Z();
-            MuTrackLength   = vTrackLength[i];
-            MuTrackEnergy   = vTrackEnergy[i];
+            MuTrackLength     = vTrackLength[i];
+            MuTrackEnergy     = vTrackEnergy[i];
             TVector3 vert(0.,1.,0.);
             TVector3 tmp = (vertex-end);
             StoppingTrackZenithAngle = tmp.Angle(vert);
@@ -845,8 +854,8 @@ void MichelWfmReco::produce(art::Event & e)
 
   } //endif bUseTrackInformation
 
-  if( (NumTracks==1)&&(NumHits==1)&&(vTrackEnergy[0]>0.)&&(vHitAmplitude[0]<190.)&&(vIsTrackPassing[0])){
-    h_TrackEnergy_vs_PromptLight->Fill(vTrackEnergy[0],vHitPE_Prompt[0]);
+  if( (IsBeamEvent)&&(NumTracks==1)&&(NumHits==1)&&(vTrackEnergy[0]>0.)&&(vHitAmplitude[0]<190.)&&(vIsTrackPassing[0])){
+    h_TrackEnergy_vs_FullLight->Fill(vTrackEnergy[0],vHitPE_Full[0]);
   }
     
 
@@ -883,7 +892,7 @@ void MichelWfmReco::produce(art::Event & e)
   
   // Michel event quality control:
   // Require 2 hits (one before PostPercent, one within 1% of PostPercent) 
-  if( (NumHits == 2) && (vHitTimes[0] < vHitTimes[1]-fGateDelay) && ( abs(vHitTimes[1]-PostPercentMark) <= 0.01*NSamples) && (!IsBeamEvent)){
+  if( (DeltaTime > 0.)  && (vHitTimes[0] < vHitTimes[1]-fGateDelay) && ( abs(vHitTimes[1]-PostPercentMark) <= 0.015*NSamples) && (!IsBeamEvent)){
     
     if(bVerbose) std::cout << "--> passes Michel trigger cut (off-beam) \n";
     N_MichelCandidates++;
@@ -893,9 +902,9 @@ void MichelWfmReco::produce(art::Event & e)
     h_PromptPE                ->Fill(PE_Prompt);
     h_PromptPE_vs_Amplitude   ->Fill(PE_Prompt,Amplitude);
     
-    if( Charge_100ns > fPromptLightDtCut ) {
-      h_DeltaTime_chargeCut   ->Fill(DeltaTime);
-    }
+    if( Charge_100ns >= fPromptLightDtCut )                       h_DeltaTime_chargeCut     ->Fill(DeltaTime);
+    if( (Charge_100ns > 0.)&&(Charge_100ns < fPromptLightDtCut))  h_DeltaTime_chargeCutLow  ->Fill(DeltaTime);
+    if( (Charge_100ns > 0.)&&(Charge_100ns < 1500) )              h_DeltaTime_chargeBelow1500->Fill(DeltaTime);
 
     if( !vIsInBGPopulation[1] ) {
       N_MichelNonBG++;
@@ -919,6 +928,8 @@ void MichelWfmReco::produce(art::Event & e)
         h_Energy_region->Fill(PE_Full/fLY);
       }
     }
+    
+    if(bVerbose) std::cout<<"Filled histograms\n";
      
     // Make average waveform of the "good" Michel events
     if( (DeltaTime > fAveWfmCut_Dt)&&(!vIsInBGPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_ave1.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
@@ -930,7 +941,7 @@ void MichelWfmReco::produce(art::Event & e)
 
 
   // Also look at DeltaTime of beam events where there was a delayed optical hit
-  if( (NumHits == 2) && ( abs(vHitTimes[0]-PostPercentMark) <= 0.01*NSamples) && (IsBeamEvent) ){
+  if( (NumHits == 2) && ( abs(vHitTimes[0]-PostPercentMark) <= 0.015*NSamples) && (IsBeamEvent) ){
     if( Charge_100ns > fPromptLightDtCut ) h_DeltaTime_chargeCut_beam->Fill(DeltaTime);
   }
 
@@ -1023,43 +1034,49 @@ void MichelWfmReco::beginJob()
   MichelDataTree ->Branch("PromptFraction",&PromptFraction,"PromptFraction/F");
   
   // Track information
-  MichelDataTree ->Branch("NumTracks",&NumTracks,"NumTracks/I");
-  if(fSaveAllTrackInfoToTree){
-    MichelDataTree ->Branch("TrackVertex_x",&vTrackVertex_x);
-    MichelDataTree ->Branch("TrackVertex_y",&vTrackVertex_y);
-    MichelDataTree ->Branch("TrackVertex_z",&vTrackVertex_z);
-    MichelDataTree ->Branch("TrackEnd_x",&vTrackEnd_x);
-    MichelDataTree ->Branch("TrackEnd_y",&vTrackEnd_y);
-    MichelDataTree ->Branch("TrackEnd_z",&vTrackEnd_z);
-    MichelDataTree ->Branch("IsTrackStopping",&vIsTrackStopping);
-    MichelDataTree ->Branch("IsTrackPassing",&vIsTrackPassing);
-    MichelDataTree ->Branch("IsTrackContained",&vIsTrackContained);
-    MichelDataTree ->Branch("TrackPID",&vTrackPID);
-    MichelDataTree ->Branch("TrackPIDA",&vTrackPIDA);
-    MichelDataTree ->Branch("TrackLength",&vTrackLength);
-    MichelDataTree ->Branch("TrackEnergy",&vTrackEnergy);
+  if(bUseTrackInformation){
+    MichelDataTree ->Branch("NumTracks",&NumTracks,"NumTracks/I");
+    if(fSaveAllTrackInfoToTree){
+      MichelDataTree ->Branch("TrackVertex_x",&vTrackVertex_x);
+      MichelDataTree ->Branch("TrackVertex_y",&vTrackVertex_y);
+      MichelDataTree ->Branch("TrackVertex_z",&vTrackVertex_z);
+      MichelDataTree ->Branch("TrackEnd_x",&vTrackEnd_x);
+      MichelDataTree ->Branch("TrackEnd_y",&vTrackEnd_y);
+      MichelDataTree ->Branch("TrackEnd_z",&vTrackEnd_z);
+      MichelDataTree ->Branch("IsTrackStopping",&vIsTrackStopping);
+      MichelDataTree ->Branch("IsTrackPassing",&vIsTrackPassing);
+      MichelDataTree ->Branch("IsTrackContained",&vIsTrackContained);
+      MichelDataTree ->Branch("TrackPID",&vTrackPID);
+      MichelDataTree ->Branch("TrackPIDA",&vTrackPIDA);
+      MichelDataTree ->Branch("TrackLength",&vTrackLength);
+      MichelDataTree ->Branch("TrackEnergy",&vTrackEnergy);
+    }
+    MichelDataTree ->Branch("IsSinglePassingTrack",&IsSinglePassingTrack,"IsSinglePassingTrack/I");
+    MichelDataTree ->Branch("IsSingleStoppingTrack",&IsSingleStoppingTrack,"IsStoppingTrack/I");
+    MichelDataTree ->Branch("StoppingTrackZenithAngle",&StoppingTrackZenithAngle,"StoppingTrackZenithAngle/F");
+    MichelDataTree ->Branch("PassingTrackZenithAngle",&PassingTrackZenithAngle,"PassingTrackZenithAngle/F");
+    MichelDataTree ->Branch("MuTrackVertex_x",&MuTrackVertex_x,"MuTrackVertex_x/F");
+    MichelDataTree ->Branch("MuTrackVertex_y",&MuTrackVertex_y,"MuTrackVertex_y/F");
+    MichelDataTree ->Branch("MuTrackVertex_z",&MuTrackVertex_z,"MuTrackVertex_z/F");
+    MichelDataTree ->Branch("MuTrackEnd_x",&MuTrackEnd_x,"MuTrackEnd_x/F");
+    MichelDataTree ->Branch("MuTrackEnd_y",&MuTrackEnd_y,"MuTrackEnd_y/F");
+    MichelDataTree ->Branch("MuTrackEnd_z",&MuTrackEnd_z,"MuTrackEnd_z/F");
+    MichelDataTree ->Branch("MuTrackLength",&MuTrackLength,"MuTrackLength/F");
+    MichelDataTree ->Branch("MuTrackEnergy",&MuTrackEnergy,"MuTrackEnergy/F");
+    MichelDataTree ->Branch("SecondTrackProximity",&SecondTrackProximity,"SecondTrackProximity/F"); 
+    MichelDataTree ->Branch("SecondTrackLength",&SecondTrackLength,"SecondTrackLength/F"); 
+    MichelDataTree ->Branch("SecondTrackEnergy",&SecondTrackEnergy,"SecondTrackEnergy/F"); 
+    MichelDataTree ->Branch("IsSecondTrackContained",&IsSecondTrackContained,"IsSecondTrackContained/I"); 
   }
-  MichelDataTree ->Branch("IsSinglePassingTrack",&IsSinglePassingTrack,"IsSinglePassingTrack/I");
-  MichelDataTree ->Branch("IsSingleStoppingTrack",&IsSingleStoppingTrack,"IsStoppingTrack/I");
-  MichelDataTree ->Branch("StoppingTrackZenithAngle",&StoppingTrackZenithAngle,"StoppingTrackZenithAngle/F");
-  MichelDataTree ->Branch("PassingTrackZenithAngle",&PassingTrackZenithAngle,"PassingTrackZenithAngle/F");
-  MichelDataTree ->Branch("MuTrackVertex_x",&MuTrackVertex_x,"MuTrackVertex_x/F");
-  MichelDataTree ->Branch("MuTrackVertex_y",&MuTrackVertex_y,"MuTrackVertex_y/F");
-  MichelDataTree ->Branch("MuTrackVertex_z",&MuTrackVertex_z,"MuTrackVertex_z/F");
-  MichelDataTree ->Branch("MuTrackEnd_x",&MuTrackEnd_x,"MuTrackEnd_x/F");
-  MichelDataTree ->Branch("MuTrackEnd_y",&MuTrackEnd_y,"MuTrackEnd_y/F");
-  MichelDataTree ->Branch("MuTrackEnd_z",&MuTrackEnd_z,"MuTrackEnd_z/F");
-  MichelDataTree ->Branch("MuTrackLength",&MuTrackLength,"MuTrackLength/F");
-  MichelDataTree ->Branch("MuTrackEnergy",&MuTrackEnergy,"MuTrackEnergy/F");
-  MichelDataTree ->Branch("SecondTrackProximity",&SecondTrackProximity,"SecondTrackProximity/F"); 
-  MichelDataTree ->Branch("SecondTrackLength",&SecondTrackLength,"SecondTrackLength/F"); 
-  MichelDataTree ->Branch("SecondTrackEnergy",&SecondTrackEnergy,"SecondTrackEnergy/F"); 
-  MichelDataTree ->Branch("IsSecondTrackContained",&IsSecondTrackContained,"IsSecondTrackContained/I"); 
- 
   // Histograms 
   if(fSER_Mode) {
-    h_SER        = tfs->make<TH1F>("SER","SER;Integrated ADC;Counts",400,-50.,350.);
+    h_SER        = tfs->make<TH1F>("SER","SER;Integrated ADC;Counts",500,-50.,450.);
     h_SER_g        = tfs->make<TH1F>("SER_g","SER_g;Gradient at SER candidate hit;Counts",64,-8,8.);
+    
+    h_AverageWaveformSER      = tfs->make<TH1F>("AverageWaveformSER","Average PE waveform",
+                            SERWaveformBins,0.,(float)SERWaveformBins);
+    h_AverageWaveformSER      ->GetXaxis()->SetTitle("ns");
+    h_AverageWaveformSER      ->GetYaxis()->SetTitle("mV");
   }
   h_TimeStructure           = tfs->make<TH1F>("TimeStructure", "Event timestamp (per spill);s",200,3.2,3.3);
   h_NumOpHits               = tfs->make<TH1I>("OpHitsPerEvent", "Optical hits per event", 10, 0, 10);
@@ -1077,17 +1094,26 @@ void MichelWfmReco::beginJob()
   h_NumOpHits_vs_NumTracks  ->SetOption("colz");
 
   sprintf(buffer,"#Delta t (prompt integral > %d ADC)",fPromptLightDtCut); 
-  h_DeltaTime_chargeCut     = tfs->make<TH1F>("DeltaTime_chargeCut",buffer, 700,0., 7000.);
+  h_DeltaTime_chargeCut     = tfs->make<TH1F>("DeltaTime_chargeCut",buffer, 750,0., 7500.);
   h_DeltaTime_chargeCut     ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_chargeCut     ->GetYaxis()->SetTitle("Counts");
+ 
+  sprintf(buffer,"#Delta t (prompt integral < %d ADC)",fPromptLightDtCut); 
+  h_DeltaTime_chargeCutLow     = tfs->make<TH1F>("DeltaTime_chargeCutLow",buffer, 750,0., 7500.);
+  h_DeltaTime_chargeCutLow     ->GetXaxis()->SetTitle("ns");
+  h_DeltaTime_chargeCutLow     ->GetYaxis()->SetTitle("Counts");
+  
+  h_DeltaTime_chargeBelow1500     = tfs->make<TH1F>("DeltaTime_chargeBelow1500","#Delta t (prompt integral < 1500 ADC)", 750,0., 7500.);
+  h_DeltaTime_chargeBelow1500     ->GetXaxis()->SetTitle("ns");
+  h_DeltaTime_chargeBelow1500     ->GetYaxis()->SetTitle("Counts");
   
   sprintf(buffer,"#Delta t (1 stopping track, prompt integral > %d ADC)",fPromptLightDtCut); 
-  h_DeltaTime_stoppingMu    = tfs->make<TH1F>("DeltaTime_stoppingMu", buffer, 700,0., 7000.);
+  h_DeltaTime_stoppingMu    = tfs->make<TH1F>("DeltaTime_stoppingMu", buffer, 750,0., 7500.);
   h_DeltaTime_stoppingMu    ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_stoppingMu    ->GetYaxis()->SetTitle("Counts");
 
   sprintf(buffer,"#Delta t for Michel-like beam events (prompt integral > %d ADC)",fPromptLightDtCut); 
-  h_DeltaTime_chargeCut_beam = tfs->make<TH1F>("DeltaTime_chargeCut_beam",buffer,700,0.,7000.);
+  h_DeltaTime_chargeCut_beam = tfs->make<TH1F>("DeltaTime_chargeCut_beam",buffer,750,0.,7500.);
   h_DeltaTime_chargeCut_beam ->GetXaxis()->SetTitle("ns");
   h_DeltaTime_chargeCut_beam ->GetYaxis()->SetTitle("Counts");
 
@@ -1122,7 +1148,7 @@ void MichelWfmReco::beginJob()
   h_PromptFraction_vs_Energy = tfs->make<TH2F>("PromptFraction_vs_Energy","Prompt fraction vs. energy (estimated from light);Prompt fraction;Energy [MeV]",200,0,1.2,200,0,320);
   h_PromptFraction_vs_Energy ->SetOption("colz");
   h_PromptFraction_vs_Energy_LowE = tfs->make<TH2F>("PromptFraction_vs_Energy_LowE","Prompt fraction vs. energy (estimated from light);Prompt fraction;Energy [MeV]",200,0,1.2,200,0,50);
-  h_PromptFraction_vs_Energy ->SetOption("colz");
+  h_PromptFraction_vs_Energy_LowE ->SetOption("colz");
 
   h_Charge100ns_populationCut = tfs->make<TH1F>("Charge100ns_populationCut", "Prompt light integral (100ns), BG population cut",  480,  0., 12000.);
   h_Charge100ns_populationCut ->GetXaxis()->SetTitle("Integrated prompt light, 100ns [ADC]");
@@ -1149,7 +1175,7 @@ void MichelWfmReco::beginJob()
   h_ChargeFull_populationCut_DtCut    ->GetXaxis()->SetTitle("Integrated light, 7us [ADC]");
   h_ChargeFull_populationCut_DtCut    ->GetYaxis()->SetTitle("Counts");
   
-  h_ChargeFull_region    = tfs->make<TH1F>("ChargeFull_region","Full light integral (7us), limited region",600,0.,30000.);
+  h_ChargeFull_region    = tfs->make<TH1F>("ChargeFull_region","Full light integral (7us), limited region",200,0.,30000.);
   h_ChargeFull_region    ->GetXaxis()->SetTitle("Integrated light, 7us [ADC]");
   h_ChargeFull_region    ->GetYaxis()->SetTitle("Counts");
 
@@ -1170,8 +1196,8 @@ void MichelWfmReco::beginJob()
   h_PromptPE_vs_Amplitude     ->GetYaxis()->SetTitle("Amplitude [mV]");
   h_PromptPE_vs_Amplitude     ->SetOption("colz");
   
-  h_TrackEnergy_vs_PromptLight   = tfs->make<TH2F>("TrackEnergy_vs_PromptLight",";Reconstructed track energy [MeV];Prompt photoelectrons",100,0.,250.,100,0.,500.);
-  h_TrackEnergy_vs_PromptLight   ->SetOption("colz");
+  h_TrackEnergy_vs_FullLight   = tfs->make<TH2F>("TrackEnergy_vs_FullLight",";Reconstructed track energy [MeV];Total photoelectrons",100,0.,250.,120,0.,1200.);
+  h_TrackEnergy_vs_FullLight   ->SetOption("colz");
 
   h_TrackNode_zx          = tfs->make<TH2F>("TrackNode_zx","TrackNode_zx",180,0.,90.,94,0.,47.);
   h_TrackNode_zx          ->GetXaxis()->SetTitle("z [cm]");
@@ -1345,12 +1371,27 @@ void MichelWfmReco::endJob()
   std::cout<<"================================\n";
 
 
+
   if(fSER_Mode && fSER_Fit){
   
-// ------------------------------------------------
+    // SER average waveform
+    N_entries = fOpHitBuilderAlg_SER.SERWaveform_count;
+    float integral = 0;
+    if( N_entries > 0 ){
+      for( int i = 0; i < (int)fOpHitBuilderAlg_SER.SERWaveform.size(); i++) {
+        float w = fOpHitBuilderAlg_SER.SERWaveform.at(i) / float(N_entries); 
+        h_AverageWaveformSER->Fill(i,w);
+        integral += w;
+        std::cout<<"  "<<i<<"  "<<w<<"  integral:"<<integral<<"\n";
+        std::cout<<"  bin content: "<<h_AverageWaveformSER->GetBinContent(i)<<"\n";
+      }
+    }
+    std::cout<<"Ave PE wfm integral: "<<integral<<"  ("<<N_entries<<" waveforms averaged)\n";
+  
+  // ------------------------------------------------
   // Fit out the SER
   TF1 f_gaus("f_gaus","[0]*exp(-0.5*pow((x-[1])/[2],2))",-1000,1000);
-  TF1 SER_fit("SER_fit","[0]*exp(-0.5*pow((x-[1])/[2],2)) + [3]*exp(-0.5*pow((x-[4])/[5],2)) + [6]*exp(-0.5*pow((x-2.*[4])/[7],2)) + [8]*exp(-0.5*pow((x-3.*[4])/[9],2))",-20,300);
+  TF1 SER_fit("SER_fit","[0]*exp(-0.5*pow((x-[1])/[2],2)) + [3]*exp(-0.5*pow((x-[4])/[5],2)) + [6]*exp(-0.5*pow((x-2.*[4])/[7],2)) + [8]*exp(-0.5*pow((x-3.*[4])/[9],2))",-50,400);
   
   //TF1 SER_fit("SER_fit","f_gaus(x,[0],[1],[2]) + f_gaus(x,[3],[4],[5]) + f_gaus(x,[6],2.*[4],[7])",-20,350);
   float max = (float)h_SER->GetMaximum();
@@ -1371,7 +1412,7 @@ void MichelWfmReco::endJob()
   SER_fit.SetParameter(0,max);
   SER_fit.SetParLimits(0,0.,1.2*max);
   SER_fit.SetParameter(1,6.5);
-  SER_fit.SetParLimits(1,-5.,10);
+  SER_fit.SetParLimits(1,-5.,15);
   SER_fit.SetParameter(2,16.);
   SER_fit.SetParLimits(2,5.,30.);
 
@@ -1390,8 +1431,8 @@ void MichelWfmReco::endJob()
   SER_fit.SetParLimits(7,10.,100.);
 
   // 3PE (gaus)
-  SER_fit.SetParameter(8,0.05*max);
-  SER_fit.SetParLimits(8,1.,0.3*max);
+  SER_fit.SetParameter(8,1.);
+  SER_fit.SetParLimits(8,0.,0.3*max);
   SER_fit.SetParameter(9,50);
   SER_fit.SetParLimits(9,30.,120.);
   

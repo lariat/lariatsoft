@@ -58,7 +58,9 @@ class OpHitBuilderAlg{
   
   // Average waveform vector
   std::vector<float>   AverageWaveform;
+  std::vector<float>   SERWaveform;
   int                   AverageWaveform_count;
+  int                   SERWaveform_count;
   int                   AddHitToAverageWaveform;
 
   // Fit parameters
@@ -95,6 +97,7 @@ class OpHitBuilderAlg{
   short fSER_PreWindow;
   short fSER_PostWindow;
   std::vector<short> fIntegrationWindows;
+  float fSinglePE;
 
  private:
   

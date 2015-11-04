@@ -52,6 +52,10 @@ OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
   AverageWaveform.resize(fPrePulseDisplay + fFullWindowLength);
   AverageWaveform_count = 0; 
   AddHitToAverageWaveform = 0;
+ 
+  SERWaveform.resize(fSER_PreWindow + fSER_PostWindow);
+  SERWaveform_count++;
+ 
   
   // Initialize some values
   prepulse_baseline = 0.;
@@ -82,7 +86,7 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fMinHitSeparation     = pset.get< short >("MinHitSeparation",20);
   fFirstHitSeparation   = pset.get< short >("FirstHitSeparation",250);
   fBaselineWindowLength = pset.get< short >("BaselineWindowLength",1000);
-  fPrePulseBaselineFit  = pset.get< short >("PrePulseBaselineFit",2000);
+  fPrePulseBaselineFit  = pset.get< short >("PrePulseBaselineFit",500);
   fPrePulseDisplay      = pset.get< short >("PrePulseDisplay",500);
   fPrePulseTau1         = pset.get< float >("PrePulseTau1",1400.);
   fPrePulseTau2         = pset.get< float >("PrePulseTau1",1600.);
@@ -99,6 +103,7 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fSER_PostWindow       = pset.get< short >("SER_PostWindow",25);
   fSER_PrePE_RMS_cut    = pset.get< float >("SER_PrePE_RMS_cut",2.5);
   fSER_Grad_cut         = pset.get< float >("SER_Grad_cut",-2.5);
+  fSinglePE             = pset.get< float >("SinglePE",85);
 }
 
 
@@ -202,8 +207,9 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse opdetpulse)
   } // <-- end loop over hits
 
   if(bVerbose) std::cout<<"Post-filter: "<<hits_filtered.size()<<" hits\n";
-  // Merge float-hits within 250 ns of first pulse
-  std::vector<short> hits_merged = HitMerger(hits_filtered,fFirstHitSeparation,0);
+  // Merge hits within 250 ns of first pulse
+  //std::vector<short> hits_merged = HitMerger(hits_filtered,fFirstHitSeparation,0);
+  std::vector<short> hits_merged = hits_filtered;
 
   // Now merge all remaining hits using shorter spacing
   std::vector<short> hits_remerged = HitMerger(hits_merged,fMinHitSeparation,1);
@@ -304,7 +310,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   // If the hit is too early to reliably calculate 
   // a baseline, OR if the previous hit is too close,
   // stop now and return defaults
-  if( (hit < 100)||(hit-prev_hit < 100 ) ) return hit_info;
+  if( (hit < 100)||(hit-prev_hit < 300 ) ) return hit_info;
 
   // Get baseline
   size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
@@ -314,7 +320,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
 
   // Determine bounds for fit and integration 
   short x1,x1b,x2,x3;
-  x1  = std::max(int(hit - fPrePulseBaselineFit),prev_hit+50);
+  x1  = std::max(int(hit - fPrePulseBaselineFit),prev_hit+100);
   x1b = std::max(int(hit - fPrePulseDisplay),int(x1));
   x2  = hit - 10;
   x3  = std::min(int(hit + fFullWindowLength),int(wfm.size()));
@@ -413,12 +419,13 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   // Save average waveform during integration?
   bool flag_ave = ( (AddHitToAverageWaveform)&&(total_bins>=fPrePulseDisplay+fFullWindowLength));
   if(flag_ave) AverageWaveform_count++;
-  
+
   // Integrate using the fitted function as running baseline
   float integral  = 0 ;
   float amplitude = 0.;
   int   iWindow   = 0 ;
   for( int i = 0; i < total_bins; i++){
+   
     
     short xx    = x1 + short(i);
     float yy   = prepulse_exp_fit.Eval(xx) - (float)wfm[xx];  
@@ -555,6 +562,7 @@ bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse opdetpulse )
 // Single PE finder
 std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPulse opdetpulse )
 {
+
   std::vector<std::pair<float,float>> out;
   //std::vector<float> integrals;
   
@@ -586,6 +594,13 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
   std::vector<float> wfm_corrected(NSamples);
   for(int i=0; i<NSamples; i++) wfm_corrected[i] = baseline - (float)wfm[i];
 
+  // Make empty vector in which to store waveform for each PE candidate
+  // to be reset after each PE (or after added to average waveform)
+  int SER_bins = fSER_PreWindow + fSER_PostWindow;
+  std::vector<float> tmp_wfm(SER_bins);
+  int tmp_wfm_i = 0;
+
+  // ------------------------------------------------------------
   // Scan waveform and search for hits within specified time window
   for(int i=t1; i<t2; i++){
    
@@ -594,15 +609,25 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
     bool  IsOverThresh  = (y  >= fPulseHitRMSThresh*rms);
     bool  IsOverLimit   = (yy >= fPulseHitThreshHigh); 
     bool  IsPECandidate = ((IsOverThresh) && (!IsOverLimit) && (g[i] <= fSER_Grad_cut) );
-    if(bVerbose) std::cout<<"  "<<i<<"   "<<yy<<" mV  (wfm RMS: "<<rms*fMvPerADC<<" mV --> thresh "<<fPulseHitRMSThresh*rms*fMvPerADC<<" mV)   g = "<<g[i]<<"  flat_counts: "<<flat_samples_count<<std::endl;
 
     // If we're already in a PE window, increment the
     // counters and add to integral
     if( flag ) {
+      
+      if(bVerbose) std::cout<<"  "<<i<<"   "<<yy<<" mV  (wfm RMS: "<<rms*fMvPerADC<<" mV --> thresh "<<fPulseHitRMSThresh*rms*fMvPerADC<<" mV)   g = "<<g[i]<<"  flag: "<<flag
+      <<" tmp_i "<<tmp_wfm_i<<std::endl;
+      
       counter++;
       windowsize++;
-      integral += wfm_corrected[i] - prePE_baseline;
+      float yc = wfm_corrected[i] - prePE_baseline;
+      integral += yc;
+
+      if(tmp_wfm_i < SER_bins){
+        tmp_wfm[tmp_wfm_i] = yc;
+        tmp_wfm_i++;
+      }
       
+
       // If another PE is detected after at least 5 ns, extend the window by resetting counter
       if( counter >=5 && IsPECandidate ){
         if(bVerbose) std::cout<<"Secondary hit! Extending window\n";
@@ -619,6 +644,8 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
         flag = false;
         windowsize = 0;
         flat_samples_count = 0;
+        tmp_wfm.clear();
+        tmp_wfm_i = 0;
         continue;
       }
       
@@ -627,12 +654,24 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
       if( counter == fSER_PostWindow ){
         if(bVerbose) std::cout<<"finished PE window of size "<<windowsize<<": "<<integral<<" ADCs, g = "<<hit_grad<<"\n";
         out.push_back(std::make_pair(integral,hit_grad));
+        
+        // Add to average waveform if it looks good
+        if( (windowsize+fSER_PreWindow == SER_bins) && fabs(integral - fSinglePE)<=10 ){
+          if(bVerbose) std::cout<<"ADDING PE to average waveform... size:"<<SERWaveform.size()<<", SER_bins"<<SER_bins<<"\n";
+          for(int ii=0; ii<SER_bins; ii++){
+            SERWaveform.at(ii) += tmp_wfm[ii]*fMvPerADC;
+          }
+          SERWaveform_count++;
+        }
+
         integral = 0;
         hit_grad = 0;
         windowsize = 0;
         counter = 0;
         flat_samples_count = 0;
         flag = false;
+        tmp_wfm.clear();
+        tmp_wfm_i=0;
         continue;
       }
     
@@ -647,6 +686,9 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
     // were below threshold, then we're in business!
    // if( !flag && flat_samples_count>=10 && IsPECandidate ){
     if( !flag && IsPECandidate ){
+      
+      if(bVerbose) std::cout<<"  "<<i<<"   "<<yy<<" mV  (wfm RMS: "<<rms*fMvPerADC<<" mV --> thresh "<<fPulseHitRMSThresh*rms*fMvPerADC<<" mV)   g = "<<g[i]<<"  flag: "<<flag
+      <<" tmp_i "<<tmp_wfm_i<<std::endl;
       
       // Find pre-PE baseline
       prePE_baseline = 99;
@@ -665,9 +707,12 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
         flag = true;
         hit_grad = g[i];
 
-        // Add up previous 5 samples
-        for(int ii=0; ii<=fSER_PreWindow; ii++) 
-          integral += wfm_corrected[i-fSER_PreWindow+ii] -prePE_baseline;
+        // Add up previous "prewindow" samples
+        for(int ii=0; ii<=fSER_PreWindow; ii++){
+          integral += wfm_corrected[i-fSER_PreWindow+ii] - prePE_baseline;
+          tmp_wfm[tmp_wfm_i] = wfm_corrected[i-fSER_PreWindow+ii] - prePE_baseline;
+          tmp_wfm_i++;
+        }
     
         if(bVerbose) std::cout<<"!!! found a PE.  BEginning integration... \n";
       } else {
@@ -678,7 +723,8 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
     
     if( IsOverThresh ) flat_samples_count = 0;
 
-  } 
+
+  } // <-- end scan over waveform 
 
   return out;
 
