@@ -190,10 +190,16 @@ private:
   TH1F*             fKaonProb;
   TH1F*             fProtonProb;
 
+  TH1F*             fPiProb;
+  TH1F*             fMuProb;
+
   std::vector<size_t>  fKaonRun;
   std::vector<size_t>  fKaonSubRun;
   std::vector<size_t>  fKaonEvent;
   int                  fGoodMuRSCounter;
+
+  double numPion;
+  double numMuon;
 
   //Gaussian parameters for mass fits
   float             fPiMuMassMean;
@@ -355,7 +361,9 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //Assume that there is only one good WCTrack. Identify the WCTrack's momentum.
   if( WCTrackColHandle->size() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
   float reco_momentum = WCTrackColHandle->at(0).Momentum();
-  setPriors( reco_momentum );
+
+  // This little guy gets all the MC info to do the pi/mi seperation
+  setPriors(reco_momentum);
 
   //Fill the Pz vs. TOF histo before making the momentum cut
   fPzVsTOF->Fill(reco_momentum,reco_TOF);
@@ -427,10 +435,15 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
     
     
     MuRSTrack theGoodMuRSTrack;
-    int thePenetrationDepth = 9989;
+    int thePenetrationDepth;
     bool goodMuRS = isThereAGoodMuRSTrack( MuRSColHandle, thePenetrationDepth );
+
+    // We have an issue here about the penetration depth ... 
+    // In doTheMuRSPionMuonSeperation, the penetration depth is calling vectors with smaller indexes
+    // Ah its because the priors are only for a certain range of momentum 
+
     foundGoodMuRSTrack = goodMuRS;
-    if( goodMuRS ){
+    if( goodMuRS and reco_momentum > 499 and reco_momentum < 1000){
       fGoodMuRSCounter++;
       doTheMuRSPionMuonSeparation( thePenetrationDepth, 
 				   reco_momentum,
@@ -439,6 +452,9 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
     
   }
   
+  if(pion_muon_likelihood_ratio > 1) { numPion += 1; }
+  else { numMuon += 1; }
+
 
   //Generate the PDG code corresponding to the most likely particle
   int finalPDGCode = generatePDGCode( proton_kaon_pimu_likelihood_ratios,
@@ -804,16 +820,21 @@ void ParticleIdentificationSlicing::doThePiMu_Proton_KaonSeparation( float reco_
 bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack(art::Handle< std::vector<ldp::MuonRangeStackHits> > & MuRSColHandle,
                                                           int & thePenetrationDepth)
 {
+
+  std::cout << "Fail here 1 " << std::endl;
   //Loop through the MuRS objects
   int counter = 0;
   for (size_t iMuRS = 0; iMuRS < MuRSColHandle->size(); ++iMuRS) {
     ldp::MuonRangeStackHits theMuRS = MuRSColHandle->at(iMuRS);
     for (size_t iTrack = 0; iTrack < theMuRS.NTracks(); ++iTrack) {
-      float theTrackTime = theMuRS.GetArrivalTime(iTrack);
-      if (theTrackTime >= fTriggerWindowFirstTick && theTrackTime <= fTriggerWindowLastTick) {
-        thePenetrationDepth = theMuRS.GetPenetrationDepth(iTrack);
-        counter++;
-      }
+      //      float theTrackTime = theMuRS.GetArrivalTime(iTrack);
+      //      std::cout << "Track Time:" << theTrackTime << "Trigger Tick:"<< fTriggerWindowLastTick << std::cout;
+      // So these are Vastly different numbers, with different t0
+      // So ... lets just let all of them through ... 
+
+      thePenetrationDepth = theMuRS.GetPenetrationDepth(iTrack);
+      counter++;
+
     }
 
   }
@@ -839,8 +860,11 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
   if( fVerbose )
     LOG_VERBATIM("ParticleIdentificationSlicing") << "Doing the pion muon separation.";
 
+  std::cout << "Doing the pion muon separation." << std::endl;
+
   //Calculate the final likelihood ratio for pions/muons for positive polarity
   if( fPolaritySetting == 1 ){
+
     float P_depth_given_pi = fCorrectPPiPenetrationDepth.at( thePenetrationDepth+2 ); //Always +2 because first 2 entries are header with other info
     float P_depth_given_mu = fCorrectPMuPenetrationDepth.at( thePenetrationDepth+2 );
     float P_depth_given_k = fCorrectPKPenetrationDepth.at( thePenetrationDepth+2 );
@@ -850,6 +874,9 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
     float P_murs_given_mu = fCorrectPMuPenetrationDepth.at( thePenetrationDepth+1 )/fCorrectPMuPenetrationDepth.at( thePenetrationDepth );
     float P_murs_given_k = fCorrectPKPenetrationDepth.at( thePenetrationDepth+1 )/fCorrectPKPenetrationDepth.at( thePenetrationDepth );
     float P_murs_given_prot = fCorrectPProtPenetrationDepth.at( thePenetrationDepth+1 )/fCorrectPProtPenetrationDepth.at( thePenetrationDepth );
+
+    
+
  
     float P_pi_given_murs = (fCorrectPPiMCPrior*P_murs_given_pi)/(fCorrectPPiMCPrior*P_murs_given_pi +
 								    fCorrectPMuMCPrior*P_murs_given_mu +
@@ -878,6 +905,7 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 							       P_depth_given_mu*P_mu_given_murs +
 							       P_depth_given_k*P_k_given_murs +
 							       P_depth_given_prot*P_prot_given_murs );
+
     /*
     float P_k_given_depth = P_depth_given_k*P_k_given_murs/(P_depth_given_pi*P_pi_given_murs +
 							    P_depth_given_mu*P_mu_given_murs +
@@ -892,6 +920,10 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
     if( fVerbose ) LOG_VERBATIM("ParticleIdentificationSlicing") << "Pi/mu ratio: " << pion_muon_likelihood_ratio;
     
     pion_muon_likelihood_ratio = P_pi_given_depth/P_mu_given_depth;
+
+
+    fPiProb->Fill(P_pi_given_depth);
+    fMuProb->Fill(P_mu_given_depth);
 
   }
 
@@ -947,6 +979,9 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 
     pion_muon_likelihood_ratio = P_pi_given_depth/P_mu_given_depth;
 
+    fPiProb->Fill(P_pi_given_depth);
+    fMuProb->Fill(P_mu_given_depth);
+
   }
 
   else{ LOG_VERBATIM("ParticleIdentificationSlicing") << "Polarity is zero. Aborting."; }
@@ -995,7 +1030,7 @@ int ParticleIdentificationSlicing::generatePDGCode( std::vector<float> proton_ka
     if( !foundGoodMuRSTrack ) return 21113; //21113 is for Pi: 211, Mu: 13, so this is PiMu.
     else if( fPolaritySetting == 1 ){
       if( pi_g_pimu_prob > mu_g_pimu_prob ) pdgCode = 211;
-      else if( pi_g_pimu_prob < mu_g_pimu_prob )pdgCode = -13;
+      else if( pi_g_pimu_prob < mu_g_pimu_prob ) pdgCode = -13;
       else{ LOG_VERBATIM("ParticleIdentificationSlicing") << "It seems as if no murs was run. The muon and pion probs are equal."; }
     }
     else if( fPolaritySetting == -1 ){
@@ -1166,6 +1201,10 @@ void ParticleIdentificationSlicing::makeMCPriorMap()
 //============================================================================================  
 void ParticleIdentificationSlicing::beginJob()
 {
+
+  numPion = 0;
+  numMuon = 0;
+
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
   fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz vs. Time of Flight",160,0,1600,70,10,80);
@@ -1208,7 +1247,9 @@ void ParticleIdentificationSlicing::beginJob()
   fPiMuProb = tfs->make<TH1F>("PiMuProb","Probability of a PiMu for each event.",100,0,1);
   fKaonProb = tfs->make<TH1F>("KaonProb","Probability of a Kaon for each event.",100,0,1);
   fProtonProb = tfs->make<TH1F>("ProtonProb","Probability of a Proton for each event.",100,0,1);
-  
+
+  fMuProb = tfs->make<TH1F>("MuProb","Probability of a Mu for each event.",100,0,1);
+  fPiProb = tfs->make<TH1F>("PiProb","Probability of a Pi for each event.",100,0,1);
   
   fPz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
   fPz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
@@ -1326,6 +1367,9 @@ void ParticleIdentificationSlicing::endJob()
   }
   LOG_VERBATIM("ParticleIdentificationSlicing") << "Good MuRS Tracks: " << fGoodMuRSCounter;
 
+  std::cout << "Pions: " << numPion << std::endl;
+  std::cout << "Muons: " << numMuon << std::endl;
+
   //Fitting the mass histogram in the appropriate regions to get the
   //parameters used for likelihood estimation of particle flavor
   if( fGenerateFitsForMassDistribution ){
@@ -1361,6 +1405,7 @@ void ParticleIdentificationSlicing::endJob()
 
 void ParticleIdentificationSlicing::endRun(art::Run & r)
 {
+
   // Implementation of optional member function here.
 }
 

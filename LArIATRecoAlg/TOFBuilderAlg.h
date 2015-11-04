@@ -61,8 +61,13 @@ class TOFBuilderAlg{
   TH1F* tof_counts;
   TH1F* ustof_histo;
   TH1F* timestamp_histo;
+  TH1F* width_histo;
   
-  int  fMissingNanoseconds;
+  float  fLinear;
+  float  fMultiple;
+  double fHitThreshold;
+  double fHitWait;
+  double fHitMatch;
   
   std::vector<short> tof;
   std::vector<long> timeStampDst;
