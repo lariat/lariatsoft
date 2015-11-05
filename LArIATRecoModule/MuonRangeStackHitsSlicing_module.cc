@@ -89,9 +89,6 @@ private:
   std::string fTriggerUtility;
   std::string fSlicerSourceLabel;
   TH1F* fMuRSHitTiming;
-
-  TH1F* fNumHits;
-
   TH1F* fPaddleHits;
   TH1F* fTotalPaddleHits;
   TH2F* fAmpVsPaddle;
@@ -170,82 +167,64 @@ void MuonRangeStackHitsSlicing::produce(art::Event & e)
   
   //Loop through the punchthrough and get a vector of its hits
   std::vector<size_t> punchHits;
-
-  bool rising_edge;
-
-  if(std::abs(PunchthroughDigits.at(0).ADC(0)) > std::abs(fThreshold)) { rising_edge = true; }
-  else { rising_edge = false; }
-
-  for(size_t iADC = 0; iADC < PunchthroughDigits.at(0).NADC(); ++iADC) {
-    double current = PunchthroughDigits.at(0).ADC(iADC);
-
-    if(rising_edge == false and std::abs(current) > std::abs(fThreshold)) {
-      rising_edge = true;
+  
+  for( size_t iADC = 0; iADC < PunchthroughDigits.at(0).NADC() ; ++iADC ){
+    if( PunchthroughDigits.at(0).ADC(iADC) < fThreshold ){
       punchHits.push_back(iADC);
-
-      fNumHits->Fill(-1);
     }
-
-    if(rising_edge == true and std::abs(current) < std::abs(fThreshold)) { rising_edge = false; }
-
   }
 
   ////////////////// MURS INFO GETTING ///////////////////  
   int size=MuRSDigits.size();
   std::cout << "Size of MuRSDigits: " << size << std::endl;
-
-  for (int nPaddle = 0; nPaddle < 16; ++nPaddle){
-
-    auto PaddleDigit = MuRSDigits[nPaddle];
-
-    bool rising_edge;
-
-    if(std::abs(PaddleDigit.ADC(0)) > std::abs(fThreshold)) { rising_edge = true; } 
-    else { rising_edge = false; }
-
-    for (size_t i = 0; i < PaddleDigit.NADC(); ++i){
-
-      double current = PaddleDigit.ADC(i);
-
-      if(rising_edge == false and std::abs(current) > std::abs(fThreshold)) {
-	rising_edge = true; 
-	
-	fNumHits->Fill(nPaddle); 
-
-	// fHitsVsPlane->Fill(floor(nPaddle/4));
-
-	fMuRSPaddleHits.push_back(i);
-	fMuRSHitTiming->Fill(i);
-	fAmpVsPaddle->Fill(nPaddle,fThreshold-PaddleDigit.ADC(i));
-	fTotalPaddleHits->Fill(nPaddle);
-	fPaddleHits->Fill(nPaddle);
+  /*  
+  //Debug sanity check - only temporary
+  bool isThereAHit = false;
+  if( size == 16 ){
+    int TrigMult=size/16;
+    for (int TrigIter=0; TrigIter<TrigMult; ++TrigIter){
+      for (int nPaddle=TrigIter*16; nPaddle<(TrigIter+1)*16; ++nPaddle){
+	auto PaddleDigit=MuRSDigits[nPaddle];
+	for (size_t i=0; i<PaddleDigit.NADC(); ++i){
+	  if(PaddleDigit.ADC(i)<fThreshold){
+	    isThereAHit = true;
+	  }
+	}
       }
-
-      if(rising_edge == true and std::abs(current) < std::abs(fThreshold)) { rising_edge = false; }
-
     }
-
-    fMuonRangeStackMap.emplace(nPaddle,fMuRSPaddleHits);
-
-    fMuRSPaddleHits.clear();
-
   }
+  if( isThereAHit == false ) return;
+  std::cout << "Event number: " << e.event() << ", histo: " << fEventCounter << std::endl;
+  */
 
-  std::vector<MuRSTrack> mursTrackVector;
-  makeTheMuRSTracks(fMuonRangeStackMap,mursTrackVector,punchHits);
+  //Now doing legitimate filling
+  int TrigMult=size/16;
+  for (int TrigIter=0; TrigIter<TrigMult; ++TrigIter){
+    for (int nPaddle=TrigIter*16; nPaddle<(TrigIter+1)*16; ++nPaddle){
+      auto PaddleDigit=MuRSDigits[nPaddle];
+      for (size_t i=0; i<PaddleDigit.NADC(); ++i){
+	if(PaddleDigit.ADC(i)<fThreshold){
+	  fMuRSPaddleHits.push_back(i);
+	  fMuRSHitTiming->Fill(i);
+	  fAmpVsPaddle->Fill(nPaddle-TrigIter*16,fThreshold-PaddleDigit.ADC(i));
+	  fTotalPaddleHits->Fill(nPaddle-TrigIter*16);
+	  fPaddleHits->Fill(nPaddle-TrigIter*16);
+	}
+      }
+      fMuonRangeStackMap.emplace(nPaddle-TrigIter*16,fMuRSPaddleHits);
+      fMuRSPaddleHits.clear();
+    }
+    std::vector<MuRSTrack> mursTrackVector;
+    makeTheMuRSTracks(fMuonRangeStackMap,mursTrackVector,punchHits);
 
-  ldp::MuonRangeStackHits the_MuRS(fMuonRangeStackMap,mursTrackVector);
-  (*MuonRangeStackCol).push_back(the_MuRS);		
-  fMuonRangeStackMap.clear();
-
-  for(size_t iTrack = 0; iTrack < the_MuRS.NTracks(); iTrack++) { 
-    fNumPlanesPenetrated->Fill(the_MuRS.GetPenetrationDepth(iTrack));
+    ldp::MuonRangeStackHits the_MuRS(fMuonRangeStackMap,mursTrackVector);
+    (*MuonRangeStackCol).push_back(the_MuRS);		
+    fMuonRangeStackMap.clear();
   }
 
   e.put(std::move(MuonRangeStackCol));	   
   fEventCounter++;
-
-} //produce()
+}//produce()
 
 //Sort hits in the MuRS by time and make tracks
 void MuonRangeStackHitsSlicing::makeTheMuRSTracks( std::map<int, std::vector<int> > MuonRangeStackMap,
@@ -546,9 +525,6 @@ void MuonRangeStackHitsSlicing::beginJob()
   art::ServiceHandle<art::TFileService> tfs;
   fMuRSHitTiming = tfs->make<TH1F>("MuRSHitTicks","MuRSHitTicks", 3073, 0, 3073);
   fMuRS_PT_Logic_Events = tfs->make<TH1F>("MuRS_PT_Logic_Events","0: All events, 1: Only PT, 2: Only MuRS, 3: Both",4,0,4);
-
-  fNumHits=tfs->make<TH1F>("Hitsperpaddle", "Hits per paddle",17, -1, 16);
-
   fPaddleHits=tfs->make<TH1F>("PaddleHits", "PaddleHits",16, 0, 16);
   fTotalPaddleHits=tfs->make<TH1F>("TotalPaddleHits","TotalPaddleHits",16, 0, 16);
   fAmpVsPaddle=tfs->make<TH2F>("AmplitudeVsPaddle", "AmplitudeVsPaddle",16,0,16,2021,0,2021);
