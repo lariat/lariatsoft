@@ -3,6 +3,7 @@ class NotPicky : public WCTrackAlgBase
 public:
 	void Hello() {std::cout<<"Not Picky"<<std::endl;}
 	static WCTrackAlgBase* Create() {return new NotPicky();}
+	void InitializeGeometry(){std::cout<<"NOT PICKY OVERRIDE"<<std::endl;}
 /*         void loadXMLDatabaseTableForBField( int run, int subrun )
 {
   fRun = run;

@@ -1,9 +1,9 @@
 BEGIN_PROLOG
 
-lariat_wctrackbuilderalg:
+lariat_wctrackbuilderalgnew:
 {
   PickyTracks: false
-  FactoryAlgLabel: Picky
+  //FactoryAlgLabel: Picky
 }
 
 lariat_wchitfinderalg:

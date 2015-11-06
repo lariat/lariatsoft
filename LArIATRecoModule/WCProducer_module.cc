@@ -83,7 +83,7 @@ WCProducer::WCProducer(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
 {
-   WCTrackBuilderAlgName = p.get<std::string>("FactoryAlgLabel"); //The name of the algorithm to 
+   WCTrackBuilderAlgName = p.get<std::string>("FactoryAlgLabel"); //The name of the algorithm to use from the WCTrackBuilder.fcl
 pset=p;
   // Call appropriate produces<>() functions here.
 }

@@ -100,7 +100,7 @@ class WCTrackAlgBase
 			  int & track_count);
 	  	  */
 
-   void InitializeGeometry()
+  virtual void InitializeGeometry()
    {
    
      std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
@@ -195,7 +195,7 @@ class WCTrackAlgBase
   // returns the values in cm, so have to multiply by CLHEP::cm
   fHalf_z_length_of_tpc = 0.5*tpcGeo->ActiveLength() * CLHEP::cm;
   fHalf_x_length_of_tpc = tpcGeo->ActiveHalfWidth()  * CLHEP::cm;
-  std::cout<<fHalf_x_length_of_tpc<<std::endl;
+  std::cout<<"virtual:" <<fHalf_x_length_of_tpc<<std::endl;
   }
  };
 typedef WCTrackAlgBase* (*CreateWCTrackBuilderAlgFn)(void);

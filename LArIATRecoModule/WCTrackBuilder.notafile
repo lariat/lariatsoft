@@ -101,7 +101,7 @@ private:
     WCTrackBuilderAlgBase fWCTrackBuilderAlg=0; //JustTrackbuilder part from Slicer version
     std::string       fSlicerSourceLabel; //"daq"
     WCHitFinderAlg    fWCHitFinderAlg; //Hit Finder Alg
-    std::string WCTrackBuilderAlgName; // Alg label from the factory
+    //std::string WCTrackBuilderAlgName; // Alg label from the factory
 
     //Hardware constants
     int fNumber_wire_chambers;

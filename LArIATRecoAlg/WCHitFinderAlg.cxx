@@ -158,7 +158,7 @@ if( fVerbose ){
     for( size_t iTDC = 0; iTDC < tdc_number_vect.size(); ++iTDC ){
 
       int hit_wire_chamber_axis = int((tdc_number_vect.at(iTDC)-1)/2); //-1 is for tdc index
-            //std::cout << "TEST: tdc: " << tdc_number_vect.at(iTDC)-1 << ", WCAx: " << hit_wire_chamber_axis << ", iWCAx: " << iWCAx << std::endl;
+           // std::cout << "TEST: tdc: " << tdc_number_vect.at(iTDC)-1 << ", WCAx: " << hit_wire_chamber_axis << ", iWCAx: " << iWCAx << std::endl;
       if( hit_wire_chamber_axis == iWCAx ){
 	float wire = 0;
 	convertToWireNumber( hit_channel_vect.at(iTDC), tdc_number_vect.at(iTDC)-1, wire );
