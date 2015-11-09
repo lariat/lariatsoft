@@ -4,11 +4,6 @@
 // (particulary PMTs) and find/integrate hits.  They've been used
 // mostly to analyze events in the stopping/decaying cosmic muon 
 // samples, but will be adapted for more general use.
-//
-// Oct 2, 2015:
-// The code is currently being tested and optimized, but feel free to
-// to try out the algorithms if you'd like.  Comments prior to each
-// function specify its use.  More complete documentation coming soon.
 // 
 // Authors: William Foreman, wforeman@uchicago.edu
 //
@@ -51,21 +46,23 @@ OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
   // Set size of vector to hold summed waveforms 
   AverageWaveform.resize(fPrePulseDisplay + fFullWindowLength);
   AverageWaveform_count = 0; 
+
+  // This specifies whether or not waveforms are to be summed
+  // to eventually produce average waveform.  Intended to be
+  // changed externally, ie:
+  //   fOpHitBuilderAlgInstance.AddHitToAverageWaveform=1
   AddHitToAverageWaveform = 0;
  
+  // SER waveform vector to sum waveforms into
   SERWaveform.resize(fSER_PreWindow + fSER_PostWindow);
   SERWaveform_count++;
- 
   
-  // Initialize some values
+  // Initialize some publically-accessible values
   prepulse_baseline = 0.;
   prepulse_rms = 0.;
-  fit_FastNorm = 0.;
-  fit_FastTau = 0.;
   fit_SlowNorm = 0.;
   fit_SlowTau = 0.;
   fit_ReducedChi2 = 0.;
-  
 }
 
 
@@ -74,7 +71,6 @@ OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
 OpHitBuilderAlg::~OpHitBuilderAlg()
 {
 }
-
 
 //--------------------------------------------------------------
 void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
@@ -108,8 +104,8 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
 
 
 //--------------------------------------------------------------------------
-//GetHits:  The 'meat & potatoes' of OpHitFinding!  This function takes a 
-//          waveform and returns a vector of hit times. Hits are found using 
+//GetHits:  The 'meat & potatoes' of OpHitFinding!  This function takes a whole
+//          opDetPulse object and return a vector of hit times. Hits are found using 
 //          a gradient-threshold method, and each is required to exceed some 
 //          multiple of the local RMS of the gradient (calculated in a window 
 //          preceding the hit) to reduce the frequency of fake hits.
@@ -123,8 +119,11 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
 //
 std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse opdetpulse) 
 {
+  // Extract relevant information from the OpDetPulse object
   std::vector<short> wfm = opdetpulse.Waveform();
   int TriggerTime = (int)opdetpulse.FirstSample();
+
+  // Hit finding limits (+/- trigger time) set in fcl
   int t1 = std::max(TriggerTime + fHitTimeCutoffLow,0);
   int t2 = std::min(TriggerTime + fHitTimeCutoffHigh,(int)wfm.size());
 
@@ -169,20 +168,17 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse opdetpulse)
 
     // Find the window limits to use in calculating local RMS.  
     // For all hits after the first one, the window's start point 
-    // will be limited to 20ns after the first hit point (for now)
+    // will be limited to fMinHitSeparation after the first hit point
     rms_window_end    = hits[i]-5;
     rms_window_start  = rms_window_end - rms_window_size;
     if( rms_window_start < 0 ) rms_window_start = 0;
-    if( i >= 1 ){
-      if( hits[0] +10  > rms_window_start) rms_window_start = hits[0]+10;
-    }
+    if( (i >= 1) && (hits[0] + fMinHitSeparation > rms_window_start) ) rms_window_start = hits[0] + fMinHitSeparation;
     rms_window_size = rms_window_end - rms_window_start;
 
     // Find gradient's local RMS for the hit using this window
     std::vector<float> tmp = GetBaselineAndRMS( g, rms_window_start, rms_window_end );
-    float    g_mean = tmp[0];
-    float    g_rms = tmp[1];
-
+    float g_mean = tmp[0];
+    float g_rms  = tmp[1];
 
     // Find amplitude of gradient in neighborhood of this hit
     float g_amp = g_mean - GetLocalMinimum(g,hits[i]);
@@ -190,8 +186,8 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse opdetpulse)
     // Calculate quick amplitude of pulse to use in discrimination
     size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hits[i]-10));
     tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
-    float baseline = tmp[0];
-    float hit_amp = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
+    float baseline  = tmp[0];
+    float hit_amp   = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
     
     if(bVerbose){
       std::cout<<"     "<<hits[i]<<": window: ("<<rms_window_start<<","<<rms_window_end<<")  rms: "<<g_rms
@@ -199,25 +195,22 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse opdetpulse)
     }
 
     // First check if hit's gradient and pulse amplitude exceed the set thresholds
-    if( (g_amp > g_rms*fGradRMSThresh) && (hit_amp > fPulseHitThreshLow) && (hit_amp < fPulseHitThreshHigh)){
+    if( (g_amp > g_rms*fGradRMSThresh) && (hit_amp > fPulseHitThreshLow) ){
       hits_filtered.push_back(hits[i]);
       if(bVerbose) std::cout<<"Hit passes!\n";
     }
   
   } // <-- end loop over hits
-
   if(bVerbose) std::cout<<"Post-filter: "<<hits_filtered.size()<<" hits\n";
-  // Merge hits within 250 ns of first pulse
-  //std::vector<short> hits_merged = HitMerger(hits_filtered,fFirstHitSeparation,0);
-  std::vector<short> hits_merged = hits_filtered;
 
   // Now merge all remaining hits using shorter spacing
-  std::vector<short> hits_remerged = HitMerger(hits_merged,fMinHitSeparation,1);
+  std::vector<short> hits_merged = HitMerger(hits_filtered,fMinHitSeparation,1);
+  if(bVerbose) std::cout<<"Post-merging: "<<hits_merged.size()<<" hits\n";
 
-  if(bVerbose) std::cout<<"Post-merging: "<<hits_remerged.size()<<" hits\n";
-  return hits_remerged;
+  return hits_merged;
   
 }
+
 
 
 //--------------------------------------------------------------
@@ -238,32 +231,26 @@ std::vector<float> OpHitBuilderAlg::MakeGradient( std::vector<short> wfm )
 std::vector<short> OpHitBuilderAlg::HitMerger( std::vector<short> hits, short spacing, int option)
 {
   std::vector<short> hits_merged;
-
   for(size_t i=0; i<hits.size(); i++){
-  
     // Always add the first hit
     if(i==0) {
       hits_merged.push_back(hits[i]);
-    } else {
-    
+    } else {    
       switch (option){
-        
         // option 0: check only against first hit
         case 0:
           if( (hits[i]-hits[0]) >= spacing ) hits_merged.push_back(hits[i]);
           break;
-        
         // option 1: check each hit against previous hit
         case 1:
           if( (hits[i]-hits[i-1]) >= spacing ) hits_merged.push_back(hits[i]);
           break;
-      
       }
     }
   }
-
   return hits_merged;
 }
+
 
 
 //--------------------------------------------------------------
@@ -276,22 +263,17 @@ std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<short> wfm, s
   return GetBaselineAndRMS(wfm_float,x1,x2);
 }
 
-
-//--------------------------------------------------------------
 // Get (baseline,rms) of a segment of an std::vector<float>
 std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<float> wfm, short x1, short x2 )
 {
   float mean = 0;
   float sumSquares = 0;
   int N = x2 - x1;
-
   for ( int i = x1; i < x2; i++ ) mean += wfm[i]/N;
   for ( int i = x1; i < x2; i++ ) sumSquares += pow(wfm[i]-mean,2);
-  
   std::vector<float> out(2);
   out[0] = mean;
   out[1] = sqrt(sumSquares/N);
-
   return out;
 }
 
@@ -302,7 +284,6 @@ std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<float> wfm, s
 // all the specified integrals
 std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hit, short prev_hit, std::vector<short> windows)
 {
-
   // Create vector to be returned 
   std::vector<float> hit_info(windows.size()+1);
   for(size_t i=0; i<windows.size()+1; i++) hit_info[i] = -9999.;
@@ -310,7 +291,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   // If the hit is too early to reliably calculate 
   // a baseline, OR if the previous hit is too close,
   // stop now and return defaults
-  if( (hit < 100)||(hit-prev_hit < 300 ) ) return hit_info;
+  if( (hit < 100)||(hit-prev_hit < 200 ) ) return hit_info;
 
   // Get baseline
   size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
@@ -355,28 +336,12 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   // Get mean of first few samples of the prepulse region
   int  nn = 10;
   float x1_baseline = GetBaselineAndRMS(wfm,x1,x1+nn)[0];
-  //bool PrepulseIsFlat = 0;
-  // Check if prepulse baseline is flat.  If so,
-  // use this as the "local" baseline and force
-  // p1=0 in fit
-  //if( prepulse_rms <= 2. ){ 
-  //  std::cout<<"Prepulse looks flat... "<<prepulse_rms<<std::endl;
-  //  baseline = prepulse_baseline;
-  //  PrepulseIsFlat = "true";
-  //}
-
   float norm_set    = (x1_baseline - baseline);
   if(bVerbose) std::cout<<"Norm set: "<<norm_set<<std::endl;
   if (norm_set > 0.) norm_set = 0.;
   
-  // Two-component version of fit (for future use)
-  // TF1 prepulse_exp_fit("prepulse_exp_fit","[0] + [1]*exp(-(x-[2])/[3])+[4]*exp(-(x-[2])/[5])",0.,30000.);
-  // prepulse_exp_fit.SetParameter(4,-0.1);
-  // prepulse_exp_fit.SetParLimits(4,-200.,0.);
-  // prepulse_exp_fit.SetParameter(5,7.);
 
   TF1 prepulse_exp_fit("prepulse_exp_fit","[0] + [1]*exp(-(x-[2])/[3])",0.,30000.);
-  
   prepulse_exp_fit.FixParameter(0,baseline);
   prepulse_exp_fit.FixParameter(2,x1+nn/2); 
   prepulse_exp_fit.SetParameter(1,norm_set);
@@ -396,8 +361,6 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   // Save fit info into publicly-accessible members   
   fit_SlowNorm        = prepulse_exp_fit.GetParameter(1);
   fit_SlowTau         = prepulse_exp_fit.GetParameter(3);
-  //fit_FastNorm      = prepulse_exp_fit.GetParameter(4);
-  //fit_FastTau       = prepulse_exp_fit.GetParameter(5);
   int NDF             = prepulse_exp_fit.GetNDF();
   fit_ReducedChi2     = prepulse_exp_fit.GetChisquare()/float(NDF); 
   
@@ -405,8 +368,6 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
     std::cout<<"Parameters of fitted prepulse region: \n";
     std::cout<<"    Norm_slow           : "<<fit_SlowNorm<<"\n";
     std::cout<<"    Tau_slow            : "<<fit_SlowTau<<"\n";
-    //std::cout<<"    Norm_fast           : "<<fit_FastNorm<<"\n";
-    //std::cout<<"    Tau_fast            : "<<fit_FastTau<<"\n";
     std::cout<<"    waveform baseline   : "<<baseline<<"\n";
     std::cout<<"    BS at x1            : "<<x1_baseline<<"\n";
     std::cout<<"    actual hit value    : "<<wfm[hit]<<"\n";
@@ -558,13 +519,13 @@ bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse opdetpulse )
 }
 
 
+
 //------------------------------------------------------------
 // Single PE finder
 std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPulse opdetpulse )
 {
 
   std::vector<std::pair<float,float>> out;
-  //std::vector<float> integrals;
   
   short TriggerTime       = opdetpulse.FirstSample();
   std::vector<short> wfm  = opdetpulse.Waveform();
@@ -572,7 +533,6 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
   int t1 = std::max(TriggerTime + fHitTimeCutoffLow,0);
   int t2 = std::min(TriggerTime + fHitTimeCutoffHigh,(int)wfm.size());
 
-  
   // Find waveform baseline and RMS 
   std::vector<float> tmp = GetBaselineAndRMS( wfm, 0, fBaselineWindowLength );
   float baseline  = tmp[0];
@@ -627,7 +587,6 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
         tmp_wfm_i++;
       }
       
-
       // If another PE is detected after at least 5 ns, extend the window by resetting counter
       if( counter >=5 && IsPECandidate ){
         if(bVerbose) std::cout<<"Secondary hit! Extending window\n";
@@ -652,11 +611,12 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
       // If we reached the end of the allotted window, add
       // integral to vector and reset everything
       if( counter == fSER_PostWindow ){
+        
         if(bVerbose) std::cout<<"finished PE window of size "<<windowsize<<": "<<integral<<" ADCs, g = "<<hit_grad<<"\n";
         out.push_back(std::make_pair(integral,hit_grad));
         
         // Add to average waveform if it looks good
-        if( (windowsize+fSER_PreWindow == SER_bins) && fabs(integral - fSinglePE)<=10 ){
+        if( (windowsize+fSER_PreWindow == SER_bins) && fabs(integral - fSinglePE)<=5 ){
           if(bVerbose) std::cout<<"ADDING PE to average waveform... size:"<<SERWaveform.size()<<", SER_bins"<<SER_bins<<"\n";
           for(int ii=0; ii<SER_bins; ii++){
             SERWaveform.at(ii) += tmp_wfm[ii]*fMvPerADC;
@@ -681,10 +641,8 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
 
     if( !IsOverThresh && flat_samples_count <= 50 ) flat_samples_count++;
 
-    // If we're not yet integrating a PE window, and 
-    // the signal is within bounds and the previous 10 samples
-    // were below threshold, then we're in business!
-   // if( !flag && flat_samples_count>=10 && IsPECandidate ){
+    // If we're not yet integrating a PE window, signal is within bounds,
+    // and the previous 10 samples were below threshold, then we're in business!
     if( !flag && IsPECandidate ){
       
       if(bVerbose) std::cout<<"  "<<i<<"   "<<yy<<" mV  (wfm RMS: "<<rms*fMvPerADC<<" mV --> thresh "<<fPulseHitRMSThresh*rms*fMvPerADC<<" mV)   g = "<<g[i]<<"  flag: "<<flag
@@ -694,13 +652,12 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
       prePE_baseline = 99;
       prePE_rms      = 99;
       std::vector<float> tmp = GetPedestalAndRMS(wfm_corrected,i-buffer_min,i);
-      //std::vector<float> tmp = GetBaselineAndRMS(wfm_corrected,i-buffer_min,i);
       prePE_baseline = tmp[0];
       prePE_rms      = tmp[1];
      
       if(bVerbose) std::cout<<"Potential PE:  preBS = "<<prePE_baseline<<", preRMS = "<<prePE_rms<<"\n";
  
-      // Require (1) flat pre-PE region
+      // Require flat pre-PE region
       if( prePE_rms < fSER_PrePE_RMS_cut){ 
         // Found a "PE hit", so start integral by
         // adding preceeding prepulse region
@@ -723,7 +680,6 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
     
     if( IsOverThresh ) flat_samples_count = 0;
 
-
   } // <-- end scan over waveform 
 
   return out;
@@ -731,14 +687,20 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
 }
 
 
-//------------------------------------------------------------
-// Get pedestal
+
+//--------------------------------------------------------------------------
+// Get pedestal.  This algorithm first calls the much-faster GetBaselineAndRMS 
+// function in order to set the limits of the histogram to be used in proper 
+// pedestal calculation.  Fitting to the histogram is more computationally taxing, 
+// so unless the baseline needs to be known very precisely, it is more efficient 
+// to use the standard GetBaselineAndRMS().
 std::vector<float> OpHitBuilderAlg::GetPedestalAndRMS( std::vector<float> wfm, short x1, short x2)
 {
   std::vector<float> out(2);
-  std::vector<float> tmp(2); tmp = GetBaselineAndRMS( wfm, x1, x2);
+  std::vector<float> tmp(2); 
+  tmp = GetBaselineAndRMS( wfm, x1, x2);
   float baseline  = tmp[0];
-  float rms1       = tmp[1]; 
+  float rms1      = tmp[1]; 
   
   TH1F h("h","h",100,baseline-3.*rms1,baseline+3.*rms1);
   for(int i=x1; i<x2; i++) h.Fill(wfm[i]); 
@@ -772,7 +734,6 @@ std::vector<float> OpHitBuilderAlg::GetPedestalAndRMS( std::vector<float> wfm, s
   }
 
   return out;
-   
 }
 
 // Get pedestal (for vector<short> input)

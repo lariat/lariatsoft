@@ -81,7 +81,7 @@ physics.producers.MichelWfmReco.SinglePE:               85.07
 physics.producers.MichelWfmReco.SaveHitWfmsToTree:      "false"
 physics.producers.MichelWfmReco.UseTrackInformation:    "true"
 physics.producers.MichelWfmReco.SaveAllTrackInfoToTree: "true"
-physics.producers.MichelWfmReco.AveWfmCut_Dt:           4000
+physics.producers.MichelWfmReco.AveWfmCut_Dt:           3000
 physics.producers.MichelWfmReco.CorrectAveWfms:         "true" 
 physics.producers.MichelWfmReco.UsePrepulseFit:         "true"  
 physics.producers.MichelWfmReco.PrePulseTau1:           800
@@ -98,7 +98,7 @@ physics.producers.MichelWfmReco.PromptWindowLength:     100  # default 100ns
 physics.producers.MichelWfmReco.FullWindowLength:       7000 # default 7000ns
 physics.producers.MichelWfmReco.IntegrationWindows:     [100,250,500,1000,7000]
 physics.producers.MichelWfmReco.GateDelay:              300  # 300ns in r6245-6344
-physics.producers.MichelWfmReco.PromptLightDtCut:       2000 # default 1800ADC
+physics.producers.MichelWfmReco.PromptLightDtCut:       25 # default 1800ADC
 physics.producers.MichelWfmReco.TriggerUtility:         "FragmentToDigit"
 physics.producers.MichelWfmReco.DAQModule:              "daq"
 physics.producers.MichelWfmReco.TrackModule:            "pmtrack"

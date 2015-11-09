@@ -66,8 +66,6 @@ class OpHitBuilderAlg{
   // Fit parameters
   float prepulse_baseline;
   float prepulse_rms;
-  float fit_FastNorm;
-  float fit_FastTau;
   float fit_SlowNorm;
   float fit_SlowTau;
   float fit_ReducedChi2;
