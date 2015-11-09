@@ -5,7 +5,7 @@
 // geometrical properties of test-beam particles passing      //
 // through LArIAT's four wire chambers                        //
 //                                                            //
-// Authors: Ryan Linehan, rlinehan@stanford.edu               //                           
+// Authors: Ryan Linehan, rlinehan@stanford.edu               //                  
 //          Johnny Ho, johnnyho@uchicago.edu                  //
 //          Jason St. John, stjohn@fnal.gov                   //
 //                                                            //
@@ -41,6 +41,8 @@ TOFBuilderAlg::TOFBuilderAlg( fhicl::ParameterSet const& pset )
   tof_counts->GetXaxis()->SetTitle("ToF (ns)");
   tof_counts->GetYaxis()->SetTitle("N counts");
 
+  width_histo = tfs->make<TH1F>("width_histo", "width_histo", 20, 0., 100.);
+
 }
 
 //--------------------------------------------------------------  
@@ -54,56 +56,24 @@ TOFBuilderAlg::~TOFBuilderAlg()
 void TOFBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
 
-  fMissingNanoseconds = pset.get<int>("MissingNanoseconds",10);
+  // TOF Adjustment parameters
+  fLinear = pset.get<float>("Linear",-10);
+  fMultiple = pset.get<float>("Multiple",0.9434);
 
+  fHitThreshold = pset.get<double>("HitThreshold", -40);
+  fHitWait = pset.get<double>("HitWait", 3);
+  fHitMatch = pset.get<double>("HitMatch", 10);
 }
 
-//--------------------------------------------------------------
-std::vector<short> TOFBuilderAlg::find_hits(std::vector<short> wv) {
-  // Hit finder for an inputted waveform
 
-  // The threshold for what qualifies for a hit
-  // Negative because we are looping for negative pulses
-  float threshold = -40;
-
-  // Vector that will be storing all of the found hits
-  std::vector<short> hits;
-  
-  bool rising_edge = false;
-
-  // Takes the gradient of the whole waveform
-  // Uses the Centered Difference Quotient
-  // Starts from 2 because the gradient can't be taken from the edges
-  for(unsigned short i = 2; i < wv.size(); ++i) {
-    
-    float gradient = float(wv[i]-wv[i-2])*0.5;
-    
-    // Uses the rising_edge variable to test if a hit has already been found or not
-    if(gradient < threshold && rising_edge == false) {
-      hits.insert(hits.end(),i);
-      rising_edge = true;
-    }
-    
-    // Uses the negative threshold to indicate that we have left a hit
-    if(gradient > std::abs(threshold) && rising_edge == true) {
-      rising_edge = false;
-    }
-
-  }
-  
-  // Gives a hit of 0 if nothing else was found to prevent seg faults
-  if(hits.size() == 0) { hits.insert(hits.end(), 0); }
- 
-  return hits;
-
-}
-
-//--------------------------------------------------------------
-
-std::vector<short> TOFBuilderAlg::match_hits(std::vector<short> hits1, std::vector<short> hits2) {
+std::vector<short> TOFBuilderAlg::match_hits(std::vector<short> wv1, std::vector<short> wv2) {
   // Matches the hits found on a single TOF paddle
 
   // The hits have to be within the threshold, measured in nanoseconds
+
+  std::vector <short> hits1 = find_hits(wv1);
+  std::vector <short> hits2 = find_hits(wv2);
+
   short time_threshold = 10; 
 
   const size_t len_of_hits1 = hits1.size();
@@ -122,6 +92,7 @@ std::vector<short> TOFBuilderAlg::match_hits(std::vector<short> hits1, std::vect
 
   // Using the difference table, we find all of lowest time differences between 
   //  hits found and, if that is in a given threshold, return that hit's TDC time
+
 
   for(size_t row = 0; row < len_of_hits1; row++) {
 
@@ -144,6 +115,49 @@ std::vector<short> TOFBuilderAlg::match_hits(std::vector<short> hits1, std::vect
   return matched_hits;
 }
 
+//--------------------------------------------------------------
+std::vector<short> TOFBuilderAlg::find_hits(std::vector<short> wv) {
+  // Hit finder for an inputted waveform
+
+  // Vector that will be storing all of the found hits
+  std::vector<short> hits;
+
+  bool rising_edge = false;
+  int width = 0;
+  int length_of_hit = 0;
+
+  for(unsigned short i = 1; i < (wv.size()-1); ++i) {
+    
+    float gradient = float(wv[i+1]-wv[i-1])/2;
+    
+    if(gradient < fHitThreshold and rising_edge == false) {
+      rising_edge = true;
+      hits.insert(hits.end(),i);
+    }
+
+    if(rising_edge == true) {
+
+      length_of_hit++;
+
+      if(gradient > 0.0) { width++; }
+
+      if(width > fHitWait) {
+	width_histo->Fill(length_of_hit);
+	rising_edge = false;
+	width = 0;
+	length_of_hit = 0;
+      }
+
+    }
+
+  }
+  
+  // Gives a hit of 0 if nothing else was found to prevent seg faults
+  if(hits.size() == 0) { hits.insert(hits.end(), 0); }
+ 
+  return hits;
+
+}
 
 std::pair <std::vector<short>, std::vector<long> > TOFBuilderAlg::get_TOF_and_TimeStamp(std::vector<const raw::AuxDetDigit*> ust_wv, std::vector<const raw::AuxDetDigit*> dst_wv){
 
@@ -162,30 +176,31 @@ std::pair <std::vector<short>, std::vector<long> > TOFBuilderAlg::get_TOF_and_Ti
       dst_v1.insert(dst_v1.end(), dst_wv[1]->ADC(i));
     }
   
-  // Calls the hit finders for each waveform and then matches the hits, using functions
-    std::vector<short> ustof1_hits = find_hits(ust_v0);
-    std::vector<short> ustof2_hits = find_hits(ust_v1);
-    
-    std::vector<short> ustof_hits = match_hits(ustof1_hits, ustof2_hits);
-    
-    std::vector<short> dstof1_hits = find_hits(dst_v0);
-    std::vector<short> dstof2_hits = find_hits(dst_v1);
-    
-    std::vector<short> dstof_hits = match_hits(dstof1_hits, dstof2_hits);
-    
+    // Calls the hit finders for each waveform and then matches the hits, using functions
+    std::vector<short> ustof_hits0 = find_hits(ust_v0);
+    std::vector<short> ustof_hits1 = find_hits(ust_v1);
+    std::vector<short> dstof_hits0 = find_hits(dst_v0);
+    std::vector<short> dstof_hits1 = find_hits(dst_v1);
+
+    //    std::vector<short> ustof_hits = match_hits(ust_v0, dst_v0);
+    //std::vector<short> dstof_hits = match_hits(ust_v1, dst_v1);
+
+    std::vector<short> dstof_hits = dstof_hits0;
+    std::vector<short> ustof_hits = ustof_hits0;
+
     // Loops over each of the found matched hits
     // This compares each found ust hit with each found dst hit
     for(size_t dst_hit = 0; dst_hit < dstof_hits.size(); ++dst_hit) {
       for(size_t ust_hit = 0; ust_hit < ustof_hits.size(); ++ust_hit) {
 	
 	// Actual calculation for the time of flight
-	short differ = dstof_hits[dst_hit] - ustof_hits[ust_hit];
+	short differ = fMultiple*(dstof_hits[dst_hit] - ustof_hits[ust_hit]) + fLinear;
 	
 	// Continues only if the TOF is in an expected range
-	if(differ > 20 and differ < 100) {
+	if(differ > 15 and differ < 100) {
 	  
 	  // Adds the calculated TOF to the vector tof
-	  tof.insert(tof.end(),differ-fMissingNanoseconds);
+	  tof.insert(tof.end(),differ);
 	  
 	  
 	  // Adds the timestamp for each downstream hit to the vector timeStampDst
@@ -198,7 +213,7 @@ std::pair <std::vector<short>, std::vector<long> > TOFBuilderAlg::get_TOF_and_Ti
 	  timeStampDst.insert(timeStampDst.end(), time);
 	  
 	  // Fills debug histos with tof, timestamp, and hit time for the ust hits
-	  tof_counts->Fill(differ-fMissingNanoseconds);
+	  tof_counts->Fill(differ);
 	  timestamp_histo->Fill(time);
 	  ustof_histo->Fill(ustof_hits[ust_hit]); // only ust_hits that matched with dst hits   
 	  
