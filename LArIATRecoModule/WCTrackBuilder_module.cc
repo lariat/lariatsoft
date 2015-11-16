@@ -136,12 +136,16 @@ private:
     TH2F* fHitHeatMapWC2;
     TH2F* fHitHeatMapWC3;
     TH2F* fHitHeatMapWC4;
+    TH2F* fHitsAvailable;
  std::vector<TH1F*> fWireHitsGoodTracks;
  std::vector<TH2F*> fWCMult;
  std::vector<TH1F*> fWireHitsTheTrack;
  std::vector<TH1F*> fBadTrackHits;
  TH2F* fTargetXY;
  TH2F* fPickyTracksTargetXY;
+ TH1F* fResSquare;
+ TH1F* fReco4pt;
+ TH1F* fReco4ptdiff;
 
             
     //Misc
@@ -224,7 +228,9 @@ void WCTrackBuilder::produce(art::Event & e)
 			       hit_time_bin_vect,
 			       good_hits,
 			       fVerbose);
-    MakeSomePlotsFromHits(good_hits);			       
+    MakeSomePlotsFromHits(good_hits);		
+    
+    	       
 fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 //std::cout<<"Hit Finding done, going to Track Building"<<std::endl;
   fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
@@ -245,7 +251,10 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 					 fWireHitsTheTrack,
 					 fBadTrackHits,
 					 fTargetXY,
-					 fPickyTracksTargetXY);			       
+					 fPickyTracksTargetXY,
+					 fResSquare,
+					 fReco4pt,
+					 fReco4ptdiff);			       
 
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
 //fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCTrackBuilderAlg_new::getTrackType()
@@ -476,6 +485,19 @@ int error;
     } */
     					 
     }
+//To see what things we can calculate in track building, Fill a histogram showing how many times there were 3 or 4 WC with X wires vs 3 or 4 WC Y wires.  This will
+//let us know what we can do with 6 or 7 point tracks later on
+    int xPoints=0;
+    int yPoints=0;
+    for(iWC=0;iWC<4;++iWC)
+    {
+      if(good_hits[iWC][0].hits.size() >= 1){++xPoints;}
+      if(good_hits[iWC][1].hits.size() >= 1){++yPoints;}
+    }
+    fHitsAvailable->Fill(xPoints,yPoints);
+    //std::cout<<"THINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
+    if(xPoints < 0 || yPoints < 0){std::cout<<"You have negative points available!!!!!!"<<std::endl;}
+    if(xPoints > 4 || yPoints > 4){std::cout<<"There are more than 4 WCs available!!!!!!!!"<<std::endl;}
   }
   //===================================================================================
   void WCTrackBuilder::plotTheTrackInformation( std::vector<double> reco_pz_list,
@@ -508,15 +530,13 @@ void WCTrackBuilder::beginJob()
   // Implementation of optional member function here.
       // Implementation of optional member function here.
     art::ServiceHandle<art::TFileService> tfs;
-    fReco_Pz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum in XZ plane", 180, 0, 1800);
-    fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",100,-5*3.1415926/180,5*3.141592654/180);
-    fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",120,-60,60);
-    fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",120,-60,60);
-    fZ_Dist = tfs->make<TH1F>("Z_Dist","Z distance between US/DS tracks at midplane (mm)",120,-60,60);
-    fX_Face_Dist = tfs->make<TH1F>("X_Face","X Location of Track's TPC Entry (mm)",800,-200,600);
-    fY_Face_Dist = tfs->make<TH1F>("Y_Face","Y Location of Track's TPC Entry (mm)",800,-400,400);
-    fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
-    fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
+//Hists that should be used for diagnostics and deleted before production.
+    fResSquare = tfs->make<TH1F>("Sum of Square of Residuals from Y points to Linear Regression","Sum of Square of Residuals from Y points to Linear Regression", 1000,0,100);
+    fReco4pt = tfs->make<TH1F>("Doug's 4 point reco", "Doug's 4 point reco", 200,0,2000);
+    fReco4ptdiff = tfs->make<TH1F>("Doug's 4 point reco difference", "Doug's 4 point reco difference", 400,-2000,2000);
+    fHitsAvailable = tfs->make<TH2F>("WCs Available per axis for a track", "WCs available per axis for a track", 5,0,5,5,0,5);
+    fHitsAvailable->GetXaxis()->SetTitle("Number of WCX axes available");
+    fHitsAvailable->GetYaxis()->SetTitle("Number of WCY axes available");
     fHitHeatMapWC1 = tfs->make<TH2F>("WC1 Hit Map","Number of Hits on each Axis in WC1", 10,0,10,10,0,10);
     fHitHeatMapWC2 = tfs->make<TH2F>("WC2 Hit Map","Number of Hits on each Axis in WC2", 10,0,10,10,0,10);
     fHitHeatMapWC3 = tfs->make<TH2F>("WC3 Hit Map","Number of Hits on each Axis in WC3", 10,0,10,10,0,10);
@@ -633,7 +653,17 @@ void WCTrackBuilder::beginJob()
     fWireHitsTheTrack[4]->GetXaxis()->SetTitle("wire #");
     fWireHitsTheTrack[5]->GetXaxis()->SetTitle("wire #");
     fWireHitsTheTrack[6]->GetXaxis()->SetTitle("wire #");
-    fWireHitsTheTrack[7]->GetXaxis()->SetTitle("wire #");                     
+    fWireHitsTheTrack[7]->GetXaxis()->SetTitle("wire #");  
+//Hists that should probably stay for the production run.    
+    fReco_Pz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum in XZ plane", 180, 0, 1800);
+    fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",100,-5*3.1415926/180,5*3.141592654/180);
+    fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",120,-60,60);
+    fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",120,-60,60);
+    fZ_Dist = tfs->make<TH1F>("Z_Dist","Z distance between US/DS tracks at midplane (mm)",120,-60,60);
+    fX_Face_Dist = tfs->make<TH1F>("X_Face","X Location of Track's TPC Entry (mm)",800,-200,600);
+    fY_Face_Dist = tfs->make<TH1F>("Y_Face","Y Location of Track's TPC Entry (mm)",800,-400,400);
+    fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
+    fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);                   
     fReco_Pz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
     fReco_Pz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
     fY_Kink->GetXaxis()->SetTitle("Reconstructed y_kink (radians)");

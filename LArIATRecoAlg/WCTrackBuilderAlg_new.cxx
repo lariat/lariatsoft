@@ -157,6 +157,7 @@ void WCTrackBuilderAlg_new::reconfigure( fhicl::ParameterSet const& pset )  //BO
 
   fPrintDisambiguation = false;
   fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
+  //fHighYield            = pset.get<bool  >("HighYield",           false     );
   
   //Survey constants
   fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );   
@@ -198,12 +199,15 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					   std::vector<TH1F*> & WireHits_TheTrack,
 					   std::vector<TH1F*> & BadTrackHits,
 					   TH2F* & TargetXY,
-					   TH2F* & PickyTracksTargetXY)
+					   TH2F* & PickyTracksTargetXY,
+					   TH1F* & ResSquare,
+					   TH1F* & Reco4pt,
+					   TH1F* & Reco4ptdiff)
 {					   
   fVerbose = verbose;
   fPickyTracks=true;
-  if(fPickyTracks){std::cout<<"PICKY!!!!"<<std::endl;}
-  if(!fPickyTracks){std::cout<<"NOT PICKY!!!"<<std::endl;}					 	
+  //if(fPickyTracks){std::cout<<"PICKY!!!!"<<std::endl;}
+  //if(!fPickyTracks){std::cout<<"NOT PICKY!!!"<<std::endl;}					 	
   //Determine if one should skip this trigger based on whether there is exactly one good hit in each wire chamber and axis
   //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer.
   //If there is, then move on with the function.
@@ -235,7 +239,10 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					     WCMult,
 					     BadTrackHits,
 					     TargetXY,
-					     PickyTracksTargetXY);
+					     PickyTracksTargetXY,
+					     ResSquare,
+					     Reco4pt,
+					     Reco4ptdiff);
 					     
   //Need to use the cut information to whittle down track candidates
   if( !fPickyTracks ){
@@ -265,7 +272,10 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
 					     float & reco_pz,
 					     float & y_kink,
 					     float (&dist_array)[3],
-					     TH2F* & TargetXY)
+					     TH2F* & TargetXY,
+					     TH1F* & ResSquare,
+					     TH1F* & Reco4pt,
+					     TH1F* & Reco4ptdiff)
 {
   std::vector<float> wire_x;
   std::vector<float> time_x;
@@ -299,7 +309,7 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
   float atan_y_ds = atan(delta_y_ds / fDelta_z_ds);
 
   //Calculate momentum and y_kink
-  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us))) / cos(atan_y_ds);
+  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (float(3.3 * ((10.0*3.141592654/180.0) + (sin(atan_x_ds) - sin(atan_x_us))))) ;// cos(atan_y_ds);
 
 
   y_kink = atan_y_us - atan_y_ds;
@@ -307,7 +317,8 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
   //Calculate the X/Y/Y Track End Distances
   float pos_us[3] = {0.0,0.0,0.0};
   float pos_ds[3] = {0.0,0.0,0.0};
-  midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds, TargetXY);
+  midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds, TargetXY, ResSquare, reco_pz, Reco4pt,
+  Reco4ptdiff);
   for( int iDist = 0; iDist < 3 ; ++iDist ){
     dist_array[iDist] = pos_ds[iDist]-pos_us[iDist];
   }       
@@ -320,7 +331,11 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 					      std::vector<float> y_wires,
 					      float (&pos_us)[3],
 					      float (&pos_ds)[3],
-					      TH2F* & TargetXY)
+					      TH2F* & TargetXY,
+					      TH1F* & ResSquare,
+					      double reco_pz,
+					      TH1F* & Reco4pt,
+					      TH1F* & Reco4ptdiff)
 {
   // correct x and z for rotation of MWPCs about the vertical
   float x[4] = { fX_cntr_1 + x_wires[0] * float(cos(3.141592654/180*(13.0))),
@@ -335,13 +350,13 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 		 fZ_cntr_2 + x_wires[1] * float(sin(3.141592654/180*(13.0))),
 		 fZ_cntr_3 + x_wires[2] * float(sin(3.141592654/180*(3.0))),
 		 fZ_cntr_4 + x_wires[3] * float(sin(3.141592654/180*(3.0))) };
-  float X[4]={ x[0]-float(1631.88),x[1]-float(1631.88),x[2]-float(1631.88),x[3]-float(1631.88)};
-  float Y[4]={y[1],y[2],y[3],y[4]};
-  float Z[4]={ z[0]+float(7563.41),z[1]+float(7563.41),z[2]+float(7563.41),z[3]+float(7563.41)};
- //std::cout<<"WC 1 Center (x,y,z) : ("<<fX_cntr_1<<","<<fY_cntr_1<<","<<fZ_cntr_1<<")"<<std::endl;
- //std::cout<<"WC 2 Center (x,y,z) : ("<<fX_cntr_2<<","<<fY_cntr_2<<","<<fZ_cntr_2<<")"<<std::endl;
- //std::cout<<"WC 3 Center (x,y,z) : ("<<fX_cntr_3<<","<<fY_cntr_3<<","<<fZ_cntr_3<<")"<<std::endl;
- //std::cout<<"WC 4 Center (x,y,z) : ("<<fX_cntr_4<<","<<fY_cntr_4<<","<<fZ_cntr_4<<")"<<std::endl;
+  //float X[4]={ x[0]-float(1631.88),x[1]-float(1631.88),x[2]-float(1631.88),x[3]-float(1631.88)};
+  //float Y[4]={y[1],y[2],y[3],y[4]};
+  //float Z[4]={ z[0]+float(7563.41),z[1]+float(7563.41),z[2]+float(7563.41),z[3]+float(7563.41)};
+ std::cout<<"WC 1 Center (x,y,z) : ("<<fX_cntr_1<<","<<fY_cntr_1<<","<<fZ_cntr_1<<")"<<std::endl;
+ std::cout<<"WC 2 Center (x,y,z) : ("<<fX_cntr_2<<","<<fY_cntr_2<<","<<fZ_cntr_2<<")"<<std::endl;
+ std::cout<<"WC 3 Center (x,y,z) : ("<<fX_cntr_3<<","<<fY_cntr_3<<","<<fZ_cntr_3<<")"<<std::endl;
+ std::cout<<"WC 4 Center (x,y,z) : ("<<fX_cntr_4<<","<<fY_cntr_4<<","<<fZ_cntr_4<<")"<<std::endl;
   
   // upstream (us) leg, extrapolating forward to mid-plane
   float slope_xz_us = (z[1] - z[0])/(x[1] - x[0]);
@@ -354,9 +369,9 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
   float z_us = fMid_plane_z_int_xz + fMid_plane_slope_xz * x_us;
   //Lets track back to the plane that intersects where the target should be, and find the y point where the track intersects.
   float slope_yz_us = (y[1] - y[0]) / (z[1] - z[0]);
-  float slope_yz_us_tgt=(Y[1]-Y[0])/ (Z[1]-Z[0]);
+  //float slope_yz_us_tgt=(y[1]-Y[0])/ (Z[1]-Z[0]);
   float y_int_yz_us_1 = y[0] - slope_yz_us * z[0];
-  float y_int_yz_us_1_tgt = Y[0] - slope_yz_us_tgt * Y[0];
+  //float y_int_yz_us_1_tgt = Y[0] - slope_yz_us_tgt * Y[0];
   float y_int_yz_us_2 = y[1] - slope_yz_us * z[1];
   float y_int_yz_us = (y_int_yz_us_1 + y_int_yz_us_2) / 2.0;
 
@@ -365,12 +380,12 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
   //degrees to make it normal to the track.  It's funky math, but instead of rotating the plane, I'm going to rotate the points in WC1, 2 so that it looks like the plane is not rotated at
   //all.  This is done in the reference frame of the plane instead of the experimental hall, or if you prefer, I'm making the Z axis the tertiary beam direction instead of the secondary beam
   //direction.  To correct this beam change, I can either rotate the Z axis clockwise 13 degrees or rotate the points counterclockwise. I choose the latter.-Greg
-  float slope_zx_us=((Z[1]-Z[0])*float(sin(3.141592654/180*(13.0)))+(X[1]-X[0])*float(cos(3.141592654/180*(13.0))))/((Z[1]-Z[0])*float(cos(3.141592654/180*(13.0)))+(X[1]-X[0])*float(sin(3.141592654/180*(13.0))));
+  float slope_zx_us=((z[1]-z[0])*float(sin(3.141592654/180*(13.0)))+(x[1]-x[0])*float(cos(3.141592654/180*(13.0))))/((z[1]-z[0])*float(cos(3.141592654/180*(13.0)))+(x[1]-x[0])*float(sin(3.141592654/180*(13.0))));
   //     (dz*sin + dx*cos)  //
   // m=  -----------------  //
   //     (dz*cos + dx*sin)  //
-  float x_int_zx_us=X[0]-slope_zx_us*Z[0];
-  std::cout<<"(x,y) = ("<<x_int_zx_us<<","<<y_int_yz_us_1_tgt<<")"<<std::endl;
+  float x_int_zx_us=x[0]-slope_zx_us*x[0];
+  //std::cout<<"(x,y) = ("<<x_int_zx_us<<","<<y_int_yz_us_1_tgt<<")"<<std::endl;
 //We now have these X,Y points of where the track thinks it orginated from.  If we plot them, we should see the  XY projection of the target as seen from WC.
  TargetXY->Fill(x_int_zx_us, y_int_yz_us_1);
   //downstream (ds) leg, extrapolating back to mid-plane
@@ -388,12 +403,55 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
   float z_int_yz_ds = (z_int_yz_ds_1 + z_int_yz_ds_2)/2.0;
 
   float y_ds = z_int_yz_ds + slope_yz_ds * z_ds;
+ 
 
   pos_us[0] = x_us; pos_us[1] = y_us; pos_us[2] = z_us;
   pos_ds[0] = x_ds; pos_ds[1] = y_ds; pos_ds[2] = z_ds;
-
+  FirstThreeRegression(y,z, ResSquare);//REMEMBER TO DELETE THIS LATER!!!!!!!
+  //Checking Doug's mom versus standard mom.
+  float dxa=x[1]-x[0];
+  float dza=z[1]-z[0];
+  float dxb=x[3]-x[2];
+  float dzb=z[3]-z[2];
+  float sin1=dxa/(std::sqrt(dxa*dxa+dza*dza));
+  float sin2=dxb/(std::sqrt(dxb*dxb+dzb*dzb));
+  std::cout<<sin1<<","<<sin2<<std::endl;
+  float fourptreco=124.0/(sin2-sin1);
+  Reco4pt->Fill(fourptreco);
+  Reco4ptdiff->Fill(reco_pz-fourptreco);
+  //See how 3 point mom does, missing WC3.
+//  float zmid=4205;
+  //float 
+  
 }
-			   
+//===================================================			   
+//Testing my ability to do a regression and make a plot.
+void WCTrackBuilderAlg_new::FirstThreeRegression(float (&y)[4],
+						 float (&z)[4],
+						 TH1F* & ResSquare)
+{
+  float sum_z=0;
+  float sum_zz=0;
+  float sum_y=0;
+  float sum_yz=0;
+  float intercept=0;
+  float slope=0;
+  float residualsquare=0;
+  float residual=0;
+    for(int i=0; i<3; ++i){
+      sum_y  += y[i];
+      sum_zz += z[i]*z[i];
+      sum_z  += z[i];
+      sum_yz += y[i]*z[i];  
+    }
+  slope=(3*sum_yz-sum_y*sum_z)/(3*sum_zz-sum_z*sum_z);
+  intercept=(sum_y-slope*sum_z)/3;
+  for(int i=0; i<3;++i){
+    residual= (y[i]-slope*z[i]-intercept)/std::sqrt(1+slope*slope);
+    residualsquare += residual*residual; 
+  }
+ResSquare->Fill(residualsquare);
+}
 
 //=====================================================================
 //Taking the set of good hits and finding all combinations of possible tracks. These may not be physically
@@ -415,7 +473,10 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 					    std::vector<TH2F*> & WCMult,
 					    std::vector<TH1F*> & BadTrackHits,
 					    TH2F* & TargetXY,
-					    TH2F* & PickyTracksTargetXY)
+					    TH2F* & PickyTracksTargetXY,
+					    TH1F* & ResSquare,
+					    TH1F* & Reco4pt,
+					    TH1F* & Reco4ptdiff)
 					    
 					    
 					   
@@ -471,7 +532,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		  float incoming_phi = 0;
 		  		  
 		  //Previously track_p_extrap_dists
-		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array, TargetXY);
+		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array, TargetXY, ResSquare, Reco4pt, Reco4ptdiff);
 
 		  //Get things like x/y on the tpc face, theta, phi for track
 		  findTrackOnTPCInfo(track,x_on_tpc_face,y_on_tpc_face,incoming_theta,incoming_phi);		
@@ -518,9 +579,9 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 	                  time_y.push_back(track.hits.at(iHit).time);
                         }   
                       }
-		        float pos_us[3] = {0.0,0.0,0.0};
-                        float pos_ds[3] = {0.0,0.0,0.0};
-                        midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds, PickyTracksTargetXY);
+		        //float pos_us[3] = {0.0,0.0,0.0};
+                        //float pos_ds[3] = {0.0,0.0,0.0};
+                        //midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds, PickyTracksTargetXY);
 		    track_list.push_back(track);
 		    //Hit wires for WC1X, WC1Y, WC2X, WC2Y etc.....
 		    //Also Fill the Histograms for Tracks we won't use.  Will subract off the wires of the "best" track from the good tracks

@@ -59,20 +59,34 @@ class WCTrackBuilderAlg_new{
 			  std::vector<TH1F*> & WireHits_TheTrack,
 			  std::vector<TH1F*> & BadTrackHits,
 			  TH2F* & TargetXY,
-			  TH2F* & PickyTracksTargetXY);
+			  TH2F* & PickyTracksTargetXY,
+			  TH1F* & ResSquare,
+			  TH1F* & Reco4pt,
+			  TH1F* & Reco4ptdiff);
 
 
   void getTrackMom_Kink_End(WCHitList track,
 			    float & reco_pz,
 			    float & y_kink,
 			    float (&dist_array)[3],
-			    TH2F* & TargetXY);
+			    TH2F* & TargetXY,
+			    TH1F* & ResSquare,
+			    TH1F* & Reco4pt,
+			    TH1F* & Reco4ptdiff);
   
   void midPlaneExtrapolation(std::vector<float> x_wires,
 			     std::vector<float> y_wires,
 			     float (&pos_us)[3],
 			     float (&pos_ds)[3],
-			     TH2F* & TargetXY);
+			     TH2F* & TargetXY,
+			     TH1F* & ResSquare,
+			     double reco_pz,
+			     TH1F* & Reco4pt,
+			     TH1F* & Reco4ptdiff);
+			     
+  void FirstThreeRegression(float (&y)[4],
+                            float (&z)[4],
+			    TH1F* & ResSquare);
   
   bool buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 			   std::vector<double> & reco_pz_list,
@@ -90,7 +104,10 @@ class WCTrackBuilderAlg_new{
 			   std::vector<TH2F*> & WCMult,
 			   std::vector<TH1F*> & BadTrackHits,
 			   TH2F* & TargetXY,
-			   TH2F* & PickyTracksXY);
+			   TH2F* & PickyTracksXY,
+			   TH1F* & ResSquare,
+			   TH1F* & Reco4pt,
+			   TH1F* & Reco4ptdiff);
 
   bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits);
 
