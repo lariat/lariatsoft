@@ -148,6 +148,7 @@ private:
  TH2F* fReco4ptdiff;
  std::vector<TH2F*> fTimingXY;
  std::vector<TH2F*> fRegressionPlots;
+ TH1F* fMatchedHits;
 
             
     //Misc
@@ -496,12 +497,16 @@ int error;
 //let us know what we can do with 6 or 7 point tracks later on
     int xPoints=0;
     int yPoints=0;
+    int XYMatch=0;
     for(iWC=0;iWC<4;++iWC)
     {
       if(good_hits[iWC][0].hits.size() >= 1){++xPoints;}
       if(good_hits[iWC][1].hits.size() >= 1){++yPoints;}
+      if(good_hits[iWC][0].hits.size() >= 1 && good_hits[iWC][1].hits.size() >=1){++XYMatch;}
     }
+    
     fHitsAvailable->Fill(xPoints,yPoints);
+    fMatchedHits->Fill(XYMatch);
     //std::cout<<"THINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
     if(xPoints < 0 || yPoints < 0){std::cout<<"You have negative points available!!!!!!"<<std::endl;}
     if(xPoints > 4 || yPoints > 4){std::cout<<"There are more than 4 WCs available!!!!!!!!"<<std::endl;}
@@ -544,6 +549,7 @@ void WCTrackBuilder::beginJob()
     fHitsAvailable = tfs->make<TH2F>("WCs Available per axis for a track", "WCs available per axis for a track", 5,0,5,5,0,5);
     fHitsAvailable->GetXaxis()->SetTitle("Number of WCX axes available");
     fHitsAvailable->GetYaxis()->SetTitle("Number of WCY axes available");
+    fMatchedHits = tfs->make<TH1F>("Total Pairs Available", "Total Pairs Available", 5,0,5);
     fHitHeatMapWC1 = tfs->make<TH2F>("WC1 Hit Map","Number of Hits on each Axis in WC1", 10,0,10,10,0,10);
     fHitHeatMapWC2 = tfs->make<TH2F>("WC2 Hit Map","Number of Hits on each Axis in WC2", 10,0,10,10,0,10);
     fHitHeatMapWC3 = tfs->make<TH2F>("WC3 Hit Map","Number of Hits on each Axis in WC3", 10,0,10,10,0,10);

@@ -35,21 +35,21 @@ physics:
   {
     WCTrackBuilder:
     {
-      module_type:         WCProducer
+      module_type:         WCTrackBuilder
       SourceLabel:         "daq"
-      #WCTrackBuilderAlgBase:   @local::lariat_wctrackbuilderalgbase
-      #WCHitFinderAlg:      @local::lariat_wchitfinderalg  
-      #WCTrackBuilderFactory: @local::lariat_wctrackbuilderfactory
-      FactoryAlgLabel: "Picky"
-      #TriggerUtility: "FragmentToDigit"
+      WCTrackBuilderAlg_new:   @local::lariat_wctrackbuilderalgnew
+      WCHitFinderAlg:      @local::lariat_wchitfinderalg  
+      TriggerUtility: "FragmentToDigit"
       NWC: 4
       NWperTDC: 64
       Verbose: false
+      PickyTracks: true
+      HighYield: false
     }
   }
  
   analysis: [ WCTrackBuilder ]
-  stream1: [output1]
+  stream1: []#output1]
   		       
   end_paths: [ analysis, stream1 ]
 }
