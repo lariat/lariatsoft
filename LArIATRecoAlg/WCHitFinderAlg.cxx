@@ -459,6 +459,7 @@ void WCHitFinderAlg::finalizeGoodHits(float wire,
       float average_wire = (hit.wire+wire)/2;
       float average_time = (hit.time+time)/2;
       finalGoodHitList.hits.erase(finalGoodHitList.hits.begin()+iHit);
+      std::cout<<"FINALIZING!!! Wire= "<<wire<<" changing to average wire= "<<average_wire<<" and time= "<<time<<" changing to average time "<<average_time<<std::endl; 
       wire = average_wire;
       time = average_time;
     }

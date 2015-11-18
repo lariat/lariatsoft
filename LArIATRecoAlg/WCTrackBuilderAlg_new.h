@@ -53,6 +53,8 @@ class WCTrackBuilderAlg_new{
 			  std::vector<WCHitList> & trigger_final_tracks,
 			  std::vector<std::vector<WCHitList> > & good_hits,
 			  bool verbose,
+			  bool pickytracks,
+			  bool highyield,
 			  int & track_count,
 			  std::vector<TH1F*> & WCHitsGoodTracks,
 			  std::vector<TH2F*> & WCMult,
@@ -62,7 +64,9 @@ class WCTrackBuilderAlg_new{
 			  TH2F* & PickyTracksTargetXY,
 			  TH1F* & ResSquare,
 			  TH1F* & Reco4pt,
-			  TH1F* & Reco4ptdiff);
+			  TH2F* & Reco4ptdiff,
+			  std::vector<TH2F*> & TimingXY,
+			  std::vector<TH2F*> & RegressionPlots);
 
 
   void getTrackMom_Kink_End(WCHitList track,
@@ -72,7 +76,8 @@ class WCTrackBuilderAlg_new{
 			    TH2F* & TargetXY,
 			    TH1F* & ResSquare,
 			    TH1F* & Reco4pt,
-			    TH1F* & Reco4ptdiff);
+			    TH2F* & Reco4ptdiff,
+			    std::vector<TH2F*> & RegressionPlots);
   
   void midPlaneExtrapolation(std::vector<float> x_wires,
 			     std::vector<float> y_wires,
@@ -82,11 +87,13 @@ class WCTrackBuilderAlg_new{
 			     TH1F* & ResSquare,
 			     double reco_pz,
 			     TH1F* & Reco4pt,
-			     TH1F* & Reco4ptdiff);
+			     TH2F* & Reco4ptdiff,
+			     std::vector<TH2F*> & RegressionPlots);
 			     
-  void FirstThreeRegression(float (&y)[4],
+  float Regression(float (&y)[4],
                             float (&z)[4],
-			    TH1F* & ResSquare);
+			    TH1F* & ResSquare,
+			    int skippedWC);
   
   bool buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 			   std::vector<double> & reco_pz_list,
@@ -107,7 +114,9 @@ class WCTrackBuilderAlg_new{
 			   TH2F* & PickyTracksXY,
 			   TH1F* & ResSquare,
 			   TH1F* & Reco4pt,
-			   TH1F* & Reco4ptdiff);
+			   TH2F* & Reco4ptdiff,
+			   std::vector<TH2F*> & TimingXY,
+			   std::vector<TH2F*> & RegressionPlots);
 
   bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits);
 
@@ -148,6 +157,9 @@ class WCTrackBuilderAlg_new{
   float  fSigmaYDist;
   float  fPrintDisambiguation;
   bool   fPickyTracks;
+  bool   fHighYield;
+  int xHits;
+  int yHits;
 
 
 

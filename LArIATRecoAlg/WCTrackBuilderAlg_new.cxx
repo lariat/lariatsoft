@@ -29,6 +29,8 @@
 #include <string>
 #include <TH2F.h>
 
+
+
 //--------------------------------------------------------------
 //Constructor  TRACK
 WCTrackBuilderAlg_new::WCTrackBuilderAlg_new( fhicl::ParameterSet const& pset )
@@ -157,7 +159,7 @@ void WCTrackBuilderAlg_new::reconfigure( fhicl::ParameterSet const& pset )  //BO
 
   fPrintDisambiguation = false;
   fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
-  //fHighYield            = pset.get<bool  >("HighYield",           false     );
+  fHighYield            = pset.get<bool  >("HighYield",           false     );
   
   //Survey constants
   fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );   
@@ -193,6 +195,8 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					   std::vector<WCHitList> & trigger_final_tracks,
 					   std::vector<std::vector<WCHitList> > & good_hits,
 					   bool verbose,
+					   bool pickytracks,
+					   bool highyield,
 					   int & track_count,
 					   std::vector<TH1F*> & WCHitsGoodTracks,
 					   std::vector<TH2F*> & WCMult,
@@ -202,21 +206,21 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					   TH2F* & PickyTracksTargetXY,
 					   TH1F* & ResSquare,
 					   TH1F* & Reco4pt,
-					   TH1F* & Reco4ptdiff)
+					   TH2F* & Reco4ptdiff,
+					   std::vector<TH2F*> & TimingXY,
+					   std::vector<TH2F*> & RegressionPlots)
 {					   
   fVerbose = verbose;
-  fPickyTracks=true;
-  //if(fPickyTracks){std::cout<<"PICKY!!!!"<<std::endl;}
+  fPickyTracks = pickytracks;
+  fHighYield = highyield;
   //if(!fPickyTracks){std::cout<<"NOT PICKY!!!"<<std::endl;}					 	
   //Determine if one should skip this trigger based on whether there is exactly one good hit in each wire chamber and axis
   //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer.
   //If there is, then move on with the function.
   //This can be modified to permit more than one good hit in each wire chamber axis - see comments in function
   bool skip = shouldSkipTrigger(good_hits);
-
   if( skip == true ) return;
   
-    
   
   //At this point, we should have a list of good hits with at least one good hit in X,Y for each WC.
   //Now find all possible combinations of these hits that could form a track, sans consideration
@@ -242,7 +246,9 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					     PickyTracksTargetXY,
 					     ResSquare,
 					     Reco4pt,
-					     Reco4ptdiff);
+					     Reco4ptdiff,
+					     TimingXY,
+					     RegressionPlots);
 					     
   //Need to use the cut information to whittle down track candidates
   if( !fPickyTracks ){
@@ -275,7 +281,8 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
 					     TH2F* & TargetXY,
 					     TH1F* & ResSquare,
 					     TH1F* & Reco4pt,
-					     TH1F* & Reco4ptdiff)
+					     TH2F* & Reco4ptdiff,
+					     std::vector<TH2F*> & RegressionPlots)
 {
   std::vector<float> wire_x;
   std::vector<float> time_x;
@@ -318,7 +325,7 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
   float pos_us[3] = {0.0,0.0,0.0};
   float pos_ds[3] = {0.0,0.0,0.0};
   midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds, TargetXY, ResSquare, reco_pz, Reco4pt,
-  Reco4ptdiff);
+  Reco4ptdiff, RegressionPlots);
   for( int iDist = 0; iDist < 3 ; ++iDist ){
     dist_array[iDist] = pos_ds[iDist]-pos_us[iDist];
   }       
@@ -333,9 +340,10 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 					      float (&pos_ds)[3],
 					      TH2F* & TargetXY,
 					      TH1F* & ResSquare,
-					      double reco_pz,
+					      double  reco_pz,
 					      TH1F* & Reco4pt,
-					      TH1F* & Reco4ptdiff)
+					      TH2F* & Reco4ptdiff,
+					      std::vector<TH2F*> & RegressionPlots)
 {
   // correct x and z for rotation of MWPCs about the vertical
   float x[4] = { fX_cntr_1 + x_wires[0] * float(cos(3.141592654/180*(13.0))),
@@ -353,10 +361,10 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
   //float X[4]={ x[0]-float(1631.88),x[1]-float(1631.88),x[2]-float(1631.88),x[3]-float(1631.88)};
   //float Y[4]={y[1],y[2],y[3],y[4]};
   //float Z[4]={ z[0]+float(7563.41),z[1]+float(7563.41),z[2]+float(7563.41),z[3]+float(7563.41)};
- std::cout<<"WC 1 Center (x,y,z) : ("<<fX_cntr_1<<","<<fY_cntr_1<<","<<fZ_cntr_1<<")"<<std::endl;
- std::cout<<"WC 2 Center (x,y,z) : ("<<fX_cntr_2<<","<<fY_cntr_2<<","<<fZ_cntr_2<<")"<<std::endl;
- std::cout<<"WC 3 Center (x,y,z) : ("<<fX_cntr_3<<","<<fY_cntr_3<<","<<fZ_cntr_3<<")"<<std::endl;
- std::cout<<"WC 4 Center (x,y,z) : ("<<fX_cntr_4<<","<<fY_cntr_4<<","<<fZ_cntr_4<<")"<<std::endl;
+ //std::cout<<"WC 1 Center (x,y,z) : ("<<fX_cntr_1<<","<<fY_cntr_1<<","<<fZ_cntr_1<<")"<<std::endl;
+// std::cout<<"WC 2 Center (x,y,z) : ("<<fX_cntr_2<<","<<fY_cntr_2<<","<<fZ_cntr_2<<")"<<std::endl;
+ //std::cout<<"WC 3 Center (x,y,z) : ("<<fX_cntr_3<<","<<fY_cntr_3<<","<<fZ_cntr_3<<")"<<std::endl;
+ //std::cout<<"WC 4 Center (x,y,z) : ("<<fX_cntr_4<<","<<fY_cntr_4<<","<<fZ_cntr_4<<")"<<std::endl;
   
   // upstream (us) leg, extrapolating forward to mid-plane
   float slope_xz_us = (z[1] - z[0])/(x[1] - x[0]);
@@ -407,7 +415,16 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 
   pos_us[0] = x_us; pos_us[1] = y_us; pos_us[2] = z_us;
   pos_ds[0] = x_ds; pos_ds[1] = y_ds; pos_ds[2] = z_ds;
-  FirstThreeRegression(y,z, ResSquare);//REMEMBER TO DELETE THIS LATER!!!!!!!
+  
+
+  //Calculate the Residual skipping wc2 and wc3 to see which is best.  
+  float residualsquare_skipsecond = Regression(y,z, ResSquare, 2);//REMEMBER TO DELETE THIS LATER!!!!!!!
+  float residualsquare_skipthird = Regression(y,z, ResSquare, 3);//REMEMBER TO DELETE THIS LATER!!!!!!!
+  float residualsquare_allfour = Regression(y,z, ResSquare, 0); //Using WC=0 so none get skipped
+  RegressionPlots[0]->Fill(residualsquare_skipsecond, residualsquare_allfour);
+  RegressionPlots[1]->Fill(residualsquare_skipthird, residualsquare_allfour);
+  RegressionPlots[2]->Fill(residualsquare_skipsecond,residualsquare_skipthird);
+  
   //Checking Doug's mom versus standard mom.
   float dxa=x[1]-x[0];
   float dza=z[1]-z[0];
@@ -415,10 +432,14 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
   float dzb=z[3]-z[2];
   float sin1=dxa/(std::sqrt(dxa*dxa+dza*dza));
   float sin2=dxb/(std::sqrt(dxb*dxb+dzb*dzb));
-  std::cout<<sin1<<","<<sin2<<std::endl;
+  
+   reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /float(3.3*(sin2-sin1));
+  
+  //std::cout<<sin1<<","<<sin2<<std::endl;
   float fourptreco=124.0/(sin2-sin1);
+  if(fB_field_tesla>0.349){
   Reco4pt->Fill(fourptreco);
-  Reco4ptdiff->Fill(reco_pz-fourptreco);
+  Reco4ptdiff->Fill(reco_pz,fourptreco);}
   //See how 3 point mom does, missing WC3.
 //  float zmid=4205;
   //float 
@@ -426,10 +447,12 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 }
 //===================================================			   
 //Testing my ability to do a regression and make a plot.
-void WCTrackBuilderAlg_new::FirstThreeRegression(float (&y)[4],
+float WCTrackBuilderAlg_new::Regression(float (&y)[4],
 						 float (&z)[4],
-						 TH1F* & ResSquare)
+						 TH1F* & ResSquare,
+						 int skippedWC)
 {
+  int Npoints=0;
   float sum_z=0;
   float sum_zz=0;
   float sum_y=0;
@@ -438,19 +461,27 @@ void WCTrackBuilderAlg_new::FirstThreeRegression(float (&y)[4],
   float slope=0;
   float residualsquare=0;
   float residual=0;
-    for(int i=0; i<3; ++i){
-      sum_y  += y[i];
-      sum_zz += z[i]*z[i];
-      sum_z  += z[i];
-      sum_yz += y[i]*z[i];  
+    for(int i=0; i<4; ++i){
+      if(i != skippedWC-1){ //turning WC# to array index
+        sum_y  += y[i];
+        sum_zz += z[i]*z[i];
+        sum_z  += z[i];
+        sum_yz += y[i]*z[i];  
+	++Npoints; //Residual is a function of number of points used.
+      }
     }
-  slope=(3*sum_yz-sum_y*sum_z)/(3*sum_zz-sum_z*sum_z);
-  intercept=(sum_y-slope*sum_z)/3;
-  for(int i=0; i<3;++i){
+  slope=(Npoints*sum_yz-sum_y*sum_z)/(Npoints*sum_zz-sum_z*sum_z);
+  intercept=(sum_y-slope*sum_z)/Npoints;
+  for(int i=0; i<4;++i){
+    if(i != skippedWC-1){
     residual= (y[i]-slope*z[i]-intercept)/std::sqrt(1+slope*slope);
-    residualsquare += residual*residual; 
+    residualsquare += residual*residual/Npoints; 
+    }
   }
+  if(Npoints==4){
 ResSquare->Fill(residualsquare);
+}
+  return residualsquare;
 }
 
 //=====================================================================
@@ -476,7 +507,9 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 					    TH2F* & PickyTracksTargetXY,
 					    TH1F* & ResSquare,
 					    TH1F* & Reco4pt,
-					    TH1F* & Reco4ptdiff)
+					    TH2F* & Reco4ptdiff,
+					    std::vector<TH2F*> & TimingXY,
+					    std::vector<TH2F*> & RegressionPlots)
 					    
 					    
 					   
@@ -520,7 +553,12 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		  track.hits.push_back(good_hits[2][1].hits[iHit5]);
 		  track.hits.push_back(good_hits[3][0].hits[iHit6]);
 		  track.hits.push_back(good_hits[3][1].hits[iHit7]);
-
+                  if(fPickyTracks){
+		  TimingXY[0]->Fill(track.hits[0].time,track.hits[1].time);
+		  TimingXY[1]->Fill(track.hits[2].time,track.hits[3].time);
+		  TimingXY[2]->Fill(track.hits[4].time,track.hits[5].time);
+		  TimingXY[3]->Fill(track.hits[6].time,track.hits[7].time);
+		  }
 
 		  //Track reco info
 		  float reco_pz = 0;
@@ -532,7 +570,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		  float incoming_phi = 0;
 		  		  
 		  //Previously track_p_extrap_dists
-		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array, TargetXY, ResSquare, Reco4pt, Reco4ptdiff);
+		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array, TargetXY, ResSquare, Reco4pt, Reco4ptdiff, RegressionPlots);
 
 		  //Get things like x/y on the tpc face, theta, phi for track
 		  findTrackOnTPCInfo(track,x_on_tpc_face,y_on_tpc_face,incoming_theta,incoming_phi);		
@@ -681,15 +719,37 @@ bool WCTrackBuilderAlg_new::shouldSkipTrigger(std::vector<std::vector<WCHitList>
 {
   //Now determine if we want to skip
   bool skip = false;
+  xHits = 0;
+  yHits = 0;
+  for( size_t iWC = 0; iWC < 4 ; ++iWC ){
+    if(good_hits[iWC][0].hits.size()>0){++xHits;}
+    if(good_hits[iWC][1].hits.size()>0){++yHits;}
+  } 
+  //Only continue if there are at least 3 X wires and 3 Y wires available for a track.
+  if(fPickyTracks && fHighYield){
+    for(size_t iWC=0; iWC<4; ++iWC){
+      for(size_t iAX=0; iAX<2; ++iAX){
+        if(good_hits[iWC][iAX].hits.size() > 1 && (xHits<3 || yHits<3)){ 
+          skip = true;
+	  break;
+	}
+      }
+    }   
+  }
+  if(!fPickyTracks && fHighYield){
+    if(xHits<3 || yHits<3){ 
+      skip = true;
+    }  
+  }
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
-      if( fPickyTracks ){
+      if( fPickyTracks  && !fHighYield){
 	if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
 	  skip = true;
 	  break;
 	}
       }
-      if( !fPickyTracks ){
+      if( !fPickyTracks && !fHighYield ){
 	if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
 	  skip = true;
 	  break;
