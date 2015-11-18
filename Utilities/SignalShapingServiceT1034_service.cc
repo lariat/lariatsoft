@@ -14,7 +14,7 @@
 #include "Utilities/LArProperties.h"
 #include "Utilities/LArFFT.h"
 #include "TFile.h"
-#include <fstream>
+//#include <fstream>
 
 //----------------------------------------------------------------------
 // Constructor.
@@ -93,11 +93,7 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
     std::string colFilt = pset.get<std::string>("ColFilter");
     std::vector<double> colFiltParams = pset.get<std::vector<double> >("ColFilterParams");
     fColFilterFunc = new TF1("colFilter", colFilt.c_str());
-    /*
-     std::cout<<"ColFilterParams ";
-     for(size_t i=0; i<colFiltParams.size(); ++i) std::cout<<colFiltParams[i]<<" ";
-     std::cout<<"\n";
-     */
+
     for(size_t i=0; i<colFiltParams.size(); ++i)
       fColFilterFunc->SetParameter(i, colFiltParams[i]);
     
@@ -106,10 +102,6 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
     std::string indFilt = pset.get<std::string>("IndFilter");
     std::vector<double> indFiltParams = pset.get<std::vector<double>>("IndFilterParams");
     fIndFilterFunc = new TF1("indFilter", indFilt.c_str());
-    
-    std::cout<<"IndFilterParams ";
-    for(size_t i=0; i<indFiltParams.size(); ++i) std::cout<<indFiltParams[i]<<" ";
-    std::cout<<"\n";
     
     for(size_t i=0; i<indFiltParams.size(); ++i) fIndFilterFunc->SetParameter(i, indFiltParams[i]);
   }
@@ -367,7 +359,7 @@ void util::SignalShapingServiceT1034::init()
     fIndSignalShaping.set_normflag(false);
     //fIndSignalShaping.SetPeakResponseTime(0.);
 
-//    SetResponseSampling();
+    SetResponseSampling();
 
     // Calculate filter functions.
 
@@ -467,31 +459,27 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     unsigned int ii = 0;
     unsigned int nbinc = TMath::Nint(fCol3DCorrection*(fabs(pitch))/(driftvelocity*detprop->SamplingRate())); ///number of bins //KP
 
-    integral = 0;
+    fColFieldResponse.resize(nbinc, 0.);
+   integral = 0;
     for(ii = 1; ii < nbinc; ++ii){
       fColFieldResponse[ii] = ii * ii;
       integral += fColFieldResponse[ii];
     }
-    std::cout<<"Col integral "<<integral<<" Amp "<<fColFieldRespAmp<<" size "<<nbinc<<"\n";
+ 
     for(ii = 0; ii < nbinc; ++ii) fColFieldResponse[ii] *= fColFieldRespAmp / integral;
-   
+
     // now the induction plane
     unsigned int nbini = TMath::Nint(fInd3DCorrection*(fabs(pitch))/(driftvelocity*detprop->SamplingRate()));
+    unsigned int size = 2 * (nbini + 1);
+    fIndFieldResponse.resize(size, 0.);
 
     if(fIndFieldParams.size() < 1) throw art::Exception( art::errors::InvalidNumber )
         << "Invalid IndFieldParams size";
     
-    for(ii = signalSize - nbini; ii < signalSize; ++ii) fIndFieldResponse[ii] = 1;
-    for(ii = 0; ii < nbini; ++ii)  fIndFieldResponse[ii] = -fIndFieldParams[0];
-
-    unsigned int size = 2 * (nbini + 1);
-    std::vector<double> temp(size, 0.);
-    for(ii = 1; ii < nbini + 1; ++ii){
-      temp[ii] = 1;
-      temp[nbini + ii] = -fIndFieldParams[0];
-    } // i
-    // Gaussian blur to knock off the edges
-    for(ii = 1; ii < size - 1; ++ii) fIndFieldResponse[ii] = 0.2 * temp[ii-1] + 0.6 * temp[ii] + 0.2 * temp[ii+1];
+     for(ii = 0; ii < nbini; ++ii)  {
+      fIndFieldResponse[ii] = 1;
+      fIndFieldResponse[nbini + ii] = -fIndFieldParams[0];
+    }
  
     for(ii = 0; ii < fIndFieldResponse.size(); ++ii) fIndFieldResponse[ii] *= fIndFieldRespAmp / (double)nbini;
 
@@ -569,7 +557,7 @@ void util::SignalShapingServiceT1034::SetElectResponse(double shapingtime, doubl
     element *= gain / 4.7;
    }
 
-    fft->ShiftData(fElectResponse,fElectResponse.size()/2.0);
+//    fft->ShiftData(fElectResponse,fElectResponse.size()/2.0);
   
   return;
 
@@ -596,29 +584,23 @@ void util::SignalShapingServiceT1034::SetFilters()
   if(!fGetFilterFromHisto)
   {
     fColFilterFunc->SetRange(0, double(n));
-    
-//    std::ofstream cfile("colfilter.txt");
+    double freq, f;
     for(int i=0; i<=n; ++i) {
-      double freq = 500. * i / (ts * n);      // Cycles / microsecond.
-      double f = fColFilterFunc->Eval(freq);
-//      cfile<<i<<" "<<1000*freq<<" "<<f<<"\n";
+      freq = 500. * i / (ts * n);      // Cycles / microsecond.
+      f = fColFilterFunc->Eval(freq);
       fColFilter[i] = TComplex(f, 0.);
     }
-//    cfile.close();
     
     // Calculate induction filter.
     
     
     fIndFilterFunc->SetRange(0, double(n));
     
-//    std::ofstream ifile("indfilter.txt");
     for(int i=0; i<=n; ++i) {
-      double freq = 500. * i / (ts * n);      // Cycles / microsecond.
-      double f = fIndFilterFunc->Eval(freq);
-//      ifile<<i<<" "<<1000*freq<<" "<<f<<"\n";
+      freq = 500. * i / (ts * n);      // Cycles / microsecond.
+      f = fIndFilterFunc->Eval(freq);
       fIndFilter[i] = TComplex(f, 0.);
     }
-//    ifile.close();
     
   }
   else
@@ -714,11 +696,11 @@ void util::SignalShapingServiceT1034::SetResponseSampling()
     case 0: fIndSignalShaping.AddResponseFunction( SamplingResp, true ); break;
     default: fColSignalShaping.AddResponseFunction( SamplingResp, true ); break;
     }
-
+/*
     if (iplane == 0){
       std::ofstream outfile("resindtest.txt");
       for (size_t i = 0; i<SamplingResp.size(); ++i){
-	outfile<<i<<" "<<SamplingResp[i]<<std::endl;
+      outfile<<i<<" "<<SamplingResp[i]<<std::endl;
       }
       outfile.close();
     }
@@ -729,7 +711,7 @@ void util::SignalShapingServiceT1034::SetResponseSampling()
       }
       outfile.close();
     }
-      
+*/
 
   } // for ( int iplane = 0; iplane < fNPlanes; iplane++ )
 
