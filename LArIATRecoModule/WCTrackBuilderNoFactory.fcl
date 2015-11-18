@@ -44,6 +44,7 @@ physics:
       NWperTDC: 64
       Verbose: false
       PickyTracks: true
+      HighYield: false
     }
   }
  

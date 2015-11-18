@@ -145,12 +145,15 @@ private:
  TH2F* fPickyTracksTargetXY;
  TH1F* fResSquare;
  TH1F* fReco4pt;
- TH1F* fReco4ptdiff;
+ TH2F* fReco4ptdiff;
+ std::vector<TH2F*> fTimingXY;
+ std::vector<TH2F*> fRegressionPlots;
 
             
     //Misc
     bool fVerbose;
     bool fPickyTracks;
+    bool fHighYield;
 };
 
 
@@ -245,6 +248,8 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 					 final_tracks,
 					 good_hits,
 					 fVerbose,
+					 fPickyTracks,
+					 fHighYield,
 					 track_count,
 					 fWireHitsGoodTracks,
 					 fWCMult,
@@ -254,7 +259,9 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 					 fPickyTracksTargetXY,
 					 fResSquare,
 					 fReco4pt,
-					 fReco4ptdiff);			       
+					 fReco4ptdiff,
+					 fTimingXY,
+					 fRegressionPlots);			       
 
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
 //fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCTrackBuilderAlg_new::getTrackType()
@@ -531,9 +538,9 @@ void WCTrackBuilder::beginJob()
       // Implementation of optional member function here.
     art::ServiceHandle<art::TFileService> tfs;
 //Hists that should be used for diagnostics and deleted before production.
-    fResSquare = tfs->make<TH1F>("Sum of Square of Residuals from Y points to Linear Regression","Sum of Square of Residuals from Y points to Linear Regression", 1000,0,100);
+    fResSquare = tfs->make<TH1F>("Sum of Square of Residuals from Y points to Linear Regression","Sum of Square of Residuals from Y points to Linear Regression", 150,0,150);
     fReco4pt = tfs->make<TH1F>("Doug's 4 point reco", "Doug's 4 point reco", 200,0,2000);
-    fReco4ptdiff = tfs->make<TH1F>("Doug's 4 point reco difference", "Doug's 4 point reco difference", 400,-2000,2000);
+    fReco4ptdiff = tfs->make<TH2F>("Doug's 4 point reco difference", "Doug's 4 point reco difference", 800,-4000,4000, 400,-2000,2000);
     fHitsAvailable = tfs->make<TH2F>("WCs Available per axis for a track", "WCs available per axis for a track", 5,0,5,5,0,5);
     fHitsAvailable->GetXaxis()->SetTitle("Number of WCX axes available");
     fHitsAvailable->GetYaxis()->SetTitle("Number of WCY axes available");
@@ -576,12 +583,29 @@ void WCTrackBuilder::beginJob()
     
     fTargetXY=tfs->make<TH2F>("XY Projection of Target from US WC","XY Projection of Target from US WC", 500,800,1300,200,-100,100);
     fPickyTracksTargetXY=tfs->make<TH2F>("XY Projection of Target from US WC for Picky Tracks","XY Projection of Target from US WC for Picky Tracks", 500,800,1300,200,-100,100);
+    
     for(size_t iter=0; iter<8; ++iter){
     fWireHitsGoodTracks.push_back(tfs->make<TH1F>());
     fWCMult.push_back(tfs->make<TH2F>());
     fWireHitsTheTrack.push_back(tfs->make<TH1F>());
     fBadTrackHits.push_back(tfs->make<TH1F>());
     }
+    
+    for(size_t iter=0; iter<4; ++iter){
+    fTimingXY.push_back(tfs->make<TH2F>());
+    }
+    fTimingXY[0] = tfs->make<TH2F>("WC 1 Picky tracks timing","WC1 Picky Tracks Timing", 1000,0,1000,1000,0,1000);
+    fTimingXY[1] = tfs->make<TH2F>("WC 2 Picky tracks timing","WC2 Picky Tracks Timing", 1000,0,1000,1000,0,1000);
+    fTimingXY[2] = tfs->make<TH2F>("WC 3 Picky tracks timing","WC3 Picky Tracks Timing", 1000,0,1000,1000,0,1000);
+    fTimingXY[3] = tfs->make<TH2F>("WC 4 Picky tracks timing","WC4 Picky Tracks Timing", 1000,0,1000,1000,0,1000);
+    
+    for(size_t iter=0; iter<3; ++iter){
+    fRegressionPlots.push_back(tfs->make<TH2F>());
+    }
+    
+    fRegressionPlots[0]= tfs->make<TH2F>("Regression no 2", "4 point regression vs 3 point, skipping WC2", 150,0,150,150,0,150);
+    fRegressionPlots[1]= tfs->make<TH2F>("Regression no 3", "4 point regression vs 3 point, skipping WC3", 150,0,150,150,0,150);
+    fRegressionPlots[2]= tfs->make<TH2F>("Regression no 3 vs no 2", "Three Point No WC3 vs Three Point No WC2", 150,0,150,150,0,150);
     fWireHitsGoodTracks[0] = tfs->make<TH1F>("WC1 X Wire Hits for Good Tracks", "WC1 X Wire Hits for Good Tracks", 128,-64,64);
     fWireHitsGoodTracks[1] = tfs->make<TH1F>("WC1 Y Wire Hits for Good Tracks", "WC1 Y Wire Hits for Good Tracks", 128,-64,64);
     fWireHitsGoodTracks[2] = tfs->make<TH1F>("WC2 X Wire Hits for Good Tracks", "WC2 X Wire Hits for Good Tracks", 128,-64,64);
@@ -784,6 +808,7 @@ void WCTrackBuilder::reconfigure(fhicl::ParameterSet const & p)
     fVerbose = p.get<bool>("Verbose", false);
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
     fPickyTracks=p.get<bool>("PickyTracks");
+    fHighYield=p.get<bool>("HighYield");
 }
 // 
 // void WCTrackBuilder::respondToCloseInputFile(art::FileBlock const & fb)
