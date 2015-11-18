@@ -128,6 +128,7 @@ private:
   float               fHitTimeCutoffHigh;
   bool                fUsePrepulseFit;
   float               fMvPerADC;
+  float               fHitPromptPEThreshLow;
   float               fLY;
   bool                fSER_Mode;
   float               fSER_mean_low;
@@ -180,8 +181,10 @@ private:
   int                   N_MichelNonBG;
   int                   N_PEs;
   float                 T_PEs;
-  std::vector<float>    vdEdx;
-  std::vector<float>    vResidualRange;
+  size_t                hit_i;
+  int                 closest_track_i;
+  float                 closestSoFar;
+  float                 resR_histRange;
 
   // Histograms
   TH1F* h_SER;
@@ -194,7 +197,12 @@ private:
   TH1I* h_NumOpHits_beam;
   TH1I* h_NumOpHits_offbeam;
   TH2F* h_dT_vs_MuPE_100ns;
+  TH2F* h_MuPf_100_250_vs_MuPE250ns;
+  TH2F* h_dT_vs_MuPf_100_250;
+  TH2F* h_PE100ns_vs_MuPf_100_250;
+  TH1F* h_dT;
   TH1F* h_dT_PEcut;
+  TH1F* h_dT_PEcut_MuPEcut;
   TH1F* h_dT_PEcutLow;
   TH1F* h_dT_PEcutBelow20pe;
   TH1F* h_dT_PEcutBelow20pe_stopTrk;
@@ -248,6 +256,8 @@ private:
   TH2F* h_TrackEnergy_vs_PE_Total;
   TH2I* h_InFiducialVolume;
   TH1F* h_SecondTrackOffset;
+  TH2F* h_ResRange_dEdx_mu;
+  TH2F* h_ResRange_dEdx_michel;
   TH1F* h_AverageWaveform_Michel;
   TH1F* h_AverageWaveform_BG;
   TH1F* h_AverageWaveform_BG_lowPromptPE;
@@ -322,8 +332,11 @@ private:
   std::vector<float>      vTrackPIDA;
   std::vector<float>      vTrackEnergy;
   std::vector<float>      vTrackLength;
-  //std::vector<std::vector<float>> vTrack_vdQdx;
-  //std::vector<std::vector<float>> vTrack_vResidualRange;
+  std::vector< size_t >   vTrack_NumberdEdx;
+  std::vector< float >    Mu_ResR;
+  std::vector< float >    Michel_ResR;
+  std::vector< float >    Mu_dEdx;
+  std::vector< float >    Michel_dEdx;
 
   bool                    IsSinglePassingTrack;
   bool                   IsSingleStoppingTrack;
@@ -339,6 +352,7 @@ private:
   float                   MuTrackEnergy;
   int                     MuAmplitude;
   float                   MuADC_100ns;
+  float                   MuTrackEnd_DistToCenter;
   float                   SecondTrackProximity;
   float                   SecondTrackLength;
   float                   SecondTrackEnergy;
@@ -369,9 +383,9 @@ fTrigFiltAlg(pset)
   N_PEs = 0;
   T_PEs = 0;
 
-  vdEdx.reserve(1000);
-
   hit_info.resize(fIntegrationWindows.size()+1);
+  
+  resR_histRange = 5.;
 
   if(!bUseTrackInformation) fSaveAllTrackInfoToTree = false;
 
@@ -380,7 +394,7 @@ fTrigFiltAlg(pset)
  
   // TO DO: make this a fcl parameter 
   region_centerpoint.SetXYZ(23.5,0.,45.);
-  region_radius = 10.;
+  region_radius = 15.;
 
   // Some instances of OpHitBuilder were created solely 
   // to save summed/average waveforms:
@@ -446,6 +460,7 @@ void MichelWfmReco::produce(art::Event & e)
   IsCleanBeamWaveform         = false;
   IsBeamEvent                 = -9;
   NumTracks                   = -9;
+  MuTrackEnd_DistToCenter     = -9;
   IsSingleStoppingTrack       = false;
   IsSinglePassingTrack        = false;
   StoppingTrackZenithAngle    = -1;
@@ -514,11 +529,14 @@ void MichelWfmReco::produce(art::Event & e)
   vTrackLength.clear();
   vTrackPID.clear();
   vTrackPIDA.clear();
-  //vTrack_vdQdx.clear();
-  //vTrack_vResidualRange.clear();
+  Mu_dEdx.clear();
+  Mu_ResR.clear();
+  Michel_dEdx.clear();
+  Michel_ResR.clear();
   vIsTrackStopping.clear();
   vIsTrackPassing.clear();
   vIsTrackContained.clear();
+  closest_track_i = -9;
 
   if(fSaveHitWfmsToTree){
     for(unsigned int i=0; i<HitWaveform.size(); i++) HitWaveform[i] = 0;
@@ -580,7 +598,7 @@ void MichelWfmReco::produce(art::Event & e)
   }
   // If we somehow didn't get the ETL, skip the event
   if( !GotETL ) return;
-
+  
   N_Events++;
 
   // Classify as beam or non-beam event
@@ -595,28 +613,28 @@ void MichelWfmReco::produce(art::Event & e)
   WaveformBaselineRMS = tmp[1];
   if(bVerbose) std::cout<<"Baseline: "<<WaveformBaseline<<"  RMS: "<<WaveformBaselineRMS<<"\n";
 
-  // Perform hit-finding/filtering
-  vHitTimes = fOpHitBuilderAlg.GetHits(ETL_opdetpulse);
-  NumHits = vHitTimes.size();
-  if(bVerbose) {
-    std::cout << "Performing optical hitfinding...\n"; 
-    std::cout << "We found "<<NumHits<<" hits\n";
-  }
-  
-  // If exactly 2 hits, measure their time difference
-  if(NumHits == 2){
-    dT = float(vHitTimes[1] - vHitTimes[0]);
-    if(bVerbose) std::cout<<"    DeltaT = "<<dT<<std::endl;
-  }
-  
+  // Perform hit-finding/filtering, and store hit times into
+  // a temporary vector (which will be replaced later after 
+  // some filtering is done).
+  std::vector<short> vHitTimesTmp = fOpHitBuilderAlg.GetHits(ETL_opdetpulse);
+  NumHits = vHitTimesTmp.size();
+ 
   // For each hit, do all the needed reconstruction in single function call
   for (int i=0; i<NumHits; i++){
-    if(bVerbose) std::cout<<"----- Processing hit "<<i<<"    t = "<<vHitTimes[i]<<" ------\n";
-    if( i==0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i], 0, fIntegrationWindows);
-    if( i >0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimes[i], vHitTimes[i-1], fIntegrationWindows);
-    
-    h_HitTime       ->Fill(vHitTimes[i]);
-    if(IsBeamEvent) h_HitTime_beam->Fill(vHitTimes[i]);
+    if(bVerbose) std::cout<<"----- Processing hit "<<i<<"    t = "<<vHitTimesTmp[i]<<" ------\n";
+    if( i==0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimesTmp[i], 0, fIntegrationWindows);
+    if( i >0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimesTmp[i], vHitTimesTmp[i-1], fIntegrationWindows);
+   
+    // Skip if prompt PE doesn't pass threshold
+    if( hit_info[1]/fSinglePE < fHitPromptPEThreshLow ) {
+      if(bVerbose) std::cout<<"Hit doesn't pass prompt PE threshold -- skipping.\n";
+      continue;
+    }
+
+    vHitTimes       .push_back(vHitTimesTmp[i]);
+    hit_i           = vHitTimes.size() - 1; // iterator for easier tracking
+    h_HitTime       ->Fill(vHitTimes[hit_i]);
+    if(IsBeamEvent) h_HitTime_beam->Fill(vHitTimes[hit_i]);
     vHitAmplitude.push_back(hit_info[0]);
     vHitADC_100ns   .push_back(hit_info[1]);
     vHitADC_250ns   .push_back(hit_info[2]);
@@ -628,11 +646,11 @@ void MichelWfmReco::produce(art::Event & e)
     vHitPE_500ns    .push_back(hit_info[3]/fSinglePE);
     vHitPE_1000ns   .push_back(hit_info[4]/fSinglePE);
     vHitPE_Total    .push_back(hit_info[5]/fSinglePE);
-    vHitPf          .push_back(vHitADC_100ns[i]/vHitADC_Total[i]);
-    vHitIsAtTrigger .push_back( fabs(vHitTimes[i]-PostPercentMark) < 0.015*NSamples );
+    vHitPf          .push_back(vHitADC_100ns[hit_i]/vHitADC_Total[hit_i]);
+    vHitIsAtTrigger .push_back( fabs(vHitTimes[hit_i]-PostPercentMark) < 0.015*NSamples );
     
     if(bVerbose){
-      std::cout<<"   amp: "<<vHitAmplitude[i]<<"   integrals: ";
+      std::cout<<"   amp: "<<vHitAmplitude[hit_i]<<"   integrals: ";
       for( size_t ii=0; ii<fIntegrationWindows.size(); ii++) std::cout<<hit_info[ii+1]<<"  ";
       std::cout<<"\n";
     }
@@ -644,37 +662,33 @@ void MichelWfmReco::produce(art::Event & e)
     vPrepulseReducedChi2.push_back(fOpHitBuilderAlg.fit_ReducedChi2);
     
     // Fill some histograms
-    h_HitAmplitude  ->Fill(vHitAmplitude[i]);
-    h_HitPE_100ns   ->Fill(vHitPE_100ns[i]);
-    if(IsBeamEvent && vHitTimes[i] < 8000) h_Pf_100_500_vs_PE_500ns_BeamPreTrig->Fill(vHitADC_100ns[i]/vHitADC_500ns[i],vHitPE_500ns[i]);
-    if( !IsBeamEvent && dT > 0. ) {
-      h_dT_vs_MuPE_100ns->Fill(dT,vHitPE_100ns[0]);
-      if( dT > 500. ) h_Pf_100_500_vs_PE_500ns_Mu->Fill(vHitADC_100ns[0]/vHitADC_500ns[0],vHitPE_500ns[0]);
-    }
+    h_HitAmplitude  ->Fill(vHitAmplitude[hit_i]);
+    h_HitPE_100ns   ->Fill(vHitPE_100ns[hit_i]);
+    if(IsBeamEvent && vHitTimes[hit_i] < 8000) h_Pf_100_500_vs_PE_500ns_BeamPreTrig->Fill(vHitADC_100ns[hit_i]/vHitADC_500ns[hit_i],vHitPE_500ns[hit_i]);
 
-    float Pf_100_500 = vHitADC_100ns[i]/vHitADC_500ns[i];
+    float Pf_100_500 = vHitADC_100ns[hit_i]/vHitADC_500ns[hit_i];
 
     // If this is the trigger-associated hit outside beamwindow, add to PSD plots
-    if( vHitIsAtTrigger[i] && !IsBeamEvent ){
-      h_Pf_100_500_vs_PE_500ns  ->Fill(Pf_100_500,vHitPE_500ns[i]);
-      h_Pf_100_500_vs_PE_Total  ->Fill(Pf_100_500,vHitPE_Total[i]);
-      h_Pf_100_500_vs_Energy    ->Fill(Pf_100_500,vHitPE_Total[i]/fLY);
-      h_Pf_100_1000_vs_PE_Total  ->Fill(vHitADC_100ns[i]/vHitADC_1000ns[i],vHitPE_Total[i]);
-      h_Pf_100_1000_vs_Energy   ->Fill(vHitADC_100ns[i]/vHitADC_1000ns[i],vHitPE_Total[i]/fLY);
-      h_Pf_vs_PE_Total           ->Fill(vHitPf[i],vHitPE_Total[i]);
-      h_Pf_vs_Energy            ->Fill(vHitPf[i],vHitPE_Total[i]/fLY);
-      h_Pf_vs_Energy_LowE       ->Fill(vHitPf[i],vHitPE_Total[i]/fLY);
+    if( vHitIsAtTrigger[hit_i] && !IsBeamEvent ){
+      h_Pf_100_500_vs_PE_500ns  ->Fill(Pf_100_500,vHitPE_500ns[hit_i]);
+      h_Pf_100_500_vs_PE_Total  ->Fill(Pf_100_500,vHitPE_Total[hit_i]);
+      h_Pf_100_500_vs_Energy    ->Fill(Pf_100_500,vHitPE_Total[hit_i]/fLY);
+      h_Pf_100_1000_vs_PE_Total  ->Fill(vHitADC_100ns[hit_i]/vHitADC_1000ns[hit_i],vHitPE_Total[hit_i]);
+      h_Pf_100_1000_vs_Energy   ->Fill(vHitADC_100ns[hit_i]/vHitADC_1000ns[hit_i],vHitPE_Total[hit_i]/fLY);
+      h_Pf_vs_PE_Total           ->Fill(vHitPf[hit_i],vHitPE_Total[hit_i]);
+      h_Pf_vs_Energy            ->Fill(vHitPf[hit_i],vHitPE_Total[hit_i]/fLY);
+      h_Pf_vs_Energy_LowE       ->Fill(vHitPf[hit_i],vHitPE_Total[hit_i]/fLY);
     }
     
     // Separate into high-purity signal and BG ("Rn") groups
     // Line in "Pf_100_500 vs. PE_500" phase space
     TF1 f_SigLine("f_SigLine","-30.0*x + 55",0.,1.);
     TF1 f_BGLine("f_BGLine","-27.92*x + 42.62",0.,1.);
-    if( vHitPE_100ns[i] > 0 && vHitPf[i] > 0 && vHitPf[i] < 1. ) {
-      if( vHitPE_500ns[i] > f_SigLine.Eval(Pf_100_500) ) {
+    if( vHitPE_100ns[hit_i] > 0 && vHitPf[hit_i] > 0 && vHitPf[hit_i] < 1. ) {
+      if( vHitPE_500ns[hit_i] > f_SigLine.Eval(Pf_100_500) ) {
         vIsInSignalPopulation .push_back(true);
         vIsInBGPopulation     .push_back(false);
-      } else if ( vHitPE_500ns[i] < f_BGLine.Eval(Pf_100_500) ){
+      } else if ( vHitPE_500ns[hit_i] < f_BGLine.Eval(Pf_100_500) ){
         vIsInSignalPopulation .push_back(false);
         vIsInBGPopulation     .push_back(true);
       } else {
@@ -696,6 +710,20 @@ void MichelWfmReco::produce(art::Event & e)
     */
   
   } 
+
+  // Redefine NumHits
+  NumHits = vHitTimes.size();
+  
+  // If exactly 2 hits, measure their time difference
+  if(NumHits == 2){
+    dT = float(vHitTimes[1] - vHitTimes[0]);
+    if(bVerbose) std::cout<<"    DeltaT = "<<dT<<std::endl;
+    if( !IsBeamEvent ) {
+      h_dT_vs_MuPE_100ns->Fill(dT,vHitPE_100ns[0]);
+      if( dT > 500. ) h_Pf_100_500_vs_PE_500ns_Mu->Fill(vHitADC_100ns[0]/vHitADC_500ns[0],vHitPE_500ns[0]);
+    }
+  }
+
  
   // Is clean beam waveform?
   if( (IsBeamEvent)&&(NumHits == 1)&& vHitIsAtTrigger[0] ){
@@ -731,29 +759,26 @@ void MichelWfmReco::produce(art::Event & e)
       // Get the recob::Track object and record its endpoint/vertex
       art::Ptr< recob::Track > TheTrackPtr(TrackHandle,track_index);
       recob::Track TheTrack = *TheTrackPtr;
-      vTrackEnd.push_back(TheTrack.End());
-      vTrackVertex.push_back(TheTrack.Vertex());
-      vTrackLength.push_back(TheTrack.Length());
-    
-      vTrackVertex_x.push_back(TheTrack.Vertex().X());
-      vTrackVertex_y.push_back(TheTrack.Vertex().Y());
-      vTrackVertex_z.push_back(TheTrack.Vertex().Z());
-      vTrackEnd_x.push_back(TheTrack.End().X()); 
-      vTrackEnd_y.push_back(TheTrack.End().Y()); 
-      vTrackEnd_z.push_back(TheTrack.End().Z()); 
+      vTrackEnd       .push_back(TheTrack.End());
+      vTrackVertex    .push_back(TheTrack.Vertex());
+      vTrackLength    .push_back(TheTrack.Length());
+      vTrackVertex_x  .push_back(TheTrack.Vertex().X());
+      vTrackVertex_y  .push_back(TheTrack.Vertex().Y());
+      vTrackVertex_z  .push_back(TheTrack.Vertex().Z());
+      vTrackEnd_x     .push_back(TheTrack.End().X()); 
+      vTrackEnd_y     .push_back(TheTrack.End().Y()); 
+      vTrackEnd_z     .push_back(TheTrack.End().Z()); 
 
-      bool endIsInFid = IsPointInFiducialVolume(TheTrack.End());
-      bool vertexIsInFid = IsPointInFiducialVolume(TheTrack.Vertex());
-      bool temp_flag = ((!endIsInFid && vertexIsInFid)||(endIsInFid && !vertexIsInFid));
-      
       // Is track stopping, passing, or contained?
-      vIsTrackStopping.push_back( temp_flag );
-      vIsTrackPassing.push_back( !endIsInFid && !vertexIsInFid);
-      vIsTrackContained.push_back( endIsInFid && vertexIsInFid );
+      bool endIsInFid     = IsPointInFiducialVolume(TheTrack.End());
+      bool vertexIsInFid  = IsPointInFiducialVolume(TheTrack.Vertex());
+      bool temp_flag      = ((!endIsInFid && vertexIsInFid)||(endIsInFid && !vertexIsInFid));
+      vIsTrackStopping    .push_back( temp_flag );
+      vIsTrackPassing     .push_back( !endIsInFid && !vertexIsInFid);
+      vIsTrackContained   .push_back( endIsInFid && vertexIsInFid );
       
-      /*
       if(bVerbose){
-        std::cout<<"  track "<<track_index<<" vertex("
+        std::cout<<"  track "<<track_index<<", length "<<TheTrack.Length()<<"  vertex("
         << TheTrack.Vertex().X() <<"," 
         << TheTrack.Vertex().Y() << "," 
         << TheTrack.Vertex().Z() << ")->InFiducial()="
@@ -764,10 +789,8 @@ void MichelWfmReco::produce(art::Event & e)
         << TheTrack.End().Z() << ")->InFiducial()="
         << endIsInFid << std::endl;
       }
-      */
-
+      
       h_InFiducialVolume->Fill(vertexIsInFid,endIsInFid);
-
       h_TrackNode_zx->Fill(TheTrack.Vertex().Z(),TheTrack.Vertex().X());
       h_TrackNode_zx->Fill((float)TheTrack.End().Z(),(float)TheTrack.End().X());
       h_TrackNode_zy->Fill((float)TheTrack.Vertex().Z(),(float)TheTrack.Vertex().Y());
@@ -776,53 +799,32 @@ void MichelWfmReco::produce(art::Event & e)
 
       // ################################################### 
       // ### Looping over calorimetry info for the track ###
-      // ################################################### 
+      // ###   ([0] = induction, [1] = collection)
       if( fmcal.isValid() ){
         std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(track_index);
-        // calos[0] is from induction plane
-        // calos[1] is from collection plane
         vTrackEnergy.push_back(calos[1]->KineticEnergy());
-        //if(bVerbose) std::cout<<"  KE = "<<calos[1]->KineticEnergy()<<std::endl; 
-        
-        /* NOT WORKING YET
-        // Record dQdx for points along track (limit 1000, a la AnaTree)
-        vdEdx.clear();
-        vResidualRange.clear();
-        for(size_t j=0; j<calos[1]->dEdx().size(); j++){
-          if(j>=1000) continue; 
-          vdEdx         .push_back(calos[1]->dEdx()[j]);
-          vResidualRange.push_back(calos[1]->ResidualRange()[j]);
-          std::cout<<"Calo point "<<j<<"/"<<calos[1]->dEdx().size()<<"    dEdx : "<<vdEdx[j]<<"   Res range: "<<vResidualRange[j]<<"\n";
-        }
-        vTrack_vdQdx.push_back(vdEdx);
-        vTrack_vResidualRange.push_back(vResidualRange);
-        */
-
+        if(bVerbose) std::cout<<"  KE = "<<calos[1]->KineticEnergy()<<std::endl; 
       } else {
-        //if(bVerbose) std::cout<<"  KE = undefined"<<std::endl;
-        vTrackEnergy.push_back(-99.);
-        //vTrack_vdQdx.push_back(vdEdx);
-        //vTrack_vResidualRange.push_back(vResidualRange);
+        if(bVerbose) std::cout<<"  KE = undefined"<<std::endl;
+        vTrackEnergy          .push_back(-99.);
       }
    
       // ################################################## 
       // ### Looping over PID information for the track ###
-      // ################################################## 
+      // ###   ([0] = induction, [1] = collection)
       if (fmpid.isValid()){
         std::vector<art::Ptr<anab::ParticleID> > pids = fmpid.at(track_index);
-        // pids[0] = induction
-        // pids[1] = collection
         if (!pids[1]->PlaneID().isValid) {
-        //if(bVerbose) std::cout<<"  pid["<<track_index<<"]: undefined\n";
+          if(bVerbose) std::cout<<"  pid["<<track_index<<"]: undefined\n";
           vTrackPID.push_back(-99); 
           vTrackPIDA.push_back(-99);
           continue;
         }
         vTrackPID.push_back(pids[1]->Pdg());
         vTrackPIDA.push_back(pids[1]->PIDA());
-        //if(bVerbose) std::cout<<"  pid["<<track_index<<"]: "<<pids[1]->Pdg()<<"\n";
+        if(bVerbose) std::cout<<"  pid["<<track_index<<"]: "<<pids[1]->Pdg()<<"\n";
       } else {
-        //if(bVerbose) std::cout<<"  pid["<<track_index<<"]: undefined\n";
+        if(bVerbose) std::cout<<"  pid["<<track_index<<"]: undefined\n";
         vTrackPID.push_back(-99);
         vTrackPIDA.push_back(-99);
       }
@@ -833,8 +835,8 @@ void MichelWfmReco::produce(art::Event & e)
     // --------------------------------------
     // Higher-level track filtering:
     
-    // Require no more than two tracks in the event:
-    if( NumTracks <= 2 ) {
+    // Limit number of total tracks:
+    if( NumTracks <= 4 ) {
       
       flag = false;
   
@@ -847,26 +849,38 @@ void MichelWfmReco::produce(art::Event & e)
         // assumption for cosmic muons).
         TVector3 vertex;
         TVector3 end;
-        if( vTrackVertex[i].Y() > vTrackEnd[i].Y()  ) { 
-          vertex  = vTrackVertex[i]; 
-          end     = vTrackEnd[i];
+        if( !IsBeamEvent ){
+          if( vTrackVertex[i].Y() > vTrackEnd[i].Y()  ) { 
+            vertex  = vTrackVertex[i]; 
+            end     = vTrackEnd[i];
+          } else {
+            vertex  = vTrackEnd[i];
+            end     = vTrackVertex[i];
+          }
+        // For BEAM events, whichever has lower Z value is vertex.
         } else {
-          vertex  = vTrackEnd[i];
-          end     = vTrackVertex[i];
+          if( vTrackVertex[i].Z() < vTrackEnd[i].Z()  ) { 
+            vertex  = vTrackVertex[i]; 
+            end     = vTrackEnd[i];
+          } else {
+            vertex  = vTrackEnd[i];
+            end     = vTrackVertex[i];
+          }
+          
         }
       
         // Fill histograms
         h_TrackEnd_x->Fill(end.X());
-        h_TrackEnd_y->Fill((float)end.Y());
-        h_TrackEnd_z->Fill((float)end.Z());
-        h_TrackVertex_x->Fill((float)vertex.X());
-        h_TrackVertex_y->Fill((float)vertex.Y());
-        h_TrackVertex_z->Fill((float)vertex.Z());
+        h_TrackEnd_y->Fill(end.Y());
+        h_TrackEnd_z->Fill(end.Z());
+        h_TrackVertex_x->Fill(vertex.X());
+        h_TrackVertex_y->Fill(vertex.Y());
+        h_TrackVertex_z->Fill(vertex.Z());
 
-         
+        
         // If there's a single stopping track, fill Mu variables
-        if( !flag && vIsTrackStopping[i] ) {
-          
+
+        if( !flag && vIsTrackStopping[i] ) {      
           // If there was already a stopping track, this disqualifies 
           // the event.
           if( IsSingleStoppingTrack ){
@@ -902,8 +916,8 @@ void MichelWfmReco::produce(art::Event & e)
           }
         
         }
-      } 
-    }
+      }// <-- end loop over tracks 
+    }// <-- endif(NumTracks = X)
  
     // Look for single passing tracks
     if( (NumTracks == 1)&&( vIsTrackPassing[0])) {
@@ -925,18 +939,23 @@ void MichelWfmReco::produce(art::Event & e)
       PassingTrackZenithAngle = tmp.Angle(vert);  
     }
   
-    // If there was a stopping "muon" and a second track, check
-    // to see if either of its endpoints is close to muon endpoint.
-    if( IsSingleStoppingTrack && NumTracks == 2 ) {
+    // If there was a stopping "muon" and any other tracks check
+    // to see if either of their endpoints are close to muon endpoint.
+    if( IsSingleStoppingTrack && NumTracks > 1) {
+      closestSoFar = 999;
       for( int i=0; i<NumTracks; i++){
         if( i != MuTrackIndex ){
           SecondTrackProximity = std::min( 
             (vTrackVertex[i] - MuTrackEnd).Mag(),
             (vTrackEnd[i]   - MuTrackEnd).Mag());
+          if( SecondTrackProximity < closestSoFar ) {
+            closestSoFar    = SecondTrackProximity;
+            closest_track_i = i;
+            IsSecondTrackContained = vIsTrackContained[i];
+            SecondTrackLength = vTrackLength[i];
+            SecondTrackEnergy = vTrackEnergy[i];
+          }
           h_SecondTrackOffset->Fill(SecondTrackProximity);
-          SecondTrackLength = vTrackLength[i];
-          SecondTrackEnergy = vTrackEnergy[i];
-          IsSecondTrackContained = vIsTrackContained[i];
         }
       }  
     }
@@ -947,7 +966,66 @@ void MichelWfmReco::produce(art::Event & e)
       MuADC_100ns = vHitADC_100ns[0];
     }
 
+
+    // -------------------------------------------------
+    // dE/dx
+    //
+    if( IsSingleStoppingTrack && fmcal.isValid() ){
+        
+        std::vector<art::Ptr<anab::Calorimetry> > calos_Mu = fmcal.at(MuTrackIndex);
+        size_t              N_dEdx = calos_Mu[1]->dEdx().size();
+        if(bVerbose) std::cout<<"Beginning dE/dx scan of the mu-candidate track, dEdx().size() = "<<N_dEdx<<"\n";
+       
+        // If we correctly assigned vertex/endpoint above,
+        // go ahead and fill the dEdx and Residual Range containers
+        if( vTrackVertex_y[MuTrackIndex] > vTrackEnd_y[MuTrackIndex] ){
+          for(size_t i=0; i < N_dEdx; i++){
+            Mu_ResR  .push_back(calos_Mu[1]->ResidualRange()[i]);
+            Mu_dEdx  .push_back(calos_Mu[1]->dEdx()[i]);
+            if(vTrackLength[MuTrackIndex] >= resR_histRange) h_ResRange_dEdx_mu ->Fill(Mu_ResR[i],Mu_dEdx[i]);
+            //if(bVerbose) std::cout<<"Mu track candidate resRange "<<Mu_ResR[i]<<"  dE/dx "<<Mu_dEdx[i]<<"\n";
+          }
+        }
+
+        // If a second track was found within 2cm of muon endpoint
+        // also look at its dEdx
+        if( closest_track_i >= 0 && SecondTrackProximity <= 2.)
+        {
+          std::vector<art::Ptr<anab::Calorimetry> > calos_Michel = fmcal.at(closest_track_i);
+          size_t            N_dEdx = calos_Michel[1]->dEdx().size();
+          if(bVerbose) std::cout<<"Beginning dE/dx scan of the secondary track, dEdx().size() = "<<N_dEdx<<"\n";
+          
+          // In this case, we need to call the "vertex" whichever endpoint is
+          // closest to the muon's endpoint
+          float dv = (vTrackVertex[closest_track_i] -MuTrackEnd).Mag();
+          float de = (vTrackEnd[closest_track_i]    -MuTrackEnd).Mag();
+          // If larsoft got it right, great, things are normal
+          if( dv < de ){
+            for(size_t i=0; i < N_dEdx; i++){
+              Michel_ResR .push_back(calos_Michel[1]->ResidualRange()[i]);
+              Michel_dEdx .push_back(calos_Michel[1]->dEdx()[i]);
+              if(vTrackLength[closest_track_i] >= resR_histRange) h_ResRange_dEdx_michel ->Fill(Michel_ResR[i],Michel_dEdx[i]);
+              //if(bVerbose) std::cout<<"Michel track candidate, length ="<<vTrackLength[closest_track_i]<<":  resRange "<<Michel_ResR[i]<<"  dE/dx "<<Michel_dEdx[i]<<"\n";
+            }  
+          }
+          // If larsoft says the vertex is actually the endpoint further away from 
+          // the muon endpoint, then we need to account for this 
+          /*
+          else {
+            for(size_t i=0; i < N_dEdx; i++){
+              Michel_ResR .push_back(calos_Michel[1]->ResidualRange()[N_dEdx-1]-calos_Michel[1]->ResidualRange()[N_dEdx-1-i]+calos_Michel[1]->ResidualRange()[0]);
+              Michel_dEdx .push_back(calos_Michel[1]->dEdx()[N_dEdx-1-i]);
+              if(vTrackLength[closest_track_i] >= resR_histRange) h_ResRange_dEdx_michel ->Fill(Michel_ResR[i],Michel_dEdx[i]);
+            }
+          }
+          */
+        }    
+    }// <-- endif single stopping track
+
+
   } //endif bUseTrackInformation
+
+
 
   if( (IsBeamEvent)&&(NumTracks==1)&&(NumHits==1)&&(vTrackEnergy[0]>0.)&&(vHitAmplitude[0]<190.)&&(vIsTrackPassing[0])){
     h_TrackEnergy_vs_PE_Total  ->  Fill(vTrackEnergy[0],vHitPE_Total[0]);
@@ -998,22 +1076,31 @@ void MichelWfmReco::produce(art::Event & e)
     N_MichelCandidates++;
     h_EventTypeCount->Fill(1);
     h_Michel_IsInSignal->Fill((int)vIsInSignalPopulation[1]);
-
-    h_Amplitude               ->Fill(Amplitude);
-    h_PE_100ns                ->Fill(PE_100ns);
-    h_PE_Total                ->Fill(PE_Total);
-    h_PE_100ns_vs_Amplitude   ->Fill(PE_100ns,Amplitude);
+   
+    // Fill histograms for possible PSD of initial muon 
+    h_MuPf_100_250_vs_MuPE250ns ->Fill(vHitADC_100ns[0]/vHitADC_250ns[0],vHitPE_250ns[0]);
+    h_dT_vs_MuPf_100_250        ->Fill(dT,              vHitADC_100ns[0]/vHitADC_250ns[0]);
+    h_PE100ns_vs_MuPf_100_250   ->Fill(vHitPE_100ns[1], vHitADC_100ns[0]/vHitADC_250ns[0]);
     
+    // Fill histograms of Michel pulse properties
+    h_Amplitude                     ->Fill(Amplitude);
+    h_PE_100ns                      ->Fill(PE_100ns);
+    h_PE_Total                      ->Fill(PE_Total);
+    h_PE_100ns_vs_Amplitude         ->Fill(PE_100ns,Amplitude);
     h_Pf_100_500_vs_PE_500ns_Michel ->Fill(vHitADC_100ns[1]/vHitADC_500ns[1],vHitPE_500ns[1]);
     h_Pf_100_500_vs_PE_Total_Michel ->Fill(vHitADC_100ns[1]/vHitADC_500ns[1],vHitPE_Total[1]);
     h_Pf_100_500_vs_Energy_Michel   ->Fill(vHitADC_100ns[1]/vHitADC_500ns[1],vHitPE_Total[1]/fLY);
-    h_Pf_vs_PE_Total_Michel   ->Fill(vHitPf[1],vHitPE_Total[1]);
-    h_Pf_vs_Energy_Michel     ->Fill(vHitPf[1],vHitPE_Total[1]/fLY);
-    h_dT_vs_Energy            ->Fill(dT,vHitPE_Total[1]/fLY);
+    h_Pf_vs_PE_Total_Michel         ->Fill(vHitPf[1],vHitPE_Total[1]);
+    h_Pf_vs_Energy_Michel           ->Fill(vHitPf[1],vHitPE_Total[1]/fLY);
+    h_dT_vs_Energy                  ->Fill(dT,vHitPE_Total[1]/fLY);
+    h_dT                            ->Fill(dT);
     
-    if( PE_100ns >= fPromptLightDtCut )                   h_dT_PEcut     ->Fill(dT);
-    if( (PE_100ns > 0.)&&(PE_100ns < fPromptLightDtCut))  h_dT_PEcutLow  ->Fill(dT);
-    if( (PE_100ns > 0.)&&(PE_100ns < 20) ) {            
+    if( PE_100ns >= fPromptLightDtCut ) {
+      h_dT_PEcut     ->Fill(dT);
+      if( vHitPE_100ns[0] < 100. ) h_dT_PEcut_MuPEcut->Fill(dT);
+    }
+    if( (PE_100ns > 0.)&&(PE_100ns < fPromptLightDtCut)&&(vHitPE_100ns[0]<100.))  h_dT_PEcutLow  ->Fill(dT);
+    if( (PE_100ns > 0.)&&(PE_100ns < 20)&&(vHitPE_100ns[0]<100.)) {            
       h_dT_PEcutBelow20pe->Fill(dT);
       if( IsSingleStoppingTrack ) h_dT_PEcutBelow20pe_stopTrk->Fill(dT);
       if( IsSinglePassingTrack  ) h_dT_PEcutBelow20pe_thruTrk->Fill(dT);
@@ -1035,7 +1122,8 @@ void MichelWfmReco::produce(art::Event & e)
       h_dT_vs_Energy_stopTrk->Fill(dT,PE_Total/fLY);
       h_PE_100ns_stoppingMu->Fill(PE_100ns);
       h_dT_stoppingMu->Fill(dT);
-      if( (MuTrackEnd-region_centerpoint).Mag() <= region_radius) {
+      MuTrackEnd_DistToCenter = (MuTrackEnd-region_centerpoint).Mag();
+      if( MuTrackEnd_DistToCenter <= region_radius) {
         h_PE_100ns_region->Fill(PE_100ns);
         h_PE_Total_region->Fill(PE_Total);
         h_Energy_region->Fill(PE_Total/fLY);
@@ -1119,6 +1207,7 @@ void MichelWfmReco::beginJob()
   MichelDataTree ->Branch("WaveformBaselineRMS",&WaveformBaselineRMS,"WaveformBaselineRMS/F");
   MichelDataTree ->Branch("NumHits",&NumHits,"NumHits/I");
   MichelDataTree ->Branch("HitTimes",&vHitTimes);
+  MichelDataTree ->Branch("HitIsAtTrigger",&vHitIsAtTrigger);
   MichelDataTree ->Branch("HitAmplitude",&vHitAmplitude);
   MichelDataTree ->Branch("HitADC_100ns",&vHitADC_100ns);
   MichelDataTree ->Branch("HitADC_250ns",&vHitADC_250ns);
@@ -1143,6 +1232,9 @@ void MichelWfmReco::beginJob()
   MichelDataTree ->Branch("ADC_100ns",&ADC_100ns,"ADC_100ns/F");
   MichelDataTree ->Branch("ADC_Total",&ADC_Total,"ADC_Total/F");
   MichelDataTree ->Branch("PE_100ns",&PE_100ns,"PE_100ns/F");
+  MichelDataTree ->Branch("PE_250ns",&PE_100ns,"PE_250ns/F");
+  MichelDataTree ->Branch("PE_500ns",&PE_100ns,"PE_500ns/F");
+  MichelDataTree ->Branch("PE_1000ns",&PE_100ns,"PE_1000ns/F");
   MichelDataTree ->Branch("PE_Total",&PE_Total,"PE_Total/F");
   MichelDataTree ->Branch("Pf",&Pf,"Pf/F");
   
@@ -1163,8 +1255,11 @@ void MichelWfmReco::beginJob()
       MichelDataTree ->Branch("TrackPIDA",&vTrackPIDA);
       MichelDataTree ->Branch("TrackLength",&vTrackLength);
       MichelDataTree ->Branch("TrackEnergy",&vTrackEnergy);
-      //MichelDataTree ->Branch("Track_vdQdx",&vTrack_vdQdx);
-      //MichelDataTree ->Branch("Track_vResidualRange",&vTrack_vResidualRange);
+      
+      MichelDataTree ->Branch("Mu_dEdx",&Mu_dEdx);
+      MichelDataTree ->Branch("Mu_ResRange",&Mu_ResR);
+      MichelDataTree ->Branch("Michel_dEdx",&Michel_dEdx);
+      MichelDataTree ->Branch("Michel_ResRange",&Michel_ResR);
     }
     MichelDataTree ->Branch("IsSinglePassingTrack",&IsSinglePassingTrack,"IsSinglePassingTrack/I");
     MichelDataTree ->Branch("IsSingleStoppingTrack",&IsSingleStoppingTrack,"IsStoppingTrack/I");
@@ -1178,6 +1273,7 @@ void MichelWfmReco::beginJob()
     MichelDataTree ->Branch("MuTrackEnd_z",&MuTrackEnd_z,"MuTrackEnd_z/F");
     MichelDataTree ->Branch("MuTrackLength",&MuTrackLength,"MuTrackLength/F");
     MichelDataTree ->Branch("MuTrackEnergy",&MuTrackEnergy,"MuTrackEnergy/F");
+    MichelDataTree ->Branch("MuTrackEnd_DistToCenter",&MuTrackEnd_DistToCenter,"MuTrackEnd_DistToCenter/F");
     MichelDataTree ->Branch("SecondTrackProximity",&SecondTrackProximity,"SecondTrackProximity/F"); 
     MichelDataTree ->Branch("SecondTrackLength",&SecondTrackLength,"SecondTrackLength/F"); 
     MichelDataTree ->Branch("SecondTrackEnergy",&SecondTrackEnergy,"SecondTrackEnergy/F"); 
@@ -1223,10 +1319,34 @@ void MichelWfmReco::beginJob()
   h_dT_vs_MuPE_100ns        = tfs->make<TH2F>("dT_vs_MuPE_100ns","#Deltat vs. #mu prompt PE (100ns);#Deltat [ns];Prompt light from muon [pe]",75,0,7500,120,0,1200);
   h_dT_vs_MuPE_100ns        ->SetOption("colz");
   
+  h_MuPf_100_250_vs_MuPE250ns  = tfs->make<TH2F>("MuPf_100_250_vs_MuPE250ns","Prompt fraction (100ns/250ns) for #mu-candidate pulses in Michel-like events;#mu f_{P};#mu light in 250ns [pe]",
+    200,0.,1.2,
+    200,0.,300);
+  h_MuPf_100_250_vs_MuPE250ns  ->SetOption("colz");
+  
+  h_dT_vs_MuPf_100_250  = tfs->make<TH2F>("dT_vs_MuPf_100_250","#Deltat vs. f(100/250) for #mu-candidate pulses in Michel-like events;#Deltat;#mu f_{P}",
+    150, 0.,7500, 
+    200,0.,1.2);
+  h_dT_vs_MuPf_100_250  ->SetOption("colz");
+
+  h_PE100ns_vs_MuPf_100_250 = tfs->make<TH2F>("PE100ns_vs_MuPf_100_250","Michel prompt light (100ns) vs. #mu f(100/250);Michel prompt light [pe];#mu f_{P}",
+    200,0.,140.,
+    200,0.,1.2);
+  h_PE100ns_vs_MuPf_100_250 ->SetOption("colz");
+
+  h_dT     = tfs->make<TH1F>("dT","#Deltat", 750,0., 7500.);
+  h_dT     ->GetXaxis()->SetTitle("ns");
+  h_dT     ->GetYaxis()->SetTitle("Counts");
+  
   sprintf(buffer,"#Delta t (prompt light > %d pe)",fPromptLightDtCut); 
   h_dT_PEcut     = tfs->make<TH1F>("dT_PEcut",buffer, 750,0., 7500.);
   h_dT_PEcut     ->GetXaxis()->SetTitle("ns");
   h_dT_PEcut     ->GetYaxis()->SetTitle("Counts");
+  
+  sprintf(buffer,"#Delta t (prompt light > %d pe, #mu prompt light < 100 pe)",fPromptLightDtCut); 
+  h_dT_PEcut_MuPEcut     = tfs->make<TH1F>("dT_PEcut_MuPEcut",buffer, 750,0., 7500.);
+  h_dT_PEcut_MuPEcut     ->GetXaxis()->SetTitle("ns");
+  h_dT_PEcut_MuPEcut     ->GetYaxis()->SetTitle("Counts");
  
   sprintf(buffer,"#Delta t (prompt light < %d pe)",fPromptLightDtCut); 
   h_dT_PEcutLow     = tfs->make<TH1F>("dT_PEcutLow",buffer, 750,0., 7500.);
@@ -1376,7 +1496,7 @@ void MichelWfmReco::beginJob()
   sprintf(buffer,"Prompt fraction (100ns/500ns) vs. estimated energy (%3.1f pe/MeV) for Michel-like events;Prompt fraction (f_{P});Energy [MeV]",fLY); 
   h_Pf_100_500_vs_Energy_Michel = tfs->make<TH2F>("Pf_100_500_vs_Energy_Michel",buffer,200,0,1.2,200,0,tot_pe_max/fLY);
   h_Pf_100_500_vs_Energy_Michel ->SetOption("colz");
-  
+ 
 
   h_PE_100ns_vs_Amplitude     = tfs->make<TH2F>("PE_100ns_vs_Amplitude","Prompt PEs (100ns) vs. amplitude",200,0.,140.,200,0.,100.);
   h_PE_100ns_vs_Amplitude     ->GetXaxis()->SetTitle("Prompt photoelectrons");
@@ -1409,6 +1529,15 @@ void MichelWfmReco::beginJob()
   h_InFiducialVolume      ->SetOption("colz");
   
   h_SecondTrackOffset     = tfs->make<TH1F>("SecondTrackOffset","Primary / secondary track endpoint offset;cm",100,0.,30.);
+
+  h_ResRange_dEdx_mu      = tfs->make<TH2F>("ResRange_dEdx_mu","Stopping cosmic #mu-candidate tracks;Residual range [cm]; dE/dX [MeV/cm]",
+    100,0,resR_histRange,
+    100,0,15);
+  h_ResRange_dEdx_mu      ->SetOption("colz");
+  h_ResRange_dEdx_michel  = tfs->make<TH2F>("ResRange_dEdx_michel","Michel candidate tracks;Residual range [cm]; dEdx [MeV/cm]",
+    100,0,resR_histRange,
+    100,0,15);
+  h_ResRange_dEdx_michel  ->SetOption("colz");
 
 
   h_AverageWaveform_Michel= tfs->make<TH1F>("AverageWaveform_Michel","Average waveform of Michel pulse",
@@ -1733,6 +1862,7 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fSER_PostWindow         = pset.get< short>("SER_PostWindow",30);
   fSER_Verbosity          = pset.get< bool> ("SER_Verbosity","false");
   fMvPerADC               = pset.get< float> ("MvPerADC",0.2);
+  fHitPromptPEThreshLow   = pset.get< float> ("HitPromptPEThreshLow",0);
 }
 
 void MichelWfmReco::respondToCloseInputFile(art::FileBlock const & fb)

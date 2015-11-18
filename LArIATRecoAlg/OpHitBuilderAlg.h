@@ -40,7 +40,9 @@ class OpHitBuilderAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
 
-  std::vector<short>            GetHits( raw::OpDetPulse );
+  std::vector<short>            GetHits( raw::OpDetPulse& );
+  bool                          IsCleanBeamWaveform( raw::OpDetPulse& );
+  
   std::vector<short>            HitMerger( std::vector<short>, short, int);
   std::vector<float>            MakeGradient( std::vector<short> );
   std::vector<float>            GetBaselineAndRMS( std::vector<short>, short, short);
@@ -49,12 +51,11 @@ class OpHitBuilderAlg{
   float                         GetHitAmplitude( std::vector<short>, short, short);
   float                         GetHitPromptIntegral( std::vector<short>, short, short);
   float                         GetHitFullIntegral(   std::vector<short>, short, short);  
-  bool                          IsCleanBeamWaveform( raw::OpDetPulse );
   short                         GetLocalMinimum( std::vector<short>, short);
   float                         GetLocalMinimum( std::vector<float>, short);
-  std::vector<std::pair<float,float>>  GetSinglePEs( raw::OpDetPulse );
   std::vector<float>           GetPedestalAndRMS( std::vector<float>, short, short);
   std::vector<float>           GetPedestalAndRMS( std::vector<short>, short, short);
+  std::vector<std::pair<float,float>>  GetSinglePEs( raw::OpDetPulse& );
   
   // Average waveform vector
   std::vector<float>   AverageWaveform;

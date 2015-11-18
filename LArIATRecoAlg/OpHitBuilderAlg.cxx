@@ -117,7 +117,7 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
 //              - GradRMSThresh (default 5)
 //              - MinHitSeparation (default 20 [ns])
 //
-std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse opdetpulse) 
+std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse) 
 {
   // Extract relevant information from the OpDetPulse object
   std::vector<short> wfm = opdetpulse.Waveform();
@@ -505,7 +505,7 @@ float OpHitBuilderAlg::GetHitFullIntegral(std::vector<short> wfm, short hit, sho
 // Decide if a given OpDetPulse qualifies as a "clean beam waveform."
 // ie, (1) Timestamp within beam window, and (2) exactly one optical hit
 // that occurs at the trigger time (+/- 1% tolerance)
-bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse opdetpulse )
+bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse &opdetpulse )
 {
   std::vector<short> hits = GetHits(opdetpulse);
   std::vector<short> wfm = opdetpulse.Waveform();
@@ -522,7 +522,7 @@ bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse opdetpulse )
 
 //------------------------------------------------------------
 // Single PE finder
-std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPulse opdetpulse )
+std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPulse &opdetpulse )
 {
 
   std::vector<std::pair<float,float>> out;
