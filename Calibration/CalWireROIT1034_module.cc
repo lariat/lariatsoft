@@ -153,8 +153,7 @@ namespace caldata {
     // Get signal shaping service.
     art::ServiceHandle<util::SignalShapingServiceT1034> sss;
     double DeconNorm = sss->GetDeconNorm();
-    std::cout<<"DeconNorm "<<DeconNorm<<"\n";
-
+ 
     // make a collection of Wires
     std::unique_ptr<std::vector<recob::Wire> > wirecol(new std::vector<recob::Wire>);
     // ... and an association set
@@ -165,7 +164,6 @@ namespace caldata {
     art::Handle< std::vector<raw::RawDigit> > digitVecHandle;
     evt.getByLabel(fDigitModuleLabel, fSpillName, digitVecHandle);
 
-    if (!digitVecHandle->size())  return;
     mf::LogInfo("CalWireROIT1034") << "CalWireROIT1034:: digitVecHandle size is " << digitVecHandle->size();
 
     // Use the handle to get a particular (0th) element of collection.
@@ -186,20 +184,8 @@ namespace caldata {
     std::vector<float> holder;                // holds signal data
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
     std::vector<TComplex> freqHolder(transformSize+1); // temporary frequency data
-/*
-    // BB temp check deconvolution
-    channel = 52;
-    holder.resize(transformSize, 0.);
-    holder[1000] = 1;
-    sss->Convolute(channel, holder);
-    std::ofstream cfile("conv.txt");
-    for(bin = 0; bin < holder.size(); ++bin) cfile<<bin<<" "<<holder[bin]<<"\n";
-    cfile.close();
-    sss->Deconvolute(channel, holder);
-    std::ofstream dfile("deconv.txt");
-    for(bin = 0; bin < holder.size(); ++bin) dfile<<bin<<" "<<holder[bin]<<"\n";
-    dfile.close();
-*/
+    
+
     // loop over all wires
     wirecol->reserve(digitVecHandle->size());
     for(size_t rdIter = 0; rdIter < digitVecHandle->size(); ++rdIter){ // ++ move
@@ -221,39 +207,11 @@ namespace caldata {
         // pad with zeros
         for (bin = dataSize; bin < holder.size(); ++bin) holder[bin] = 0;
         
-/*
-           // BB temp
-           std::vector<geo::WireID> wids = geom->ChannelToWire(channel);
-           unsigned int plane = wids[0].Plane;
-           unsigned int wire = wids[0].Wire;
-//data           if(plane == 0 && wire == 152) {
-           if(plane == 0 && wire == 47) {
-            std::cout<<"Gotit\n";
-            std::ofstream ofile("mc.txt");
-//data            for(bin = 1740; bin < 1860; ++bin) ofile<<bin<<" "<<holder[bin]<<"\n";
-            for(bin = 970; bin < 1060; ++bin) ofile<<bin-970<<" "<<holder[bin]<<"\n";
-            ofile.close();
-            std::cout<<"Channel "<<channel<<"\n";
-            fFFT->DoFFT(holder, freqHolder);
-            for(bin = 0; bin < 300; ++bin)  ofile<<bin<<" "<<freqHolder[bin].Rho()<<"\n";
-            ofile.close();
-            // clobber the signals
-            for(bin = 1850; bin < 2000; ++bin) holder[bin] = 0;
-            for(bin = 2580; bin < 2720; ++bin) holder[bin] = 0;
-            std::ofstream nfile("notch.txt");
-            fFFT->DoFFT(holder, freqHolder);
-            for(bin = 0; bin < 300; ++bin)  nfile<<bin<<" "<<freqHolder[bin].Rho()<<"\n";
-            nfile.close();
-           }
-*/
-        
         // Do deconvolution.
         sss->Deconvolute(channel, holder);
         for(bin = 0; bin < holder.size(); ++bin) holder[bin]=holder[bin]/DeconNorm;
       } // end if not a bad channel
       
-//      holder.resize(dataSize,1e-5);
-
       //This restores the DC component to signal removed by the deconvolution.
       if(fPostsample) {
         double average=0.0;
@@ -331,10 +289,8 @@ namespace caldata {
             for(unsigned int kk = roiStart; kk < roiEnd; ++kk) {
               sigTemp.push_back(holder[kk]);
             } // jj
-            //	  std::cout << "Xin: " << roiStart << std::endl;
             ROIVec.add_range(roiStart, std::move(sigTemp));
-            //trois.push_back(std::make_pair(roiStart,roiEnd));	    
-          }
+         }
         }
 	
         // save them
