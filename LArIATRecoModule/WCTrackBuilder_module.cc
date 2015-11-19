@@ -267,7 +267,7 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
 //fTrack_Type->Fill(fWCTrackBuilderAlg.getTrackType()); // neither does WCTrackBuilderAlg_new::getTrackType()
                                                         // but WCTrackBuilderAlg::getTrackType() exists!
-
+//std::cout<<"Tracks before: "<<track_count_pre<<"Tracks after "<<track_count<<std::endl;
      //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
     for( int iNewTrack = 0; iNewTrack < track_count-track_count_pre; ++iNewTrack ){
@@ -507,7 +507,6 @@ int error;
     
     fHitsAvailable->Fill(xPoints,yPoints);
     fMatchedHits->Fill(XYMatch);
-    //std::cout<<"THINGS!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"<<std::endl;
     if(xPoints < 0 || yPoints < 0){std::cout<<"You have negative points available!!!!!!"<<std::endl;}
     if(xPoints > 4 || yPoints > 4){std::cout<<"There are more than 4 WCs available!!!!!!!!"<<std::endl;}
   }
@@ -539,10 +538,14 @@ int error;
 
 void WCTrackBuilder::beginJob()
 {
+
+
+
   // Implementation of optional member function here.
       // Implementation of optional member function here.
     art::ServiceHandle<art::TFileService> tfs;
-//Hists that should be used for diagnostics and deleted before production.
+//Hists that should be used for diagnostics and deleted before production
+   //fEventPicky=tfs->make<TH1F>("event with picky", "event with picky", 25000,0,25000);
     fResSquare = tfs->make<TH1F>("Sum of Square of Residuals from Y points to Linear Regression","Sum of Square of Residuals from Y points to Linear Regression", 150,0,150);
     fReco4pt = tfs->make<TH1F>("Doug's 4 point reco", "Doug's 4 point reco", 200,0,2000);
     fReco4ptdiff = tfs->make<TH2F>("Doug's 4 point reco difference", "Doug's 4 point reco difference", 800,-4000,4000, 400,-2000,2000);

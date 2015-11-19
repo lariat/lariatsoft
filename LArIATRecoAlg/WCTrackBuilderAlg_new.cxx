@@ -212,8 +212,7 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 {					   
   fVerbose = verbose;
   fPickyTracks = pickytracks;
-  fHighYield = highyield;
-  //if(!fPickyTracks){std::cout<<"NOT PICKY!!!"<<std::endl;}					 	
+  fHighYield = highyield;					 	
   //Determine if one should skip this trigger based on whether there is exactly one good hit in each wire chamber and axis
   //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer.
   //If there is, then move on with the function.
@@ -316,8 +315,8 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
   float atan_y_ds = atan(delta_y_ds / fDelta_z_ds);
 
   //Calculate momentum and y_kink
-  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (float(3.3 * ((10.0*3.141592654/180.0) + (sin(atan_x_ds) - sin(atan_x_us))))) ;// cos(atan_y_ds);
-
+  //reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (float(3.3 * ((10.0*3.141592654/180.0) + (sin(atan_x_ds) - sin(atan_x_us))))) ;// cos(atan_y_ds);
+reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us))) / cos(atan_y_ds);
 
   y_kink = atan_y_us - atan_y_ds;
 
@@ -531,7 +530,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 
   //Loop through all combinations of tracks
   //int total_possible_tracks=0;
-  int track_counter=0;
+  //int track_counter=0;
   //total_possible_tracks=good_hits[0][0].hits.size()*good_hits[1][0].hits.size()*good_hits[2][0].hits.size()*good_hits[3][0].hits.size()*good_hits[0][1].hits.size()*good_hits[2][1].hits.size()*good_hits[1][1].hits.size()*good_hits[3][1].hits.size();
   //std::cout<<"Total number of track combos: "<<total_possible_tracks<<std::endl;
   for( size_t iHit0 = 0; iHit0 < good_hits[0][0].hits.size(); ++iHit0 ){
@@ -600,26 +599,6 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		  //Add the track to the track list
 		  
 		  if( fPickyTracks || (!fPickyTracks && is_good_track) ){
-		      std::vector<float> wire_x;
-                      std::vector<float> time_x;
-                      std::vector<float> wire_y;
-                      std::vector<float> time_y;
-  
-  //Loop through the hits in the track and fill the wire/time x/y
-                     for( size_t iHit = 0; iHit < track.hits.size() ; ++iHit ){
-                        int var = iHit % 2;
-                        if( var == 0 ){
-	                  wire_x.push_back(track.hits.at(iHit).wire);
-	                  time_x.push_back(track.hits.at(iHit).time);
-                        }
-                        if( var == 1 ){
-	                  wire_y.push_back(track.hits.at(iHit).wire);
-	                  time_y.push_back(track.hits.at(iHit).time);
-                        }   
-                      }
-		        //float pos_us[3] = {0.0,0.0,0.0};
-                        //float pos_ds[3] = {0.0,0.0,0.0};
-                        //midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds, PickyTracksTargetXY);
 		    track_list.push_back(track);
 		    //Hit wires for WC1X, WC1Y, WC2X, WC2Y etc.....
 		    //Also Fill the Histograms for Tracks we won't use.  Will subract off the wires of the "best" track from the good tracks
@@ -658,7 +637,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		    incoming_theta_list.push_back(incoming_theta);
 		    incoming_phi_list.push_back(incoming_phi);
 		    track_count_this_trigger++;
-		    track_counter++;
+		    track_count++;
 		  }
 		}
 	      }
@@ -670,7 +649,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
   }
   int mult=1;
   std::vector<int> visitedwires;
-  //std::cout<<"Track Counter: "<<track_counter<<std::endl;
+  //std::cout<<"Track Count: "<<track_count<<std::endl;
   for(size_t planeIter=0; planeIter<8; ++planeIter){  
     for(size_t i=0; i<track_list.size(); ++i){
       bool DidChange = false;

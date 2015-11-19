@@ -43,13 +43,13 @@ physics:
       NWC: 4
       NWperTDC: 64
       Verbose: false
-      PickyTracks: true
+      PickyTracks: false
       HighYield: false
     }
   }
  
   analysis: [ WCTrackBuilder ]
-  stream1: []#output1]
+  stream1: [output1]
   		       
   end_paths: [ analysis, stream1 ]
 }
