@@ -60,7 +60,7 @@ physics.producers.MichelWfmReco.HitTimeCutoffLow:     -100000   # default -10000
 physics.producers.MichelWfmReco.HitTimeCutoffHigh:    100000  # default  1000000
 
 physics.producers.MichelWfmReco.SER_Verbosity:          "false"
-physics.producers.MichelWfmReco.Verbosity:              "false"
+physics.producers.MichelWfmReco.Verbosity:              "true"
 
 physics.producers.MichelWfmReco.SER_Mode:               "false"
 physics.producers.MichelWfmReco.SER_Fit:                "true"

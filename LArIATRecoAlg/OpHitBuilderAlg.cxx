@@ -92,7 +92,7 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fMvPerADC             = pset.get< float >("MvPerADC",0.2);
   fUsePrepulseFit       = pset.get< bool  >("UsePrepulseFit","true");
   fTimestampCut         = pset.get< float >("TimestampCut",5.25);
-  bVerbose              = pset.get< bool  >("Verbosity","true");
+  bVerbose              = pset.get< bool  >("Verbosity","false");
   fHitTimeCutoffLow     = pset.get< int   >("HitTimeCutoffLow",-100000);
   fHitTimeCutoffHigh    = pset.get< int   >("HitTimeCutoffHigh",100000);
   fSER_PreWindow        = pset.get< short >("SER_PreWindow",5);
@@ -516,6 +516,53 @@ bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse &opdetpulse )
   } else {
     return false;
   }
+}
+
+//--------------------------------------------------------------
+// Are the PMT hits for this event consistent with a Michel-trigger
+// event? (ie, is there a hit before the trigger time?)
+// This function is currently configured to look at the ETL PMT only,
+// which was on most of the runs.
+bool OpHitBuilderAlg::LooksLikeMichel( art::Event &e )
+{
+  if(bVerbose) std::cout<<"OpHitBuilderAlg::LooksLikeMichel...\n";
+
+  bool out = false;
+
+  // Get the OpDetPulses; skip event if empty
+  art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
+  e.getByLabel("daq","",WaveformHandle);
+  if( (int)WaveformHandle->size() == 0 ) {
+    if(bVerbose) std::cout<<"No optical detector data found -- can't do Michel filter!\n";
+  } else {
+
+    // If not empty, do hit-finding and look for early hits, which are 
+    // signatures of Michel-triggered events.
+    for( int ipulse = 0; ipulse < (int)WaveformHandle->size(); ipulse++){
+      art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle,ipulse);
+      raw::OpDetPulse opdetpulse = *ThePulsePtr;
+      
+      // Is this the ETL?
+      if( opdetpulse.OpChannel() == 1) {
+        std::vector<short> hits = GetHits(opdetpulse);
+        short triggerTick = opdetpulse.FirstSample();
+
+        // Loop through the found hits, and if there
+        // are any before triggerTick - 300, flag as
+        // a Michel (out = true)
+        for(size_t i=0; i<hits.size(); i++){
+          
+          if(hits[i] <= triggerTick - 300) out = true;
+
+        }
+
+      } // endif ETL
+    } // endloop over pulses
+  }
+  
+  if(bVerbose) std::cout<<"Result: "<<out<<"\n";
+
+  return out;
 }
 
 

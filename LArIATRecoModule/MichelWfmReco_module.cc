@@ -385,7 +385,7 @@ fTrigFiltAlg(pset)
 
   hit_info.resize(fIntegrationWindows.size()+1);
   
-  resR_histRange = 5.;
+  resR_histRange = 30.;
 
   if(!bUseTrackInformation) fSaveAllTrackInfoToTree = false;
 
@@ -448,10 +448,14 @@ fTrigFiltAlg(pset)
 
 void MichelWfmReco::produce(art::Event & e)
 {
+  // Testing
+  //bool looksLikeMichel = fOpHitBuilderAlg.LooksLikeMichel(e);
+  //std::cout<<"Looks like Michel: "<<looksLikeMichel<<"\n";
+
   iEvent++;
 
   // Initialize variables to be saved into tree
-  TVector3              vInit(-99.,-99.,-99.);
+  TVector3                    vInit(-99.,-99.,-99.);
   NumHits                     = -9;
   RunNumber                   = -9;
   SubRunNumber                = -9;
@@ -970,7 +974,7 @@ void MichelWfmReco::produce(art::Event & e)
     // -------------------------------------------------
     // dE/dx
     //
-    if( IsSingleStoppingTrack && fmcal.isValid() ){
+    if( !IsBeamEvent && IsSingleStoppingTrack && fmcal.isValid() ){
         
         std::vector<art::Ptr<anab::Calorimetry> > calos_Mu = fmcal.at(MuTrackIndex);
         size_t              N_dEdx = calos_Mu[1]->dEdx().size();
@@ -1532,11 +1536,11 @@ void MichelWfmReco::beginJob()
 
   h_ResRange_dEdx_mu      = tfs->make<TH2F>("ResRange_dEdx_mu","Stopping cosmic #mu-candidate tracks;Residual range [cm]; dE/dX [MeV/cm]",
     100,0,resR_histRange,
-    100,0,15);
+    100,0,30);
   h_ResRange_dEdx_mu      ->SetOption("colz");
   h_ResRange_dEdx_michel  = tfs->make<TH2F>("ResRange_dEdx_michel","Michel candidate tracks;Residual range [cm]; dEdx [MeV/cm]",
     100,0,resR_histRange,
-    100,0,15);
+    100,0,30);
   h_ResRange_dEdx_michel  ->SetOption("colz");
 
 

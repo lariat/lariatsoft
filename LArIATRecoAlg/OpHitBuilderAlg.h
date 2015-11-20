@@ -42,6 +42,7 @@ class OpHitBuilderAlg{
 
   std::vector<short>            GetHits( raw::OpDetPulse& );
   bool                          IsCleanBeamWaveform( raw::OpDetPulse& );
+  bool                          LooksLikeMichel( art::Event& );
   
   std::vector<short>            HitMerger( std::vector<short>, short, int);
   std::vector<float>            MakeGradient( std::vector<short> );
