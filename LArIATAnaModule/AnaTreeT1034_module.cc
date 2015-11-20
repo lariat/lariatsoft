@@ -74,6 +74,7 @@
 const int kMaxTrack      = 1000;  //maximum number of tracks
 const int kMaxHits       = 20000; //maximum number of hits
 const int kMaxTrackHits  = 1000;  //maximum number of space points
+const int kMaxTrajHits   = 1000;  //maximum number of trajectory points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;   //maximum number of TOF objects
@@ -150,6 +151,16 @@ private:
    double trkdedx[kMaxTrack][2][1000];
    double trkrr[kMaxTrack][2][1000];
    double trkpitchhit[kMaxTrack][2][1000];
+   
+   
+   // === Storing trajectory information for the track ===
+   int nTrajPoint[kMaxTrack];			//<---Storing the number of trajectory points
+   double pHat0_X[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the x-dir
+   double pHat0_Y[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the y-dir
+   double pHat0_Z[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the z-dir
+   double trjPt_X[kMaxTrack][kMaxTrajHits];     //<---Storing the trajector point location in X
+   double trjPt_Y[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Y
+   double trjPt_Z[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Z
    
    // === Storing 2-d Hit information ===
    int    nhits;		//<---Number of 2-d hits in the event
@@ -853,6 +864,43 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	}//<---End PID loop (j)
 
       }//<---End checking PID info
+
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
+//						RECORDING THE TRAJECTORY POINTS FOR THIS TRACK
+// ----------------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------------- 
+   
+   nTrajPoint[i] = tracklist[i]->NumberTrajectoryPoints();
+   
+   // ### Storing the trajectory points in a similar way to PionXS ###
+   TVector3 p_hat_0;
+   // ##############################################
+   // ### Looping over all the trajectory points ###
+   // ##############################################
+   for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
+      {
+      p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
+      
+      //Strange directionality convention - I'm reversing the direction vector
+      //if it's pointing in the negative X direction
+      if( p_hat_0.Z() < 0 )
+         {
+	 p_hat_0.SetX(p_hat_0.X()*-1);
+	 p_hat_0.SetY(p_hat_0.Y()*-1);
+	 p_hat_0.SetZ(p_hat_0.Z()*-1);
+	 }
+      
+      
+      pHat0_X[i][iTrajPt] = p_hat_0.X();
+      pHat0_Y[i][iTrajPt] = p_hat_0.Y();
+      pHat0_Z[i][iTrajPt] = p_hat_0.Z();
+      
+      trjPt_X[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).X();
+      trjPt_Y[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Y();
+      trjPt_Z[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Z();
+
+      }//<---End iTrajPt
       
   }//<---End track loop (i)
 
@@ -1004,6 +1052,15 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
   fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
+  
+  fTree->Branch("nTrajPoint", &nTrajPoint, "nTrajPoint[ntracks_reco]/I");
+  fTree->Branch("pHat0_X", pHat0_X, "pHat0_X[ntracks_reco][1000]/D");
+  fTree->Branch("pHat0_Y", pHat0_Y, "pHat0_Y[ntracks_reco][1000]/D");
+  fTree->Branch("pHat0_Z", pHat0_Z, "pHat0_Z[ntracks_reco][1000]/D");
+  fTree->Branch("trjPt_X", trjPt_X, "trjPt_X[ntracks_reco][1000]/D");
+  fTree->Branch("trjPt_Y", trjPt_Y, "trjPt_Y[ntracks_reco][1000]/D");
+  fTree->Branch("trjPt_Z", trjPt_Z, "trjPt_Z[ntracks_reco][1000]/D");
+  
   fTree->Branch("nhits",&nhits,"nhits/I");
   fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
   fTree->Branch("hit_wire",hit_wire,"hit_wire[nhits]/I");
@@ -1067,15 +1124,15 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("shwID",shwID,"shwI[nshowers]/I");
   fTree->Branch("BestPlaneShw",BestPlaneShw,"BestPlaneShw[nshowers]/I");
   fTree->Branch("LengthShw",LengthShw,"LengthShw[nshowers]/D");
-  fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][nshowers]/D");
+  fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][1000]/D");
   // fTree->Branch("CosStartSigmaShw",CosStartSigmaShw,"CosStartSigmaShw[3][nshowers]/D");
-  fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][nshowers]/D");
+  fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][1000]/D");
   //fTree->Branch("CosStartXYZSigmaShw",CosStartXYZSigmaShw,"CosStartXYZSigmaShw[3][nshowers]/D");
-  fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][nshowers]/D");
+  fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][1000]/D");
   //fTree->Branch("TotalESigmaShw",TotalESigmaShw,"TotalESigmaShw[2][nshowers]/D");
-  fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][nshowers]/D");
+  fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][1000]/D");
   //fTree->Branch("dEdxSigmaPerPlaneShw",dEdxSigmaPerPlaneShw,"dEdxSigmaPerPlaneShw[2][nshowers]/D");
-  fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][nshowers]/D");
+  fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][1000]/D");
   //fTree->Branch("TotalMIPESigmaShw",TotalMIPESigmaShw,"TotalMIPESigmaShw[2][nshowers]/D");
 
 }
@@ -1125,6 +1182,12 @@ void lariat::AnaTreeT1034::ResetVars()
       trkx[i][j] = -99999;
       trky[i][j] = -99999;
       trkz[i][j] = -99999;
+      pHat0_X[i][j] = -99999;
+      pHat0_Y[i][j] = -99999;
+      pHat0_Z[i][j] = -99999;
+      trjPt_X[i][j] = -99999;
+      trjPt_Y[i][j] = -99999;
+      trjPt_Z[i][j] = -99999;
     }
     for (int j = 0; j<2; ++j){
       trkpitch[i][j] = -99999;
