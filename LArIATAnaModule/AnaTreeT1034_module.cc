@@ -60,6 +60,9 @@
 #include "RawDataUtilities/TriggerDigitUtility.h"
 #include "RecoBase/Shower.h"
 #include "RecoBase/EndPoint2D.h"
+#include "MCBase/MCShower.h"
+#include "MCBase/MCStep.h"
+
 
 // #####################
 // ### ROOT includes ###
@@ -74,11 +77,13 @@
 const int kMaxTrack      = 1000;  //maximum number of tracks
 const int kMaxHits       = 20000; //maximum number of hits
 const int kMaxTrackHits  = 1000;  //maximum number of space points
+const int kMaxTrajHits   = 1000;  //maximum number of trajectory points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;   //maximum number of TOF objects
 const int kMaxPrimaries  = 20000;  //maximum number of primary particles
-const int kMaxShower = 100;
+const int kMaxShower     = 100;   //maximum number of Reconstructed showers
+const int kMaxMCShower   = 1000; // maximum number of MCShower Object
 
 namespace lariat 
 {
@@ -151,6 +156,16 @@ private:
    double trkrr[kMaxTrack][2][1000];
    double trkpitchhit[kMaxTrack][2][1000];
    
+   
+   // === Storing trajectory information for the track ===
+   int nTrajPoint[kMaxTrack];			//<---Storing the number of trajectory points
+   double pHat0_X[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the x-dir
+   double pHat0_Y[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the y-dir
+   double pHat0_Z[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the z-dir
+   double trjPt_X[kMaxTrack][kMaxTrajHits];     //<---Storing the trajector point location in X
+   double trjPt_Y[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Y
+   double trjPt_Z[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Z
+   
    // === Storing 2-d Hit information ===
    int    nhits;		//<---Number of 2-d hits in the event
    int    hit_plane[kMaxHits];	//<---Plane number of the hit
@@ -219,6 +234,53 @@ private:
    int process_primary[kMaxPrimaries];		//<---Is this particle primary (primary = 1, non-primary = 1)
    
    
+   // ==== Storing MCShower MCTruth Information ===
+   
+   int     no_mcshowers;                         	//number of MC Showers in this event.
+   int       mcshwr_origin[kMaxMCShower];            	//MC Shower origin information. 
+   int       mcshwr_pdg[kMaxMCShower];            	//MC Shower particle PDG code.   
+   int       mcshwr_TrackId[kMaxMCShower];        	//MC Shower particle G4 track ID.
+   double     mcshwr_startX[kMaxMCShower];            	//MC Shower particle G4 startX 
+   double     mcshwr_startY[kMaxMCShower];          	//MC Shower particle G4 startY 
+   double     mcshwr_startZ[kMaxMCShower];          	//MC Shower particle G4 startZ
+   double     mcshwr_endX[kMaxMCShower];            	//MC Shower particle G4 endX 
+   double     mcshwr_endY[kMaxMCShower];            	//MC Shower particle G4 endY 
+   double     mcshwr_endZ[kMaxMCShower];            	//MC Shower particle G4 endZ
+   double    mcshwr_CombEngX[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point X Position. 
+   double    mcshwr_CombEngY[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point Y Position.
+   double    mcshwr_CombEngZ[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point Z Position.
+   double     mcshwr_CombEngPx[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+   double     mcshwr_CombEngPy[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+   double     mcshwr_CombEngPz[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+   double     mcshwr_CombEngE[kMaxMCShower];            //MC Shower Combined energy deposition information, Energy
+   double     mcshwr_dEdx[kMaxMCShower];           	//MC Shower dEdx, MeV/cm
+   double     mcshwr_StartDirX[kMaxMCShower];      	//MC Shower Direction of begining of shower, X direction 
+   double     mcshwr_StartDirY[kMaxMCShower];      	//MC Shower Direction of begining of shower, Y direction 
+   double     mcshwr_StartDirZ[kMaxMCShower];      	//MC Shower Direction of begining of shower, Z direction 
+   int       mcshwr_isEngDeposited[kMaxMCShower];  	//tells whether if this shower deposited energy in the detector or not.
+   							//yes = 1; no =0;
+   //MC Shower mother information
+   int       mcshwr_Motherpdg[kMaxMCShower];       	//MC Shower's mother PDG code.
+   int       mcshwr_MotherTrkId[kMaxMCShower];     	//MC Shower's mother G4 track ID.
+   double     mcshwr_MotherstartX[kMaxMCShower];    	//MC Shower's mother  G4 startX .
+   double     mcshwr_MotherstartY[kMaxMCShower];    	//MC Shower's mother  G4 startY .
+   double     mcshwr_MotherstartZ[kMaxMCShower];    	//MC Shower's mother  G4 startZ .
+   double     mcshwr_MotherendX[kMaxMCShower];          //MC Shower's mother  G4 endX   .
+   double     mcshwr_MotherendY[kMaxMCShower];          //MC Shower's mother  G4 endY   .
+   double     mcshwr_MotherendZ[kMaxMCShower];          //MC Shower's mother  G4 endZ   .
+   
+   //MC Shower ancestor information
+   int       mcshwr_Ancestorpdg[kMaxMCShower];       	//MC Shower's ancestor PDG code.
+   int       mcshwr_AncestorTrkId[kMaxMCShower];     	//MC Shower's ancestor G4 track ID.
+   double     mcshwr_AncestorstartX[kMaxMCShower];   	//MC Shower's ancestor  G4 startX
+   double     mcshwr_AncestorstartY[kMaxMCShower];   	//MC Shower's ancestor  G4 startY
+   double     mcshwr_AncestorstartZ[kMaxMCShower];   	//MC Shower's ancestor  G4 startZ
+   double     mcshwr_AncestorendX[kMaxMCShower];     	//MC Shower's ancestor  G4 endX 
+   double     mcshwr_AncestorendY[kMaxMCShower];     	//MC Shower's ancestor  G4 endY
+   double     mcshwr_AncestorendZ[kMaxMCShower];      	//MC Shower's ancestor  G4 endZ  
+
+   
+   
    // === Storing Shower Reco Information using ShowerReco3D ===
 
   int nshowers; ///number of showers per event
@@ -259,6 +321,7 @@ private:
   std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
   std::string fG4ModuleLabel;
   std::string fShowerModuleLabel;       // Producer that makes showers from clustering
+  std::string fMCShowerModuleLabel;	// Producer name that makes MCShower Object
 
 };
 
@@ -285,6 +348,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
    fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
    fG4ModuleLabel               = pset.get< std::string >("G4ModuleLabel");
    fShowerModuleLabel           = pset.get< std::string >("ShowerModuleLabel");
+   fMCShowerModuleLabel		= pset.get< std::string >("MCShowerModuleLabel");
    return;
 }
 
@@ -447,6 +511,94 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    	{isdata = true;}
 	
    else isdata = false;
+   
+   
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   //							FILLING THE MCTruth Geant4 INFORMATION
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+
+   if(!isdata)
+      {
+      art::Handle< std::vector<sim::MCShower> > mcshowerh;
+      evt.getByLabel(fMCShowerModuleLabel, mcshowerh);
+      
+      // #######################################################
+      // ### Check to make sure the MCShower Handle is valid ###
+      // #######################################################
+      if (mcshowerh.isValid())
+         {
+	 
+	 //std::cout<<mcshowerh->size()<<std::endl;
+	 no_mcshowers = mcshowerh->size();
+	 size_t shwr = 0;
+	 // ############################################################
+	 // ### Looping over all MC Showers (using uBooNEAna method) ###
+	 // ############################################################
+         for(std::vector<sim::MCShower>::const_iterator imcshwr = mcshowerh->begin(); imcshwr != mcshowerh->end(); ++imcshwr)
+	    {
+	    
+	    const sim::MCShower& mcshwr = *imcshwr;
+	    
+            mcshwr_origin[shwr]          = mcshwr.Origin();
+	    mcshwr_pdg[shwr]              = mcshwr.PdgCode();
+	    mcshwr_TrackId[shwr]              = mcshwr.TrackID();
+	    mcshwr_startX[shwr]          = mcshwr.Start().X();
+	    mcshwr_startY[shwr]          = mcshwr.Start().Y();
+	    mcshwr_startZ[shwr]          = mcshwr.Start().Z();
+	    mcshwr_endX[shwr]            = mcshwr.End().X();
+	    mcshwr_endY[shwr]            = mcshwr.End().Y(); 
+	    mcshwr_endZ[shwr]            = mcshwr.End().Z();
+	    
+	    // ### Recording Energy inside the detector ###
+	    if (mcshwr.DetProfile().E()!= 0)
+	       {
+	       mcshwr_isEngDeposited[shwr] = 1;
+	       mcshwr_CombEngX[shwr]        = mcshwr.DetProfile().X(); 
+	       mcshwr_CombEngY[shwr]        = mcshwr.DetProfile().Y();
+	       mcshwr_CombEngZ[shwr]        = mcshwr.DetProfile().Z();
+	       mcshwr_CombEngPx[shwr]       = mcshwr.DetProfile().Px();
+	       mcshwr_CombEngPy[shwr]       = mcshwr.DetProfile().Py();
+	       mcshwr_CombEngPz[shwr]       = mcshwr.DetProfile().Pz(); 
+	       mcshwr_CombEngE[shwr]        = mcshwr.DetProfile().E();
+	       mcshwr_dEdx[shwr]            = mcshwr.dEdx();
+	       mcshwr_StartDirX[shwr]       = mcshwr.StartDir().X();
+	       mcshwr_StartDirY[shwr]       = mcshwr.StartDir().Y();
+	       mcshwr_StartDirZ[shwr]       = mcshwr.StartDir().Z();
+	       }//<---End recording info inside the detector
+	    else
+	       {mcshwr_isEngDeposited[shwr] = 0;}
+	    
+	    mcshwr_Motherpdg[shwr]       = mcshwr.MotherPdgCode();
+	    mcshwr_MotherTrkId[shwr]     = mcshwr.MotherTrackID();
+	    mcshwr_MotherstartX[shwr]    = mcshwr.MotherStart().X();
+	    mcshwr_MotherstartY[shwr]    = mcshwr.MotherStart().Y();
+	    mcshwr_MotherstartZ[shwr]    = mcshwr.MotherStart().Z();
+	    mcshwr_MotherendX[shwr]      = mcshwr.MotherEnd().X();
+	    mcshwr_MotherendY[shwr]      = mcshwr.MotherEnd().Y();
+	    mcshwr_MotherendZ[shwr]      = mcshwr.MotherEnd().Z();
+	    mcshwr_Ancestorpdg[shwr]     = mcshwr.AncestorPdgCode();
+	    mcshwr_AncestorTrkId[shwr]   = mcshwr.AncestorTrackID();
+	    mcshwr_AncestorstartX[shwr]  = mcshwr.AncestorStart().X();
+	    mcshwr_AncestorstartY[shwr]  = mcshwr.AncestorStart().Y();
+	    mcshwr_AncestorstartZ[shwr]  = mcshwr.AncestorStart().Z();
+	    mcshwr_AncestorendX[shwr]    = mcshwr.AncestorEnd().X();
+	    mcshwr_AncestorendY[shwr]    = mcshwr.AncestorEnd().Y();
+	    mcshwr_AncestorendZ[shwr]    = mcshwr.AncestorEnd().Z();
+
+      
+            shwr++;
+            }//<---End imcshwr iterator loop
+	    
+	    
+         }//<---Only going in if the handle is valid
+      }//<---End only looking at MC information
+   
+   
+   
+   
+   
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
    //							FILLING THE MCTruth Geant4 INFORMATION
@@ -853,6 +1005,43 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	}//<---End PID loop (j)
 
       }//<---End checking PID info
+
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
+//						RECORDING THE TRAJECTORY POINTS FOR THIS TRACK
+// ----------------------------------------------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------------------------------------------- 
+   
+   nTrajPoint[i] = tracklist[i]->NumberTrajectoryPoints();
+   
+   // ### Storing the trajectory points in a similar way to PionXS ###
+   TVector3 p_hat_0;
+   // ##############################################
+   // ### Looping over all the trajectory points ###
+   // ##############################################
+   for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
+      {
+      p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
+      
+      //Strange directionality convention - I'm reversing the direction vector
+      //if it's pointing in the negative X direction
+      if( p_hat_0.Z() < 0 )
+         {
+	 p_hat_0.SetX(p_hat_0.X()*-1);
+	 p_hat_0.SetY(p_hat_0.Y()*-1);
+	 p_hat_0.SetZ(p_hat_0.Z()*-1);
+	 }
+      
+      
+      pHat0_X[i][iTrajPt] = p_hat_0.X();
+      pHat0_Y[i][iTrajPt] = p_hat_0.Y();
+      pHat0_Z[i][iTrajPt] = p_hat_0.Z();
+      
+      trjPt_X[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).X();
+      trjPt_Y[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Y();
+      trjPt_Z[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Z();
+
+      }//<---End iTrajPt
       
   }//<---End track loop (i)
 
@@ -1004,6 +1193,15 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
   fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
+  
+  fTree->Branch("nTrajPoint", &nTrajPoint, "nTrajPoint[ntracks_reco]/I");
+  fTree->Branch("pHat0_X", pHat0_X, "pHat0_X[ntracks_reco][1000]/D");
+  fTree->Branch("pHat0_Y", pHat0_Y, "pHat0_Y[ntracks_reco][1000]/D");
+  fTree->Branch("pHat0_Z", pHat0_Z, "pHat0_Z[ntracks_reco][1000]/D");
+  fTree->Branch("trjPt_X", trjPt_X, "trjPt_X[ntracks_reco][1000]/D");
+  fTree->Branch("trjPt_Y", trjPt_Y, "trjPt_Y[ntracks_reco][1000]/D");
+  fTree->Branch("trjPt_Z", trjPt_Z, "trjPt_Z[ntracks_reco][1000]/D");
+  
   fTree->Branch("nhits",&nhits,"nhits/I");
   fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
   fTree->Branch("hit_wire",hit_wire,"hit_wire[nhits]/I");
@@ -1061,21 +1259,62 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
   fTree->Branch("TrackId",TrackId,"TrackId[geant_list_size]/I");
   fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
+  
+  fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
+  fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
+  fTree->Branch("mcshwr_pdg", mcshwr_pdg, "mcshwr_pdg[no_mcshowers]/D");
+  fTree->Branch("mcshwr_TrackId", mcshwr_TrackId, "mcshwr_TrackId[no_mcshowers]/I");
+  fTree->Branch("mcshwr_startX", mcshwr_startX, "mcshwr_startX[no_mcshowers]/D");
+  fTree->Branch("mcshwr_startY", mcshwr_startY, "mcshwr_startY[no_mcshowers]/D");
+  fTree->Branch("mcshwr_startZ", mcshwr_startZ, "mcshwr_startZ[no_mcshowers]/D");
+  fTree->Branch("mcshwr_endX", mcshwr_endX, "mcshwr_endX[no_mcshowers]/D");
+  fTree->Branch("mcshwr_endY", mcshwr_endY, "mcshwr_endY[no_mcshowers]/D");
+  fTree->Branch("mcshwr_endZ", mcshwr_endZ, "mcshwr_endZ[no_mcshowers]/D");
+  fTree->Branch("mcshwr_CombEngX", mcshwr_CombEngX, "mcshwr_CombEngX[no_mcshowers]/D");
+  fTree->Branch("mcshwr_CombEngY", mcshwr_CombEngY, "mcshwr_CombEngY[no_mcshowers]/D");
+  fTree->Branch("mcshwr_CombEngZ", mcshwr_CombEngZ, "mcshwr_CombEngZ[no_mcshowers]/D");
+  fTree->Branch("mcshwr_CombEngPx", mcshwr_CombEngPx, "mcshwr_CombEngPx[no_mcshowers]/D");
+  fTree->Branch("mcshwr_CombEngPy", mcshwr_CombEngPy, "mcshwr_CombEngPy[no_mcshowers]/D");
+  fTree->Branch("mcshwr_CombEngPz", mcshwr_CombEngPz, "mcshwr_CombEngPz[no_mcshowers]/D");
+  fTree->Branch("mcshwr_CombEngE", mcshwr_CombEngE, "mcshwr_CombEngE[no_mcshowers]/D");
+  fTree->Branch("mcshwr_dEdx", mcshwr_dEdx, "mcshwr_dEdx[no_mcshowers]/D");
+  fTree->Branch("mcshwr_StartDirX", mcshwr_StartDirX, "mcshwr_StartDirX[no_mcshowers]/D");
+  fTree->Branch("mcshwr_StartDirY", mcshwr_StartDirY, "mcshwr_StartDirY[no_mcshowers]/D");
+  fTree->Branch("mcshwr_StartDirZ", mcshwr_StartDirZ, "mcshwr_StartDirZ[no_mcshowers]/D");
+  fTree->Branch("mcshwr_isEngDeposited", mcshwr_isEngDeposited, "mcshwr_isEngDeposited[no_mcshowers]/I");
+  fTree->Branch("mcshwr_Motherpdg", mcshwr_Motherpdg, "mcshwr_Motherpdg[no_mcshowers]/I");
+  fTree->Branch("mcshwr_MotherTrkId", mcshwr_MotherTrkId, "mcshwr_MotherTrkId[no_mcshowers]/I");
+  fTree->Branch("mcshwr_MotherstartX", mcshwr_MotherstartX, "mcshwr_MotherstartX[no_mcshowers]/I");
+  fTree->Branch("mcshwr_MotherstartY", mcshwr_MotherstartY, "mcshwr_MotherstartY[no_mcshowers]/I");
+  fTree->Branch("mcshwr_MotherstartZ", mcshwr_MotherstartZ, "mcshwr_MotherstartZ[no_mcshowers]/I");
+  fTree->Branch("mcshwr_MotherendX", mcshwr_MotherendX, "mcshwr_MotherendX[no_mcshowers]/I");
+  fTree->Branch("mcshwr_MotherendY", mcshwr_MotherendY, "mcshwr_MotherendY[no_mcshowers]/I");
+  fTree->Branch("mcshwr_MotherendZ", mcshwr_MotherendZ, "mcshwr_MotherendZ[no_mcshowers]/I");
+  
+  fTree->Branch("mcshwr_Ancestorpdg", mcshwr_Ancestorpdg, "mcshwr_Ancestorpdg[no_mcshowers]/I");
+  fTree->Branch("mcshwr_AncestorTrkId", mcshwr_AncestorTrkId, "mcshwr_AncestorTrkId[no_mcshowers]/I");
+  fTree->Branch("mcshwr_AncestorstartX", mcshwr_AncestorstartX, "mcshwr_AncestorstartX[no_mcshowers]/I");
+  fTree->Branch("mcshwr_AncestorstartY", mcshwr_AncestorstartY, "mcshwr_AncestorstartY[no_mcshowers]/I");
+  fTree->Branch("mcshwr_AncestorstartZ", mcshwr_AncestorstartZ, "mcshwr_AncestorstartZ[no_mcshowers]/I");
+  fTree->Branch("mcshwr_AncestorendX", mcshwr_AncestorendX, "mcshwr_AncestorendX[no_mcshowers]/I");
+  fTree->Branch("mcshwr_AncestorendY", mcshwr_AncestorendY, "mcshwr_AncestorendY[no_mcshowers]/I");
+  fTree->Branch("mcshwr_AncestorendZ", mcshwr_AncestorendZ, "mcshwr_AncestorendZ[no_mcshowers]/I");
+
       
    
   fTree->Branch("nshowers",&nshowers,"nshowers/I");
   fTree->Branch("shwID",shwID,"shwI[nshowers]/I");
   fTree->Branch("BestPlaneShw",BestPlaneShw,"BestPlaneShw[nshowers]/I");
   fTree->Branch("LengthShw",LengthShw,"LengthShw[nshowers]/D");
-  fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][nshowers]/D");
+  fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][1000]/D");
   // fTree->Branch("CosStartSigmaShw",CosStartSigmaShw,"CosStartSigmaShw[3][nshowers]/D");
-  fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][nshowers]/D");
+  fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][1000]/D");
   //fTree->Branch("CosStartXYZSigmaShw",CosStartXYZSigmaShw,"CosStartXYZSigmaShw[3][nshowers]/D");
-  fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][nshowers]/D");
+  fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][1000]/D");
   //fTree->Branch("TotalESigmaShw",TotalESigmaShw,"TotalESigmaShw[2][nshowers]/D");
-  fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][nshowers]/D");
+  fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][1000]/D");
   //fTree->Branch("dEdxSigmaPerPlaneShw",dEdxSigmaPerPlaneShw,"dEdxSigmaPerPlaneShw[2][nshowers]/D");
-  fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][nshowers]/D");
+  fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][1000]/D");
   //fTree->Branch("TotalMIPESigmaShw",TotalMIPESigmaShw,"TotalMIPESigmaShw[2][nshowers]/D");
 
 }
@@ -1125,6 +1364,12 @@ void lariat::AnaTreeT1034::ResetVars()
       trkx[i][j] = -99999;
       trky[i][j] = -99999;
       trkz[i][j] = -99999;
+      pHat0_X[i][j] = -99999;
+      pHat0_Y[i][j] = -99999;
+      pHat0_Z[i][j] = -99999;
+      trjPt_X[i][j] = -99999;
+      trjPt_Y[i][j] = -99999;
+      trjPt_Z[i][j] = -99999;
     }
     for (int j = 0; j<2; ++j){
       trkpitch[i][j] = -99999;
