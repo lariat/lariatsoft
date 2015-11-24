@@ -13,6 +13,7 @@ lariat_databaseutility:
 
   ConfigTableName: "lariat_xml_database"
   IFBeamTableName: "lariat_ifbeam_database"
+  HardwareConnectionsTableName: "lariat_hardware_connections"
 }
 
 END_PROLOG

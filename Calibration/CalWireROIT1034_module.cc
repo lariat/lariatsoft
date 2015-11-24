@@ -162,7 +162,13 @@ namespace caldata {
     art::Handle< std::vector<raw::RawDigit> > digitVecHandle;
     evt.getByLabel(fDigitModuleLabel, fSpillName, digitVecHandle);
 
-    if (!digitVecHandle->size())  return;
+    if (!digitVecHandle->size())  
+       {
+       // ### Adding a fix which requires CalWire to write to the event regardless ###
+       evt.put(std::move(wirecol), fSpillName);
+       evt.put(std::move(WireDigitAssn), fSpillName);
+       return;
+       }
     mf::LogInfo("CalWireROIT1034") << "CalWireROIT1034:: digitVecHandle size is " << digitVecHandle->size();
 
     // Use the handle to get a particular (0th) element of collection.
@@ -338,7 +344,7 @@ namespace caldata {
 	  throw art::Exception(art::errors::InsertFailure)
 	    << "Can't associate wire #" << (wirecol->size() - 1)
 	    << " with raw digit #" << digitVec.key();
-	} // if failed to add association  
+  } // if failed to add association
       }
     }
     

@@ -259,48 +259,43 @@ void WvformPMT::analyze(art::Event const & evt)
 //------------------------------------------------------------------------------
 void WvformPMT::endJob()
 {
-
-
-
-for(int c=0;c<fNumberOfPMTs;++c) {
-	fitexp2 = new TF1("exp2",twoexp,0,15000,7);
-	for(int j =0;j<fBaselineCounts;j++) baseline.at(c)=baseline.at(c)+double(bins[c].at(j));
-	baseline.at(c)=baseline.at(c)/fBaselineCounts;
-	for(int j =0;j<int(avhist[c]->GetNbinsX());++j) {
-			if (PMTWvformCount[c]!=0 && int(j)<int(bins[c].size())) avhist[c]->SetBinContent(j,(-double(bins[c].at(j))+baseline.at(c))/PMTWvformCount[c]);
-			if (PMTWvformCount[c]!=0 && int(j)<int(bins[c].size())) avhist_raw[c]->SetBinContent(j,(double(bins[c].at(j))/PMTWvformCount[c]));
-		}
-		//scaling e.g http://en.wikipedia.org/wiki/Short-time_Fourier_transform, fftÂ from root example
+  
+  for(int c=0;c<fNumberOfPMTs;++c) {
+    fitexp2 = new TF1("exp2",twoexp,0,15000,7);
+    for(int j =0;j<fBaselineCounts;j++) baseline.at(c)=baseline.at(c)+double(bins[c].at(j));
+    baseline.at(c)=baseline.at(c)/fBaselineCounts;
+    for(int j =0;j<int(avhist[c]->GetNbinsX());++j) {
+      if (PMTWvformCount[c]!=0 && int(j)<int(bins[c].size())) avhist[c]->SetBinContent(j,(-double(bins[c].at(j))+baseline.at(c))/PMTWvformCount[c]);
+      if (PMTWvformCount[c]!=0 && int(j)<int(bins[c].size())) avhist_raw[c]->SetBinContent(j,(double(bins[c].at(j))/PMTWvformCount[c]));
+    }
+      //scaling e.g http://en.wikipedia.org/wiki/Short-time_Fourier_transform, fftÂ from root example
   		double scaling_fft=double(fSampleFreq*1000000000)/double(fSamples);
-		TH1* temp_hist=NULL;
-		temp_hist=avhist[c]->FFT(temp_hist,"MAG");
-		TVirtualFFT *fft = TVirtualFFT::GetCurrentTransform();
-		double re1=0.;
-		double im1=0.;
-		for (int it=0; it<(fSamples/2+1); ++it){
-			fft->GetPointComplex(it, re1, im1);
-			avhist_fft[c]->SetBinContent(it,temp_hist->GetBinContent(it));
-			fft_scaled[c]->SetBinContent(it,scaling_fft*temp_hist->GetBinContent(it));
-
-			
-		}
-
-
-		
-		fitexp2->SetRange(Double_t(fFitStart),Double_t(fFitEnd));
-		fitexp2->SetParameter(0,Double_t(fFitConst));
-		fitexp2->SetParameter(1,Double_t(fExpM1));
-		fitexp2->SetParameter(2,Double_t(fExpS1));
-		fitexp2->SetParLimits(2,Double_t(fExpS1L), Double_t(fExpS1H));
-		fitexp2->SetParameter(3,Double_t(fExpM2));
-		fitexp2->SetParameter(4,Double_t(fExpS2));
-		fitexp2->SetParameter(5,Double_t(fExpM3));
-		fitexp2->SetParameter(6,Double_t(fExpS3));
-
-
-	avhist[c]->Fit("exp2", "REM+");
-	delete temp_hist;
-	delete fft;
+    TH1* temp_hist=NULL;
+    temp_hist=avhist[c]->FFT(temp_hist,"MAG");
+    TVirtualFFT *fft = TVirtualFFT::GetCurrentTransform();
+    double re1=0.;
+    double im1=0.;
+    for (int it=0; it<(fSamples/2+1); ++it){
+      fft->GetPointComplex(it, re1, im1);
+      avhist_fft[c]->SetBinContent(it,temp_hist->GetBinContent(it));
+      fft_scaled[c]->SetBinContent(it,scaling_fft*temp_hist->GetBinContent(it));
+    }
+    
+    fitexp2->SetRange(Double_t(fFitStart),Double_t(fFitEnd));
+    fitexp2->SetParameter(0,Double_t(fFitConst));
+    fitexp2->SetParameter(1,Double_t(fExpM1));
+    fitexp2->SetParameter(2,Double_t(fExpS1));
+    fitexp2->SetParLimits(2,Double_t(fExpS1L), Double_t(fExpS1H));
+    fitexp2->SetParameter(3,Double_t(fExpM2));
+    fitexp2->SetParameter(4,Double_t(fExpS2));
+    fitexp2->SetParameter(5,Double_t(fExpM3));
+    fitexp2->SetParameter(6,Double_t(fExpS3));
+    
+    
+    avhist[c]->Fit("exp2", "REM+");
+    delete temp_hist;
+    delete fft;
+    delete fitexp2;
   }
 
    

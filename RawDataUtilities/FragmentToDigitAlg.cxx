@@ -8,6 +8,7 @@
 //                                                            //
 ////////////////////////////////////////////////////////////////
 
+// C++ includes
 #include <bitset>
 
 // LArIAT
@@ -459,6 +460,7 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
   trigNames.push_back("MuRS");
 
   // Starting in run 6155 the trigger channels were read out by boardID 24
+  // IMPORTANT: Runs 6155 to 6304 do not have the waveforms recorded in the V1740B (CAEN boardId 24).
   if(fRunNumber > 6154){
     boardId = 24;
     chanOff = 48;
@@ -587,12 +589,19 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
 
   for(auto const& tdced : tdcEventData){ 
 
+    unsigned int tdcNumber = static_cast <unsigned int> (tdced.tdcEventHeader.tdcNumber);
+
+    mf::LogDebug("FragmentToDigitAlg") << "tdcEventHeader.tdcNumber: " << tdcNumber;
+
     // determine the chamber and start wire
     auto switr = fTDCToStartWire.find(tdced.tdcEventHeader.tdcNumber);
     auto chitr = fTDCToChamber.find(tdced.tdcEventHeader.tdcNumber);
 
+    // return if TDC number is out of range; stops filling of MWPC digits
+    if (tdcNumber < 1 or tdcNumber > 16) return;
+
     if( chitr == fTDCToChamber.end() || switr == fTDCToStartWire.end() )
-      throw cet::exception("FragmentToDigitAlg") << "TDC number " << tdced.tdcEventHeader.tdcNumber
+      throw cet::exception("FragmentToDigitAlg") << "TDC number " << tdcNumber
 					      << " is not present in map to chamber number or start wire";
 
     // LOG_VERBATIM("FragmentToDigitAlg") << "there are " << tdced.tdcHits.size() << " tdc hit objects in the vector for chamber "

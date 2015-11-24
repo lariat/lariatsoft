@@ -10,7 +10,10 @@ lariat_anatree:
     ParticleIDModuleLabel:    "pid"
     ClusterModuleLabel:       "linecluster"
     WCTrackLabel:             "wctrack"
-    
+    TOFModuleLabel:	      "tof"
+    G4ModuleLabel:            "largeant"
+    ShowerModuleLabel:        "showerreco"
+    MCShowerModuleLabel:      "mcreco"
 }
 
 END_PROLOG

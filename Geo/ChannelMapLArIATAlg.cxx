@@ -41,7 +41,6 @@ namespace geo{
     Uninitialize();
     
     std::vector<geo::CryostatGeo*>& cgeo = geodata.cryostats;
-    std::vector<geo::AuxDetGeo*>  & adgeo = geodata.auxDets;
     
     fNcryostat = cgeo.size();
     
@@ -193,8 +192,8 @@ namespace geo{
 
   //----------------------------------------------------------------------------
   double ChannelMapLArIATAlg::WireCoordinate(double              YPos, 
-					     double              ZPos, 
-					     geo::PlaneID const& planeID) const
+                                             double              ZPos,
+                                             geo::PlaneID const& planeID) const
   {
     // Returns the wire number corresponding to a (Y,Z) position in PlaneNo 
     // with float precision.
@@ -207,7 +206,7 @@ namespace geo{
   
   //----------------------------------------------------------------------------
   WireID ChannelMapLArIATAlg::NearestWireID(TVector3     const& worldPos, 
-					    geo::PlaneID const& planeID) const
+                                            geo::PlaneID const& planeID) const
   {
 
     // This part is the actual calculation of the nearest wire number, where we assume

@@ -323,7 +323,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 {
   //Caution
   if( fPolaritySetting == 0 ){
-    std::cout << "Polarity is zero. Skipping this event." << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "Polarity is zero. Skipping this event.";
     return;
   }
 
@@ -348,12 +348,12 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 			      MuRSColHandle );
 
   //we want to know the Pz vs. TOF, so make sure that there is only one TOF object with one TOF within. Find the TOF
-  if( TOFColHandle->size() != 1 ) return;
-  if( TOFColHandle->at(0).NTOF() != 1 ) return;
+  if( TOFColHandle->size() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
+  if( TOFColHandle->at(0).NTOF() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
   float reco_TOF = TOFColHandle->at(0).SingleTOF(0);
 
   //Assume that there is only one good WCTrack. Identify the WCTrack's momentum.
-  if( WCTrackColHandle->size() != 1 ) return;
+  if( WCTrackColHandle->size() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
   float reco_momentum = WCTrackColHandle->at(0).Momentum();
   setPriors( reco_momentum );
 
@@ -361,7 +361,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   fPzVsTOF->Fill(reco_momentum,reco_TOF);
 
   //Make a cut to reduce ambiguity in particle species based on mass distributions
-  if(reco_momentum > fMaxMomentumForPID ){ return; }
+  if(reco_momentum > fMaxMomentumForPID ){ e.put(std::move(AuxDetParticleIDCol)); return; }
 
   //Plot essential information about the incoming data products that passed the
   //cuts. Also, plot THE MASS!!!!
@@ -408,7 +408,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //parametrized threshold. If it is, run pi/mu separation on it.
   bool foundGoodMuRSTrack = false;
   ldp::MuonRangeStackHits theMuRS = MuRSColHandle->at(0);
-  if( fVerbose ) std::cout << "PiMu likelihood: " << proton_kaon_pimu_likelihood_ratios.at(2) << std::endl;
+  if( fVerbose ) LOG_VERBATIM("ParticleIdentificationSlicing") << "PiMu likelihood: " << proton_kaon_pimu_likelihood_ratios.at(2);
   if( proton_kaon_pimu_likelihood_ratios.at(2) > fPiMuLRThreshold && theMuRS.WasItInitializedEmpty() == false ){
     
     ///////////////// PARTICLE ID Pion Vs. Muon /////////////////////////
@@ -423,7 +423,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
     //One way to improve this PID is to look at incoming times of WCTracks and MuRSTracks and match them,
     //rather than relying on the above assumption.
     
-    if( fVerbose )std::cout << "PiMu probability above threshold." << std::endl;
+    if( fVerbose )LOG_VERBATIM("ParticleIdentificationSlicing") << "PiMu probability above threshold.";
     
     
     MuRSTrack theGoodMuRSTrack;
@@ -512,7 +512,7 @@ void ParticleIdentificationSlicing::plotTheGoodTracksAndTOFInfo( art::Handle< st
         
   float mass = pow(pow((fSpeedOfLight*(TOFColHandle->at(0).SingleTOF(0))*1e-9/fDistanceTraveled)*WCTrackColHandle->at(0).Momentum(),2)-pow(WCTrackColHandle->at(0).Momentum(),2),0.5);
   fParticleMass->Fill(mass);
-  std::cout << "mass: " << mass << std::endl;
+  LOG_VERBATIM("ParticleIdentificationSlicing") << "mass: " << mass;
 
 
   ldp::MuonRangeStackHits murs = MuRSColHandle->at(0);
@@ -600,7 +600,7 @@ void ParticleIdentificationSlicing::pullSpecificPPriorsFromTable( float momentum
   
   //Loop through the mc prior map and identify which beam setting vector to use
   std::map< std::string, std::vector<float> >::iterator iter;
-  std::cout << "Momentum: " << momentum << " MeV/c " << std::endl;
+  LOG_VERBATIM("ParticleIdentificationSlicing") << "Momentum: " << momentum << " MeV/c ";
   for( iter = fMCPriorMap.begin(); iter != fMCPriorMap.end(); ++iter ){
     std::string particle = parseMCPriorString( iter->first );
     if( particle == "Pi" ){
@@ -656,12 +656,12 @@ void ParticleIdentificationSlicing::pullSpecificPPriorsFromTable( float momentum
   
   //Sanity check
   if( fVerbose ){
-    std::cout << "After setting, Correct-Momentum MC priors are: \n" << 
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "After setting, Correct-Momentum MC priors are: \n" << 
       "Pion: " << fCorrectPPiMCPrior << "\n" <<
       "Muon: " << fCorrectPMuMCPrior << "\n" << 
       "Kaon: " << fCorrectPKMCPrior << "\n" << 
       "Proton: " << fCorrectPProtMCPrior << "\n" << 
-      "Electron: " << fCorrectPEMCPrior << std::endl; 
+      "Electron: " << fCorrectPEMCPrior; 
   }
 
 
@@ -694,7 +694,7 @@ void ParticleIdentificationSlicing::pullSpecificPPriorsFromTable( float momentum
 	  fCorrectPPiPenetrationDepth.push_back(fPiMinusPenetrationDepth.at(iP*entriesPerMomentum+iEntry));
 	  fCorrectPKPenetrationDepth.push_back(fKMinusPenetrationDepth.at(iP*entriesPerMomentum+iEntry));
 	} 
-	else{ std::cout << "MAGNET SETTING IS NOT POSITIVE OR NEGATIVE. ABORT." << std::endl; }
+	else{ LOG_VERBATIM("ParticleIdentificationSlicing") << "MAGNET SETTING IS NOT POSITIVE OR NEGATIVE. ABORT."; }
       }
     }
   }
@@ -728,11 +728,11 @@ std::string ParticleIdentificationSlicing::parseMCPriorString( std::string theSt
   //Sanity check
   //  if( fVerbose ){
   if(0){
-    std::cout << "In parseMCPriorString, we find " << tempStringVect.size() << " strings. These are: " << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "In parseMCPriorString, we find " << tempStringVect.size() << " strings. These are: ";
     for( size_t iString = 0; iString < tempStringVect.size(); ++iString ){
-      std::cout << "String " << iString << ": " << tempStringVect.at(iString) << std::endl;
+      LOG_VERBATIM("ParticleIdentificationSlicing") << "String " << iString << ": " << tempStringVect.at(iString);
     }
-    std::cout << "Testing stoi capabilities for strings (1,2): (" << stoi(tempStringVect.at(1)) << "," << stoi(tempStringVect.at(3)) << ")" << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "Testing stoi capabilities for strings (1,2): (" << stoi(tempStringVect.at(1)) << "," << stoi(tempStringVect.at(3)) << ")";
   }
 
   if( stoi(tempStringVect.at(1)) == fEnergySetting &&
@@ -743,7 +743,7 @@ std::string ParticleIdentificationSlicing::parseMCPriorString( std::string theSt
     }
   }
   
-  //  std::cout << "Something not matched. Returning abort string." << std::endl;
+  //  LOG_VERBATIM("ParticleIdentificationSlicing") << "Something not matched. Returning abort string.";
   return "abort";
   
 }
@@ -759,10 +759,11 @@ void ParticleIdentificationSlicing::doThePiMu_Proton_KaonSeparation( float reco_
 
   //Sanity check
   if( fVerbose ){
-    std::cout << "Integrated Proton Prior: " << fAllPProtMCPrior << std::endl;
-    std::cout << "Integrated Kaon Prior: " << fAllPKMCPrior << std::endl;
-    std::cout << "Integrated Pi Prior: " << fAllPPiMCPrior << std::endl;
-    std::cout << "Integrated Mu Prior: " << fAllPMuMCPrior << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing")
+    << "Integrated Proton Prior: " << fAllPProtMCPrior
+    << "Integrated Kaon Prior: " << fAllPKMCPrior
+    << "Integrated Pi Prior: " << fAllPPiMCPrior
+    << "Integrated Mu Prior: " << fAllPMuMCPrior;
   }
     
   
@@ -818,12 +819,12 @@ bool ParticleIdentificationSlicing::isThereAGoodMuRSTrack(art::Handle< std::vect
   }
 
   if (counter == 1) {
-    std::cout << "There was a good MuRS track." << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "There was a good MuRS track.";
     return true;
   }
   else if (counter == 0) return false;
   else {
-    std::cout << "I'm not sure what to do here. There were 2+ good murs tracks. Returning true." << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "I'm not sure what to do here. There were 2+ good murs tracks. Returning true.";
     return true;
   }
 }
@@ -836,7 +837,7 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 								 float & pion_muon_likelihood_ratio )
 {
   if( fVerbose )
-    std::cout << "Doing the pion muon separation." << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "Doing the pion muon separation.";
 
   //Calculate the final likelihood ratio for pions/muons for positive polarity
   if( fPolaritySetting == 1 ){
@@ -888,7 +889,7 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 								     P_depth_given_prot*P_prot_given_murs );
 							       */    
 
-    if( fVerbose ) std::cout << "Pi/mu ratio: " << pion_muon_likelihood_ratio << std::endl;
+    if( fVerbose ) LOG_VERBATIM("ParticleIdentificationSlicing") << "Pi/mu ratio: " << pion_muon_likelihood_ratio;
     
     pion_muon_likelihood_ratio = P_pi_given_depth/P_mu_given_depth;
 
@@ -948,7 +949,7 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 
   }
 
-  else{ std::cout << "Polarity is zero. Aborting." << std::endl; }
+  else{ LOG_VERBATIM("ParticleIdentificationSlicing") << "Polarity is zero. Aborting."; }
 
   /*
   float P_depth_given_pion = getProbabilityOfDepthGivenPionAtPunchThrough( reco_momentum, thePenetrationDepth );
@@ -973,7 +974,7 @@ int ParticleIdentificationSlicing::generatePDGCode( std::vector<float> proton_ka
   float pi_g_pimu_prob = pion_muon_likelihood_ratio/(pion_muon_likelihood_ratio+1);
   float mu_g_pimu_prob = 1/(pion_muon_likelihood_ratio+1);
 
-  std::cout << "pi_g_pimu_prob: " << pi_g_pimu_prob << ", mu_g_pimu_prob: " << mu_g_pimu_prob << std::endl;
+  LOG_VERBATIM("ParticleIdentificationSlicing") << "pi_g_pimu_prob: " << pi_g_pimu_prob << ", mu_g_pimu_prob: " << mu_g_pimu_prob;
   
 
   int pdgCode = 0; //Zero is unsuccessful decision of PDG code
@@ -995,12 +996,12 @@ int ParticleIdentificationSlicing::generatePDGCode( std::vector<float> proton_ka
     else if( fPolaritySetting == 1 ){
       if( pi_g_pimu_prob > mu_g_pimu_prob ) pdgCode = 211;
       else if( pi_g_pimu_prob < mu_g_pimu_prob )pdgCode = -13;
-      else{ std::cout << "It seems as if no murs was run. The muon and pion probs are equal." << std::endl; }
+      else{ LOG_VERBATIM("ParticleIdentificationSlicing") << "It seems as if no murs was run. The muon and pion probs are equal."; }
     }
     else if( fPolaritySetting == -1 ){
       if( pi_g_pimu_prob > mu_g_pimu_prob ) pdgCode = -211;
       else if( pi_g_pimu_prob < mu_g_pimu_prob )pdgCode = 13;
-      else{ std::cout << "It seems as if no murs was run. The muon and pion probs are equal." << std::endl; }
+      else{ LOG_VERBATIM("ParticleIdentificationSlicing") << "It seems as if no murs was run. The muon and pion probs are equal."; }
 
     }
     else{ pdgCode = 0; }
@@ -1017,7 +1018,7 @@ void ParticleIdentificationSlicing::fillPIDHistos( int finalPDGCode,
 						   
 						   
 {
-  std::cout << "TOF: " << TOF << ", P: " << momentum << std::endl;
+  LOG_VERBATIM("ParticleIdentificationSlicing") << "TOF: " << TOF << ", P: " << momentum;
 
   if( finalPDGCode == 2212 || finalPDGCode == -2212 ){
     fPzVsTOFProtons->Fill(momentum,TOF);
@@ -1052,9 +1053,10 @@ void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
 
   //Sanity check
   if( fVerbose ){
-    std::cout << "Magnet Setting: " << fMagnetSetting << std::endl;
-    std::cout << "Magnet Polarity: " << fPolaritySetting << std::endl;
-    std::cout << "Energy Setting: " << fEnergySetting << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing")
+    << "Magnet Setting: " << fMagnetSetting
+    << "Magnet Polarity: " << fPolaritySetting
+    << "Energy Setting: " << fEnergySetting;
   }
 
   //Known settings
@@ -1089,9 +1091,10 @@ void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
   
   //Sanity check
   if( fVerbose ){
-    std::cout << "Magnet Setting: " << fMagnetSetting << ", Closest accepted: " << theTrueMagSetting << std::endl;
-    std::cout << "Magnet Polarity: " << fPolaritySetting << std::endl;
-    std::cout << "Energy Setting: " << fEnergySetting << ", Closest accepted: " << theTrueEnergySetting << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing")
+    << "Magnet Setting: " << fMagnetSetting << ", Closest accepted: " << theTrueMagSetting
+    << "Magnet Polarity: " << fPolaritySetting
+    << "Energy Setting: " << fEnergySetting << ", Closest accepted: " << theTrueEnergySetting;
   }
 
   //More Sanity checks
@@ -1257,7 +1260,7 @@ void ParticleIdentificationSlicing::beginJob()
     geo::AuxDetGeo* anAuxDetGeo = theAuxDetGeoVect.at(iDet);
     anAuxDetGeo->GetCenter(centerOfDet);
 
-    //    std::cout << "AuxDetGeo " << iDet << " center: (" << centerOfDet[0] << "," << centerOfDet[1] << "," << centerOfDet[2] << ")" << std::endl;
+    //    LOG_VERBATIM("ParticleIdentificationSlicing") << "AuxDetGeo " << iDet << " center: (" << centerOfDet[0] << "," << centerOfDet[1] << "," << centerOfDet[2] << ")";
     //0 and 6 are US and DS TOF
     if( iDet == 0 ){
       usTOFctr[0] = centerOfDet[0] * CLHEP::cm;
@@ -1292,7 +1295,7 @@ void ParticleIdentificationSlicing::beginJob()
   fDistanceTraveled = (shortDist1+shortDist2)/1000;
 
   if( fVerbose ){
-    std::cout << "us2dsAngle: " << us2dsAngle*rad2deg << "\nangle1: " << angle1 << "\nangle3: " << angle3 << "\nshortDist1: " << shortDist1 << "\nshortDist2: " << shortDist2 << "\nDistanceTraveled: " << fDistanceTraveled << std::endl; 
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "us2dsAngle: " << us2dsAngle*rad2deg << "\nangle1: " << angle1 << "\nangle3: " << angle3 << "\nshortDist1: " << shortDist1 << "\nshortDist2: " << shortDist2 << "\nDistanceTraveled: " << fDistanceTraveled; 
   }
 
 }
@@ -1319,9 +1322,9 @@ void ParticleIdentificationSlicing::endJob()
 {
   // Implementation of optional member function here.
   for( size_t iKaon = 0; iKaon < fKaonRun.size() ; ++iKaon ){
-    std::cout << "Kaon Run: " << fKaonRun.at(iKaon) << ", SubRun: " << fKaonSubRun.at(iKaon) << ", Event: " << fKaonEvent.at(iKaon) << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "Kaon Run: " << fKaonRun.at(iKaon) << ", SubRun: " << fKaonSubRun.at(iKaon) << ", Event: " << fKaonEvent.at(iKaon);
   }
-  std::cout << "Good MuRS Tracks: " << fGoodMuRSCounter << std::endl;
+  LOG_VERBATIM("ParticleIdentificationSlicing") << "Good MuRS Tracks: " << fGoodMuRSCounter;
 
   //Fitting the mass histogram in the appropriate regions to get the
   //parameters used for likelihood estimation of particle flavor
@@ -1338,12 +1341,18 @@ void ParticleIdentificationSlicing::endJob()
     f3->SetParameter(0,940);
     f3->SetParameter(1,100);
     f3->SetParameter(2,20);
-    std::cout << "Fitting to Pi/Mu peak: " << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "Fitting to Pi/Mu peak: ";
     fParticleMass->Fit("f1","R");
-    std::cout << "Fitting to Kaon peak: " << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "Fitting to Kaon peak: ";
     fParticleMass->Fit("f2","R");
-    std::cout << "Fitting to Proton peak: " << std::endl;
+    LOG_VERBATIM("ParticleIdentificationSlicing") << "Fitting to Proton peak: ";
     fParticleMass->Fit("f3","R");
+    
+    // clean up the pointers - not sure why ROOT seems to require everything to
+    // be in pointer form...
+    delete f1;
+    delete f2;
+    delete f3;
   }
   
 

@@ -241,6 +241,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
   }
   //track information
   trkf::TrackMomentumCalculator trkm;
+  trkm.SetMinLength(10); //change the minimal track length requirement to 10 cm
   ntracks_reco=tracklist.size();
   double larStart[3];
   double larEnd[3];
