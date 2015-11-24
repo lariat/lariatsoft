@@ -1,4 +1,4 @@
-#include "standard_slicer.fcl"
+#include "SlicerInput.fcl"
 
 services.user.SeedService.policy: "preDefinedSeed"
 services.user.SeedService.baseSeed: 1234
