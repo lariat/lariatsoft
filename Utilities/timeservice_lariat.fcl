@@ -1,0 +1,11 @@
+#
+# Deprecated configuration - use lariat_detectorclocks directly instead
+#
+
+#include "detectorclocks_lariat.fcl"
+
+BEGIN_PROLOG
+
+lariat_timeservice: @local::lariat_detectorclocks
+
+END_PROLOG
