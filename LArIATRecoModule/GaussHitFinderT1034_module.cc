@@ -52,7 +52,7 @@
 #include "RecoBase/Wire.h"
 #include "RecoBase/Hit.h"
 //#include "RecoBaseArt/HitCreator.h"
-#include "Utilities/DetectorProperties.h"
+//#include "DetectorInfoServices/DetectorPropertiesService.h"
 #include "Utilities/AssociationUtil.h"
 
 // ROOT Includes
@@ -271,7 +271,7 @@ void GausHitFinder::produce(art::Event& evt)
    // ###################################
    // ### Calling Detector Properties ###
    // ###################################
-   art::ServiceHandle<util::DetectorProperties> detprop;
+//   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
    
    // ################################
    // ### Calling Geometry service ###

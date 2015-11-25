@@ -3,8 +3,6 @@ art_make( MODULE_LIBRARIES Geometry
 			Geometry_service
 			Simulation
 			BackTracker_service
-			LArProperties_service
-			DetectorProperties_service
 	                Utilities
 			Filters
 			RawData

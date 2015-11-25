@@ -209,8 +209,8 @@ physics.producers.pmtrack.MinSeedSize2ndPass: 3
 services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
 services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
 
-services.DetectorProperties.TimeOffsetV: -13.2
-services.LArProperties.Electronlifetime: 1600
+services.DetectorPropertiesService.TimeOffsetV: -13.2
+services.DetectorPropertiesService.Electronlifetime: 1600
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"

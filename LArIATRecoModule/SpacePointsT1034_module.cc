@@ -56,8 +56,8 @@
 #include "RecoAlg/DBScanAlg.h"
 #include "RecoAlg/ClusterRecoUtil/StandardClusterParamsAlg.h"
 #include "RecoAlg/ClusterParamsImportWrapper.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/LArProperties.h"
+#include "DetectorInfoServices/DetectorPropertiesService.h"
+#include "DetectorInfoServices/LArPropertiesService.h"
 #include "Utilities/AssociationUtil.h"
 
 // ROOT includes
@@ -175,8 +175,8 @@ void SpacePointsT1034::produce(art::Event & evt)
   
   // get services
   art::ServiceHandle<geo::Geometry> geom;
-  art::ServiceHandle<util::LArProperties> larprop;
-  art::ServiceHandle<util::DetectorProperties> detprop;
+  auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
+  auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   
   //////////////////////////////////////////////////////
   // Make a std::unique_ptr<> for the thing you want to put into the event
@@ -217,15 +217,15 @@ void SpacePointsT1034::produce(art::Event & evt)
   double plane_pitch = geom->PlanePitch(0,1);   //wire plane pitch in cm 
   double wire_pitch = geom->WirePitch(0,1,0);    //wire pitch in cm
   //double Efield_drift = 0.5;  // Electric Field in the drift region in kV/cm
-  double Efield_drift = larprop->Efield(0);  // Electric Field in the drift region in kV/cm
+  double Efield_drift = detprop->Efield(0);  // Electric Field in the drift region in kV/cm
   double Efield_SI = 0.7;     // Electric Field between Shield and Induction planes in kV/cm
   double Efield_IC = 0.9;     // Electric Field between Induction and Collection planes in kV/cm
   //double Temperature = 90.5;  // LAr Temperature in K
   double Temperature = larprop->Temperature();  // LAr Temperature in K
   
-  double driftvelocity = larprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
-  double driftvelocity_SI = larprop->DriftVelocity(Efield_SI,Temperature);    //drift velocity between shield and induction (cm/us)
-  double driftvelocity_IC = larprop->DriftVelocity(Efield_IC,Temperature);    //drift velocity between induction and collection (cm/us)
+  double driftvelocity = detprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
+  double driftvelocity_SI = detprop->DriftVelocity(Efield_SI,Temperature);    //drift velocity between shield and induction (cm/us)
+  double driftvelocity_IC = detprop->DriftVelocity(Efield_IC,Temperature);    //drift velocity between induction and collection (cm/us)
   double timepitch = driftvelocity*timetick;                         //time sample (cm) 
   double tSI = plane_pitch/driftvelocity_SI/timetick;                   //drift time between Shield and Collection planes (time samples)
   double tIC = plane_pitch/driftvelocity_IC/timetick;                //drift time between Induction and Collection planes (time samples)

@@ -42,8 +42,7 @@
 #include "RecoBase/Track.h"
 #include "RecoBase/Vertex.h"
 #include "RecoBase/SpacePoint.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
+#include "DetectorInfoServices/DetectorPropertiesService.h"
 #include "Utilities/AssociationUtil.h"
 #include "RawData/ExternalTrigger.h"
 #include "RawData/RawDigit.h"
@@ -365,10 +364,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    // #######################################
    // === Geometry Service ===
    art::ServiceHandle<geo::Geometry> geom;
-   // === Liquid Argon Properties Services ===
-   art::ServiceHandle<util::LArProperties> larprop;
    // === Detector properties service ===
-   art::ServiceHandle<util::DetectorProperties> detprop;
+   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
    // === BackTracker service ===
    art::ServiceHandle<cheat::BackTracker> bt;
    const sim::ParticleList& plist = bt->ParticleList();
@@ -393,9 +390,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    evttime = tts.AsDouble();
    
    // === Electric Field ===
-   efield[0] = larprop->Efield(0);
-   efield[1] = larprop->Efield(1);
-   efield[2] = larprop->Efield(2);
+   efield[0] = detprop->Efield(0);
+   efield[1] = detprop->Efield(1);
+   efield[2] = detprop->Efield(2);
    
    // === Trigger Offset ====
    t0 = detprop->TriggerOffset();

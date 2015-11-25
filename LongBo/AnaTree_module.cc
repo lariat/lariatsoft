@@ -32,8 +32,7 @@
 #include "RecoBase/Cluster.h"
 #include "RecoBase/Track.h"
 #include "RecoBase/SpacePoint.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
+#include "DetectorInfoServices/DetectorPropertiesService.h"
 #include "Utilities/AssociationUtil.h"
 #include "RawData/ExternalTrigger.h"
 #include "RawData/RawDigit.h"
@@ -165,8 +164,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
   ResetVars();
 
   art::ServiceHandle<geo::Geometry> geom;
-  art::ServiceHandle<util::LArProperties> larprop;
-  art::ServiceHandle<util::DetectorProperties> detprop;
+  auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   art::ServiceHandle<cheat::BackTracker> bt;
 
 //  for (size_t i = 0; i<geom->Nplanes(); ++i){
@@ -187,9 +185,9 @@ void bo::AnaTree::analyze(art::Event const & evt)
   evttime = tts.AsDouble();
 
 
-  efield[0] = larprop->Efield(0);
-  efield[1] = larprop->Efield(1);
-  efield[2] = larprop->Efield(2);
+  efield[0] = detprop->Efield(0);
+  efield[1] = detprop->Efield(1);
+  efield[2] = detprop->Efield(2);
 
   t0 = detprop->TriggerOffset();
 

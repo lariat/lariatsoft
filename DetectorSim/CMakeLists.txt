@@ -9,9 +9,9 @@ simple_plugin(SimWireT1034 "module"
                         Geometry_service
                         Simulation
                         Utilities
-                        TimeService_service
                         Filters
                         RawData
+                        DetectorClocksServiceStandard_service
                         SignalShapingServiceT1034_service
 			${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
