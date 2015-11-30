@@ -238,6 +238,7 @@ namespace trkf {
     double Efield_drift = detprop->Efield(0);  // Electric Field in the drift region in kV/cm
     // Note: LArProperties::Temperature() has moved to DetectorProperties/DetectorPropertiesService
     double Temperature = detprop->Temperature();  // LAr Temperature in K
+
     // Note: LArProperties::DriftVelocity() has moved to DetectorProperties/DetectorPropertiesService
     double driftvelocity = detprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
     double timepitch = driftvelocity*timetick;                         //time sample (cm) 
