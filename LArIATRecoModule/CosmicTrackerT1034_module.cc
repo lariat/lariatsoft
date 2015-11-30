@@ -50,7 +50,6 @@
 #include "RecoBase/Cluster.h"
 #include "RecoBase/Track.h"
 #include "RecoBase/SpacePoint.h"
-#include "DetectorInfoServices/LArPropertiesService.h"
 #include "DetectorInfoServices/DetectorPropertiesService.h"
 #include "Utilities/AssociationUtil.h"
 #include "RecoAlg/ClusterMatchTQ.h"
@@ -210,7 +209,6 @@ namespace trkf {
   
     // get services
     art::ServiceHandle<geo::Geometry> geom;
-    auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
     auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     rdu::TriggerDigitUtility tdu(evt, fTriggerUtility);   
@@ -235,7 +233,7 @@ namespace trkf {
     //double plane_pitch = geom->PlanePitch(0,1);   //wire plane pitch in cm 
     double wire_pitch = geom->WirePitch(0,1,0);    //wire pitch in cm
     double Efield_drift = detprop->Efield(0);  // Electric Field in the drift region in kV/cm
-    double Temperature = larprop->Temperature();  // LAr Temperature in K
+    double Temperature = detprop->Temperature();  // LAr Temperature in K
 
     double driftvelocity = detprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
     double timepitch = driftvelocity*timetick;                         //time sample (cm) 

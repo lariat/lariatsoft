@@ -57,7 +57,6 @@
 #include "RecoAlg/ClusterRecoUtil/StandardClusterParamsAlg.h"
 #include "RecoAlg/ClusterParamsImportWrapper.h"
 #include "DetectorInfoServices/DetectorPropertiesService.h"
-#include "DetectorInfoServices/LArPropertiesService.h"
 #include "Utilities/AssociationUtil.h"
 
 // ROOT includes
@@ -175,7 +174,6 @@ void SpacePointsT1034::produce(art::Event & evt)
   
   // get services
   art::ServiceHandle<geo::Geometry> geom;
-  auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   
   //////////////////////////////////////////////////////
@@ -221,7 +219,7 @@ void SpacePointsT1034::produce(art::Event & evt)
   double Efield_SI = 0.7;     // Electric Field between Shield and Induction planes in kV/cm
   double Efield_IC = 0.9;     // Electric Field between Induction and Collection planes in kV/cm
   //double Temperature = 90.5;  // LAr Temperature in K
-  double Temperature = larprop->Temperature();  // LAr Temperature in K
+  double Temperature = detprop->Temperature();  // LAr Temperature in K
   
   double driftvelocity = detprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
   double driftvelocity_SI = detprop->DriftVelocity(Efield_SI,Temperature);    //drift velocity between shield and induction (cm/us)
