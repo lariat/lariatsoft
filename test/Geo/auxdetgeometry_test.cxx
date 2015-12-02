@@ -82,7 +82,7 @@ int main(int argc, char const** argv) {
   
   // second argument: path of the parameter set for geometry test configuration
   // (optional; default: "physics.analysers.geotest")
-  config.SetTesterParameterSetPath
+  config.SetMainTesterParameterSetPath
     ((++iParam < argc)? argv[iParam]: "physics.analyzers.geotest");
   
   // third argument: path of the parameter set for geometry configuration

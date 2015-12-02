@@ -69,6 +69,7 @@ using LArIATGeometryTestEnvironment
 int main(int argc, char const** argv) {
   
   LArIATGeometryConfiguration config("geometry_test_lariat");
+  config.SetMainTesterParameterSetName("geotest");
   
   //
   // parameter parsing
@@ -80,8 +81,7 @@ int main(int argc, char const** argv) {
   
   // second argument: path of the parameter set for geometry test configuration
   // (optional; default: "physics.analysers.geotest")
-  config.SetTesterParameterSetPath
-    ((++iParam < argc)? argv[iParam]: "physics.analyzers.geotest");
+  if (++iParam < argc) config.SetMainTesterParameterSetPath(argv[iParam]);
   
   // third argument: path of the parameter set for geometry configuration
   // (optional; default: "services.Geometry" from the inherited object)
