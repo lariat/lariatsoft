@@ -65,4 +65,10 @@ lariat_endpointmod.EndPointAlg:                   @local::lariat_endpointalg
                                                                                       
 #lariat_showeranglecluster:                        @local::standard_showeranglecluster 
 
+lariat_blurredcluster: @local::standard_blurredcluster
+lariat_blurredcluster.HitsModuleLabel: "linecluster"
+lariat_blurredcluster.GlobalTPCRecon: false
+lariat_blurredcluster.BlurredClusterAlg.BlurTick: 15
+lariat_blurredcluster.BlurredClusterAlg.BlurWire: 15
+
 END_PROLOG
