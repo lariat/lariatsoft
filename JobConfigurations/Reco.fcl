@@ -149,32 +149,56 @@ physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 #physics.producers.fuzzycluster.HitsModuleLabel:                 "gaushit"
 #physics.producers.fuzzycluster.CalDataModuleLabel:              "caldata"
 
-#physics.producers.cccluster.CalDataModuleLabel:                 "caldata"
-physics.producers.cchit.CCHitFinderAlg.MinSigInd:  4
-physics.producers.cchit.CCHitFinderAlg.MinSigCol:  4
-physics.producers.cchit.CCHitFinderAlg.MinRMSInd:  6.0
-physics.producers.cchit.CCHitFinderAlg.MinRMSCol:  8.0
-physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [0.02, 0.09]
-#physics.producers.cchit.CCHitFinderAlg.CrudeHitWidth:  0
+#physics.producers.cchit.CCHitFinderAlg.MinPeak:    [4, 4] # min peak signal in each plane
+#physics.producers.cchit.CCHitFinderAlg.MinRMS:     [8, 10] # min signal RMS in each plane
+#physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [1.1, 0.5]
+#physics.producers.cchit.CCHitFinderAlg.MaxBumps:    5    # make a crude hit if > MaxBumps are found in the RAT
+#physics.producers.cchit.CCHitFinderAlg.MaxXtraHits:   1
+#physics.producers.cchit.CCHitFinderAlg.ChiSplit:   20.   # Max chi/DOF for splitting hits for signal rms error = 1
+#physics.producers.cchit.CCHitFinderAlg.ChiNorms: [ 1.0, 1.0 ]  # chi/DOF normalization for each plane
 #physics.producers.cchit.CCHitFinderAlg.StudyHits: false
 #physics.producers.cchit.CCHitFinderAlg.UWireRange: [70, 100]
 #physics.producers.cchit.CCHitFinderAlg.UTickRange: [1560, 1660]
 #physics.producers.cchit.CCHitFinderAlg.VWireRange: [45, 85]
 #physics.producers.cchit.CCHitFinderAlg.VTickRange: [1500, 1800]
 
-physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 20
-physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.2,0.2,0.2]
-physics.producers.linecluster.ClusterCrawlerAlg.MaxHitsFit: [20, 8, 4]
-physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3
-physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0
+physics.producers.linecluster.HitFinderModuleLabel: "gaushit"
+physics.producers.linecluster.ClusterCrawlerAlg.NumPass: 3      # Number of passes through the hit collection
+physics.producers.linecluster.ClusterCrawlerAlg.MaxHitsFit: [100, 10, 3] # Max number of hits fit in each pass
+physics.producers.linecluster.ClusterCrawlerAlg.MinHits:    [ 80,  8, 3] # Minimum number of hits required
+physics.producers.linecluster.ClusterCrawlerAlg.MinWirAfterSkip: [ 10,  3, 2] # Min number of hits after skipping a gap
+physics.producers.linecluster.ClusterCrawlerAlg.NHitsAve:    [ 10,  6, 2] # Number of hits for finding average hit charge
+physics.producers.linecluster.ClusterCrawlerAlg.ChgCut:     [2, 4, 8] # Max fractional charge allowed for adding hits
+physics.producers.linecluster.ClusterCrawlerAlg.ChiCut:   [4, 8, 10]  # Max fit chisq for clusters
+physics.producers.linecluster.ClusterCrawlerAlg.MaxWirSkip:   [20, 4, 0] # Max number of wires to skip while crawling
+physics.producers.linecluster.ClusterCrawlerAlg.KinkChiRat: [1.2, 1.2, 2] # (1st cut) Max fit chisq ratio for identifying a kink
+physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.2, 0.4, 1.5] # (2nd cut) Max kink angle
+physics.producers.linecluster.ClusterCrawlerAlg.DoMerge: [false, true, true] # Merge clusters on pass?
+physics.producers.linecluster.ClusterCrawlerAlg.TimeDelta: [8, 8, 20] # mMx tick difference at intersection for merging clusters
+physics.producers.linecluster.ClusterCrawlerAlg.MergeChgCut: [0.8, 0.8, 0.8] # Max charge ratio difference for merging clusters
+physics.producers.linecluster.ClusterCrawlerAlg.FindVertices: [true, true, true] # Find vertices on each pass?
+physics.producers.linecluster.ClusterCrawlerAlg.LACrawl: [true, true, true] # Crawl Large Angle clusters on each pass?
+physics.producers.linecluster.ClusterCrawlerAlg.LAClusAngleCut: 45  # Angle (degrees) for using Large Angle crawling code
+physics.producers.linecluster.ClusterCrawlerAlg.LAClusMaxHitsFit: 4 # Max number of hits
+physics.producers.linecluster.ClusterCrawlerAlg.MinHitFrac: 0.6 # Discard clusters with fraction of (numHits/numWires) < value
+physics.producers.linecluster.ClusterCrawlerAlg.MinAmp: 5 # Min signal amplitude for merging clusters and cluster-vtx associations
+physics.producers.linecluster.ClusterCrawlerAlg.HitMergeChiCut: 2.5 # Max hit separation chisq to make hits available for merging
+physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0.1 # max angle difference (radians) for merging overlap clusters
+physics.producers.linecluster.ClusterCrawlerAlg.ChkClusterDS: true # Extend clusters DownStream after creating them?
+physics.producers.linecluster.ClusterCrawlerAlg.VtxClusterSplit: true # Split clusters that cross a 2D vertex?
+physics.producers.linecluster.ClusterCrawlerAlg.FindStarVertices: true # Find 2D vertices with a star topology
+physics.producers.linecluster.ClusterCrawlerAlg.FindHammerClusters: true # Find 2D vertices with a hammer topology
+physics.producers.linecluster.ClusterCrawlerAlg.FindVLAClusters: false # Find Very Large Angle clusters
+physics.producers.linecluster.ClusterCrawlerAlg.RefineVertexClusters: false # Refine vertices and clusters after creating them
+physics.producers.linecluster.ClusterCrawlerAlg.HitErrFac: 0.2  # Fraction of hit RMS to calculate cluster fit chisq
+physics.producers.linecluster.ClusterCrawlerAlg.AllowNoHitWire: 3 # Allow skipping wires that have no signal
+physics.producers.linecluster.ClusterCrawlerAlg.Vertex2DCut: 10 # Chisq cut for making 2D vertices
+physics.producers.linecluster.ClusterCrawlerAlg.Vertex2DWireErrCut: 5 # Reject 3D vertices if wire error too large (wires)
+physics.producers.linecluster.ClusterCrawlerAlg.Vertex3DCut: 3 # Chisq cut for making 3D vertices
 
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 0
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  5555
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: -1
-
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: 1
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  126
-#physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 600
+physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: -1
+physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  0
+physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
 physics.producers.costrk.ClusterModuleLabel:  "linecluster"
 physics.producers.costrk.VertexModuleLabel:   "linecluster"
