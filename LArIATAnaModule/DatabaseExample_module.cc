@@ -278,23 +278,10 @@ namespace DatabaseExample {
          all_connections_iter != fHardwareConnectionsValues.end();
          ++all_connections_iter) {
 
+      mf::LogVerbatim("DatabaseExample")
+        << "Column: " << all_connections_iter->first << "; Value: " << all_connections_iter->second;
 
-        std::string str ("d_"); 
-        std::string str2 ("_c"); 
-        std::string str3 ("l_"); 
-        std::size_t found = all_connections_iter->first.find(str);
-        std::size_t found2 = all_connections_iter->first.find(str2);
-        std::size_t found3 = all_connections_iter->first.find(str3);
-        if(found !=std::string::npos){
-	std::string strboardId (all_connections_iter->first,found+2,found2-(found+2) );
-	std::string strchannelId (all_connections_iter->first,found3+2,all_connections_iter->first.size()-found3);
-        uint32_t boardId =stoi(strboardId );
-        uint32_t channelId =stoi(strchannelId );
-    mf::LogVerbatim("DatabaseExample")
-        << "Column: " << all_connections_iter->first << "; Value: " << all_connections_iter->second<< "; boardId: "<<boardId<<"; channelId: "<<channelId;
-       } 
-       
-     }
+    }
 
     mf::LogVerbatim("DatabaseExample")
       << "///////////////////////////////////////////////////////////////////"
