@@ -23,8 +23,7 @@ lariat_cchitfinderalg.MinRMSInd:                  5.
 lariat_cchitfinderalg.MinRMSCol:                  10.                               
 lariat_cchitfinderalg.ChiNorms:                   [0.5, 2.7]                        
 lariat_cchitfinderalg.ChgNorms:                   [1.0, 1.0]                        
-lariat_cchitrefineralg:                           @local::standard_cchitrefineralg  
-                                                                                    
+
 lariat_fuzzyclusteralg:                           @local::standard_fuzzyclusteralg  
                                                                                     
 lariat_houghbasealg:                              @local::standard_houghbasealg     
@@ -38,7 +37,6 @@ lariat_endpointalg:                               @local::standard_endpointalg
 lariat_clustercrawler:                            @local::standard_clustercrawler   
 lariat_clustercrawler.ClusterCrawlerAlg:          @local::lariat_clustercrawleralg  
 lariat_clustercrawler.CCHitFinderAlg:             @local::lariat_cchitfinderalg     
-lariat_clustercrawler.CCHitRefinerAlg:            @local::lariat_cchitrefineralg    
 
 lariat_clustercrawlermc:                          @local::lariat_clustercrawler      
 lariat_clustercrawlermc.CCHitFinderAlg.MinRMSInd: 6.7

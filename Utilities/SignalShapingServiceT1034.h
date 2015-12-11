@@ -18,6 +18,7 @@
 /// Ind3DCorrection - 3D path length correction for induction plane.
 /// ColFieldRespAmp - Collection field response amplitude.
 /// IndFieldRespAmp - Induction field response amplitude.
+/// IndFieldParams  - Induction field function parameters
 /// ShapeTimeConst  - Time constants for exponential shaping.
 /// ColFilter       - Root parameterized collection plane filter function.
 /// ColFilterParams - Collection filter function parameters.
@@ -106,13 +107,14 @@ namespace util {
 
     // Fcl parameters.
 
-    int fNFieldBins;         			///< number of bins for field response
+    unsigned int fNFieldBins;         		///< number of bins for field response
     double fCol3DCorrection; 			///< correction factor to account for 3D path of 
 						///< electrons thru wires
     double fInd3DCorrection;  			///< correction factor to account for 3D path of 
 						///< electrons thru wires
     double fColFieldRespAmp;  			///< amplitude of response to field 
     double fIndFieldRespAmp;  			///< amplitude of response to field  
+    std::vector<double> fIndFieldParams;         ///< induction plane field function parameters
     
     std::vector<double> fFieldResponseTOffset;  ///< Time offset for field response in ns
     std::vector<double> fCalibResponseTOffset;  //Calibrated time offset in order to alogn U/V/Y planes 

@@ -1474,6 +1474,8 @@ void FragmentToDigit::makeMuonRangeDigits(std::vector<CAENFragment>     const& c
 {
   // The Muon Range Stack channels are all on the V1740 board in slot 7
   // The channels are 32 <= ch < 48
+  
+
   uint32_t boardId = 7;
   uint32_t chanOff = 32;
   uint32_t maxChan = 48;
@@ -1497,6 +1499,7 @@ void FragmentToDigit::makeMuonRangeDigits(std::vector<CAENFragment>     const& c
 void FragmentToDigit::makeTOFDigits(std::vector<CAENFragment>     const& caenFrags,
 				    std::vector<raw::AuxDetDigit>      & tofAuxDigits)
 {
+
   // TOF inputs are all sent to board 8
   uint32_t boardId = 8;
   uint32_t chanOff = 0;
