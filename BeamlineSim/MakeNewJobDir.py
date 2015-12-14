@@ -85,7 +85,10 @@ print "newdirname:",newdirname,":"
 commands.getoutput('mkdir '+newdirname)
 if verbose: print "mkdir "+newdirname
 commands.getoutput('cp '+olddir+'/MergeTrees.py '+newdirname+'/.')
-
+##new scripts added to new directory
+commands.getoutput('cp '+olddir+'/Script.sh '+newdirname+'/.')
+commands.getoutput('cp '+olddir+'/MergeFiles.sh '+newdirname+'/.')
+commands.getoutput('cp '+olddir+'/Jobsubmit.sh '+newdirname+'/.')
 ################################################################
 ## Make the new g4bl script. Have to modify this on your own. ##
 lsd = commands.getoutput('ls '+olddir+'/LAriaT_*.in')
