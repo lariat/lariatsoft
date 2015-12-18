@@ -87,6 +87,7 @@ physics:
          #FragmentToDigit,
          caldata,
          cchit,
+	 gaushit,
         # cccluster,
 	 linecluster,
          showerreco,
