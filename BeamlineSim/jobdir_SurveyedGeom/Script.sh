@@ -1,5 +1,4 @@
 source /grid/fermiapp/products/common/etc/setups.sh
-#source /cvmfs/oasis.opensciencegrid.org/fermilab/products/common/etc/setup
 source /grid/fermiapp/products/larsoft/setup
 export GROUP=lariat
 export JOBSUB_GROUP=lariat
@@ -19,7 +18,7 @@ echo "jobsize is: $jobsize"
 echo "first = $first"
 echo "last = $last"
 
-ifdh cp /lariat/app/users/$USER/lariatsoft/BeamlineSim/path/input input
+ifdh cp $PWD/input input
 ls -lrth
 g4bl input first=$first last=$last
 ls -lrth
