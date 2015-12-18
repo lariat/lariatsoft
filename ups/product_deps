@@ -24,15 +24,9 @@ qualifier	              larsoft          LariatFilters	lariatfragments  artdaq_c
 e9:debug	       	      e9:debug         -nq-		 e9:debug        e9:nu:s24:debug	-nq-
 e9:opt			      e9:opt	       -nq-		 e9:opt		 e9:nu:s24:opt	  	-nq-
 e9:prof			      e9:prof	       -nq-		 e9:prof         e9:nu:s24:prof		-nq-
-e9:debug:noifdh		      e9:debug:noifdh  -nq-		 e9:debug        e9:nu:s24:debug	-nq-
-e9:opt:noifdh		      e9:opt:noifdh    -nq-		 e9:opt		 e9:nu:s24:opt	  	-nq-
-e9:prof:noifdh		      e9:prof:noifdh   -nq-		 e9:prof	 e9:nu:s24:prof		-nq-
 e9:debug:nobeam		      e9:debug         -nq-		 e9:debug        e9:nu:s24:debug	-
 e9:opt:nobeam		      e9:opt	       -nq-		 e9:opt		 e9:nu:s24:opt	  	-
 e9:prof:nobeam		      e9:prof	       -nq-		 e9:prof         e9:nu:s24:prof		-
-e9:debug:nobeam:noifdh	      e9:debug:noifdh  -nq-		 e9:debug        e9:nu:s24:debug	-
-e9:opt:nobeam:noifdh	      e9:opt:noifdh    -nq-		 e9:opt		 e9:nu:s24:opt	  	-
-e9:prof:nobeam:noifdh	      e9:prof:noifdh   -nq-		 e9:prof         e9:nu:s24:prof		-
 
 end_qualifier_list
 
