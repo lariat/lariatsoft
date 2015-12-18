@@ -1,5 +1,4 @@
 source /grid/fermiapp/products/common/etc/setups.sh
-#source /cvmfs/oasis.opensciencegrid.org/fermilab/products/common/etc/setup
 source /grid/fermiapp/products/larsoft/setup
 export GROUP=lariat
 export JOBSUB_GROUP=lariat
