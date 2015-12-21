@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v05_00_00_rc0
+parent	lariatsoft v05_00_00_rc1
 defaultqual	e9
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
@@ -10,29 +10,29 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		v05_00_00_rc0
+larsoft		v05_00_00_rc1
 LariatFilters   v01_02
 lariatfragments v01_07_00
-artdaq_core     v1_04_21
+artdaq_core     v1_04_26
 LariatBeamFiles v01_00 - optional
 
-cetbuildtools   v4_17_03 - only_for_build
+cetbuildtools   v4_18_01 - only_for_build
 end_product_list
   
 # e9  - with gcc 4.9.2 and -std=c++11
 qualifier	              larsoft          LariatFilters	lariatfragments  artdaq_core	    LariatBeamFiles	notes
-e9:debug	       	      e9:debug         -nq-		 e9:debug        e9:nu:s21:debug	-nq-
-e9:opt			      e9:opt	       -nq-		 e9:opt		 e9:nu:s21:opt	  	-nq-
-e9:prof			      e9:prof	       -nq-		 e9:prof         e9:nu:s21:prof		-nq-
-e9:debug:noifdh		      e9:debug:noifdh  -nq-		 e9:debug        e9:nu:s21:debug	-nq-
-e9:opt:noifdh		      e9:opt:noifdh    -nq-		 e9:opt		 e9:nu:s21:opt	  	-nq-
-e9:prof:noifdh		      e9:prof:noifdh   -nq-		 e9:prof	 e9:nu:s21:prof		-nq-
-e9:debug:nobeam		      e9:debug         -nq-		 e9:debug        e9:nu:s21:debug	-
-e9:opt:nobeam		      e9:opt	       -nq-		 e9:opt		 e9:nu:s21:opt	  	-
-e9:prof:nobeam		      e9:prof	       -nq-		 e9:prof         e9:nu:s21:prof		-
-e9:debug:nobeam:noifdh	      e9:debug:noifdh  -nq-		 e9:debug        e9:nu:s21:debug	-
-e9:opt:nobeam:noifdh	      e9:opt:noifdh    -nq-		 e9:opt		 e9:nu:s21:opt	  	-
-e9:prof:nobeam:noifdh	      e9:prof:noifdh   -nq-		 e9:prof         e9:nu:s21:prof		-
+e9:debug	       	      e9:debug         -nq-		 e9:debug        e9:nu:s26:debug	-nq-
+e9:opt			      e9:opt	       -nq-		 e9:opt		 e9:nu:s26:opt	  	-nq-
+e9:prof			      e9:prof	       -nq-		 e9:prof         e9:nu:s26:prof		-nq-
+e9:debug:noifdh		      e9:debug:noifdh  -nq-		 e9:debug        e9:nu:s26:debug	-nq-
+e9:opt:noifdh		      e9:opt:noifdh    -nq-		 e9:opt		 e9:nu:s26:opt	  	-nq-
+e9:prof:noifdh		      e9:prof:noifdh   -nq-		 e9:prof	 e9:nu:s26:prof		-nq-
+e9:debug:nobeam		      e9:debug         -nq-		 e9:debug        e9:nu:s26:debug	-
+e9:opt:nobeam		      e9:opt	       -nq-		 e9:opt		 e9:nu:s26:opt	  	-
+e9:prof:nobeam		      e9:prof	       -nq-		 e9:prof         e9:nu:s26:prof		-
+e9:debug:nobeam:noifdh	      e9:debug:noifdh  -nq-		 e9:debug        e9:nu:s26:debug	-
+e9:opt:nobeam:noifdh	      e9:opt:noifdh    -nq-		 e9:opt		 e9:nu:s26:opt	  	-
+e9:prof:nobeam:noifdh	      e9:prof:noifdh   -nq-		 e9:prof         e9:nu:s26:prof		-
 
 end_qualifier_list
 
