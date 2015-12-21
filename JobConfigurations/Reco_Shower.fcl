@@ -11,6 +11,7 @@
 #include "showerreco3d.fcl"
 #include "clustermodules.fcl"
 #include "cluster_lariat.fcl"
+#include "showerfindermodules.fcl"
 
 process_name: Reco2D
 
@@ -68,7 +69,7 @@ physics:
   #fuzzycluster:		@local::standard_fuzzycluster
   #fuzzyclustermerger:	@local::standard_fuzzyclustermerger
   blurredcluster:         @local::standard_blurredcluster
-
+  emshower:             @local::standard_emshower
 
   ### Shower-Finder producers
 
@@ -109,7 +110,9 @@ physics:
 	 #hough 
  #        pandora
           blurredcluster,
+         emshower,
          showerreco
+         
    ]
 
 #ana: [ showerquality ]
@@ -163,7 +166,8 @@ physics.producers.showerreco.InputProducer:                "blurredcluster"
 physics.producers.blurredcluster.HitsModuleLabel:           "linecluster"
 physics.producers.blurredcluster.GlobalTPCRecon:           "false"
 #physics.producers.blurredcluster.CreateDebugPDF:           "true"
-physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:           10
+physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:           15
+physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:           15
 physics.producers.blurredcluster.BlurredClusterAlg.ClusterTickDistance:           50
 ####physics.producers.blurredcluster.BlurredClusterAlg.MinSize:           1	
 physics.producers.showerreco.MinHits:   2
@@ -216,3 +220,4 @@ physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
 physics.producers.calo.CaloAlg.CalAreaConstants: [0.0068,0.0153]
+physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]

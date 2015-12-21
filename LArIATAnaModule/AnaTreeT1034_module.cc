@@ -40,6 +40,7 @@
 #include "RecoBase/Hit.h"
 #include "RecoBase/Cluster.h"
 #include "RecoBase/Track.h"
+#include "RecoBase/TrackHitMeta.h"
 #include "RecoBase/Vertex.h"
 #include "RecoBase/SpacePoint.h"
 #include "Utilities/LArProperties.h"
@@ -62,7 +63,7 @@
 #include "RecoBase/EndPoint2D.h"
 #include "MCBase/MCShower.h"
 #include "MCBase/MCStep.h"
-
+#include "AnalysisAlg/CalorimetryAlg.h"
 
 // #####################
 // ### ROOT includes ###
@@ -181,6 +182,14 @@ private:
    int    hit_t[kMaxHits];	//<---Stores the time tick value for the current hit
    int    hit_ch[kMaxHits];	//<---Stores the hits "charge" in integrated raw ADC (pedestal subtracted)
    int    hit_fwhh[kMaxHits];	//<---Calculated Full width / half max value for the hit
+   int    hit_trkkey[kMaxHits]; //<---track index if hit is associated with a track
+   float  hit_dQds[kMaxHits];   //<---hit dQ/ds
+   float  hit_dEds[kMaxHits];   //<---hit dE/ds
+   float  hit_ds[kMaxHits];     //<---hit ds
+   float  hit_resrange[kMaxHits];//<---hit residual range
+   float  hit_x[kMaxHits];        //<---hit x coordinate
+   float  hit_y[kMaxHits];        //<---hit y coordinate
+   float  hit_z[kMaxHits];        //<---hit z coordinate
    
    // === Storing 2-d Cluster Information ===
    int    nclus;
@@ -307,7 +316,7 @@ private:
    double hit_rms[kMaxHits];
    double hit_nelec[kMaxHits];
    double hit_energy[kMaxHits];
-   int    hit_trkkey[kMaxHits];
+  //int    hit_trkkey[kMaxHits];
    int    hit_clukey[kMaxHits];
    
    
@@ -323,10 +332,14 @@ private:
   std::string fShowerModuleLabel;       // Producer that makes showers from clustering
   std::string fMCShowerModuleLabel;	// Producer name that makes MCShower Object
 
+  calo::CalorimetryAlg fCalorimetryAlg;
+
 };
 
 
-lariat::AnaTreeT1034::AnaTreeT1034(fhicl::ParameterSet const & pset) : EDAnalyzer(pset)
+lariat::AnaTreeT1034::AnaTreeT1034(fhicl::ParameterSet const & pset) 
+  : EDAnalyzer(pset)
+  , fCalorimetryAlg(pset.get<fhicl::ParameterSet>("CalorimetryAlg"))
 {
    this->reconfigure(pset);
 }
@@ -495,6 +508,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    art::FindManyP<recob::Cluster>     fmc(hitListHandle,   evt, fClusterModuleLabel);
    // ==== Association between Clusters and Showers ===
    art::FindManyP<recob::Shower> fms (clusterListHandle, evt, fShowerModuleLabel);
+   // ==== Association between Tracks and Hits
+   art::FindManyP<recob::Hit> fmth(trackListHandle, evt, fTrackModuleLabel);
+   art::FindManyP<recob::Hit, recob::TrackHitMeta> fmthm(trackListHandle, evt, fTrackModuleLabel);
   
    
    // ### Something to do with SimChannels...need to come back to ###
@@ -1042,11 +1058,30 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       trjPt_Z[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Z();
 
       }//<---End iTrajPt
-      
+
+   if (fmthm.isValid()){
+     auto vhit = fmthm.at(i);
+     auto vmeta = fmthm.data(i);
+     for (size_t h = 0; h < vhit.size(); ++h){
+       if (vhit[h].key()<kMaxHits){
+	 //hit_trkkey[vhit[h].key()] = tracklist[i].key();
+	 if (vmeta[h]->Dx()){
+	   hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCalorimetryAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
+	   hit_dEds[vhit[h].key()] = fCalorimetryAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
+	 }
+	 hit_ds[vhit[h].key()] = vmeta[h]->Dx();
+	 hit_resrange[vhit[h].key()] = tracklist[i]->Length(vmeta[h]->Index());
+	 hit_x[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).X();
+	 hit_y[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Y();
+	 hit_z[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Z();
+       }
+     }//loop over all hits
+   }//fmthm is valid   
+   
   }//<---End track loop (i)
 
   nhits = hitlist.size();
-  for (size_t i = 0; i<hitlist.size(); ++i){
+  for (size_t i = 0; i<hitlist.size() && int(i)< kMaxHits; ++i){
     cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
     unsigned int channel = hitlist[i]->Channel();
     geo::WireID wireid = hitlist[i]->WireID();
@@ -1221,7 +1256,14 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("hit_rms",hit_rms,"hit_rms[nhits]/D");
   fTree->Branch("hit_nelec",hit_nelec,"hit_nelec[nhits]/D");
   fTree->Branch("hit_energy",hit_energy,"hit_energy[nhits]/D");
-  
+  fTree->Branch("hit_dQds", hit_dQds, "hit_dQds[nhits]/F");
+  fTree->Branch("hit_dEds", hit_dEds, "hit_dEds[nhits]/F");
+  fTree->Branch("hit_ds", hit_ds, "hit_ds[nhits]/F");
+  fTree->Branch("hit_resrange", hit_resrange, "hit_resrange[nhits]/F");
+  fTree->Branch("hit_x", hit_x, "hit_x[nhits]/F");
+  fTree->Branch("hit_y", hit_y, "hit_y[nhits]/F");
+  fTree->Branch("hit_z", hit_z, "hit_z[nhits]/F");
+
   fTree->Branch("nwctrks",&nwctrks,"nwctrks/I");
    fTree->Branch("wctrk_XFaceCoor",wctrk_XFaceCoor,"wctrk_XFaceCoor[nwctrks]/D");
    fTree->Branch("wctrk_YFaceCoor",wctrk_YFaceCoor,"wctrk_YFaceCoor[nwctrks]/D");
@@ -1403,6 +1445,13 @@ void lariat::AnaTreeT1034::ResetVars()
     hit_rms[i] = -99999;
     hit_nelec[i] = -99999;
     hit_energy[i] = -99999;
+    hit_dQds[i] = -99999;
+    hit_dEds[i] = -99999;
+    hit_ds[i] = -99999;
+    hit_resrange[i] = -99999;
+    hit_x[i] = -99999;
+    hit_y[i] = -99999;
+    hit_z[i] = -99999;
   }
   
   nwctrks = -99999;

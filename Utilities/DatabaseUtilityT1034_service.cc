@@ -40,7 +40,7 @@ namespace util {
   void DatabaseUtilityT1034::reconfigure(fhicl::ParameterSet const& pset) {
 
     // get parameters from .fcl files
-    fDBHost = pset.get< std::string >("DBHost", "ifdb02.fnal.gov");
+    fDBHost = pset.get< std::string >("DBHost", "ifdbprod2.fnal.gov");
     fDBPort = pset.get< std::string >("DBPort", "5443");
     fDBName = pset.get< std::string >("DBName", "lariat_prd");
     fDBUser = pset.get< std::string >("DBUser", "lariat_prd_user");
