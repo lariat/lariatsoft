@@ -6,12 +6,12 @@ include_directories( $ENV{POSTGRESQL_INC} )
 
 simple_plugin(SimWireT1034 "module"
 			Geometry
-                        Geometry_service
+                        larcore_Geometry_Geometry_service
                         Simulation
                         Utilities
                         Filters
                         RawData
-                        DetectorClocksServiceStandard_service
+                        lardata_DetectorInfoServices_DetectorClocksServiceStandard_service
                         SignalShapingServiceT1034_service
 			${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}

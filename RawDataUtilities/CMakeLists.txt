@@ -47,7 +47,7 @@ art_make(BASENAME_ONLY
                           ${ROOT_BASIC_LIB_LIST}
          MODULE_LIBRARIES RawData
 	                        SummaryData
-			                    Geometry_service
+			                    larcore_Geometry_Geometry_service
                           LariatFragments
                           RawDataUtilities
 			                    ${ART_FRAMEWORK_CORE}

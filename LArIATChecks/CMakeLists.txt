@@ -12,12 +12,12 @@ art_make(BASENAME_ONLY
 	 		  RawData
 	                  SummaryData
 			  Geometry
-			  Geometry_service
+			  larcore_Geometry_Geometry_service
 			  RawDataUtilities
 			  RecoBase
 			  RecoBaseArt
 			  Utilities
-                          BackTracker_service
+                          larsim_MCCheater_BackTracker_service
 			  ${SEEDSERVICE_SERVICE} # artextensions
 			  ${SIMULATIONBASE}
 			  ${ART_FRAMEWORK_CORE}

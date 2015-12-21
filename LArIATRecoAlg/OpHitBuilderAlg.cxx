@@ -25,8 +25,8 @@
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 
 // LArSoft Includes
-#include "Utilities/AssociationUtil.h"
-#include "RawData/TriggerData.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/RawData/TriggerData.h"
 
 //LAriatSoft Includes
 #include "LArIATRecoAlg/OpHitBuilderAlg.h"

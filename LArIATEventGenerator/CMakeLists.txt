@@ -5,7 +5,7 @@ art_make( BASENAME_ONLY
           MODULE_LIBRARIES Simulation
                         SummaryData
                         Geometry
-                        Geometry_service
+                        larcore_Geometry_Geometry_service
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
@@ -28,11 +28,11 @@ art_make( BASENAME_ONLY
 
 # art_make( BASENAME_ONLY
 #           MODULE_LIBRARIES PhotonPropagation
-#                         PhotonVisibilityService_service
+#                         larsim_PhotonPropagation_PhotonVisibilityService_service
 #                         Simulation
 #                         SummaryData
 #                         Geometry
-#                         Geometry_service
+#                         larcore_Geometry_Geometry_service
 #                         ${SIMULATIONBASE}
 #                         ${ART_FRAMEWORK_CORE}
 #                         ${ART_FRAMEWORK_PRINCIPAL}

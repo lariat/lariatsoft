@@ -13,7 +13,7 @@ art_make(BASENAME_ONLY
 	 		  RawData
 	                  SummaryData
 			  Geometry
-			  Geometry_service
+			  larcore_Geometry_Geometry_service
 			  RawDataUtilities
 			  RecoBase
 			  RecoBaseArt
