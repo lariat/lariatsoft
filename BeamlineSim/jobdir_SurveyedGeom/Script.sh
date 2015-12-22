@@ -9,7 +9,7 @@ setup git
 
 setup ifdhc
 
-jobsize=100000
+jobsize=Size
 first=${PROCESS}*${jobsize}
 last=($PROCESS+1)*${jobsize}-1
 
