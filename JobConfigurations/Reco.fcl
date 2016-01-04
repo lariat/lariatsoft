@@ -11,7 +11,7 @@
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
 
-
+ 
 process_name: Reco2D
 
 services:
@@ -87,6 +87,7 @@ physics:
          #FragmentToDigit,
          caldata,
          cchit,
+	 gaushit,
         # cccluster,
 	 linecluster,
          showerreco,
