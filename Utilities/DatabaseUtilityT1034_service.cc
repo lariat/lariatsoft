@@ -28,7 +28,7 @@ namespace util {
   DatabaseUtilityT1034::DatabaseUtilityT1034(fhicl::ParameterSet   const& pset,
                                              art::ActivityRegistry      & reg)
   : fDBHost                 ( getenv("LARIATDBHOST")                         )
-  , fDBPort                 ( getenv("LARAIATDBPORT")                        )
+  , fDBPort                 ( getenv("LARIATDBPORT")                         )
   , fDBName                 ( getenv("LARIATDBNAME")                         )
   , fDBUser                 ( getenv("LARIATDBUSER")                         )
   , fDBPasswordFile         ( getenv("DB_PWD_FILE")                          )
