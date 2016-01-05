@@ -30,4 +30,12 @@ lariat_pimufilter:
  TOFModuleLabel: 		"tof"
 }
 
+lariat_wcTrackFilter:
+{
+module_type:      WCTrackFilter
+WCTrackLabel:     "wctrack"	# WCTrack module label
+minNumberWCTrack: 1 		# number of WCTracks in the event to pass the filter
+
+}
+
 END_PROLOG
