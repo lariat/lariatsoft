@@ -64,4 +64,11 @@ MaxUpstreamZPosition:	14.	# the minimum upstream z position of the earliest spac
 MaxNTracksUpstream:	4	# maximum number of tracks which can be in this upstream portion of the TPC
 }
 
+
+lariat_stoppingtracksfilter:
+{
+module_type:		StoppingTracksFilter
+TrackModuleLabel:	"pmtrack"
+}
+
 END_PROLOG

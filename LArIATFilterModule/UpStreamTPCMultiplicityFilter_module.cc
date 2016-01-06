@@ -160,7 +160,8 @@ bool UpStreamTPCMultiplicityFilter::filter(art::Event & evt)
 	if(tempZpoint < fupstreamZPosition)
 	  {
 	    TrackSptsZCut = true; 
-	    continue; // If you're lucky and the fist spt satisfies the condition, you don't need to look further
+	    break; // Break from spacepoint loop:
+	           //If you're lucky and the fist spt satisfies the condition, you don't need to look further
 	  }
 	
       }//<---End of loop on spacepoints
