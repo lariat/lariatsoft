@@ -56,4 +56,12 @@ upstreamZPosition:	2	# the minimum upstream z position of the earliest spacepoin
 nTracksUpstream:	1	# number of tracks which must be in this upstream portion of the TPC
 }
 
+lariat_upstreamtpcmultiplicity:
+{
+module_type:		UpStreamTPCMultiplicityFilter
+TrackModuleLabel:	"pmtrack"
+MaxUpstreamZPosition:	14.	# the minimum upstream z position of the earliest spacepoint (cm)
+MaxNTracksUpstream:	4	# maximum number of tracks which can be in this upstream portion of the TPC
+}
+
 END_PROLOG
