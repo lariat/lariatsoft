@@ -48,4 +48,12 @@ TOFUpperBound:  30	# maximum time for the TOF object (ns)
 
 }
 
+lariat_upstreamtpctrack:
+{
+module_type:		UpStreamTPCTrackFilter
+TrackModuleLabel:	"pmtrack"
+upstreamZPosition:	2	# the minimum upstream z position of the earliest spacepoint (cm)
+nTracksUpstream:	1	# number of tracks which must be in this upstream portion of the TPC
+}
+
 END_PROLOG
