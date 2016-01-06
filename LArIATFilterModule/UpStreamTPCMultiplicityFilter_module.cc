@@ -79,6 +79,7 @@ private:
   TH1F*  fNumberTracksTot;                  
   TH1F*  fNumberTracksInUSPortion;          
   TH1F*  fNumberTracksInUSPortionPassingCut;
+  TH1F*  fZUSPositionTrack;
 };
 
 
@@ -95,10 +96,10 @@ void UpStreamTPCMultiplicityFilter::beginJob()
   // Declare checks histograms
   art::ServiceHandle<art::TFileService> tfs;
 
-  fNumberTracksTot                  = tfs->make<TH1F>("NumberTracksTot"                  ,"Tot N of tracks:N evt:N Tracks"                       ,160,0,160);
-  fNumberTracksInUSPortion          = tfs->make<TH1F>("NumberTracksInUSPortion"          ,"N of tracks in US portion:N evt:N Tracks"             ,160,0,160);
-  fNumberTracksInUSPortionPassingCut= tfs->make<TH1F>("NumberTracksInUSPortionPassingCut","N of tracks in US portion passing Cuts:N evt:N Tracks",160,0,160);
-
+  fNumberTracksTot                  = tfs->make<TH1F>("NumberTracksTot"                  ,"Tot N of tracks:N evt:N Tracks"                       ,30,-0.5,29.5);
+  fNumberTracksInUSPortion          = tfs->make<TH1F>("NumberTracksInUSPortion"          ,"N of tracks in US portion:N evt:N Tracks"             ,30,-0.5,29.5);
+  fNumberTracksInUSPortionPassingCut= tfs->make<TH1F>("NumberTracksInUSPortionPassingCut","N of tracks in US portion passing Cuts:N evt:N Tracks",30,-0.5,29.5);
+  fZUSPositionTrack                 = tfs->make<TH1F>("ZUSPositionTrack"                 ,"Upstream Z point of the track:N tracks: Upstream Z"   ,270,0.,90.);
 }
 
 bool UpStreamTPCMultiplicityFilter::filter(art::Event & evt)
@@ -164,6 +165,7 @@ bool UpStreamTPCMultiplicityFilter::filter(art::Event & evt)
 	
       }//<---End of loop on spacepoints
       
+      fZUSPositionTrack->Fill(tempZpoint);
       // ### If this track passes then bump our counter ###
       if(TrackSptsZCut){ntrksUpStream++;}
       
@@ -174,7 +176,6 @@ bool UpStreamTPCMultiplicityFilter::filter(art::Event & evt)
   fNumberTracksInUSPortion->Fill(ntrksUpStream);
 
   // ### If we found too many upstream tracks then return false ###
-  std::cout<<ntrksUpStream<<" track upsteam "<<fnTracksUpstream<<" track cut \n";
   if(ntrksUpStream > fnTracksUpstream) return false;
   // ### Otherwise, keep the event and save the number of tracks###
   fNumberTracksInUSPortionPassingCut->Fill(ntrksUpStream);
