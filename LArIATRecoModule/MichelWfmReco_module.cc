@@ -101,7 +101,6 @@ private:
   // Tunable parameters from fcl
   bool                bUseTriggerFilter;
   bool                bUseTrackInformation;
-  bool                bVerbose;
   std::string         fDAQModule;
   std::string         fTrackModule;
   std::string         fParticleIDModule;
@@ -245,6 +244,7 @@ private:
   TH2F* h_Pf_100_500_vs_Energy_Michel;
   TH2F* h_Pf_100_1000_vs_Energy;
   TH2F* h_PE_100ns_vs_Amplitude;
+  TH2F* h_PE100ns_vs_Amplitude_BeamPreTrig;
   TH1F* h_TrackVertex_x;
   TH1F* h_TrackVertex_y;
   TH1F* h_TrackVertex_z;
@@ -383,6 +383,8 @@ fTrigFiltAlg(pset)
   N_PEs = 0;
   T_PEs = 0;
 
+  // Resize the hit_info vector to accomodate the user-specified
+  // number of different integration window lengths (+ amplitude)
   hit_info.resize(fIntegrationWindows.size()+1);
   
   resR_histRange = 30.;
@@ -428,7 +430,6 @@ fTrigFiltAlg(pset)
 
   // Configure instance of OpHitBuilder dedicated to 
   // finding single PEs
-  fOpHitBuilderAlg_SER.bVerbose                 = fSER_Verbosity;
   fOpHitBuilderAlg_SER.fUsePrepulseFit          = false;
   fOpHitBuilderAlg_SER.fFirstHitSeparation      = 0;
   fOpHitBuilderAlg_SER.fMinHitSeparation        = 10;
@@ -448,10 +449,6 @@ fTrigFiltAlg(pset)
 
 void MichelWfmReco::produce(art::Event & e)
 {
-  // Testing
-  //bool looksLikeMichel = fOpHitBuilderAlg.LooksLikeMichel(e);
-  //std::cout<<"Looks like Michel: "<<looksLikeMichel<<"\n";
-
   iEvent++;
 
   // Initialize variables to be saved into tree
@@ -571,7 +568,7 @@ void MichelWfmReco::produce(art::Event & e)
   art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
   e.getByLabel(fDAQModule,fInstanceName,WaveformHandle);
   if( (int)WaveformHandle->size() == 0 ) {
-    if(bVerbose) std::cout<<"No optical detector data found -- skipping the event\n";
+    LOG_VERBATIM("MichelWfmReco") << "No optical detector data found, skipping the event.";
     return;
   } else {
     // If not empty, store ETL waveform
@@ -586,14 +583,10 @@ void MichelWfmReco::produce(art::Event & e)
         Timestamp = (float(ThePulse.PMTFrame())*8.)/1.0e09;
         PostPercentMark = short(ThePulse.FirstSample()); 
         GotETL = true;
-        
-        if(bVerbose){
-          std::cout<<"ETL pulse recorded."<<std::endl;
-          std::cout<<"  Nsamples = "<<NSamples<<std::endl;
-          std::cout<<"  PMTFrame = "<<ThePulse.PMTFrame()<<std::endl;
-          std::cout<<"  FirstSample = "<<ThePulse.FirstSample()<<std::endl;
-          std::cout<<"  Timestamp = "<<Timestamp<<" sec"<<std::endl;
-        }
+    
+        LOG_VERBATIM("MichelWfmReco")
+        << "PMT pulse recorded (" << NSamples << " samples, trigger at " << PostPercentMark << ")\n"
+        << "Timestamp " << Timestamp << " sec";
 
         // Is clean beam waveform? (for testing out function)
         //IsCleanBeamWaveform = fOpHitBuilderAlg.IsCleanBeamWaveform(ThePulse);
@@ -615,7 +608,6 @@ void MichelWfmReco::produce(art::Event & e)
   std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(ETL_waveform,0,fBaselineWindowLength);
   WaveformBaseline = tmp[0];
   WaveformBaselineRMS = tmp[1];
-  if(bVerbose) std::cout<<"Baseline: "<<WaveformBaseline<<"  RMS: "<<WaveformBaselineRMS<<"\n";
 
   // Perform hit-finding/filtering, and store hit times into
   // a temporary vector (which will be replaced later after 
@@ -625,13 +617,12 @@ void MichelWfmReco::produce(art::Event & e)
  
   // For each hit, do all the needed reconstruction in single function call
   for (int i=0; i<NumHits; i++){
-    if(bVerbose) std::cout<<"----- Processing hit "<<i<<"    t = "<<vHitTimesTmp[i]<<" ------\n";
     if( i==0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimesTmp[i], 0, fIntegrationWindows);
     if( i >0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimesTmp[i], vHitTimesTmp[i-1], fIntegrationWindows);
    
     // Skip if prompt PE doesn't pass threshold
     if( hit_info[1]/fSinglePE < fHitPromptPEThreshLow ) {
-      if(bVerbose) std::cout<<"Hit doesn't pass prompt PE threshold -- skipping.\n";
+      LOG_VERBATIM("MichelWfmReco") << "!! Hit doesn't pass promptPE cut, skipping.";
       continue;
     }
 
@@ -653,12 +644,6 @@ void MichelWfmReco::produce(art::Event & e)
     vHitPf          .push_back(vHitADC_100ns[hit_i]/vHitADC_Total[hit_i]);
     vHitIsAtTrigger .push_back( fabs(vHitTimes[hit_i]-PostPercentMark) < 0.015*NSamples );
     
-    if(bVerbose){
-      std::cout<<"   amp: "<<vHitAmplitude[hit_i]<<"   integrals: ";
-      for( size_t ii=0; ii<fIntegrationWindows.size(); ii++) std::cout<<hit_info[ii+1]<<"  ";
-      std::cout<<"\n";
-    }
-    
     vPrepulseBaseline.push_back(fOpHitBuilderAlg.prepulse_baseline);
     vPrepulseRMS.push_back(fOpHitBuilderAlg.prepulse_rms);
     vPrepulseSlowNorm.push_back(fOpHitBuilderAlg.fit_SlowNorm);
@@ -668,7 +653,10 @@ void MichelWfmReco::produce(art::Event & e)
     // Fill some histograms
     h_HitAmplitude  ->Fill(vHitAmplitude[hit_i]);
     h_HitPE_100ns   ->Fill(vHitPE_100ns[hit_i]);
-    if(IsBeamEvent && vHitTimes[hit_i] < 8000) h_Pf_100_500_vs_PE_500ns_BeamPreTrig->Fill(vHitADC_100ns[hit_i]/vHitADC_500ns[hit_i],vHitPE_500ns[hit_i]);
+    if(IsBeamEvent && vHitTimes[hit_i] < PostPercentMark - 500) {
+      h_Pf_100_500_vs_PE_500ns_BeamPreTrig->Fill(vHitADC_100ns[hit_i]/vHitADC_500ns[hit_i],vHitPE_500ns[hit_i]);
+      h_PE100ns_vs_Amplitude_BeamPreTrig  ->Fill(vHitPE_100ns[hit_i], vHitAmplitude[hit_i]);
+    }
 
     float Pf_100_500 = vHitADC_100ns[hit_i]/vHitADC_500ns[hit_i];
 
@@ -721,7 +709,7 @@ void MichelWfmReco::produce(art::Event & e)
   // If exactly 2 hits, measure their time difference
   if(NumHits == 2){
     dT = float(vHitTimes[1] - vHitTimes[0]);
-    if(bVerbose) std::cout<<"    DeltaT = "<<dT<<std::endl;
+    LOG_VERBATIM("MichelWfmReco") << "Exactly 2 hits.  dT = " << dT << " ns.";
     if( !IsBeamEvent ) {
       h_dT_vs_MuPE_100ns->Fill(dT,vHitPE_100ns[0]);
       if( dT > 500. ) h_Pf_100_500_vs_PE_500ns_Mu->Fill(vHitADC_100ns[0]/vHitADC_500ns[0],vHitPE_500ns[0]);
@@ -750,7 +738,7 @@ void MichelWfmReco::produce(art::Event & e)
 
     NumTracks = (int)TrackHandle->size();
 
-    if(bVerbose) std::cout<<"Number of tracks: "<<NumTracks<<"\n";
+    LOG_VERBATIM("MichelWfmReco") << "Number of tracks: "<<NumTracks;
   
     // === Association between Calorimetry objects and Tracks ===
     art::FindManyP<anab::Calorimetry> fmcal(TrackHandle, e, fTrackCalModule);
@@ -781,8 +769,8 @@ void MichelWfmReco::produce(art::Event & e)
       vIsTrackPassing     .push_back( !endIsInFid && !vertexIsInFid);
       vIsTrackContained   .push_back( endIsInFid && vertexIsInFid );
       
-      if(bVerbose){
-        std::cout<<"  track "<<track_index<<", length "<<TheTrack.Length()<<"  vertex("
+      LOG_VERBATIM("MichelWfmReco")
+        <<"  track "<<track_index<<", length "<<TheTrack.Length()<<"  vertex("
         << TheTrack.Vertex().X() <<"," 
         << TheTrack.Vertex().Y() << "," 
         << TheTrack.Vertex().Z() << ")->InFiducial()="
@@ -791,8 +779,8 @@ void MichelWfmReco::produce(art::Event & e)
         << TheTrack.End().X() <<"," 
         << TheTrack.End().Y() << "," 
         << TheTrack.End().Z() << ")->InFiducial()="
-        << endIsInFid << std::endl;
-      }
+        << endIsInFid;
+      
       
       h_InFiducialVolume->Fill(vertexIsInFid,endIsInFid);
       h_TrackNode_zx->Fill(TheTrack.Vertex().Z(),TheTrack.Vertex().X());
@@ -807,9 +795,9 @@ void MichelWfmReco::produce(art::Event & e)
       if( fmcal.isValid() ){
         std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(track_index);
         vTrackEnergy.push_back(calos[1]->KineticEnergy());
-        if(bVerbose) std::cout<<"  KE = "<<calos[1]->KineticEnergy()<<std::endl; 
+        LOG_VERBATIM("MichelWfmReco") << "  KE = " << calos[1] -> KineticEnergy();
       } else {
-        if(bVerbose) std::cout<<"  KE = undefined"<<std::endl;
+        LOG_VERBATIM("MichelWfmReco") << "  KE = undefined";
         vTrackEnergy          .push_back(-99.);
       }
    
@@ -819,16 +807,16 @@ void MichelWfmReco::produce(art::Event & e)
       if (fmpid.isValid()){
         std::vector<art::Ptr<anab::ParticleID> > pids = fmpid.at(track_index);
         if (!pids[1]->PlaneID().isValid) {
-          if(bVerbose) std::cout<<"  pid["<<track_index<<"]: undefined\n";
+          LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: undefined";
           vTrackPID.push_back(-99); 
           vTrackPIDA.push_back(-99);
           continue;
         }
         vTrackPID.push_back(pids[1]->Pdg());
         vTrackPIDA.push_back(pids[1]->PIDA());
-        if(bVerbose) std::cout<<"  pid["<<track_index<<"]: "<<pids[1]->Pdg()<<"\n";
+        LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: "<<pids[1]->Pdg();
       } else {
-        if(bVerbose) std::cout<<"  pid["<<track_index<<"]: undefined\n";
+        LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: undefined";
         vTrackPID.push_back(-99);
         vTrackPIDA.push_back(-99);
       }
@@ -978,7 +966,8 @@ void MichelWfmReco::produce(art::Event & e)
         
         std::vector<art::Ptr<anab::Calorimetry> > calos_Mu = fmcal.at(MuTrackIndex);
         size_t              N_dEdx = calos_Mu[1]->dEdx().size();
-        if(bVerbose) std::cout<<"Beginning dE/dx scan of the mu-candidate track, dEdx().size() = "<<N_dEdx<<"\n";
+        LOG_VERBATIM("MichelWfmReco") 
+        <<"Beginning dE/dx scan of the mu-candidate track, dEdx().size() = "<<N_dEdx;
        
         // If we correctly assigned vertex/endpoint above,
         // go ahead and fill the dEdx and Residual Range containers
@@ -987,7 +976,6 @@ void MichelWfmReco::produce(art::Event & e)
             Mu_ResR  .push_back(calos_Mu[1]->ResidualRange()[i]);
             Mu_dEdx  .push_back(calos_Mu[1]->dEdx()[i]);
             if(vTrackLength[MuTrackIndex] >= resR_histRange) h_ResRange_dEdx_mu ->Fill(Mu_ResR[i],Mu_dEdx[i]);
-            //if(bVerbose) std::cout<<"Mu track candidate resRange "<<Mu_ResR[i]<<"  dE/dx "<<Mu_dEdx[i]<<"\n";
           }
         }
 
@@ -997,7 +985,8 @@ void MichelWfmReco::produce(art::Event & e)
         {
           std::vector<art::Ptr<anab::Calorimetry> > calos_Michel = fmcal.at(closest_track_i);
           size_t            N_dEdx = calos_Michel[1]->dEdx().size();
-          if(bVerbose) std::cout<<"Beginning dE/dx scan of the secondary track, dEdx().size() = "<<N_dEdx<<"\n";
+          LOG_VERBATIM("MichelWfmReco") 
+          << "Beginning dE/dx scan of the secondary track, dEdx().size() = "<<N_dEdx;
           
           // In this case, we need to call the "vertex" whichever endpoint is
           // closest to the muon's endpoint
@@ -1009,7 +998,6 @@ void MichelWfmReco::produce(art::Event & e)
               Michel_ResR .push_back(calos_Michel[1]->ResidualRange()[i]);
               Michel_dEdx .push_back(calos_Michel[1]->dEdx()[i]);
               if(vTrackLength[closest_track_i] >= resR_histRange) h_ResRange_dEdx_michel ->Fill(Michel_ResR[i],Michel_dEdx[i]);
-              //if(bVerbose) std::cout<<"Michel track candidate, length ="<<vTrackLength[closest_track_i]<<":  resRange "<<Michel_ResR[i]<<"  dE/dx "<<Michel_dEdx[i]<<"\n";
             }  
           }
           // If larsoft says the vertex is actually the endpoint further away from 
@@ -1056,10 +1044,6 @@ void MichelWfmReco::produce(art::Event & e)
     PE_1000ns     = vHitPE_1000ns[1];
     PE_Total      = vHitPE_Total[1];
     Pf            = vHitPf[1];
-    
-    if(bVerbose) std::cout<<"    Amplitude     = "<<Amplitude<<std::endl;
-    if(bVerbose) std::cout<<"    ADC prompt = "<<ADC_100ns<<" ("<<PE_100ns<<" PEs)"<<std::endl;
-    if(bVerbose) std::cout<<"    ADC full   = "<<ADC_Total<< " ("<<PE_Total<<" PEs)"<<std::endl;
   
   }
   
@@ -1076,7 +1060,7 @@ void MichelWfmReco::produce(art::Event & e)
   // Require 2 hits (one before PostPercent, one within 1% of PostPercent) 
   if( (dT > 0.)  && (vHitTimes[0] < vHitTimes[1]-fGateDelay) && (vHitIsAtTrigger[1]) && (!IsBeamEvent)){
     
-    if(bVerbose) std::cout << "--> passes Michel trigger cut (off-beam) \n";
+    LOG_VERBATIM("MichelWfmReco") << "--> passes Michel trigger cut (off-beam)";
     N_MichelCandidates++;
     h_EventTypeCount->Fill(1);
     h_Michel_IsInSignal->Fill((int)vIsInSignalPopulation[1]);
@@ -1139,7 +1123,6 @@ void MichelWfmReco::produce(art::Event & e)
       }
     }
     
-    if(bVerbose) std::cout<<"Filled histograms\n";
      
     // Make average waveform of the "good" Michel events
     if( (dT > fAveWfmCut_Dt)&&(vIsInSignalPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_aveMichel.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
@@ -1166,9 +1149,9 @@ void MichelWfmReco::produce(art::Event & e)
   //=========================================================
   // SER-finder
   if(fSER_Mode){
-    if(bVerbose) std::cout<<"================== SER MODE =====================\n";
+    LOG_VERBATIM("MichelWfmReco") << "================== SER MODE =====================";
     std::vector<std::pair<float,float>> SER_integrals = fOpHitBuilderAlg_SER.GetSinglePEs(ETL_opdetpulse);  
-    if(bVerbose) std::cout<<"Found "<<SER_integrals.size()<<" single PE candidates.\n";
+    LOG_VERBATIM("MichelWfmReco") << "Found " << SER_integrals.size()<<" single PE candidates";
     for( size_t i = 0; i < SER_integrals.size(); i++){
       //std::cout<<"  i = "<<SER_integrals[i]<<std::endl; 
       h_SER->Fill(SER_integrals[i].first);
@@ -1183,7 +1166,7 @@ void MichelWfmReco::produce(art::Event & e)
   MichelDataTree->Fill();
   
   // Add space in printout to separate events (for easier debugging)
-  if(bVerbose) std::cout<<std::endl;
+  LOG_VERBATIM("MichelWfmReco") << "\n";
 
 }
 
@@ -1466,6 +1449,11 @@ void MichelWfmReco::beginJob()
   h_Pf_100_500_vs_PE_500ns_Mu = tfs->make<TH2F>("Pf_100_500_vs_PE_500ns_Mu",
     "Prompt fraction (100ns/500ns) vs. total light in 500ns for initial muon;Prompt fraction (f_{P});Total light in 500ns [pe]",200,0,1.2,200,0,tot_pe_max/2.);
   h_Pf_100_500_vs_PE_500ns_Mu ->SetOption("colz");
+  
+  h_PE100ns_vs_Amplitude_BeamPreTrig = tfs->make<TH2F>("h_PE100ns_vs_Amplitude_BeamPreTrig","Hits within pre-trigger window of beam events;Prompt light in 100ns [pe];Amplitude [mV]",
+    200,0.,140,
+    200,0.,100);
+  h_PE100ns_vs_Amplitude_BeamPreTrig->SetOption("colz");
 
   
   sprintf(buffer,"Prompt fraction (100ns/7#mus) vs. estimated energy (%3.1f pe/MeV);Prompt fraction (f_{P});Energy [MeV]",fLY); 
@@ -1594,25 +1582,26 @@ void MichelWfmReco::endJob()
   float integral_total = 0.;
   float ave_baseline = 0.;
   if( N_entries > 0 ){
-    for( int i = 0; i < (int)fOpHitBuilderAlg_aveMichel.AverageWaveform.size(); i++) {
+    for( int i = 1; i <= (int)fOpHitBuilderAlg_aveMichel.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_aveMichel.AverageWaveform.at(i) / float(N_entries); 
-      h_AverageWaveform_Michel->Fill(i,w);
-      if( (i<fPrePulseDisplay-10)) ave_baseline += w/(float(fPrePulseDisplay)-10.);
-      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;// - ave_baseline;
-      if( (i>fPrePulseDisplay-10) ) integral_total += w;//- ave_baseline; 
+      h_AverageWaveform_Michel->Fill(i-1,w);
+      if( (i-1<fPrePulseDisplay-10)) ave_baseline += w/(float(fPrePulseDisplay)-10.);
+      if( (i-1>fPrePulseDisplay-10)&&(i-1<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;// - ave_baseline;
+      if( (i-1>fPrePulseDisplay-10) ) integral_total += w;//- ave_baseline; 
     }
   }
   
   //float min = h_AverageWaveform1->GetMinimum() - 0.001;
   h_AverageWaveform_Michel->Add(&ones,-1.*ave_baseline+0.1);
   
-  std::cout<<"=================================\n";
-  std::cout<<"Michel hits (1)\n";
-  std::cout<<"Average of "<<N_entries<<" waveforms.\n";
-  std::cout<<"   prompt ("<<fPromptWindowLength<<" ns): "<<integral_prompt<<std::endl;
-  std::cout<<"   total ("<<fFullWindowLength<<" ns): "<<integral_total<<std::endl;
-  std::cout<<"   ratio: "<< integral_prompt / integral_total <<std::endl;
-  std::cout<<"================================\n";
+  LOG_VERBATIM("MichelWfmReco") 
+  <<"=================================\n"
+  <<"Michel hits (1)\n"
+  <<"Average of "<<N_entries<<" waveforms.\n"
+  <<"   prompt ("<<fPromptWindowLength<<" ns): "<<integral_prompt<<std::endl
+  <<"   total ("<<fFullWindowLength<<" ns): "<<integral_total<<std::endl
+  <<"   ratio: "<< integral_prompt / integral_total <<std::endl
+  <<"================================\n";
   
   
   // Waveform 2 (BG pulses)
@@ -1621,12 +1610,12 @@ void MichelWfmReco::endJob()
   integral_total = 0.;
   ave_baseline = 0.;
   if( N_entries > 0 ){
-    for( int i = 0; i < (int)fOpHitBuilderAlg_aveBG.AverageWaveform.size(); i++) {
+    for( int i = 1; i <= (int)fOpHitBuilderAlg_aveBG.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_aveBG.AverageWaveform.at(i) / float(N_entries); 
-      h_AverageWaveform_BG->Fill(i,w);
-      if( (i<fPrePulseDisplay-10)) ave_baseline += w/(float(fPrePulseDisplay)-10.);
-      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;// - ave_baseline;
-      if( (i>fPrePulseDisplay-10) ) integral_total += w;// - ave_baseline; 
+      h_AverageWaveform_BG->Fill(i-1,w);
+      if( (i-1<fPrePulseDisplay-10)) ave_baseline += w/(float(fPrePulseDisplay)-10.);
+      if( (i-1>fPrePulseDisplay-10)&&(i-1<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;// - ave_baseline;
+      if( (i-1>fPrePulseDisplay-10) ) integral_total += w;// - ave_baseline; 
     }
   }
   //min = h_AverageWaveform2->GetMinimum() - 0.001;
@@ -1645,12 +1634,12 @@ void MichelWfmReco::endJob()
   integral_total = 0.;
   ave_baseline = 0.;
   if( N_entries > 0 ){
-    for( int i = 0; i < (int)fOpHitBuilderAlg_aveBG_lowPromptPE.AverageWaveform.size(); i++) {
+    for( int i = 1; i <= (int)fOpHitBuilderAlg_aveBG_lowPromptPE.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_aveBG_lowPromptPE.AverageWaveform.at(i) / float(N_entries); 
-      h_AverageWaveform_BG_lowPromptPE->Fill(i,w);
-      if( (i<fPrePulseDisplay-10)) ave_baseline += w/(float(fPrePulseDisplay)-10.);
-      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;// - ave_baseline;
-      if( (i>fPrePulseDisplay-10) ) integral_total += w;// - ave_baseline; 
+      h_AverageWaveform_BG_lowPromptPE->Fill(i-1,w);
+      if( (i-1<fPrePulseDisplay-10)) ave_baseline += w/(float(fPrePulseDisplay)-10.);
+      if( (i-1>fPrePulseDisplay-10)&&(i-1<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;// - ave_baseline;
+      if( (i-1>fPrePulseDisplay-10) ) integral_total += w;// - ave_baseline; 
     }
   }
   //min = h_AverageWaveform2->GetMinimum() - 0.001;
@@ -1670,11 +1659,11 @@ void MichelWfmReco::endJob()
   integral_prompt = 0.;
   integral_total = 0.;
   if( N_entries > 0 ){
-    for( int i = 0; i < (int)fOpHitBuilderAlg_aveMIP.AverageWaveform.size(); i++) {
+    for( int i = 1; i <= (int)fOpHitBuilderAlg_aveMIP.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_aveMIP.AverageWaveform.at(i) / float(N_entries); 
-      h_AverageWaveformMIP->Fill(i,w);
-      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;
-      if( (i>fPrePulseDisplay-10) ) integral_total += w; 
+      h_AverageWaveformMIP->Fill(i-1,w);
+      if( (i-1>fPrePulseDisplay-10)&&(i-1<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;
+      if( (i-1>fPrePulseDisplay-10) ) integral_total += w; 
     }
   }
   //min = h_AverageWaveformMIP->GetMinimum() - 0.001;
@@ -1693,11 +1682,11 @@ void MichelWfmReco::endJob()
   integral_prompt = 0.;
   integral_total = 0.;
   if( N_entries > 0 ){
-    for( int i = 0; i < (int)fOpHitBuilderAlg_aveProton.AverageWaveform.size(); i++) {
+    for( int i = 1; i <=(int)fOpHitBuilderAlg_aveProton.AverageWaveform.size(); i++) {
       float w = fOpHitBuilderAlg_aveProton.AverageWaveform.at(i) / float(N_entries); 
-      h_AverageWaveformProton->Fill(i,w);
-      if( (i>fPrePulseDisplay-10)&&(i<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;
-      if( (i>fPrePulseDisplay-10) ) integral_total += w; 
+      h_AverageWaveformProton->Fill(i-1,w);
+      if( (i-1>fPrePulseDisplay-10)&&(i-1<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;
+      if( (i-1>fPrePulseDisplay-10) ) integral_total += w; 
     }
   }
   //min = h_AverageWaveformProton->GetMinimum() - 0.001;
@@ -1730,9 +1719,9 @@ void MichelWfmReco::endJob()
     std::cout<<"------------------------------------------------------\n";
     std::cout<<"PE waveform (sample [ns], ADC):\n";
     if( N_entries > 0 ){
-      for( int i = 0; i < (int)fOpHitBuilderAlg_SER.SERWaveform.size(); i++) {
+      for( int i = 1; i < (int)fOpHitBuilderAlg_SER.SERWaveform.size(); i++) {
         float w = fOpHitBuilderAlg_SER.SERWaveform.at(i) / float(N_entries); 
-        h_AverageWaveformSER->Fill(i,w);
+        h_AverageWaveformSER->Fill(i-1,w);
         integral += w/fMvPerADC;
         std::cout<<i<<"     "<<w/fMvPerADC<<"\n";
       }
@@ -1822,7 +1811,6 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fTriggerUtility         = pset.get< std::string >("TriggerUtility","FragmentToDigit");
   bUseTriggerFilter       = pset.get< bool >("UseTriggerFilter","false");
   bUseTrackInformation    = pset.get< bool >("UseTrackInformation","true");
-  bVerbose                = pset.get< bool >("Verbosity","true");
   fDAQModule              = pset.get< std::string >("DAQModule","daq");
   fTrackModule            = pset.get< std::string >("TrackModule","pmtrack");
   fTrackCalModule         = pset.get< std::string >("TrackCalModule","calo");

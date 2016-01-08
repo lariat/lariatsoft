@@ -75,6 +75,7 @@ OpHitBuilderAlg::~OpHitBuilderAlg()
 //--------------------------------------------------------------
 void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fGradHitThresh        = pset.get< float >("GradHitThresh",-10);
+  fSignalHitThresh      = pset.get< float >("SignalHitThresh",4);
   fPulseHitThreshLow    = pset.get< float >("PulseHitThreshLow",0.);
   fPulseHitThreshHigh   = pset.get< float >("PulseHitThreshHigh",999);
   fPulseHitRMSThresh    = pset.get< float >("PulseHitRMSThresh",2.5);
@@ -92,7 +93,6 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fMvPerADC             = pset.get< float >("MvPerADC",0.2);
   fUsePrepulseFit       = pset.get< bool  >("UsePrepulseFit","true");
   fTimestampCut         = pset.get< float >("TimestampCut",5.25);
-  bVerbose              = pset.get< bool  >("Verbosity","false");
   fHitTimeCutoffLow     = pset.get< int   >("HitTimeCutoffLow",-100000);
   fHitTimeCutoffHigh    = pset.get< int   >("HitTimeCutoffHigh",100000);
   fSER_PreWindow        = pset.get< short >("SER_PreWindow",5);
@@ -100,6 +100,7 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fSER_PrePE_RMS_cut    = pset.get< float >("SER_PrePE_RMS_cut",2.5);
   fSER_Grad_cut         = pset.get< float >("SER_Grad_cut",-2.5);
   fSinglePE             = pset.get< float >("SinglePE",85);
+  fHitFindingMode       = pset.get< std::string >("HitFindingMode","grad");
 }
 
 
@@ -129,83 +130,133 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse)
 
   // Make vector hits to be filled
   std::vector<short> hits;
-
-  // Make the gradient
-  std::vector<float> g = MakeGradient(wfm);
-  
-  // Set rising_edge to false before starting hit finding loop
-  bool rising_edge = false;
-
-  for(size_t i = 0; i < g.size(); i++){
-    
-    // If gradient is under threshold, and we are within the hit finding
-    // time limits set in the fhicl, we have a hit candidate
-    if (g[i] <= fGradHitThresh && rising_edge == false && i > (size_t)t1 && i < (size_t)t2){
-      rising_edge = true;
-      hits.insert(hits.end(),i);
-    }
-       
-    // When we leave the hit candidate, reset rising_edge to false
-    if (g[i] > fGradHitThresh && rising_edge == true){
-      rising_edge = false;
-    }
-
-  } // <-- end scan over gradient
-
-  if(bVerbose) std::cout<<"Found "<<hits.size()<<" hits in first gradient theshold pass\n";
-
-  // So now we have a list of hits, but clusters of these could be
-  // fakes due to a "noisy" gradient. Filter out the hits that
-  // are not high enough above the gradient's local RMS.
-  
   std::vector<short> hits_filtered;
-  
-  for( size_t i = 0; i < hits.size(); i++ ) {
 
-    short     rms_window_size = 100;
-    short     rms_window_start = 0;
-    short     rms_window_end  = rms_window_size;
-
-    // Find the window limits to use in calculating local RMS.  
-    // For all hits after the first one, the window's start point 
-    // will be limited to fMinHitSeparation after the first hit point
-    rms_window_end    = hits[i]-5;
-    rms_window_start  = rms_window_end - rms_window_size;
-    if( rms_window_start < 0 ) rms_window_start = 0;
-    if( (i >= 1) && (hits[0] + fMinHitSeparation > rms_window_start) ) rms_window_start = hits[0] + fMinHitSeparation;
-    rms_window_size = rms_window_end - rms_window_start;
-
-    // Find gradient's local RMS for the hit using this window
-    std::vector<float> tmp = GetBaselineAndRMS( g, rms_window_start, rms_window_end );
-    float g_mean = tmp[0];
-    float g_rms  = tmp[1];
-
-    // Find amplitude of gradient in neighborhood of this hit
-    float g_amp = g_mean - GetLocalMinimum(g,hits[i]);
-
-    // Calculate quick amplitude of pulse to use in discrimination
-    size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hits[i]-10));
-    tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
-    float baseline  = tmp[0];
-    float hit_amp   = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
+  // Begin hit-finding, discriminating on either the gradient or the signal
+  if( fHitFindingMode=="grad" )
+  {
     
-    if(bVerbose){
-      std::cout<<"     "<<hits[i]<<": window: ("<<rms_window_start<<","<<rms_window_end<<")  rms: "<<g_rms
-      <<"   rms_thresh: "<<g_rms*fGradRMSThresh<<"   g_amp: "<<g_amp<<"  amp "<<hit_amp<<"\n";
-    }
-
-    // First check if hit's gradient and pulse amplitude exceed the set thresholds
-    if( (g_amp > g_rms*fGradRMSThresh) && (hit_amp > fPulseHitThreshLow) ){
-      hits_filtered.push_back(hits[i]);
-      if(bVerbose) std::cout<<"Hit passes!\n";
-    }
+    LOG_VERBATIM("OpHitBuilder") 
+    << "Scanning for hits using gradient-threshold method: \n"
+    << "(1st-pass thresh " << fGradHitThresh << " ADC/ns, RMS thresh x"<<fGradRMSThresh<<")";
   
-  } // <-- end loop over hits
-  if(bVerbose) std::cout<<"Post-filter: "<<hits_filtered.size()<<" hits\n";
+    // Set rising_edge to false before starting hit finding loop
+    bool rising_edge = false;
 
+    // Make the gradient
+    std::vector<float> g = MakeGradient(wfm);
+    
+    for(size_t i = 0; i < g.size(); i++){
+      
+      // If gradient is under threshold, and we are within the hit finding
+      // time limits set in the fhicl, we have a hit candidate
+      if (g[i] <= fGradHitThresh && rising_edge == false && i > (size_t)t1 && i < (size_t)t2){
+        rising_edge = true;
+        hits.insert(hits.end(),i);
+      }
+         
+      // When we leave the hit candidate, reset rising_edge to false
+      if (g[i] > fGradHitThresh && rising_edge == true){
+        rising_edge = false;
+      }
+  
+    } // <-- end scan over gradient
+ 
+    LOG_VERBATIM("OpHitBuilder")
+    << "Found " << hits.size()
+    << " hits in first gradient threshold pass"; 
+  
+    // So now we have a list of hits, but clusters of these could be
+    // fakes due to a "noisy" gradient. Filter out the hits that
+    // are not high enough above the gradient's local RMS.
+    
+    // std::vector<short> hits_filtered;
+    
+    for( size_t i = 0; i < hits.size(); i++ ) {
+  
+      short     rms_window_size = 100;
+      short     rms_window_start = 0;
+      short     rms_window_end  = rms_window_size;
+  
+      // Find the window limits to use in calculating local RMS.  
+      // For all hits after the first one, the window's start point 
+      // will be limited to fMinHitSeparation after the first hit point
+      rms_window_end    = hits[i]-5;
+      rms_window_start  = rms_window_end - rms_window_size;
+      if( rms_window_start < 0 ) rms_window_start = 0;
+      if( (i >= 1) && (hits[0] + fMinHitSeparation > rms_window_start) ) rms_window_start = hits[0] + fMinHitSeparation;
+      rms_window_size = rms_window_end - rms_window_start;
+  
+      // Find gradient's local RMS for the hit using this window
+      std::vector<float> tmp = GetBaselineAndRMS( g, rms_window_start, rms_window_end );
+      float g_mean = tmp[0];
+      float g_rms  = tmp[1];
+  
+      // Find amplitude of gradient in neighborhood of this hit
+      float g_amp = g_mean - GetLocalMinimum(g,hits[i]);
+  
+      // Calculate quick amplitude of pulse to use in discrimination
+      size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hits[i]-10));
+      tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
+      float baseline  = tmp[0];
+      float hit_amp   = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
+      
+
+      LOG_VERBATIM("OpHitBuilder")
+      << "  - " << hits[i] << "(pre-pulse " << rms_window_start << "-" << rms_window_end << ")"
+      << " gRMS " << g_rms << " (thresh " << g_rms*fGradRMSThresh
+      << ", grad amp " << g_amp 
+      << ", pulse amp " << hit_amp;
+  
+      // First check if hit's gradient and pulse amplitude exceed the set thresholds
+      if( (g_amp > g_rms*fGradRMSThresh) && (hit_amp > fPulseHitThreshLow) ){
+        hits_filtered.push_back(hits[i]);
+        LOG_VERBATIM("OpHitBuilder") << "  --> hit passes.";
+      }
+    
+    } // <-- end loop over hits
+    LOG_VERBATIM("OpHitBuilder") << hits_filtered.size() << " hits pass filter.";
+  
+  } // endif GRAD mode
+  
+  else if ( fHitFindingMode == "signal" ){
+    
+    LOG_VERBATIM("OpHitBuilder") 
+    << "Scanning for hits using signal/pulse-threshold method: \n"
+    << "(threshold " << fSignalHitThresh << ")";
+
+    // Get wfm baseline
+    float baseline = GetPedestalAndRMS(wfm,0,fBaselineWindowLength)[0];
+    
+    // Set rising_edge to false before starting hit finding loop
+    bool rising_edge = false;
+  
+    for(size_t i = 0; i < wfm.size(); i++){
+      
+      // If signal is under threshold, and we are within the hit finding
+      // time limits set in the fhicl, we have a hit candidate
+      if ( (baseline - wfm[i])*fMvPerADC <= fSignalHitThresh && rising_edge == false && i > (size_t)t1 && i < (size_t)t2){
+        rising_edge = true;
+        hits_filtered.insert(hits_filtered.end(),i);
+        LOG_VERBATIM("OpHitBuilder")
+        << " - " << i;
+      }
+         
+      // When we leave the hit candidate, reset rising_edge to false
+      if ( (baseline - wfm[i])*fMvPerADC < fSignalHitThresh && rising_edge == true){
+        rising_edge = false;
+      }
+  
+    } // <-- end scan over waveform
+    LOG_VERBATIM("OpHitBuilder") << "Found " << hits_filtered.size() << " hits.";
+
+  
+  } // Endif SIGNAL mode
+  // End hitfinding
+  
   // Now merge all remaining hits using shorter spacing
   std::vector<short> hits_merged = HitMerger(hits_filtered,fMinHitSeparation,1);
-  if(bVerbose) std::cout<<"Post-merging: "<<hits_merged.size()<<" hits\n";
+  LOG_VERBATIM("OpHitBuilder") << "Post-merging: " << hits_merged.size() << " hits.";
 
   return hits_merged;
   
@@ -230,6 +281,9 @@ std::vector<float> OpHitBuilderAlg::MakeGradient( std::vector<short> wfm )
 // Merge hits
 std::vector<short> OpHitBuilderAlg::HitMerger( std::vector<short> hits, short spacing, int option)
 {
+  LOG_VERBATIM("OpHitBuilder")
+  << "Merging hits... (" << hits.size() << ")";
+
   std::vector<short> hits_merged;
   for(size_t i=0; i<hits.size(); i++){
     // Always add the first hit
@@ -243,7 +297,7 @@ std::vector<short> OpHitBuilderAlg::HitMerger( std::vector<short> hits, short sp
           break;
         // option 1: check each hit against previous hit
         case 1:
-          if( (hits[i]-hits[i-1]) >= spacing ) hits_merged.push_back(hits[i]);
+          if( (hits[i]-hits_merged[hits_merged.size()-1]) >= spacing ) hits_merged.push_back(hits[i]);
           break;
       }
     }
@@ -284,14 +338,21 @@ std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<float> wfm, s
 // all the specified integrals
 std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hit, short prev_hit, std::vector<short> windows)
 {
-  // Create vector to be returned 
+
+  LOG_VERBATIM("OpHitBuilder")
+  << "GETHITINFO: Processing hit at sample " << hit << "(prev hit @ " << prev_hit << ")";
+
+  // Create vector to be returned (amplitude, integralWindow1, integralWindow2, ...)
+  // Initialize dummy values.
   std::vector<float> hit_info(windows.size()+1);
   for(size_t i=0; i<windows.size()+1; i++) hit_info[i] = -9999.;
   
-  // If the hit is too early to reliably calculate 
-  // a baseline, OR if the previous hit is too close,
-  // stop now and return defaults
-  if( (hit < 100)||(hit-prev_hit < 200 ) ) return hit_info;
+  // If the hit is too early to reliably calculate a baseline, OR if the 
+  // previous hit is too close, stop now and return defaults
+  if( (hit < 100)||(hit-prev_hit < 200 ) ) {
+    LOG_VERBATIM("OpHitBuilder") << "!!! Hit is too early or close to prev hit -- abort.";
+    return hit_info;
+  }
 
   // Get baseline
   size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
@@ -307,10 +368,8 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   x3  = std::min(int(hit + fFullWindowLength),int(wfm.size()));
   const int prepulse_bins = int(x2) - int(x1);
   const int total_bins    = int(x3) - int(x1);
-  if(bVerbose) {
-    std::cout<<"Integration limits: x1, x2, x3 "<<x1<<"   "<<x2<<"  "<<x3<<std::endl;
-    std::cout<<"Prev hit: "<<prev_hit<<"\n";
-  }
+  LOG_VERBATIM("OpHitBuilder") 
+  << "  x1, x2, x3 = " << x1 << "  " << x2 << "  " << x3;
   
   // Fill x,y arrays to be used in the TGraph
   // during the fit later
@@ -327,20 +386,19 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   prepulse_rms      = prepulse_info[1];
   float diff       = prepulse_baseline - baseline;
   
-  if(bVerbose){
-    std::cout<<"Prepulse baseline "<<prepulse_baseline<<"   rms "<<prepulse_rms<<std::endl;
-    std::cout<<"Waveform baseline "<<baseline<<"   rms "<<rms<<std::endl;
-    std::cout<<"Difference        "<<diff<<"   ("<<diff/rms<<" * rms)"<<std::endl;
-  }
+  LOG_VERBATIM("OpHitBuilder") 
+  << "  Prepulse baseline (x1-x2) " << prepulse_baseline << ", rms " << prepulse_rms << "\n"
+  << "  Waveform baseline         " << baseline <<", rms " << rms << "\n"
+  << "  Difference                " << diff << " (" << diff/rms << " * rms)";
+
 
   // Get mean of first few samples of the prepulse region
   int  nn = 10;
   float x1_baseline = GetBaselineAndRMS(wfm,x1,x1+nn)[0];
   float norm_set    = (x1_baseline - baseline);
-  if(bVerbose) std::cout<<"Norm set: "<<norm_set<<std::endl;
   if (norm_set > 0.) norm_set = 0.;
   
-
+  // Define exponential function and initialize parameters
   TF1 prepulse_exp_fit("prepulse_exp_fit","[0] + [1]*exp(-(x-[2])/[3])",0.,30000.);
   prepulse_exp_fit.FixParameter(0,baseline);
   prepulse_exp_fit.FixParameter(2,x1+nn/2); 
@@ -350,12 +408,17 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   prepulse_exp_fit.SetParLimits(3,fPrePulseTau1,fPrePulseTau2);
 
   if(fUsePrepulseFit){ 
+      
+      // Fit prepulse region with above function
       TGraph graph(prepulse_bins,x,y);
       graph.Fit("prepulse_exp_fit","QN0");
+
   } else {
+
     // Prepulse fit turned OFF; just use baseline
     // (zero out exponential component)
     prepulse_exp_fit.FixParameter(1,0.);  
+  
   }
 
   // Save fit info into publicly-accessible members   
@@ -363,20 +426,19 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   fit_SlowTau         = prepulse_exp_fit.GetParameter(3);
   int NDF             = prepulse_exp_fit.GetNDF();
   fit_ReducedChi2     = prepulse_exp_fit.GetChisquare()/float(NDF); 
-  
-  if(bVerbose){
-    std::cout<<"Parameters of fitted prepulse region: \n";
-    std::cout<<"    Norm_slow           : "<<fit_SlowNorm<<"\n";
-    std::cout<<"    Tau_slow            : "<<fit_SlowTau<<"\n";
-    std::cout<<"    waveform baseline   : "<<baseline<<"\n";
-    std::cout<<"    BS at x1            : "<<x1_baseline<<"\n";
-    std::cout<<"    actual hit value    : "<<wfm[hit]<<"\n";
-    std::cout<<"    f(x1)               : "<<prepulse_exp_fit.Eval(x1)<<" ("<<prepulse_exp_fit.Eval(x1)-baseline<<" from BS)\n";
-    std::cout<<"    f(x2)               : "<<prepulse_exp_fit.Eval(x2)<<" ("<<prepulse_exp_fit.Eval(x2)-baseline<<" from BS)\n";
-    std::cout<<"    f(x3)               : "<<prepulse_exp_fit.Eval(x3)<<" ("<<prepulse_exp_fit.Eval(x2)-baseline<<" from BS)\n";
-    std::cout<<"    ChiSquared          : "<<fit_ReducedChi2<<"\n";
-  }
-  
+ 
+  LOG_VERBATIM("OpHitBuilder")
+  << "  Resulting fit parameters \n"
+  << "    norm            : " << fit_SlowNorm     << "\n"
+  << "    tau             : " << fit_SlowTau      << "\n"
+  << "    Chi2/NDF        : " << fit_ReducedChi2  << "\n"  
+  << "  Function values (baseline subtracted)\n"
+  << "    f(x1)  = " << prepulse_exp_fit.Eval(x1) - baseline    << "\n"
+  << "    f(x2)  = " << prepulse_exp_fit.Eval(x2) - baseline    << "\n"
+  << "    f(hit) = " << prepulse_exp_fit.Eval(hit) - baseline   << "\n"
+  << "    actual hit value = " << wfm[hit] - baseline           << "\n"
+  << "    f(x3)  = " << prepulse_exp_fit.Eval(x3) - baseline;
+   
   // Save average waveform during integration?
   bool flag_ave = ( (AddHitToAverageWaveform)&&(total_bins>=fPrePulseDisplay+fFullWindowLength));
   if(flag_ave) AverageWaveform_count++;
@@ -385,9 +447,12 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   float integral  = 0 ;
   float amplitude = 0.;
   int   iWindow   = 0 ;
+
+  LOG_VERBATIM("OpHitBuilder") 
+  << "  Starting integration from "<<x2<<" to "<<x3;
+
   for( int i = 0; i < total_bins; i++){
    
-    
     short xx    = x1 + short(i);
     float yy   = prepulse_exp_fit.Eval(xx) - (float)wfm[xx];  
     
@@ -396,6 +461,11 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
 
     // Save integral at appropriate window sizes
     if( xx - hit == windows[iWindow]-1) {
+
+      LOG_VERBATIM("OpHitBuilder")
+      << "    window "<< iWindow << " (size " << windows[iWindow] << ")"
+      << "  = " << integral << " ADC ";
+      
       hit_info[iWindow+1] = integral;
       iWindow++;
     }
@@ -405,14 +475,11 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
 
     // Add to average waveform if specified
     if( (flag_ave) && ( xx >= x1b)) AverageWaveform.at(xx-x1b) += yy*fMvPerADC;
- 
-    //std::cout<<"   i "<<xx<<"  v:"<<yy*fMvPerADC
-    //<<"  integrating? "<<(xx>=x2)
-    //<<"  "<<integral<<"   "<<integral_prompt<<std::endl;
   
   }
 
   hit_info[0] = amplitude*fMvPerADC;
+  LOG_VERBATIM("OpHitBuilder") << "  amplitude = " << hit_info[0];
 
   return hit_info;
 
@@ -518,52 +585,6 @@ bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse &opdetpulse )
   }
 }
 
-//--------------------------------------------------------------
-// Are the PMT hits for this event consistent with a Michel-trigger
-// event? (ie, is there a hit before the trigger time?)
-// This function is currently configured to look at the ETL PMT only,
-// which was on most of the runs.
-bool OpHitBuilderAlg::LooksLikeMichel( art::Event &e )
-{
-  if(bVerbose) std::cout<<"OpHitBuilderAlg::LooksLikeMichel...\n";
-
-  bool out = false;
-
-  // Get the OpDetPulses; skip event if empty
-  art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
-  e.getByLabel("daq","",WaveformHandle);
-  if( (int)WaveformHandle->size() == 0 ) {
-    if(bVerbose) std::cout<<"No optical detector data found -- can't do Michel filter!\n";
-  } else {
-
-    // If not empty, do hit-finding and look for early hits, which are 
-    // signatures of Michel-triggered events.
-    for( int ipulse = 0; ipulse < (int)WaveformHandle->size(); ipulse++){
-      art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle,ipulse);
-      raw::OpDetPulse opdetpulse = *ThePulsePtr;
-      
-      // Is this the ETL?
-      if( opdetpulse.OpChannel() == 1) {
-        std::vector<short> hits = GetHits(opdetpulse);
-        short triggerTick = opdetpulse.FirstSample();
-
-        // Loop through the found hits, and if there
-        // are any before triggerTick - 300, flag as
-        // a Michel (out = true)
-        for(size_t i=0; i<hits.size(); i++){
-          
-          if(hits[i] <= triggerTick - 300) out = true;
-
-        }
-
-      } // endif ETL
-    } // endloop over pulses
-  }
-  
-  if(bVerbose) std::cout<<"Result: "<<out<<"\n";
-
-  return out;
-}
 
 
 
@@ -571,6 +592,9 @@ bool OpHitBuilderAlg::LooksLikeMichel( art::Event &e )
 // Single PE finder
 std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPulse &opdetpulse )
 {
+
+  LOG_VERBATIM("OpHitBuilder") 
+  << "Searching for single PE candidates (RMS thresh x " << fPulseHitRMSThresh << ")";
 
   std::vector<std::pair<float,float>> out;
   
@@ -620,9 +644,10 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
     // If we're already in a PE window, increment the
     // counters and add to integral
     if( flag ) {
-      
-      if(bVerbose) std::cout<<"  "<<i<<"   "<<yy<<" mV  (wfm RMS: "<<rms*fMvPerADC<<" mV --> thresh "<<fPulseHitRMSThresh*rms*fMvPerADC<<" mV)   g = "<<g[i]<<"  flag: "<<flag
-      <<" tmp_i "<<tmp_wfm_i<<std::endl;
+     
+      LOG_VERBATIM("OpHitBuilder")
+      << "  " << i << "  yy = " << yy << " mV (wfm RMS " << rms*fMvPerADC << " mV), "
+      << " thresh " << fPulseHitRMSThresh*rms*fMvPerADC << ", g " << g[i] << ", flag " << flag;
       
       counter++;
       windowsize++;
@@ -636,14 +661,14 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
       
       // If another PE is detected after at least 5 ns, extend the window by resetting counter
       if( counter >=5 && IsPECandidate ){
-        if(bVerbose) std::cout<<"Secondary hit! Extending window\n";
+        LOG_VERBATIM("OpHitBuilder") << "  Secondary hit, extending window";
         counter = 0;
       }
       
       // If pulse extends above upper limit or if window length
       // is exceeded due to multiple merges, abort mission.
       if( IsOverLimit || (windowsize > 2*fSER_PostWindow) ){
-        if(bVerbose) std::cout<<"ABORT\n";
+        LOG_VERBATIM("OpHitBuilder") << "  abort!";
         counter = 0;
         hit_grad = 0;
         integral = 0;
@@ -658,13 +683,17 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
       // If we reached the end of the allotted window, add
       // integral to vector and reset everything
       if( counter == fSER_PostWindow ){
-        
-        if(bVerbose) std::cout<<"finished PE window of size "<<windowsize<<": "<<integral<<" ADCs, g = "<<hit_grad<<"\n";
+       
+        LOG_VERBATIM("OpHitBuilder") 
+        << "Finished PE window of size "<<windowsize<<", "
+        << integral << " ADCs, g = " << hit_grad;
         out.push_back(std::make_pair(integral,hit_grad));
         
         // Add to average waveform if it looks good
         if( (windowsize+fSER_PreWindow == SER_bins) && fabs(integral - fSinglePE)<=5 ){
-          if(bVerbose) std::cout<<"ADDING PE to average waveform... size:"<<SERWaveform.size()<<", SER_bins"<<SER_bins<<"\n";
+          
+          LOG_VERBATIM("OpHitBuilder") << "Add to average PE wfm.";
+          
           for(int ii=0; ii<SER_bins; ii++){
             SERWaveform.at(ii) += tmp_wfm[ii]*fMvPerADC;
           }
@@ -692,8 +721,6 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
     // and the previous 10 samples were below threshold, then we're in business!
     if( !flag && IsPECandidate ){
       
-      if(bVerbose) std::cout<<"  "<<i<<"   "<<yy<<" mV  (wfm RMS: "<<rms*fMvPerADC<<" mV --> thresh "<<fPulseHitRMSThresh*rms*fMvPerADC<<" mV)   g = "<<g[i]<<"  flag: "<<flag
-      <<" tmp_i "<<tmp_wfm_i<<std::endl;
       
       // Find pre-PE baseline
       prePE_baseline = 99;
@@ -702,7 +729,10 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
       prePE_baseline = tmp[0];
       prePE_rms      = tmp[1];
      
-      if(bVerbose) std::cout<<"Potential PE:  preBS = "<<prePE_baseline<<", preRMS = "<<prePE_rms<<"\n";
+      LOG_VERBATIM("OpHitBuilder")
+      << "  " << i << "  yy = " << yy << " mV (wfm RMS " << rms*fMvPerADC << " mV), "
+      << " thresh " << fPulseHitRMSThresh*rms*fMvPerADC << ", g " << g[i] << ", flag " << flag << "\n"
+      << "  Potential PE!  preBS/RMS " << prePE_baseline << ", "<< prePE_rms;
  
       // Require flat pre-PE region
       if( prePE_rms < fSER_PrePE_RMS_cut){ 
@@ -717,10 +747,10 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
           tmp_wfm[tmp_wfm_i] = wfm_corrected[i-fSER_PreWindow+ii] - prePE_baseline;
           tmp_wfm_i++;
         }
-    
-        if(bVerbose) std::cout<<"!!! found a PE.  BEginning integration... \n";
+   
+        LOG_VERBATIM("OpHitBuilder") << "  Looks good!  Beginning integration..."; 
       } else {
-        if(bVerbose) std::cout<<"Potential PE but didn't meet prePE flatness requirement ...\n";
+        LOG_VERBATIM("OpHitBuilder") << "  Doesn't pass preBS cut, moving on..."; 
       }
 
     } // <-- end if(PE cand)
@@ -762,12 +792,11 @@ std::vector<float> OpHitBuilderAlg::GetPedestalAndRMS( std::vector<float> wfm, s
   float rms2 = f.GetParameter(2);
   float rchi2 = f.GetChisquare()/(float)(f.GetNDF()-1);
 
-  if(bVerbose){
-    std::cout<<"Pedestal function -------------\n";
-    std::cout<<"RMS: "<<rms1<<"   f->GetParameter(2) = "<<rms2<<"\n";
-    std::cout<<"BS : "<<baseline<<"       ped = "<<ped<<"\n";
-    std::cout<<"Red_Chi2 = "<<rchi2<<"\n";
-  }
+  LOG_VERBATIM("OpHitBuilder")
+  << "Calculating pedestal        ... " << ped << " (traditional BS " << baseline << ")\n"
+  << "Calculating gaussian spread ... " << rms2 << "(traditional RMS " << rms1 << ")\n"
+  << "Reduced Chi2 of fit         ... " << rchi2;
+
 
   // If resulting pedestal (from fit) is trustworthy,
   // then return it; otherwise, return traditional baseline/rms

@@ -42,7 +42,6 @@ class OpHitBuilderAlg{
 
   std::vector<short>            GetHits( raw::OpDetPulse& );
   bool                          IsCleanBeamWaveform( raw::OpDetPulse& );
-  bool                          LooksLikeMichel( art::Event& );
   
   std::vector<short>            HitMerger( std::vector<short>, short, int);
   std::vector<float>            MakeGradient( std::vector<short> );
@@ -72,12 +71,12 @@ class OpHitBuilderAlg{
   float fit_SlowTau;
   float fit_ReducedChi2;
 
-  bool  bVerbose;
   float fSER_PrePE_RMS_cut;
   float fSER_Grad_cut;
   float fPulseHitRMSThresh;
   bool  fUsePrepulseFit;
   float fGradHitThresh;
+  float fSignalHitThresh;
   float fPulseHitThreshLow;
   float fPulseHitThreshHigh;
   float fGradRMSThresh;
@@ -98,6 +97,7 @@ class OpHitBuilderAlg{
   short fSER_PostWindow;
   std::vector<short> fIntegrationWindows;
   float fSinglePE;
+  std::string fHitFindingMode;
 
  private:
   
