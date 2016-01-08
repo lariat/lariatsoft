@@ -22,12 +22,23 @@ lariat_kaonfilter:
 
 lariat_pimufilter:
 {
- module_type: 			PiMuFilter
- SourceLabel:   		"daq"
+ module_type: 						PiMuFilter
+ SourceLabel:   					"daq"
  PiMuProbabilityThreshold: 	0.8
- ParticleIDModuleLabel: 	"pid"
- WCTrackModuleLabel: 		"wctrack"
- TOFModuleLabel: 		"tof"
+ ParticleIDModuleLabel: 		"pid"
+ WCTrackModuleLabel: 			"wctrack"
+ TOFModuleLabel: 					"tof"
+}
+
+lariat_particlefilter:
+{
+ module_type: 						ParticleFilter
+ SourceLabel: 						"daq"
+ ParticleProbabilityThreshold: 0.8
+ ParticlePDG: 						 211
+ ParticleIDModuleLabel:       "pid"
+ WCTrackModuleLabel: 			"wctrack"
+ TOFModuleLabel: 					"tof"
 }
 
 lariat_wctrackfilter:
