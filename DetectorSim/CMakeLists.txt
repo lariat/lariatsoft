@@ -5,12 +5,12 @@ include_directories( $ENV{LARSIM_INC}     )
 include_directories( $ENV{POSTGRESQL_INC} )
 
 simple_plugin(SimWireT1034 "module"
-			Geometry
+			larcore_Geometry
                         larcore_Geometry_Geometry_service
-                        Simulation
-                        Utilities
-                        Filters
-                        RawData
+                        larsim_Simulation
+                        lardata_Utilities
+                        larevt_Filters
+                        lardata_RawData
                         lardata_DetectorInfoServices_DetectorClocksServiceStandard_service
                         SignalShapingServiceT1034_service
 			${ART_FRAMEWORK_CORE}

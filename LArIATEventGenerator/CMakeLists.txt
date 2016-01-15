@@ -2,9 +2,9 @@
 include_directories( $ENV{NUTOOLS_INC} )
 
 art_make( BASENAME_ONLY
-          MODULE_LIBRARIES Simulation
-                        SummaryData
-                        Geometry
+          MODULE_LIBRARIES larsim_Simulation
+                        larcore_SummaryData
+                        larcore_Geometry
                         larcore_Geometry_Geometry_service
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}
@@ -27,11 +27,11 @@ art_make( BASENAME_ONLY
 
 
 # art_make( BASENAME_ONLY
-#           MODULE_LIBRARIES PhotonPropagation
+#           MODULE_LIBRARIES larsim_PhotonPropagation
 #                         larsim_PhotonPropagation_PhotonVisibilityService_service
-#                         Simulation
-#                         SummaryData
-#                         Geometry
+#                         larsim_Simulation
+#                         larcore_SummaryData
+#                         larcore_Geometry
 #                         larcore_Geometry_Geometry_service
 #                         ${SIMULATIONBASE}
 #                         ${ART_FRAMEWORK_CORE}
