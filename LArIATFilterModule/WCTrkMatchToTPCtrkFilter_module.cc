@@ -51,6 +51,12 @@
 #include <iostream>
 #include <memory>
 
+// #####################
+// ### ROOT Includes ###
+// #####################
+#include <TH1F.h>
+#include <TH2F.h>
+
 class WCTrkMatchToTPCtrkFilter;
 
 class WCTrkMatchToTPCtrkFilter : public art::EDFilter {
@@ -87,6 +93,12 @@ private:
   double	fMaxZPos;		// Maximum Z position of the TPC track we will consider
   int		fMaxMatchedTracks;	// The maximum number of tracks allowed to be matched per event
   
+  // --- Histos for checking filter ---
+  TH1F*		hDeltaX;
+  TH1F*		hDeltaY;
+  TH1F*		hAlpha;
+  TH1F*		hnMatch;
+  
   
 };
 
@@ -100,26 +112,32 @@ WCTrkMatchToTPCtrkFilter::WCTrkMatchToTPCtrkFilter(fhicl::ParameterSet const & p
 }
 
 // -------------------- FHICL Parameter Set ---------------------
-void WCTrkMatchToTPCtrkFilter::reconfigure(fhicl::ParameterSet const & pset)
+void WCTrkMatchToTPCtrkFilter::reconfigure(fhicl::ParameterSet const & p)
 {
-  fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel");
-  fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
-  falpha			= pset.get< double >("alpha", 20.0);
-  fDeltaXLow			= pset.get< double >("DeltaXLow", -2.0);
-  fDeltaXHigh			= pset.get< double >("DeltaXHigh", 6.0);
-  fDeltaYLow			= pset.get< double >("DeltaYLow", -3.0);
-  fDeltaYHigh			= pset.get< double >("DeltaYHigh", 6.0);
-  fMaxZPos			= pset.get< double >("MaxZPos", 14.0);
-  fMaxMatchedTracks		= pset.get<   int  >("MaxMatchedTracks", 1);
+  fTrackModuleLabel		= p.get< std::string >("TrackModuleLabel");
+  fWCTrackLabel 		= p.get< std::string >("WCTrackLabel");
+  falpha			= p.get< double >("alpha", 20.0);
+  fDeltaXLow			= p.get< double >("DeltaXLow", -2.0);
+  fDeltaXHigh			= p.get< double >("DeltaXHigh", 6.0);
+  fDeltaYLow			= p.get< double >("DeltaYLow", -3.0);
+  fDeltaYHigh			= p.get< double >("DeltaYHigh", 6.0);
+  fMaxZPos			= p.get< double >("MaxZPos", 14.0);
+  fMaxMatchedTracks		= p.get<  int   >("MaxMatchedTracks", 1);
   
   
-  return;
+  //return;
 }
 
 // ---------------------- Begin Job ---------------------------
 void WCTrkMatchToTPCtrkFilter::beginJob()
 {
   // Implementation of optional member function here.
+  art::ServiceHandle<art::TFileService> tfs;
+  
+  hDeltaX = tfs->make<TH1F>("hDeltaX", "#Delta X between TPC and WCtrk (TPC - WC)", 400, -20, 20);
+  hDeltaY = tfs->make<TH1F>("hDeltaY", "#Delta Y between TPC and WCtrk (TPC - WC)", 400, -20, 20);
+  hAlpha  = tfs->make<TH1F>("hAlpha", "#alpha (Angle between TPC and WC Track)", 110, -5, 50);
+  hnMatch = tfs->make<TH1F>("hnMatch", "Number of matched TPC/WC Tracks", 20, -1, 9);
 }
 
 
@@ -397,17 +415,26 @@ for(int aa = 0; aa < ntrks; aa++)
       DeltaX_WC_TPC_Track = UpStreamTrjPointX[aa] - (wctrk_XFace[bb]);
       DeltaY_WC_TPC_Track = UpStreamTrjPointY[aa] - (wctrk_YFace[bb]);
       
+      
+      
       // ### Only counting the track if it passes the alpha, DeltaX and Delta Y ###
       // ###       and is far enough upstream in the TPC in Z position          ###
       if(alpha < falpha && DeltaX_WC_TPC_Track > fDeltaXLow && DeltaX_WC_TPC_Track < fDeltaXHigh &&
          DeltaY_WC_TPC_Track > fDeltaYLow && DeltaY_WC_TPC_Track < fDeltaYHigh && UpStreamTrjPointZ[aa] < fMaxZPos)
-	 {nWC_TPC_TrackMatch++;}
+	 {
+	 // ### Filling Histograms ###
+         hDeltaX->Fill(DeltaX_WC_TPC_Track);
+         hDeltaY->Fill(DeltaY_WC_TPC_Track);
+         hAlpha->Fill(alpha);
+	 nWC_TPC_TrackMatch++;
+	 
+	 }
       
    
       }//<---End bb loop
    }//<---End aa loop
 
-
+hnMatch->Fill(nWC_TPC_TrackMatch);
 if(nWC_TPC_TrackMatch <= fMaxMatchedTracks && nWC_TPC_TrackMatch > 0)
    {return true;}
 else {return false;}
