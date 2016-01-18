@@ -5,6 +5,8 @@
 //
 // Generated at Wed Jan  6 11:59:49 2016 by Elena Gramellini using artmod
 // from cetpkgsupport v1_08_06.
+//Calorimetry and tagging for stopping tracks added by Irene Nutini on January 2016
+
 // The naive version of this filter works as follows:
 // the filter rejects an event if all the tracks are stopping inside the TPC
 // 
@@ -21,7 +23,8 @@
 // ##########################
 #include "art/Framework/Core/EDFilter.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/FindOneP.h" 
+#include "art/Framework/Core/FindOneP.h"
+#include "art/Framework/Core/FindManyP.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
@@ -41,6 +44,9 @@
 #include "RecoBase/Track.h"
 #include "RecoBase/SpacePoint.h"
 #include "Utilities/AssociationUtil.h"
+#include "AnalysisBase/Calorimetry.h"
+#include "AnalysisBase/ParticleID.h"
+
 // ####################
 // ### C++ Includes ###
 // ####################
@@ -51,6 +57,11 @@
 // ### ROOT includes ###
 // #####################
 #include <TH1F.h>
+#include <TH2F.h>
+#include <TGraph.h>
+#include <TF1.h>
+
+const int kMaxTrack      = 1000;  //maximum number of tracks
 
 class StoppingTracksFilter;
 
@@ -90,12 +101,31 @@ private:
 
   // Declare member data here.
   std::string fTrackModuleLabel;
-  float fupstreamZPosition;
+  std::string fCalorimetryModuleLabel;
+  double fupstreamZPosition;
+  
+  double fParticleMass;
+  
+  double fLowLimitStop;
+  double fUpLimitStop;
+  
+  
+  // === Storing the tracks Calorimetry Information
+  int    trkhits[kMaxTrack][2];
+  double trkpida[kMaxTrack][2];
+  double trkke[kMaxTrack][2];
+  double trkdedx[kMaxTrack][2][1000];
+  double trkrr[kMaxTrack][2][1000];
+  double trkpitchhit[kMaxTrack][2][1000];
 
   TH1F  *fTotNTrack;
   TH1F  *fStoppingTrack;
   TH1F  *fDifferenceTrack;
   TH1F  *fNTrackPassedCuts;
+  
+  TH1F*		   fdEdx;
+  TH2F*		   fdEdxRange;
+  TH1F*			fFitPar;
 };
 
 
@@ -106,35 +136,56 @@ StoppingTracksFilter::StoppingTracksFilter(fhicl::ParameterSet const & p)
   // Call appropriate produces<>() functions here.
   this->reconfigure(p);
   std::string fTrackModuleLabel;
+  std::string fCalorimetryModuleLabel;
+  
 }
 
 bool StoppingTracksFilter::filter(art::Event & evt)
 {
+	//############ Simplified version ########
+	//use only dEdx vs rr to evaluate if stopping for all TPC tracks, for every particle
+	
+	
   // #####################################
   // ### Getting the Track Information ###
   // #####################################
+   
+	//####TPC Track####
   art::Handle< std::vector<recob::Track> > trackListHandle; //<---Define trackListHandle as a vector of recob::Track objects
   std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
   
   // === Filling the tracklist from the tracklistHandle ===
-  if (!evt.getByLabel(fTrackModuleLabel,trackListHandle)) return false;
-  art::fill_ptr_vector(tracklist, trackListHandle);
+  if (evt.getByLabel(fTrackModuleLabel,trackListHandle)) {
+  art::fill_ptr_vector(tracklist, trackListHandle);}
    
   // === Association between SpacePoints and Tracks ===
   art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel); 
    
+ // === Association between Calorimetry objects and Tracks ===
+  art::FindManyP<anab::Calorimetry> fmcal(trackListHandle, evt, fCalorimetryModuleLabel);
+  
+  
+  //std::cout<<"========================================="<<std::endl;
+   std::cout<<"Run = "<<evt.run()<<", SubRun = "<<evt.subRun()<<", Evt = "<<evt.id().event()<<std::endl;
+ // std::cout<<"========================================="<<std::endl;
+	
   //======== Setting up my counters ========
   int i = -1;
   int nPassingZCut = 0;
   int nStopping    = 0;
 
+  int nStop =0;
+  bool StopTrack = false;
+  
   // ### Looping over tracks ###
   for ( auto const& thisTrack : (*trackListHandle) )
     { 
-      ++i;
+      ++i; //TPC tracks
+		std::cout << "TPC track # " << i << std::endl;
       // ### Setting a temp variable for this track ###
       float tempZpoint = 100;
-      
+      bool IncomingTrack = false;
+		bool StoppingTrack = false;
       // ### Grabbing the SpacePoints associated with this track ###
       std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(i);
       
@@ -158,20 +209,164 @@ bool StoppingTracksFilter::filter(art::Event & evt)
 	    {      
 	      // ###     If the track passes this cut,      ###
 	      // ###    add to the passingZCut counter      ###
+			IncomingTrack= true;
 	      nPassingZCut++;
 	      // ###  Check if the track is stopping.       ###
 	      // ###  If it is add to the stopping counter  ###
 	      if (isStoppingTrack(thisTrack)) nStopping++;
 	      break; // You don't need to continue looping on the SpacePoints, you already found the track
 	    }
+		 
 	  
 	}//<---End j loop
+	
+	//if(IncomingTrack == true) {std::cout << " Track " << i << " with lowest Zpoint < 2 cm " << std::endl;}
+	
+   
+   // ########################################################## 
+   // ### Looping over Calorimetry information for the track ###
+   // ########################################################## 
+   if (fmcal.isValid())
+     {
+     // ### Putting calo information for this track (i) into pointer vector ###
+     std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(i);
+     
+     // ### Looping over each calorimetry point (similar to SpacePoint) ###
+     for (size_t j = 0; j<calos.size(); ++j)
+       {
+// ### If we don't have calorimetry information for this plane skip ###
+if (!calos[j]->PlaneID().isValid) continue;
+
+// ### Grabbing this calorimetry points plane number (0 == induction, 1 == collection) ###
+int pl = calos[j]->PlaneID().Plane;
+
+// ### Skipping this point if the plane number doesn't make sense ###
+if (pl<0||pl>1) continue;
+
+// ### Recording the number of calorimetry points for this track in this plane ####
+trkhits[i][pl] = calos[j]->dEdx().size();
+
+// #### Recording the kinetic energy for this track in this plane ###
+trkke[i][pl] = calos[j]->KineticEnergy();
+
+// ###############################################
+// ### Looping over all the calorimetry points ###
+// ###############################################
+
+//if(pl == 1) std::cout << "Number of calo hits for this track in plane 1 " << calos[j]->dEdx().size() << std::endl;
+
+double lastHitsdEdx[16]={0.};
+double lastHitsRR[16]={0.};
+
+double ordereddEdx[1000]={0.};
+double orderedRR[1000]={0.};
+
+for (size_t k = 0; k<calos[j]->dEdx().size(); ++k)
+  {
+  // ### If we go over 1000 points just skip them ###
+  if (k>=1000) continue;
+  
+  // ### Recording the dE/dX information for this calo point along the track in this plane ###
+  trkdedx[i][pl][k] = calos[j]->dEdx()[k];
+  
+  // ### Recording the residual range for this calo point along the track in this plane ###
+  trkrr[i][pl][k] = calos[j]->ResidualRange()[k];
+  
+  // ### Recording the pitch of this calo point along the track in this plane ###
+  trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
+  
+  //### Analyzing caloHits ONLY from collection plane - 1
+  
+  if(pl == 1) {
+	
+	size_t dimCalo = 0;
+	dimCalo = calos[j]->dEdx().size();
+  //Fill histos with calo info from collection plane for each track
+  fdEdx->Fill((calos[j]->dEdx()[k]));
+  fdEdxRange->Fill(calos[j]->ResidualRange()[k],(calos[j]->dEdx()[k]));
+  //In case the recorded CaloPoints are not ordered with decreasing RR: 
+		if(k < calos[j]->dEdx().size()-1){
+		  if(calos[j]->ResidualRange()[k] > calos[j]->ResidualRange()[k+1]) {
+		//If the previous caloHit RR is higher than the next, that's the starting point of the track	
+			ordereddEdx[k]= calos[j]->dEdx()[k];
+			orderedRR[k]= calos[j]->ResidualRange()[k];
+		 		}
+		 	  else {
+				  ordereddEdx[dimCalo-k]= calos[j]->dEdx()[k];
+				  orderedRR[dimCalo-k]= calos[j]->ResidualRange()[k];	
+		 		}
+	 	  	}
+  		
+		}
+		
+  
+  }//<---End calo points (k)
+  
+  if(pl == 1){
+ //Actually to study the dEdx vs RR 
+ //and to provide a good fit for distinguishing stopping particles, I take in account only tracks longer than around 8 cm
+ if(calos[j]->dEdx().size() > 18){
+ size_t hj=0;
+  
+  hj=calos[j]->dEdx().size()-17;
+  int hjj=0;
+  while(hj > calos[j]->dEdx().size()-18 && hj < calos[j]->dEdx().size()-1 ){
+	  //lastHits are the one with lower RR
+    	lastHitsdEdx[hjj]=ordereddEdx[hj];
+  	   lastHitsRR[hjj]=orderedRR[hj];
+  	   hj++;
+		hjj++;
+  }
+  
+ 
+ } else {std::cout << "Too short track: " << i << std::endl; }
+}
+ 
+ int check=0;
+ int h=0;
+ 
+ //Doublechecking the lastHits vector has been filled
+ while(h < 16){
+ if(lastHitsRR[h]==0.) {h++; check++;}
+  else h++;
+   }
+	
+  double p1=0.;
+  
+	if(check != 16){
+		TGraph *g1 = new TGraph(16,lastHitsRR,lastHitsdEdx);
+		TF1 *fitFcn = new TF1("fitFcn","[0]*pow(x,[1])",0.,10.);
+		fitFcn->SetParameter(1,-0.4);
+		g1->Fit("fitFcn");
+		//In case of "invalid fit" we have to add a control <------
+		p1 = fitFcn->GetParameter(1);
+		//std::cout << "RR Fit Parameters "<< p1 << std::endl;
+		fFitPar->Fill(p1);
+	 } 
+ 
+	 if(p1 < fUpLimitStop && p1 > fLowLimitStop) {
+	 //std::cout << "Possible stopping track "	<< std::endl;
+	 StoppingTrack = true;
+	 nStop++;
+	 }
+ 
+ 
+      }//<---End looping over calo points (j)
+		
+				
+		
+      
+    }//<---End checking Calo info is valid 
+	 
+	 if(IncomingTrack == true && StoppingTrack == true) {std::cout << "Possible stopping track "	<< i << std::endl; StopTrack = true;}
+	
       
     }//<---End i loop
-
-  //If all the tracks which passed the ZCut are stopping, you thow out the event
-  if (nPassingZCut == nStopping) return false;
-  //  if (passingZCut < stopping)  throw 20; // I'd like to put an exception here
+	 
+	 std::cout << "There are " << nStop << " possible stopping tracks for this event" << std::endl;
+	 
+  //If at least one of the tracks which passed the ZCut is stopping, you throw out the event
+  if (StopTrack == true) return false;
   // ### Otherwise, keep the event ###
   return true;
 }
@@ -186,12 +381,21 @@ void StoppingTracksFilter::beginJob()
   fDifferenceTrack  = tfs->make<TH1F>("DifferenceTrack"  ,"DifferenceTrack :Y:X"  ,30,-0.5,29.5);
   fNTrackPassedCuts = tfs->make<TH1F>("NTrackPassedCuts" ,"NTrackPassedCuts:Y:X"  ,30,-0.5,29.5);
   
+  fdEdx = tfs->make<TH1F>("dEdx per each point", "dEdx per each point", 240,-10.,50.);
+  fdEdxRange = tfs->make<TH2F>("dEdxVSresRange", "dEdxVSresRange for the tpc track selected", 100,0.,100., 100,0.,20.);
+  fFitPar = tfs->make<TH1F>("expParLastHits fit", "expPar from lastHits fit", 100,-10.,10.);
+  
 }
 
 void StoppingTracksFilter::reconfigure(fhicl::ParameterSet const & p)
 {
   fTrackModuleLabel  = p.get< std::string >("TrackModuleLabel" );
   fupstreamZPosition = p.get< double >("upstreamZPosition", 2.0);
+  fCalorimetryModuleLabel = p.get< std::string >("CalorimetryModuleLabel", "calo");
+  fParticleMass = p.get< double >("ParticleMass", 139.57);//default particle: charged pion
+  //Range for the p1 parameter of the fit dEdx vs RR (low RR) to select stopping particles 
+  fLowLimitStop = p.get< double >("LowerLimitStoppingTrack", -0.43);
+  fUpLimitStop = p.get< double >("UpperLimitStoppingTrack", -0.35);
 }
 
 bool StoppingTracksFilter::isStoppingTrack( recob::Track aTrack )
@@ -214,30 +418,4 @@ bool StoppingTracksFilter::isEscapingTrack( recob::Track aTrack )
 */
 
 
-  /*
-  // This is an idea I'm not sure I want to implement.... 
-  // Counting the total number of Stopping and thru going tracks
-  // ### Counting the number of stopping tracks ###
-  // ###             for this event             ###
-  unsigned int ntrksStopping = 0;
-  unsigned int ntrksEscaping = 0;
 
-  // ### Looping over tracks ###
-  for ( auto const& thisTrack : (*trackListHandle) )
-    {
-      unsigned int S = isStoppingTrack(thisTrack);
-      unsigned int E = isEscapingTrack(thisTrack);
-      ntrksStopping += S;
-      ntrksEscaping += E;
-      std::cout<<"S*E "<<S*E<<std::endl;
-    }//<---End of the loop on tracks
-  
-  //  Fill check histograms
-  fTotNTrack->Fill(tracklist.size());
-  fStoppingTrack->Fill(ntrksStopping);
-  fDifferenceTrack->Fill(tracklist.size() - ntrksStopping);
-
-  // ### If all the tracks of the event are stopping return false ###
-  if(ntrksStopping                 == tracklist.size()) return false;
-  if(ntrksStopping + ntrksEscaping == tracklist.size()) return false;
-  */
