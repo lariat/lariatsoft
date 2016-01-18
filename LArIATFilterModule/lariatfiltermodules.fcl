@@ -22,12 +22,12 @@ lariat_kaonfilter:
 
 lariat_pimufilter:
 {
- module_type: 						PiMuFilter
- SourceLabel:   					"daq"
+ module_type: 			PiMuFilter
+ SourceLabel:   		"daq"
  PiMuProbabilityThreshold: 	0.8
- ParticleIDModuleLabel: 		"pid"
- WCTrackModuleLabel: 			"wctrack"
- TOFModuleLabel: 					"tof"
+ ParticleIDModuleLabel: 	"pid"
+ WCTrackModuleLabel: 		"wctrack"
+ TOFModuleLabel: 		"tof"
 }
 
 lariat_particlefilter:
@@ -80,6 +80,21 @@ lariat_stoppingtracksfilter:
 {
 module_type:		StoppingTracksFilter
 TrackModuleLabel:	"pmtrack"
+}
+
+
+lariat_wctotpcmatchfilter:
+{
+module_type: 		WCTrkMatchToTPCtrkFilter
+TrackModuleLabel: 	"pmtrack"
+WCTrackLabel: 		"wctrack"
+alpha:			20.
+DeltaXLow:		-2.0
+DeltaXHigh:		6.0
+DeltaYLow:		-3.0
+DeltaYHigh:		6.0
+MaxZPos:		14.0
+fMaxMatchedTracks:	1 # Max number of matched TPC and WC tracks (requires > 0)
 }
 
 END_PROLOG
