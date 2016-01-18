@@ -175,6 +175,10 @@ if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
 // === Association between SpacePoints and Tracks ===
 art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
 
+//std::cout<<"========================================="<<std::endl;
+//std::cout<<"Run = "<<evt.run()<<", SubRun = "<<evt.subRun()<<", Evt = "<<evt.id().event()<<std::endl;
+//std::cout<<"========================================="<<std::endl;
+
 
 // ---------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
@@ -237,8 +241,12 @@ float pHatX = 999;
 float pHatY = 999;
 //float pHatZ = 999;
 //float pHatMag = 999;
+
+float tpcTheta[100]= {0.};
+
 // ### Storing the trajectory points in a similar way to PionXS ###
-TVector3 p_hat_0;
+
+TVector3 z_hat(0,0,1);
 
 // ###################################
 // ### Looping over all the tracks ###
@@ -248,13 +256,14 @@ for(size_t i=0; i<tracklist.size();++i)
    // ### Clearing the vectors for each track ###
    trackStart.clear();
    trackEnd.clear();
+	
+	TVector3 p_hat_0;
     
    // ### Setting the track information into memory ###
    memset(larStart, 0, 3);
    memset(larEnd, 0, 3);
    tracklist[i]->Extent(trackStart,trackEnd); 
    tracklist[i]->Direction(larStart,larEnd);
-  
   
    
    
@@ -310,6 +319,9 @@ for(size_t i=0; i<tracklist.size();++i)
 	 }//<---End only storing points if they are the lowest Z point
 
       }//<---End iTrajPt loop
+		
+		// ### Calculating the Theta for the TPC Track ###
+		tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());
    
    // ###################################################
    // ### Saving for looping later the upstream point ###
@@ -317,13 +329,13 @@ for(size_t i=0; i<tracklist.size();++i)
    // ###################################################
    //if(FirstTrjPtZ < 999)
       //{
-      UpStreamTrjPointZ[ntrks] = FirstTrjPtZ;  
-      UpStreamTrjPointY[ntrks] = FirstTrjPtY;
-      UpStreamTrjPointX[ntrks] = FirstTrjPtX;
+      UpStreamTrjPointZ[i] = FirstTrjPtZ;  
+      UpStreamTrjPointY[i] = FirstTrjPtY;
+      UpStreamTrjPointX[i] = FirstTrjPtX;
    
       //UpStreamTrjPointPHatZ[ntrks] = pHatZ;
-      UpStreamTrjPointPHatY[ntrks] = pHatY;
-      UpStreamTrjPointPHatX[ntrks] = pHatX;
+      UpStreamTrjPointPHatY[i] = pHatY;
+      UpStreamTrjPointPHatX[i] = pHatX;
       //UpStreamTrjPointPHatMag[ntrks] = pHatMag;
       ntrks++;
       //}// <----End saving FirstPoint   
@@ -339,7 +351,7 @@ int nWC_TPC_TrackMatch = 0;
 // ###################################################
 // ### Vectors for angles between TPC and WC Track ###
 // ###################################################
-TVector3 z_hat(0,0,1);
+
 
 
 // #########################################
@@ -349,7 +361,9 @@ for(int aa = 0; aa < ntrks; aa++)
    {
    float DeltaX_WC_TPC_Track = 999;
    float DeltaY_WC_TPC_Track = 999;
-   p_hat_0 = tracklist[aa]->DirectionAtPoint(aa);
+   //p_hat_0 = tracklist[aa]->DirectionAtPoint(aa);
+	float tpc_Theta=tpcTheta[aa];
+	  
    // ###########################################
    // ### Loop over all the eligible WCTracks ###
    // ###########################################
@@ -360,9 +374,7 @@ for(int aa = 0; aa < ntrks; aa++)
    
       // ### Grabbing the WCTRack Phi ###
       float wcPhi = wctrk_phi[bb];
-   
-      // ### Calculating the Theta for the TPC Track ###
-      float tpcTheta = acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());  
+      
    
       // ### Using same convention as WCTrack to calculate phi ###
       float phi = 0;
@@ -403,9 +415,9 @@ for(int aa = 0; aa < ntrks; aa++)
       theUnitVector_WCTrack.SetZ(cos(wcTheta));
    
       // ### TPC Track Unit Vector ===
-      theUnitVector_TPCTrack.SetX(sin(tpcTheta)*cos(tpcPhi));
-      theUnitVector_TPCTrack.SetY(sin(tpcTheta)*sin(tpcPhi));
-      theUnitVector_TPCTrack.SetZ(cos(tpcTheta));
+      theUnitVector_TPCTrack.SetX(sin(tpc_Theta)*cos(tpcPhi));
+      theUnitVector_TPCTrack.SetY(sin(tpc_Theta)*sin(tpcPhi));
+      theUnitVector_TPCTrack.SetZ(cos(tpc_Theta));
    
       // ###########################################################
       // ### Calculating the angle between WCTrack and TPC Track ###
