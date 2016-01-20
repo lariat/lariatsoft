@@ -27,24 +27,30 @@ namespace ldp{
     
   public:
     //Constructors
-    MuonRangeStackHits();
+    MuonRangeStackHits();    
 
   private:
     std::map<int, std::vector<int> > fPaddleTimeTickMap;
     std::vector<MuRSTrack> fMuRSTrackVector;
+    bool fIsInitializedEmpty;
 
 #ifndef __GCCXML__
 
   public:
-    //Non-default constructor
+    // Non-default constructor
     MuonRangeStackHits(std::map<int, std::vector<int>> paddlemap, std::vector<MuRSTrack> trackVect );
     
-    //Get Methods
+    // Get Methods
     std::vector<int>       TimeTick(int iPaddle)  const; //The vector listing the time ticks when a certain iPaddle was hit.
     size_t                 NTracks();
     MuRSTrack              GetTrack(int iTrack);
     int                    GetPenetrationDepth(int iTrack) const; 
     int                    GetArrivalTime(int iTrack) const;
+    bool                   WasItInitializedEmpty();
+
+    // Set Methods
+    void SetPenetrationDepth(int iTrack, int depth) { fMuRSTrackVector.at(iTrack).penetrationDepth = depth; } 
+    void SetArrivalTime(int iTrack, int time) { fMuRSTrackVector.at(iTrack).arrivalTime = time; } 
 
 #endif
     

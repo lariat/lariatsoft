@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v01_09_00
-defaultqual	e7
+parent	lariatsoft v04_33_00
+defaultqual	e9
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
 # to the search path in development environment
@@ -10,41 +10,41 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		      v04_23_00
+larsoft		v04_33_00
 LariatFilters   v01_02
-lariatfragments v01_06_01
-artdaq_core     v1_04_17
-LariatBeamFiles v01_00 - optional
-
-cetbuildtools   v4_13_00 - only_for_build
+lariatfragments v01_07_03
+artdaq_core     v1_04_27
+LariatBeamFiles v01_00		-	optional
+lariatutil	v1_26_00 	-	optional
+cetbuildtools   v4_18_01 	-	only_for_build
 end_product_list
-  
-# e7  - with gcc 4.9.2 and -std=c++11
-qualifier	              larsoft          LariatFilters	lariatfragments artdaq_core	    LariatBeamFiles	notes
-e7:debug		            e7:debug         -nq-		        e7:debug        e7:nu:s15:debug	-nq-
-e7:opt			            e7:opt	         -nq-		        e7:opt		      e7:nu:s15:opt	  -nq-
-e7:prof			            e7:prof	         -nq-		        e7:prof		      e7:nu:s15:prof	-nq-
-e7:debug:noifdh		      e7:debug:noifdh  -nq-		        e7:debug        e7:nu:s15:debug	-nq-
-e7:opt:noifdh		        e7:opt:noifdh	   -nq-		        e7:opt		      e7:nu:s15:opt	  -nq-
-e7:prof:noifdh		      e7:prof:noifdh	 -nq-		        e7:prof		      e7:nu:s15:prof	-nq-
-e7:debug:nobeam		      e7:debug         -nq-		        e7:debug        e7:nu:s15:debug	-
-e7:opt:nobeam		        e7:opt	         -nq-		        e7:opt		      e7:nu:s15:opt	  -
-e7:prof:nobeam		      e7:prof	  	     -nq-		        e7:prof		      e7:nu:s15:prof	-
-e7:debug:nobeam:noifdh	e7:debug:noifdh  -nq-		        e7:debug        e7:nu:s15:debug	-
-e7:opt:nobeam:noifdh	  e7:opt:noifdh	   -nq-		        e7:opt		      e7:nu:s15:opt  	-
-e7:prof:nobeam:noifdh	  e7:prof:noifdh	 -nq-		        e7:prof		      e7:nu:s15:prof	-
+
+# e9  - with gcc 4.9.2 and -std=c++11
+qualifier    	       larsoft	  LariatFilters	lariatfragments	  artdaq_core	    LariatBeamFiles	lariatutil	notes
+e9:debug	       e9:debug	  -nq-		e9:debug	  e9:nu:s28:debug   -nq-		e9:debug
+e9:opt		       e9:opt	  -nq-		e9:opt		  e9:nu:s28:opt	    -nq-		e9:opt
+e9:prof		       e9:prof	  -nq-		e9:prof		  e9:nu:s28:prof    -nq-		e9:prof
+e9:debug:nobeam	       e9:debug	  -nq-		e9:debug	  e9:nu:s28:debug   -			e9:debug
+e9:opt:nobeam	       e9:opt	  -nq-		e9:opt		  e9:nu:s28:opt	    -			e9:opt
+e9:prof:nobeam	       e9:prof	  -nq-		e9:prof		  e9:nu:s28:prof    -			e9:prof
 
 end_qualifier_list
 
 # table file fragment to set FW_DATA
 table_fragment_begin
-    envSet(DB_PWD_DIR,          /pwd/Utilities/)
-    pathPrepend(FW_DATA,        /grid/fermiapp/lariat/)
-    pathPrepend(FW_SEARCH_PATH, ${UPS_PROD_DIR}:${UPS_PROD_DIR}/gdml:${UPS_PROD_DIR}/pwd:/grid/fermiapp/lariat/:/grid/fermiapp/lbne/lar/aux/)
-    pathPrepend(FHICL_FILE_PATH, .)
+    pathPrepend(FW_DATA,              /grid/fermiapp/lariat/)
+    pathPrepend(FW_SEARCH_PATH,       ${UPS_PROD_DIR}:${UPS_PROD_DIR}/gdml:${UPS_PROD_DIR}/pwd:/grid/fermiapp/lariat/:/grid/fermiapp/lbne/lar/aux/)
+    pathPrepend(FHICL_FILE_PATH,      .)
     envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
     envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
-    envSet(ART_WORKBOOK_QUAL,         "s14:e7")
+    envSet(ART_WORKBOOK_QUAL,         "s28:e9")
+    envSet(LARIATDBNAME,              lariat_prd)
+    envSet(LARIATDBPORT,              5443)
+    envSet(LARIATDBHOST,              ifdbprod2.fnal.gov)
+    envSet(LARIATDBUSER,              lariat_prd_user)
+    envSet(LARIATDBRECONNECTWAITTIME, 10)
+    envSet(LARIATCONNECTATTEMPTS,     3)
+    envSet(DB_PWD_FILE,               ${UPS_PROD_DIR}/pwd/Utilities/lariat_prd_passwd)
 table_fragment_end
 
 

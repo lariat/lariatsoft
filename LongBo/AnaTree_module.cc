@@ -42,13 +42,15 @@
 #include "Simulation/SimChannel.h"
 #include "AnalysisBase/Calorimetry.h"
 #include "AnalysisBase/ParticleID.h"
+#include "RecoAlg/TrackMomentumCalculator.h"
 
 // ROOT includes
 #include "TTree.h"
 #include "TTimeStamp.h"
 
 const int kMaxTrack      = 1000;  //maximum number of tracks
-const int kMaxHits       = 10000; //maximum number of hits
+const int kMaxCluster    = 1000;  //maximum number of clusters
+const int kMaxHits       = 20000; //maximum number of hits
 const int kMaxTrackHits  = 1000;  //maximum number of space points
 
 namespace bo {
@@ -91,6 +93,10 @@ private:
   double trkenddcosx[kMaxTrack];
   double trkenddcosy[kMaxTrack];
   double trkenddcosz[kMaxTrack];
+  double trklen[kMaxTrack];
+  double trkmomrange[kMaxTrack];
+  double trkmommschi2[kMaxTrack];
+  double trkmommsllhd[kMaxTrack];
   int    ntrkhits[kMaxTrack];
   double trkx[kMaxTrack][kMaxTrackHits];
   double trky[kMaxTrack][kMaxTrackHits];
@@ -98,8 +104,16 @@ private:
   double trkpitch[kMaxTrack][2];
   int    trkhits[kMaxTrack][2];
   double trkpida[kMaxTrack][2];
+  double trkke[kMaxTrack][2];
   double trkdedx[kMaxTrack][2][1000];
+  double trkrr[kMaxTrack][2][1000];
   double trkpitchhit[kMaxTrack][2][1000];
+  int    nclus;
+  double clustartwire[kMaxCluster];
+  double clustarttick[kMaxCluster];
+  double cluendwire[kMaxCluster];
+  double cluendtick[kMaxCluster];
+  int    cluplane[kMaxCluster];
   int    nhits;
   int    hit_plane[kMaxHits];
   int    hit_wire[kMaxHits];
@@ -118,9 +132,11 @@ private:
   double hit_nelec[kMaxHits];
   double hit_energy[kMaxHits];
   int    hit_trkkey[kMaxHits];
+  int    hit_clukey[kMaxHits];
 
   std::string fTrigModuleLabel;
   std::string fHitsModuleLabel;
+  std::string fClusterModuleLabel;
   std::string fTrackModuleLabel;
   std::string fCalorimetryModuleLabel;
   std::string fParticleIDModuleLabel;
@@ -131,6 +147,7 @@ bo::AnaTree::AnaTree(fhicl::ParameterSet const & pset)
   : EDAnalyzer(pset)
   , fTrigModuleLabel       (pset.get< std::string >("TrigModuleLabel"))
   , fHitsModuleLabel       (pset.get< std::string >("HitsModuleLabel"))
+  , fClusterModuleLabel     (pset.get< std::string >("ClusterModuleLabel"))
   , fTrackModuleLabel       (pset.get< std::string >("TrackModuleLabel"))
   , fCalorimetryModuleLabel (pset.get< std::string >("CalorimetryModuleLabel"))
   , fParticleIDModuleLabel  (pset.get< std::string >("ParticleIDModuleLabel"))
@@ -185,6 +202,12 @@ void bo::AnaTree::analyze(art::Event const & evt)
     trigtime[i] = triglist[i]->GetTrigTime();
   }
 
+  art::Handle< std::vector<recob::Cluster> > clusterListHandle;
+  std::vector<art::Ptr<recob::Cluster> > clusterlist;
+  if (evt.getByLabel(fClusterModuleLabel,clusterListHandle))
+    art::fill_ptr_vector(clusterlist, clusterListHandle);    
+
+
   art::Handle< std::vector<recob::Track> > trackListHandle;
   std::vector<art::Ptr<recob::Track> > tracklist;
   if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
@@ -198,6 +221,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
   art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
   art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
   art::FindManyP<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
+  art::FindManyP<recob::Cluster>     fmc(hitListHandle,   evt, fClusterModuleLabel);
   art::FindManyP<anab::Calorimetry> fmcal(trackListHandle, evt, fCalorimetryModuleLabel);
   art::FindManyP<anab::ParticleID>  fmpid(trackListHandle, evt, fParticleIDModuleLabel);
   std::vector<const sim::SimChannel*> fSimChannels;
@@ -206,7 +230,18 @@ void bo::AnaTree::analyze(art::Event const & evt)
   }catch (art::Exception const&e){
   }
 
+  //cluster information
+  nclus = clusterlist.size();
+  for (size_t i = 0; i<clusterlist.size(); ++i){
+    clustartwire[i] = clusterlist[i]->StartWire();
+    clustarttick[i] = clusterlist[i]->StartTick();
+    cluendwire[i] = clusterlist[i]->EndWire();
+    cluendtick[i] = clusterlist[i]->EndTick();
+    cluplane[i] = clusterlist[i]->Plane().Plane;
+  }
   //track information
+  trkf::TrackMomentumCalculator trkm;
+  trkm.SetMinLength(10); //change the minimal track length requirement to 10 cm
   ntracks_reco=tracklist.size();
   double larStart[3];
   double larEnd[3];
@@ -231,6 +266,10 @@ void bo::AnaTree::analyze(art::Event const & evt)
     trkenddcosx[i]    = larEnd[0];
     trkenddcosy[i]    = larEnd[1];
     trkenddcosz[i]    = larEnd[2];
+    trklen[i]         = tracklist[i]->Length();
+    trkmomrange[i]    = trkm.GetTrackMomentum(trklen[i],13);
+    trkmommschi2[i]   = trkm.GetMomentumMultiScatterChi2(tracklist[i]);
+    trkmommsllhd[i]   = trkm.GetMomentumMultiScatterLLHD(tracklist[i]);
     ntrkhits[i] = fmsp.at(i).size();
     std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(i);
     for (size_t j = 0; j<spts.size(); ++j){
@@ -257,9 +296,11 @@ void bo::AnaTree::analyze(art::Event const & evt)
 	int pl = calos[j]->PlaneID().Plane;
 	if (pl<0||pl>1) continue;
 	trkhits[i][pl] = calos[j]->dEdx().size();
+	trkke[i][pl] = calos[j]->KineticEnergy();
 	for (size_t k = 0; k<calos[j]->dEdx().size(); ++k){
 	  if (k>=1000) continue;
 	  trkdedx[i][pl][k] = calos[j]->dEdx()[k];
+	  trkrr[i][pl][k] = calos[j]->ResidualRange()[k];
 	  trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
 	}
       }
@@ -292,6 +333,11 @@ void bo::AnaTree::analyze(art::Event const & evt)
       if (fmtk.at(i).size()!=0){
 	hit_trkid[i] = fmtk.at(i)[0]->ID();
 	hit_trkkey[i] = fmtk.at(i)[0].key();
+      }
+    }
+    if (fmc.isValid()){
+      if (fmc.at(i).size()!=0){
+	hit_clukey[i] = fmc.at(i)[0].key();
       }
     }
     if (hit_plane[i]==1){//collection plane
@@ -379,6 +425,12 @@ void bo::AnaTree::beginJob()
   fTree->Branch("efield",efield,"efield[3]/D");
   fTree->Branch("t0",&t0,"t0/I");
   fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
+  fTree->Branch("nclus",&nclus,"nclus/I");
+  fTree->Branch("clustartwire",clustartwire,"clustartwire[nclus]/D");
+  fTree->Branch("clustarttick",clustarttick,"clustarttick[nclus]/D");
+  fTree->Branch("cluendwire",cluendwire,"cluendwire[nclus]/D");
+  fTree->Branch("cluendtick",cluendtick,"cluendtick[nclus]/D");
+  fTree->Branch("cluplane",cluplane,"cluplane[nclus]/I");
   fTree->Branch("ntracks_reco",&ntracks_reco,"ntracks_reco/I");
   fTree->Branch("trkvtxx",trkvtxx,"trkvtxx[ntracks_reco]/D");
   fTree->Branch("trkvtxy",trkvtxy,"trkvtxy[ntracks_reco]/D");
@@ -392,6 +444,10 @@ void bo::AnaTree::beginJob()
   fTree->Branch("trkenddcosx",trkenddcosx,"trkenddcosx[ntracks_reco]/D");
   fTree->Branch("trkenddcosy",trkenddcosy,"trkenddcosy[ntracks_reco]/D");
   fTree->Branch("trkenddcosz",trkenddcosz,"trkenddcosz[ntracks_reco]/D");
+  fTree->Branch("trklen",trklen,"trklen[ntracks_reco]/D");
+  fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/D");
+  fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/D");
+  fTree->Branch("trkmommsllhd",trkmommsllhd,"trkmommsllhd[ntracks_reco]/D");
   fTree->Branch("ntrkhits",ntrkhits,"ntrkhits[ntracks_reco]/I");
   fTree->Branch("trkx",trkx,"trkx[ntracks_reco][1000]/D");
   fTree->Branch("trky",trky,"trky[ntracks_reco][1000]/D");
@@ -399,7 +455,9 @@ void bo::AnaTree::beginJob()
   fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/D");
   fTree->Branch("trkhits",trkhits,"trkhits[ntracks_reco][2]/I");
   fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkrr",trkrr,"trkrr[ntracks_reco][2][1000]/D");
   fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
   fTree->Branch("nhits",&nhits,"nhits/I");
   fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
@@ -412,6 +470,7 @@ void bo::AnaTree::beginJob()
   fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/D");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
   fTree->Branch("hit_trkkey",hit_trkkey,"hit_trkkey[nhits]/I");
+  fTree->Branch("hit_clukey",hit_clukey,"hit_clukey[nhits]/I");
   fTree->Branch("hit_pk",hit_pk,"hit_pk[nhits]/I");
   fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
   fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
@@ -438,6 +497,14 @@ void bo::AnaTree::ResetVars(){
   for (int i = 0; i < 16; ++i){
      trigtime[i]=-99999;
   }
+  nclus = -99999;
+  for (int i = 0; i < kMaxCluster; ++i){
+    clustartwire[i] = -99999;
+    clustarttick[i] = -99999;
+    cluendwire[i] = -99999;
+    cluendtick[i] = -99999;
+    cluplane[i] = -99999;
+  }
   ntracks_reco = -99999;
   for (int i = 0; i < kMaxTrack; ++i){
     trkvtxx[i] = -99999;
@@ -452,6 +519,10 @@ void bo::AnaTree::ResetVars(){
     trkenddcosx[i] = -99999;
     trkenddcosy[i] = -99999;
     trkenddcosz[i] = -99999;
+    trklen[i] = -99999;
+    trkmomrange[i] = -99999;
+    trkmommschi2[i] = -99999;
+    trkmommsllhd[i] = -99999;
     ntrkhits[i] = -99999;
     for (int j = 0; j<kMaxTrackHits; ++j){
       trkx[i][j] = -99999;
@@ -461,9 +532,11 @@ void bo::AnaTree::ResetVars(){
     for (int j = 0; j<2; ++j){
       trkpitch[i][j] = -99999;
       trkhits[i][j] = -99999; 
+      trkke[i][j] = -99999;
       trkpida[i][j] = -99999;
       for (int k = 0; k<1000; ++k){
 	trkdedx[i][j][k] = -99999;
+	trkrr[i][j][k] = -99999;
 	trkpitchhit[i][j][k] = -99999;
       }
     }
@@ -478,6 +551,7 @@ void bo::AnaTree::ResetVars(){
     hit_ph[i] = -99999;
     hit_trkid[i] = -99999;
     hit_trkkey[i] = -99999;
+    hit_clukey[i] = -99999;
     hit_tstart[i] = -99999;
     hit_tend[i] = -99999;
     hit_pk[i] = -99999;

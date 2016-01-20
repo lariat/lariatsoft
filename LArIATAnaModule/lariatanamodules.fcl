@@ -1,11 +1,23 @@
+#include "calorimetry.fcl"
+
 BEGIN_PROLOG
 
 lariat_anatree:
 {
     module_type:              "AnaTreeT1034"
-    HitsModuleLabel:          "cccluster"
-    TrackModuleLabel:         "ct"
     TriggerUtility:           "FragmentToDigit"
+    HitsModuleLabel:          "linecluster"
+    TrackModuleLabel:         "pmtrack"
+    CalorimetryModuleLabel:   "calo"
+    ParticleIDModuleLabel:    "pid"
+    ClusterModuleLabel:       "linecluster"
+    WCTrackLabel:             "wctrack"
+    TOFModuleLabel:	      "tof"
+    G4ModuleLabel:            "largeant"
+    ShowerModuleLabel:        "showerreco"
+    MCShowerModuleLabel:      "mcreco"
+    CalorimetryAlg:          @local::standard_calorimetryalgmc
 }
+lariat_anatree.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
 
 END_PROLOG

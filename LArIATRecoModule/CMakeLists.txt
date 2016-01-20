@@ -3,6 +3,7 @@ art_make(BASENAME_ONLY
 	 LIB_LIBRARIES Geometry
 	               ClusterRecoUtil
 		       RecoBase
+		       LArIATChecks
          MODULE_LIBRARIES LArIATRecoAlg
 	 		  LArIATDataProducts
 			  Filters

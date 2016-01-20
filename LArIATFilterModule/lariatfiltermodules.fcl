@@ -7,8 +7,27 @@ lariat_triggerpattern:
 {
   module_type:        TriggerPatternFilter
   TriggerFilterAlg:   @local::lariat_triggerfilteralg
-  SourceLabel:        SlicerInput
-  TriggerPattern:      "<+BEAMON-PILEUP>"
+  SourceLabel:        "daq"
+  TriggerPattern:     "<+BEAMON-PILEUP>"
+}
+
+lariat_kaonfilter:
+{
+  module_type:                 KaonFilter
+  KaonProbabilityThreshold:    0.8
+  ParticleIDModuleLabel:       "pid"
+  WCTrackModuleLabel:          "wctrack"
+  TOFModuleLabel:              "tof"
+}
+
+lariat_pimufilter:
+{
+ module_type: 			PiMuFilter
+ SourceLabel:   		"daq"
+ PiMuProbabilityThreshold: 	0.8
+ ParticleIDModuleLabel: 	"pid"
+ WCTrackModuleLabel: 		"wctrack"
+ TOFModuleLabel: 		"tof"
 }
 
 END_PROLOG

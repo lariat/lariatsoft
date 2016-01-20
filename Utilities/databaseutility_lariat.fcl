@@ -2,17 +2,9 @@ BEGIN_PROLOG
 
 lariat_databaseutility:
 {
-  DBHost:          "ifdb02.fnal.gov"
-  DBPort:          5443
-  DBName:          "lariat_prd"
-  DBUser:          "lariat_prd_user"
-  DBPasswordFile:  "Utilities/lariat_prd_passwd"
-
-  DBReconnectWaitTime:     10
-  DBNumberConnectAttempts:  3
-
   ConfigTableName: "lariat_xml_database"
   IFBeamTableName: "lariat_ifbeam_database"
+  HardwareConnectionsTableName: "lariat_hardware_connections"
 }
 
 END_PROLOG

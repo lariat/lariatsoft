@@ -1,6 +1,5 @@
 #include "FragmentToDigit_config.fcl"
 #include "services_lariat.fcl"
-
 process_name: LariatProducer
 
 #source is now a root file

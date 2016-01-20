@@ -1,0 +1,75 @@
+#include "databaseutility_lariat.fcl"
+#include "geometry_lariat.fcl"
+#include "sliceralg.fcl"
+#include "RawDataUtilities_algs.fcl"
+
+process_name: SlicerNoMerge
+
+services:
+{
+ scheduler:
+ {
+  fileMode: NOMERGE
+ }
+ ExptGeoHelperInterface: @local::lariat_geometry_helper
+ Geometry:               @local::lariat_geo
+ DatabaseUtilityT1034:   @local::lariat_databaseutility
+}
+
+source:
+{
+ module_type: "SlicerInput"
+
+ # Number of events to analyze; "-1" means all of the events in the input
+ # file. You can override this value with the "-n" option on the command line.
+ maxEvents:    -1
+
+ SourceName:   "daq"  # RawDataLabel
+ SlicerAlg:    @local::standard_sliceralg
+
+ FragmentToDigitAlg: @local::lariat_fragmenttodigit_alg
+
+ # Events with number of TPC readouts outside the range of
+ #
+ #   [ MinTPCReadoutPerEvent, MaxTPCReadoutPerEvent ]
+ #
+ # will not be written to the resulting ROOT file. This
+ # can also be taken care of in a filter module downstream.
+ MinTPCReadoutsPerEvent:       0
+ MaxTPCReadoutsPerEvent:       100
+
+ # Parameters for the slicing algorithm. A value of "-1" means that the
+ # values will be obtained from the lariat_prd database. This is what
+ # we want 99.9% of the time.
+ V1740PreAcquisitionWindow:   -1
+ V1740PostAcquisitionWindow:  -1
+ V1740AcquisitionWindow:      -1
+ V1740BPreAcquisitionWindow:  -1
+ V1740BPostAcquisitionWindow: -1
+ V1740BAcquisitionWindow:     -1
+ V1751PreAcquisitionWindow:   -1
+ V1751PostAcquisitionWindow:  -1
+ V1751AcquisitionWindow:      -1
+ TDCPreAcquisitionWindow:     -1
+ TDCPostAcquisitionWindow:    -1
+ TDCAcquisitionWindow:        -1
+}
+
+physics:
+{
+ producers: {}
+
+ stream1: [ out1 ]
+ end_paths: [ stream1 ]
+}
+
+outputs:
+{
+ out1:
+ {
+  module_type: "RootOutput"
+  fileName:    "lariat_digit_r%06r_sr%04s_%tc.root"
+  dataTier:    "raw"
+  streamName:  "all"
+ }
+}

@@ -14,13 +14,17 @@
 #include "Utilities/LArProperties.h"
 #include "Utilities/LArFFT.h"
 #include "TFile.h"
-#include <fstream>
+//#include <fstream>
 
 //----------------------------------------------------------------------
 // Constructor.
 util::SignalShapingServiceT1034::SignalShapingServiceT1034(const fhicl::ParameterSet& pset,
-								    art::ActivityRegistry& /* reg */) 
-  : fInit(false)
+                                                           art::ActivityRegistry& /* reg */)
+: fInit(false)
+, fColFilterFunc(nullptr)
+, fIndFilterFunc(nullptr)
+, fColFieldFunc(nullptr)
+, fIndFieldFunc(nullptr)
 {
   reconfigure(pset);
 }
@@ -29,7 +33,15 @@ util::SignalShapingServiceT1034::SignalShapingServiceT1034(const fhicl::Paramete
 //----------------------------------------------------------------------
 // Destructor.
 util::SignalShapingServiceT1034::~SignalShapingServiceT1034()
-{}
+{
+  if(fColFilterFunc) delete fColFilterFunc;
+  if(fIndFilterFunc) delete fIndFilterFunc;
+  if(fColFieldFunc)  delete fColFieldFunc;
+  if(fIndFieldFunc)  delete fIndFieldFunc;
+
+  fFieldResponseHist.clear();
+  fFilterHist.clear();
+}
 
 
 //----------------------------------------------------------------------
@@ -37,126 +49,130 @@ util::SignalShapingServiceT1034::~SignalShapingServiceT1034()
 void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pset)
 {
   // Reset initialization flag.
-
+  
   fInit = false;
-
+  
   // Reset kernels.
-
+  
   fColSignalShaping.Reset();
   fIndSignalShaping.Reset();
-
+  
   // Fetch fcl parameters.
-
-  fNFieldBins = pset.get<int>("FieldBins");
+  
+  fNFieldBins      = pset.get<int>("FieldBins");
   fCol3DCorrection = pset.get<double>("Col3DCorrection");
   fInd3DCorrection = pset.get<double>("Ind3DCorrection");
   fColFieldRespAmp = pset.get<double>("ColFieldRespAmp");
   fIndFieldRespAmp = pset.get<double>("IndFieldRespAmp");
+  fIndFieldParams  = pset.get<std::vector<double>>("IndFieldParams");
   
-  fDeconNorm = pset.get<double>("DeconNorm");
+  fDeconNorm                = pset.get<double>("DeconNorm");
   fADCPerPCAtLowestASICGain = pset.get<double>("ADCPerPCAtLowestASICGain");
-  fASICGainInMVPerFC = pset.get<std::vector<double> >("ASICGainInMVPerFC");
-  fShapeTimeConst = pset.get<std::vector<double> >("ShapeTimeConst");
-  fNoiseFactVec =  pset.get<std::vector<DoubleVec> >("NoiseFactVec");
-
+  fASICGainInMVPerFC        = pset.get<std::vector<double> >("ASICGainInMVPerFC");
+  fShapeTimeConst           = pset.get<std::vector<double> >("ShapeTimeConst");
+  fNoiseFactVec             = pset.get<std::vector<DoubleVec> >("NoiseFactVec");
+  
   fInputFieldRespSamplingPeriod = pset.get<double>("InputFieldRespSamplingPeriod");
   
   fFieldResponseTOffset = pset.get<std::vector<double> >("FieldResponseTOffset");
   fCalibResponseTOffset = pset.get<std::vector<double> >("CalibResponseTOffset");
-
-  fUseFunctionFieldShape= pset.get<bool>("UseFunctionFieldShape");
+  
+  fUseFunctionFieldShape  = pset.get<bool>("UseFunctionFieldShape");
   fUseHistogramFieldShape = pset.get<bool>("UseHistogramFieldShape");
-
-  fGetFilterFromHisto= pset.get<bool>("GetFilterFromHisto");
-
+  
+  fGetFilterFromHisto = pset.get<bool>("GetFilterFromHisto");
+  
   fScaleNegativeResponse = pset.get<std::vector<double> >("ScaleNegativeResponse");
-  fScaleResponseTime = pset.get<std::vector<double> >("ScaleResponseTime");
+  fScaleResponseTime     = pset.get<std::vector<double> >("ScaleResponseTime");
   
   // Construct parameterized collection filter function.
- if(!fGetFilterFromHisto)
- {
-  mf::LogInfo("SignalShapingServiceT1034") << "Getting Filter from .fcl file" ;
-  std::string colFilt = pset.get<std::string>("ColFilter");
-  std::vector<double> colFiltParams =
-  pset.get<std::vector<double> >("ColFilterParams");
-  fColFilterFunc = new TF1("colFilter", colFilt.c_str());
-  for(unsigned int i=0; i<colFiltParams.size(); ++i)
-    fColFilterFunc->SetParameter(i, colFiltParams[i]);
-
-  // Construct parameterized induction filter function.
-
-  std::string indFilt = pset.get<std::string>("IndFilter");
-  std::vector<double> indFiltParams = pset.get<std::vector<double> >("IndFilterParams");
-  fIndFilterFunc = new TF1("indFilter", indFilt.c_str());
-  for(unsigned int i=0; i<indFiltParams.size(); ++i)
-    fIndFilterFunc->SetParameter(i, indFiltParams[i]);
-
-
- }
- else
- {  
-   std::string histoname = pset.get<std::string>("FilterHistoName");
-   mf::LogInfo("SignalShapingServiceT1034") << " using filter from .root file " ;
-   int fNPlanes=3;
-   
-  // constructor decides if initialized value is a path or an environment variable
-  std::string fname;
-  cet::search_path sp("FW_SEARCH_PATH");
-  sp.find_file(pset.get<std::string>("FilterFunctionFname"), fname);
+  if(!fGetFilterFromHisto)
+  {
+    mf::LogInfo("SignalShapingServiceT1034") << "Getting Filter from .fcl file" ;
     
-  TFile * in=new TFile(fname.c_str(),"READ");
-   for(int i=0;i<fNPlanes;i++){
-     TH1D * temp=(TH1D *)in->Get(Form(histoname.c_str(),i));
-     fFilterHist[i]=new TH1D(Form(histoname.c_str(),i),Form(histoname.c_str(),i),temp->GetNbinsX(),0,temp->GetNbinsX());
-     temp->Copy(*fFilterHist[i]); 
+    std::string colFilt = pset.get<std::string>("ColFilter");
+    std::vector<double> colFiltParams = pset.get<std::vector<double> >("ColFilterParams");
+    fColFilterFunc = new TF1("colFilter", colFilt.c_str());
+
+    for(size_t i=0; i<colFiltParams.size(); ++i)
+      fColFilterFunc->SetParameter(i, colFiltParams[i]);
+    
+    // Construct parameterized induction filter function.
+    
+    std::string indFilt = pset.get<std::string>("IndFilter");
+    std::vector<double> indFiltParams = pset.get<std::vector<double>>("IndFilterParams");
+    fIndFilterFunc = new TF1("indFilter", indFilt.c_str());
+    
+    for(size_t i=0; i<indFiltParams.size(); ++i) fIndFilterFunc->SetParameter(i, indFiltParams[i]);
+  }
+  else
+  {
+    std::string histoname = pset.get<std::string>("FilterHistoName");
+    mf::LogInfo("SignalShapingServiceT1034") << " using filter from .root file " ;
+    int fNPlanes=3;
+    
+    // constructor decides if initialized value is a path or an environment variable
+    std::string fname;
+    cet::search_path sp("FW_SEARCH_PATH");
+    sp.find_file(pset.get<std::string>("FilterFunctionFname"), fname);
+    
+    TFile * in=new TFile(fname.c_str(),"READ");
+    for(int i=0; i<fNPlanes; ++i){
+      TH1D * temp = (TH1D *)in->Get(Form(histoname.c_str(),i));
+      fFilterHist.push_back(new TH1D(Form(histoname.c_str(),i),Form(histoname.c_str(),i),temp->GetNbinsX(),0,temp->GetNbinsX()));
+      temp->Copy(*fFilterHist[i]);
     }
-   
-   in->Close();
-   
- }
-
- /////////////////////////////////////
- if(fUseFunctionFieldShape)
- {
-  std::string colField = pset.get<std::string>("ColFieldShape");
-  std::vector<double> colFieldParams =
-    pset.get<std::vector<double> >("ColFieldParams");
-  fColFieldFunc = new TF1("colField", colField.c_str());
-  for(unsigned int i=0; i<colFieldParams.size(); ++i)
-    fColFieldFunc->SetParameter(i, colFieldParams[i]);
-
-  // Construct parameterized induction filter function.
-
-  std::string indField = pset.get<std::string>("IndFieldShape");
-  std::vector<double> indFieldParams = pset.get<std::vector<double> >("IndFieldParams");
-  fIndFieldFunc = new TF1("indField", indField.c_str());
-  for(unsigned int i=0; i<indFieldParams.size(); ++i)
-    fIndFieldFunc->SetParameter(i, indFieldParams[i]);
-   // Warning, last parameter needs to be multiplied by the FFTSize, in current version of the code,
-   
-   
+    
+    in->Close();
+    
+  }
+  
+  /////////////////////////////////////
+  if(fUseFunctionFieldShape)
+  {
+    std::string colField = pset.get<std::string>("ColFieldShape");
+    std::vector<double> colFieldParams = pset.get<std::vector<double> >("ColFieldParams");
+    fColFieldFunc = new TF1("colField", colField.c_str());
+    for(size_t i=0; i<colFieldParams.size(); ++i)
+      fColFieldFunc->SetParameter(i, colFieldParams[i]);
+    
+    // Construct parameterized induction filter function.
+    
+    std::string indField = pset.get<std::string>("IndFieldShape");
+    //  std::vector<double> indFieldParams = pset.get<std::vector<double> >("IndFieldParams");
+    fIndFieldFunc = new TF1("indField", indField.c_str());
+    for(size_t i=0; i < fIndFieldParams.size(); ++i)
+      fIndFieldFunc->SetParameter(i, fIndFieldParams[i]);
+    // Warning, last parameter needs to be multiplied by the FFTSize, in current version of the code,
+    
+    
   } else if ( fUseHistogramFieldShape ) {
-    mf::LogInfo("SignalShapingServiceT1034") << " using the field response provided from a .root file " ;
+    mf::LogInfo("SignalShapingServiceT1034") << " using the field response provided from a .root file ";
     int fNPlanes = 2;
     
     // constructor decides if initialized value is a path or an environment variable
-    std::string fname;   
+    std::string fname;
     cet::search_path sp("FW_SEARCH_PATH");
     sp.find_file( pset.get<std::string>("FieldResponseFname"), fname );
     std::string histoname = pset.get<std::string>("FieldResponseHistoName");
-
+    
     std::unique_ptr<TFile> fin(new TFile(fname.c_str(), "READ"));
-    if ( !fin->IsOpen() ) throw art::Exception( art::errors::NotFound ) << "Could not find the field response file " << fname << "!" << std::endl;
-
+    if ( !fin->IsOpen() )
+      throw art::Exception( art::errors::NotFound ) << "Could not find the field response file " << fname << "!";
+    
     std::string iPlane[2] = { "V", "Y"};
-
-    for ( int i = 0; i < fNPlanes; i++ ) {
+    
+    for ( int i = 0; i < fNPlanes; ++i ) {
       TString iHistoName = Form( "%s_%s", histoname.c_str(), iPlane[i].c_str());
-      TH1F *temp = (TH1F*) fin->Get( iHistoName );  
-      if ( !temp ) throw art::Exception( art::errors::NotFound ) << "Could not find the field response histogram " << iHistoName << std::endl;
-      if ( temp->GetNbinsX() > fNFieldBins ) throw art::Exception( art::errors::InvalidNumber ) << "FieldBins should always be larger than or equal to the number of the bins in the input histogram!" << std::endl;
+      TH1F *temp = (TH1F*) fin->Get( iHistoName );
+      if ( !temp )
+        throw art::Exception( art::errors::NotFound )
+        << "Could not find the field response histogram " << iHistoName;
+      if ( temp->GetNbinsX() > (int)fNFieldBins )
+        throw art::Exception( art::errors::InvalidNumber )
+        << "FieldBins should always be larger than or equal to the number of the bins in the input histogram!";
       
-      fFieldResponseHist[i] = new TH1F( iHistoName, iHistoName, temp->GetNbinsX(), temp->GetBinLowEdge(1), temp->GetBinLowEdge( temp->GetNbinsX() + 1) );
+      fFieldResponseHist.push_back(new TH1F( iHistoName, iHistoName, temp->GetNbinsX(), temp->GetBinLowEdge(1), temp->GetBinLowEdge( temp->GetNbinsX() + 1) ));
       temp->Copy(*fFieldResponseHist[i]);
     }
     
@@ -384,48 +400,40 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
   // probably not a bad assumption
   double pitch = xyz2[0] - xyz1[0]; ///in cm
 
-  fColFieldResponse.resize(fNFieldBins, 0.);
-  fIndFieldResponse.resize(fNFieldBins, 0.);
-
   // set the response for the collection plane first
   // the first entry is 0
 
   double driftvelocity=larp->DriftVelocity()/1000.;  
-  int nbinc = TMath::Nint(fCol3DCorrection*(fabs(pitch))/(driftvelocity*detprop->SamplingRate())); ///number of bins //KP
   double integral = 0.;  
+  art::ServiceHandle<util::LArFFT> fft;
+  unsigned int signalSize = fft->FFTSize();
+
+  fColFieldResponse.resize(signalSize, 0.);
+  fIndFieldResponse.resize(signalSize, 0.);
+  
+  
   ////////////////////////////////////////////////////
    if(fUseFunctionFieldShape)
   {
-  art::ServiceHandle<util::LArFFT> fft;
-  int signalSize = fft->FFTSize();
-  std::vector<double> ramp(signalSize);
+//  std::vector<double> ramp(signalSize);
    // TComplex kernBin;
    // int size = signalSize/2;
    // int bin=0;
     //std::vector<TComplex> freqSig(size+1);
-  std::vector<double> bipolar(signalSize);
+//  std::vector<double> bipolar(signalSize);
     
-    
-  fColFieldResponse.resize(signalSize, 0.);
-  fIndFieldResponse.resize(signalSize, 0.);
    
   // Hardcoding. Bad. Temporary hopefully.
   fIndFieldFunc->SetParameter(4,fIndFieldFunc->GetParameter(4)*signalSize);
+  unsigned int i;
   
-  //double integral = 0.;
-    for(int i = 0; i < signalSize; i++) {
-          ramp[i]=fColFieldFunc->Eval(i);
-          fColFieldResponse[i]=ramp[i];
-          integral += fColFieldResponse[i];
-	  // rampc->Fill(i,ramp[i]);
-	  bipolar[i]=fIndFieldFunc->Eval(i);
-	  fIndFieldResponse[i]=bipolar[i];
-	  // bipol->Fill(i,bipolar[i]);
+    for(i = 0; i < signalSize; i++) {
+      fColFieldResponse[i]=fColFieldFunc->Eval(i);
+      integral += fColFieldResponse[i];
+      fIndFieldResponse[i]=fIndFieldFunc->Eval(i);
     }
-     
-   for(int i = 0; i < signalSize; ++i){
-      fColFieldResponse[i] *= fColFieldRespAmp/integral;
-     }
+    
+   for(i = 0; i < signalSize; ++i) fColFieldResponse[i] *= fColFieldRespAmp/integral;
       
     //this might be not necessary if the function definition is not defined in the middle of the signal range  
     fft->ShiftData(fIndFieldResponse,signalSize/2.0);
@@ -433,37 +441,47 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     
     // Ticks in nanosecond
     // Calculate the normalization of the collection plane
-    for ( int ibin = 1; ibin <= fFieldResponseHist[1]->GetNbinsX(); ibin++ )
+    for ( int ibin = 1; ibin <= fFieldResponseHist[1]->GetNbinsX(); ++ibin )
       integral += fFieldResponseHist[1]->GetBinContent( ibin );   
 
     // Induction plane
-    for ( int ibin = 1; ibin <= fFieldResponseHist[0]->GetNbinsX(); ibin++ )
+    for ( int ibin = 1; ibin <= fFieldResponseHist[0]->GetNbinsX(); ++ibin )
       fIndFieldResponse[ibin-1] = fIndFieldRespAmp*fFieldResponseHist[0]->GetBinContent( ibin )/integral;
 
     // Collection plane
-    for ( int ibin = 1; ibin <= fFieldResponseHist[1]->GetNbinsX(); ibin++ )
+    for ( int ibin = 1; ibin <= fFieldResponseHist[1]->GetNbinsX(); ++ibin )
       fColFieldResponse[ibin-1] = fColFieldRespAmp*fFieldResponseHist[1]->GetBinContent( ibin )/integral;
   } else
   {
     //////////////////////////////////////////////////
-    mf::LogInfo("SignalShapingServiceT1034") << " using the old field shape " ;
+    mf::LogInfo("SignalShapingServiceT1034") << " using the old (Best!) field shape " ;
     double integral = 0.;
-    for(int i = 1; i < nbinc; ++i){
-      fColFieldResponse[i] = fColFieldResponse[i-1] + 1.0;
-      integral += fColFieldResponse[i];
+    unsigned int ii = 0;
+    unsigned int nbinc = TMath::Nint(fCol3DCorrection*(fabs(pitch))/(driftvelocity*detprop->SamplingRate())); ///number of bins //KP
+
+    fColFieldResponse.resize(nbinc, 0.);
+   integral = 0;
+    for(ii = 1; ii < nbinc; ++ii){
+      fColFieldResponse[ii] = ii * ii;
+      integral += fColFieldResponse[ii];
     }
-    
-    for(int i = 0; i < nbinc; ++i){
-      fColFieldResponse[i] *= fColFieldRespAmp/integral;
-    }
-    
+ 
+    for(ii = 0; ii < nbinc; ++ii) fColFieldResponse[ii] *= fColFieldRespAmp / integral;
+
     // now the induction plane
+    unsigned int nbini = TMath::Nint(fInd3DCorrection*(fabs(pitch))/(driftvelocity*detprop->SamplingRate()));
+    unsigned int size = 2 * (nbini + 1);
+    fIndFieldResponse.resize(size, 0.);
+
+    if(fIndFieldParams.size() < 1) throw art::Exception( art::errors::InvalidNumber )
+        << "Invalid IndFieldParams size";
     
-    int nbini = TMath::Nint(fInd3DCorrection*(fabs(pitch))/(driftvelocity*detprop->SamplingRate()));//KP
-    for(int i = 0; i < nbini; ++i){
-      fIndFieldResponse[i] = fIndFieldRespAmp/(1.*nbini);
-      fIndFieldResponse[nbini+i] = -fIndFieldRespAmp/(1.*nbini);
+     for(ii = 0; ii < nbini; ++ii)  {
+      fIndFieldResponse[ii] = 1;
+      fIndFieldResponse[nbini + ii] = -fIndFieldParams[0];
     }
+ 
+    for(ii = 0; ii < fIndFieldResponse.size(); ++ii) fIndFieldResponse[ii] *= fIndFieldRespAmp / (double)nbini;
 
   }
   
@@ -538,6 +556,8 @@ void util::SignalShapingServiceT1034::SetElectResponse(double shapingtime, doubl
     element *= fADCPerPCAtLowestASICGain * 1.60217657e-7;
     element *= gain / 4.7;
    }
+
+//    fft->ShiftData(fElectResponse,fElectResponse.size()/2.0);
   
   return;
 
@@ -545,45 +565,43 @@ void util::SignalShapingServiceT1034::SetElectResponse(double shapingtime, doubl
 
 
 //----------------------------------------------------------------------
-// Calculate microboone filter functions.
+// Calculate filter functions.
 void util::SignalShapingServiceT1034::SetFilters()
 {
   // Get services.
-
+  
   art::ServiceHandle<util::DetectorProperties> detprop;
   art::ServiceHandle<util::LArFFT> fft;
-
+  
   double ts = detprop->SamplingRate();
   int n = fft->FFTSize() / 2;
-
+  
   // Calculate collection filter.
-
+  
   fColFilter.resize(n+1);
   fIndFilter.resize(n+1);
   
   if(!fGetFilterFromHisto)
   {
-  fColFilterFunc->SetRange(0, double(n));
-
-  for(int i=0; i<=n; ++i) {
-    double freq = 500. * i / (ts * n);      // Cycles / microsecond.
-    double f = fColFilterFunc->Eval(freq);
-    fColFilter[i] = TComplex(f, 0.);
-  }
-  
-
-  // Calculate induction filter.
-
- 
-  fIndFilterFunc->SetRange(0, double(n));
-
-  for(int i=0; i<=n; ++i) {
-    double freq = 500. * i / (ts * n);      // Cycles / microsecond.
-    double f = fIndFilterFunc->Eval(freq);
-    fIndFilter[i] = TComplex(f, 0.);
+    fColFilterFunc->SetRange(0, double(n));
+    double freq, f;
+    for(int i=0; i<=n; ++i) {
+      freq = 500. * i / (ts * n);      // Cycles / microsecond.
+      f = fColFilterFunc->Eval(freq);
+      fColFilter[i] = TComplex(f, 0.);
     }
-  
-
+    
+    // Calculate induction filter.
+    
+    
+    fIndFilterFunc->SetRange(0, double(n));
+    
+    for(int i=0; i<=n; ++i) {
+      freq = 500. * i / (ts * n);      // Cycles / microsecond.
+      f = fIndFilterFunc->Eval(freq);
+      fIndFilter[i] = TComplex(f, 0.);
+    }
+    
   }
   else
   {
@@ -592,18 +610,15 @@ void util::SignalShapingServiceT1034::SetFilters()
       double f = fFilterHist[1]->GetBinContent(i);  // hardcoded plane numbers. Bad. To change later.
       fColFilter[i] = TComplex(f, 0.);
       double h = fFilterHist[0]->GetBinContent(i);
-      fIndFilter[i] = TComplex(h, 0.); 
+      fIndFilter[i] = TComplex(h, 0.);
     }
   }
-  
-  // fIndSignalShaping.AddFilterFunction(fIndFilter);
-  // fColSignalShaping.AddFilterFunction(fColFilter);
   
 }
 
 
 //----------------------------------------------------------------------
-// Sample microboone response (the convoluted field and electronic
+// Sample response (the convoluted field and electronic
 // response), will probably add the filter later
 void util::SignalShapingServiceT1034::SetResponseSampling()
 {
@@ -681,11 +696,11 @@ void util::SignalShapingServiceT1034::SetResponseSampling()
     case 0: fIndSignalShaping.AddResponseFunction( SamplingResp, true ); break;
     default: fColSignalShaping.AddResponseFunction( SamplingResp, true ); break;
     }
-
+/*
     if (iplane == 0){
       std::ofstream outfile("resindtest.txt");
       for (size_t i = 0; i<SamplingResp.size(); ++i){
-	outfile<<i<<" "<<SamplingResp[i]<<std::endl;
+      outfile<<i<<" "<<SamplingResp[i]<<std::endl;
       }
       outfile.close();
     }
@@ -696,7 +711,7 @@ void util::SignalShapingServiceT1034::SetResponseSampling()
       }
       outfile.close();
     }
-      
+*/
 
   } // for ( int iplane = 0; iplane < fNPlanes; iplane++ )
 

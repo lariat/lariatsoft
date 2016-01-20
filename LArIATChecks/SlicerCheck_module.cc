@@ -543,8 +543,8 @@ namespace SlicerCheck {
 
       if (fNumberTPCReadouts > 0) {
         if (i < (Collections.size() - 1)) {
-          //fIntervalsDeltaT = (Collections[i+1].interval.second - Collections[i].interval.first) / 1000.0;
-          fIntervalsDeltaT = (Collections[i+1].interval.second - Collections[i].interval.first);
+          //fIntervalsDeltaT = (Collections[i+1].interval.first - Collections[i].interval.second) / 1000.0;
+          fIntervalsDeltaT = (Collections[i+1].interval.first - Collections[i].interval.second);
           std::cout << "fIntervalsDeltaT [usec]: " << fIntervalsDeltaT << std::endl;
           fIntervalsDeltaTHistogram->Fill(fIntervalsDeltaT / 1000.0);
           fIntervalsDeltaTZHistogram->Fill(fIntervalsDeltaT / 1000.0);
@@ -569,8 +569,8 @@ namespace SlicerCheck {
     if (CAENBoard0Intervals.size() > 1) {
       for (size_t i = 0; i < (CAENBoard0Intervals.size() - 1); ++i) {
         fTPCIntervalsDeltaT = -1;
-        //fTPCIntervalsDeltaT = (CAENBoard0Intervals.at(i+1).second - CAENBoard0Intervals.at(i).first) / 1000.0;
-        fTPCIntervalsDeltaT = (CAENBoard0Intervals.at(i+1).second - CAENBoard0Intervals.at(i).first);
+        //fTPCIntervalsDeltaT = (CAENBoard0Intervals.at(i+1).first - CAENBoard0Intervals.at(i).second) / 1000.0;
+        fTPCIntervalsDeltaT = (CAENBoard0Intervals.at(i+1).first - CAENBoard0Intervals.at(i).second);
         std::cout << "fTPCIntervalsDeltaT [usec]: " << fTPCIntervalsDeltaT << std::endl;
         fTPCIntervalsDeltaTHistogram->Fill(fTPCIntervalsDeltaT / 1000.0);
         fTPCIntervalsDeltaTZHistogram->Fill(fTPCIntervalsDeltaT / 1000.0);

@@ -9,6 +9,7 @@ art_make(BASENAME_ONLY
          ClusterRecoUtil
          DatabaseUtilityT1034_service
          RecoAlg
+	 AnalysisAlg
          RawData
          Simulation
          SummaryData

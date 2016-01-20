@@ -14,39 +14,27 @@
 
 //C++ includes
 #include <vector>
+#include <set>
 #include <cmath>
 #include <iostream>
 
 //Framework includes
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Persistency/Provenance/EventID.h"
+#include "art/Framework/Principal/RunPrincipal.h"
+#include "art/Framework/Principal/Run.h"
 
-// artdaq
-#include "artdaq-core/Data/Fragments.hh"
-#include "artdaq-core/Data/Fragment.hh"
+namespace raw{
+  class RawDigit;
+  class AuxDetDigit;
+  class OpDetPulse;
+  class TriggerData;
+}
 
-// lardata
-#include "RawData/RawDigit.h"
-
-// LArIAT
-#include "LArIATFragments/LariatFragment.h"
-#include "LArIATFragments/WUTFragment.h"
-#include "LArIATFragments/CAENFragment.h"
 #include "LArIATFragments/TDCFragment.h"
-#include "LArIATFragments/V1495Fragment.h"
-#include "SimpleTypesAndConstants/RawTypes.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
-#include "RawData/RawDigit.h"
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/TriggerData.h"
-#include "SummaryData/RunData.h"
-#include "Geometry/Geometry.h"
-#include "Utilities/AssociationUtil.h"
-
-
-
+class CAENFragment;
 
 typedef std::vector<TDCFragment::TdcEventData> TDCDataBlock; 
 
@@ -60,6 +48,9 @@ class FragmentToDigitAlg{
    
   void reconfigure( fhicl::ParameterSet const& pset );
   
+  
+  
+
   void makeTheDigits(std::vector<CAENFragment> caenFrags,
                      std::vector<TDCDataBlock> tdcDataBlocks,
                      std::vector<raw::AuxDetDigit> & auxDigits,
@@ -77,6 +68,9 @@ class FragmentToDigitAlg{
                                   std::set<uint32_t>            const& boardChans,
                                   uint32_t                      const& chanOffset,
                                   std::string                   const& detName);
+
+
+//<<-------------------------------THESE NEED TO BE CHANGED TO ADD CALL TO DATABASE----------------------------------------->>
   void makeMuonRangeDigits(std::vector<CAENFragment>     const& caenFrags,
                            std::vector<raw::AuxDetDigit>      & mrAuxDigits);
   void makeTOFDigits(std::vector<CAENFragment>     const& caenFrags,
@@ -96,26 +90,33 @@ class FragmentToDigitAlg{
                                             std::vector<CAENFragment>                             const& caenFrags,
                                             std::vector< std::vector<TDCFragment::TdcEventData> > const& tdcDataBlocks);
 
-  void InitializeRun( art::RunNumber_t runNumber );
+  void InitializeRun(art::RunPrincipal* const & run, art::RunNumber_t runNumber, std::uint64_t timestamp);
+  std::string TimestampToString(std::time_t const& Timestamp); 
   
 
  private:
 
-  art::ServiceHandle<art::TFileService>      tfs;                      ///< handle to the TFileService
-  std::string                                fRawFragmentLabel;        ///< label for module producing artdaq fragments
-  std::string                                fRawFragmentInstance;     ///< instance label for artdaq fragments        
-  size_t                                     fMaxNumberFitIterations;  ///< number of fit iterations before stopping
-  std::map<uint32_t, std::set<uint32_t> >    fOpticalDetChannels;      ///< key is the board ID, set are channels on that board
-  std::map< int, std::vector<CAENFragment> > fTriggerToCAENDataBlocks; ///< map trigger ID to vector of CAEN blocks
-  std::map< int, std::vector<TDCDataBlock> > fTriggerToTDCDataBlocks;  ///< map trigger ID to vector of TDC blocks
-  std::map<size_t, size_t>                   fTDCToStartWire;          ///< map TDCs to first wire attached to TDC
-  std::map<size_t, size_t>                   fTDCToChamber;            ///< map TDCs to the chamber they are attached
-  std::vector<std::string>                   fMWPCNames;               ///< vector to hold detector names of the MWPCs
-  int                                        fRunNumber;               ///< current run number
-  size_t                                     fTriggerDecisionTick;     ///< tick at which to expect the trigger decision
-  float                                      fTrigger1740Pedestal;     ///< pedestal value for the 1740 readout of the triggers
-  float                                      fTrigger1740Threshold;    ///< 1740 readout must go below the pedestal this much to trigger
-
+  int                                        		fRunNumber;               	///< current run number
+  std::string                                		fRawFragmentLabel;        	///< label for module producing artdaq fragments
+  std::string                                		fRawFragmentInstance;     	///< instance label for artdaq fragments        
+  size_t                                     		fMaxNumberFitIterations;  	///< number of fit iterations before stopping
+  std::map<uint32_t, std::set<uint32_t> >    		fOpticalDetChannels;      	///< key is the board ID, set are channels on that board
+  std::map< int, std::vector<CAENFragment> > 		fTriggerToCAENDataBlocks; 	///< map trigger ID to vector of CAEN blocks
+  std::map< int, std::vector<TDCDataBlock> > 		fTriggerToTDCDataBlocks;  	///< map trigger ID to vector of TDC blocks
+  std::map<size_t, size_t>                   		fTDCToStartWire;          	///< map TDCs to first wire attached to TDC
+  std::map<size_t, size_t>                   		fTDCToChamber;            	///< map TDCs to the chamber they are attached
+  std::vector<std::string>                   		fMWPCNames;               	///< vector to hold detector names of the MWPCs
+  size_t                                     		fTriggerDecisionTick;     	///< tick at which to expect the trigger decision
+  float                                      		fTrigger1740Pedestal;     	///< pedestal value for the 1740 readout of the triggers
+  float                                      		fTrigger1740Threshold;    	///< 1740 readout must go below the pedestal this much to trigger
+  float                                      		fV1751PostPercent;        	///< 1751 PostPercent setting (ranges 0-100)
+  art::ServiceHandle<util::DatabaseUtilityT1034> 	fDatabaseUtility;     		///< handle to the DatabaseUtility1034
+  std::map< std::string, std::string >       		fConfigValues;            	///< (key, value) pair for the database query result
+  std::map< std::string, std::string >       		fHardwareConnections;          	///< (key, value) pair for the hardware database query result----------------jess lines
+  std::vector<std::string>                   		fHardwareParams;            	///< vector of parameter names to be queried---------------------------------jess lines
+  std::vector<std::string>                   		fConfigParams;            	///< vector of parameter names to be queried
+  std::string		                   		fRunDateTime;  	           	///< string of Date/Time to use to querry HardwareConnectionsTable-----------jess lines
+  std::uint32_t		                   		fRunTimestamp; 	           	///<Timestamp from runNumber to use to querry HardwareConnectionsTable-------jess lines
 
 };
 

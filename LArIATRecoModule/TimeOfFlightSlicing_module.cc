@@ -83,6 +83,7 @@ private:
   ///< Label for the module producing the triggers
   TOFBuilderAlg fTOFAlg;
   TH1F*         fTOFHisto;
+  TH1F*         fWidthHisto;
   bool          fMakeHistograms;
   std::string   fSlicerSourceLabel;
 };
@@ -135,10 +136,10 @@ void lrm::TimeOfFlightSlicing::produce(art::Event & e)
     
     //Fill histos if necessary
     if( fMakeHistograms ){
-      std::cout << "NTOF: " << TOFObject.NTOF() << std::endl;
       for( size_t iTOF = 0; iTOF < TOFObject.NTOF(); ++iTOF ){
 	fTOFHisto->Fill(TOFObject.SingleTOF(iTOF));
       }
+      fWidthHisto->Fill(TOFObject.NTOF());
     }
     
   }
@@ -162,6 +163,9 @@ void lrm::TimeOfFlightSlicing::beginJob()
     fTOFHisto->SetTitle("All TOF Possibilites");
     fTOFHisto->GetXaxis()->SetTitle("TOF (ns)");
     fTOFHisto->GetYaxis()->SetTitle("TOF hits per 1 ns");
+
+    fWidthHisto = tfs->make<TH1F>("NTOF","All TOF possibilities",100,0,100 );
+
   }
 }
 
@@ -191,11 +195,10 @@ void lrm::TimeOfFlightSlicing::endSubRun(art::SubRun & sr)
 }
 
 void lrm::TimeOfFlightSlicing::reconfigure(fhicl::ParameterSet const & p)
-{
-   
+{   
    // Implementing the ability to pass the name of the TriggerUtililty 
    fMakeHistograms     = p.get< bool >("MakeHistograms", true);
-   fSlicerSourceLabel  = p.get< std::string >("SourceLabel","SlicerInput");
+   fSlicerSourceLabel  = p.get< std::string >("SourceLabel", "daq");
 }
 
 void lrm::TimeOfFlightSlicing::respondToCloseInputFile(art::FileBlock const & fb)

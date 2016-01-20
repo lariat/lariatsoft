@@ -16,7 +16,9 @@
 #include "art/Framework/IO/Sources/SourceHelper.h"
 #include "art/Framework/IO/Sources/SourceTraits.h"
 #include "art/Framework/IO/Sources/put_product_in_principal.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Principal/EventPrincipal.h"
+#include "art/Framework/Principal/RunPrincipal.h"
+#include "art/Framework/Principal/SubRunPrincipal.h"
 #include "art/Persistency/Provenance/EventID.h"
 #include "art/Persistency/Provenance/MasterProductRegistry.h"
 #include "art/Persistency/Provenance/RunID.h"
@@ -46,6 +48,7 @@
 #include "LArIATFragments/WUTFragment.h"
 
 // LArIATSoft includes
+#include "LArIATDataProducts/ConditionsSummary.h"
 #include "RawDataUtilities/SlicerAlg.h"
 #include "RawDataUtilities/FragmentToDigitAlg.h"
 #include "Utilities/DatabaseUtilityT1034.h"
@@ -61,6 +64,7 @@
 #include <string>
 #include <vector>
 #include <utility>
+#include <initializer_list>
 
 //-------------------------------------------------------------------------
 // unnamed namespace
@@ -134,8 +138,8 @@ namespace rdu
 
     // Constructor and destructor.
     explicit Slicer(fhicl::ParameterSet        const& pset,
-                      art::ProductRegistryHelper      & prhelper,
-                      art::SourceHelper               & shelper);
+                    art::ProductRegistryHelper      & prhelper,
+                    art::SourceHelper               & shelper);
     virtual ~Slicer();
 
     ///////////////////////////////////////////////////////////////////
@@ -206,8 +210,12 @@ namespace rdu
     // fragment-to-digit algorithm (?)
     FragmentToDigitAlg fFragmentToDigitAlg;
 
+    // load up the RunPrincipal
     void commenceRun(art::RunPrincipal * & outRun);
 
+    // load up the SubRunPrincipal
+    void commenceSubRun(art::SubRunPrincipal * & outSubRun);
+    
     // get parameters from lariat_prd database
     void getDatabaseParameters_(art::RunNumber_t const& RunNumber);
 
@@ -273,6 +281,9 @@ namespace rdu
     double fTDCPostAcquisitionWindow;
     double fTDCAcquisitionWindow;
 
+    // timestamp from SpillTrailer
+    std::uint64_t fTimestamp;
+
   }; // class Slicer
 
   //-----------------------------------------------------------------------
@@ -284,7 +295,7 @@ namespace rdu
   Slicer::Slicer(fhicl::ParameterSet        const& pset,
                  art::ProductRegistryHelper      & prhelper,
                  art::SourceHelper               & shelper)
-    : fSourceName("SlicerInput")
+    : fSourceName("daq")
     , fLastFileName(pset.get< std::vector< std::string > >("fileNames", {}).back())
     , fFile()
     , fDoneWithFile(false)
@@ -303,13 +314,12 @@ namespace rdu
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
 
-    // Will use same instance name for the outgoing products as for the
-    // incoming ones.
-    prhelper.reconstitutes<std::vector<raw::AuxDetDigit>, art::InEvent>(fSourceName);
-    prhelper.reconstitutes<std::vector<raw::RawDigit>,    art::InEvent>(fSourceName);
-    prhelper.reconstitutes<std::vector<raw::OpDetPulse>,  art::InEvent>(fSourceName);
-    prhelper.reconstitutes<std::vector<raw::Trigger>,     art::InEvent>(fSourceName);
-    prhelper.reconstitutes<sumdata::RunData,              art::InRun  >(fSourceName);
+    prhelper.reconstitutes<std::vector<raw::AuxDetDigit>, art::InEvent >(fSourceName);
+    prhelper.reconstitutes<std::vector<raw::RawDigit>,    art::InEvent >(fSourceName);
+    prhelper.reconstitutes<std::vector<raw::OpDetPulse>,  art::InEvent >(fSourceName);
+    prhelper.reconstitutes<std::vector<raw::Trigger>,     art::InEvent >(fSourceName);
+    prhelper.reconstitutes<sumdata::RunData,              art::InRun   >(fSourceName);
+    prhelper.reconstitutes<ldp::ConditionsSummary,        art::InSubRun>(fSourceName);
 
     // set config parameters to get from the lariat_prd database
     fConfigParams.clear();
@@ -368,11 +378,12 @@ namespace rdu
       fSubRunNumber = std::stoul(matches[2]);
     }
 
-    std::cout << "\n////////////////////////////////////" << std::endl;
-    std::cout << "fRunNumber:       " << fRunNumber       << std::endl;
-    std::cout << "fSubRunNumber:    " << fSubRunNumber    << std::endl;
-    std::cout << "fCachedRunNumber: " << fCachedRunNumber << std::endl;
-    std::cout << "////////////////////////////////////\n" << std::endl;
+    LOG_VERBATIM("SlicerInput")
+    << "\n////////////////////////////////////"
+    << "\nfRunNumber:       " << fRunNumber
+    << "\nfSubRunNumber:    " << fSubRunNumber
+    << "\nfCachedRunNumber: " << fCachedRunNumber
+    << "\n////////////////////////////////////\n";
 
     // get database parameters
     // TODO: Check to see if the current run number is the same as the
@@ -438,7 +449,7 @@ namespace rdu
   {
     if (fDoneWithFile) return false;
 
-    art::Timestamp timestamp; // LBNE should decide how to initialize this
+    art::Timestamp timestamp = fTimestamp;
 
     if (fRunNumber != fCachedRunNumber) {
       outRun = fSourceHelper.makeRunPrincipal(fRunNumber, timestamp);
@@ -452,9 +463,11 @@ namespace rdu
       outSubRun = fSourceHelper.makeSubRunPrincipal(fRunNumber, fSubRunNumber, timestamp);
       fCachedSubRunNumber = fSubRunNumber;
       // fEventNumber = 0ul;
+      
+      this->commenceSubRun(outSubRun);
     }
 
-    std::cout << "fCollections.size(): " << fCollections.size() << std::endl;
+    LOG_VERBATIM("SlicerInput") << "fCollections.size(): " << fCollections.size();
 
     this->makeEventAndPutDigits_(outEvent);
 
@@ -480,6 +493,12 @@ namespace rdu
       artdaq::Fragment frag = fragments->at(0);
       const char * bytePtr = reinterpret_cast <const char *> (&*frag.dataBegin());
       LArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(unsigned long long));
+
+      // get SpillTrailer
+      LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
+
+      // get timestamp from SpillTrailer, cast as uint64_t
+      fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
     }
 
   }
@@ -555,16 +574,16 @@ namespace rdu
 
     size_t const& NumberTPCReadouts = Collection.numberTPCReadouts;
 
-    std::cout << "fCollectionIndex: " << fCollectionIndex << std::endl;
-    std::cout << "NumberTPCReadouts: " << NumberTPCReadouts << std::endl;
-    std::cout << "Collection.numberTPCReadouts: " << Collection.numberTPCReadouts << std::endl;
-    std::cout << "Collection.caenBlocks.size(): " << Collection.caenBlocks.size() << std::endl;
-    std::cout << "Collection.tdcBlocks.size(): " << Collection.tdcBlocks.size() << std::endl;
-
-    std::cout << "Adding digits to run " << fRunNumber
-              << ", sub-run "            << fSubRunNumber
-              <<  ", event "             << fEventNumber
-              << "..."                   << std::endl;
+    LOG_VERBATIM("SlicerInput")
+    << "fCollectionIndex: " << fCollectionIndex
+    << "\nNumberTPCReadouts: " << NumberTPCReadouts
+    << "\nCollection.numberTPCReadouts: " << Collection.numberTPCReadouts
+    << "\nCollection.caenBlocks.size(): " << Collection.caenBlocks.size()
+    << "\nCollection.tdcBlocks.size(): " << Collection.tdcBlocks.size()
+    << "\n\nAdding digits to run " << fRunNumber
+    << ", sub-run "                << fSubRunNumber
+    <<  ", event "                 << fEventNumber
+    << "...";
 
     std::vector< CAENFragment > caenDataBlocks = Collection.caenBlocks;
     std::vector< std::vector<TDCFragment::TdcEventData> > tdcDataBlocks = Collection.tdcBlocks;
@@ -617,19 +636,20 @@ namespace rdu
     fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams,
                                                       static_cast <int> (RunNumber));
 
-    std::cout << "//////////////////////////////////////////////"                                       << std::endl;
-    std::cout << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           << std::endl;
-    std::cout << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            << std::endl;
-    std::cout << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           << std::endl;
-    std::cout << "V1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            << std::endl;
-    std::cout << "V1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           << std::endl;
-    std::cout << "V1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          << std::endl;
-    std::cout << "V1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           << std::endl;
-    std::cout << "V1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  << std::endl;
-    std::cout << "V1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] << std::endl;
-    std::cout << "fTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             << std::endl;
-    std::cout << "fTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 << std::endl;
-    std::cout << "//////////////////////////////////////////////"                                       << std::endl;
+    LOG_VERBATIM("SlicerInput")
+    << "//////////////////////////////////////////////"
+    << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           
+    << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            
+    << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           
+    << "V1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            
+    << "V1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           
+    << "V1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          
+    << "V1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           
+    << "V1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  
+    << "V1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] 
+    << "fTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             
+    << "fTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 
+    << "//////////////////////////////////////////////";
 
     // cast from string to size_t
     fV1495DelayTicks       = this->castToSizeT_(fConfigValues["v1495_config_v1495_delay_ticks"]);
@@ -677,22 +697,23 @@ namespace rdu
     if (fTDCPostAcquisitionWindow    < 0) fTDCPostAcquisitionWindow    = 0;
     if (fTDCAcquisitionWindow        < 0) fTDCAcquisitionWindow        = fTDCReadoutWindow;
 
-    std::cout << "//////////////////////////////////////////////"                << std::endl;
-    std::cout << "V1495DelayTicks:             " << fV1495DelayTicks             << std::endl;
-    std::cout << "V1495Delay:                  " << fV1495Delay                  << std::endl;
-    std::cout << "V1740PreAcquisitionWindow:   " << fV1740PreAcquisitionWindow   << std::endl;
-    std::cout << "V1740PostAcquisitionWindow:  " << fV1740PostAcquisitionWindow  << std::endl;
-    std::cout << "V1740AcquisitionWindow:      " << fV1740AcquisitionWindow      << std::endl;
-    std::cout << "V1740BPreAcquisitionWindow:  " << fV1740BPreAcquisitionWindow  << std::endl;
-    std::cout << "V1740BPostAcquisitionWindow: " << fV1740BPostAcquisitionWindow << std::endl;
-    std::cout << "V1740BAcquisitionWindow:     " << fV1740BAcquisitionWindow     << std::endl;
-    std::cout << "V1751PreAcquisitionWindow:   " << fV1751PreAcquisitionWindow   << std::endl;
-    std::cout << "V1751PostAcquisitionWindow:  " << fV1751PostAcquisitionWindow  << std::endl;
-    std::cout << "V1751AcquisitionWindow:      " << fV1751AcquisitionWindow      << std::endl;
-    std::cout << "TDCPreAcquisitionWindow:     " << fTDCPreAcquisitionWindow     << std::endl;
-    std::cout << "TDCPostAcquisitionWindow:    " << fTDCPostAcquisitionWindow    << std::endl;
-    std::cout << "TDCAcquisitionWindow:        " << fTDCAcquisitionWindow        << std::endl;
-    std::cout << "//////////////////////////////////////////////"                << std::endl;
+    LOG_VERBATIM("SlicerInput")
+    << "//////////////////////////////////////////////"
+    << "\nV1495DelayTicks:             " << fV1495DelayTicks
+    << "\nV1495Delay:                  " << fV1495Delay
+    << "\nV1740PreAcquisitionWindow:   " << fV1740PreAcquisitionWindow
+    << "\nV1740PostAcquisitionWindow:  " << fV1740PostAcquisitionWindow
+    << "\nV1740AcquisitionWindow:      " << fV1740AcquisitionWindow
+    << "\nV1740BPreAcquisitionWindow:  " << fV1740BPreAcquisitionWindow
+    << "\nV1740BPostAcquisitionWindow: " << fV1740BPostAcquisitionWindow
+    << "\nV1740BAcquisitionWindow:     " << fV1740BAcquisitionWindow
+    << "\nV1751PreAcquisitionWindow:   " << fV1751PreAcquisitionWindow
+    << "\nV1751PostAcquisitionWindow:  " << fV1751PostAcquisitionWindow
+    << "\nV1751AcquisitionWindow:      " << fV1751AcquisitionWindow
+    << "\nTDCPreAcquisitionWindow:     " << fTDCPreAcquisitionWindow
+    << "\nTDCPostAcquisitionWindow:    " << fTDCPostAcquisitionWindow
+    << "\nTDCAcquisitionWindow:        " << fTDCAcquisitionWindow
+    << "//////////////////////////////////////////////";
 
     return;
   }
@@ -715,7 +736,8 @@ namespace rdu
   //-----------------------------------------------------------------------
   void Slicer::commenceRun(art::RunPrincipal * & outRun)  // wtf is this? idk.
   {
-    fFragmentToDigitAlg.InitializeRun(fRunNumber);
+    
+    fFragmentToDigitAlg.InitializeRun(outRun, fRunNumber, fTimestamp);
 
     // grab the geometry object to see what geometry we are using
     art::ServiceHandle<geo::Geometry> geo;
@@ -727,6 +749,158 @@ namespace rdu
 
     return;
   }
+  
+  //-----------------------------------------------------------------------
+  void Slicer::commenceSubRun(art::SubRunPrincipal * & outSubRun)
+  {
+//    std::initializer_list<std::string> sam_params = {
+//      "detector.cathode_voltage",
+//      "detector.collection_voltage",
+//      "detector.induction_voltage",
+//      "detector.pmt_etl",
+//      "detector.pmt_ham",
+//      "detector.shield_voltage",
+//      "detector.sipm_ham",
+//      "detector.sipm_sensl",
+//      "secondary.intensity",
+//      "secondary.momentum",
+//      "secondary.polarity",
+//      "tertiary.beam_counters",
+//      "tertiary.cherenkov1",
+//      "tertiary.cherenkov2",
+//      "tertiary.cosmic_counters",
+//      "tertiary.DSTOF",
+//      "tertiary.USTOF",
+//      "tertiary.halo_paddle",
+//      "tertiary.magnet_current",
+//      "tertiary.magnet_polarity",
+//      "tertiary.muon_range_stack",
+//      "tertiary.MWPC1",
+//      "tertiary.MWPC2",
+//      "tertiary.MWPC3",
+//      "tertiary.MWPC4",
+//      "tertiary.number_MuRS",
+//      "tertiary.punch_through",
+//      "file_format"
+//    };
+    
+    std::initializer_list<std::string> run_params = {
+      "v1751_config_caen_enablereadout",
+      "larasic_config_larasic_collection_filter",
+      "larasic_config_larasic_collection_gain",
+      "larasic_config_larasic_enablereadout",
+      "larasic_config_larasic_pulseron",
+      "larasic_config_larasic_channelscan",
+      "v1740_config_caen_recordlength",
+    };
+
+    std::initializer_list<std::string> subrun_params = {
+      "end_f_mc7sc1"
+    };
+
+    std::vector<std::string> runparams(run_params);
+    std::vector<std::string> subrunparams(subrun_params);
+    
+    // get the relevant information from the database
+    auto runValues    = fDatabaseUtility->GetConfigValues(runparams,
+                                                          static_cast <int> (fRunNumber));
+    auto subrunValues = fDatabaseUtility->GetIFBeamValues(subrunparams,
+                                                          static_cast <int> (fRunNumber),
+                                                          static_cast <int> (fSubRunNumber));
+
+//    for(auto itr : runValues) 
+//      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
+//
+//    for(auto itr : subrunValues) 
+//      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
+
+    // create the ConditionsSummary object and put it into the subrun
+    // for the time being, several parameters are accessible from the
+    // SAM database, and we don't yet know how to get those, so comment them out
+    
+//    std::vector<bool> mwpc(4);
+//    mwpc[0] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    mwpc[1] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    mwpc[2] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    mwpc[3] = (strcmp(runValues["tertiary.MWPC1"].c_str(), "on") == 0) ? true : false;
+//    
+//    size_t              secondaryIntensity     = this->castToSizeT_(runValues["secondary.intensity"]);
+//    size_t              secondaryMomentum      = this->castToSizeT_(runValues["secondary.momentum"]);
+//    size_t              secondaryPolarity      = (strcmp(runValues["secondary.polarity"].c_str(), "Negative") == 0) ? 0 : 1;
+//    size_t              magnetCurrent          = this->castToSizeT_(runValues["tertiary.magnet_current"]);
+//    size_t              magnetPolarity         = (strcmp(runValues["tertiary.magnet_polarity"].c_str(), "Negative") == 0) ? 0 : 1;
+//    size_t              tpcCathodeHV           = this->castToSizeT_(runValues["detector.cathode_voltage"]);
+//    size_t              tpcCollectionV         = this->castToSizeT_(runValues["detector.collection_voltage"]);
+//    size_t              tpcInductionV          = this->castToSizeT_(runValues["detector.induction_voltage"]);
+//    size_t              tpcShieldV             = this->castToSizeT_(runValues["detector.shield_voltage"]);
+//    size_t              etlPMTHV               = 0;
+//    size_t              hamamatsuPMTHV         = 0;
+//    size_t              hamamatsuSiPMHV        = 0;
+//    size_t              senslSiPMHV            = 0;
+//    size_t              tertiaryBeamCounters   = 0;
+//    size_t              tertiaryCherenkov1     = 0;
+//    size_t              tertiaryCherenkov2     = 0;
+//    size_t              tertiaryCosmicCounters = 0;
+//    size_t              dsTOF                  = 0;
+//    size_t              usTOF                  = 0;
+//    size_t              haloPaddle             = 0;
+//    size_t              muonRangeStack         = 0;
+//    size_t              numberMuRS             = this->castToSizeT_(runValues["tertiary.number_MuRS"]);
+//    size_t              punchThrough           = 0;
+//    bool                correctFileFormat      = false;
+
+    LOG_VERBATIM("SlicerInput") << subrunValues["end_f_mc7sc1"];
+
+    size_t              endMC7SC1              = this->castToSizeT_(subrunValues["end_f_mc7sc1"]);
+    bool                v1751CaenEnableReadout = this->castToSizeT_(runValues["v1751_config_caen_enablereadout"]);
+    size_t              asicCollectionFilter   = this->castToSizeT_(runValues["larasic_config_larasic_collection_filter"]);
+    size_t              asicCollectionGain     = this->castToSizeT_(runValues["larasic_config_larasic_collection_gain"]);
+    bool                asicEnableReadout      = this->castToSizeT_(runValues["larasic_config_larasic_enablereadout"]);
+    bool                asicPulserOn           = this->castToSizeT_(runValues["larasic_config_larasic_pulseron"]);
+    bool                asicChannelScan        = this->castToSizeT_(runValues["larasic_config_larasic_channelscan"]);
+    size_t              v1740RecordLength      = this->castToSizeT_(runValues["v1740_config_caen_recordlength"]);
+    
+    
+
+    std::unique_ptr<ldp::ConditionsSummary> conditionsSummary(new ldp::ConditionsSummary(/*secondaryIntensity,
+                                                                                         secondaryMomentum,
+                                                                                         secondaryPolarity,
+                                                                                         magnetCurrent,
+                                                                                         magnetPolarity,
+                                                                                         tpcCathodeHV,
+                                                                                         tpcCollectionV,
+                                                                                         tpcInductionV,
+                                                                                         tpcShieldV,
+                                                                                         etlPMTHV,
+                                                                                         hamamatsuPMTHV,
+                                                                                         hamamatsuSiPMHV,
+                                                                                         senslSiPMHV,
+                                                                                         tertiaryBeamCounters,
+                                                                                         tertiaryCherenkov1,
+                                                                                         tertiaryCherenkov2,
+                                                                                         tertiaryCosmicCounters,
+                                                                                         dsTOF,
+                                                                                         usTOF,
+                                                                                         haloPaddle,
+                                                                                         muonRangeStack,
+                                                                                         numberMuRS,
+                                                                                         punchThrough,,
+                                                                                         correctFileFormat,
+                                                                                         mwpc,*/
+                                                                                         endMC7SC1,
+                                                                                         v1751CaenEnableReadout,
+                                                                                         asicCollectionFilter,
+                                                                                         asicCollectionGain,
+                                                                                         asicEnableReadout,
+                                                                                         asicPulserOn,
+                                                                                         asicChannelScan,
+                                                                                         v1740RecordLength)
+                                                              );
+    art::put_product_in_principal(std::move(conditionsSummary), *outSubRun, fSourceName);
+
+    return;
+  }
+
 
   DEFINE_ART_INPUT_SOURCE(art::Source<rdu::Slicer>)
 

@@ -324,10 +324,11 @@ namespace evgen{
   //Create subtree of the     
     
      // constructor decides if initialized value is a path or an environment variable
-    std::string fname;
-    cet::search_path sp("FW_SEARCH_PATH");
-    sp.find_file(fFileName, fname);
-    fMuonFileR = new TFile(fname.c_str(),"READ");
+    //std::string fname;
+    //cet::search_path sp("FW_SEARCH_PATH");
+    //sp.find_file(fFileName, fname);
+    //fMuonFileR = new TFile(fname.c_str(),"READ");
+    fMuonFileR = new TFile(fFileName.c_str(),"READ");
     
     TNtuple = (TTree*)(fMuonFileR->Get(fTreeName.c_str()));
 

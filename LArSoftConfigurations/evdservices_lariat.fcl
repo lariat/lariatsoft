@@ -9,7 +9,7 @@ lariat_colordrawingopt:                       @local::standard_colordrawingopt
 lariat_colordrawingopt.RawQLow:               [-10.]
 lariat_colordrawingopt.RawQHigh:              [ 400.]
 lariat_rawdrawingopt:                         @local::standard_rawdrawingopt
-lariat_rawdrawingopt.RawDataLabel:            SlicerInput
+lariat_rawdrawingopt.RawDataLabel:            "daq"
 lariat_rawdrawingopt.TotalTicks:              3072
 lariat_rawdrawingopt.DetPedestalRetrievalAlg.DefaultCollMean:  0
 lariat_rawdrawingopt.DetPedestalRetrievalAlg.DefaultIndMean:   0
@@ -58,6 +58,8 @@ lariat_disp:
  InfoTransfer:		                      @local::lariat_infotransfer    
  TimeService:                  		      @local::lariat_timeservice
  IDetPedestalService:                         @local::lariat_detpedestalservice
+ IChannelStatusService: @local::lariat_channel_filter
+ 
 }                                                                                  
                                                                                    
 #######################################                                            

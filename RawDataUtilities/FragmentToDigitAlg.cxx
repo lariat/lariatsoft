@@ -8,44 +8,26 @@
 //                                                            //
 ////////////////////////////////////////////////////////////////
 
-//C++ includes
-#include <vector>
-#include <cmath>
-#include <iostream>
-
-//Framework includes
-#include "fhiclcpp/ParameterSet.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-
-// artdaq
-#include "artdaq-core/Data/Fragments.hh"
-#include "artdaq-core/Data/Fragment.hh"
-
-// lardata
-#include "RawData/RawDigit.h"
+// C++ includes
+#include <bitset>
 
 // LArIAT
 #include "LArIATFragments/LariatFragment.h"
 #include "LArIATFragments/WUTFragment.h"
 #include "LArIATFragments/CAENFragment.h"
-#include "LArIATFragments/TDCFragment.h"
 #include "LArIATFragments/V1495Fragment.h"
 #include "SimpleTypesAndConstants/RawTypes.h"
+#include "Utilities/DatabaseUtilityT1034.h"
 
-
-
+// LArSoft
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
 #include "RawData/OpDetPulse.h"
 #include "RawData/TriggerData.h"
-#include "SummaryData/RunData.h"
-#include "Geometry/Geometry.h"
-#include "Utilities/AssociationUtil.h"
 
-#include "FragmentToDigitAlg.h"
+#include "RawDataUtilities/FragmentToDigitAlg.h"
 
-
+#include "messagefacility/MessageLogger/MessageLogger.h"
 
 enum {
   V1740_N_CHANNELS = 64,
@@ -67,7 +49,6 @@ FragmentToDigitAlg::FragmentToDigitAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
 
-
 }
 
 //=====================================================================
@@ -83,26 +64,14 @@ void FragmentToDigitAlg::reconfigure( fhicl::ParameterSet const& pset )
   fTriggerDecisionTick    = pset.get< unsigned int>("TriggerDecisionTick",    100    ); 
   fTrigger1740Pedestal    = pset.get< float       >("Trigger1740Pedestal",    2000.  );
   fTrigger1740Threshold   = pset.get< float       >("Trigger1740Threshold",   0.     );
-
-  std::vector<std::vector<unsigned int> > opChans = pset.get< std::vector<std::vector<unsigned int>> >("pmt_channel_ids");
-
-  for(size_t i = 0; i < opChans.size(); ++i){
-    if(opChans[i].size() < 1) continue;
-    for(size_t j = 1; j < opChans[i].size(); ++j){
-      fOpticalDetChannels[opChans[i][0]].insert(opChans[i][j]);
-      LOG_VERBATIM("SliceToDigit") << "board " << opChans[i][0] 
-				      << " has optical detector on channel " 
-				      << opChans[i][j];
-    }
-  }
 }
 
 //=====================================================================
-void FragmentToDigitAlg::makeTheDigits( std::vector<CAENFragment> caenFrags,
-					std::vector<TDCDataBlock> tdcDataBlocks,
-					std::vector<raw::AuxDetDigit> & auxDigits,
-					std::vector<raw::RawDigit> & rawDigits,
-					std::vector<raw::OpDetPulse> & opPulses )
+void FragmentToDigitAlg::makeTheDigits(std::vector<CAENFragment> caenFrags,
+                                       std::vector<TDCDataBlock> tdcDataBlocks,
+                                       std::vector<raw::AuxDetDigit> & auxDigits,
+                                       std::vector<raw::RawDigit> & rawDigits,
+                                       std::vector<raw::OpDetPulse> & opPulses )
 
 {
   //Resetting the digits
@@ -123,7 +92,7 @@ void FragmentToDigitAlg::makeTheDigits( std::vector<CAENFragment> caenFrags,
   return;  
 }
 
-//=====================================================================
+//===============================================================----------
 uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFrags)
 {
 
@@ -161,6 +130,7 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
 
   for(auto const& frag : caenFrags){
 
+    // \todo Need to get this board ID information and run number from the database
     if     (frag.header.boardId != 7  && fRunNumber < 6155) continue;
     else if(frag.header.boardId != 24 && fRunNumber > 6154) continue;
 
@@ -266,47 +236,80 @@ float FragmentToDigitAlg::findPedestal(const std::vector<short> & adcVec)
 
 //===============================================================----------
 void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& caenFrags,
-				      std::vector<raw::OpDetPulse>      & opDetPulse)
+                                         std::vector<raw::OpDetPulse>      & opDetPulse)
 {
   // loop over the caenFrags
   uint32_t boardId        = 0;
+  uint32_t boardIdquery   = 0;
+  uint32_t chanOff        = 0;
+  std::string value("CRYO"); // why are we searching on CRYO?  that is not obvious for this method and a comment would be helpful
+  std::string board("board_");
+  std::string channel("_channel_");
+  size_t boardLoc;
+  size_t channelLoc;
+  size_t temp;
   uint32_t triggerTimeTag = 0;
+  int      firstSample    = 0;
 
-  for(auto const& caenFrag : caenFrags){
-
+  for(auto const& caenFrag : caenFrags)
+  {
     boardId        = caenFrag.header.boardId;
     triggerTimeTag = caenFrag.header.triggerTimeTag;
 
-    if(fOpticalDetChannels.count(boardId) > 0){
+    for(auto hardwareIter : fHardwareConnections)
+    {
+      temp  = hardwareIter.second.find(value);
+      if(temp != std::string::npos)
+      {
+        boardLoc   = hardwareIter.first.find(board) + board.size();				//location in string where board ID is
+        channelLoc = hardwareIter.first.find(channel) + channel.size();		//location in string where channel ID is
+     
+        if(boardLoc !=std::string::npos)
+        {
+          std::string strboardId (hardwareIter.first, boardLoc, channelLoc - channel.size());
+          std::string strchannelId (hardwareIter.first, channelLoc, hardwareIter.first.size());
+          
+          boardIdquery = std::stoi(strboardId); 					//convert string boardID to uint32
+          chanOff      = std::stoi(strchannelId); 			  //convert string channel to uint32
+        }//end setting board/channel ID
 
-      // loop over the channels on this board connected to optical detectors
-      for(auto ch : fOpticalDetChannels.find(boardId)->second){
 
-        // check that the current channel, ch, is a valid one for grabbing a waveform
-        if(ch > caenFrag.waveForms.size() )
-        throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch
-						  << " from board "        << boardId
-						  << " is beyond the scope of the waveform vector";
+        if(boardId == boardIdquery)
+        {
+          // loop over the channels on this board connected to optical detectors
+          // check that the current channel, ch, is a valid one for grabbing a waveform
+          if(chanOff > caenFrag.waveForms.size() )
+          throw cet::exception("FragmentToDigitAlg")
+            << "requested channel, " << chanOff
+            << " from board "        << boardId
+            << " is beyond the scope of the waveform vector";
         
-        std::vector<short> waveForm(caenFrag.waveForms[ch].data.begin(), caenFrag.waveForms[ch].data.end());
+          std::vector<short> waveForm(caenFrag.waveForms[chanOff].data.begin(), caenFrag.waveForms[chanOff].data.end());
         
-        // LOG_VERBATIM("FragmentToDigitAlg") << "Writing opdetpulses "
-        // 			       << " boardID : " << boardId
-        // 			       << " channel " << ch
-        // 			       << " size of wvform data " << waveForm.size()
-        // 			       << " fOpDetChID[boardId] size() " << fOpDetChID[boardId].size();
+          // calculate first sample
+          firstSample = (int)((100.-fV1751PostPercent) * 0.01 * waveForm.size());
         
-        opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (ch),
-                                             waveForm,
-                                             0,
-                                             static_cast <unsigned int> (triggerTimeTag)
-                                             )
-                             );
+          LOG_VERBATIM("FragmentToDigitAlg")
+          << " Found CRYO"
+          << "\n Writing opdetpulses "
+          << " boardID : " << boardId
+          << " channel " << chanOff
+          << " size of wvform data " << waveForm.size()
+          << " Column: "<< hardwareIter.first<<" Value: "<<hardwareIter.second
+          << " BoardId: "<< boardId <<" ChannelId: "<< chanOff
+          << " firstSample: "<< firstSample << " triggerTimeTag: " << triggerTimeTag;
         
-      } // end loop over channels on this board
-    } // end if this board has optical channels on it
-  } // end loop over fragments
-
+          opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (chanOff),
+                                               waveForm,
+                                               static_cast <unsigned int> (triggerTimeTag),
+                                               static_cast <unsigned int> (firstSample)
+                                               )
+                               );
+        
+        } // end if this board has optical channels on it
+      } // end if boardLoc found
+    } // end loop over HardwareConnections
+  }// end loop over fragments
   return;
 }
 
@@ -320,11 +323,11 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
 // caen board)
 // detName is the name of the detector
 void FragmentToDigitAlg::caenFragmentToAuxDetDigits(std::vector<CAENFragment>     const& caenFrags,
-						 std::vector<raw::AuxDetDigit>      & auxDetDigits,
-						 uint32_t                      const& boardId,
-						 std::set<uint32_t>            const& boardChans,
-						 uint32_t                      const& chanOffset,
-						 std::string                   const& detName)
+                                                    std::vector<raw::AuxDetDigit>      & auxDetDigits,
+                                                    uint32_t                      const& boardId,
+                                                    std::set<uint32_t>            const& boardChans,
+                                                    uint32_t                      const& chanOffset,
+                                                    std::string                   const& detName)
 {
   // loop over the fragments and grab the one corresponding to this board ID
   for(auto const& frag : caenFrags){
@@ -336,23 +339,24 @@ void FragmentToDigitAlg::caenFragmentToAuxDetDigits(std::vector<CAENFragment>   
       
       // check that ch is larger than chanOffset
       if(ch < chanOffset)
-	throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch
-						<< " is smaller than the requested offest "
-						<< chanOffset;
+        throw cet::exception("FragmentToDigitAlg")
+        << "requested channel, " << ch
+        << " is smaller than the requested offest "
+        << chanOffset;
 
       // check that there is a waveform for the chosen channel
       if(ch > frag.waveForms.size() )
-	throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch 
-						<< " from board "        << boardId
-						<< " is beyond the scope of the waveform vector";
+        throw cet::exception("FragmentToDigitAlg") << "requested channel, " << ch
+        << " from board "        << boardId
+        << " is beyond the scope of the waveform vector";
       
       std::vector<short> waveForm(frag.waveForms[ch].data.begin(), frag.waveForms[ch].data.end());
 	
       // place the AuxDetDigit in the vector
       auxDetDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short> (ch - chanOffset),
-					      waveForm,
-					      detName,
-					      static_cast<unsigned long long>(frag.header.triggerTimeTag))
+                                              waveForm,
+                                              detName,
+                                              static_cast<unsigned long long>(frag.header.triggerTimeTag))
 			     );
 
     } // end loop over channels on the board
@@ -363,127 +367,311 @@ void FragmentToDigitAlg::caenFragmentToAuxDetDigits(std::vector<CAENFragment>   
 
 //===============================================================----------
 void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const& caenFrags,
-					  std::vector<raw::AuxDetDigit>      & mrAuxDigits)
+                                             std::vector<raw::AuxDetDigit>      & mrAuxDigits)
 {
-  // The Muon Range Stack channels are all on the V1740 board in slot 7
-  // The channels are 32 <= ch < 48
-  uint32_t boardId = 7;
-  uint32_t chanOff = 32;
-  uint32_t maxChan = 48;
+  uint32_t boardId = 0;
+  uint32_t chanOff = 0;
   std::set<uint32_t> boardChans;
-
-  // Starting in run 6155 the MuRS channels were read out by boardID 24
-  if(fRunNumber > 6154){
-    boardId = 24;
-    chanOff = 32;
-    maxChan = 48;
-  }
-
-  for(uint32_t bc = chanOff; bc < maxChan; ++bc) boardChans.insert(bc);
-
-  this->caenFragmentToAuxDetDigits(caenFrags, mrAuxDigits, boardId, boardChans, chanOff, "MuonRangeStack");
+  std::set<std::string> MURSNames;
+  MURSNames.insert("MURS1");
+  MURSNames.insert("MURS2");
+  MURSNames.insert("MURS3");
+  MURSNames.insert("MURS4");
+  MURSNames.insert("MURS5");
+  MURSNames.insert("MURS6");
+  MURSNames.insert("MURS7");
+  MURSNames.insert("MURS8");
+  MURSNames.insert("MURS9");
+  MURSNames.insert("MURS10");
+  MURSNames.insert("MURS11");
+  MURSNames.insert("MURS12");
+  MURSNames.insert("MURS13");
+  MURSNames.insert("MURS14");
+  MURSNames.insert("MURS15");
+  MURSNames.insert("MURS16");
+  std::string board("board_");									//looking for board ID number in string
+  std::string channel("_channel_");						//looking for channel ID number in string
+  size_t boardLoc;
+  size_t channelLoc;
+  for( auto hardwareIter : fHardwareConnections)
+  {
+      // there is at most one entry in a set with a given value, so
+      // if we find any entries with the name given by the value of
+      // hardwareItr, we are looking at the device of interest
+    if( MURSNames.count(hardwareIter.second) > 0)
+    {
+      
+      boardLoc   = hardwareIter.first.find(board) + board.size();				//location in string where board ID is
+      channelLoc = hardwareIter.first.find(channel) + channel.size();		//location in string where channel ID is
+      
+      if(boardLoc != std::string::npos)
+      {
+        std::string strboardId  (hardwareIter.first, boardLoc,   channelLoc - channel.size());
+        std::string strchannelId(hardwareIter.first, channelLoc, hardwareIter.first.size());
+        
+        boardId = std::stoi(strboardId); 								//convert string boardID to uint32
+        chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
+        LOG_VERBATIM("FragmentToDigitAlg")
+        <<" Found MURS"
+        <<" Column: "<< hardwareIter.first
+        <<" Value: "<<hardwareIter.second
+        <<" BoardId: "<< boardId
+        <<" ChannelId: "<< chanOff;
+      }//end setting board/channel ID
+      
+      // \todo This value for chanOff may not be correct.  The chanOff value is intended to allow
+      // the caenFragmentToAuxDetDigit know how many to subtract from the board channel such that the
+      // channels from the auxdet all satisfy the range of 0-N.
+      boardChans.insert(chanOff);
+    }//end if MURS
+  }//end loop over HardwareConnections
+  LOG_VERBATIM("FragmentToDigitAlg")
+  << "ChannelOffset: " << *(boardChans.begin());
+  
+  this->caenFragmentToAuxDetDigits(caenFrags, mrAuxDigits, boardId, boardChans,*(boardChans.begin()) , "MuonRangeStack");
+  boardChans.clear();
 
   return;
 }
 
 //===============================================================----------
 void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caenFrags,
-				    std::vector<raw::AuxDetDigit>      & tofAuxDigits)
+                                       std::vector<raw::AuxDetDigit>      & tofAuxDigits)
 {
-  // TOF inputs are all sent to board 8
-  uint32_t boardId = 8;
+  uint32_t boardId = 0;
   uint32_t chanOff = 0;
-  std::set<uint32_t> boardChans;
+  std::set<uint32_t> boardChansUS;
+  std::set<uint32_t> boardChansDS;
+  std::set<std::string> TOFNames;
+  TOFNames.insert("USTOF1");
+  TOFNames.insert("USTOF2");
+  TOFNames.insert("DSTOF1");
+  TOFNames.insert("DSTOF2");
+  std::string board("board_");
+  std::string channel("_channel_");
+  size_t boardLoc;
+  size_t channelLoc;
+  for( auto hardwareIter : fHardwareConnections) 
+  {
+    if( TOFNames.count(hardwareIter.second) > 0)
+    {
+      boardLoc   = hardwareIter.first.find(board) + board.size();				//location in string where board ID is
+      channelLoc = hardwareIter.first.find(channel) + channel.size();				//location in string where channel ID is
+      
+      if(boardLoc !=std::string::npos)
+      {
+        std::string strboardId (hardwareIter.first, boardLoc, channelLoc - channel.size());
+        std::string strchannelId (hardwareIter.first, channelLoc, hardwareIter.first.size());
+        
+        boardId = std::stoi(strboardId);								//convert string boardID to uint32
+        chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
+        LOG_VERBATIM("FragmentToDigitAlg")
+        <<" Found TOF"
+        <<" Column: "   << hardwareIter.first
+        <<" Value: "    << hardwareIter.second
+        <<" BoardId: "  << boardId
+        <<" ChannelId: "<< chanOff;
+      }//end setting board/channel ID
 
-  for(uint32_t bc = chanOff; bc < 2; ++bc) boardChans.insert(bc);
-  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOFUS");
+      // \todo These values for chanOff may not be correct.  The chanOff value is intended to allow
+      // the caenFragmentToAuxDetDigit know how many to subtract from the board channel such that the
+      // channels from the auxdet all satisfy the range of 0-N.
+      if     ( hardwareIter.second == "USTOF1" || hardwareIter.second == "USTOF2" ) boardChansUS.insert(chanOff);
+      else if( hardwareIter.second == "DSTOF1" || hardwareIter.second == "DSTOF2" ) boardChansDS.insert(chanOff);
+    }//end find TOFNames
+  }//end loop over hardwareDatabase
+
+  LOG_VERBATIM("FragmentToDigitAlg")
+  << "ChannelOffset: " << *(boardChansUS.begin())
+  << " ChannelOffset: " << *(boardChansDS.begin());
   
-  boardChans.clear();
-  chanOff = 2;
-  for(uint32_t bc = chanOff; bc < 4; ++bc) boardChans.insert(bc);
-  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChans, chanOff, "TOFDS");
+  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChansUS, *(boardChansUS.begin()), "TOFUS");
+  this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChansDS, *(boardChansDS.begin()), "TOFDS");
+  
+  boardChansUS.clear();
+  boardChansDS.clear();
 
+          
   return;
 }
 
 //===============================================================----------
 void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& caenFrags,
-					std::vector<raw::AuxDetDigit>      & agAuxDigits)
+                                           std::vector<raw::AuxDetDigit>      & agAuxDigits)
 {
   // Aerogel inputs are all sent to board 8
-  uint32_t boardId = 8;
-  uint32_t chanOff = 4;
-  std::set<uint32_t> boardChans;
+  uint32_t boardId = 0;
+  uint32_t chanOff = 0;
+  std::set<uint32_t> boardChansUS;
+  std::set<uint32_t> boardChansDS;
+  std::set<std::string> AGNames;
+  AGNames.insert("AGUSE");
+  AGNames.insert("AGUSW");
+  AGNames.insert("AGDSE");
+  AGNames.insert("AGDSW");
+  std::string board("board_");
+  std::string channel("_channel_");
+  size_t boardLoc;
+  size_t channelLoc;
+   for( auto hardwareIter : fHardwareConnections) 
+   {
+     if( AGNames.count(hardwareIter.second) > 0)
+     {
+       
+       boardLoc   = hardwareIter.first.find(board) + board.size();				//location in string where board ID is
+       channelLoc = hardwareIter.first.find(channel) + channel.size();				//location in string where channel ID is
+       
+       if(boardLoc !=std::string::npos)
+       {
+         std::string strboardId (hardwareIter.first, boardLoc, channelLoc - channel.size());
+         std::string strchannelId (hardwareIter.first, channelLoc, hardwareIter.first.size());
+         
+         boardId = std::stoi(strboardId);								//convert string boardID to uint32
+         chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
+         LOG_VERBATIM("FragmentToDigitAlg")<< " Found AeroGel"
+         << " Column: "  << hardwareIter.first
+         << " Value: "   << hardwareIter.second
+         << " BoardId: " << boardId
+         <<" ChannelId: "<< chanOff;
+       }//end setting board/channel ID
+       
+        // \todo These values for chanOff may not be correct.  The chanOff value is intended to allow
+        // the caenFragmentToAuxDetDigit know how many to subtract from the board channel such that the
+        // channels from the auxdet all satisfy the range of 0-N.
+       if     ( hardwareIter.second == "AGUSE" || hardwareIter.second == "AGUSW" ) boardChansUS.insert(chanOff);
+       else if( hardwareIter.second == "AGDSE" || hardwareIter.second == "AGDSW" ) boardChansDS.insert(chanOff);
+     }//end find AGNAMES
+  }//end loop over hardwareDatabase
 
-  // Call this for each AeroGel counter
-  for(uint32_t bc = chanOff; bc < 6; ++bc) boardChans.insert(bc);
-  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelUS");
+  LOG_VERBATIM("FragmentToDigitAlg")
+  << "ChannelOffset: " << *(boardChansUS.begin())
+  << " ChannelOffset: " << *(boardChansDS.begin());
 
-  boardChans.clear();
-  chanOff = 6;
-  for(uint32_t bc = chanOff; bc < 8; ++bc) boardChans.insert(bc);
-  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelDS");
-
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChansUS, *(boardChansUS.begin()), "AeroGelUS");
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChansDS, *(boardChansUS.begin()), "AeroGelDS");
+  
+  boardChansUS.clear();  
+  boardChansDS.clear();  
   return;
 }
 
 //===============================================================----------
 // Halo paddles are currently (Jun 4, 2015) attached to board 9, channels 5 and 6
 void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& caenFrags,
-				     std::vector<raw::AuxDetDigit>      & hAuxDigits)
+                                        std::vector<raw::AuxDetDigit>      & hAuxDigits)
 {
-  // Halo inputs are all sent to board 8
-  uint32_t boardId = 9;
-  uint32_t chanOff = 5;
-  uint32_t maxChan = 7;
-  std::set<uint32_t> boardChans;
+   uint32_t boardId = 0;
+   uint32_t chanOff = 0;
+   std::set<uint32_t> boardChans;
+   std::set<std::string> HALONames;
+   HALONames.insert("HALO1");
+   HALONames.insert("HALO2");
+   std::string board("board_");									//looking for board ID number in string
+   std::string channel("_channel_");								//looking for channel ID number in string
+   size_t boardLoc;
+   size_t channelLoc;
+  for( auto hardwareIter : fHardwareConnections) 
+  {
+    if( HALONames.count(hardwareIter.second) > 0)
+    {
+      
+      boardLoc   = hardwareIter.first.find(board) + board.size();				//location in string where board ID is
+      channelLoc = hardwareIter.first.find(channel) + channel.size();				//location in string where channel ID is
+      
+      if(boardLoc !=std::string::npos)
+      {
+        std::string strboardId (hardwareIter.first, boardLoc, channelLoc - channel.size());
+        std::string strchannelId (hardwareIter.first, channelLoc, hardwareIter.first.size());
+        
+        boardId = std::stoi(strboardId); 								//convert string boardID to uint32
+        chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
+        
+        LOG_VERBATIM("FragmentToDigitAlg")
+        <<" Found HALO"
+        <<" Column: "   << hardwareIter.first
+        <<" Value: "    << hardwareIter.second
+        <<" BoardId: "  << boardId
+        <<" ChannelId: "<< chanOff;
+        
+      }//end setting board/channel ID
+      
+      // \todo This value for chanOff may not be correct.  The chanOff value is intended to allow
+      // the caenFragmentToAuxDetDigit know how many to subtract from the board channel such that the
+      // channels from the auxdet all satisfy the range of 0-N.
+      boardChans.insert(chanOff);
+    }//end find HALONames
+  }//end loop over HardwareConnections
 
-  for(uint32_t bc = chanOff; bc < maxChan; ++bc) boardChans.insert(bc);
-  this->caenFragmentToAuxDetDigits(caenFrags, hAuxDigits, boardId, boardChans, chanOff, "Halo");
-
+  LOG_VERBATIM("FragmentToDigitAlg") << "ChannelOffset: " << *(boardChans.begin());
+  
+  this->caenFragmentToAuxDetDigits(caenFrags, hAuxDigits, boardId, boardChans, *(boardChans.begin()), "Halo");
+  boardChans.clear();
   return;
 }
 
 //===============================================================----------
 void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& caenFrags,
-					std::vector<raw::AuxDetDigit>      & trAuxDigits)
+                                           std::vector<raw::AuxDetDigit>      & trAuxDigits)
 {
   // The trigger waveforms all come on board 7, channels 48-63
-  uint32_t boardId = 7;
-  uint32_t chanOff = 48;
-  uint32_t maxChan = 64;
+  uint32_t boardId=0;
+  uint32_t chanOff=0;
   std::set<uint32_t> boardChans;
-  std::vector<std::string> trigNames;
-  trigNames.push_back("WC1");
-  trigNames.push_back("WC2");    
-  trigNames.push_back("WC3");      
-  trigNames.push_back("WC4");    
-  trigNames.push_back("BEAMON"); 
-  trigNames.push_back("USTOF");  
-  trigNames.push_back("DSTOF");    
-  trigNames.push_back("PUNCH");  
-  trigNames.push_back("HALO");   
-  trigNames.push_back("PULSER"); 
-  trigNames.push_back("COSMICON"); 
-  trigNames.push_back("COSMIC"); 
-  trigNames.push_back("PILEUP"); 
-  trigNames.push_back("MICHEL"); 
-  trigNames.push_back("LARSCINT"); 
-  trigNames.push_back("MuRS");
+  std::string board("board_");
+  std::string channel("_channel_");
+  size_t boardLoc;
+  size_t channelLoc;
+  std::set<std::string> trigNames;
+  trigNames.insert("WC1");
+  trigNames.insert("WC2");    
+  trigNames.insert("WC3");      
+  trigNames.insert("WC4");    
+  trigNames.insert("BEAMON"); 
+  trigNames.insert("USTOF");  
+  trigNames.insert("DSTOF");    
+  trigNames.insert("PUNCH");  
+  trigNames.insert("HALO");   
+  trigNames.insert("PULSER"); 
+  trigNames.insert("COSMICON"); 
+  trigNames.insert("COSMIC"); 
+  trigNames.insert("PILEUP"); 
+  trigNames.insert("MICHEL"); 
+  trigNames.insert("LARSCINT"); 
+  trigNames.insert("MURS");
+  for( auto hardwareIter : fHardwareConnections) 
+  {
+    if( trigNames.count(hardwareIter.second) > 0)
+    {
+      boardLoc   = hardwareIter.first.find(board) + board.size();
+      channelLoc = hardwareIter.first.find(channel) + channel.size();
+      
+      if(boardLoc !=std::string::npos)
+      {
+        std::string strboardId (hardwareIter.first, boardLoc, channelLoc - channel.size());
+        std::string strchannelId (hardwareIter.first, channelLoc, hardwareIter.first.size());
+        
+        boardId = std::stoi(strboardId);
+        chanOff = std::stoi(strchannelId);
+        LOG_VERBATIM("FragmentToDigitAlg") <<" Found Triggers"
+        <<" Column: "    << hardwareIter.first
+        <<" Value: "     << hardwareIter.second
+        <<" BoardId: "   << boardId
+        <<" ChannelId: " << chanOff
+        <<" TrigNames: " << hardwareIter.second;
+      }//end setting board/channel ID
+      
+      // \todo This value for chanOff may not be correct.  The chanOff value is intended to allow
+      // the caenFragmentToAuxDetDigit know how many to subtract from the board channel such that the
+      // channels from the auxdet all satisfy the range of 0-N.
+      boardChans.insert(chanOff);
+      
+      LOG_VERBATIM("FragmentToDigitAlg") << "ChannelOffset: " << *(boardChans.begin());
+      
+      this->caenFragmentToAuxDetDigits(caenFrags, trAuxDigits, boardId, boardChans, *(boardChans.begin()), hardwareIter.second);
+      boardChans.clear();
+    }//end loop over trigNames
+  }//end loop over HardwareConnections
 
-  // Starting in run 6155 the trigger channels were read out by boardID 24
-  if(fRunNumber > 6154){
-    boardId = 24;
-    chanOff = 48;
-    maxChan = 64;
-  }
-
-  // Call this for each AeroGel counter
-  for(uint32_t tc = 0; tc < maxChan - chanOff; ++tc){
-    boardChans.clear();
-    boardChans.insert(chanOff + tc);
-    this->caenFragmentToAuxDetDigits(caenFrags, trAuxDigits, boardId, boardChans, chanOff, trigNames[tc]);
-  }
 
   return;
 }
@@ -574,9 +762,9 @@ void FragmentToDigitAlg::InitializeMWPCContainers()
 //===============================================================----------
 void FragmentToDigitAlg::CleanUpMWPCContainers()
 {
-  fMWPCNames           .clear();
-  fTDCToStartWire      .clear();   
-  fTDCToChamber        .clear();
+  fMWPCNames     .clear();
+  fTDCToStartWire.clear();   
+  fTDCToChamber  .clear();
 
   return;
 }
@@ -585,7 +773,7 @@ void FragmentToDigitAlg::CleanUpMWPCContainers()
 // set the name of the detector in the AuxDetDigit to be of the form
 // MWPCXX where XX is the controller Number
 void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> const& tdcEventData,
-				     std::vector<raw::AuxDetDigit>               & mwpcAuxDigits)
+                                        std::vector<raw::AuxDetDigit>               & mwpcAuxDigits)
 {
 
   size_t channelsPerChamber = TDCFragment::N_CHANNELS * TDCFragment::TDCS_PER_CHAMBER;
@@ -600,25 +788,34 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
 
   for(auto const& tdced : tdcEventData){ 
 
+    unsigned int tdcNumber = static_cast <unsigned int> (tdced.tdcEventHeader.tdcNumber);
+
+    mf::LogDebug("FragmentToDigitAlg") << "tdcEventHeader.tdcNumber: " << tdcNumber;
+
     // determine the chamber and start wire
     auto switr = fTDCToStartWire.find(tdced.tdcEventHeader.tdcNumber);
     auto chitr = fTDCToChamber.find(tdced.tdcEventHeader.tdcNumber);
 
+    // return if TDC number is out of range; stops filling of MWPC digits
+    if (tdcNumber < 1 or tdcNumber > 16) return;
+
     if( chitr == fTDCToChamber.end() || switr == fTDCToStartWire.end() )
-      throw cet::exception("FragmentToDigitAlg") << "TDC number " << tdced.tdcEventHeader.tdcNumber
-					      << " is not present in map to chamber number or start wire";
+      throw cet::exception("FragmentToDigitAlg")
+      << "TDC number " << tdcNumber
+      << " is not present in map to chamber number or start wire";
 
     // LOG_VERBATIM("FragmentToDigitAlg") << "there are " << tdced.tdcHits.size() << " tdc hit objects in the vector for chamber "
     // 				    << chitr->second << " on tdc " << chitr->first << " start wire " << switr->second;
     
     for(auto const& hit : tdced.tdcHits){
       if(chitr->second >= TDCFragment::MAX_CHAMBERS || 
-	 switr->second + (size_t)hit.channel >= channelsPerChamber
-	 )
-	throw cet::exception("FragmentToDigitAlg") << "Chamber is " << chitr->second << "/" << TDCFragment::MAX_CHAMBERS
-						<< " hit channel is " << (size_t)hit.channel
-						<< " first wire in tdc is " << switr->second << "/" 
-						<< channelsPerChamber;
+         switr->second + (size_t)hit.channel >= channelsPerChamber
+         )
+        throw cet::exception("FragmentToDigitAlg")
+        << "Chamber is " << chitr->second << "/" << TDCFragment::MAX_CHAMBERS
+        << " hit channel is " << (size_t)hit.channel
+        << " first wire in tdc is " << switr->second << "/"
+        << channelsPerChamber;
 
       chamberHits      [chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)].push_back(hit.timeBin);
       chamberTimeStamps[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
@@ -639,10 +836,10 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
       if(chamberHits[cham*channelsPerChamber + chan].size() < 1) continue;
       
       mwpcAuxDigits.push_back(raw::AuxDetDigit(static_cast <unsigned short> (chan),
-					       chamberHits[cham*channelsPerChamber + chan],
-					       fMWPCNames[cham],
-					       static_cast <unsigned long long> (chamberTimeStamps[cham*channelsPerChamber + chan]))
-			      );
+                                               chamberHits[cham*channelsPerChamber + chan],
+                                               fMWPCNames[cham],
+                                               static_cast <unsigned long long> (chamberTimeStamps[cham*channelsPerChamber + chan]))
+                              );
 
     }
     
@@ -670,8 +867,9 @@ std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t
     caenDataPresent = true;
   }
   else
-    LOG_WARNING("FragmentToDigit") << "There are no CAEN Fragments for event " << EventNumber
-                                   << " that may be OK, so continue";
+    LOG_WARNING("FragmentToDigit")
+    << "There are no CAEN Fragments for event " << EventNumber
+    << " that may be OK, so continue";
 
   //If there are no caen fragments present, then set the trigger info
   //based on the TDCDataBlock information
@@ -682,16 +880,54 @@ std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t
     }
   }
   else
-    LOG_WARNING("FragmentToDigit") << "There are no TDC Fragments for event " << EventNumber
-                   << " that may be OK, so continue";
+    LOG_WARNING("FragmentToDigit")
+    << "There are no TDC Fragments for event " << EventNumber
+    << " that may be OK, so continue";
 
   return triggerVector;
 
 }
 
 //===============================================================----------
-void FragmentToDigitAlg::InitializeRun( art::RunNumber_t runNumber )
+void FragmentToDigitAlg::InitializeRun(art::RunPrincipal* const& run, art::RunNumber_t runNumber, uint64_t timestamp)
 {
-  fRunNumber = runNumber;
+  //const art::Run& Run;
+  fRunNumber=runNumber;
+  //fRunTimestamp = run->beginTime().timeLow();	//jess lines
+  //fRunTimestamp = 2015102012;	//jess lines
+  //fRunTimestamp = Run.beginTime().timeLow();	//jess lines
+  fRunDateTime = this->TimestampToString(timestamp);	//jess lines
   InitializeMWPCContainers();
+  LOG_VERBATIM("FragmentToDigitAlg") << "Initializing Run" 
+   	     << " RunNumber: "<<fRunNumber<<" Date/Time: "<<fRunDateTime<<" RunTimestamp: "<<fRunTimestamp;
+  // Set config parameters to get from the lariat_prd database
+  fConfigParams.clear();
+  fConfigParams.push_back("v1495_config_v1495_delay_ticks");
+  fConfigParams.push_back("v1740_config_caen_postpercent");
+  fConfigParams.push_back("v1740_config_caen_recordlength");
+  fConfigParams.push_back("v1740b_config_caen_postpercent");
+  fConfigParams.push_back("v1740b_config_caen_recordlength");
+  fConfigParams.push_back("v1751_config_caen_postpercent");
+  fConfigParams.push_back("v1751_config_caen_recordlength");
+  fConfigParams.push_back("v1740_config_caen_v1740_samplereduction");
+  fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
+  fConfigParams.push_back("tdc_config_tdc_pipelinedelay");
+  fConfigParams.push_back("tdc_config_tdc_gatewidth");
+  
+  // Get V1751 PostPercent settings from database
+  fConfigValues.clear();
+  fHardwareConnections.clear();											//jess lines
+  fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
+  fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
+  fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
 }
+//-------------------jess lines
+//=====================================================================
+  std::string FragmentToDigitAlg::TimestampToString(std::time_t const& Timestamp) {
+    struct tm * TimeInfo;
+    char Buffer[30];
+    TimeInfo = std::localtime(&Timestamp);
+    std::strftime(Buffer, 30, "%Y-%m-%d %H:%M", TimeInfo);
+    return std::string(Buffer);
+  }
+

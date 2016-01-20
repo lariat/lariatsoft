@@ -30,7 +30,7 @@ namespace geo{
 
     for(int i = 2; i > 0; --i){ 
       if(c1[i] != c2[i]){
-	return c1[i] < c2[i];
+        return c1[i] < c2[i];
       }
     }
     
@@ -52,7 +52,7 @@ namespace geo{
 
     for(int i = 2; i > 0; --i){ 
       if(c1[i] != c2[i]){
-	return c1[i] < c2[i];
+        return c1[i] < c2[i];
       }
     }
     

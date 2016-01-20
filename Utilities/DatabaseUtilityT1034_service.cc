@@ -14,6 +14,7 @@
 
 // C++ includes
 #include <iostream>
+#include <stdlib.h>
 #include <fstream>
 
 namespace util {
@@ -25,11 +26,19 @@ namespace util {
   //-----------------------------------------------------------------------
   // constructor
   DatabaseUtilityT1034::DatabaseUtilityT1034(fhicl::ParameterSet   const& pset,
-                                             art::ActivityRegistry      & reg) {
+                                             art::ActivityRegistry      & reg)
+  : fDBHost                 ( getenv("LARIATDBHOST")                         )
+  , fDBPort                 ( getenv("LARIATDBPORT")                         )
+  , fDBName                 ( getenv("LARIATDBNAME")                         )
+  , fDBUser                 ( getenv("LARIATDBUSER")                         )
+  , fDBPasswordFile         ( getenv("DB_PWD_FILE")                          )
+  , fDBReconnectWaitTime    ( std::atoi(getenv("LARIATDBRECONNECTWAITTIME")) )
+  , fDBNumberConnectAttempts( std::atoi(getenv("LARIATCONNECTATTEMPTS"))     )
+  {
 
     // read in parameters from .fcl files
     this->reconfigure(pset);
-
+    
   }
 
   //-----------------------------------------------------------------------
@@ -40,25 +49,12 @@ namespace util {
   void DatabaseUtilityT1034::reconfigure(fhicl::ParameterSet const& pset) {
 
     // get parameters from .fcl files
-    fDBHost = pset.get< std::string >("DBHost", "ifdb02.fnal.gov");
-    fDBPort = pset.get< std::string >("DBPort", "5443");
-    fDBName = pset.get< std::string >("DBName", "lariat_prd");
-    fDBUser = pset.get< std::string >("DBUser", "lariat_prd_user");
-
-    fDBPasswordFile = pset.get< std::string >("DBPasswordFile", "Utilities/lariat_prd_passwd");
-    fDBReconnectWaitTime = pset.get< unsigned int >("DBReconnectWaitTime", 10);
-    fDBNumberConnectAttempts = pset.get< unsigned int >("DBNumberConnectAttempts", 3);
-
-    fConfigTableName = pset.get< std::string >("ConfigTableName", "lariat_xml_database");
-    fIFBeamTableName = pset.get< std::string >("IFBeamTableName", "lariat_ifbeam_database");
-
-    // find the password file
-    cet::search_path search_path("FW_SEARCH_PATH");
-    std::string password_file_path;
-    search_path.find_file(fDBPasswordFile, password_file_path);
+    fConfigTableName =              pset.get< std::string >("ConfigTableName", "lariat_xml_database");
+    fIFBeamTableName =              pset.get< std::string >("IFBeamTableName", "lariat_ifbeam_database");
+    fHardwareConnectionsTableName = pset.get< std::string >("HardwareConnectionsTableName", "lariat_hardware_connections");
 
     // read in the password from the password file
-    std::ifstream in(password_file_path.c_str());
+    std::ifstream in(fDBPasswordFile.c_str());
     if (in.is_open()) {
       std::getline(in, fDBPassword);
       in.close();
@@ -372,6 +368,59 @@ namespace util {
                         " from " + schema_name + "." + table_name +
                         " where runnumber = " + std::to_string(RunNumber) +
                         " and subrun = " + std::to_string(SubRunNumber) + ";";
+
+    // get values with query
+    std::map< std::string, std::string > values = this->GetValues(query);
+
+    return values;
+  }
+
+  //-----------------------------------------------------------------------
+  std::map< std::string, std::string > DatabaseUtilityT1034::GetHardwareConnections(std::string DateTime) {
+
+    // DateTime format should be 'YYYY-MM-DD HH24:MI:SS'
+    // e.g., '2015-06-17 14:16:00'
+
+    // vector of column names
+    std::vector< std::string > ColumnNames;
+
+    // datetime column
+    ColumnNames.push_back("date_time");
+
+    // fill column names for CAEN boards 8 and 9; 8 channels each
+    for (size_t channel = 0; channel < 8; ++channel) {
+      ColumnNames.push_back("caen_board_8_channel_" + std::to_string(channel));
+      ColumnNames.push_back("caen_board_9_channel_" + std::to_string(channel));
+    }
+
+    // fill column names for CAEN board 24; 64 channels
+    for (size_t channel = 0; channel < 64; ++channel) {
+      ColumnNames.push_back("caen_board_24_channel_" + std::to_string(channel));
+    }
+
+    // concatenate column names into single string for query
+    std::string column_names;
+
+    size_t number_columns = ColumnNames.size();
+
+    for (size_t i = 0; i < number_columns; ++i) {
+      if (i == 0) {
+        column_names = ColumnNames.at(i);
+      }
+      else {
+        column_names += ", " + ColumnNames.at(i);
+      }
+    }
+
+    // set schema and table names
+    std::string schema_name = "public";
+    std::string table_name = fHardwareConnectionsTableName;
+
+    // set query
+    std::string query = "select " + column_names +
+                        " from " + schema_name + "." + table_name +
+                        " where date_time < '" + DateTime + "'::timestamp"
+                        " order by date_time desc limit 1;";
 
     // get values with query
     std::map< std::string, std::string > values = this->GetValues(query);
