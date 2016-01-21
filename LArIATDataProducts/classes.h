@@ -63,6 +63,12 @@ template class art::Wrapper< ldp::AGCounter                  >;
 
 template class art::Wrapper< std::vector<ldp::AGCounter >    >;
 
+template class  std::vector<AGCHits>;
+
+template class art::Wrapper< AGCHits                  >;
+
+template class art::Wrapper< std::vector<AGCHits >    >;
+
 template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >    ;
 template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF> >    ;
 
