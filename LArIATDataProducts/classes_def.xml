@@ -24,6 +24,13 @@
  <class name="art::Wrapper<ldp::TOF>"                                         />
  <class name="art::Wrapper<std::vector<ldp::TOF> >"                           />
 
+ <class name="ldp::AGCounter" ClassVersion="10"                                >
+  <version ClassVersion="10" checksum="1800444611"/>
+ </class>
+ <class name="std::vector<ldp::AGCounter>"                                    />
+ <class name="art::Wrapper<ldp::AGCounter>"                                   />
+ <class name="art::Wrapper<std::vector<ldp::AGCounter> >"                     />
+
  <class name="std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >"    />
  <class name="std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF> >"    />
   

@@ -45,28 +45,30 @@ namespace ldp {
 	AGCounter(); 
     	~AGCounter();
 
+#ifndef __GCCXML__
 //      AGCounter(std::vector<std::vector<AGCHits> >);
        	AGCounter(std::vector<AGCHits>);
-	
-	short unsigned int 	GetNHits();
+
+	size_t GetNHits() const;	
+//	short unsigned int 	GetNHits();
 	
 	long int		GetTriggerTimeStamp(int);
 	
-	long unsigned int 	GetHitTimeStampUSE(int);
-	long unsigned int 	GetHitTimeStampUSW(int);
-	long unsigned int 	GetHitTimeStampDS1(int);
-	long unsigned int 	GetHitTimeStampDS2(int);
+	long unsigned int 	GetHitTimeStampUSE(int) const;
+	long unsigned int 	GetHitTimeStampUSW(int) const;
+	long unsigned int 	GetHitTimeStampDS1(int) const;
+	long unsigned int 	GetHitTimeStampDS2(int) const;
 	
-	float			GetHitPulseAreaUSE(int);
-	float			GetHitPulseAreaUSW(int);
-	float			GetHitPulseAreaDS1(int);
-	float			GetHitPulseAreaDS2(int);
+	float			GetHitPulseAreaUSE(int) const;
+	float			GetHitPulseAreaUSW(int) const;
+	float			GetHitPulseAreaDS1(int) const;
+	float			GetHitPulseAreaDS2(int) const;
 	
-	bool 			GetHitExistUSE(int);
-	bool 			GetHitExistUSW(int);
-	bool 			GetHitExistDS1(int);
-	bool 			GetHitExistDS2(int);
-
+	bool 			GetHitExistUSE(int) const;
+	bool 			GetHitExistUSW(int) const;
+	bool 			GetHitExistDS1(int) const;
+	bool 			GetHitExistDS2(int) const;
+#endif
     
   private:
   	std::vector<AGCHits> fAGCHits;

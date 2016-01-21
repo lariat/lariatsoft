@@ -58,6 +58,7 @@
 #include "RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
+#include "LArIATDataProducts/AGCounter.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
 #include "RecoBase/Shower.h"
 #include "RecoBase/EndPoint2D.h"
@@ -82,6 +83,7 @@ const int kMaxTrajHits   = 1000;  //maximum number of trajectory points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;   //maximum number of TOF objects
+const int kMaxAG         = 100;   //maximum number of AG objects
 const int kMaxPrimaries  = 20000;  //maximum number of primary particles
 const int kMaxShower     = 100;   //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000; // maximum number of MCShower Object
@@ -222,6 +224,23 @@ private:
    double tofObject[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
    double tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
    
+   // === Storing Aerogel Counter Information ===
+
+   int               nAG;
+   long unsigned int HitTimeStampUSE[kMaxAG]; //<---Pulse time stamp relative to (?) in units of (?)
+   long unsigned int HitTimeStampUSW[kMaxAG];
+   long unsigned int HitTimeStampDS1[kMaxAG];
+   long unsigned int HitTimeStampDS2[kMaxAG];
+
+   float             HitPulseAreaUSE[kMaxAG]; //<---Pulse area in uits of ns*mV(?) for given PMT
+   float             HitPulseAreaUSW[kMaxAG];
+   float             HitPulseAreaDS1[kMaxAG];
+   float             HitPulseAreaDS2[kMaxAG];
+
+   bool              HitExistUSE[kMaxAG];     //<---Boolean of whether or not a pulse has been found for the given PMT
+   bool              HitExistUSW[kMaxAG];
+   bool              HitExistDS1[kMaxAG];
+   bool              HitExistDS2[kMaxAG];
    
    // === Storing Geant4 MC Truth Information ===
    int no_primaries;				//<---Number of primary Geant4 particles in the event
@@ -328,6 +347,7 @@ private:
   std::string fParticleIDModuleLabel;
   std::string fWCTrackLabel; 		// The name of the producer that made tracks through the MWPCs
   std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
+  std::string fAGModuleLabel;         // Name of the producer that made the aerogel objects
   std::string fG4ModuleLabel;
   std::string fShowerModuleLabel;       // Producer that makes showers from clustering
   std::string fMCShowerModuleLabel;	// Producer name that makes MCShower Object
@@ -359,6 +379,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
    fClusterModuleLabel          = pset.get< std::string >("ClusterModuleLabel");
    fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
    fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
+   fAGModuleLabel               = pset.get< std::string >("AGModuleLabel");
    fG4ModuleLabel               = pset.get< std::string >("G4ModuleLabel");
    fShowerModuleLabel           = pset.get< std::string >("ShowerModuleLabel");
    fMCShowerModuleLabel		= pset.get< std::string >("MCShowerModuleLabel");
@@ -478,6 +499,15 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    
    if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
       {art::fill_ptr_vector(tof, TOFColHandle);}
+
+   // ####################################################
+   // ### Getting the Aerogel Information ###
+   // ####################################################
+   art::Handle< std::vector<ldp::AGCounter> > AGColHandle;
+   std::vector<art::Ptr<ldp::AGCounter> > agc;
+
+   if(evt.getByLabel(fAGModuleLabel,AGColHandle))
+      {art::fill_ptr_vector(agc, AGColHandle);}
       
    // #####################################
    // ### Getting the Shower Information ###
@@ -789,6 +819,54 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
         } // loop over TOF
 
       }//<---End tof_count loop
+
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   //                                                   FILLING THE AEROGEL COUNTER INFORMATION
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+
+//   ldp::AGCounter counter;
+//   std::cout<<"counter.GetNHits()"<<counter.GetNHits()<<std::endl;
+//   std::cout<<"counter.size()"<<counter.size()<<std::endl;
+//   std::cout<<"counter->size()"<<counter->size()<<std::endl;
+
+   nAG = agc.size();
+   // ################################
+   // ### Looping over aerogel counter objects ###
+   // ################################
+   size_t agc_counter = 0; // book-keeping
+   for(size_t i = 0; i < agc.size(); i++)
+      {
+
+        auto number_agc = agc[i]->GetNHits();
+        std::cout<<"nAG: "<<nAG<<std::endl;
+        std::cout<<" number_agc: "<<number_agc<<std::endl;
+        std::cout<<"agc[i]->GetNHits(): "<<agc[i]->GetNHits()<<std::endl;
+
+        for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
+//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
+          HitTimeStampUSE[i]=agc[agc_counter]->GetHitTimeStampUSE(agc_idx);
+          HitTimeStampUSW[i]=agc[agc_counter]->GetHitTimeStampUSW(agc_idx);
+          HitTimeStampDS1[i]=agc[agc_counter]->GetHitTimeStampDS1(agc_idx);
+          HitTimeStampDS2[i]=agc[agc_counter]->GetHitTimeStampDS2(agc_idx);
+
+          HitPulseAreaUSE[i]=agc[agc_counter]->GetHitPulseAreaUSE(agc_idx);
+          HitPulseAreaUSW[i]=agc[agc_counter]->GetHitPulseAreaUSW(agc_idx);
+          HitPulseAreaDS1[i]=agc[agc_counter]->GetHitPulseAreaDS1(agc_idx);
+          HitPulseAreaDS2[i]=agc[agc_counter]->GetHitPulseAreaDS2(agc_idx);
+
+          HitExistUSE[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+          HitExistUSW[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+          HitExistDS1[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+          HitExistDS2[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+          ++agc_counter;
+        } // loop over aerogel pulses
+
+      }//<---End aerogel counters
+     
+
+//        short unsigned int number_agc = agc[i]->GetNHits();
 
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
