@@ -166,7 +166,10 @@ private:
    double trjPt_X[kMaxTrack][kMaxTrajHits];     //<---Storing the trajector point location in X
    double trjPt_Y[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Y
    double trjPt_Z[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Z
-   
+
+  // === Geaaant inforamtion for reconstruction track
+  int trkg4id[kMaxHits];         //<---geant track id for the track
+
    // === Storing 2-d Hit information ===
    int    nhits;		//<---Number of 2-d hits in the event
    int    hit_plane[kMaxHits];	//<---Plane number of the hit
@@ -1077,7 +1080,37 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
        }
      }//loop over all hits
    }//fmthm is valid   
-   
+
+    if (!isdata&&fmth.isValid()){
+      // Find true track for each reconstructed track
+      int TrackID = 0;
+      std::vector< art::Ptr<recob::Hit> > allHits = fmth.at(i);
+      
+      std::map<int,double> trkide;
+      for(size_t h = 0; h < allHits.size(); ++h){
+	art::Ptr<recob::Hit> hit = allHits[h];
+	std::vector<sim::TrackIDE> TrackIDs = bt->HitToTrackID(hit);
+	for(size_t e = 0; e < TrackIDs.size(); ++e){
+	  trkide[TrackIDs[e].trackID] += TrackIDs[e].energy;
+	}	    
+      }
+      // Work out which IDE despoited the most charge in the hit if there was more than one.
+      double maxe = -1;
+      double tote = 0;
+      for (std::map<int,double>::iterator ii = trkide.begin(); ii!=trkide.end(); ++ii){
+	tote += ii->second;
+	if ((ii->second)>maxe){
+	  maxe = ii->second;
+	  TrackID = ii->first;
+	}
+      }
+      // Now have trackID, so get PdG code and T0 etc.
+      const simb::MCParticle *particle = bt->TrackIDToParticle(TrackID);
+      if (particle){
+	trkg4id[i] = TrackID;
+      }
+    }   
+
   }//<---End track loop (i)
 
   nhits = hitlist.size();
@@ -1236,7 +1269,8 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trjPt_X", trjPt_X, "trjPt_X[ntracks_reco][1000]/D");
   fTree->Branch("trjPt_Y", trjPt_Y, "trjPt_Y[ntracks_reco][1000]/D");
   fTree->Branch("trjPt_Z", trjPt_Z, "trjPt_Z[ntracks_reco][1000]/D");
-  
+  fTree->Branch("trkg4id", trkg4id, "trkg4id[ntracks_reco]/I");
+
   fTree->Branch("nhits",&nhits,"nhits/I");
   fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
   fTree->Branch("hit_wire",hit_wire,"hit_wire[nhits]/I");
@@ -1424,6 +1458,7 @@ void lariat::AnaTreeT1034::ResetVars()
 	trkpitchhit[i][j][k] = -99999;
       }
     }
+    trkg4id[i] = -9999;
   }
   nhits = -99999;
   for (int i = 0; i<kMaxHits; ++i){
