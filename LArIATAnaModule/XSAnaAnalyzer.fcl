@@ -1,0 +1,137 @@
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "services_lariat.fcl"
+#include "lariatanamodules.fcl"
+#include "caldata_lariat.fcl"
+#include "hitfindermodules.fcl"
+#include "cluster_lariat.fcl"
+#include "lariattrackfindermodules.fcl"
+#include "trackfindermodules_lariat.fcl"
+#include "trackfindermodules.fcl"
+#include "lariatfiltermodules.fcl"
+
+process_name: XSAnalysis
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  #TFileService: { fileName: "/lariat/data/users/elenag/PionRecoPid/allruns_kaons_6110.root" }
+  TFileService: { fileName: "Test.root" }
+
+  Timing:       {}
+  RandomNumberGenerator: {} #ART native random number generator
+  message:      @local::standard_info
+  user:         @local::lariat_services 	     
+}
+
+
+#source is now a root file
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+ producers:
+ {
+   
+ }
+
+ 
+ filters:
+ {
+   #this filter should keep pnly kaons
+   #kaonfilter: @local::lariat_kaonfilter
+  # pimufilter: @local::lariat_pimufilter
+
+   #This is the TPC filter to select only "good single incoming tpc track events" for the analysis#   
+ #  kaonfilter: @local::lariat_kaonfilter                                                                                                                     
+#   singleprimary: @local::lariat_singleprimarytrack
+  
+ }
+
+ analyzers:
+ {
+  #XSAnalysis_module is an analyzer                                                                                                                                                 
+  trigana:     @local::lariat_xsanalysis
+ }
+
+ #define the producer and filter modules for this path, order matters, 
+ #filters reject all following items.  see lines starting physics.producers below
+ #reco: [ pimufilter,singleprimary, trigana ]
+ #reco: [ kaonfilter, singleprimary, trigana ]
+ reco: [  ]
+ ana:  [ trigana]
+
+ #define the output stream, there could be more than one if using filters 
+ stream1:  [ out1 ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event, 
+ #ie filters and producers
+ trigger_paths: [  ]
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+ #ie analyzers and output streams.  these all run simultaneously
+ end_paths:     [  ana ]  
+}
+
+#block to define where the output goes.  if you defined a filter in the physics
+#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+  SelectEvents:
+	 {
+#    SelectEvents: [ reco ]
+   }
+#   fileName:    "/lariat/data/users/elenag/PionRecoPid/Data_Analysis_pimu_6110.root"
+ #  fileName:    "Data_Analysis_pimu_6110.root"                                                                                               
+
+ }
+
+ 
+
+}
+#############################################################################
+#Here are listed the main parameters from TPC_filter and XSAnalysis_producer#
+#############################################################################
+
+###############################################################################################################################################
+#These are the parameters when can change in our tests, to see the effects on statistic and on systematic uncertainties (especially on MC data)
+#-----Filter parameters:-----#
+#physics.filters.singleprimary.UpstreamEpsilon1: 14.0 #in cm
+#physics.filters.singleprimary.UpstreamEpsilon2:  2.0 #in cm
+#physics.filters.singleprimary.AlphaCutDegrees:      20
+#physics.filters.singleprimary.UpperDeltaYCutBound:  6.    #in cm
+#physics.filters.singleprimary.LowerDeltaYCutBound:  -3.    #in cm
+#physics.filters.singleprimary.UpperDeltaXCutBound: 6.
+#physics.filters.singleprimary.LowerDeltaXCutBound: -2.
+
+#-----Analysis parameters:-----#
+#physics.analyzers.UpstreamEpsilon: 2.0 #in cm
+physics.analyzers.trigana.EnStoppingCut: 50.
+physics.analyzers.trigana.Verbose: true
+#physics.producers.trigana.ThinSlabThickness: 0.4725 #in cm
+#physics.producers.trigana.ZLowLimitCrossing: 89.0 #in cm
+#physics.producers.trigana.ZUpLimitCrossing: 91.0 #in cm
+
+###############################################################################################################################################
+#These are "building parameters" that should not be changed in tests (Maybe we'll have only to change the source label for MC data?)
+#physics.filters.singleprimary.SourceLabel: "daq"
+#physics.filters.singleprimary.TPCTrackBuilderLabel: "pmtrack"
+#physics.filters.singleprimary.WCTrackBuilderLabel: "wctrack"
+#physics.producers.trigana.SourceLabel: "SlicerInput"
+#physics.producers.trigana.TPCTrackBuilderLabel: "pmtrack"
+#physics.producers.trigana.WCTrackBuilderLabel: "wctrack"
+#physics.producers.trigana.CalorimetryModuleLabel: "calo"
+
+###############################################################################################################################################
