@@ -1360,7 +1360,21 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("ntof", &ntof, "ntof/I");
   fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
   fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
-  
+
+  fTree->Branch("nAG", &nAG, "nAG/I");
+  fTree->Branch("HitTimeStampUSE", HitTimeStampUSE, "HitTimeStampUSE[nAG]/D");
+  fTree->Branch("HitTimeStampUSW", HitTimeStampUSW, "HitTimeStampUSW[nAG]/D");
+  fTree->Branch("HitTimeStampDS1", HitTimeStampDS1, "HitTimeStampDS1[nAG]/D");
+  fTree->Branch("HitTimeStampDS2", HitTimeStampDS2, "HitTimeStampDS2[nAG]/D");
+  fTree->Branch("HitPulseAreaUSE", HitPulseAreaUSE, "HitPulseAreaUSE[nAG]/D");
+  fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/D");
+  fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/D");
+  fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/D");
+  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/D");
+  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/D");
+  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/D");
+  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/D");
+
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
   
@@ -1564,6 +1578,26 @@ void lariat::AnaTreeT1034::ResetVars()
 	
 	}//<---End i loop
   
+  nAG = -99999;
+  for (int i = 0; i < kMaxAG; i++)
+        {
+        HitTimeStampUSE[i] = -99999;
+        HitTimeStampUSW[i] = -99999;
+        HitTimeStampDS1[i] = -99999;
+        HitTimeStampDS2[i] = -99999;
+
+        HitPulseAreaUSE[i] = -99999;
+        HitPulseAreaUSW[i] = -99999;
+        HitPulseAreaDS1[i] = -99999;
+        HitPulseAreaDS2[i] = -99999;
+
+        HitExistUSE[i] = -99999;
+        HitExistUSW[i] = -99999;
+        HitExistDS1[i] = -99999;
+        HitExistDS2[i] = -99999;
+
+        }//<---End i loop
+
   no_primaries = -99999;
   geant_list_size=-999;
   for (int i = 0; i<kMaxPrimaries; ++i){
