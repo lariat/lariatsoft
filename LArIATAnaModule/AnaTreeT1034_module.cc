@@ -46,7 +46,7 @@
 #include "Utilities/LArProperties.h"
 #include "Utilities/DetectorProperties.h"
 #include "Utilities/AssociationUtil.h"
-#include "RawData/ExternalTrigger.h"
+//#include "RawData/ExternalTrigger.h"
 #include "RawData/RawDigit.h"
 #include "RawData/raw.h"
 #include "MCCheater/BackTracker.h"
@@ -119,7 +119,7 @@ private:
    double evttime;		//<---Event Time Stamp
    double efield[3];		//<---Electric Field 
    int t0;
-   int trigtime[16];		//<---Trigger time
+  //int trigtime[16];		//<---Trigger time
    
    // === Storing Track Information ===
    int ntracks_reco;		//<---Number of reconstructed tracks
@@ -323,7 +323,7 @@ private:
    int    hit_clukey[kMaxHits];
    
    
-  std::string fTrigModuleLabel;
+  //std::string fTrigModuleLabel;
   std::string fClusterModuleLabel;
   std::string fHitsModuleLabel;
   std::string fTrackModuleLabel;
@@ -354,7 +354,7 @@ lariat::AnaTreeT1034::~AnaTreeT1034()
 
 void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
 {
-   fTrigModuleLabel	 	= pset.get< std::string >("TriggerUtility");
+  //fTrigModuleLabel	 	= pset.get< std::string >("TriggerUtility");
    fHitsModuleLabel      	= pset.get< std::string >("HitsModuleLabel");
    fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel");
    fCalorimetryModuleLabel 	= pset.get< std::string >("CalorimetryModuleLabel");
@@ -416,6 +416,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    // === Trigger Offset ====
    t0 = detprop->TriggerOffset();
    
+   /*
    // ###################################
    // ### Getting Trigger Information ###
    // ###################################
@@ -433,7 +434,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // === Recording the time of the various triggers ===
       trigtime[i] = triglist[i]->GetTrigTime();
       }
-   
+   */
    // #####################################
    // ### Getting the Track Information ###
    // #####################################
@@ -1226,7 +1227,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("evttime",&evttime,"evttime/D");
   fTree->Branch("efield",efield,"efield[3]/D");
   fTree->Branch("t0",&t0,"t0/I");
-  fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
+  //fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
   fTree->Branch("nclus",&nclus,"nclus/I");
   fTree->Branch("clustertwire",clustertwire,"clustertwire[nclus]/D");
   fTree->Branch("clusterttick",clusterttick,"clusterttick[nclus]/D");
@@ -1406,9 +1407,9 @@ void lariat::AnaTreeT1034::ResetVars()
     efield[i] = -99999;
   }
   t0 = -99999;
-  for (int i = 0; i < 16; ++i){
-     trigtime[i]=-99999;
-  }
+//  for (int i = 0; i < 16; ++i){
+//     trigtime[i]=-99999;
+//  }
   nclus = -99999;
   for (int i = 0; i < kMaxCluster; ++i){
     clustertwire[i] = -99999;
