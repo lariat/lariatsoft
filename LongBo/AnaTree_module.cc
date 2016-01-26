@@ -35,7 +35,7 @@
 #include "Utilities/LArProperties.h"
 #include "Utilities/DetectorProperties.h"
 #include "Utilities/AssociationUtil.h"
-#include "RawData/ExternalTrigger.h"
+//#include "RawData/ExternalTrigger.h"
 #include "RawData/RawDigit.h"
 #include "RawData/raw.h"
 #include "MCCheater/BackTracker.h"
@@ -79,7 +79,7 @@ private:
   double evttime;
   double efield[3];
   int t0;
-  int trigtime[16];
+  //int trigtime[16];
   int ntracks_reco;         //number of reconstructed tracks
   double trkvtxx[kMaxTrack];
   double trkvtxy[kMaxTrack];
@@ -134,7 +134,7 @@ private:
   int    hit_trkkey[kMaxHits];
   int    hit_clukey[kMaxHits];
 
-  std::string fTrigModuleLabel;
+  //  std::string fTrigModuleLabel;
   std::string fHitsModuleLabel;
   std::string fClusterModuleLabel;
   std::string fTrackModuleLabel;
@@ -145,7 +145,7 @@ private:
 
 bo::AnaTree::AnaTree(fhicl::ParameterSet const & pset)
   : EDAnalyzer(pset)
-  , fTrigModuleLabel       (pset.get< std::string >("TrigModuleLabel"))
+    //  , fTrigModuleLabel       (pset.get< std::string >("TrigModuleLabel"))
   , fHitsModuleLabel       (pset.get< std::string >("HitsModuleLabel"))
   , fClusterModuleLabel     (pset.get< std::string >("ClusterModuleLabel"))
   , fTrackModuleLabel       (pset.get< std::string >("TrackModuleLabel"))
@@ -193,6 +193,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
 
   t0 = detprop->TriggerOffset();
 
+  /*
   art::Handle< std::vector<raw::ExternalTrigger> > trigListHandle;
   std::vector<art::Ptr<raw::ExternalTrigger> > triglist;
   if (evt.getByLabel(fTrigModuleLabel,trigListHandle))
@@ -201,6 +202,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
   for (size_t i = 0; i<triglist.size(); ++i){
     trigtime[i] = triglist[i]->GetTrigTime();
   }
+  */
 
   art::Handle< std::vector<recob::Cluster> > clusterListHandle;
   std::vector<art::Ptr<recob::Cluster> > clusterlist;
@@ -424,7 +426,7 @@ void bo::AnaTree::beginJob()
   fTree->Branch("evttime",&evttime,"evttime/D");
   fTree->Branch("efield",efield,"efield[3]/D");
   fTree->Branch("t0",&t0,"t0/I");
-  fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
+  //fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
   fTree->Branch("nclus",&nclus,"nclus/I");
   fTree->Branch("clustartwire",clustartwire,"clustartwire[nclus]/D");
   fTree->Branch("clustarttick",clustarttick,"clustarttick[nclus]/D");
@@ -494,9 +496,9 @@ void bo::AnaTree::ResetVars(){
     efield[i] = -99999;
   }
   t0 = -99999;
-  for (int i = 0; i < 16; ++i){
-     trigtime[i]=-99999;
-  }
+//  for (int i = 0; i < 16; ++i){
+//     trigtime[i]=-99999;
+//  }
   nclus = -99999;
   for (int i = 0; i < kMaxCluster; ++i){
     clustartwire[i] = -99999;

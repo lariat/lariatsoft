@@ -46,7 +46,7 @@
 #include "Utilities/LArProperties.h"
 #include "Utilities/DetectorProperties.h"
 #include "Utilities/AssociationUtil.h"
-#include "RawData/ExternalTrigger.h"
+//#include "RawData/ExternalTrigger.h"
 #include "RawData/RawDigit.h"
 #include "RawData/raw.h"
 #include "MCCheater/BackTracker.h"
@@ -58,6 +58,7 @@
 #include "RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
+#include "LArIATDataProducts/AGCounter.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
 #include "RecoBase/Shower.h"
 #include "RecoBase/EndPoint2D.h"
@@ -82,6 +83,7 @@ const int kMaxTrajHits   = 1000;  //maximum number of trajectory points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;   //maximum number of TOF objects
+const int kMaxAG         = 100;   //maximum number of AG objects
 const int kMaxPrimaries  = 20000;  //maximum number of primary particles
 const int kMaxShower     = 100;   //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000; // maximum number of MCShower Object
@@ -119,7 +121,7 @@ private:
    double evttime;		//<---Event Time Stamp
    double efield[3];		//<---Electric Field 
    int t0;
-   int trigtime[16];		//<---Trigger time
+  //int trigtime[16];		//<---Trigger time
    
    // === Storing Track Information ===
    int ntracks_reco;		//<---Number of reconstructed tracks
@@ -225,6 +227,23 @@ private:
    double tofObject[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
    double tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
    
+   // === Storing Aerogel Counter Information ===
+
+   int               nAG;
+   long unsigned int HitTimeStampUSE[kMaxAG]; //<---Pulse time stamp relative to (?) in units of (?)
+   long unsigned int HitTimeStampUSW[kMaxAG];
+   long unsigned int HitTimeStampDS1[kMaxAG];
+   long unsigned int HitTimeStampDS2[kMaxAG];
+
+   float             HitPulseAreaUSE[kMaxAG]; //<---Pulse area in uits of ns*mV(?) for given PMT
+   float             HitPulseAreaUSW[kMaxAG];
+   float             HitPulseAreaDS1[kMaxAG];
+   float             HitPulseAreaDS2[kMaxAG];
+
+   bool              HitExistUSE[kMaxAG];     //<---Boolean of whether or not a pulse has been found for the given PMT
+   bool              HitExistUSW[kMaxAG];
+   bool              HitExistDS1[kMaxAG];
+   bool              HitExistDS2[kMaxAG];
    
    // === Storing Geant4 MC Truth Information ===
    int no_primaries;				//<---Number of primary Geant4 particles in the event
@@ -323,7 +342,7 @@ private:
    int    hit_clukey[kMaxHits];
    
    
-  std::string fTrigModuleLabel;
+  //std::string fTrigModuleLabel;
   std::string fClusterModuleLabel;
   std::string fHitsModuleLabel;
   std::string fTrackModuleLabel;
@@ -331,6 +350,7 @@ private:
   std::string fParticleIDModuleLabel;
   std::string fWCTrackLabel; 		// The name of the producer that made tracks through the MWPCs
   std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
+  std::string fAGModuleLabel;         // Name of the producer that made the aerogel objects
   std::string fG4ModuleLabel;
   std::string fShowerModuleLabel;       // Producer that makes showers from clustering
   std::string fMCShowerModuleLabel;	// Producer name that makes MCShower Object
@@ -354,7 +374,7 @@ lariat::AnaTreeT1034::~AnaTreeT1034()
 
 void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
 {
-   fTrigModuleLabel	 	= pset.get< std::string >("TriggerUtility");
+  //fTrigModuleLabel	 	= pset.get< std::string >("TriggerUtility");
    fHitsModuleLabel      	= pset.get< std::string >("HitsModuleLabel");
    fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel");
    fCalorimetryModuleLabel 	= pset.get< std::string >("CalorimetryModuleLabel");
@@ -362,6 +382,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
    fClusterModuleLabel          = pset.get< std::string >("ClusterModuleLabel");
    fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
    fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
+   fAGModuleLabel               = pset.get< std::string >("AGModuleLabel");
    fG4ModuleLabel               = pset.get< std::string >("G4ModuleLabel");
    fShowerModuleLabel           = pset.get< std::string >("ShowerModuleLabel");
    fMCShowerModuleLabel		= pset.get< std::string >("MCShowerModuleLabel");
@@ -416,6 +437,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    // === Trigger Offset ====
    t0 = detprop->TriggerOffset();
    
+   /*
    // ###################################
    // ### Getting Trigger Information ###
    // ###################################
@@ -433,7 +455,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // === Recording the time of the various triggers ===
       trigtime[i] = triglist[i]->GetTrigTime();
       }
-   
+   */
    // #####################################
    // ### Getting the Track Information ###
    // #####################################
@@ -481,6 +503,15 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    
    if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
       {art::fill_ptr_vector(tof, TOFColHandle);}
+
+   // ####################################################
+   // ### Getting the Aerogel Information ###
+   // ####################################################
+   art::Handle< std::vector<ldp::AGCounter> > AGColHandle;
+   std::vector<art::Ptr<ldp::AGCounter> > agc;
+
+   if(evt.getByLabel(fAGModuleLabel,AGColHandle))
+      {art::fill_ptr_vector(agc, AGColHandle);}
       
    // #####################################
    // ### Getting the Shower Information ###
@@ -792,6 +823,54 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
         } // loop over TOF
 
       }//<---End tof_count loop
+
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+   //                                                   FILLING THE AEROGEL COUNTER INFORMATION
+   // ----------------------------------------------------------------------------------------------------------------------------
+   // ----------------------------------------------------------------------------------------------------------------------------
+
+//   ldp::AGCounter counter;
+//   std::cout<<"counter.GetNHits()"<<counter.GetNHits()<<std::endl;
+//   std::cout<<"counter.size()"<<counter.size()<<std::endl;
+//   std::cout<<"counter->size()"<<counter->size()<<std::endl;
+
+   nAG = agc.size();
+   // ################################
+   // ### Looping over aerogel counter objects ###
+   // ################################
+   size_t agc_counter = 0; // book-keeping
+   for(size_t i = 0; i < agc.size(); i++)
+      {
+
+        auto number_agc = agc[i]->GetNHits();
+        std::cout<<"nAG: "<<nAG<<std::endl;
+        std::cout<<" number_agc: "<<number_agc<<std::endl;
+        std::cout<<"agc[i]->GetNHits(): "<<agc[i]->GetNHits()<<std::endl;
+
+        for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
+//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
+          HitTimeStampUSE[i]=agc[agc_counter]->GetHitTimeStampUSE(agc_idx);
+          HitTimeStampUSW[i]=agc[agc_counter]->GetHitTimeStampUSW(agc_idx);
+          HitTimeStampDS1[i]=agc[agc_counter]->GetHitTimeStampDS1(agc_idx);
+          HitTimeStampDS2[i]=agc[agc_counter]->GetHitTimeStampDS2(agc_idx);
+
+          HitPulseAreaUSE[i]=agc[agc_counter]->GetHitPulseAreaUSE(agc_idx);
+          HitPulseAreaUSW[i]=agc[agc_counter]->GetHitPulseAreaUSW(agc_idx);
+          HitPulseAreaDS1[i]=agc[agc_counter]->GetHitPulseAreaDS1(agc_idx);
+          HitPulseAreaDS2[i]=agc[agc_counter]->GetHitPulseAreaDS2(agc_idx);
+
+          HitExistUSE[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+          HitExistUSW[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+          HitExistDS1[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+          HitExistDS2[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+          ++agc_counter;
+        } // loop over aerogel pulses
+
+      }//<---End aerogel counters
+     
+
+//        short unsigned int number_agc = agc[i]->GetNHits();
 
    // ----------------------------------------------------------------------------------------------------------------------------
    // ----------------------------------------------------------------------------------------------------------------------------
@@ -1226,7 +1305,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("evttime",&evttime,"evttime/D");
   fTree->Branch("efield",efield,"efield[3]/D");
   fTree->Branch("t0",&t0,"t0/I");
-  fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
+  //fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
   fTree->Branch("nclus",&nclus,"nclus/I");
   fTree->Branch("clustertwire",clustertwire,"clustertwire[nclus]/D");
   fTree->Branch("clusterttick",clusterttick,"clusterttick[nclus]/D");
@@ -1316,7 +1395,21 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("ntof", &ntof, "ntof/I");
   fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
   fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
-  
+
+  fTree->Branch("nAG", &nAG, "nAG/I");
+  fTree->Branch("HitTimeStampUSE", HitTimeStampUSE, "HitTimeStampUSE[nAG]/D");
+  fTree->Branch("HitTimeStampUSW", HitTimeStampUSW, "HitTimeStampUSW[nAG]/D");
+  fTree->Branch("HitTimeStampDS1", HitTimeStampDS1, "HitTimeStampDS1[nAG]/D");
+  fTree->Branch("HitTimeStampDS2", HitTimeStampDS2, "HitTimeStampDS2[nAG]/D");
+  fTree->Branch("HitPulseAreaUSE", HitPulseAreaUSE, "HitPulseAreaUSE[nAG]/D");
+  fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/D");
+  fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/D");
+  fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/D");
+  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/D");
+  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/D");
+  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/D");
+  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/D");
+
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
   
@@ -1406,9 +1499,9 @@ void lariat::AnaTreeT1034::ResetVars()
     efield[i] = -99999;
   }
   t0 = -99999;
-  for (int i = 0; i < 16; ++i){
-     trigtime[i]=-99999;
-  }
+//  for (int i = 0; i < 16; ++i){
+//     trigtime[i]=-99999;
+//  }
   nclus = -99999;
   for (int i = 0; i < kMaxCluster; ++i){
     clustertwire[i] = -99999;
@@ -1521,6 +1614,26 @@ void lariat::AnaTreeT1034::ResetVars()
 	
 	}//<---End i loop
   
+  nAG = -99999;
+  for (int i = 0; i < kMaxAG; i++)
+        {
+        HitTimeStampUSE[i] = -99999;
+        HitTimeStampUSW[i] = -99999;
+        HitTimeStampDS1[i] = -99999;
+        HitTimeStampDS2[i] = -99999;
+
+        HitPulseAreaUSE[i] = -99999;
+        HitPulseAreaUSW[i] = -99999;
+        HitPulseAreaDS1[i] = -99999;
+        HitPulseAreaDS2[i] = -99999;
+
+        HitExistUSE[i] = -99999;
+        HitExistUSW[i] = -99999;
+        HitExistDS1[i] = -99999;
+        HitExistDS2[i] = -99999;
+
+        }//<---End i loop
+
   no_primaries = -99999;
   geant_list_size=-999;
   for (int i = 0; i<kMaxPrimaries; ++i){
