@@ -240,17 +240,22 @@ void XSAnalysis::analyze(art::Event const & e)
   // if (fAmIData)
   art::Handle< std::vector<ldp::WCTrack> > wcTrackHandle;        
   std::vector<art::Ptr<ldp::WCTrack> >     wctrack;                /// Define wctrack as a pointer to ldp::WCTrack
+  std::cout<<"Puppa 0.5 : "<<std::endl;
+  e.getByLabel(fWCTrackBuilderLabel, wcTrackHandle);
   if(!e.getByLabel(fWCTrackBuilderLabel, wcTrackHandle)) return;   /// If there are no wire chamber tracks for the right label, return 
   art::fill_ptr_vector(wctrack, wcTrackHandle);			   /// Filling the wctrack from the wcTrackHandle 	       
-  nwctrks = wctrack.size();					   /// Store the number of wire chamber tracks per event                   
+  nwctrks = wctrack.size();	
+  std::cout<<"Puppa 1 : "<<nwctrks<<std::endl;				   /// Store the number of wire chamber tracks per event                   
   if ( nwctrks !=1 ) return;                                       /// If there are more than 1 wire chamber tracks, return 
     
   ///Retrieving the TPC tracks from the sliced event
   art::Handle< std::vector<recob::Track> > tpcTrackHandle;
   std::vector<art::Ptr<recob::Track> > tracklist;                   /// Define tracklist as a pointer to recob::tracks
+  std::cout<<"Puppa 1.5 : "<<std::endl;
   if (!e.getByLabel(fTPCTrackBuilderLabel,tpcTrackHandle)) return;  /// If there are no TPC tracks for the right label, return
   art::fill_ptr_vector(tracklist, tpcTrackHandle);                  /// Filling the tracklist from the tracklistHandle 
   ntracks_reco=tracklist.size();                                    /// Store the number of tracks per event                   
+  std::cout<<"Puppa 2 : "<<std::endl;
   if ( !ntracks_reco ) return;                                      /// If there are no TPC tracks in general, return
   
   ///Association between Calorimetry objects and Tracks
