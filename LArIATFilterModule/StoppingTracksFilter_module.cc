@@ -174,6 +174,7 @@ bool StoppingTracksFilter::filter(art::Event & evt)
   // ### Looping over tracks ###
   for ( auto const& thisTrack : tracklist )
     { 
+      //
       std::cout << "TPC track key " << thisTrack.key() << std::endl;
       
       // ### Setting a temp variable for this track ###
