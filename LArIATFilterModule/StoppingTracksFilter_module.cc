@@ -18,7 +18,7 @@
 // You later find out that Track1 is the best match to wcTrack.
 // You don't want to keep this track for the PionXSAnalysis!
 ////////////////////////////////////////////////////////////////////////
-/////////////////////////////////////////////
+
 
 // ##########################
 // ### Framework Includes ###
@@ -216,8 +216,17 @@ bool StoppingTracksFilter::filter(art::Event & evt)
   std::cout << "There are " << nStopping    << " stopping tracks for this event" << std::endl;
   std::cout << "There are " << nPassingZCut << " incoming tracks for this event" << std::endl;
   
-  //If at least one of the tracks which passed the ZCut is stopping, you throw out the event
-  if (nStopping == nPassingZCut) return false;
+
+  // If you want to implement the following logic:
+  // "Keep the event if you find 1+ not stopping and incoming track"
+  // You need to de-comment the following line and comment out the rest
+  //  if (nStopping == nPassingZCut) return false;
+
+  // If you want to implement the following logic:
+  // "Reject the event if you find 1+ incoming and stopping track"
+  // You need to de-comment the following line and comment out the previous lines
+  if (nStopping) return false;
+
   // ### Otherwise, keep the event ###
   return true;
 }

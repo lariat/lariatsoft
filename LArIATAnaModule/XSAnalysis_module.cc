@@ -520,7 +520,7 @@ bool XSAnalysis::findTheTPCTrack (int                                  &tpcTrack
 				    art::FindManyP<anab::Calorimetry>  fmcal      ,
 				    art::FindManyP<recob::SpacePoint>  fmsp       )
 {
-  std::vector<int> iTrack;
+  std::vector<recob::Track> iTrack;
   // ### Looping over tracks we need to find the only one that matches the wcTrack ###
   for ( auto const& thisTrack : tracklist )
     { 
@@ -553,7 +553,7 @@ bool XSAnalysis::findTheTPCTrack (int                                  &tpcTrack
 	if(tempZpoint < fupstreamZPosition)
 	  {
 	    if(!isStoppingTrack(*thisTrack,fmcal)) // If your track made it to here, it's incoming and non stopping!
-	      iTrack.emplace_back(thisTrack->ID()); 	    
+	      iTrack.emplace_back(*thisTrack); 
 	    // Break from spacepoint loop: you don't need to keep looping, you found an incoming track.	           
 	    break; 
 	  }	
