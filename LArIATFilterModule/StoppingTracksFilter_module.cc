@@ -18,7 +18,7 @@
 // You later find out that Track1 is the best match to wcTrack.
 // You don't want to keep this track for the PionXSAnalysis!
 ////////////////////////////////////////////////////////////////////////
-
+/////////////////////////////////////////////
 
 // ##########################
 // ### Framework Includes ###
@@ -172,15 +172,15 @@ bool StoppingTracksFilter::filter(art::Event & evt)
   int nStopping    = 0;
   
   // ### Looping over tracks ###
-  for ( auto const& thisTrack : (*trackListHandle) )
+  for ( auto const& thisTrack : tracklist )
     { 
-      std::cout << "TPC track ID " << thisTrack.ID() << std::endl;
+      std::cout << "TPC track key " << thisTrack.key() << std::endl;
       
       // ### Setting a temp variable for this track ###
       float tempZpoint = 100;
       
       // ### Grabbing the SpacePoints associated with this track ###
-      std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(thisTrack.ID());
+      std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(thisTrack.key());
       
       // ########################################
       // ### Looping over all the SpacePoints ###
@@ -205,7 +205,7 @@ bool StoppingTracksFilter::filter(art::Event & evt)
 	      nPassingZCut++;
 	      // ###  Check if the track is stopping.       ###
 	      // ###  If it is add to the stopping counter  ###
-	      if (isStoppingTrack(thisTrack,fmcal)) nStopping++;
+	      if (isStoppingTrack(*thisTrack,fmcal)) nStopping++;
 	      break; // You don't need to continue looping on the SpacePoints, you already found the track
 	    }
 		 	  
