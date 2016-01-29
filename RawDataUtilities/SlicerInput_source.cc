@@ -492,10 +492,10 @@ namespace rdu
 
       artdaq::Fragment frag = fragments->at(0);
       const char * bytePtr = reinterpret_cast <const char *> (&*frag.dataBegin());
-      LArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(unsigned long long));
+      LArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(artdaq::RawDataType));
 
       // get SpillTrailer
-      LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
+      LariatFragment::SpillTrailer const& spillTrailer = LArIATFragment->spillTrailer;
 
       // get timestamp from SpillTrailer, cast as uint64_t
       fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
