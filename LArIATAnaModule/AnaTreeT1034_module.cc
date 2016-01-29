@@ -259,10 +259,11 @@ private:
    double EndPointx[kMaxPrimaries];		//<---X position that this Geant4 particle ended at
    double EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
    double EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
+   int Process[kMaxPrimaries];		        //<---records the process for this particle
    int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
    int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
    int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
-   int process_primary[kMaxPrimaries];		//<---Is this particle primary (primary = 1, non-primary = 1)
+   int process_primary[kMaxPrimaries];		//<---Is this particle primary (primary = 1, non-primary = 0)
    
    
    // ==== Storing MCShower MCTruth Information ===
@@ -674,6 +675,27 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Setting a string for primary ###
       std::string pri("primary");
       
+      // ### Setting a string for PionMinusInelastic ###
+      std::string PionMinusInelastic("PionMinusInelastic");
+      
+      // ### Setting a string for NeutronInelastic ###
+      std::string NeutronInelastic("NeutronInelastic");
+      
+       // ### Setting a string for hadElastic ###
+      std::string hadElastic("hadElastic");
+      
+      // ### Setting a string for nCapture ###
+      std::string nCapture("nCapture");
+      
+      // ### Setting a string for CHIPSNuclearCaptureAtRest ###
+      std::string CHIPSNuclearCaptureAtRest("CHIPSNuclearCaptureAtRest");
+      
+      // ### Setting a string for Decay ###
+      std::string Decay("Decay");
+      
+      // ### Setting a string for KaonZeroLInelastic ###
+      std::string KaonZeroLInelastic("KaonZeroLInelastic");
+      
       int primary=0;
       int geant_particle=0;
       
@@ -705,7 +727,41 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           // ### If this particle is not-primary, set = 0 ###
 	  else
 	     {process_primary[i]=0;}
-   
+          
+	  // ### Recording the process as a integer ###
+	  // 0 = primary
+	  // 1 = PionMinusInelastic
+	  // 2 = NeutronInelastic
+	  // 3 = hadElastic
+	  // 4 = nCapture
+	  // 5 = CHIPSNuclearCaptureAtRest
+	  // 6 = Decay
+	  // 7 = KaonZeroLInelastic
+	  if(geant_part[i]->Process() == pri)
+	     {Process[i] = 0;}
+	     
+	  if(geant_part[i]->Process() == PionMinusInelastic)
+	     {Process[i] = 1;}
+	     
+	  if(geant_part[i]->Process() == NeutronInelastic)
+	     {Process[i] = 2;}
+	     
+	  if(geant_part[i]->Process() == hadElastic)
+	     {Process[i] = 3;}
+	  
+	  if(geant_part[i]->Process() == nCapture)
+	     {Process[i] = 4;}
+	     
+	  if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
+	     {Process[i] = 5;}
+	  
+	  if(geant_part[i]->Process() == Decay)
+	     {Process[i] = 6;}
+	  
+	  if(geant_part[i]->Process() == KaonZeroLInelastic)
+	     {Process[i] = 7;}
+	  std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
+	  
           // ### Saving the particles mother TrackID ###
 	  Mother[i]=geant_part[i]->Mother();
 	  // ### Saving the particles TrackID ###
@@ -1424,6 +1480,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("EndPointx",EndPointx,"EndPointx[geant_list_size]/D");
   fTree->Branch("EndPointy",EndPointy,"EndPointy[geant_list_size]/D");
   fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/D");
+  fTree->Branch("Process", Process, "Process[geant_list_size]/I");
   fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
   fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
   fTree->Branch("TrackId",TrackId,"TrackId[geant_list_size]/I");
@@ -1648,6 +1705,7 @@ void lariat::AnaTreeT1034::ResetVars()
     EndPointx[i] = -99999;
     EndPointy[i] = -99999;
     EndPointz[i] = -99999;
+    Process[i] = -99999;
     NumberDaughters[i] = -99999;
     Mother[i] = -99999;
     TrackId[i] = -99999;
