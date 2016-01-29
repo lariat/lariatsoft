@@ -713,6 +713,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Setting a string for muMinusCaptureAtRest ###
       std::string muMinusCaptureAtRest("muMinusCaptureAtRest");
       
+      // ### Setting a string for ProtonInelastic ###
+      std::string ProtonInelastic("ProtonInelastic");
+      
       
       int primary=0;
       int geant_particle=0;
@@ -757,6 +760,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  // 7 = KaonZeroLInelastic
 	  // 8 = CoulombScat
 	  // 9 = muMinusCaptureAtRest
+	  //10 = ProtonInelastic
 	  if(geant_part[i]->Process() == pri)
 	     {Process[i] = 0;}
 	     
@@ -786,6 +790,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	     
 	  if(geant_part[i]->Process() == muMinusCaptureAtRest)
 	     {Process[i] = 9;}
+	     
+	  if(geant_part[i]->Process() == ProtonInelastic)
+	     {Process[i] = 10;}
 	     
 	  std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
 	  
