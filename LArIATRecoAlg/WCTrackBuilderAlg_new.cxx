@@ -64,57 +64,21 @@ WCTrackBuilderAlg_new::WCTrackBuilderAlg_new( fhicl::ParameterSet const& pset )
       fZ_cntr_1 = centerOfDet[2] * CLHEP::cm;
     }
    if(iDet == 2){ //WC2
-      fX_cntr_2 = centerOfDet[0] * CLHEP::cm;
+      fX_cntr_2 = centerOfDet[0] * CLHEP::cm +18 ; //correcting where the gdml has an 18mm offset for WC2X
       fY_cntr_2 = centerOfDet[1] * CLHEP::cm;
       fZ_cntr_2 = centerOfDet[2] * CLHEP::cm;
     }
-   if(iDet == 3){ //WC1
+   if(iDet == 3){ //WC3
       fX_cntr_3 = centerOfDet[0] * CLHEP::cm;
       fY_cntr_3 = centerOfDet[1] * CLHEP::cm;
       fZ_cntr_3 = centerOfDet[2] * CLHEP::cm;
     }
-   if(iDet == 4){ //WC2
+   if(iDet == 4){ //WC4
       fX_cntr_4 = centerOfDet[0] * CLHEP::cm;
       fY_cntr_4 = centerOfDet[1] * CLHEP::cm;
       fZ_cntr_4 = centerOfDet[2] * CLHEP::cm;
     }
   }
-
-
-    
-  // rough guess beginning 2015.02: moved WC4 33" along the 3deg beam.
-  // x = -1146.64 mm = -1102.77 mm - sin(3 deg)*33"
-  // z =  7587.99 mm =  6750.94 mm + cos(3 deg)*33"
-  // Positions from 2014 runs: (fX_cntr_4, fY_cntr_4, fZ_cntr_4) = (-1102.77, 0.0, 6750.94)
-  
-  // derive some useful geometric/al constants
-  
-  // upstream (us) leg center line projected onto xz-plane
-  fCntr_slope_xz_us = (fZ_cntr_2 - fZ_cntr_1)/(fX_cntr_2 - fX_cntr_1);
-  fCntr_z_int_xz_us_1 = fZ_cntr_1 - (fCntr_slope_xz_us * fX_cntr_1);
-  fCntr_z_int_xz_us_2 = fZ_cntr_2 - (fCntr_slope_xz_us * fX_cntr_2);
-  fCntr_z_int_xz_us = (fCntr_z_int_xz_us_1 + fCntr_z_int_xz_us_2) / 2.0;
-  
-  // downstream (ds) leg center line projected onto xz-plane
-  fCntr_slope_xz_ds = (fZ_cntr_4 - fZ_cntr_3)/(fX_cntr_4 - fX_cntr_3);
-  fCntr_z_int_xz_ds_3 = fZ_cntr_3 - (fCntr_slope_xz_ds * fX_cntr_3);
-  fCntr_z_int_xz_ds_4 = fZ_cntr_4 - (fCntr_slope_xz_ds * fX_cntr_4);
-  fCntr_z_int_xz_ds = (fCntr_z_int_xz_ds_3 + fCntr_z_int_xz_ds_4) / 2.0;
-  
-  // mid-plane
-  // includes intersection point of upstream and downstream
-  // center lines above and taken to be at 8 y-degrees from the
-  // xy-plane
-  fMid_plane_x = -1.0 * (fCntr_z_int_xz_ds - fCntr_z_int_xz_us) / (fCntr_slope_xz_ds - fCntr_slope_xz_us);
-  
-  fMid_plane_z_us = fCntr_z_int_xz_us + fCntr_slope_xz_us * fMid_plane_x;
-  fMid_plane_z_ds = fCntr_z_int_xz_ds + fCntr_slope_xz_ds * fMid_plane_x;
-  fMid_plane_z = (fMid_plane_z_us + fMid_plane_z_ds) / 2.0;
-  fMid_plane_slope_xz = tan(8.0*3.141592654/180);
-  fMid_plane_z_int_xz = fMid_plane_z - fMid_plane_slope_xz * fMid_plane_x;
-
-  // Use the Geometry service to get positions and lengths
-  // of the TPC
   auto tpcGeo = fGeo->begin_TPC_id().get();
   double tpcLocalCenter[3] = {0.};
   tpcGeo->LocalToWorld(tpcLocalCenter, fCenter_of_tpc);
@@ -122,15 +86,23 @@ WCTrackBuilderAlg_new::WCTrackBuilderAlg_new( fhicl::ParameterSet const& pset )
   	//    << fCenter_of_tpc[0] << ","
   	  //  << fCenter_of_tpc[1] << ","
   	    //<< fCenter_of_tpc[2] << std::endl;
-
+//std::cout<<CLHEP::cm<<std::endl;
   // put the center of the TPC in world coordinates into mm
   for(int i = 0; i < 3; ++i) {fCenter_of_tpc[i] *= CLHEP::cm;}
       std::cout << "fCenter of TPC: "
   	    << fCenter_of_tpc[0] << ","
   	    << fCenter_of_tpc[1] << ","
   	    << fCenter_of_tpc[2] << std::endl;
-
-
+  float dxus= fX_cntr_2-fX_cntr_1;
+  float dyus= fY_cntr_2-fY_cntr_1;
+  float dzus= fZ_cntr_2-fZ_cntr_1;
+  fDelta_z_us=pow(dxus*dxus+dyus*dyus+dzus*dzus,.5);
+  float dxds= fX_cntr_4-fX_cntr_3;
+  float dyds= fY_cntr_4-fY_cntr_3;
+  float dzds= fZ_cntr_4-fZ_cntr_3;
+  fDelta_z_ds=pow(dxds*dxds+dyds*dyds+dzds*dzds,.5);
+  
+  //std::cout<<"delta_us: "<<fDelta_z_us<<" delta_ds: "<<fDelta_z_ds<<std::endl;
   // get the active half width and length of the TPC in mm, geometry
   // returns the values in cm, so have to multiply by CLHEP::cm
   fHalf_z_length_of_tpc = 0.5*tpcGeo->ActiveLength() * CLHEP::cm;
@@ -162,11 +134,13 @@ void WCTrackBuilderAlg_new::reconfigure( fhicl::ParameterSet const& pset )  //BO
   fHighYield            = pset.get<bool  >("HighYield",           false     );
   
   //Survey constants
-  fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );   
+  fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );  //this will recalculated using geometry instead of hardcoding. 
   fDelta_z_ds 		= pset.get<float >("DeltaZds",   	  1570.06   );   
   fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
   fmm_to_m    		= pset.get<float >("MMtoM",        	  0.001     );	
   fGeV_to_MeV 		= pset.get<float >("GeVToMeV",    	  1000.0    );   
+  fMP_X                 = pset.get<float> ("MidplaneInterceptFactor", 1);
+  fMP_M                 = pset.get<float> ("MidplaneSlopeFactor", 1);
 
   
   return;
@@ -177,7 +151,14 @@ void WCTrackBuilderAlg_new::loadXMLDatabaseTableForBField( int run, int subrun )
 {
   fRun = run;
   fSubRun = subrun;
-  fB_field_tesla = 0.0035*std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
+  current=std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
+  //std::cout<<"Current: "<<current<<std::endl;
+  if(fabs(current)>90){fB_field_tesla= .003375*current;}
+  if(fabs(current)<90 && fabs(current)>70){fB_field_tesla= .0034875*current;}
+  if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}
+  if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  
+  if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
+ // fB_field_tesla = 0.0035*std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
   std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl;
 }
 
@@ -197,7 +178,7 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					   bool verbose,
 					   bool pickytracks,
 					   bool highyield,
-					   int & track_count,
+					   int & track_count,/* ,
 					   std::vector<TH1F*> & WCHitsGoodTracks,
 					   std::vector<TH2F*> & WCMult,
 					   std::vector<TH1F*> & WireHits_TheTrack,
@@ -208,18 +189,24 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					   TH1F* & Reco4pt,
 					   TH2F* & Reco4ptdiff,
 					   std::vector<TH2F*> & TimingXY,
-					   std::vector<TH2F*> & RegressionPlots)
+					   std::vector<TH2F*> & RegressionPlots,
+					   std::vector<TH1F*> & RegressionPlots1D,
+					   */std::vector<TH2F*> & Recoplots/*,
+					   TH1F* & Bfield */)
 {					   
   fVerbose = verbose;
   fPickyTracks = pickytracks;
-  fHighYield = highyield;					 	
+  fHighYield = highyield;
+  for(int i=0; i<3; ++i){
+    BestYStats.push_back(999);
+  }					 	
   //Determine if one should skip this trigger based on whether there is exactly one good hit in each wire chamber and axis
   //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer.
   //If there is, then move on with the function.
   //This can be modified to permit more than one good hit in each wire chamber axis - see comments in function
   bool skip = shouldSkipTrigger(good_hits);
   if( skip == true ) return;
-  
+/*   Bfield->Fill(fB_field_tesla) */;
   
   //At this point, we should have a list of good hits with at least one good hit in X,Y for each WC.
   //Now find all possible combinations of these hits that could form a track, sans consideration
@@ -237,7 +224,7 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					     y_face_list,
 					     incoming_theta_list,
 					     incoming_phi_list,
-					     trigger_final_tracks,
+					     trigger_final_tracks,/* ,
 					     WCHitsGoodTracks,
 					     WCMult,
 					     BadTrackHits,
@@ -247,7 +234,9 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					     Reco4pt,
 					     Reco4ptdiff,
 					     TimingXY,
-					     RegressionPlots);
+					     RegressionPlots,
+					     RegressionPlots1D,*/
+					     Recoplots);
 					     
   //Need to use the cut information to whittle down track candidates
   if( !fPickyTracks ){
@@ -264,11 +253,11 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 			trigger_final_tracks,
 			lonely_hit_bool);			
   }
- if(trigger_final_tracks.size()==1 && trigger_final_tracks[0].hits.size()==8){ //if we have one track, with 8 hits, fill the wire hits of the good track
+/*  if(trigger_final_tracks.size()==1 && trigger_final_tracks[0].hits.size()==8){ //if we have one track, with 8 hits, fill the wire hits of the good track
    for(size_t iter=0; iter<8; ++iter){
      WireHits_TheTrack[iter]->Fill(trigger_final_tracks[0].hits[iter].wire);
      BadTrackHits[iter]->Fill(trigger_final_tracks[0].hits[iter].wire,-1);}
-   }
+   } */
 }
 
 //=====================================================================
@@ -276,12 +265,14 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
 					     float & reco_pz,
 					     float & y_kink,
-					     float (&dist_array)[3],
+					     float (&dist_array)[3],/* ,
 					     TH2F* & TargetXY,
 					     TH1F* & ResSquare,
 					     TH1F* & Reco4pt,
 					     TH2F* & Reco4ptdiff,
-					     std::vector<TH2F*> & RegressionPlots)
+					     std::vector<TH2F*> & RegressionPlots,
+					     std::vector<TH1F*> & RegressionPlots1D,*/
+					     std::vector<TH2F*> & Recoplots )
 {
   std::vector<float> wire_x;
   std::vector<float> time_x;
@@ -300,7 +291,35 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
 	time_y.push_back(track.hits.at(iHit).time);
       }   
   }
-  
+  float sin13=sin((3.141592654/180)*13.0);
+  float sin3=sin((3.141592654/180)*3.0);
+  float cos3=cos((3.141592654/180)*3.0);
+  float cos13=cos((3.141592654/180)*13.0);
+
+//For 4 Hit Tracks, we just need the angles of the upstream and downstream ends to calculate the momentum 
+  // correct x and z for rotation of MWPCs about the vertical
+    float x[4] = {fX_cntr_1 + wire_x[0] * cos13,
+		  fX_cntr_2 + wire_x[1] * cos13,
+		  fX_cntr_3 + wire_x[2] * cos3,
+		  fX_cntr_4 + wire_x[3] * cos3 };
+    //float y[4] = { fY_cntr_1 + wire_y[0],
+//		 fY_cntr_2 + wire_y[1],
+//		 fY_cntr_3 + wire_y[2],
+//		 fY_cntr_4 + wire_y[3] };
+    float z[4] = { fZ_cntr_1 + wire_x[0] * sin13,
+		 fZ_cntr_2 + wire_x[1] * sin13,
+		 fZ_cntr_3 + wire_x[2] * sin3,
+ 		 fZ_cntr_4 + wire_x[3] * sin3};
+    float dx_us=x[1]-x[0];
+    float dx_ds=x[3]-x[2];
+   // float dy_us=y[1]-y[0];
+   // float dy_ds=y[3]-y[2];
+    float dz_us=z[1]-z[0];
+    float dz_ds=z[3]-z[2];
+    float theta_x_us= atan(dx_us/dz_us);
+    float theta_x_ds= atan(dx_ds/dz_ds);
+    //float theta_y_us= atan(dy_us/dz_us);
+    //float theta_y_ds= atan(dy_ds/dz_ds);
   //Calculate angles to be used in momentum reco
   float delta_x_us = wire_x[1] - wire_x[0];
   float delta_y_us = wire_y[1] - wire_y[0];
@@ -310,21 +329,25 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
 
   float atan_x_us = atan(delta_x_us / fDelta_z_us);
   float atan_x_ds = atan(delta_x_ds / fDelta_z_ds);
-
+  //std::cout<<"us: "<< fDelta_z_us<<"ds: "<<fDelta_z_ds<<std::endl;
   float atan_y_us = atan(delta_y_us / fDelta_z_us);
   float atan_y_ds = atan(delta_y_ds / fDelta_z_ds);
-
+     std::cout<<"tan us:"<<theta_x_us*180/3.1415<<"tan2 us: "<<atan2(dx_us,dz_us)*180/3.1415<<std::endl;
+     std::cout<<"tan ds:"<<theta_x_ds*180/3.1415<<"tan2 ds: "<<atan2(dx_ds,dz_ds)*180/3.1415<<std::endl;  
   //Calculate momentum and y_kink
   //reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (float(3.3 * ((10.0*3.141592654/180.0) + (sin(atan_x_ds) - sin(atan_x_us))))) ;// cos(atan_y_ds);
-reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us))) / cos(atan_y_ds);
-
+  
+  if(NHits==4){reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * ((10.0*3.141592654/180.0) + (atan_x_ds - atan_x_us)))/cos(atan_y_ds);} //use the normal 4 point momentum formula
+   
+    
+  
+  
   y_kink = atan_y_us - atan_y_ds;
 
   //Calculate the X/Y/Y Track End Distances
   float pos_us[3] = {0.0,0.0,0.0};
   float pos_ds[3] = {0.0,0.0,0.0};
-  midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds, TargetXY, ResSquare, reco_pz, Reco4pt,
-  Reco4ptdiff, RegressionPlots);
+  midPlaneExtrapolation(wire_x,wire_y,pos_us,pos_ds,reco_pz,WCMissed,Recoplots);
   for( int iDist = 0; iDist < 3 ; ++iDist ){
     dist_array[iDist] = pos_ds[iDist]-pos_us[iDist];
   }       
@@ -337,65 +360,49 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 					      std::vector<float> y_wires,
 					      float (&pos_us)[3],
 					      float (&pos_ds)[3],
-					      TH2F* & TargetXY,
-					      TH1F* & ResSquare,
 					      double  reco_pz,
+					      int WCMissed,/*,
+ 					      TH2F* & TargetXY,
+					      TH1F* & ResSquare,
 					      TH1F* & Reco4pt,
 					      TH2F* & Reco4ptdiff,
-					      std::vector<TH2F*> & RegressionPlots)
+					      std::vector<TH2F*> & RegressionPlots,
+					      std::vector<TH1F*> & RegressionPlots1D,*/
+					      std::vector<TH2F*> & Recoplots)
 {
+  float sin13=sin((3.141592654/180)*13.0);
+  float sin3=sin((3.141592654/180)*3.0);
+  float cos3=cos((3.141592654/180)*3.0);
+  float cos13=cos((3.141592654/180)*13.0);
   // correct x and z for rotation of MWPCs about the vertical
-  float x[4] = { fX_cntr_1 + x_wires[0] * float(cos(3.141592654/180*(13.0))),
-		 fX_cntr_2 + x_wires[1] * float(cos(3.141592654/180*(13.0))),
-		 fX_cntr_3 + x_wires[2] * float(cos(3.141592654/180*(3.0))),
-		 fX_cntr_4 + x_wires[3] * float(cos(3.141592654/180*(3.0))) };
+  float x[4] = { fX_cntr_1 + x_wires[0] * cos13,
+		 fX_cntr_2 + x_wires[1] * cos13,
+		 fX_cntr_3 + x_wires[2] * cos3,
+		 fX_cntr_4 + x_wires[3] * cos3 };
   float y[4] = { fY_cntr_1 + y_wires[0],
 		 fY_cntr_2 + y_wires[1],
 		 fY_cntr_3 + y_wires[2],
 		 fY_cntr_4 + y_wires[3] };
-  float z[4] = { fZ_cntr_1 + x_wires[0] * float(sin(3.141592654/180*(13.0))),
-		 fZ_cntr_2 + x_wires[1] * float(sin(3.141592654/180*(13.0))),
-		 fZ_cntr_3 + x_wires[2] * float(sin(3.141592654/180*(3.0))),
-		 fZ_cntr_4 + x_wires[3] * float(sin(3.141592654/180*(3.0))) };
-  //float X[4]={ x[0]-float(1631.88),x[1]-float(1631.88),x[2]-float(1631.88),x[3]-float(1631.88)};
-  //float Y[4]={y[1],y[2],y[3],y[4]};
-  //float Z[4]={ z[0]+float(7563.41),z[1]+float(7563.41),z[2]+float(7563.41),z[3]+float(7563.41)};
- //std::cout<<"WC 1 Center (x,y,z) : ("<<fX_cntr_1<<","<<fY_cntr_1<<","<<fZ_cntr_1<<")"<<std::endl;
-// std::cout<<"WC 2 Center (x,y,z) : ("<<fX_cntr_2<<","<<fY_cntr_2<<","<<fZ_cntr_2<<")"<<std::endl;
- //std::cout<<"WC 3 Center (x,y,z) : ("<<fX_cntr_3<<","<<fY_cntr_3<<","<<fZ_cntr_3<<")"<<std::endl;
- //std::cout<<"WC 4 Center (x,y,z) : ("<<fX_cntr_4<<","<<fY_cntr_4<<","<<fZ_cntr_4<<")"<<std::endl;
+  float z[4] = { fZ_cntr_1 + x_wires[0] * sin13,
+		 fZ_cntr_2 + x_wires[1] * sin13,
+		 fZ_cntr_3 + x_wires[2] * sin3,
+ 		 fZ_cntr_4 + x_wires[3] * sin3};
+  		 
   
-  // upstream (us) leg, extrapolating forward to mid-plane
-  float slope_xz_us = (z[1] - z[0])/(x[1] - x[0]);
-  //float slope_xz_us_tgt = (Z[1] - Z[0])/(X[1] - X[0]);
+  
+//upstream leg of WC's tracked forward to midplane, using coordinate system with TPC as the origin  
+  float slope_xz_us = (z[1] - z[0])/(x[1] - x[0]); 
   float z_int_xz_us_1 = z[0] - slope_xz_us * x[0];
   float z_int_xz_us_2 = z[1] - slope_xz_us * x[1];
   float z_int_xz_us = (z_int_xz_us_1 + z_int_xz_us_2) / 2.0;
-
   float x_us = (z_int_xz_us - fMid_plane_z_int_xz) / (fMid_plane_slope_xz - slope_xz_us);
-  float z_us = fMid_plane_z_int_xz + fMid_plane_slope_xz * x_us;
-  //Lets track back to the plane that intersects where the target should be, and find the y point where the track intersects.
+  float z_us = fMid_plane_z_int_xz + fMid_plane_slope_xz * x_us; 
   float slope_yz_us = (y[1] - y[0]) / (z[1] - z[0]);
-  //float slope_yz_us_tgt=(y[1]-Y[0])/ (Z[1]-Z[0]);
   float y_int_yz_us_1 = y[0] - slope_yz_us * z[0];
-  //float y_int_yz_us_1_tgt = Y[0] - slope_yz_us_tgt * Y[0];
   float y_int_yz_us_2 = y[1] - slope_yz_us * z[1];
   float y_int_yz_us = (y_int_yz_us_1 + y_int_yz_us_2) / 2.0;
-
-  float y_us = y_int_yz_us + slope_yz_us * z_us;
-  //Now we trace back the X,Z coordinates to find where it intersects the XY plane normal to it back at the origin. This plane would be standard XY plane at the origin, but rotated 13
-  //degrees to make it normal to the track.  It's funky math, but instead of rotating the plane, I'm going to rotate the points in WC1, 2 so that it looks like the plane is not rotated at
-  //all.  This is done in the reference frame of the plane instead of the experimental hall, or if you prefer, I'm making the Z axis the tertiary beam direction instead of the secondary beam
-  //direction.  To correct this beam change, I can either rotate the Z axis clockwise 13 degrees or rotate the points counterclockwise. I choose the latter.-Greg
-  float slope_zx_us=((z[1]-z[0])*float(sin(3.141592654/180*(13.0)))+(x[1]-x[0])*float(cos(3.141592654/180*(13.0))))/((z[1]-z[0])*float(cos(3.141592654/180*(13.0)))+(x[1]-x[0])*float(sin(3.141592654/180*(13.0))));
-  //     (dz*sin + dx*cos)  //
-  // m=  -----------------  //
-  //     (dz*cos + dx*sin)  //
-  float x_int_zx_us=x[0]-slope_zx_us*x[0];
-  //std::cout<<"(x,y) = ("<<x_int_zx_us<<","<<y_int_yz_us_1_tgt<<")"<<std::endl;
-//We now have these X,Y points of where the track thinks it orginated from.  If we plot them, we should see the  XY projection of the target as seen from WC.
- TargetXY->Fill(x_int_zx_us, y_int_yz_us_1);
-  //downstream (ds) leg, extrapolating back to mid-plane
+  float y_us = y_int_yz_us + slope_yz_us * z_us;    
+//downstream leg of WCs tracked back to midplane, using coodinate system with TPC as the origin
   float slope_xz_ds = (z[3] - z[2]) / (x[3] - x[2]);
   float z_int_xz_ds_1 = z[2] - slope_xz_ds * x[2];
   float z_int_xz_ds_2 = z[3] - slope_xz_ds * x[3];
@@ -413,44 +420,227 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
  
 
   pos_us[0] = x_us; pos_us[1] = y_us; pos_us[2] = z_us;
-  pos_ds[0] = x_ds; pos_ds[1] = y_ds; pos_ds[2] = z_ds;
+  pos_ds[0] = x_ds; pos_ds[1] = y_ds; pos_ds[2] = z_ds;  
+  
+ 
+
+
+//Hardcoding survey data from Run 1, Docdb 1371-final.  These are the coordinates of each wire chamber from target  
+/*   float fX_cntr_target[4]={-394.081,-740.6132,-1064.9204,-1192.6316};
+  float fY_cntr_target[4]={-.381, .0254, -3.1496, -20.4216};
+  float fZ_cntr_target[4]={1698.244, 3196.0058, 5163.8484, 7602.0168};
+   */
+//TPC origin system calculation
+//Better (i.e correct) version of calculating the midplane.  All lines (us, ds, mp) are done in the form X=mZ+b, so m must be some form of dx/dz
+  //finding m, b for us leg
+  float center_slope_us=(fX_cntr_2- fX_cntr_1)/(fZ_cntr_2 - fZ_cntr_1);
+  float center_intercept_us=fX_cntr_2 - center_slope_us * fZ_cntr_2;
+  //finding m,b for ds leg
+  float center_slope_ds=(fX_cntr_4 - fX_cntr_3)/(fZ_cntr_4 - fZ_cntr_3);
+  float center_intercept_ds=fX_cntr_4 - center_slope_ds * fZ_cntr_4;
+  //At the midplane, these must intersect, setting the equations equal, we solve for Zmp, then plug back into either us, ds equation to get Xmp
+  float midplane_z= (center_intercept_ds - center_intercept_us)/(center_slope_us - center_slope_ds);  
+  float midplane_x= center_slope_us * midplane_z + center_intercept_us;
+  //We expect the midplane to be oriented at 8 degrees, which means Mmp==cot(8), and we get Bmp from that, Xmp, Zmp
+  float tan8=tan(8.0*3.141592654/180);
+  std::cout<<"Midplane intercept factor: "<<fMP_X<<" Midplane slope factor: "<<fMP_M<<std::endl;
+  float midplane_slope=tan8 * fMP_M;
+  float midplane_intercept=(midplane_x-midplane_z*tan8) * fMP_X;
+  std::cout<<"Midplane intercept:"<<midplane_intercept<<std::endl;
+// 
+// //TARGET origin system calculation
+// 
+// 
+//     
+//    //Better (i.e correct) version of calculating the midplane.  All lines (us, ds, mp) are done in the form X=mZ+b, so m must be some form of dx/dz
+//   //finding m, b for us leg
+//   float center_slope_us_tgt=(fX_cntr_target[1] - fX_cntr_target[0])/(fZ_cntr_target[1] - fZ_cntr_target[0]);
+//   float center_intercept_us_tgt=fX_cntr_target[1] - center_slope_us_tgt * fZ_cntr_target[1];
+//   //finding m,b for ds leg
+//   float center_slope_ds_tgt=(fX_cntr_target[3] - fX_cntr_target[2])/(fZ_cntr_target[3] - fZ_cntr_target[2]);
+//   float center_intercept_ds_tgt=fX_cntr_target[3] - center_slope_ds_tgt * fZ_cntr_target[3];
+//   //At the midplane, these must intersect, setting the equations equal, we solve for Zmp, then plug back into either us, ds equation to get Xmp
+//   float midplane_z_tgt= (center_intercept_ds_tgt - center_intercept_us_tgt)/(center_slope_us_tgt - center_slope_ds_tgt);  
+//   float midplane_x_tgt= center_slope_us_tgt * midplane_z_tgt + center_intercept_us_tgt;
+//   //We expect the midplane to be oriented at 8 degrees, which means Mmp==cot(8), and we get Bmp from that, Xmp, Zmp
+//   float midplane_intercept_tgt=(midplane_x_tgt-midplane_z_tgt*tan8*fMP_M)*fMP_X; //fMP_M is the slope shift to calibrate where the midplane should be from where we currently have it
+//   std::cout<<"TGT Midplane Intercept: "<<midplane_intercept_tgt<<std::endl;
+//   
+// //Find the position of the hit 		 
+//   float X[4]={fX_cntr_target[0] + x_wires[0] * cos13 ,fX_cntr_target[1] + x_wires[1] * cos13 ,fX_cntr_target[2] + x_wires[2] * cos3 ,fX_cntr_target[3] + x_wires[3] * cos3};
+//   float Y[4]={fY_cntr_target[0] + y_wires[0], fY_cntr_target[1] + y_wires[1], fY_cntr_target[2]+ y_wires[2], fY_cntr_target[3]+ y_wires[3]};
+//   std::cout<<"Y[0]"<<Y[0]<<std::endl;
+//   float Z[4]={fZ_cntr_target[0] + x_wires[0] * sin13, fZ_cntr_target[1] + x_wires[1] * sin13, fZ_cntr_target[2] + x_wires[2] * sin3, fZ_cntr_target[3] + x_wires[3] * sin3};
+// //If we have a 4 point hit, we can calculate the angle between the us and ds legs and use that for the momentum.
+//  
+// 
+//   float delta_y_ds = y_wires[3] - y_wires[2];
+//   float atan_y_ds = atan(delta_y_ds / fDelta_z_ds); 
+//   
+  //To see how picky tracks works, I'm going to change Nhits and WCMissed so both versions of momentum is calculated to compare with the standard 4pt.  This is for checks only and should be deleted after verification. 
+  NHits=3;
+  WCMissed=2;
+    float dy_us=y[1]-y[0];
+    float dy_ds=y[3]-y[2];
+    float dz_us=z[1]-z[0];
+    float dz_ds=z[3]-z[2];
+  float theta_y_us= atan(dy_us/dz_us);
+  float theta_y_ds= atan(dy_ds/dz_ds);
+  float S2_reco_pz;
+  float S3_reco_pz;
+  if(NHits==3){
+  //float zmid=4205;
+    if(WCMissed==2){
+      float ds_dz=z[3]-z[2];
+      float ds_dx=x[3]-x[2];
+      float ds_slope=ds_dx/ds_dz;
+      float ds_int_x= x[3]-ds_slope*z[3];
+      float z_ds=(midplane_intercept-ds_int_x)/(ds_slope-midplane_slope); //Solving tan8*Z+Bmp == Mds*Z+Bds
+      float x_ds=ds_slope*z_ds+ ds_int_x;
+      float us_dz=(z_ds-z[0]);
+      float us_dx=(x_ds-x[0]);       
+      float us_theta=asin(us_dx/pow(us_dx*us_dx+us_dz*us_dz,.5));
+      float ds_theta=asin(ds_dx/pow(ds_dx*ds_dx+ds_dz*ds_dz,.5));
+      
+       S2_reco_pz=(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * (ds_theta - us_theta))/cos(theta_y_ds);
+       std::cout<<"S2:"<<S2_reco_pz<<std::endl;
+/*        Recoplots[0]->Fill(reco_pz,(reco_pz-S2_reco_pz)/S2_reco_pz);
+       Recoplots[6]->Fill(reco_pz,S2_reco_pz); */
+        if(current<70 && current> 50){
+       
+	 //Recoplots[2]->Fill(reco_pz,(reco_pz-S2_reco_pz)/S2_reco_pz);*/
+       Recoplots[8]->Fill(reco_pz,S2_reco_pz);
+       } 
+        if(current>90){
+	 //Recoplots[4]->Fill(reco_pz,(reco_pz-S2_reco_pz)/S2_reco_pz);
+	 Recoplots[10]->Fill(reco_pz,S2_reco_pz);
+       } 
+              
+    }
+    WCMissed=3;
+    if(WCMissed==3){
+    
+  
+  
+      float us_dz=z[1]-z[0];
+      float us_dx=x[1]-x[0];
+      float us_slope=us_dx/us_dz;
+      float us_int_x= x[1]-us_slope*z[1];
+      float z_us=(midplane_intercept-us_int_x)/(us_slope-midplane_slope); //Solving tan8*Z+Bmp == Mus*Z+Bus
+      float x_us=us_slope*z_us + us_int_x;
+      //std::cout<<"x_us_midplane: "<<x_us_target<<std::endl;
+      //std::cout<<"z_us_midplane: "<<z_us_target<<std::endl;
+      float ds_dz=-(z_us-z[3]);
+      float ds_dx=-(x_us-x[3]);    
+      float us_theta=asin(us_dx/pow(us_dx*us_dx+us_dz*us_dz,.5));
+      float ds_theta=asin(ds_dx/pow(ds_dx*ds_dx+ds_dz*ds_dz,.5)); 
+      //std::cout<<"us_theta: "<<us_theta_target<<std::endl;
+      //std::cout<<"ds_theta: "<<ds_theta_target<<std::endl;
+      S3_reco_pz=(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * (ds_theta - us_theta))/cos(theta_y_us);
+      //std::cout<<"S3:"<<S3_reco_pz<<std::endl;
+      // Recoplots[1]->Fill(reco_pz,(reco_pz-S3_reco_pz)/S3_reco_pz);
+      //Recoplots[7]->Fill(reco_pz,S3_reco_pz);
+       if(current<70 && current> 50){
+	// Recoplots[3]->Fill(reco_pz,(reco_pz-S3_reco_pz)/S3_reco_pz);
+         Recoplots[9]->Fill(reco_pz,S3_reco_pz);
+       } 
+        if(current>90){
+	 //Recoplots[5]->Fill(reco_pz,(reco_pz-S3_reco_pz)/S3_reco_pz);
+         Recoplots[11]->Fill(reco_pz,S3_reco_pz);	 
+       } 
+        
+    }
+  NHits=4;  
+  WCMissed=-1;
+  //Recoplots[0]->Fill(S2_reco_pz,reco_pz);
+  //Recoplots[1]->Fill(S3_reco_pz,reco_pz);
+} 
+
+//Lets track back to the plane that intersects where the target should be, and find the y point where the track intersects.
+
+/*   float slope_yz_us_tgt=(Y[1]-Y[0])/ (Z[1]-Z[0]);
+  float y_int_yz_us_1_tgt = Y[1] - slope_yz_us_tgt * Z[1];
+
+
+
+  float Target_intercept =X[1]-((X[1]-X[0])/(Z[1]-Z[0]))*Z[1];
+  
+  float Target_x=Target_intercept/(1-(sin13/cos13)*((X[1]-X[0])/(Z[1]-Z[0])));
+  float Target_z=Target_intercept/(cos13/sin13-((X[1]-X[0])/(Z[1]-Z[0])));
+ 
+  float Target_apparent=pow(pow(Target_x,2)+pow(Target_z,2),.5);
+  
+if the X position was negative, we need the distance to be negative as well.
+  if(Target_x<0){Target_apparent=-Target_apparent;} */
+/*   TargetXY->Fill(Target_apparent, y_int_yz_us_1_tgt); */
+
   
 
-  //Calculate the Residual skipping wc2 and wc3 to see which is best.  
-  float residualsquare_skipsecond = Regression(y,z, ResSquare, 2);//REMEMBER TO DELETE THIS LATER!!!!!!!
-  float residualsquare_skipthird = Regression(y,z, ResSquare, 3);//REMEMBER TO DELETE THIS LATER!!!!!!!
-  float residualsquare_allfour = Regression(y,z, ResSquare, 0); //Using WC=0 so none get skipped
-  RegressionPlots[0]->Fill(residualsquare_skipsecond, residualsquare_allfour);
-  RegressionPlots[1]->Fill(residualsquare_skipthird, residualsquare_allfour);
-  RegressionPlots[2]->Fill(residualsquare_skipsecond,residualsquare_skipthird);
+//Calculate the Residual skipping wc2 and wc3 to see which is best.  
+/*   std::vector<float> residualsquare_skipsecond = Regression(y,z, ResSquare, 2);//REMEMBER TO DELETE THIS LATER!!!!!!!
+  std::vector<float> residualsquare_skipthird = Regression(y,z, ResSquare, 3);//REMEMBER TO DELETE THIS LATER!!!!!!!
+  std::vector<float> residualsquare_allfour = Regression(y,z, ResSquare, 0); //Using WC=0 so none get skipped
+  RegressionPlots[0]->Fill(residualsquare_skipsecond[2], residualsquare_allfour[2]);
+  RegressionPlots[1]->Fill(residualsquare_skipthird[2], residualsquare_allfour[2]);
+  RegressionPlots[2]->Fill(residualsquare_skipsecond[2],residualsquare_skipthird[2]);
+  RegressionPlots1D[0]->Fill(residualsquare_allfour[2]-residualsquare_skipsecond[2]);
+  RegressionPlots1D[1]->Fill(residualsquare_allfour[2]-residualsquare_skipthird[2]);
+  RegressionPlots1D[2]->Fill(residualsquare_skipthird[2]-residualsquare_skipsecond[2]); */
   
-  //Checking Doug's mom versus standard mom.
-  float dxa=x[1]-x[0];
-  float dza=z[1]-z[0];
-  float dxb=x[3]-x[2];
-  float dzb=z[3]-z[2];
-  float sin1=dxa/(std::sqrt(dxa*dxa+dza*dza));
-  float sin2=dxb/(std::sqrt(dxb*dxb+dzb*dzb));
-  
-   reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /float(3.3*(sin2-sin1));
-  
-  //std::cout<<sin1<<","<<sin2<<std::endl;
-  float fourptreco=124.0/(sin2-sin1);
-  if(fB_field_tesla>0.349){
-  Reco4pt->Fill(fourptreco);
-  Reco4ptdiff->Fill(reco_pz,fourptreco);}
-  //See how 3 point mom does, missing WC3.
-//  float zmid=4205;
-  //float 
-  
+//This is the code to keep that will take the best Y points available, using 3 or 4 (if available) point regression
+/*   if(fHighYield){
+    if(NHits==4){
+      std::vector<float> FourRegression=Regression(y,z, ResSquare, 0);
+      std::vector<float> ThreeRegression_SkipTwo=Regression(y,z,ResSquare,2);
+      std::vector<float> ThreeRegression_SkipThree=Regression(y,z,ResSquare,3);
+      if(FourRegression[2]<ThreeRegression_SkipTwo[2] && FourRegression[2]<ThreeRegression_SkipThree[2] && FourRegression[2]<BestYStats[2]){
+        BestYStats=FourRegression;
+	BestYHits.clear();
+	for(int i=0; i<4; ++i){
+	BestYHits.push_back(y[i]);
+	}
+      }
+      if(ThreeRegression_SkipTwo[2]<ThreeRegression_SkipThree[2] && ThreeRegression_SkipTwo[2]<FourRegression[2] && ThreeRegression_SkipTwo[2]<BestYStats[2]){
+        BestYStats=ThreeRegression_SkipTwo;
+	BestYHits.clear();
+	for(int i=0; i<4; ++i){
+	  if(i!=1){
+	    BestYHits.push_back(y[i]);
+	  }
+	}
+      }
+      if(ThreeRegression_SkipThree[2]<ThreeRegression_SkipTwo[2] && ThreeRegression_SkipThree[2]<FourRegression[2] && ThreeRegression_SkipThree[2]<BestYStats[2]){
+        BestYStats=ThreeRegression_SkipThree;
+	BestYHits.clear();
+	for(int i=0; i<4; ++i){
+	  if(i!=2){
+	    BestYHits.push_back(y[i]);
+	  }
+	}               	       
+      }
+    }
+    if(NHits==3){
+      std::vector<float> ThreeRegression=Regression(y,z,ResSquare,WCMissed);
+      if(ThreeRegression[2]<BestYStats[2]){
+        BestYStats=ThreeRegression;
+	BestYHits.clear();
+	for(int i=0; i<4; ++i){
+	  if(i != WCMissed-1){
+	    BestYHits.push_back(y[i]);
+	  }
+	}   
+      }
+    }  
+  } */
 }
 //===================================================			   
-//Testing my ability to do a regression and make a plot.
-float WCTrackBuilderAlg_new::Regression(float (&y)[4],
+/* //Testing my ability to do a regression and make a plot.
+std::vector<float> WCTrackBuilderAlg_new::Regression(float (&y)[4],
 						 float (&z)[4],
 						 TH1F* & ResSquare,
 						 int skippedWC)
 {
+ std::vector<float> RegressionValues;
   int Npoints=0;
   float sum_z=0;
   float sum_zz=0;
@@ -478,10 +668,13 @@ float WCTrackBuilderAlg_new::Regression(float (&y)[4],
     }
   }
   if(Npoints==4){
-ResSquare->Fill(residualsquare);
+    ResSquare->Fill(residualsquare);
 }
-  return residualsquare;
-}
+  RegressionValues.push_back(slope);
+  RegressionValues.push_back(intercept);
+  RegressionValues.push_back(residualsquare);
+  return RegressionValues;
+} */
 
 //=====================================================================
 //Taking the set of good hits and finding all combinations of possible tracks. These may not be physically
@@ -498,7 +691,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 					    std::vector<double> & y_on_tpc_face_list,
 					    std::vector<double> & incoming_theta_list,
 					    std::vector<double> & incoming_phi_list,
-					    std::vector<WCHitList> & track_list,
+					    std::vector<WCHitList> & track_list,/* ,
 					    std::vector<TH1F*> & GoodTrackWireHits,
 					    std::vector<TH2F*> & WCMult,
 					    std::vector<TH1F*> & BadTrackHits,
@@ -508,7 +701,9 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 					    TH1F* & Reco4pt,
 					    TH2F* & Reco4ptdiff,
 					    std::vector<TH2F*> & TimingXY,
-					    std::vector<TH2F*> & RegressionPlots)
+					    std::vector<TH2F*> & RegressionPlots,
+					    std::vector<TH1F*> & RegressionPlots1D,*/
+					    std::vector<TH2F*> & Recoplots)
 					    
 					    
 					   
@@ -552,12 +747,12 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		  track.hits.push_back(good_hits[2][1].hits[iHit5]);
 		  track.hits.push_back(good_hits[3][0].hits[iHit6]);
 		  track.hits.push_back(good_hits[3][1].hits[iHit7]);
-                  if(fPickyTracks){
+/*                   if(fPickyTracks){
 		  TimingXY[0]->Fill(track.hits[0].time,track.hits[1].time);
 		  TimingXY[1]->Fill(track.hits[2].time,track.hits[3].time);
 		  TimingXY[2]->Fill(track.hits[4].time,track.hits[5].time);
 		  TimingXY[3]->Fill(track.hits[6].time,track.hits[7].time);
-		  }
+		  } */
 
 		  //Track reco info
 		  float reco_pz = 0;
@@ -569,7 +764,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		  float incoming_phi = 0;
 		  		  
 		  //Previously track_p_extrap_dists
-		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array, TargetXY, ResSquare, Reco4pt, Reco4ptdiff, RegressionPlots);
+		  getTrackMom_Kink_End(track,reco_pz,y_kink,dist_array,/* , TargetXY, ResSquare, Reco4pt, Reco4ptdiff, RegressionPlots, RegressionPlots1D, */Recoplots );
 
 		  //Get things like x/y on the tpc face, theta, phi for track
 		  findTrackOnTPCInfo(track,x_on_tpc_face,y_on_tpc_face,incoming_theta,incoming_phi);		
@@ -603,7 +798,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		    //Hit wires for WC1X, WC1Y, WC2X, WC2Y etc.....
 		    //Also Fill the Histograms for Tracks we won't use.  Will subract off the wires of the "best" track from the good tracks
 		    //leaving only the hits we discard when we disambiguateTracks.
-		    GoodTrackWireHits[0]->Fill(good_hits[0][0].hits[iHit0].wire);
+/* 		    GoodTrackWireHits[0]->Fill(good_hits[0][0].hits[iHit0].wire);
 		    GoodTrackWireHits[1]->Fill(good_hits[0][1].hits[iHit1].wire);
 		    GoodTrackWireHits[2]->Fill(good_hits[1][0].hits[iHit2].wire);
 		    GoodTrackWireHits[3]->Fill(good_hits[1][1].hits[iHit3].wire);
@@ -618,7 +813,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
 		    BadTrackHits[4]->Fill(good_hits[2][0].hits[iHit4].wire);
 		    BadTrackHits[5]->Fill(good_hits[2][1].hits[iHit5].wire);
 		    BadTrackHits[6]->Fill(good_hits[3][0].hits[iHit6].wire);
-		    BadTrackHits[7]->Fill(good_hits[3][1].hits[iHit7].wire);
+		    BadTrackHits[7]->Fill(good_hits[3][1].hits[iHit7].wire); */
 
 		    
 		    //Storing the momentum in the buffer that will be
@@ -647,7 +842,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
       }  
     }
   }
-  int mult=1;
+/*   int mult=1;
   std::vector<int> visitedwires;
   //std::cout<<"Track Count: "<<track_count<<std::endl;
   for(size_t planeIter=0; planeIter<8; ++planeIter){  
@@ -678,7 +873,7 @@ bool WCTrackBuilderAlg_new::buildTracksFromHits(std::vector<std::vector<WCHitLis
       mult=1;
       visitedwires.push_back(the_wire);
     }
-  }   
+  }  */  
 
   
   //Clear the hit lists for each WC/axis
@@ -698,17 +893,17 @@ bool WCTrackBuilderAlg_new::shouldSkipTrigger(std::vector<std::vector<WCHitList>
 {
   //Now determine if we want to skip
   bool skip = false;
-  xHits = 0;
-  yHits = 0;
+  NHits=0;
+  WCMissed=-1;
   for( size_t iWC = 0; iWC < 4 ; ++iWC ){
-    if(good_hits[iWC][0].hits.size()>0){++xHits;}
-    if(good_hits[iWC][1].hits.size()>0){++yHits;}
+  if(good_hits[iWC][0].hits.size()>0 && good_hits[iWC][1].hits.size()>0){++NHits;}
+  else{WCMissed=iWC+1;}
   } 
-  //Only continue if there are at least 3 X wires and 3 Y wires available for a track.
   if(fPickyTracks && fHighYield){
     for(size_t iWC=0; iWC<4; ++iWC){
       for(size_t iAX=0; iAX<2; ++iAX){
-        if(good_hits[iWC][iAX].hits.size() > 1 && (xHits<3 || yHits<3)){ 
+        if(good_hits[iWC][iAX].hits.size() > 1 || NHits<3 || WCMissed==0 || WCMissed==3){  
+	//skip events that have more than 1 hit in an axis, have less than 3 X or Y hits, or the missed X is the first or last WC
           skip = true;
 	  break;
 	}
@@ -716,20 +911,20 @@ bool WCTrackBuilderAlg_new::shouldSkipTrigger(std::vector<std::vector<WCHitList>
     }   
   }
   if(!fPickyTracks && fHighYield){
-    if(xHits<3 || yHits<3){ 
+    if(NHits<3 || WCMissed==0 || WCMissed==3){ //skip events with less than 3 X/Y hits or is missing the first or last WC
       skip = true;
     }  
   }
   for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
     for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
       if( fPickyTracks  && !fHighYield){
-	if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
+	if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){ //require 1, unabigious 4 (x,y) track
 	  skip = true;
 	  break;
 	}
       }
       if( !fPickyTracks && !fHighYield ){
-	if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //<-----------------------------------------TO CHANGE THE ONE-HIT-PER-PLANE TRACK RESTRICTION!!!!
+	if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //allow many 4 (x,y) point tracks and cut down later
 	  skip = true;
 	  break;
 	}
@@ -758,7 +953,7 @@ bool WCTrackBuilderAlg_new::shouldSkipTrigger(std::vector<std::vector<WCHitList>
 void WCTrackBuilderAlg_new::findTrackOnTPCInfo(WCHitList track, float &x, float &y, float &theta, float &phi )
 {
   
-  //Get position vectors of the points on WC3 and WC4
+  //Get position vectors of the points on WC3 and WC4 
   float WC3_point[3] = { fX_cntr_3 + track.hits.at(4).wire*float(cos(3.141592654/180*(3.0))),
 			   fY_cntr_3 + track.hits.at(5).wire,
 			   fZ_cntr_3 + track.hits.at(4).wire*float(sin(3.141592654/180*(3.0))) };

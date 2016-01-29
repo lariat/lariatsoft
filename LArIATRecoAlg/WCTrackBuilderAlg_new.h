@@ -55,7 +55,7 @@ class WCTrackBuilderAlg_new{
 			  bool verbose,
 			  bool pickytracks,
 			  bool highyield,
-			  int & track_count,
+			  int & track_count,/*, 
 			  std::vector<TH1F*> & WCHitsGoodTracks,
 			  std::vector<TH2F*> & WCMult,
 			  std::vector<TH1F*> & WireHits_TheTrack,
@@ -66,33 +66,41 @@ class WCTrackBuilderAlg_new{
 			  TH1F* & Reco4pt,
 			  TH2F* & Reco4ptdiff,
 			  std::vector<TH2F*> & TimingXY,
-			  std::vector<TH2F*> & RegressionPlots);
+			  std::vector<TH2F*> & RegressionPlots,
+			  std::vector<TH1F*> & RegressionPlots1D,*/
+			  std::vector<TH2F*> & Recoplots/*
+			  TH1F* & Bfield */);
 
 
   void getTrackMom_Kink_End(WCHitList track,
 			    float & reco_pz,
 			    float & y_kink,
-			    float (&dist_array)[3],
+			    float (&dist_array)[3],/* ,
 			    TH2F* & TargetXY,
 			    TH1F* & ResSquare,
 			    TH1F* & Reco4pt,
 			    TH2F* & Reco4ptdiff,
-			    std::vector<TH2F*> & RegressionPlots);
-  
+			    std::vector<TH2F*> & RegressionPlots,
+			    std::vector<TH1F*> & RegressionPlots1D,*/
+			    std::vector<TH2F*> & Recoplots );
+
   void midPlaneExtrapolation(std::vector<float> x_wires,
 			     std::vector<float> y_wires,
 			     float (&pos_us)[3],
 			     float (&pos_ds)[3],
+			     double reco_pz,
+			     int WCMissed,/*,
 			     TH2F* & TargetXY,
 			     TH1F* & ResSquare,
-			     double reco_pz,
-			     TH1F* & Reco4pt,
+ 			     TH1F* & Reco4pt,
 			     TH2F* & Reco4ptdiff,
-			     std::vector<TH2F*> & RegressionPlots);
+			     std::vector<TH2F*> & RegressionPlots,
+ 			     std::vector<TH1F*> & RegressionPlots1D,*/
+ 			     std::vector<TH2F*> & Recoplots);
 			     
-  float Regression(float (&y)[4],
-                            float (&z)[4],
-			    TH1F* & ResSquare,
+  std::vector<float> Regression(float (&y)[4],
+                            float (&z)[4],/*
+ 			    TH1F* & ResSquare */
 			    int skippedWC);
   
   bool buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
@@ -106,7 +114,7 @@ class WCTrackBuilderAlg_new{
 			   std::vector<double> & y_on_tpc_face_list,
 			   std::vector<double> & incoming_theta_list,
 			   std::vector<double> & incoming_phi_list,
-			   std::vector<WCHitList> & track_list,
+			   std::vector<WCHitList> & track_list,/* ,
 			   std::vector<TH1F*> & WCHitsGoodTracks,
 			   std::vector<TH2F*> & WCMult,
 			   std::vector<TH1F*> & BadTrackHits,
@@ -116,7 +124,9 @@ class WCTrackBuilderAlg_new{
 			   TH1F* & Reco4pt,
 			   TH2F* & Reco4ptdiff,
 			   std::vector<TH2F*> & TimingXY,
-			   std::vector<TH2F*> & RegressionPlots);
+			   std::vector<TH2F*> & RegressionPlots,
+			   std::vector<TH1F*> & RegressionPlots1D,*/
+			   std::vector<TH2F*> & Recoplots);
 
   bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits);
 
@@ -158,8 +168,11 @@ class WCTrackBuilderAlg_new{
   float  fPrintDisambiguation;
   bool   fPickyTracks;
   bool   fHighYield;
-  int xHits;
-  int yHits;
+  int NHits;
+  int WCMissed;
+  std::vector<float> BestYStats;
+  std::vector<float> BestYHits;
+
 
 
 
@@ -231,7 +244,9 @@ class WCTrackBuilderAlg_new{
   bool fVerbose;
   int fRun;
   int fSubRun;
-
+  float current;
+  float fMP_X;
+  float fMP_M;
   art::ServiceHandle<geo::Geometry> fGeo;  /// Geometry Service Handle
   
 };
