@@ -265,6 +265,17 @@ private:
    int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
    int process_primary[kMaxPrimaries];		//<---Is this particle primary (primary = 1, non-primary = 0)
    
+   // ### Recording the process as a integer ###
+	  // 0 = primary
+	  // 1 = PionMinusInelastic
+	  // 2 = NeutronInelastic
+	  // 3 = hadElastic
+	  // 4 = nCapture
+	  // 5 = CHIPSNuclearCaptureAtRest
+	  // 6 = Decay
+	  // 7 = KaonZeroLInelastic
+	  // 8 = CoulombScat
+	  // 9 = muMinusCaptureAtRest#
    
    // ==== Storing MCShower MCTruth Information ===
    
@@ -696,6 +707,13 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Setting a string for KaonZeroLInelastic ###
       std::string KaonZeroLInelastic("KaonZeroLInelastic");
       
+      // ### Setting a string for CoulombScat ###
+      std::string CoulombScat("CoulombScat");
+      
+      // ### Setting a string for muMinusCaptureAtRest ###
+      std::string muMinusCaptureAtRest("muMinusCaptureAtRest");
+      
+      
       int primary=0;
       int geant_particle=0;
       
@@ -737,6 +755,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  // 5 = CHIPSNuclearCaptureAtRest
 	  // 6 = Decay
 	  // 7 = KaonZeroLInelastic
+	  // 8 = CoulombScat
+	  // 9 = muMinusCaptureAtRest
 	  if(geant_part[i]->Process() == pri)
 	     {Process[i] = 0;}
 	     
@@ -760,6 +780,13 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  
 	  if(geant_part[i]->Process() == KaonZeroLInelastic)
 	     {Process[i] = 7;}
+	     
+	  if(geant_part[i]->Process() == CoulombScat)
+	     {Process[i] = 8;}
+	     
+	  if(geant_part[i]->Process() == muMinusCaptureAtRest)
+	     {Process[i] = 9;}
+	     
 	  std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
 	  
           // ### Saving the particles mother TrackID ###
