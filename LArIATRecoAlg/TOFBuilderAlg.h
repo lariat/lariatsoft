@@ -50,28 +50,21 @@ class TOFBuilderAlg{
   std::vector<short> get_tof(std::vector<const raw::AuxDetDigit*> ust_wv,
 			     std::vector<const raw::AuxDetDigit*> dst_wv);
 
-  std::vector<long>  get_timeStampDst(std::vector<const raw::AuxDetDigit*> ust_wv,
+  std::vector<long> get_timeStampDst(std::vector<const raw::AuxDetDigit*> ust_wv,
 				     std::vector<const raw::AuxDetDigit*> dst_wv);
 
   void clear_tof_and_timeStampDst();
 
  private:
-
-  // ROOT historgrams for debugging purposes  1 doxygen comment per histo
-  TH1F* tof_counts;
-  TH1F* ustof_histo;
-  TH1F* timestamp_histo;
-  TH1F* width_histo;
   
   float  fLinear;
   float  fMultiple;
   double fHitThreshold;
   double fHitWait;
-  double fHitMatch;
-  
-  std::vector<short> tof;
-  std::vector<long> timeStampDst;
-   
+  double fHitMatchThreshold;   
+
+  std::vector<short> TOF;	  
+  std::vector<long> Dst_Timestamp;
   
 };
 
