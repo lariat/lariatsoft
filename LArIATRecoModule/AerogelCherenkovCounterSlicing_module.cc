@@ -103,8 +103,8 @@ void lrm::AerogelCherenkovCounterSlicing::produce(art::Event & e)
   for(size_t iDig = 0; iDig < AuxDetDigitHandle->size(); ++iDig){
     if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelUS")&&(AuxDetDigitHandle->at(iDig).Channel() == 0)) AGCUSEDigits.push_back(AuxDetDigitHandle->at(iDig));
     if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelUS")&&(AuxDetDigitHandle->at(iDig).Channel() == 1)) AGCUSWDigits.push_back(AuxDetDigitHandle->at(iDig));
-    if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelDS")&&(AuxDetDigitHandle->at(iDig).Channel() == 0)) AGCDS1Digits.push_back(AuxDetDigitHandle->at(iDig));
-    if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelDS")&&(AuxDetDigitHandle->at(iDig).Channel() == 1)) AGCDS2Digits.push_back(AuxDetDigitHandle->at(iDig));
+    if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelDS")&&(AuxDetDigitHandle->at(iDig).Channel() == 2)) AGCDS1Digits.push_back(AuxDetDigitHandle->at(iDig));
+    if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelDS")&&(AuxDetDigitHandle->at(iDig).Channel() == 3)) AGCDS2Digits.push_back(AuxDetDigitHandle->at(iDig));
   }
   
   fAGCounterAlg.ImportWaveform("USE", AGCUSEDigits);
