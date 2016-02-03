@@ -16,6 +16,7 @@
 #include "RecoBase/EndPoint2D.h"
 #include "RecoBase/SpacePoint.h"
 #include "RecoBase/Track.h"
+#include "LArIATDataProducts/WCTrack.h"
 
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
@@ -40,6 +41,8 @@ template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Track>      >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Vertex>     >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit>  >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>   >;
+//template class art::pair<art::Ptr<ldp::WCTrack>, art::Ptr<recob::Track>      >;
+
 
 template class std::pair<art::Ptr<raw::RawDigit>,     art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<recob::Wire>,       art::Ptr<raw::Trigger> >;
@@ -51,6 +54,8 @@ template class std::pair<art::Ptr<recob::Track>,      art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<recob::Vertex>,     art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<raw::AuxDetDigit>,  art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<raw::OpDetPulse>,   art::Ptr<raw::Trigger> >;
+//template class art::pair<art::Ptr<recob::Track>,      art::Ptr<ldp::WCTrack> >;
+
 
 template class art::Assns<raw::Trigger, raw::RawDigit,     void>;
 template class art::Assns<raw::Trigger, recob::Wire,       void>;
@@ -62,6 +67,7 @@ template class art::Assns<raw::Trigger, recob::SpacePoint, void>;
 template class art::Assns<raw::Trigger, recob::Track,      void>;
 template class art::Assns<raw::Trigger, raw::AuxDetDigit,  void>;
 template class art::Assns<raw::Trigger, raw::OpDetPulse,   void>;
+template class art::Assns<ldp::WCTrack, recob::Track,      void>;
 
 template class art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, recob::Wire,       void> >;
@@ -73,3 +79,4 @@ template class art::Wrapper<art::Assns<raw::Trigger, recob::Track,      void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, recob::Vertex,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit,  void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,   void> >;
+template class art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >;

@@ -524,13 +524,13 @@ bool XSAnalysis::findTheTPCTrack (int                                  &tpcTrack
   // ### Looping over tracks we need to find the only one that matches the wcTrack ###
   for ( auto const& thisTrack : tracklist )
     { 
-      std::cout << "TPC track ID " << thisTrack->ID() << std::endl;
+      std::cout << "TPC track ID " << thisTrack.key() << std::endl;
 
       // ### Setting a temp variables for this track ###
       float tempZpoint = 100.;
       
       // ### Grabbing the SpacePoints associated with this track ###
-      std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(thisTrack->ID());
+      std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(thisTrack.key());
       
       // ########################################
       // ### Looping over all the SpacePoints ###
