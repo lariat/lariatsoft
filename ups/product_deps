@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v04_35_00
+parent	lariatsoft v04_36_00
 defaultqual	e9
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
@@ -10,7 +10,7 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		v04_35_00
+larsoft		v04_36_00
 LariatFilters   v01_02
 lariatfragments v01_07_03
 artdaq_core     v1_04_28
@@ -24,9 +24,6 @@ qualifier    	       larsoft	  LariatFilters	lariatfragments	  artdaq_core	    L
 e9:debug	       e9:debug	  -nq-		e9:debug	  e9:nu:s30:debug   -nq-		e9:debug
 e9:opt		       e9:opt	  -nq-		e9:opt		  e9:nu:s30:opt	    -nq-		e9:opt
 e9:prof		       e9:prof	  -nq-		e9:prof		  e9:nu:s30:prof    -nq-		e9:prof
-e9:debug:nobeam	       e9:debug	  -nq-		e9:debug	  e9:nu:s30:debug   -			e9:debug
-e9:opt:nobeam	       e9:opt	  -nq-		e9:opt		  e9:nu:s30:opt	    -			e9:opt
-e9:prof:nobeam	       e9:prof	  -nq-		e9:prof		  e9:nu:s30:prof    -			e9:prof
 
 end_qualifier_list
 
