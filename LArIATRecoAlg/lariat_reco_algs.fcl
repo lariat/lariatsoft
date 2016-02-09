@@ -2,10 +2,13 @@ BEGIN_PROLOG
 
 lariat_wctrackbuilderalgnew:
 {
-  PickyTracks: false
-  ##FactoryAlgLabel: Picky
+ # PickyTracks: false
+  MidplaneInterceptFactor: 1.01
+  MidplaneSlopeFactor: 2
 }
-
+lariat_wctrackbuilderalg:
+{
+}
 lariat_wchitfinderalg:
 {
 }

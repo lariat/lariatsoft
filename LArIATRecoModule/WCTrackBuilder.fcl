@@ -6,7 +6,7 @@ process_name: WCTrackBuilder
 
 services:
 {
-  TFileService: { fileName: "WCTrackBuilder_histo.root" }
+  TFileService: { fileName: "WCTrackBuildernew_histo.root" }
   message:      @local::standard_info
   user:         @local::lariat_services
 }
@@ -23,7 +23,7 @@ outputs:
 {
   output1: {
     module_type: RootOutput
-    fileName: "SlicedEventsWithTracks.root"
+    fileName: "SlicedEventsWithTracksnew.root"
   }
 }
 
@@ -35,23 +35,26 @@ physics:
   {
     WCTrackBuilder:
     {
-      module_type:         WCTrackBuilder
+      module_type:         WCTrackBuildernew
       SourceLabel:         "daq"
-      WCTrackBuilderAlg_new:   @local::lariat_wctrackbuilderalgnew
+      WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
       WCHitFinderAlg:      @local::lariat_wchitfinderalg  
       TriggerUtility: "FragmentToDigit"
       NWC: 4
       NWperTDC: 64
       Verbose: false
-      PickyTracks: false
+      PickyTracks: true
       HighYield: false
+      CheckTracks: true
     }
   }
  
   analysis: [ WCTrackBuilder ]
-  stream1: [output1]
+  stream1: []#output1]
   		       
   end_paths: [ analysis, stream1 ]
 }
 
 physics.producers.WCTrackBuilder.TriggerUtility: "FragmentToDigit"
+physics.producers.WCTrackBuilder.WCTrackBuilderAlg.MidplaneInterceptFactor: 1
+physics.producers.WCTrackBuilder.WCTrackBuilderAlg.MidplaneSlopeFactor: 1

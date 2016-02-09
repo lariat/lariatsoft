@@ -59,6 +59,7 @@ outputs:
     fileName:    "standard_slicer.root" # default file name, can override from command line with -o or --output
     dataTier:    "raw"
     streamName:  "all"
+    compressionLevel: 1
   }
 }
 

@@ -40,7 +40,7 @@ class WCTrackBuilderAlg{
    
    void loadXMLDatabaseTableForBField( int run, int subrun );
    
-   int reconstructTracks(std::vector<double> & reco_pz_list,               
+   void reconstructTracks(std::vector<double> & reco_pz_list,               
 					     std::vector<double> & x_face_list,
 					     std::vector<double> & y_face_list,
 					     std::vector<double> & incoming_theta_list,
@@ -49,12 +49,16 @@ class WCTrackBuilderAlg{
 					     std::vector<std::vector<WCHitList> > & good_hits,
 					     bool pickytracks,
 					     bool highyield,
+					     bool diagnostics,
 					     std::vector<double> & y_kink_list,
 					     std::vector<double> & x_dist_list,
 					     std::vector<double> & y_dist_list,
-					     std::vector<double> & z_dist_list);
+					     std::vector<double> & z_dist_list,
+					     int & WCMissed,
+					     std::vector<TH2F*> & Recodiff);
 		
-   bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits);
+   bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
+   			  int & WCMissed);
    
    void buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
 	                      std::vector<double> & reco_pz_list,
@@ -62,15 +66,22 @@ class WCTrackBuilderAlg{
 		              std::vector<double> & y_face_list,
 			      std::vector<double> & incoming_theta_list,
 			      std::vector<double> & incoming_phi_list,
-			      std::vector<WCHitList> & event_final_tracks);
+			      std::vector<WCHitList> & event_final_tracks,
+			      std::vector<double> & y_kink_list,
+			      std::vector<double> & x_dist_list,
+			      std::vector<double> & y_dist_list,
+			      std::vector<double> & z_dist_list,
+			      int & WCMissed);
 			      
    void findTheHitPositions(WCHitList & track,
 		            float (&x)[4],
          	            float (&y)[4],
-		            float (&z)[4]);
+		            float (&z)[4],
+			    int & WCMissed);
 		       
    std::vector<float> Regression(float (&y)[4],
-			         float (&z)[4]);
+			         float (&z)[4],
+				 int & WCMissed);
 				 
    void calculateTheMomentum(WCHitList & best_track,
 		             float (&x)[4],
@@ -96,14 +107,20 @@ class WCTrackBuilderAlg{
 		              std::vector<double> & y_face_list,
 			      std::vector<double> & incoming_theta_list,
 			      std::vector<double> & incoming_phi_list,
-			      std::vector<WCHitList> & event_final_tracks);
+			      std::vector<WCHitList> & event_final_tracks,
+			      std::vector<double> & y_kink_list,
+			      std::vector<double> & x_dist_list,
+			      std::vector<double> & y_dist_list,
+			      std::vector<double> & z_dist_list,
+			      int & WCMissed);
 			      
    void calculateTheThreePointMomentum(WCHitList & best_track,
 				       float(&x)[4],
 				       float(&y)[4],
 				       float(&z)[4],
 				       float & reco_pz,
-				       std::vector<float> & BestTrackStats);
+				       std::vector<float> & BestTrackStats,
+				       int & WCMissed);
 				       				 
 				 
   void extrapolateTheMissedPoint(WCHitList & best_track,
@@ -112,12 +129,36 @@ class WCTrackBuilderAlg{
 			         float(&z)[4],
 				 float & reco_pz,
 				 std::vector<float> & BestTrackStats,
-				 std::vector<float> & missed_wires);
+				 std::vector<float> & missed_wires,
+				 int & WCMissed);
+				 
+  void calculateTrackKink_Dists(float (&x)[4],
+  				float (&y)[4],
+				float (&z)[4],
+				std::vector<float> & track_stats,
+				std::vector<double> & y_kink_list,
+				std::vector<double> & x_dist_list,
+				std::vector<double> & y_dist_list,
+				std::vector<double> & z_dist_list);
+
+  void MakeDiagnosticPlots(std::vector<std::vector<WCHitList> > & good_hits,
+					    std::vector<TH2F*> & RecoDiff,	                      
+					    std::vector<double> & reco_pz_list,
+			      		    std::vector<double> & x_face_list,
+		              		    std::vector<double> & y_face_list,
+			      		    std::vector<double> & incoming_theta_list,
+			      		    std::vector<double> & incoming_phi_list,
+			      		    std::vector<double> & y_kink_list,
+			      		    std::vector<double> & x_dist_list,
+			      	            std::vector<double> & y_dist_list,
+			      	            std::vector<double> & z_dist_list,
+			      	            int & WCMissed);
 		
   private:
   
   bool   fPickyTracks;
   bool   fHighYield;
+  bool   fDiagnostics;
   int NHits;
   int WCMissed;
   				 
