@@ -1,11 +1,11 @@
 //////////////////////////////////////////////////////////////
-// Name:      SlicerInput_source.cc
+// Name:      EventBuilderInput_source.cc
 // Date:      8 September 2015
 // Author:    Everybody is an author!
 //////////////////////////////////////////////////////////////
 
-#ifndef SlicerInput_source
-#define SlicerInput_source
+#ifndef EventBuilderInput_source
+#define EventBuilderInput_source
 
 // art includes
 #include "art/Framework/Core/FileBlock.h"
@@ -49,7 +49,7 @@
 
 // LArIATSoft includes
 #include "LArIATDataProducts/ConditionsSummary.h"
-#include "RawDataUtilities/SlicerAlg.h"
+#include "RawDataUtilities/EventBuilderAlg.h"
 #include "RawDataUtilities/FragmentToDigitAlg.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
@@ -118,12 +118,12 @@ namespace raw {
 //-------------------------------------------------------------------------
 namespace rdu
 {
-  // The class Slicer is to be used as the template parameter for
+  // The class EventBuilder is to be used as the template parameter for
   // art::Source<T>. It understands how to read art's ROOT data files,
   // to extract artdaq::Fragments from them, how to convert the
   // artdaq::Fragments into vectors of raw::RawDigit objects, and
   // finally how to re-combine those raw::RawDigit objects to present
-  // the user of the art::Source<Slicer> with a sequence of
+  // the user of the art::Source<EventBuilder> with a sequence of
   // art::Events that have the desired event structure, different from
   // the event structure of the data file(s) being read.
 
@@ -131,20 +131,20 @@ namespace rdu
   //-----------------------------------------------------------------------
   // class definition
 
-  class Slicer
+  class EventBuilder
   {
 
    public:
 
     // Constructor and destructor.
-    explicit Slicer(fhicl::ParameterSet        const& pset,
-                    art::ProductRegistryHelper      & prhelper,
-                    art::SourceHelper               & shelper);
-    virtual ~Slicer();
+    explicit EventBuilder(fhicl::ParameterSet        const& pset,
+                          art::ProductRegistryHelper      & prhelper,
+                          art::SourceHelper               & shelper);
+    virtual ~EventBuilder();
 
     ///////////////////////////////////////////////////////////////////
     // See art/Framework/IO/Sources/Source.h for a description of each
-    // of the public member functions of Slicer.
+    // of the public member functions of EventBuilder.
     ///////////////////////////////////////////////////////////////////
 
     // Open the file of the given name, returning a new FileBlock.
@@ -204,8 +204,8 @@ namespace rdu
     // DatabaseUtilityT1034 service handle
     art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
 
-    // slicer algorithm
-    rdu::SlicerAlg fSlicerAlg;
+    // event builder algorithm
+    rdu::EventBuilderAlg fEventBuilderAlg;
 
     // fragment-to-digit algorithm (?)
     FragmentToDigitAlg fFragmentToDigitAlg;
@@ -284,7 +284,7 @@ namespace rdu
     // timestamp from SpillTrailer
     std::uint64_t fTimestamp;
 
-  }; // class Slicer
+  }; // class EventBuilder
 
   //-----------------------------------------------------------------------
   //-----------------------------------------------------------------------
@@ -292,9 +292,9 @@ namespace rdu
 
   //-----------------------------------------------------------------------
   // constructor
-  Slicer::Slicer(fhicl::ParameterSet        const& pset,
-                 art::ProductRegistryHelper      & prhelper,
-                 art::SourceHelper               & shelper)
+  EventBuilder::EventBuilder(fhicl::ParameterSet        const& pset,
+                             art::ProductRegistryHelper      & prhelper,
+                             art::SourceHelper               & shelper)
     : fSourceName("daq")
     , fLastFileName(pset.get< std::vector< std::string > >("fileNames", {}).back())
     , fFile()
@@ -308,7 +308,7 @@ namespace rdu
     , fEventNumber()
     , fCachedRunNumber(-1)
     , fCachedSubRunNumber(-1)
-    , fSlicerAlg(pset.get<fhicl::ParameterSet>("SlicerAlg"))
+    , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
   {
     // read in the parameters from the .fcl file
@@ -338,13 +338,13 @@ namespace rdu
 
   //-----------------------------------------------------------------------
   // destructor
-  Slicer::~Slicer()
+  EventBuilder::~EventBuilder()
   {}
 
   //-----------------------------------------------------------------------
-  void Slicer::reconfigure(fhicl::ParameterSet const& pset)
+  void EventBuilder::reconfigure(fhicl::ParameterSet const& pset)
   {
-    fSlicerAlg.reconfigure(pset.get<fhicl::ParameterSet>("SlicerAlg"));
+    fEventBuilderAlg.reconfigure(pset.get<fhicl::ParameterSet>("EventBuilderAlg"));
 
     fSourceName = pset.get< std::string >("SourceName", "daq");
 
@@ -368,7 +368,7 @@ namespace rdu
   }
 
   //-----------------------------------------------------------------------
-  bool Slicer::readFile(std::string const& filename, art::FileBlock * & fileblock)
+  bool EventBuilder::readFile(std::string const& filename, art::FileBlock * & fileblock)
   {
     // Run numbers determined based on file name... see comment in
     // unnamed namespace above.
@@ -378,7 +378,7 @@ namespace rdu
       fSubRunNumber = std::stoul(matches[2]);
     }
 
-    LOG_VERBATIM("SlicerInput")
+    LOG_VERBATIM("EventBuilderInput")
     << "\n////////////////////////////////////"
     << "\nfRunNumber:       " << fRunNumber
     << "\nfSubRunNumber:    " << fSubRunNumber
@@ -392,19 +392,19 @@ namespace rdu
     //       before.
     this->getDatabaseParameters_(fRunNumber);
 
-    // configure the slicer algorithm
-    fSlicerAlg.Configure(fV1740PreAcquisitionWindow,
-                         fV1740PostAcquisitionWindow,
-                         fV1740AcquisitionWindow,
-                         fV1740BPreAcquisitionWindow,
-                         fV1740BPostAcquisitionWindow,
-                         fV1740BAcquisitionWindow,
-                         fV1751PreAcquisitionWindow,
-                         fV1751PostAcquisitionWindow,
-                         fV1751AcquisitionWindow,
-                         fTDCPreAcquisitionWindow,
-                         fTDCPostAcquisitionWindow,
-                         fTDCAcquisitionWindow);
+    // configure the event builder algorithm
+    fEventBuilderAlg.Configure(fV1740PreAcquisitionWindow,
+                               fV1740PostAcquisitionWindow,
+                               fV1740AcquisitionWindow,
+                               fV1740BPreAcquisitionWindow,
+                               fV1740BPostAcquisitionWindow,
+                               fV1740BAcquisitionWindow,
+                               fV1751PreAcquisitionWindow,
+                               fV1751PostAcquisitionWindow,
+                               fV1751AcquisitionWindow,
+                               fTDCPreAcquisitionWindow,
+                               fTDCPostAcquisitionWindow,
+                               fTDCAcquisitionWindow);
 
     // get artdaq::Fragments branch
     fFile.reset(new TFile(filename.data()));
@@ -430,7 +430,7 @@ namespace rdu
     // group data blocks into collections
     fCollectionIndex = 0;
     fCollections.clear();
-    fCollections = fSlicerAlg.Slice(fLariatFragment);
+    fCollections = fEventBuilderAlg.Build(fLariatFragment);
 
     // we are done with this file if there are no data blocks
     if (fCollections.size() < 1) fDoneWithFile = true;
@@ -441,11 +441,11 @@ namespace rdu
   }
 
   //-----------------------------------------------------------------------
-  bool Slicer::readNext(art::RunPrincipal    * const& inRun,
-                        art::SubRunPrincipal * const& inSubRun,
-                        art::RunPrincipal    *      & outRun,
-                        art::SubRunPrincipal *      & outSubRun,
-                        art::EventPrincipal  *      & outEvent)
+  bool EventBuilder::readNext(art::RunPrincipal    * const& inRun,
+                              art::SubRunPrincipal * const& inSubRun,
+                              art::RunPrincipal    *      & outRun,
+                              art::SubRunPrincipal *      & outSubRun,
+                              art::EventPrincipal  *      & outEvent)
   {
     if (fDoneWithFile) return false;
 
@@ -467,7 +467,7 @@ namespace rdu
       this->commenceSubRun(outSubRun);
     }
 
-    LOG_VERBATIM("SlicerInput") << "fCollections.size(): " << fCollections.size();
+    LOG_VERBATIM("EventBuilderInput") << "fCollections.size(): " << fCollections.size();
 
     this->makeEventAndPutDigits_(outEvent);
 
@@ -475,20 +475,20 @@ namespace rdu
   }
 
   //-----------------------------------------------------------------------
-  void Slicer::closeCurrentFile()
+  void EventBuilder::closeCurrentFile()
   {
     fFile.reset(nullptr);
   }
 
   //-----------------------------------------------------------------------
-  void Slicer::loadDigits_(LariatFragment * & LArIATFragment)
+  void EventBuilder::loadDigits_(LariatFragment * & LArIATFragment)
   {
 
     if (fTreeIndex != fNumberInputEvents) {
       artdaq::Fragments * fragments = getFragments(fFragmentsBranch, fTreeIndex++);
 
       if ((*fragments).size() > 1)
-        throw cet::exception("Slicer") << "artdaq::Fragment vector contains more than one fragment.";
+        throw cet::exception("EventBuilder") << "artdaq::Fragment vector contains more than one fragment.";
 
       artdaq::Fragment frag = fragments->at(0);
       const char * bytePtr = reinterpret_cast <const char *> (&*frag.dataBegin());
@@ -504,7 +504,7 @@ namespace rdu
   }
 
   //-----------------------------------------------------------------------
-  void Slicer::makeEventAndPutDigits_(art::EventPrincipal * & outEvent)
+  void EventBuilder::makeEventAndPutDigits_(art::EventPrincipal * & outEvent)
   {
 
     ++fEventNumber;
@@ -574,16 +574,16 @@ namespace rdu
 
     size_t const& NumberTPCReadouts = Collection.numberTPCReadouts;
 
-    LOG_VERBATIM("SlicerInput")
-    << "fCollectionIndex: " << fCollectionIndex
-    << "\nNumberTPCReadouts: " << NumberTPCReadouts
-    << "\nCollection.numberTPCReadouts: " << Collection.numberTPCReadouts
-    << "\nCollection.caenBlocks.size(): " << Collection.caenBlocks.size()
-    << "\nCollection.tdcBlocks.size(): " << Collection.tdcBlocks.size()
-    << "\n\nAdding digits to run " << fRunNumber
-    << ", sub-run "                << fSubRunNumber
-    <<  ", event "                 << fEventNumber
-    << "...";
+    LOG_VERBATIM("EventBuilderInput")
+      << "fCollectionIndex: " << fCollectionIndex
+      << "\nNumberTPCReadouts: " << NumberTPCReadouts
+      << "\nCollection.numberTPCReadouts: " << Collection.numberTPCReadouts
+      << "\nCollection.caenBlocks.size(): " << Collection.caenBlocks.size()
+      << "\nCollection.tdcBlocks.size(): " << Collection.tdcBlocks.size()
+      << "\n\nAdding digits to run " << fRunNumber
+      << ", sub-run "                << fSubRunNumber
+      <<  ", event "                 << fEventNumber
+      << "...";
 
     std::vector< CAENFragment > caenDataBlocks = Collection.caenBlocks;
     std::vector< std::vector<TDCFragment::TdcEventData> > tdcDataBlocks = Collection.tdcBlocks;
@@ -629,27 +629,27 @@ namespace rdu
   }
 
   //-----------------------------------------------------------------------
-  void Slicer::getDatabaseParameters_(art::RunNumber_t const& RunNumber)
+  void EventBuilder::getDatabaseParameters_(art::RunNumber_t const& RunNumber)
   {
     fConfigValues.clear();
 
     fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams,
                                                       static_cast <int> (RunNumber));
 
-    LOG_VERBATIM("SlicerInput")
-    << "//////////////////////////////////////////////"
-    << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           
-    << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            
-    << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           
-    << "V1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            
-    << "V1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           
-    << "V1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          
-    << "V1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           
-    << "V1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  
-    << "V1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] 
-    << "fTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             
-    << "fTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 
-    << "//////////////////////////////////////////////";
+    LOG_VERBATIM("EventBuilderInput")
+      << "//////////////////////////////////////////////"
+      << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           
+      << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            
+      << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           
+      << "V1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            
+      << "V1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           
+      << "V1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          
+      << "V1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           
+      << "V1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  
+      << "V1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] 
+      << "fTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             
+      << "fTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 
+      << "//////////////////////////////////////////////";
 
     // cast from string to size_t
     fV1495DelayTicks       = this->castToSizeT_(fConfigValues["v1495_config_v1495_delay_ticks"]);
@@ -697,29 +697,29 @@ namespace rdu
     if (fTDCPostAcquisitionWindow    < 0) fTDCPostAcquisitionWindow    = 0;
     if (fTDCAcquisitionWindow        < 0) fTDCAcquisitionWindow        = fTDCReadoutWindow;
 
-    LOG_VERBATIM("SlicerInput")
-    << "//////////////////////////////////////////////"
-    << "\nV1495DelayTicks:             " << fV1495DelayTicks
-    << "\nV1495Delay:                  " << fV1495Delay
-    << "\nV1740PreAcquisitionWindow:   " << fV1740PreAcquisitionWindow
-    << "\nV1740PostAcquisitionWindow:  " << fV1740PostAcquisitionWindow
-    << "\nV1740AcquisitionWindow:      " << fV1740AcquisitionWindow
-    << "\nV1740BPreAcquisitionWindow:  " << fV1740BPreAcquisitionWindow
-    << "\nV1740BPostAcquisitionWindow: " << fV1740BPostAcquisitionWindow
-    << "\nV1740BAcquisitionWindow:     " << fV1740BAcquisitionWindow
-    << "\nV1751PreAcquisitionWindow:   " << fV1751PreAcquisitionWindow
-    << "\nV1751PostAcquisitionWindow:  " << fV1751PostAcquisitionWindow
-    << "\nV1751AcquisitionWindow:      " << fV1751AcquisitionWindow
-    << "\nTDCPreAcquisitionWindow:     " << fTDCPreAcquisitionWindow
-    << "\nTDCPostAcquisitionWindow:    " << fTDCPostAcquisitionWindow
-    << "\nTDCAcquisitionWindow:        " << fTDCAcquisitionWindow
-    << "//////////////////////////////////////////////";
+    LOG_VERBATIM("EventBuilderInput")
+      << "//////////////////////////////////////////////"
+      << "\nV1495DelayTicks:             " << fV1495DelayTicks
+      << "\nV1495Delay:                  " << fV1495Delay
+      << "\nV1740PreAcquisitionWindow:   " << fV1740PreAcquisitionWindow
+      << "\nV1740PostAcquisitionWindow:  " << fV1740PostAcquisitionWindow
+      << "\nV1740AcquisitionWindow:      " << fV1740AcquisitionWindow
+      << "\nV1740BPreAcquisitionWindow:  " << fV1740BPreAcquisitionWindow
+      << "\nV1740BPostAcquisitionWindow: " << fV1740BPostAcquisitionWindow
+      << "\nV1740BAcquisitionWindow:     " << fV1740BAcquisitionWindow
+      << "\nV1751PreAcquisitionWindow:   " << fV1751PreAcquisitionWindow
+      << "\nV1751PostAcquisitionWindow:  " << fV1751PostAcquisitionWindow
+      << "\nV1751AcquisitionWindow:      " << fV1751AcquisitionWindow
+      << "\nTDCPreAcquisitionWindow:     " << fTDCPreAcquisitionWindow
+      << "\nTDCPostAcquisitionWindow:    " << fTDCPostAcquisitionWindow
+      << "\nTDCAcquisitionWindow:        " << fTDCAcquisitionWindow
+      << "//////////////////////////////////////////////";
 
     return;
   }
 
   //-----------------------------------------------------------------------
-  size_t Slicer::castToSizeT_(std::string const& String)
+  size_t EventBuilder::castToSizeT_(std::string const& String)
   {
     size_t SizeT;
 
@@ -734,7 +734,7 @@ namespace rdu
   }
 
   //-----------------------------------------------------------------------
-  void Slicer::commenceRun(art::RunPrincipal * & outRun)  // wtf is this? idk.
+  void EventBuilder::commenceRun(art::RunPrincipal * & outRun)  // wtf is this? idk.
   {
     
     fFragmentToDigitAlg.InitializeRun(outRun, fRunNumber, fTimestamp);
@@ -751,7 +751,7 @@ namespace rdu
   }
   
   //-----------------------------------------------------------------------
-  void Slicer::commenceSubRun(art::SubRunPrincipal * & outSubRun)
+  void EventBuilder::commenceSubRun(art::SubRunPrincipal * & outSubRun)
   {
 //    std::initializer_list<std::string> sam_params = {
 //      "detector.cathode_voltage",
@@ -809,10 +809,10 @@ namespace rdu
                                                           static_cast <int> (fSubRunNumber));
 
 //    for(auto itr : runValues) 
-//      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
+//      LOG_VERBATIM("EventBuilderInput") << itr.first << " " << itr.second;
 //
 //    for(auto itr : subrunValues) 
-//      LOG_VERBATIM("SlicerInput") << itr.first << " " << itr.second;
+//      LOG_VERBATIM("EventBuilderInput") << itr.first << " " << itr.second;
 
     // create the ConditionsSummary object and put it into the subrun
     // for the time being, several parameters are accessible from the
@@ -849,7 +849,7 @@ namespace rdu
 //    size_t              punchThrough           = 0;
 //    bool                correctFileFormat      = false;
 
-    LOG_VERBATIM("SlicerInput") << subrunValues["end_f_mc7sc1"];
+    LOG_VERBATIM("EventBuilderInput") << subrunValues["end_f_mc7sc1"];
 
     size_t              endMC7SC1              = this->castToSizeT_(subrunValues["end_f_mc7sc1"]);
     bool                v1751CaenEnableReadout = this->castToSizeT_(runValues["v1751_config_caen_enablereadout"]);
@@ -902,8 +902,8 @@ namespace rdu
   }
 
 
-  DEFINE_ART_INPUT_SOURCE(art::Source<rdu::Slicer>)
+  DEFINE_ART_INPUT_SOURCE(art::Source<rdu::EventBuilder>)
 
 } // namespace rdu
 
-#endif // SlicerInput_source
+#endif // EventBuilderInput_source

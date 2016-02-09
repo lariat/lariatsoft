@@ -1,0 +1,78 @@
+#include "services_lariat.fcl"
+#include "clockcorrectionalg.fcl"
+#include "eventbuilderalg.fcl"
+
+process_name: EventBuilderCheck
+
+services:
+{
+  TFileService: { fileName: "EventBuilderCheck.root" }
+  Timing:       {}
+  RandomNumberGenerator: {} 
+  message:      @local::standard_info
+  user:         @local::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+
+  # Number of events to analyze; "-1" means all of the events in the input
+  # file. You can override this value with the "-n" option on the command line. 
+  maxEvents:  -1 
+}
+
+# This is empty, because we're not writing any art::Events to an output file. 
+outputs: {}
+
+physics:
+{
+  analyzers:
+  {
+    EventBuilderCheck:
+    {
+      # The "module_type" tells us which module to run. The name here
+      # matches the name supplied to DEFINE_ART_MODULE near the end of
+      # EventBuilderCheck_module.cc.
+
+      module_type:             "EventBuilderCheck"
+      EventBuilderAlg:         @local::standard_eventbuilderalg
+
+      # Pre-/post-acquisition windows in microseconds. A value of -1
+      # will utilize values that are dependent on the lariat_prd
+      # database.
+
+      V1740PreAcquisitionWindow:   -1  # 393.216
+      V1740PostAcquisitionWindow:  -1  # 0.128
+      V1740AcquisitionWindow:      -1  # 393.216
+      V1740BPreAcquisitionWindow:  -1  # 393.216
+      V1740BPostAcquisitionWindow: -1  # 0.128
+      V1740BAcquisitionWindow:     -1  # 393.216
+      V1751PreAcquisitionWindow:   -1  # 0.128
+      V1751PostAcquisitionWindow:  -1  # 0.128
+      V1751AcquisitionWindow:      -1  # 28.672
+      TDCPreAcquisitionWindow:     -1  # 1.196 or 1.20525?
+      TDCPostAcquisitionWindow:    -1  # 0
+      TDCAcquisitionWindow:        -1  # 1.196 or 1.20525?
+    }
+  }
+
+  analysis: [ EventBuilderCheck ]
+
+  end_paths: [ analysis ]  
+}
+
+services.user.SeedService: @local::random_seedservice
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.MinSamples:                   2
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.ResidualThreshold:            1
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.MaxTrials:                    10000
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.StopResidualsSum:             0
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.StopProbability:              1
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e5  # microseconds
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.MinNumberTimeStamps:          3
+#physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.MinNumberDataPoints:          3
+
