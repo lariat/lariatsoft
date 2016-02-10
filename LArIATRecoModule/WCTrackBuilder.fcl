@@ -37,7 +37,7 @@ physics:
     {
       module_type:         WCTrackBuildernew
       SourceLabel:         "daq"
-      WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
+      WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalgnew
       WCHitFinderAlg:      @local::lariat_wchitfinderalg  
       TriggerUtility: "FragmentToDigit"
       NWC: 4
@@ -56,5 +56,5 @@ physics:
 }
 
 physics.producers.WCTrackBuilder.TriggerUtility: "FragmentToDigit"
-physics.producers.WCTrackBuilder.WCTrackBuilderAlg.MidplaneInterceptFactor: 1
-physics.producers.WCTrackBuilder.WCTrackBuilderAlg.MidplaneSlopeFactor: 1
+physics.producers.WCTrackBuilder.WCTrackBuilderAlg.MidplaneInterceptFactor: 1.05
+physics.producers.WCTrackBuilder.WCTrackBuilderAlg.MidplaneSlopeFactor: .98

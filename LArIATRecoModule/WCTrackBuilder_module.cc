@@ -160,7 +160,7 @@ private:
 
 
 WCTrackBuilder::WCTrackBuilder(fhicl::ParameterSet const & p)
- : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg_new")) // these should be initialized
+ : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg")) // these should be initialized
  , fWCHitFinderAlg(p.get< fhicl::ParameterSet >("WCHitFinderAlg"))            // here instead of reconfigure()
 {
   // Call appropriate produces<>() functions here.

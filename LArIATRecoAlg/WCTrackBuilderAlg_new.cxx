@@ -64,7 +64,7 @@ WCTrackBuilderAlg_new::WCTrackBuilderAlg_new( fhicl::ParameterSet const& pset )
       fZ_cntr_1 = centerOfDet[2] * CLHEP::cm;
     }
    if(iDet == 2){ //WC2
-      fX_cntr_2 = centerOfDet[0] * CLHEP::cm +18 ; //correcting where the gdml has an 18mm offset for WC2X
+      fX_cntr_2 = centerOfDet[0] * CLHEP::cm; //correcting where the gdml has an 18mm offset for WC2X
       fY_cntr_2 = centerOfDet[1] * CLHEP::cm;
       fZ_cntr_2 = centerOfDet[2] * CLHEP::cm;
     }
@@ -231,7 +231,7 @@ void WCTrackBuilderAlg_new::reconstructTracks(std::vector<double> & reco_pz_list
 					     TargetXY,
 					     PickyTracksTargetXY,
 					     ResSquare,
-					     Reco4pt,
+					     Reco4pt
 					     Reco4ptdiff,
 					     TimingXY,
 					     RegressionPlots,
@@ -285,10 +285,12 @@ void WCTrackBuilderAlg_new::getTrackMom_Kink_End(WCHitList track,
     if( var == 0 ){
 	wire_x.push_back(track.hits.at(iHit).wire);
 	time_x.push_back(track.hits.at(iHit).time);
+	std::cout<<"for iHit: "<<iHit<<"x wire :"<<track.hits.at(iHit).wire<<std::endl;
       }
     if( var == 1 ){
 	wire_y.push_back(track.hits.at(iHit).wire);
 	time_y.push_back(track.hits.at(iHit).time);
+	std::cout<<"for iHit: "<<iHit<<"y wire :"<<track.hits.at(iHit).wire<<std::endl;
       }   
   }
   float sin13=sin((3.141592654/180)*13.0);
@@ -388,7 +390,9 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
 		 fZ_cntr_3 + x_wires[2] * sin3,
  		 fZ_cntr_4 + x_wires[3] * sin3};
   		 
-  
+  for(int iWC=0; iWC<4; ++iWC){
+  std::cout<<"For WC: "<<iWC+1<<"The position is :"<<x[iWC]<<", "<<y[iWC]<<", "<<z[iWC]<<std::endl;
+  }
   
 //upstream leg of WC's tracked forward to midplane, using coordinate system with TPC as the origin  
   float slope_xz_us = (z[1] - z[0])/(x[1] - x[0]); 
@@ -445,7 +449,7 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
   float tan8=tan(8.0*3.141592654/180);
   std::cout<<"Midplane intercept factor: "<<fMP_X<<" Midplane slope factor: "<<fMP_M<<std::endl;
   float midplane_slope=tan8 * fMP_M;
-  float midplane_intercept=(midplane_x-midplane_z*tan8) * fMP_X;
+  float midplane_intercept=(midplane_x-midplane_z*tan8) *fMP_X;
   std::cout<<"Midplane intercept:"<<midplane_intercept<<std::endl;
 // 
 // //TARGET origin system calculation
@@ -497,11 +501,17 @@ void WCTrackBuilderAlg_new::midPlaneExtrapolation(std::vector<float> x_wires,
       float ds_int_x= x[3]-ds_slope*z[3];
       float z_ds=(midplane_intercept-ds_int_x)/(ds_slope-midplane_slope); //Solving tan8*Z+Bmp == Mds*Z+Bds
       float x_ds=ds_slope*z_ds+ ds_int_x;
+      std::cout<<"x hits "<<x[2]<<", "<<x[3]<<std::endl;
+      std::cout<<"z hits "<<z[2]<<", "<<z[3]<<std::endl;
+      std::cout<<"X centers "<<fX_cntr_3<<", "<<fX_cntr_4<<std::endl;
+      std::cout<<"Z centers "<<fZ_cntr_3<<", "<<fZ_cntr_4<<std::endl;
+      std::cout<<"ds_dx, ds_dz, slope, int"<<ds_dx<<", "<<ds_dz<<", "<<ds_slope<<", "<<ds_int_x<<std::endl;
+      std::cout<<"midplane x,z"<<x_ds<<" "<<z_ds<<std::endl;
       float us_dz=(z_ds-z[0]);
       float us_dx=(x_ds-x[0]);       
       float us_theta=asin(us_dx/pow(us_dx*us_dx+us_dz*us_dz,.5));
       float ds_theta=asin(ds_dx/pow(ds_dx*ds_dx+ds_dz*ds_dz,.5));
-      
+      std::cout<<"s2 thetas :"<<us_theta<<", "<<ds_theta<<std::endl;
        S2_reco_pz=(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / float(3.3 * (ds_theta - us_theta))/cos(theta_y_ds);
        std::cout<<"S2:"<<S2_reco_pz<<std::endl;
 /*        Recoplots[0]->Fill(reco_pz,(reco_pz-S2_reco_pz)/S2_reco_pz);
