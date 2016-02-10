@@ -11,9 +11,9 @@ Class: LArIATDataProducts/TOF.cxx
 Dictionary: LArIATDataProducts/classes.h and classes_def.xml
 
 Authores:
+Daniel Smith     - dsmith@fnal.gov
 Elena Gramellini - elena.gramellini@yale.edu
 Irene Nutini     - irene.nutini@stud.unifi.it
-Daniel Smith     - dsmith@fnal.gov
 
 */
 
@@ -64,8 +64,6 @@ public:
   TimeOfFlightSlicing & operator = (TimeOfFlightSlicing &&) = delete;
 
   void produce(art::Event & e) override;
-
-
   void beginJob() override;
   void beginRun(art::Run & r) override;
   void beginSubRun(art::SubRun & sr) override;
@@ -82,10 +80,17 @@ private:
 
   ///< Label for the module producing the triggers
   TOFBuilderAlg fTOFAlg;
+
   TH1F*         fTOFHisto;
-  TH1F*         fWidthHisto;
+  TH1F*         fTimeStampHisto;
+  TH1F*         fNTOFHisto;
+
   bool          fMakeHistograms;
   std::string   fSlicerSourceLabel;
+
+  int fSubRun;
+  int fRun;
+
 };
 
 //----------------------------------------------------------------
@@ -113,7 +118,7 @@ void lrm::TimeOfFlightSlicing::produce(art::Event & e)
   art::Handle< std::vector<raw::AuxDetDigit> > AuxDetDigitHandle;
   e.getByLabel(fSlicerSourceLabel,AuxDetDigitHandle);
 
-  //Determine which digits are the USTOF and DSTOF ones
+  //Get the digits for USTOF and DSTOF
   std::vector<const raw::AuxDetDigit*> USTOF;
   std::vector<const raw::AuxDetDigit*> DSTOF;
   for( size_t iDig = 0; iDig < AuxDetDigitHandle->size() ; ++iDig ){
@@ -129,59 +134,57 @@ void lrm::TimeOfFlightSlicing::produce(art::Event & e)
     // Variables of our object
     
     std::pair<std::vector<short>, std::vector<long> > pair;
-    pair = fTOFAlg.get_TOF_and_TimeStamp(USTOF,DSTOF);
-    
+    pair = fTOFAlg.get_TOF_and_TimeStamp(USTOF, DSTOF);
+
     ldp::TOF TOFObject(pair.first, pair.second);
-    (*TOFCol).push_back( TOFObject );
-    
+    (*TOFCol).push_back(TOFObject);
+
     //Fill histos if necessary
     if( fMakeHistograms ){
+      fNTOFHisto->Fill(TOFObject.NTOF());
+      
       for( size_t iTOF = 0; iTOF < TOFObject.NTOF(); ++iTOF ){
 	fTOFHisto->Fill(TOFObject.SingleTOF(iTOF));
+	fTimeStampHisto->Fill(TOFObject.TimeStamp(iTOF));
       }
-      fWidthHisto->Fill(TOFObject.NTOF());
     }
     
   }
   
   // Move LArSoft magic to save the information into the final ROOT file 
-  e.put(std::move(TOFCol));
-  
+  e.put(std::move(TOFCol));  
   return;
 }
-
-
-
-
 
 void lrm::TimeOfFlightSlicing::beginJob()
 {
   // Opens up the file service to read information from the ROOT file input
   art::ServiceHandle<art::TFileService> tfs;
+
   if( fMakeHistograms ){
-    fTOFHisto = tfs->make<TH1F>("TOF","All TOF possibilities",100,0,100 );
+    fTOFHisto = tfs->make<TH1F>("TOF","All TOF possibilities",100,0.0,100.0);
     fTOFHisto->SetTitle("All TOF Possibilites");
     fTOFHisto->GetXaxis()->SetTitle("TOF (ns)");
     fTOFHisto->GetYaxis()->SetTitle("TOF hits per 1 ns");
 
-    fWidthHisto = tfs->make<TH1F>("NTOF","All TOF possibilities",100,0,100 );
-
+    fTimeStampHisto = tfs->make<TH1F>("TimeStamp","All Timestamps for TOFs",1000,0.0,9000000000.0);
+    fNTOFHisto = tfs->make<TH1F>("NTOF","Number of TOF in an event",10,0.0,10.0);
   }
 }
 
 void lrm::TimeOfFlightSlicing::beginRun(art::Run & r)
 {
-  // Implementation of optional member function here.
+  fRun = r.run();
 }
 
 void lrm::TimeOfFlightSlicing::beginSubRun(art::SubRun & sr)
 {
-  // Implementation of optional member function here.
+  fSubRun = sr.subRun();
 }
 
 void lrm::TimeOfFlightSlicing::endJob()
 {
-  // Implementation of optional member function here.
+  // Implementation of optional member function here. 
 }
 
 void lrm::TimeOfFlightSlicing::endRun(art::Run & r)
@@ -191,12 +194,11 @@ void lrm::TimeOfFlightSlicing::endRun(art::Run & r)
 
 void lrm::TimeOfFlightSlicing::endSubRun(art::SubRun & sr)
 {
-  // Implementation of optional member function here.
+  // Implementation of optional member function here. 
 }
 
 void lrm::TimeOfFlightSlicing::reconfigure(fhicl::ParameterSet const & p)
 {   
-   // Implementing the ability to pass the name of the TriggerUtililty 
    fMakeHistograms     = p.get< bool >("MakeHistograms", true);
    fSlicerSourceLabel  = p.get< std::string >("SourceLabel", "daq");
 }

@@ -11,7 +11,7 @@
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
 
-
+ 
 process_name: Reco2D
 
 services:
@@ -86,7 +86,8 @@ physics:
 #         opflash,
          #FragmentToDigit,
          caldata,
-         cchit,
+#         cchit,
+	 gaushit,
         # cccluster,
 	 linecluster,
          showerreco,
@@ -141,6 +142,8 @@ outputs:
 physics.producers.caldata.DigitModuleLabel:                     "daq"
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
+physics.producers.gaushit.Chi2NDFRetry:                          1000.
+#physics.producers.gaushit.MinSig:                               [8, 10]
 #physics.producers.rffhit.CalDataModuleLabel:                    "caldata"
 
 #physics.producers.corner.CornerAlgParamSet.RawDataModuleLabel:  "daq"
@@ -207,21 +210,23 @@ physics.producers.pmtrack.ClusterModuleLabel: "linecluster"
 physics.producers.pmtrack.HitModuleLabel:     "linecluster"
 physics.producers.pmtrack.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.FlipToBeam: true
+physics.producers.pmtrack.RunVertexing: true
 physics.producers.cctrack.HitModuleLabel:     "linecluster"
 physics.producers.cctrack.ClusterModuleLabel: "linecluster"
 physics.producers.cctrack.VertexModuleLabel:  "linecluster"
 physics.producers.cctrack.MatchAlgs: 1
 #physics.producers.pandora.GeantModuleLabel:                     "largeant"
 #physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
-services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
-services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
+#services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
+#services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
 
-services.DetectorProperties.TimeOffsetV: -13.2
+#services.DetectorProperties.TimeOffsetV: -13.2
+services.DetectorProperties.TimeOffsetV: -2.0
 services.LArProperties.Electronlifetime: 1600
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.0068,0.0153]
+physics.producers.calo.CaloAlg.CalAreaConstants: [0.028,0.048]
 physics.producers.showerreco.InputProducer:        "linecluster"
 

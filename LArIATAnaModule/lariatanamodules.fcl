@@ -1,3 +1,5 @@
+#include "calorimetry.fcl"
+
 BEGIN_PROLOG
 
 lariat_anatree:
@@ -11,9 +13,12 @@ lariat_anatree:
     ClusterModuleLabel:       "linecluster"
     WCTrackLabel:             "WCTrackBuilder"
     TOFModuleLabel:	      "tof"
+    AGModuleLabel:            "aerogel"
     G4ModuleLabel:            "largeant"
     ShowerModuleLabel:        "showerreco"
     MCShowerModuleLabel:      "mcreco"
+    CalorimetryAlg:          @local::standard_calorimetryalgmc
 }
+lariat_anatree.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
 
 END_PROLOG

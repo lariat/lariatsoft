@@ -548,7 +548,7 @@ namespace rdu {
                                          << iter->second;
     }
 
-    unsigned int numberTdcDataBlocks;
+    unsigned int numberTdcDataBlocks = 0;
 
     // get number of TDC fragments
     const size_t numberTdcFrags = data->tdcFrags.size();

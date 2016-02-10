@@ -11,11 +11,11 @@
 #include "timeservice_lariat.fcl"
 #include "backtracker.fcl"
 #include "sam_lariat.fcl"
-# #include "pmtconfig_lariat.fcl"
-# #include "opticaldetectorservices_lariat.fcl"
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
 #include "channelstatus_lariat.fcl"
+# #include "pmtconfig_lariat.fcl"
+# #include "opticaldetectorservices_lariat.fcl"
 
 BEGIN_PROLOG
 
@@ -25,41 +25,41 @@ lariat_services:
  Geometry:                     @local::lariat_geo 	        
  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
  AuxDetGeometry:               @local::lariat_auxdetgeo            
- DetectorProperties:        @local::lariat_detproperties   
- LArProperties:             @local::lariat_properties	
- LArFFT:                    @local::lariat_larfft  	
- DatabaseUtil:	            @local::lariat_database        
- DatabaseUtilityT1034:      @local::lariat_databaseutility
- SignalShapingServiceT1034: @local::lariat_signalshapingservice
- TimeService:               @local::lariat_timeservice  
- BackTracker:               @local::standard_backtracker
- SeedService:               @local::standard_seedservice
- #UBOpticalChConfig:     @local::lariat_optical_ch_config
- IDetPedestalService:       @local::lariat_detpedestalservice
+ DetectorProperties:           @local::lariat_detproperties
+ LArProperties:                @local::lariat_properties
+ LArFFT:                       @local::lariat_larfft
+ DatabaseUtil:	               @local::lariat_database
+ DatabaseUtilityT1034:         @local::lariat_databaseutility
+ SignalShapingServiceT1034:    @local::lariat_signalshapingservice
+ TimeService:                  @local::lariat_timeservice
+ BackTracker:                  @local::standard_backtracker
+ SeedService:                  @local::standard_seedservice
+ IDetPedestalService:          @local::lariat_detpedestalservice
  IChannelStatusService:        @local::lariat_channel_filter
+ #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
 
 lariat_simulation_services:
 {
- LArG4Parameters:           @local::lariat_largeantparameters
- LArVoxelCalculator:        @local::lariat_larvoxelcalculator
- MagneticField:             @local::no_mag                   
- ExptGeoHelperInterface:    @local::lariat_geometry_helper   
- Geometry:                  @local::lariat_geo               
+ LArG4Parameters:              @local::lariat_largeantparameters
+ LArVoxelCalculator:           @local::lariat_larvoxelcalculator
+ MagneticField:                @local::no_mag
+ ExptGeoHelperInterface:       @local::lariat_geometry_helper
+ Geometry:                     @local::lariat_geo
  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
  AuxDetGeometry:               @local::lariat_auxdetgeo            
- DetectorProperties:        @local::lariat_detproperties     
- LArProperties:             @local::lariat_properties        
- LArFFT:                    @local::lariat_larfft            
- DatabaseUtil:	            @local::lariat_database          
- DatabaseUtilityT1034:      @local::lariat_databaseutility
- SignalShapingServiceT1034: @local::lariat_signalshapingservice
- TimeService:               @local::lariat_timeservice  
- BackTracker:               @local::standard_backtracker      
- SeedService:               @local::standard_seedservice
- #OpDetResponseInterface: @local::lariat_opdetresponse 
- #UBOpticalChConfig:      @local::lariat_optical_ch_config
+ DetectorProperties:           @local::lariat_detproperties
+ LArProperties:                @local::lariat_properties
+ LArFFT:                       @local::lariat_larfft
+ DatabaseUtil:	               @local::lariat_database
+ DatabaseUtilityT1034:         @local::lariat_databaseutility
+ SignalShapingServiceT1034:    @local::lariat_signalshapingservice
+ TimeService:                  @local::lariat_timeservice
+ BackTracker:                  @local::standard_backtracker
+ SeedService:                  @local::standard_seedservice
  IChannelStatusService:        @local::lariat_channel_filter
+ #OpDetResponseInterface:      @local::lariat_opdetresponse
+ #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
 
 

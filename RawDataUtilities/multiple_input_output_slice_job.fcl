@@ -1,9 +1,9 @@
 #include "databaseutility_lariat.fcl"
 #include "geometry_lariat.fcl"
-#include "sliceralg.fcl"
+#include "eventbuilderalg.fcl"
 #include "RawDataUtilities_algs.fcl"
 
-process_name: SlicerNoMerge
+process_name: EventBuilderNoMerge
 
 services:
 {
@@ -18,14 +18,14 @@ services:
 
 source:
 {
- module_type: "SlicerInput"
+ module_type: "EventBuilderInput"
 
  # Number of events to analyze; "-1" means all of the events in the input
  # file. You can override this value with the "-n" option on the command line.
  maxEvents:    -1
 
- SourceName:   "daq"  # RawDataLabel
- SlicerAlg:    @local::standard_sliceralg
+ SourceName:         "daq"  # RawDataLabel
+ EventBuilderAlg:    @local::standard_eventbuilderalg
 
  FragmentToDigitAlg: @local::lariat_fragmenttodigit_alg
 
