@@ -27,7 +27,7 @@
 
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
+#include "larcore/Geometry/Geometry.h"
 
 //LArIAT include
 #include "Utilities/DatabaseUtilityT1034.h"

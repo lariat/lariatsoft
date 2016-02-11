@@ -24,8 +24,8 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "RawData/AuxDetDigit.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/RawData/AuxDetDigit.h"
 
 //ROOT
 #include <TH1F.h>

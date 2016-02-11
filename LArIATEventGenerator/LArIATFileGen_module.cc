@@ -27,9 +27,9 @@
 #include "SimulationBase/MCParticle.h"
 
 // lar includes
-#include "Geometry/Geometry.h"
-#include "SummaryData/RunData.h"
-#include "Utilities/DetectorProperties.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/SummaryData/RunData.h"
+#include "lardata/Utilities/DetectorProperties.h"
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"

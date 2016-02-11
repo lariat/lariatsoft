@@ -47,10 +47,10 @@
 #include <TTree.h>
 
 // LArSoft Includes
-#include "Utilities/AssociationUtil.h"
-#include "RawData/TriggerData.h"
-#include "RecoBase/Track.h"
-#include "AnalysisBase/Calorimetry.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/RawData/TriggerData.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/AnalysisBase/Calorimetry.h"
 
 //LAriatSoft Includes
 #include "RawDataUtilities/TriggerDigitUtility.h"

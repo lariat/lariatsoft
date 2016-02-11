@@ -34,17 +34,17 @@
 
 //Larsoft Includes
 
-#include "SimpleTypesAndConstants/RawTypes.h"
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
-#include "RecoBase/Wire.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "lardata/RecoBase/Wire.h"
 #include "LArIATDataProducts/Edge.h"
-#include "RecoBase/Hit.h"
-#include "RecoBaseArt/HitCreator.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/AssociationUtil.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/RecoBaseArt/HitCreator.h"
+#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/Utilities/AssociationUtil.h"
 
 // ROOT Includes
 #include "TGraphErrors.h"

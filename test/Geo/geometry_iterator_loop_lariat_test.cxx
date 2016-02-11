@@ -16,7 +16,7 @@
 // LArSoft libraries
 #include "test/Geo/geometry_unit_test_lariat.h"
 #include "test/Geometry/GeometryIteratorLoopTestAlg.h"
-#include "Geometry/GeometryCore.h"
+#include "larcore/Geometry/GeometryCore.h"
 #include "Geo/ChannelMapLArIATAlg.h"
 
 // utility libraries

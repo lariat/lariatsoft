@@ -10,7 +10,7 @@ include_directories( $ENV{POSTGRESQL_INC}       	       )
 
 art_make(BASENAME_ONLY
          LIBRARY_NAME     RawDataUtilities
-	       LIB_LIBRARIES    RawData
+	       LIB_LIBRARIES    lardata_RawData
 	                        LariatFragments
                   			  DatabaseUtilityT1034_service
 			                    ${ART_FRAMEWORK_CORE}
@@ -29,13 +29,13 @@ art_make(BASENAME_ONLY
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
                           ${FHICLCPP}	  
-         DICT_LIBRARIES   RawData
-	 		                    SummaryData
-        SOURCE_LIBRARIES  RawData
-	                        Utilities
+         DICT_LIBRARIES   lardata_RawData
+	 		                    larcore_SummaryData
+        SOURCE_LIBRARIES  lardata_RawData
+	                        lardata_Utilities
 	 		                    LariatFragments
                           LArIATDataProducts
-			                    SummaryData
+			                    larcore_SummaryData
 			                    RawDataUtilities
 			                    DatabaseUtilityT1034_service
 	                        ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -45,9 +45,9 @@ art_make(BASENAME_ONLY
                           ${ART_FRAMEWORK_IO_ROOT}
 			                    ${MF_MESSAGELOGGER}
                           ${ROOT_BASIC_LIB_LIST}
-         MODULE_LIBRARIES RawData
-	                        SummaryData
-			                    Geometry_service
+         MODULE_LIBRARIES lardata_RawData
+	                        larcore_SummaryData
+			                    larcore_Geometry_Geometry_service
                           LariatFragments
                           RawDataUtilities
 			                    ${ART_FRAMEWORK_CORE}

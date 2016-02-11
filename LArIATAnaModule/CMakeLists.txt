@@ -1,28 +1,28 @@
 art_make(BASENAME_ONLY
-         LIB_LIBRARIES Geometry
-         ClusterRecoUtil
-         RecoBase
+         LIB_LIBRARIES larcore_Geometry
+         larreco_RecoAlg_ClusterRecoUtil
+         lardata_RecoBase
          MODULE_LIBRARIES LArIATRecoAlg
          LArIATDataProducts
-         Filters
-         ClusterFinder
-         ClusterRecoUtil
+         larevt_Filters
+         larreco_ClusterFinder
+         larreco_RecoAlg_ClusterRecoUtil
          DatabaseUtilityT1034_service
-         RecoAlg
-	 AnalysisAlg
-         RawData
-         Simulation
-         SummaryData
-         Geometry
-         Geometry_service
+         larreco_RecoAlg
+	 lardata_AnalysisAlg
+         lardata_RawData
+         larsim_Simulation
+         larcore_SummaryData
+         larcore_Geometry
+         larcore_Geometry_Geometry_service
          RawDataUtilities
-         RecoBase
-         RecoBaseArt
-         RecoObjects
-         Utilities
-         LArProperties_service
-         DetectorProperties_service
-         BackTracker_service
+         lardata_RecoBase
+         lardata_RecoBaseArt
+         lardata_RecoObjects
+         lardata_Utilities
+         lardata_Utilities_LArProperties_service
+         lardata_Utilities_DetectorProperties_service
+         larsim_MCCheater_BackTracker_service
          ${SEEDSERVICE_SERVICE} # artextensions
          ${SIMULATIONBASE}
          ${ART_FRAMEWORK_CORE}
