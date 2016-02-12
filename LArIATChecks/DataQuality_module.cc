@@ -21,7 +21,18 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "cetlib/exception.h"
 
+// LArSoft includes
+#include "RawData/AuxDetDigit.h"
+#include "RawData/OpDetPulse.h"
+#include "RawData/RawDigit.h"
+#include "RawData/TriggerData.h"
+//#include "SimpleTypesAndConstants/RawTypes.h"
+//#include "SummaryData/RunData.h"
+//#include "Utilities/AssociationUtil.h"
+
 // LArIATSoft includes
+#include "LArIATRecoAlg/TOFBuilderAlg.h"
+#include "RawDataUtilities/FragmentToDigitAlg.h"
 #include "RawDataUtilities/FragmentUtility.h"
 #include "RawDataUtilities/EventBuilderAlg.h"
 #include "Utilities/DatabaseUtilityT1034.h"
@@ -96,6 +107,15 @@ namespace DataQuality {
     // event builder algorithm
     rdu::EventBuilderAlg fEventBuilderAlg;
 
+    // fragment-to-digit algorithm
+    FragmentToDigitAlg fFragmentToDigitAlg;
+
+    // TOF builder algorithm
+    TOFBuilderAlg fTOFBuilderAlg;
+
+    // timestamp from SpillTrailer
+    std::uint64_t fTimestamp;
+
     // vector of parameter names to be queried from the
     // lariat_xml_database table for a specified run
     std::vector<std::string> fConfigParams;
@@ -161,6 +181,10 @@ namespace DataQuality {
     TH1D * fNumberTPCReadoutsHistogram;
     TH1D * fTPCIntervalsDeltaTHistogram;
     TH1D * fTPCIntervalsDeltaTZHistogram;
+
+    TH1I * fUSTOFHitsHistogram;
+    TH1I * fDSTOFHitsHistogram;
+    TH1D * fTOFHistogram;
 
     std::vector< std::vector< TH1I * > > fCAENPedestalHistograms;
     std::vector< std::vector< TH1I * > > fCAENADCHistograms;
@@ -254,6 +278,8 @@ namespace DataQuality {
   DataQuality::DataQuality(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
+    , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
+    , fTOFBuilderAlg(pset)
   {
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
@@ -288,8 +314,23 @@ namespace DataQuality {
     fCaenV1740BWaveform.resize(V1740B_N_CHANNELS);
     fCaenV1751Waveform.resize(V1751_N_CHANNELS);
 
+    // resize vectors for pedestal TH1 objects
+    //  0 ...  7  CAEN V1740
+    //  8 ... 15  CAEN V1751
+    // 15 ... 23
+    // 24 ... 31  CAEN V1740
+    fCAENPedestalHistograms.resize(32);
+    fCAENADCHistograms.resize(32);
+
     // TFile service
     art::ServiceHandle<art::TFileService> tfs;
+
+    // create sub-directory for TOF
+    art::TFileDirectory tofDir = tfs->mkdir("tof");
+
+    // create sub-directories for pedestal and ADC histograms
+    art::TFileDirectory pedestalDir = tfs->mkdir("pedestal");
+    art::TFileDirectory adcDir      = tfs->mkdir("adc");
 
     // create TH1 objects
     fIntervalsDeltaTHistogram     = tfs->make<TH1D>("IntervalsDeltaT",     ";#Delta t [ms];Entries per ms",       10000, -0.5, 9999.5);
@@ -298,17 +339,11 @@ namespace DataQuality {
     fTPCIntervalsDeltaTHistogram  = tfs->make<TH1D>("TPCIntervalsDeltaT",  ";#Delta t [ms];Entries per ms",       10000, -0.5, 9999.5);
     fTPCIntervalsDeltaTZHistogram = tfs->make<TH1D>("TPCIntervalsDeltaTZ", ";#Delta t [ms];Entries per 0.001 ms",  1000,    0,    1);
 
-    // create sub-directories for pedestal and ADC histograms
-    art::TFileDirectory pedestalDir = tfs->mkdir("pedestal");
-    art::TFileDirectory adcDir      = tfs->mkdir("adc");
+    // TH1 objects for TOF
+    fUSTOFHitsHistogram = tofDir.make<TH1I>("USTOFHits", ";Tick tick;Entries per time tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
+    fDSTOFHitsHistogram = tofDir.make<TH1I>("DSTOFHits", ";Tick tick;Entries per time tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
 
-    // resize vectors for TH1 objects
-    //  0 ...  7  CAEN V1740
-    //  8 ... 15  CAEN V1751
-    // 15 ... 23
-    // 24 ... 31  CAEN V1740
-    fCAENPedestalHistograms.resize(32);
-    fCAENADCHistograms.resize(32);
+    fTOFHistogram = tofDir.make<TH1D>("TOF", ";TOF [ns];Entries per ns", 500, 0, 500);
 
     // create TH1 objects in pedestal and ADC sub-directories
     for (size_t i = 0; i < V1740_N_BOARDS; ++i) {
@@ -610,6 +645,15 @@ namespace DataQuality {
     // make the utility to access the fragments from the event record
     rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
 
+    // get SpillTrailer
+    LariatFragment::SpillTrailer const& spillTrailer = (&fragUtil.DAQFragment())->spillTrailer;
+
+    // get timestamp from SpillTrailer, cast as uint64_t
+    fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
+
+    // initialize run for the fragment-to-digit algorithm
+    fFragmentToDigitAlg.InitializeRun(fRun, fTimestamp);
+
     // configure the event builder algorithm
     fEventBuilderAlg.Configure(fV1740PreAcquisitionWindow,
                                fV1740PostAcquisitionWindow,
@@ -881,6 +925,100 @@ namespace DataQuality {
       fNumberTPCReadoutsHistogram->Fill(fNumberTPCReadouts);
 
       fEventBuilderTree->Fill();
+
+      ////////////////////////////////////////////////////////
+      // add digits
+      ////////////////////////////////////////////////////////
+
+      std::vector<raw::AuxDetDigit> auxDetDigits;
+      std::vector<raw::RawDigit>    rawDigits;
+      std::vector<raw::OpDetPulse>  opDetPulses;
+
+      std::cout << "Collection.caenBlocks.size(): " << Collection.caenBlocks.size() << std::endl;
+      std::cout << "Collection.tdcBlocks.size():  " << Collection.tdcBlocks.size()  << std::endl;
+      std::cout << "auxDetDigits.size(): " << auxDetDigits.size() << std::endl;
+      std::cout << "rawDigits.size():    " << rawDigits.size()    << std::endl;
+      std::cout << "opDetPulses.size():  " << opDetPulses.size()  << std::endl;
+
+      fFragmentToDigitAlg.makeTheDigits(Collection.caenBlocks,
+                                        Collection.tdcBlocks,
+                                        auxDetDigits,
+                                        rawDigits,
+                                        opDetPulses);
+
+      ////////////////////////////////////////////////////////
+      // begin time of flight shenanigans
+      ////////////////////////////////////////////////////////
+
+      std::vector< const raw::AuxDetDigit * > ustofDigits;
+      std::vector< const raw::AuxDetDigit * > dstofDigits;
+
+      for (size_t j = 0; j < auxDetDigits.size(); ++j) {
+        //if (auxDetDigits[j]) {
+        //}
+        std::cout << "AuxDetName(): " << auxDetDigits[j].AuxDetName() << std::endl;
+        if (auxDetDigits[j].AuxDetName() == "TOFUS")
+          ustofDigits.push_back(&(auxDetDigits[j]));
+        if (auxDetDigits[j].AuxDetName() == "TOFDS")
+          dstofDigits.push_back(&(auxDetDigits[j]));
+      }
+
+      if (ustofDigits.size() == 2 and dstofDigits.size() == 2) {
+
+        // vector for TOF waveforms
+        std::vector<short> ustofWaveformA;
+        std::vector<short> ustofWaveformB;
+        std::vector<short> dstofWaveformA;
+        std::vector<short> dstofWaveformB;
+
+        // fill vectors with TOF waveforms
+        for (size_t j = 0; j < ustofDigits[0]->NADC(); ++j) {
+          ustofWaveformA.push_back(ustofDigits[0]->ADC(j));
+        }
+        for (size_t j = 0; j < ustofDigits[1]->NADC(); ++j) {
+          ustofWaveformB.push_back(ustofDigits[1]->ADC(j));
+        }
+        for (size_t j = 0; j < dstofDigits[0]->NADC(); ++j) {
+          dstofWaveformA.push_back(dstofDigits[0]->ADC(j));
+        }
+        for (size_t j = 0; j < dstofDigits[1]->NADC(); ++j) {
+          dstofWaveformB.push_back(dstofDigits[1]->ADC(j));
+        }
+
+        // find hits from TOF waveforms
+        std::vector<short> ustofAHits = fTOFBuilderAlg.find_hits(ustofWaveformA);
+        std::vector<short> ustofBHits = fTOFBuilderAlg.find_hits(ustofWaveformB);
+        std::vector<short> dstofAHits = fTOFBuilderAlg.find_hits(dstofWaveformA);
+        std::vector<short> dstofBHits = fTOFBuilderAlg.find_hits(dstofWaveformB);
+
+        // match hits between TOF counters;
+        // USTOF1 matched with USTOF2, DSTOF1 matched with DSTOF2
+        std::vector<short> ustofHits = fTOFBuilderAlg.match_hits(ustofAHits, ustofBHits);
+        std::vector<short> dstofHits = fTOFBuilderAlg.match_hits(dstofAHits, dstofBHits);
+
+        std::cout << "ustofHits.size(): " << ustofHits.size() << std::endl;
+        std::cout << "dstofHits.size(): " << dstofHits.size() << std::endl;
+
+        for (size_t j = 0; j < ustofHits.size(); ++j) {
+          fUSTOFHitsHistogram->Fill(ustofHits[j]);
+        }
+
+        for (size_t j = 0; j < dstofHits.size(); ++j) {
+          fDSTOFHitsHistogram->Fill(dstofHits[j]);
+        }
+
+        std::pair< std::vector<short>, std::vector<long> > tofAndTimeStamp;
+        tofAndTimeStamp = fTOFBuilderAlg.get_TOF_and_TimeStamp(ustofDigits, dstofDigits);
+
+        std::cout << "tofAndTimeStamp.first.size(): " << tofAndTimeStamp.first.size() << std::endl;
+
+        for (size_t j = 0; j < tofAndTimeStamp.first.size(); ++j) {
+          std::cout << "tofAndTimeStamp.first.at(j): " << tofAndTimeStamp.first.at(j) << std::endl;
+          fTOFHistogram->Fill(tofAndTimeStamp.first.at(j));
+        }
+
+      }
+
     }
 
     std::vector< rdu::DataBlock > DataBlocks;
