@@ -1,5 +1,5 @@
 //////////////////////////////////////////////////////////////
-// Name:      SlicerAlg.cxx
+// Name:      EventBuilderAlg.cxx
 // Date:      20 August 2015
 // Author:    Everybody is an author!
 //////////////////////////////////////////////////////////////
@@ -7,7 +7,7 @@
 //////////////////////////////////////////////////////////////
 
 // Class include
-#include "RawDataUtilities/SlicerAlg.h"
+#include "RawDataUtilities/EventBuilderAlg.h"
 
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -27,7 +27,7 @@ namespace rdu {
 
   //-----------------------------------------------------------------------
   // constructor
-  SlicerAlg::SlicerAlg(fhicl::ParameterSet const& pset)
+  EventBuilderAlg::EventBuilderAlg(fhicl::ParameterSet const& pset)
     : fClockCorrectionAlg(pset.get<fhicl::ParameterSet>("ClockCorrectionAlg"))
   {
     // read in parameters from .fcl files
@@ -36,10 +36,10 @@ namespace rdu {
 
   //-----------------------------------------------------------------------
   // destructor
-  SlicerAlg::~SlicerAlg() {}
+  EventBuilderAlg::~EventBuilderAlg() {}
 
   //-----------------------------------------------------------------------
-  void SlicerAlg::reconfigure(fhicl::ParameterSet const& pset)
+  void EventBuilderAlg::reconfigure(fhicl::ParameterSet const& pset)
   {
     fTPCReadoutBufferLow  = pset.get< double >("TPCReadoutBufferLow",  0.256);
     fTPCReadoutBufferHigh = pset.get< double >("TPCReadoutBufferHigh", 0.256);
@@ -48,18 +48,18 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  void SlicerAlg::Configure(double V1740PreAcquisitionWindow,
-                            double V1740PostAcquisitionWindow,
-                            double V1740AcquisitionWindow,
-                            double V1740BPreAcquisitionWindow,
-                            double V1740BPostAcquisitionWindow,
-                            double V1740BAcquisitionWindow,
-                            double V1751PreAcquisitionWindow,
-                            double V1751PostAcquisitionWindow,
-                            double V1751AcquisitionWindow,
-                            double TDCPreAcquisitionWindow,
-                            double TDCPostAcquisitionWindow,
-                            double TDCAcquisitionWindow)
+  void EventBuilderAlg::Configure(double V1740PreAcquisitionWindow,
+                                  double V1740PostAcquisitionWindow,
+                                  double V1740AcquisitionWindow,
+                                  double V1740BPreAcquisitionWindow,
+                                  double V1740BPostAcquisitionWindow,
+                                  double V1740BAcquisitionWindow,
+                                  double V1751PreAcquisitionWindow,
+                                  double V1751PostAcquisitionWindow,
+                                  double V1751AcquisitionWindow,
+                                  double TDCPreAcquisitionWindow,
+                                  double TDCPostAcquisitionWindow,
+                                  double TDCAcquisitionWindow)
   {
     fV1740PreAcquisitionWindow   = V1740PreAcquisitionWindow;
     fV1740PostAcquisitionWindow  = V1740PostAcquisitionWindow;
@@ -78,11 +78,11 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  std::vector< std::pair< double, double> > SlicerAlg::CreateIntervals(std::vector< rdu::DataBlock > const& DataBlocks,
-                                                                       unsigned int                  const& DeviceID,
-                                                                       double                        const& PreAcquisitionWindow,
-                                                                       double                        const& PostAcquisitionWindow,
-                                                                       double                        const& AcquisitionWindow)
+  std::vector< std::pair< double, double> > EventBuilderAlg::CreateIntervals(std::vector< rdu::DataBlock > const& DataBlocks,
+                                                                             unsigned int                  const& DeviceID,
+                                                                             double                        const& PreAcquisitionWindow,
+                                                                             double                        const& PostAcquisitionWindow,
+                                                                             double                        const& AcquisitionWindow)
   {
     std::vector< std::pair< double, double > > Intervals;
 
@@ -100,7 +100,7 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  std::vector< std::pair< double, double > > SlicerAlg::IntervalsSelfMerge(std::vector< std::pair< double, double > > const& Intervals)
+  std::vector< std::pair< double, double > > EventBuilderAlg::IntervalsSelfMerge(std::vector< std::pair< double, double > > const& Intervals)
   {
     // vector merged intervals
     std::vector< std::pair< double, double > > MergedIntervals;
@@ -173,8 +173,8 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  std::vector< std::pair< double, double > > SlicerAlg::MergeIntervals(std::vector< std::pair< double, double > > const& IntervalsA,
-                                                                       std::vector< std::pair< double, double > > const& IntervalsB)
+  std::vector< std::pair< double, double > > EventBuilderAlg::MergeIntervals(std::vector< std::pair< double, double > > const& IntervalsA,
+                                                                             std::vector< std::pair< double, double > > const& IntervalsB)
   {
     // vector merged intervals
     std::vector< std::pair< double, double > > MergedIntervals;
@@ -302,7 +302,7 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  std::vector< rdu::DataBlock > SlicerAlg::GetDataBlocks(const LariatFragment * data)
+  std::vector< rdu::DataBlock > EventBuilderAlg::GetDataBlocks(const LariatFragment * data)
   {
 
     std::vector< rdu::DataBlock > DataBlocks;
@@ -314,10 +314,10 @@ namespace rdu {
 
     for (std::map< unsigned int, std::vector< double> >::const_iterator
          iter = TimeStampMap.begin(); iter != TimeStampMap.end(); ++iter) {
-      mf::LogVerbatim("SlicerAlg") << "Device ID: "
-                                   << iter->first
-                                   << "; number of data blocks: "
-                                   << iter->second.size();
+      mf::LogVerbatim("EventBuilderAlg") << "Device ID: "
+                                           << iter->first
+                                           << "; number of data blocks: "
+                                           << iter->second.size();
     }
 
     // get clock correction parameters
@@ -357,7 +357,7 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  std::vector< rdu::DataBlockCollection > SlicerAlg::Slice(const LariatFragment * data)
+  std::vector< rdu::DataBlockCollection > EventBuilderAlg::Build(const LariatFragment * data)
   {
 
     // get data blocks
@@ -626,9 +626,9 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  void SlicerAlg::hello_world()
+  void EventBuilderAlg::hello_world()
   {
-    mf::LogVerbatim("SlicerAlg")
+    mf::LogVerbatim("EventBuilderAlg")
         << "\n///////////////////////////////////////////////////////////\n"
         << "Hello, World!\n"
         << "///////////////////////////////////////////////////////////\n";
@@ -639,7 +639,7 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
-  void SlicerAlg::hello_kitty()
+  void EventBuilderAlg::hello_kitty()
   {
     return;
   }

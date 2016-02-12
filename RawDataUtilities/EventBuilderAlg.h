@@ -1,13 +1,13 @@
 //////////////////////////////////////////////////////////////
-// Name:      SlicerAlg.h
+// Name:      EventBuilderAlg.h
 // Date:      20 August 2015
 // Author:    Everybody is an author!
 //////////////////////////////////////////////////////////////
 // Event slicing algorithm for LArIAT.
 //////////////////////////////////////////////////////////////
 
-#ifndef SLICERALG_H
-#define SLICERALG_H
+#ifndef EVENTBUILDERALG_H
+#define EVENTBUILDERALG_H
 
 // Framework includes
 #include "fhiclcpp/ParameterSet.h"
@@ -30,15 +30,15 @@
 
 namespace rdu {
 
-  class SlicerAlg {
+  class EventBuilderAlg {
 
    public:
 
     // constructor
-    SlicerAlg(fhicl::ParameterSet const& pset);
+    EventBuilderAlg(fhicl::ParameterSet const& pset);
 
     // destructor
-    ~SlicerAlg();
+    ~EventBuilderAlg();
 
     // this method reads in any parameters from the .fcl files
     void reconfigure(fhicl::ParameterSet const& pset);
@@ -75,9 +75,9 @@ namespace rdu {
     std::vector< rdu::DataBlock > GetDataBlocks(const LariatFragment * data);
     //void GetDataBlocks(const LariatFragment * data, std::vector< rdu::DataBlock > & DataBlocks);
 
-    // slice
-    std::vector< rdu::DataBlockCollection > Slice(const LariatFragment * data);
-    //void Slice(const LariatFragment * data, std::vector< rdu::DataBlockCollection > & Collections);
+    // build
+    std::vector< rdu::DataBlockCollection > Build(const LariatFragment * data);
+    //void Build(const LariatFragment * data, std::vector< rdu::DataBlockCollection > & Collections);
 
     // this method is used for testing porpoises
     void hello_world();

@@ -1,11 +1,11 @@
 //////////////////////////////////////////////////////////////
-// Name:      SlicerCzech_module.cc
+// Name:      EventBuilderCzech_module.cc
 // Date:      22 August 2015
 // Author:    Everybody is an author!
 //////////////////////////////////////////////////////////////
 
-#ifndef SlicerCheck_Module
-#define SlicerCheck_Module
+#ifndef EventBuilderCheck_Module
+#define EventBuilderCheck_Module
 
 // Framework includes
 #include "art/Framework/Core/EDAnalyzer.h"
@@ -23,7 +23,7 @@
 
 // LArIATSoft includes
 #include "RawDataUtilities/FragmentUtility.h"
-#include "RawDataUtilities/SlicerAlg.h"
+#include "RawDataUtilities/EventBuilderAlg.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
 // ROOT includes
@@ -41,20 +41,20 @@
 #include <utility>
 #include <vector>
 
-namespace SlicerCheck {
+namespace EventBuilderCheck {
 
   //-----------------------------------------------------------------------
   //-----------------------------------------------------------------------
   // class definition
 
-  class SlicerCheck : public art::EDAnalyzer 
+  class EventBuilderCheck : public art::EDAnalyzer 
   {
 
    public:
 
     // Standard constructor and destructor for an ART module.
-    explicit SlicerCheck(fhicl::ParameterSet const& pset);
-    virtual ~SlicerCheck();
+    explicit EventBuilderCheck(fhicl::ParameterSet const& pset);
+    virtual ~EventBuilderCheck();
 
     // This method is called once, at the start of the job.
     void beginJob();
@@ -82,8 +82,8 @@ namespace SlicerCheck {
     // DatabaseUtilityT1034 service handle
     art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
 
-    // slicer algorithm
-    rdu::SlicerAlg fSlicerAlg;
+    // event builder algorithm
+    rdu::EventBuilderAlg fEventBuilderAlg;
 
     // vector of parameter names to be queried from the
     // lariat_xml_database table for a specified run
@@ -149,7 +149,7 @@ namespace SlicerCheck {
     TH1D * fTPCIntervalsDeltaTZHistogram;
 
     // pointer to n-tuples
-    TTree * fSlicerTree;
+    TTree * fEventBuilderTree;
     TTree * fTPCTree;
 
     // variables that will go into the n-tuples
@@ -186,7 +186,7 @@ namespace SlicerCheck {
     std::vector<double> fCAENBoard24TimeStamps;
     std::vector<double> fTDCTimeStamps;
 
-  }; // class SlicerCheck
+  }; // class EventBuilderCheck
 
 
   //-----------------------------------------------------------------------
@@ -195,9 +195,9 @@ namespace SlicerCheck {
 
   //-----------------------------------------------------------------------
   // constructor
-  SlicerCheck::SlicerCheck(fhicl::ParameterSet const& pset)
+  EventBuilderCheck::EventBuilderCheck(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
-    , fSlicerAlg(pset.get<fhicl::ParameterSet>("SlicerAlg"))
+    , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
   {
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
@@ -205,13 +205,13 @@ namespace SlicerCheck {
 
   //-----------------------------------------------------------------------
   // destructor
-  SlicerCheck::~SlicerCheck() 
+  EventBuilderCheck::~EventBuilderCheck() 
   {}
 
   //-----------------------------------------------------------------------
-  void SlicerCheck::beginJob()
+  void EventBuilderCheck::beginJob()
   {
-    fSlicerAlg.hello_world();
+    fEventBuilderAlg.hello_world();
 
     fConfigParams.push_back("v1495_config_v1495_delay_ticks");
     fConfigParams.push_back("v1740_config_caen_postpercent");
@@ -227,53 +227,53 @@ namespace SlicerCheck {
 
     art::ServiceHandle<art::TFileService> tfs;
 
-    fSlicerTree = tfs->make<TTree>("SlicerTree", "SlicerTree");
+    fEventBuilderTree = tfs->make<TTree>("EventBuilderTree", "EventBuilderTree");
 
-    fSlicerTree->Branch("Run",                         &fRun,                         "Run/I");
-    fSlicerTree->Branch("SubRun",                      &fSubRun,                      "SubRun/I");
-    fSlicerTree->Branch("IntervalsDeltaT",             &fIntervalsDeltaT,             "IntervalsDeltaT/D");
-    fSlicerTree->Branch("IntervalLength",              &fIntervalLength,              "IntervalLength/D");
-    fSlicerTree->Branch("IntervalStart",               &fIntervalStart,               "IntervalStart/D");
-    fSlicerTree->Branch("IntervalStop",                &fIntervalStop,                "IntervalStop/D");
-    fSlicerTree->Branch("NumberTPCReadouts",           &fNumberTPCReadouts,           "NumberTPCReadouts/I");
-    fSlicerTree->Branch("NumberCAENBlocks",            &fNumberCAENBlocks,            "NumberCAENBlocks/I");
-    fSlicerTree->Branch("NumberTDCBlocks",             &fNumberTDCBlocks,             "NumberTDCBlocks/I");
-    fSlicerTree->Branch("NumberCAENBoard0Blocks",      &fNumberCAENBoard0Blocks,      "NumberCAENBoard0Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard1Blocks",      &fNumberCAENBoard1Blocks,      "NumberCAENBoard1Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard2Blocks",      &fNumberCAENBoard2Blocks,      "NumberCAENBoard2Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard3Blocks",      &fNumberCAENBoard3Blocks,      "NumberCAENBoard3Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard4Blocks",      &fNumberCAENBoard4Blocks,      "NumberCAENBoard4Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard5Blocks",      &fNumberCAENBoard5Blocks,      "NumberCAENBoard5Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard6Blocks",      &fNumberCAENBoard6Blocks,      "NumberCAENBoard6Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard7Blocks",      &fNumberCAENBoard7Blocks,      "NumberCAENBoard7Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard8Blocks",      &fNumberCAENBoard8Blocks,      "NumberCAENBoard8Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard9Blocks",      &fNumberCAENBoard9Blocks,      "NumberCAENBoard9Blocks/I");
-    fSlicerTree->Branch("NumberCAENBoard24Blocks",     &fNumberCAENBoard24Blocks,     "NumberCAENBoard24Blocks/I");
-    fSlicerTree->Branch("V1740PreAcquisitionWindow",   &fV1740PreAcquisitionWindow,   "V1740PreAcquisitionWindow/D");
-    fSlicerTree->Branch("V1740PostAcquisitionWindow",  &fV1740PostAcquisitionWindow,  "V1740PostAcquisitionWindow/D");
-    fSlicerTree->Branch("V1740AcquisitionWindow",      &fV1740AcquisitionWindow,      "V1740AcquisitionWindow/D");
-    fSlicerTree->Branch("V1740BPreAcquisitionWindow",  &fV1740BPreAcquisitionWindow,  "V1740BPreAcquisitionWindow/D");
-    fSlicerTree->Branch("V1740BPostAcquisitionWindow", &fV1740BPostAcquisitionWindow, "V1740BPostAcquisitionWindow/D");
-    fSlicerTree->Branch("V1740BAcquisitionWindow",     &fV1740BAcquisitionWindow,     "V1740BAcquisitionWindow/D");
-    fSlicerTree->Branch("V1751PreAcquisitionWindow",   &fV1751PreAcquisitionWindow,   "V1751PreAcquisitionWindow/D");
-    fSlicerTree->Branch("V1751PostAcquisitionWindow",  &fV1751PostAcquisitionWindow,  "V1751PostAcquisitionWindow/D");
-    fSlicerTree->Branch("V1751AcquisitionWindow",      &fV1751AcquisitionWindow,      "V1751AcquisitionWindow/D");
-    fSlicerTree->Branch("TDCPreAcquisitionWindow",     &fTDCPreAcquisitionWindow,     "TDCPreAcquisitionWindow/D");
-    fSlicerTree->Branch("TDCPostAcquisitionWindow",    &fTDCPostAcquisitionWindow,    "TDCPostAcquisitionWindow/D");
-    fSlicerTree->Branch("TDCAcquisitionWindow",        &fTDCAcquisitionWindow,        "TDCAcquisitionWindow/D");
-    fSlicerTree->Branch("CAENBoard0TimeStamps",        &fCAENBoard0TimeStamps);
-    fSlicerTree->Branch("CAENBoard1TimeStamps",        &fCAENBoard1TimeStamps);
-    fSlicerTree->Branch("CAENBoard2TimeStamps",        &fCAENBoard2TimeStamps);
-    fSlicerTree->Branch("CAENBoard3TimeStamps",        &fCAENBoard3TimeStamps);
-    fSlicerTree->Branch("CAENBoard4TimeStamps",        &fCAENBoard4TimeStamps);
-    fSlicerTree->Branch("CAENBoard5TimeStamps",        &fCAENBoard5TimeStamps);
-    fSlicerTree->Branch("CAENBoard5TimeStamps",        &fCAENBoard5TimeStamps);
-    fSlicerTree->Branch("CAENBoard6TimeStamps",        &fCAENBoard6TimeStamps);
-    fSlicerTree->Branch("CAENBoard7TimeStamps",        &fCAENBoard7TimeStamps);
-    fSlicerTree->Branch("CAENBoard8TimeStamps",        &fCAENBoard8TimeStamps);
-    fSlicerTree->Branch("CAENBoard9TimeStamps",        &fCAENBoard9TimeStamps);
-    fSlicerTree->Branch("CAENBoard24TimeStamps",       &fCAENBoard24TimeStamps);
-    fSlicerTree->Branch("TDCTimeStamps",               &fTDCTimeStamps);
+    fEventBuilderTree->Branch("Run",                         &fRun,                         "Run/I");
+    fEventBuilderTree->Branch("SubRun",                      &fSubRun,                      "SubRun/I");
+    fEventBuilderTree->Branch("IntervalsDeltaT",             &fIntervalsDeltaT,             "IntervalsDeltaT/D");
+    fEventBuilderTree->Branch("IntervalLength",              &fIntervalLength,              "IntervalLength/D");
+    fEventBuilderTree->Branch("IntervalStart",               &fIntervalStart,               "IntervalStart/D");
+    fEventBuilderTree->Branch("IntervalStop",                &fIntervalStop,                "IntervalStop/D");
+    fEventBuilderTree->Branch("NumberTPCReadouts",           &fNumberTPCReadouts,           "NumberTPCReadouts/I");
+    fEventBuilderTree->Branch("NumberCAENBlocks",            &fNumberCAENBlocks,            "NumberCAENBlocks/I");
+    fEventBuilderTree->Branch("NumberTDCBlocks",             &fNumberTDCBlocks,             "NumberTDCBlocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard0Blocks",      &fNumberCAENBoard0Blocks,      "NumberCAENBoard0Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard1Blocks",      &fNumberCAENBoard1Blocks,      "NumberCAENBoard1Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard2Blocks",      &fNumberCAENBoard2Blocks,      "NumberCAENBoard2Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard3Blocks",      &fNumberCAENBoard3Blocks,      "NumberCAENBoard3Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard4Blocks",      &fNumberCAENBoard4Blocks,      "NumberCAENBoard4Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard5Blocks",      &fNumberCAENBoard5Blocks,      "NumberCAENBoard5Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard6Blocks",      &fNumberCAENBoard6Blocks,      "NumberCAENBoard6Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard7Blocks",      &fNumberCAENBoard7Blocks,      "NumberCAENBoard7Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard8Blocks",      &fNumberCAENBoard8Blocks,      "NumberCAENBoard8Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard9Blocks",      &fNumberCAENBoard9Blocks,      "NumberCAENBoard9Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard24Blocks",     &fNumberCAENBoard24Blocks,     "NumberCAENBoard24Blocks/I");
+    fEventBuilderTree->Branch("V1740PreAcquisitionWindow",   &fV1740PreAcquisitionWindow,   "V1740PreAcquisitionWindow/D");
+    fEventBuilderTree->Branch("V1740PostAcquisitionWindow",  &fV1740PostAcquisitionWindow,  "V1740PostAcquisitionWindow/D");
+    fEventBuilderTree->Branch("V1740AcquisitionWindow",      &fV1740AcquisitionWindow,      "V1740AcquisitionWindow/D");
+    fEventBuilderTree->Branch("V1740BPreAcquisitionWindow",  &fV1740BPreAcquisitionWindow,  "V1740BPreAcquisitionWindow/D");
+    fEventBuilderTree->Branch("V1740BPostAcquisitionWindow", &fV1740BPostAcquisitionWindow, "V1740BPostAcquisitionWindow/D");
+    fEventBuilderTree->Branch("V1740BAcquisitionWindow",     &fV1740BAcquisitionWindow,     "V1740BAcquisitionWindow/D");
+    fEventBuilderTree->Branch("V1751PreAcquisitionWindow",   &fV1751PreAcquisitionWindow,   "V1751PreAcquisitionWindow/D");
+    fEventBuilderTree->Branch("V1751PostAcquisitionWindow",  &fV1751PostAcquisitionWindow,  "V1751PostAcquisitionWindow/D");
+    fEventBuilderTree->Branch("V1751AcquisitionWindow",      &fV1751AcquisitionWindow,      "V1751AcquisitionWindow/D");
+    fEventBuilderTree->Branch("TDCPreAcquisitionWindow",     &fTDCPreAcquisitionWindow,     "TDCPreAcquisitionWindow/D");
+    fEventBuilderTree->Branch("TDCPostAcquisitionWindow",    &fTDCPostAcquisitionWindow,    "TDCPostAcquisitionWindow/D");
+    fEventBuilderTree->Branch("TDCAcquisitionWindow",        &fTDCAcquisitionWindow,        "TDCAcquisitionWindow/D");
+    fEventBuilderTree->Branch("CAENBoard0TimeStamps",        &fCAENBoard0TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard1TimeStamps",        &fCAENBoard1TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard2TimeStamps",        &fCAENBoard2TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard3TimeStamps",        &fCAENBoard3TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard4TimeStamps",        &fCAENBoard4TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard5TimeStamps",        &fCAENBoard5TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard5TimeStamps",        &fCAENBoard5TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard6TimeStamps",        &fCAENBoard6TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard7TimeStamps",        &fCAENBoard7TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard8TimeStamps",        &fCAENBoard8TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard9TimeStamps",        &fCAENBoard9TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard24TimeStamps",       &fCAENBoard24TimeStamps);
+    fEventBuilderTree->Branch("TDCTimeStamps",               &fTDCTimeStamps);
 
     fTPCTree = tfs->make<TTree>("TPCTree", "TPCTree");
     fTPCTree->Branch("Run",                &fRun,                "Run/I");
@@ -290,7 +290,7 @@ namespace SlicerCheck {
   }
 
   //-----------------------------------------------------------------------
-  void SlicerCheck::beginRun(const art::Run& run)
+  void EventBuilderCheck::beginRun(const art::Run& run)
   {
     fRun = run.run();
     fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, fRun);
@@ -382,13 +382,13 @@ namespace SlicerCheck {
   }
 
   //-----------------------------------------------------------------------
-  void SlicerCheck::beginSubRun(const art::SubRun& subrun)
+  void EventBuilderCheck::beginSubRun(const art::SubRun& subrun)
   {}
 
   //-----------------------------------------------------------------------
-  void SlicerCheck::reconfigure(fhicl::ParameterSet const& pset)
+  void EventBuilderCheck::reconfigure(fhicl::ParameterSet const& pset)
   {
-    fSlicerAlg.reconfigure(pset.get<fhicl::ParameterSet>("SlicerAlg"));
+    fEventBuilderAlg.reconfigure(pset.get<fhicl::ParameterSet>("EventBuilderAlg"));
     fRawFragmentLabel    = pset.get< std::string >("RawFragmentLabel",    "daq"  );
     fRawFragmentInstance = pset.get< std::string >("RawFragmentInstance", "SPILL");
 
@@ -409,30 +409,30 @@ namespace SlicerCheck {
   }
 
   //-----------------------------------------------------------------------
-  void SlicerCheck::analyze(const art::Event& event) 
+  void EventBuilderCheck::analyze(const art::Event& event) 
   {
     fSubRun = event.subRun();
 
     // make the utility to access the fragments from the event record
     rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
 
-    // configure the slicer algorithm
-    fSlicerAlg.Configure(fV1740PreAcquisitionWindow,
-                         fV1740PostAcquisitionWindow,
-                         fV1740AcquisitionWindow,
-                         fV1740BPreAcquisitionWindow,
-                         fV1740BPostAcquisitionWindow,
-                         fV1740BAcquisitionWindow,
-                         fV1751PreAcquisitionWindow,
-                         fV1751PostAcquisitionWindow,
-                         fV1751AcquisitionWindow,
-                         fTDCPreAcquisitionWindow,
-                         fTDCPostAcquisitionWindow,
-                         fTDCAcquisitionWindow);
+    // configure the event builder algorithm
+    fEventBuilderAlg.Configure(fV1740PreAcquisitionWindow,
+                               fV1740PostAcquisitionWindow,
+                               fV1740AcquisitionWindow,
+                               fV1740BPreAcquisitionWindow,
+                               fV1740BPostAcquisitionWindow,
+                               fV1740BAcquisitionWindow,
+                               fV1751PreAcquisitionWindow,
+                               fV1751PostAcquisitionWindow,
+                               fV1751AcquisitionWindow,
+                               fTDCPreAcquisitionWindow,
+                               fTDCPostAcquisitionWindow,
+                               fTDCAcquisitionWindow);
 
     // group data blocks into collections
     std::vector< rdu::DataBlockCollection > Collections;
-    Collections = fSlicerAlg.Slice(&fragUtil.DAQFragment());
+    Collections = fEventBuilderAlg.Build(&fragUtil.DAQFragment());
 
     for (size_t i = 0; i < Collections.size(); ++i) {
       rdu::DataBlockCollection const& Collection = Collections[i];
@@ -553,15 +553,15 @@ namespace SlicerCheck {
 
       fNumberTPCReadoutsHistogram->Fill(fNumberTPCReadouts);
 
-      fSlicerTree->Fill();
+      fEventBuilderTree->Fill();
     }
 
     std::vector< rdu::DataBlock > DataBlocks;
-    DataBlocks = fSlicerAlg.GetDataBlocks(&fragUtil.DAQFragment());
+    DataBlocks = fEventBuilderAlg.GetDataBlocks(&fragUtil.DAQFragment());
     std::vector< std::pair< double, double > > CAENBoard0Intervals;
-    //CAENBoard0Intervals = fSlicerAlg.CreateIntervals(DataBlocks, 0, fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow, fV1740AcquisitionWindow);
-    CAENBoard0Intervals = fSlicerAlg.CreateIntervals(DataBlocks, 0, 0.128, 0.128, fV1740AcquisitionWindow);
-    CAENBoard0Intervals = fSlicerAlg.IntervalsSelfMerge(CAENBoard0Intervals);
+    //CAENBoard0Intervals = fEventBuilderAlg.CreateIntervals(DataBlocks, 0, fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow, fV1740AcquisitionWindow);
+    CAENBoard0Intervals = fEventBuilderAlg.CreateIntervals(DataBlocks, 0, 0.128, 0.128, fV1740AcquisitionWindow);
+    CAENBoard0Intervals = fEventBuilderAlg.IntervalsSelfMerge(CAENBoard0Intervals);
 
     //fTPCIntervalsDeltaT = -999999999999999999;
     fTPCIntervalsDeltaT = -1;
@@ -582,7 +582,7 @@ namespace SlicerCheck {
   }
 
   //-----------------------------------------------------------------------
-  size_t SlicerCheck::CastToSizeT(std::string const& String) 
+  size_t EventBuilderCheck::CastToSizeT(std::string const& String) 
   {
     size_t SizeT;
 
@@ -598,8 +598,8 @@ namespace SlicerCheck {
 
   // This macro has to be defined for this module to be invoked from a
   // .fcl file.
-  DEFINE_ART_MODULE(SlicerCheck)
+  DEFINE_ART_MODULE(EventBuilderCheck)
 
-} // namespace SlicerCheck
+} // namespace EventBuilderCheck
 
-#endif // SlicerCheck_Module
+#endif // EventBuilderCheck_Module
