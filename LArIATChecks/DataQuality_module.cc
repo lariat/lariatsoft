@@ -93,8 +93,8 @@ namespace DataQuality {
     // This method reads in any parameters from the .fcl files.
     void reconfigure(fhicl::ParameterSet const& pset);
 
-    // The analysis routine, called once per event. 
-    void analyze(const art::Event& evt); 
+    // The analysis routine, called once per event.
+    void analyze(const art::Event& event);
 
    private:
 
@@ -205,7 +205,7 @@ namespace DataQuality {
     int                 fRun;
     int                 fSubRun;
     int                 fEvent;
-    int                 fEventCounter;
+    //int                 fEventCounter;
     double              fIntervalsDeltaT;
     double              fIntervalsDeltaTBeginToBegin;
     double              fIntervalLength;
@@ -239,6 +239,12 @@ namespace DataQuality {
     std::vector<double> fCAENBoard9TimeStamps;
     std::vector<double> fCAENBoard24TimeStamps;
     std::vector<double> fTDCTimeStamps;
+
+    uint32_t            fTimeStampLow;
+    uint32_t            fTimeStampHigh;
+    uint32_t            fSpillTrailerRunNumber;
+    uint32_t            fSpillTrailerSpillNumber;
+    uint32_t            fSpillTrailerTimeStamp;
 
     // variables that will go into the CAEN trees
     uint32_t                               fCaenFragment;
@@ -391,6 +397,8 @@ namespace DataQuality {
     }
 
     // create TTree objects
+    fEventRecord        = tfs->make<TTree>("artEventRecord",  "artEventRecord");
+    fSpillTrailerTree   = tfs->make<TTree>("spillTrailer",    "spillTrailer");
     fEventBuilderTree   = tfs->make<TTree>("EventBuilderTree", "EventBuilderTree");
     fTPCTree            = tfs->make<TTree>("TPCTree",          "TPCTree");
     fCaenV1740DataTree  = tfs->make<TTree>("v1740",            "v1740");
@@ -453,21 +461,21 @@ namespace DataQuality {
     fTPCTree->Branch("TPCIntervalsDeltaT",             &fTPCIntervalsDeltaT,             "TPCIntervalsDeltaT/D");
     fTPCTree->Branch("TPCIntervalsDeltaTBeginToBegin", &fTPCIntervalsDeltaTBeginToBegin, "TPCIntervalsDeltaTBeginToBegin/D");
 
-    //fEventRecord = tfs->make<TTree>("artEventRecord", "artEventRecord");
-    //fEventRecord->Branch("run_number", &fRun, "run_number/i");
-    //fEventRecord->Branch("sub_run_number", &fSubRun, "sub_run_number/i");
-    //fEventRecord->Branch("event_number", &event_number, "event_number/i");
-    //fEventRecord->Branch("time_stamp_low", &time_stamp_low, "time_stamp_low/i");
-    //fEventRecord->Branch("time_stamp_high", &time_stamp_high, "time_stamp_high/i");
+    // fEventRecord branches
+    fEventRecord->Branch("run_number",      &fRun,           "run_number/I");
+    fEventRecord->Branch("sub_run_number",  &fSubRun,        "sub_run_number/I");
+    fEventRecord->Branch("event_number",    &fEvent,         "event_number/I");
+    fEventRecord->Branch("time_stamp_low",  &fTimeStampLow,  "time_stamp_low/i");
+    fEventRecord->Branch("time_stamp_high", &fTimeStampHigh, "time_stamp_high/i");
 
-    //fSpillTrailerTree = tfs->make<TTree>("spillTrailer", "spillTrailer");
-    //fSpillTrailerTree->Branch("runNumber", &runNumber, "runNumber/i");
-    //fSpillTrailerTree->Branch("spillNumber", &spillNumber, "spillNumber/i");
-    //fSpillTrailerTree->Branch("timeStamp", &timeStamp, "timeStamp/i");
+    // fSpillTrailerTree branches
+    fSpillTrailerTree->Branch("runNumber",   &fSpillTrailerRunNumber,   "runNumber/i");
+    fSpillTrailerTree->Branch("spillNumber", &fSpillTrailerSpillNumber, "spillNumber/i");
+    fSpillTrailerTree->Branch("timeStamp",   &fSpillTrailerTimeStamp,   "timeStamp/i");
 
     // fCaenV1740DataTree branches
-    fCaenV1740DataTree->Branch("run",              &fRun,                "run/i");
-    fCaenV1740DataTree->Branch("spill",            &fSubRun,             "spill/i");
+    fCaenV1740DataTree->Branch("run",              &fRun,                "run/I");
+    fCaenV1740DataTree->Branch("spill",            &fSubRun,             "spill/I");
     fCaenV1740DataTree->Branch("fragment",         &fCaenFragment,       "fragment/i");
     fCaenV1740DataTree->Branch("event_counter",    &fCaenEventCounter,   "event_counter/i");
     fCaenV1740DataTree->Branch("board_id",         &fCaenBoardId,        "board_id/i");
@@ -480,8 +488,8 @@ namespace DataQuality {
     }
 
     // fCaenV1740BDataTree branches
-    fCaenV1740BDataTree->Branch("run",              &fRun,                "run/i");
-    fCaenV1740BDataTree->Branch("spill",            &fSubRun,             "spill/i");
+    fCaenV1740BDataTree->Branch("run",              &fRun,                "run/I");
+    fCaenV1740BDataTree->Branch("spill",            &fSubRun,             "spill/I");
     fCaenV1740BDataTree->Branch("fragment",         &fCaenFragment,       "fragment/i");
     fCaenV1740BDataTree->Branch("event_counter",    &fCaenEventCounter,   "event_counter/i");
     fCaenV1740BDataTree->Branch("board_id",         &fCaenBoardId,        "board_id/i");
@@ -494,8 +502,8 @@ namespace DataQuality {
     }
 
     // fCaenV1751DataTree branches
-    fCaenV1751DataTree->Branch("run",              &fRun,                "run/i");
-    fCaenV1751DataTree->Branch("spill",            &fSubRun,             "spill/i");
+    fCaenV1751DataTree->Branch("run",              &fRun,                "run/I");
+    fCaenV1751DataTree->Branch("spill",            &fSubRun,             "spill/I");
     fCaenV1751DataTree->Branch("fragment",         &fCaenFragment,       "fragment/i");
     fCaenV1751DataTree->Branch("event_counter",    &fCaenEventCounter,   "event_counter/i");
     fCaenV1751DataTree->Branch("board_id",         &fCaenBoardId,        "board_id/i");
@@ -508,8 +516,8 @@ namespace DataQuality {
     }
 
     // fMwpcTdcDataTree branches
-    fMwpcTdcDataTree->Branch("run",                   &fRun,                     "run/i");
-    fMwpcTdcDataTree->Branch("spill",                 &fSubRun,                  "spill/i");
+    fMwpcTdcDataTree->Branch("run",                   &fRun,                     "run/I");
+    fMwpcTdcDataTree->Branch("spill",                 &fSubRun,                  "spill/I");
     fMwpcTdcDataTree->Branch("event_counter",         &fMwpcEventCounter,        "event_counter/i");
     fMwpcTdcDataTree->Branch("trigger_counter",       &fMwpcTriggerCounter,      "trigger_counter/i");
     fMwpcTdcDataTree->Branch("controller_time_stamp", &fMwpcControllerTimeStamp, "controller_time_stamp/s");
@@ -520,8 +528,8 @@ namespace DataQuality {
     fMwpcTdcDataTree->Branch("hit_time_bin",          &fMwpcHitTimeBin);
 
     // fWutDataTree branches
-    fWutDataTree->Branch("run",          &fRun,           "run/i");
-    fWutDataTree->Branch("spill",        &fSubRun,        "spill/i");
+    fWutDataTree->Branch("run",          &fRun,           "run/I");
+    fWutDataTree->Branch("spill",        &fSubRun,        "spill/I");
     fWutDataTree->Branch("time_header",  &fWutTimeHeader, "time_header/i");
     fWutDataTree->Branch("number_hits",  &fWutNumberHits, "number_hits/i");
     fWutDataTree->Branch("hit_channel",  &fWutHitChannel);
@@ -640,13 +648,20 @@ namespace DataQuality {
   //-----------------------------------------------------------------------
   void DataQuality::analyze(const art::Event& event) 
   {
-    fSubRun = event.subRun();
-
+    //fRun           = event.run();
+    fSubRun        = event.subRun();
+    fEvent         = event.event();
+    fTimeStampLow  = event.time().timeLow();
+    fTimeStampHigh = event.time().timeHigh();
+ 
     // make the utility to access the fragments from the event record
     rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
 
     // get SpillTrailer
     LariatFragment::SpillTrailer const& spillTrailer = (&fragUtil.DAQFragment())->spillTrailer;
+    fSpillTrailerRunNumber = spillTrailer.runNumber;
+    fSpillTrailerSpillNumber = spillTrailer.spillNumber;
+    fSpillTrailerTimeStamp = spillTrailer.timeStamp;
 
     // get timestamp from SpillTrailer, cast as uint64_t
     fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
@@ -934,11 +949,11 @@ namespace DataQuality {
       std::vector<raw::RawDigit>    rawDigits;
       std::vector<raw::OpDetPulse>  opDetPulses;
 
-      std::cout << "Collection.caenBlocks.size(): " << Collection.caenBlocks.size() << std::endl;
-      std::cout << "Collection.tdcBlocks.size():  " << Collection.tdcBlocks.size()  << std::endl;
-      std::cout << "auxDetDigits.size(): " << auxDetDigits.size() << std::endl;
-      std::cout << "rawDigits.size():    " << rawDigits.size()    << std::endl;
-      std::cout << "opDetPulses.size():  " << opDetPulses.size()  << std::endl;
+      //std::cout << "Collection.caenBlocks.size(): " << Collection.caenBlocks.size() << std::endl;
+      //std::cout << "Collection.tdcBlocks.size():  " << Collection.tdcBlocks.size()  << std::endl;
+      //std::cout << "auxDetDigits.size(): " << auxDetDigits.size() << std::endl;
+      //std::cout << "rawDigits.size():    " << rawDigits.size()    << std::endl;
+      //std::cout << "opDetPulses.size():  " << opDetPulses.size()  << std::endl;
 
       fFragmentToDigitAlg.makeTheDigits(Collection.caenBlocks,
                                         Collection.tdcBlocks,
@@ -954,9 +969,7 @@ namespace DataQuality {
       std::vector< const raw::AuxDetDigit * > dstofDigits;
 
       for (size_t j = 0; j < auxDetDigits.size(); ++j) {
-        //if (auxDetDigits[j]) {
-        //}
-        std::cout << "AuxDetName(): " << auxDetDigits[j].AuxDetName() << std::endl;
+        //std::cout << "AuxDetName(): " << auxDetDigits[j].AuxDetName() << std::endl;
         if (auxDetDigits[j].AuxDetName() == "TOFUS")
           ustofDigits.push_back(&(auxDetDigits[j]));
         if (auxDetDigits[j].AuxDetName() == "TOFDS")
@@ -996,8 +1009,8 @@ namespace DataQuality {
         std::vector<short> ustofHits = fTOFBuilderAlg.match_hits(ustofAHits, ustofBHits);
         std::vector<short> dstofHits = fTOFBuilderAlg.match_hits(dstofAHits, dstofBHits);
 
-        std::cout << "ustofHits.size(): " << ustofHits.size() << std::endl;
-        std::cout << "dstofHits.size(): " << dstofHits.size() << std::endl;
+        //std::cout << "ustofHits.size(): " << ustofHits.size() << std::endl;
+        //std::cout << "dstofHits.size(): " << dstofHits.size() << std::endl;
 
         for (size_t j = 0; j < ustofHits.size(); ++j) {
           fUSTOFHitsHistogram->Fill(ustofHits[j]);
@@ -1010,10 +1023,10 @@ namespace DataQuality {
         std::pair< std::vector<short>, std::vector<long> > tofAndTimeStamp;
         tofAndTimeStamp = fTOFBuilderAlg.get_TOF_and_TimeStamp(ustofDigits, dstofDigits);
 
-        std::cout << "tofAndTimeStamp.first.size(): " << tofAndTimeStamp.first.size() << std::endl;
+        //std::cout << "tofAndTimeStamp.first.size(): " << tofAndTimeStamp.first.size() << std::endl;
 
         for (size_t j = 0; j < tofAndTimeStamp.first.size(); ++j) {
-          std::cout << "tofAndTimeStamp.first.at(j): " << tofAndTimeStamp.first.at(j) << std::endl;
+          //std::cout << "tofAndTimeStamp.first.at(j): " << tofAndTimeStamp.first.at(j) << std::endl;
           fTOFHistogram->Fill(tofAndTimeStamp.first.at(j));
         }
 
@@ -1038,7 +1051,7 @@ namespace DataQuality {
         //fTPCIntervalsDeltaT = (CAENBoard0Intervals.at(i+1).first - CAENBoard0Intervals.at(i).second) / 1000.0;
         fTPCIntervalsDeltaT             = (CAENBoard0Intervals.at(i+1).first - CAENBoard0Intervals.at(i).second);
         fTPCIntervalsDeltaTBeginToBegin = (CAENBoard0Intervals.at(i+1).first - CAENBoard0Intervals.at(i).first);
-        std::cout << "fTPCIntervalsDeltaT [usec]: " << fTPCIntervalsDeltaT << std::endl;
+        //std::cout << "fTPCIntervalsDeltaT [usec]: " << fTPCIntervalsDeltaT << std::endl;
         fTPCIntervalsDeltaTHistogram->Fill(fTPCIntervalsDeltaT / 1000.0);
         fTPCIntervalsDeltaTZHistogram->Fill(fTPCIntervalsDeltaT / 1000.0);
         fTPCTree->Fill();
@@ -1061,8 +1074,8 @@ namespace DataQuality {
       fWutDataTree->Fill();
     }
 
-    //fEventRecord->Fill();
-    //fSpillTrailerTree->Fill();
+    fEventRecord->Fill();
+    fSpillTrailerTree->Fill();
 
     return;
   }
