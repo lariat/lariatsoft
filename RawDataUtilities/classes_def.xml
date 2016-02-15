@@ -63,6 +63,8 @@
   <class name="art::Assns<raw::Trigger, raw::AuxDetDigit,  void>" />
   <class name="art::Assns<raw::Trigger, raw::OpDetPulse,   void>" />
   <class name="art::Assns<ldp::WCTrack, recob::Track,      void>" />
+  <class name="art::Assns<recob::Track, recob::Stopping,   void>" />
+
 
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,     void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Wire,       void> >"/>

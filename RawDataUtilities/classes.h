@@ -17,6 +17,7 @@
 #include "RecoBase/SpacePoint.h"
 #include "RecoBase/Track.h"
 #include "LArIATDataProducts/WCTrack.h"
+#include "LArIATDataProducts/Stopping.h"
 
 #include "RawData/RawDigit.h"
 #include "RawData/AuxDetDigit.h"
@@ -68,6 +69,7 @@ template class art::Assns<raw::Trigger, recob::Track,      void>;
 template class art::Assns<raw::Trigger, raw::AuxDetDigit,  void>;
 template class art::Assns<raw::Trigger, raw::OpDetPulse,   void>;
 template class art::Assns<ldp::WCTrack, recob::Track,      void>;
+template class art::Assns<recob::Track, recob::Stopping,   void>; 
 
 template class art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, recob::Wire,       void> >;
