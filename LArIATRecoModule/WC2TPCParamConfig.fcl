@@ -1,0 +1,13 @@
+lariat_wc2tpcmatch:
+{
+module_type:            WC2TPCTrackMatch
+TrackModuleLabel:       "pmtrack"
+WCTrackLabel:           "wctrack"
+alpha:                  20.
+DeltaXLow:              -2.0
+DeltaXHigh:             6.0
+DeltaYLow:              -3.0
+DeltaYHigh:             6.0
+MaxZPos:                14.0
+MaxMatchedTracks:       1 # Max number of matched TPC and WC tracks (requires > 0)
+}
