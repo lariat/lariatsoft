@@ -15,6 +15,7 @@
 // [   ] Decent comments
 // [   ] Modify to include MC switch
 //       [   ] Exclude WC information
+// [   ] Read Associations
 // [   ] Write an Exception class like SelectionTool/ERTool/Base/ERException.cxx 
 ////////////////////////////////////////////////////////////////////////
 
