@@ -90,7 +90,8 @@ class FragmentToDigitAlg{
                                             std::vector<CAENFragment>                             const& caenFrags,
                                             std::vector< std::vector<TDCFragment::TdcEventData> > const& tdcDataBlocks);
 
-  void InitializeRun(art::RunPrincipal* const & run, art::RunNumber_t runNumber, std::uint64_t timestamp);
+  //void InitializeRun(art::RunPrincipal* const & run, art::RunNumber_t runNumber, std::uint64_t timestamp);
+  void InitializeRun(art::RunNumber_t runNumber, std::uint64_t timestamp);
   std::string TimestampToString(std::time_t const& Timestamp); 
   
 
