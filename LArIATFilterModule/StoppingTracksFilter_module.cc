@@ -97,7 +97,7 @@ public:
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
   */
 
-  bool isStoppingTrack( recob::Track aTrack, art::FindManyP<anab::Calorimetry> fmcal );
+  bool isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindManyP<anab::Calorimetry> fmcal );
  // THIS IS CHEATING, WE CAN PASS BETTER THAN THIS
 private:
 
@@ -206,7 +206,7 @@ bool StoppingTracksFilter::filter(art::Event & evt)
 	      nPassingZCut++;
 	      // ###  Check if the track is stopping.       ###
 	      // ###  If it is add to the stopping counter  ###
-	      if (isStoppingTrack(*thisTrack,fmcal)) nStopping++;
+	      if (isStoppingTrack(thisTrack,fmcal)) nStopping++;
 	      break; // You don't need to continue looping on the SpacePoints, you already found the track
 	    }
 		 	  
@@ -259,7 +259,7 @@ void StoppingTracksFilter::reconfigure(fhicl::ParameterSet const & p)
   fUpLimitStop = p.get< double >("UpperLimitStoppingTrack", -0.35);
 }
 
-bool StoppingTracksFilter::isStoppingTrack( recob::Track aTrack, art::FindManyP<anab::Calorimetry> fmcal )
+bool StoppingTracksFilter::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindManyP<anab::Calorimetry> fmcal )
 {
   /**
      In this function we decide if the given track is stopping or not
@@ -274,7 +274,7 @@ bool StoppingTracksFilter::isStoppingTrack( recob::Track aTrack, art::FindManyP<
   // ########################################################## 
   
   // ### Putting calo information for this track (i) into pointer vector ###
-  std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(aTrack.ID());
+  std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(aTrack.key());
   
   // ### Looping over each calorimetry point (similar to SpacePoint) ###
   for (size_t j = 0; j<calos.size(); ++j)
