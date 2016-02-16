@@ -165,7 +165,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
   ResetVars();
 
   art::ServiceHandle<geo::Geometry> geom;
-  auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
+  //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   art::ServiceHandle<cheat::BackTracker> bt;
 
@@ -187,9 +187,10 @@ void bo::AnaTree::analyze(art::Event const & evt)
   evttime = tts.AsDouble();
 
 
-  efield[0] = larprop->Efield(0);
-  efield[1] = larprop->Efield(1);
-  efield[2] = larprop->Efield(2);
+  // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
+  efield[0] = detprop->Efield(0);
+  efield[1] = detprop->Efield(1);
+  efield[2] = detprop->Efield(2);
 
   t0 = detprop->TriggerOffset();
 

@@ -210,7 +210,7 @@ namespace trkf {
   
     // get services
     art::ServiceHandle<geo::Geometry> geom;
-    auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
+    //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
     auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
     rdu::TriggerDigitUtility tdu(evt, fTriggerUtility);   
@@ -234,10 +234,12 @@ namespace trkf {
     //double presamplings = detprop->TriggerOffset(); // presamplings in ticks  
     //double plane_pitch = geom->PlanePitch(0,1);   //wire plane pitch in cm 
     double wire_pitch = geom->WirePitch(0,1,0);    //wire pitch in cm
-    double Efield_drift = larprop->Efield(0);  // Electric Field in the drift region in kV/cm
-    double Temperature = larprop->Temperature();  // LAr Temperature in K
-
-    double driftvelocity = larprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
+    // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
+    double Efield_drift = detprop->Efield(0);  // Electric Field in the drift region in kV/cm
+    // Note: LArProperties::Temperature() has moved to DetectorProperties/DetectorPropertiesService
+    double Temperature = detprop->Temperature();  // LAr Temperature in K
+    // Note: LArProperties::DriftVelocity() has moved to DetectorProperties/DetectorPropertiesService
+    double driftvelocity = detprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
     double timepitch = driftvelocity*timetick;                         //time sample (cm) 
 
     LOG_VERBATIM("CosmicTrackerT1034") << " ";       
