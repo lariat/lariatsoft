@@ -1,7 +1,6 @@
 cet_enable_asserts()
 
 set( lariat_util_lib_list lardata_Utilities_LArFFT_service
-     lardata_Utilities_LArProperties_service
      larcore_Geometry
      larcore_Geometry_Geometry_service
      lardata_Utilities
@@ -32,6 +31,7 @@ simple_plugin( SignalShapingServiceT1034  "service"
 )
 
 simple_plugin( DatabaseUtilityT1034  "service"
+               lardata_Utilities_DatabaseUtil_service
                ${MF_MESSAGELOGGER}
                ${MF_UTILITIES}
                ${FHICLCPP}

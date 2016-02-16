@@ -17,7 +17,7 @@ art_make(BASENAME_ONLY
 			  lardata_RecoBase
 			  lardata_RecoBaseArt
 			  lardata_Utilities
-			  lardata_Utilities_LArProperties_service
+			  
                           lardata_Utilities_DetectorProperties_service
                           larsim_MCCheater_BackTracker_service
 			  ${SEEDSERVICE_SERVICE} # artextensions
