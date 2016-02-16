@@ -4,7 +4,7 @@ art_make( MODULE_LIBRARIES larcore_Geometry
 			larsim_Simulation
 			larsim_MCCheater_BackTracker_service
 			
-			lardata_Utilities_DetectorProperties_service
+			
 	                lardata_Utilities
 			larevt_Filters
 			lardata_RawData
