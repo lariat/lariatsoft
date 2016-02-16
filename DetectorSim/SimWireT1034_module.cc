@@ -38,6 +38,7 @@ extern "C" {
 #include "lardata/RawData/TriggerData.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksServiceStandard.h" // special (see below)
 #include "Utilities/SignalShapingServiceT1034.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larsim/Simulation/sim.h"
@@ -209,10 +210,14 @@ namespace detsim {
 
   void SimWireT1034::produce(art::Event& evt)
   {
+    
+    // the following code is non-portable;
+    // it requires a specific implementation of DetectorClocksService.
+    art::ServiceHandle<detinfo::DetectorClocksServiceStandard> tss;
+    // In case trigger simulation is run in the same job...
+    tss->preProcessEvent(evt);
 
     auto const* ts = lar::providerFrom<detinfo::DetectorClocksService>();
-    // In case trigger simulation is run in the same job...
-    ts->preProcessEvent(evt);
 
     // get the geometry to be able to figure out signal types and chan -> plane mappings
     art::ServiceHandle<geo::Geometry> geo;

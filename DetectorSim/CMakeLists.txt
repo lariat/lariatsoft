@@ -9,9 +9,9 @@ simple_plugin(SimWireT1034 "module"
                         larcore_Geometry_Geometry_service
                         larsim_Simulation
                         lardata_Utilities
-                        lardata_Utilities_TimeService_service
                         larevt_Filters
                         lardata_RawData
+                        lardata_DetectorInfoServices_DetectorClocksServiceStandard_service
                         SignalShapingServiceT1034_service
 			${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}
