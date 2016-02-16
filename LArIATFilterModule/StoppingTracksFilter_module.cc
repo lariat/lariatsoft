@@ -265,6 +265,8 @@ bool StoppingTracksFilter::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::
      In this function we decide if the given track is stopping or not
   */
   bool StoppingTrack = false;
+    bool StoppingTrack0 = false;
+    bool StoppingTrack1 = false;
   // If the calorimetry is not valid, you consider the particle stopping. 
   // You want the particle out from the interaction pool
   if (!fmcal.isValid()) return true; 
@@ -374,6 +376,7 @@ bool StoppingTracksFilter::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::
       }
       
       double p1=0.;
+      double p0=0.;
       
       if(check != 16){
 	TGraph *g1 = new TGraph(16,lastHitsRR,lastHitsdEdx);
@@ -382,17 +385,23 @@ bool StoppingTracksFilter::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::
 	g1->Fit("fitFcn");
 	//In case of "invalid fit" we have to add a control <------
 	p1 = fitFcn->GetParameter(1);
-	//std::cout << "RR Fit Parameters "<< p1 << std::endl;
+    p0 = fitFcn->GetParameter(0);
+          //std::cout << "RR Fit Parameters "<< p1 << std::endl;
 	fFitPar->Fill(p1);
       } 
       
       if(p1 < fUpLimitStop && p1 > fLowLimitStop) {
 	//std::cout << "Possible stopping track "	<< std::endl;
-	StoppingTrack = true;
+	StoppingTrack0 = true;
       }
+        //over param p0 - A
+        if(p0 < 20. && p0 > 5.){
+            StoppingTrack1= true;
+        }
       
 	  
-    }//<---End looping over calo points (j)	  
+    }//<---End looping over calo points (j)
+    if(StoppingTrack0==true && StoppingTrack1 == true) {std::cout << "Possible stopping track "	<< std::endl; StoppingTrack = true;}
   
   return StoppingTrack;
 }
