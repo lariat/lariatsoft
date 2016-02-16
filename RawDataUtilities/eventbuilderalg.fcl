@@ -2,7 +2,7 @@
 
 BEGIN_PROLOG
 
-standard_sliceralg:
+standard_eventbuilderalg:
 {
     ClockCorrectionAlg:   @local::standard_clockcorrectionalg
 

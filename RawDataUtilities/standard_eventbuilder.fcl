@@ -1,8 +1,8 @@
 #include "services_lariat.fcl"
-#include "sliceralg.fcl"
+#include "eventbuilderalg.fcl"
 #include "RawDataUtilities_algs.fcl"
 
-process_name: Slicer
+process_name: EventBuilder
 
 services:
 {
@@ -14,14 +14,14 @@ services:
 
 source:
 {
-  module_type: SlicerInput
+  module_type: EventBuilderInput
 
   # Number of events to analyze; "-1" means all of the events in the input
   # file. You can override this value with the "-n" option on the command line. 
   maxEvents:    -1 
 
-  SourceName:   "daq"  # RawDataLabel
-  SlicerAlg:    @local::standard_sliceralg
+  SourceName:           "daq"  # RawDataLabel
+  EventBuilderAlg:    @local::standard_eventbuilderalg
 
   FragmentToDigitAlg: @local::lariat_fragmenttodigit_alg
 
@@ -56,7 +56,7 @@ outputs:
   out1:
   {
     module_type: RootOutput
-    fileName:    "standard_slicer.root" # default file name, can override from command line with -o or --output
+    fileName:    "standard_eventbuilder.root" # default file name, can override from command line with -o or --output
     dataTier:    "raw"
     streamName:  "all"
   }
@@ -73,21 +73,21 @@ physics:
 
 services.user.SeedService: @local::random_seedservice
 
-# parameters for SlicerAlg
-source.SlicerAlg.TPCReadoutBufferLow:  0.256
-source.SlicerAlg.TPCReadoutBufferHigh: 0.256
+# parameters for EventBuilderAlg
+source.EventBuilderAlg.TPCReadoutBufferLow:  0.256
+source.EventBuilderAlg.TPCReadoutBufferHigh: 0.256
 
 # parameters for ClockCorrectionAlg
-source.SlicerAlg.ClockCorrectionAlg.MinSamples:                   2
-source.SlicerAlg.ClockCorrectionAlg.ResidualThreshold:            1
-source.SlicerAlg.ClockCorrectionAlg.MaxTrials:                    10000
-source.SlicerAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
-source.SlicerAlg.ClockCorrectionAlg.StopResidualsSum:             0
-source.SlicerAlg.ClockCorrectionAlg.StopProbability:              1
-source.SlicerAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e4  # microseconds
-source.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
-source.SlicerAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
-source.SlicerAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
-source.SlicerAlg.ClockCorrectionAlg.MinNumberTimeStamps:          3
-source.SlicerAlg.ClockCorrectionAlg.MinNumberDataPoints:          3
+source.EventBuilderAlg.ClockCorrectionAlg.MinSamples:                   2
+source.EventBuilderAlg.ClockCorrectionAlg.ResidualThreshold:            1
+source.EventBuilderAlg.ClockCorrectionAlg.MaxTrials:                    10000
+source.EventBuilderAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
+source.EventBuilderAlg.ClockCorrectionAlg.StopResidualsSum:             0
+source.EventBuilderAlg.ClockCorrectionAlg.StopProbability:              1
+source.EventBuilderAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e4  # microseconds
+source.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
+source.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
+source.EventBuilderAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
+source.EventBuilderAlg.ClockCorrectionAlg.MinNumberTimeStamps:          3
+source.EventBuilderAlg.ClockCorrectionAlg.MinNumberDataPoints:          3
 
