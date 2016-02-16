@@ -36,13 +36,13 @@ extern "C" {
 #include "lardata/RawData/RawDigit.h"
 #include "lardata/RawData/raw.h"
 #include "lardata/RawData/TriggerData.h"
-#include "lardata/Utilities/LArProperties.h"
-#include "lardata/Utilities/TimeService.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "Utilities/SignalShapingServiceT1034.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larsim/Simulation/sim.h"
 #include "larsim/Simulation/SimChannel.h"
-#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "TMath.h"
 #include "TComplex.h"
@@ -103,7 +103,7 @@ namespace detsim {
     //be made a fcl parameter but not likely to ever change
     const float adcsaturation = 4095;
     
-    ::util::ElecClock fClock; ///< TPC electronics clock
+    ::detinfo::ElecClock fClock; ///< TPC electronics clock
     
   }; // class SimWireT1034
   
@@ -171,7 +171,7 @@ namespace detsim {
     
       }
     //detector properties information
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     fNTimeSamples  = detprop->NumberTimeSamples();
 
  
@@ -210,7 +210,7 @@ namespace detsim {
   void SimWireT1034::produce(art::Event& evt)
   {
 
-    art::ServiceHandle<util::TimeService> ts;
+    auto const* ts = lar::providerFrom<detinfo::DetectorClocksService>();
     // In case trigger simulation is run in the same job...
     ts->preProcessEvent(evt);
 

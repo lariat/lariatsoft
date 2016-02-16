@@ -43,7 +43,7 @@
 #include "LArIATDataProducts/Edge.h"
 #include "lardata/RecoBase/Hit.h"
 #include "lardata/RecoBaseArt/HitCreator.h"
-#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
 // ROOT Includes
@@ -583,7 +583,7 @@ void Edge::produce(art::Event & evt)
   // ##########################
   // ###Detector Properties ###
   // ##########################
-  //art::ServiceHandle<util::DetectorProperties> detprop;
+  //auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
  
   
   // #######################

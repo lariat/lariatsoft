@@ -43,8 +43,8 @@
 #include "lardata/RecoBase/TrackHitMeta.h"
 #include "lardata/RecoBase/Vertex.h"
 #include "lardata/RecoBase/SpacePoint.h"
-#include "lardata/Utilities/LArProperties.h"
-#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 //#include "RawData/ExternalTrigger.h"
 #include "lardata/RawData/RawDigit.h"
@@ -405,9 +405,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Geometry Service ===
   art::ServiceHandle<geo::Geometry> geom;
   // === Liquid Argon Properties Services ===
-  art::ServiceHandle<util::LArProperties> larprop;
+  auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   // === Detector properties service ===
-  art::ServiceHandle<util::DetectorProperties> detprop;
+  auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   // === BackTracker service ===
   art::ServiceHandle<cheat::BackTracker> bt;
   const sim::ParticleList& plist = bt->ParticleList();

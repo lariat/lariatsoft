@@ -29,7 +29,7 @@
 // lar includes
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/SummaryData/RunData.h"
-#include "lardata/Utilities/DetectorProperties.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "TVector3.h"
 #include "TDatabasePDG.h"
@@ -374,7 +374,7 @@ namespace evgen{
     
     std::cout << "old tree size, new tree size: " << TNtuple->GetEntries() << " " << TNtupleSmall->GetEntries() << std::endl;
     
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     
     const double frametime=detprop->SamplingRate()*detprop->NumberTimeSamples()/1000.; 
     int frameindex=1;
