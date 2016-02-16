@@ -405,7 +405,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Geometry Service ===
   art::ServiceHandle<geo::Geometry> geom;
   // === Liquid Argon Properties Services ===
-  auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
+  //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   // === Detector properties service ===
   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   // === BackTracker service ===
@@ -432,9 +432,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   evttime = tts.AsDouble();
    
   // === Electric Field ===
-  efield[0] = larprop->Efield(0);
-  efield[1] = larprop->Efield(1);
-  efield[2] = larprop->Efield(2);
+  // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
+  efield[0] = detprop->Efield(0);
+  efield[1] = detprop->Efield(1);
+  efield[2] = detprop->Efield(2);
    
   // === Trigger Offset ====
   t0 = detprop->TriggerOffset();
