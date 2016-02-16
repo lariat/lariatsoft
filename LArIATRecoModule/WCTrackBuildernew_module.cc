@@ -122,6 +122,7 @@ private:
     TH1F* fPhi_Dist;
     TH1F* fTrack_Type;
     std::vector<TH2F*> fRecodiff;
+    TH1F* fWCDist;
 /*    TH1F* fHitErrorWC1;
     TH1F* fHitErrorWC2;    
     TH1F* fHitErrorWC3;
@@ -255,7 +256,8 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 					 y_dist_list,
 					 z_dist_list,
 					 WCMissed,
-					 fRecodiff);			       
+					 fRecodiff,
+					 fWCDist);			       
 
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
 //fTrack_Type->Fill(fWCTrackBuildernewAlg.getTrackType()); // neither does WCTrackBuildernewAlg_new::getTrackType()
@@ -537,7 +539,7 @@ void WCTrackBuildernew::beginJob()
     art::ServiceHandle<art::TFileService> tfs;
 //Hists that should be used for diagnostics and deleted before production
 
-  for(int i=0; i<59; ++i){
+  for(int i=0; i<61; ++i){
     fRecodiff.push_back(tfs->make<TH2F>());
   }
 fRecodiff[0]= tfs->make<TH2F>("WC1XWire4v2","WC1XWire4v2",500,-250,250,500,-250,250);
@@ -548,6 +550,7 @@ fRecodiff[4]= tfs->make<TH2F>("WC3XWire4v2","WC3XWire4v2",500,-250,250,500,-250,
 fRecodiff[5]= tfs->make<TH2F>("WC3YWire4v2","WC3YWire4v2",500,-250,250,500,-250,250);
 fRecodiff[6]= tfs->make<TH2F>("WC4XWire4v2","WC4XWire4v2",500,-250,250,500,-250,250);
 fRecodiff[7]= tfs->make<TH2F>("WC4YWire4v2","WC4YWire4v2",500,-250,250,500,-250,250);
+
 
 fRecodiff[8]= tfs->make<TH2F>("WC1XWire4v3","WC1XWire4v3",500,-250,250,500,-250,250);
 fRecodiff[9]= tfs->make<TH2F>("WC1YWire4v3","WC1YWire4v3",500,-250,250,500,-250,250);
@@ -599,20 +602,24 @@ fRecodiff[45]=tfs->make<TH2F>("TPCTheta4v2","TPCTheta4v2",100,-.5,.5,100,-.5,.5)
 fRecodiff[46]=tfs->make<TH2F>("TPCPhi4v3","TPCPhi4v3",80,-4,4,80,-4,4);
 fRecodiff[47]=tfs->make<TH2F>("TPCTheta4v3","TPCTheta4v3",100,-.5,.5,100,-.5,.5);
 
-fRecodiff[48]=tfs->make<TH2F>("XDist4v2","XDist4v2",4000,-2000,2000,4000,-2000,2000);
-fRecodiff[49]=tfs->make<TH2F>("YDist4v2","YDist4v2",4000,-2000,2000,4000,-2000,2000);
-fRecodiff[50]=tfs->make<TH2F>("ZDist4v2","ZDist4v2",4000,-2000,2000,4000,-2000,2000);
+fRecodiff[48]=tfs->make<TH2F>("XDist4v2","XDist4v2",500,-250,250,500,-250,250);
+fRecodiff[49]=tfs->make<TH2F>("YDist4v2","YDist4v2",100,-50,50,100,-50,50);
+fRecodiff[50]=tfs->make<TH2F>("ZDist4v2","ZDist4v2",100,-50,50,100,-50,50);
 fRecodiff[51]=tfs->make<TH2F>("YKink4v2","YKink4v2",200,-.1,.1,200,-.1,.1);
 
-fRecodiff[52]=tfs->make<TH2F>("XDist4v3","XDist4v3",4000,-2000,2000,4000,-2000,2000);
-fRecodiff[53]=tfs->make<TH2F>("YDist4v3","YDist4v3",4000,-2000,2000,4000,-2000,2000);
-fRecodiff[54]=tfs->make<TH2F>("ZDist4v3","ZDist4v3",4000,-2000,2000,4000,-2000,2000);
+fRecodiff[52]=tfs->make<TH2F>("XDist4v3","XDist4v3",500,-250,250,500,-250,250);
+fRecodiff[53]=tfs->make<TH2F>("YDist4v3","YDist4v3",100,-50,50,100,-50,50);
+fRecodiff[54]=tfs->make<TH2F>("ZDist4v3","ZDist4v3",100,-50,50,100,-50,50);
 fRecodiff[55]=tfs->make<TH2F>("YKink4v3","YKink4v3",200,-.1,.1,200,-.1,.1);
 
 fRecodiff[56]=tfs->make<TH2F>("mom4v2","mom4v2",1000,0,2000,1000,0,2000);
 fRecodiff[57]=tfs->make<TH2F>("mom4v3","mom4v3",1000,0,2000,1000,0,2000);
-fRecodiff[58]=tfs->make<TH2F>("Best residual","best residual",3000,0,300,3000,0,300);
 
+fRecodiff[58]=tfs->make<TH2F>("Best residual all four","best residual all four",3000,0,300,3000,0,300);
+fRecodiff[59]=tfs->make<TH2F>("Best residual Skip 2","best residual Skip 2",3000,0,300,3000,0,300);
+fRecodiff[60]=tfs->make<TH2F>("Best residual Skip 3","best residual Skip 3",3000,0,300,3000,0,300);
+
+fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 //fRecodiff[0] = tfs->make<TH2F>("Recofourvsthree","Reco4vs3", 100,0,1000,100,0,1000);
    //fEventPicky=tfs->make<TH1F>("event with picky", "event with picky", 25000,0,25000);
 //     fResSquare = tfs->make<TH1F>("Sum of Square of Residuals from Y points to Linear Regression","Sum of Square of Residuals from Y points to Linear Regression", 150,0,150);
@@ -808,7 +815,7 @@ fRecodiff[58]=tfs->make<TH2F>("Best residual","best residual",3000,0,300,3000,0,
     fX_Face_Dist = tfs->make<TH1F>("X_Face","X Location of Track's TPC Entry (mm)",1600,-200,1400);
     fY_Face_Dist = tfs->make<TH1F>("Y_Face","Y Location of Track's TPC Entry (mm)",800,-400,400);
     fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",400,-.4,0.4);
-    fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",200,-6.28318,6.28318);                   
+    fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",2000,-6.28318,6.28318);                   
     fReco_Pz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
     fReco_Pz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
     fY_Kink->GetXaxis()->SetTitle("Reconstructed y_kink (radians)");
@@ -826,7 +833,7 @@ fRecodiff[58]=tfs->make<TH2F>("Best residual","best residual",3000,0,300,3000,0,
     fTheta_Dist->GetXaxis()->SetTitle("Theta (radians)");
     fTheta_Dist->GetYaxis()->SetTitle("Tracks per .002 radians");
     fPhi_Dist->GetXaxis()->SetTitle("Phi (radians)");
-    fPhi_Dist->GetYaxis()->SetTitle("Tracks per 0.0628 radians");
+    fPhi_Dist->GetYaxis()->SetTitle("Tracks per 0.00628 radians");
     
     fTrack_Type = tfs->make<TH1F>("TrackType","WCTrack conditions: 1=missHit,2=uniqueHits,3=lonelyHit,4=socialHits",4,0,4);
     fTrack_Type->GetYaxis()->SetTitle("# Events");

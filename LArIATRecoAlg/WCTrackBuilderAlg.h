@@ -55,10 +55,12 @@ class WCTrackBuilderAlg{
 					     std::vector<double> & y_dist_list,
 					     std::vector<double> & z_dist_list,
 					     int & WCMissed,
-					     std::vector<TH2F*> & Recodiff);
+					     std::vector<TH2F*> & Recodiff,
+					     TH1F* & WCdistribution);
 		
    bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
-   			  int & WCMissed);
+   			  int & WCMissed,
+			  TH1F*  & WCDist);
    
    void buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
 	                      std::vector<double> & reco_pz_list,
