@@ -52,7 +52,7 @@
 #include "lardata/RecoBase/Wire.h"
 #include "lardata/RecoBase/Hit.h"
 //#include "RecoBaseArt/HitCreator.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+//#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
 // ROOT Includes
@@ -271,7 +271,7 @@ void GausHitFinder::produce(art::Event& evt)
    // ###################################
    // ### Calling Detector Properties ###
    // ###################################
-   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+   //auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
    
    // ################################
    // ### Calling Geometry service ###
