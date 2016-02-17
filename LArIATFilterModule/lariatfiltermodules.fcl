@@ -103,4 +103,31 @@ MaxZPos:		14.0
 MaxMatchedTracks:	1 # Max number of matched TPC and WC tracks (requires > 0)
 }
 
+
+#Filters for Quality-checks
+
+lariat_wctrackquality:
+{
+module_type:      WCTrackFilter
+WCTrackLabel:     "wctrack"	# WCTrack module label
+minNumberWCTrack: 1 		# number of WCTracks in the event to pass the filter
+
+}
+
+lariat_tofquality:
+{
+module_type:	TOFQuality
+TOFModuleLabel:	"tof"	# TOF module label
+nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter
+}
+
+lariat_calwirequality:
+{
+module_type:	CalWireTPCQuality
+CalDataModuleLabel:	"caldata"	# caldata module label
+nCalWireObjects: 	480 	# number of CalWire objects in the event to pass the filter
+}
+
+
+
 END_PROLOG
