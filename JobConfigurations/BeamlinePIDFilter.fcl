@@ -97,3 +97,4 @@ physics.filters.particlefilter.ParticlePDG: 21113
 #Since we can't yet discriminate between pions and muons from the reconstructed beamline informations, we go for PiMu for now
 
 physics.filters.particlefilter.ParticleProbabilityThreshold: 0.5
+physics.filters.particlefilter.ParticleIDModuleLabel:       "BeamPid"
