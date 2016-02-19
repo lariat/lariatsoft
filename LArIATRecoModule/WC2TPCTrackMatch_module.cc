@@ -363,37 +363,37 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  //Calculating phi (degeneracy elimination for the atan function)
 	  //----------------------------------------------------------------------------------------------
 	  if( UpStreamTrjPointPHatY[aa] > 0 && UpStreamTrjPointPHatX[aa] > 0 ){ 
-	    std::cout<<"@@@@@@@@@@ Puppa 3 "<<std::endl;
+	 
 	    phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa]); 
 	  }
 	  else if( UpStreamTrjPointPHatY[aa] > 0 && UpStreamTrjPointPHatX[aa] < 0 ){ 
-	    std::cout<<"@@@@@@@@@@ Puppa 4 "<<std::endl;
+	 
 	    phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+3.141592654; }
 	  else if( UpStreamTrjPointPHatY[aa] < 0 && UpStreamTrjPointPHatX[aa] < 0 ){ 
-	    std::cout<<"@@@@@@@@@@ Puppa 5 "<<std::endl;
+	 
 	    phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+3.141592654; }
 	  else if( UpStreamTrjPointPHatY[aa] < 0 && UpStreamTrjPointPHatX[aa] > 0 ){ 
-	    std::cout<<"@@@@@@@@@@ Puppa 6 "<<std::endl;
+	 
 	    phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+6.28318; }
 	  else if( UpStreamTrjPointPHatY[aa] == 0 && UpStreamTrjPointPHatX[aa] == 0 ){ 
-	    std::cout<<"@@@@@@@@@@ Puppa 7 "<<std::endl;
+	 
 	    phi = 0; }//defined by convention
 	  else if( UpStreamTrjPointPHatY[aa] == 0 )
 	    {
-	      std::cout<<"@@@@@@@@@@ Puppa 8 "<<std::endl;
+	 
 	      if( UpStreamTrjPointPHatX[aa] > 0 ){ 
-		std::cout<<"@@@@@@@@@@ Puppa 9 "<<std::endl;
+	
 		phi = 0; }
 	      
 	      else{
-		std::cout<<"@@@@@@@@@@ Puppa 10 "<<std::endl;
+	
 		phi = 3.141592654;
 	      }
 	      
 	    }
 	  else if( UpStreamTrjPointPHatX[aa] == 0 )
 	    {
-	      std::cout<<"@@@@@@@@@@ Puppa 11 "<<std::endl;
+	
 	      if( UpStreamTrjPointPHatY[aa] > 0 ){ phi = 3.141592654/2; }
 	      else{ phi = 3.141592654*3/2; }
 	      
@@ -408,7 +408,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  // #########################################################
 	  TVector3 theUnitVector_WCTrack;
 	  TVector3 theUnitVector_TPCTrack;
-	  std::cout<<"@@@@@@@@@@ Puppa 12 "<<std::endl;
+	  
 	  // === WCTrack Unit Vector ===
 	  theUnitVector_WCTrack.SetX(sin(wcTheta)*cos(wcPhi));
 	  theUnitVector_WCTrack.SetY(sin(wcTheta)*sin(wcPhi));
@@ -430,32 +430,13 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  
 	  // ### Only counting the track if it passes the alpha, DeltaX and Delta Y ###
 	  // ###       and is far enough upstream in the TPC in Z position          ###
-	 
-
-
-	  std::cout<<"@@@@ Puppa               alpha " <<alpha<<" < "<<falpha<<" ?"<<std::endl;
-	  std::cout<<"@@@@ Puppa DeltaX_WC_TPC_Track "<<DeltaX_WC_TPC_Track   <<" > "<< fDeltaXLow<<" ?" <<std::endl;
-	  std::cout<<"@@@@ Puppa DeltaY_WC_TPC_Track "<<DeltaY_WC_TPC_Track   <<" > "<< fDeltaYLow<<" ?" <<std::endl;
-	  std::cout<<"@@@@ Puppa DeltaX_WC_TPC_Track "<<DeltaX_WC_TPC_Track   <<" < "<< fDeltaXHigh<<" ?"<<std::endl;
-	  std::cout<<"@@@@ Puppa DeltaY_WC_TPC_Track "<<DeltaY_WC_TPC_Track   <<" < "<< fDeltaYHigh<<" ?"<<std::endl;
-	  std::cout<<"@@@@ Puppa UpStreamTrjPointZ   "<<UpStreamTrjPointZ[aa] <<" < "<< fMaxZPos<<" ?"   <<std::endl;
-
-
-          if( alpha < falpha) std::cout<<"&&&& Puppa alpha "<<std::endl;
-	  if( DeltaX_WC_TPC_Track > fDeltaXLow ) std::cout<<"&&&& Puppa DeltaX_WC_TPC_Track "<<std::endl;
-	  if( DeltaY_WC_TPC_Track > fDeltaYLow ) std::cout<<"&&&& Puppa DeltaY_WC_TPC_Track "<<std::endl;
-          if( DeltaX_WC_TPC_Track < fDeltaXHigh) std::cout<<"&&&& Puppa DeltaX_WC_TPC_Track "<<std::endl;
-          if( DeltaY_WC_TPC_Track < fDeltaYHigh) std::cout<<"&&&& Puppa DeltaY_WC_TPC_Track "<<std::endl;
-          if( UpStreamTrjPointZ[aa] < fMaxZPos ) std::cout<<"&&&& Puppa UpStreamTrjPointZ   "<<std::endl;
-
-           
 	  if(alpha < falpha && 
 	     DeltaX_WC_TPC_Track > fDeltaXLow && 
 	     DeltaY_WC_TPC_Track > fDeltaYLow && 
 	     DeltaX_WC_TPC_Track < fDeltaXHigh &&
              DeltaY_WC_TPC_Track < fDeltaYHigh && 
              UpStreamTrjPointZ[aa] < fMaxZPos){
-	    std::cout<<"@@@@@@@@@@ Puppa 13 "<<std::endl;
+
 	      // ### Filling Histograms ###
 	      hDeltaX->Fill(DeltaX_WC_TPC_Track);
 	      hDeltaY->Fill(DeltaY_WC_TPC_Track);
@@ -503,6 +484,10 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  tpcIndeces.insert(it->second.second);
 	  // We create the assn here
 	  util::CreateAssn(*this, evt, tracklist.at(it->second.second),wctrack.at(it->second.first), *wcTpcTrackAssn);
+	  std::cout<<"########### "<< (tracklist.at(it->second.second))->Length()<<" \n"
+		   << (tracklist.at(it->second.second)->Vertex())[0]<<std::endl
+		   << (tracklist.at(it->second.second)->Vertex())[1]<<std::endl
+		   << (tracklist.at(it->second.second)->Vertex())[2]<<std::endl;
 	  // Enable a max number of associations
 	  ++matchCounter;
 	  if(matchCounter >= fMaxMatchedTracks) break;

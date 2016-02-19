@@ -82,3 +82,5 @@ template class art::Wrapper<art::Assns<raw::Trigger, recob::Vertex,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit,  void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,   void> >;
 template class art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >;
+
+template class art::Wrapper<art::PtrVector<recob::Track> >;
