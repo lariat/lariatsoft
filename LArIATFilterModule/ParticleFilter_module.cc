@@ -56,6 +56,7 @@ private:
 
   // Declare member data here.
   TH2F* fParticlePzVsTOF;
+  TH2F* fPzVsTOF;
   
   std::string fParticleIDModuleLabel;
   std::string fWCTrackModuleLabel;
@@ -98,7 +99,9 @@ bool ParticleFilter::filter(art::Event & e)
   //Finding best-guess Particles
   double pdg_temp = 0;
   pdg_temp=fParticlePDG;
-  
+ 
+fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
+
 std::cout << "I'm looking for particles with PDG " << pdg_temp << std::endl;
 
 if(pdg_temp == 321 || pdg_temp == -321){
@@ -169,7 +172,8 @@ void ParticleFilter::beginJob()
 {
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
-  fParticlePzVsTOF = tfs->make<TH2F>("ParticlePzVsTOF","Particle Pz Vs. TOF",160,0,1600,70,10,80);  //that's now from protons
+  fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz Vs. TOF (All) ",160,0,1600,70,10,80);
+  fParticlePzVsTOF = tfs->make<TH2F>("ParticlePzVsTOF","Particle Pz Vs. TOF",160,0,1600,70,10,80);  //that's for the selected particles
 
 }
 
