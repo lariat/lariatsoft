@@ -1,11 +1,13 @@
 ////////////////////////////////////////////////////////////////////////
-// Class:       KaonFilter
+// Class:       ParticleFilter
 // Module Type: filter
-// File:        KaonFilter_module.cc
+// File:        ParticleFilter_module.cc
 //
 // Generated at Thur Dec 10 2015 by Irene Nutini using artmod
 // from cetpkgsupport v1_08_06.
 //Following KaonFilter - PiMuFilter structure
+//Using BeamlinePID object to identify and select different particle species
+//From the fcl file of the filter you can choose the PDG of the particle you want to select and filter
 ////////////////////////////////////////////////////////////////////////
 
 #include "art/Framework/Core/EDFilter.h"
