@@ -22,10 +22,10 @@
 #include "cetlib/exception.h"
 
 // LArSoft includes
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/RawDigit.h"
-#include "RawData/TriggerData.h"
+#include "lardata/RawData/AuxDetDigit.h"
+#include "lardata/RawData/OpDetPulse.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/TriggerData.h"
 //#include "SimpleTypesAndConstants/RawTypes.h"
 //#include "SummaryData/RunData.h"
 //#include "Utilities/AssociationUtil.h"
@@ -188,6 +188,7 @@ namespace DataQuality {
 
     std::vector< std::vector< TH1I * > > fCAENPedestalHistograms;
     std::vector< std::vector< TH1I * > > fCAENADCHistograms;
+    std::vector< std::vector< TH1I * > > fCAENMinADCHistograms;
 
     // pointer to n-tuples
     TTree * fEventBuilderTree;    ///< Tree holding variables on the performance of the event builder
@@ -327,6 +328,7 @@ namespace DataQuality {
     // 24 ... 31  CAEN V1740
     fCAENPedestalHistograms.resize(32);
     fCAENADCHistograms.resize(32);
+    fCAENMinADCHistograms.resize(32);
 
     // TFile service
     art::ServiceHandle<art::TFileService> tfs;
@@ -337,6 +339,7 @@ namespace DataQuality {
     // create sub-directories for pedestal and ADC histograms
     art::TFileDirectory pedestalDir = tfs->mkdir("pedestal");
     art::TFileDirectory adcDir      = tfs->mkdir("adc");
+    art::TFileDirectory minADCDir   = tfs->mkdir("min_adc");
 
     // create TH1 objects
     fIntervalsDeltaTHistogram     = tfs->make<TH1D>("IntervalsDeltaT",     ";#Delta t [ms];Entries per ms",       10000, -0.5, 9999.5);
@@ -355,6 +358,7 @@ namespace DataQuality {
     for (size_t i = 0; i < V1740_N_BOARDS; ++i) {
       fCAENPedestalHistograms[i].resize(V1740_N_CHANNELS);
       fCAENADCHistograms[i].resize(V1740_N_CHANNELS);
+      fCAENMinADCHistograms[i].resize(V1740_N_CHANNELS);
       for (size_t j = 0; j < V1740_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -363,6 +367,9 @@ namespace DataQuality {
         fCAENADCHistograms[i][j] = adcDir.make<TH1I>((th1Title + "_adc").c_str(),
                                                      ";ADC;Entries per ADC",
                                                      4096, 0-0.5, 4096-0.5);
+        fCAENMinADCHistograms[i][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
+                                                           ";ADC;Entries per ADC",
+                                                           4096, 0, 4096);
       }
     }
 
@@ -370,6 +377,7 @@ namespace DataQuality {
       size_t offset = 8;
       fCAENPedestalHistograms[i + offset].resize(V1751_N_CHANNELS);
       fCAENADCHistograms[i + offset].resize(V1751_N_CHANNELS);
+      fCAENMinADCHistograms[i + offset].resize(V1751_N_CHANNELS);
       for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i + offset) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i + offset][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -378,6 +386,9 @@ namespace DataQuality {
         fCAENADCHistograms[i + offset][j] = adcDir.make<TH1I>((th1Title + "_adc").c_str(),
                                                               ";ADC;Entries per ADC",
                                                               1024, 0-0.5, 1024-0.5);
+        fCAENMinADCHistograms[i + offset][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
+                                                                    ";ADC;Entries per ADC",
+                                                                    1024, 0, 1024);
       }
     }
 
@@ -385,6 +396,7 @@ namespace DataQuality {
       size_t offset = 24;
       fCAENPedestalHistograms[i + offset].resize(V1740B_N_CHANNELS);
       fCAENADCHistograms[i + offset].resize(V1740B_N_CHANNELS);
+      fCAENMinADCHistograms[i + offset].resize(V1740B_N_CHANNELS);
       for (size_t j = 0; j < V1740B_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i + offset) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i + offset][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -393,6 +405,9 @@ namespace DataQuality {
         fCAENADCHistograms[i + offset][j] = adcDir.make<TH1I>((th1Title + "_adc").c_str(),
                                                               ";ADC;Entries per ADC",
                                                               4096, 0-0.5, 4096-0.5);
+        fCAENMinADCHistograms[i + offset][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
+                                                                    ";ADC;Entries per ADC",
+                                                                    4096, 0, 4096);
       }
     }
 
@@ -797,6 +812,10 @@ namespace DataQuality {
               fCAENADCHistograms[boardId][k]->Fill(caenFrag.waveForms[k].data[sample]);
             }
           }
+          short unsigned int minADC = * std::min_element(std::begin(caenFrag.waveForms[k].data),
+                                                         std::end(caenFrag.waveForms[k].data));
+          fCAENMinADCHistograms[boardId][k]->Fill(minADC);
+                                                                   
         }
 
         if (boardId == 0 or boardId == 1 or boardId == 2 or

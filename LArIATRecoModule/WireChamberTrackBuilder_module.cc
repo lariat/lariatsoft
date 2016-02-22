@@ -23,7 +23,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "Utilities/AssociationUtil.h"
+#include "lardata/Utilities/AssociationUtil.h"
 
 //LArIAT Things
 #include "RawDataUtilities/TriggerDigitUtility.h"

@@ -26,7 +26,7 @@
 #include <fstream>
 #include <vector>
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "Utilities/AssociationUtil.h"
+#include "lardata/Utilities/AssociationUtil.h"
 
 //LArIAT Things
 #include "RawDataUtilities/TriggerDigitUtility.h"

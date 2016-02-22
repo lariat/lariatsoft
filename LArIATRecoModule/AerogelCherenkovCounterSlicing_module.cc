@@ -27,8 +27,8 @@
 #include <TH1F.h>
 
 // LArSoft Includes
-#include "Utilities/AssociationUtil.h"
-#include "RawData/TriggerData.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/RawData/TriggerData.h"
 
 //LAriatSoft Includes
 #include "LArIATDataProducts/AGCounter.h"

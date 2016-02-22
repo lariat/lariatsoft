@@ -25,18 +25,18 @@
 // ########################
 // ### LArSoft includes ###
 // ########################
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
-#include "RecoBase/Cluster.h"
-#include "RecoBase/Hit.h"
-#include "Utilities/AssociationUtil.h"
-#include "Filters/ChannelFilter.h"
-#include "RecoAlg/DBScanAlg.h"
-#include "ClusterFinder/ClusterCreator.h"
-#include "RecoAlg/ClusterRecoUtil/StandardClusterParamsAlg.h"
-#include "RecoAlg/ClusterParamsImportWrapper.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "lardata/RecoBase/Cluster.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "larevt/Filters/ChannelFilter.h"
+#include "larreco/RecoAlg/DBScanAlg.h"
+#include "larreco/ClusterFinder/ClusterCreator.h"
+#include "larreco/RecoAlg/ClusterRecoUtil/StandardClusterParamsAlg.h"
+#include "larreco/RecoAlg/ClusterParamsImportWrapper.h"
 
 
 #include <fstream>

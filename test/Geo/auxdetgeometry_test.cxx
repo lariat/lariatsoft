@@ -19,8 +19,8 @@
 // LArSoft libraries
 #include "test/Geometry/GeometryTestAlg.h"
 #include "test/Geometry/geometry_unit_test_base.h"
-#include "Geometry/GeometryCore.h"
-#include "Geometry/ChannelMapStandardAlg.h"
+#include "larcore/Geometry/GeometryCore.h"
+#include "larcore/Geometry/ChannelMapStandardAlg.h"
 
 // utility libraries
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -82,7 +82,7 @@ int main(int argc, char const** argv) {
   
   // second argument: path of the parameter set for geometry test configuration
   // (optional; default: "physics.analysers.geotest")
-  config.SetTesterParameterSetPath
+  config.SetMainTesterParameterSetPath
     ((++iParam < argc)? argv[iParam]: "physics.analyzers.geotest");
   
   // third argument: path of the parameter set for geometry configuration

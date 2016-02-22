@@ -5,8 +5,8 @@
 /// \author  rs@fnal.gov
 ////////////////////////////////////////////////////////////////////////////////
 
-#include "Geometry/AuxDetChannelMapAlg.h"
-#include "Geometry/AuxDetGeometryCore.h"
+#include "larcore/Geometry/AuxDetChannelMapAlg.h"
+#include "larcore/Geometry/AuxDetGeometryCore.h"
 
 #include "Geo/LArIATAuxDetGeometryHelper.h"
 #include "Geo/AuxDetChannelMapLArIATAlg.h"

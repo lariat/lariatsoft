@@ -27,7 +27,7 @@
 #include "LArIATDataProducts/AGCounter.h"
 #include "LArIATDataProducts/AuxDetParticleID.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
-#include "Geometry/Geometry.h"
+#include "larcore/Geometry/Geometry.h"
 
 //C++ includes
 #include <vector>
