@@ -539,7 +539,7 @@ void WCTrackBuildernew::beginJob()
     art::ServiceHandle<art::TFileService> tfs;
 //Hists that should be used for diagnostics and deleted before production
 
-  for(int i=0; i<61; ++i){
+  for(int i=0; i<76; ++i){
     fRecodiff.push_back(tfs->make<TH2F>());
   }
 fRecodiff[0]= tfs->make<TH2F>("WC1XWire4v2","WC1XWire4v2",500,-250,250,500,-250,250);
@@ -562,7 +562,7 @@ fRecodiff[14]= tfs->make<TH2F>("WC4XWire4v3","WC4XWire4v3",500,-250,250,500,-250
 fRecodiff[15]= tfs->make<TH2F>("WC4YWire4v3","WC4YWire4v3",500,-250,250,500,-250,250);
 
 fRecodiff[16]= tfs->make<TH2F>("X14v2","X14v2",4000,0,4000,4000,0,4000);
-fRecodiff[17]= tfs->make<TH2F>("X24v2","X24v2",4000,0,4000,4000,0,4000);
+fRecodiff[17]= tfs->make<TH2F>("X24v2","X24v2",300,550,850,300,550,850);
 fRecodiff[18]= tfs->make<TH2F>("X34v2","X34v2",4000,0,4000,4000,0,4000);
 fRecodiff[19]= tfs->make<TH2F>("X44v2","X44v2",4000,0,4000,4000,0,4000);
 
@@ -582,7 +582,7 @@ fRecodiff[30]= tfs->make<TH2F>("Y34v3","Y34v3",200,-100,100,200,-100,100);
 fRecodiff[31]= tfs->make<TH2F>("Y44v3","Y44v3",200,-100,100,200,-100,100);
 
 fRecodiff[32]= tfs->make<TH2F>("Z14v2","Z14v2",10000,-10000,0,10000,-10000,0);
-fRecodiff[33]= tfs->make<TH2F>("Z24v2","Z24v2",10000,-10000,0,10000,-10000,0);
+fRecodiff[33]= tfs->make<TH2F>("Z24v2","Z24v2",100,-5400,-5300,100,-5400,-5300);
 fRecodiff[34]= tfs->make<TH2F>("Z34v2","Z34v2",10000,-10000,0,10000,-10000,0);
 fRecodiff[35]= tfs->make<TH2F>("Z44v2","Z44v2",10000,-10000,0,10000,-10000,0);
 
@@ -593,7 +593,7 @@ fRecodiff[39]= tfs->make<TH2F>("Z44v3","Z44v3",10000,-10000,0,10000,-10000,0);
 
 fRecodiff[40]=tfs->make<TH2F>("TPCx4v2","TPCx4v2",800,-400,400,800,-400,400);
 fRecodiff[41]=tfs->make<TH2F>("TPCy4v2","TPCy4v2",400,-200,200,400,-200,200);
-fRecodiff[42]=tfs->make<TH2F>("TPCx4v3","TPCx4v3",800,-400,400,800,-400,400);
+fRecodiff[42]=tfs->make<TH2F>("TPCx4v3","TPCx4v3",300,100,400,300,100,400);
 fRecodiff[43]=tfs->make<TH2F>("TPCy4v3","TPCy4v3",400,-200,200,400,-200,200);
 
 fRecodiff[44]=tfs->make<TH2F>("TPCPhi4v2","TPCPhi4v2",80,-4,4,80,-4,4);
@@ -612,13 +612,36 @@ fRecodiff[53]=tfs->make<TH2F>("YDist4v3","YDist4v3",100,-50,50,100,-50,50);
 fRecodiff[54]=tfs->make<TH2F>("ZDist4v3","ZDist4v3",100,-50,50,100,-50,50);
 fRecodiff[55]=tfs->make<TH2F>("YKink4v3","YKink4v3",200,-.1,.1,200,-.1,.1);
 
-fRecodiff[56]=tfs->make<TH2F>("mom4v2","mom4v2",1000,0,2000,1000,0,2000);
-fRecodiff[57]=tfs->make<TH2F>("mom4v3","mom4v3",1000,0,2000,1000,0,2000);
+fRecodiff[56]=tfs->make<TH2F>("mom4v2","relative error of S2 mom",1000,0,2000,200,-1,1);
+fRecodiff[57]=tfs->make<TH2F>("mom4v3","relative error of S3 mom",1000,0,2000,200,-1,1);
+fRecodiff[62]=tfs->make<TH2F>("mom4v4","relative error of S4 mom",1000,0,2000,200,-1,1);
 
 fRecodiff[58]=tfs->make<TH2F>("Best residual all four","best residual all four",3000,0,300,3000,0,300);
 fRecodiff[59]=tfs->make<TH2F>("Best residual Skip 2","best residual Skip 2",3000,0,300,3000,0,300);
 fRecodiff[60]=tfs->make<TH2F>("Best residual Skip 3","best residual Skip 3",3000,0,300,3000,0,300);
+fRecodiff[61]=tfs->make<TH2F>("Best residual Skip 4","best residual Skip 4",3000,0,300,3000,0,300);
 
+fRecodiff[63]= tfs->make<TH2F>("X44v4","X44v4",4000,0,4000,4000,0,4000);
+fRecodiff[64]= tfs->make<TH2F>("Y44v4","Y44v4",200,-100,100,200,-100,100);
+fRecodiff[65]= tfs->make<TH2F>("Z44v4","Z44v4",10000,-10000,0,10000,-10000,0);
+
+fRecodiff[66]=tfs->make<TH2F>("XDist4v4","XDist4v4",500,-250,250,500,-250,250);
+fRecodiff[67]=tfs->make<TH2F>("YDist4v4","YDist4v4",100,-50,50,100,-50,50);
+fRecodiff[68]=tfs->make<TH2F>("ZDist4v4","ZDist4v4",100,-50,50,100,-50,50);
+fRecodiff[69]=tfs->make<TH2F>("YKink4v4","YKink4v4",200,-.1,.1,200,-.1,.1);
+
+fRecodiff[70]=tfs->make<TH2F>("TPCPhi4v4","TPCPhi4v4",80,-4,4,80,-4,4);
+fRecodiff[71]=tfs->make<TH2F>("TPCTheta4v4","TPCTheta4v4",100,-.5,.5,100,-.5,.5);
+
+fRecodiff[72]= tfs->make<TH2F>("WC4XWire4v4","WC4XWire4v4",500,-250,250,500,-250,250);
+fRecodiff[73]= tfs->make<TH2F>("WC4YWire4v4","WC4YWire4v4",500,-250,250,500,-250,250);
+
+fRecodiff[74]=tfs->make<TH2F>("TPCx4v4","TPCx4v4",800,-400,400,800,-400,400);
+fRecodiff[75]=tfs->make<TH2F>("TPCy4v4","TPCy4v4",400,-200,200,400,-200,200);
+
+fRecodiff[76]=tfs->make<TH2F>("Best residual 4v2","best residual 4v2",3000,0,300,3000,0,300);
+fRecodiff[77]=tfs->make<TH2F>("Best residual 4v3","best residual 4v3",3000,0,300,3000,0,300);
+fRecodiff[78]=tfs->make<TH2F>("Best residual 4v4","best residual 4v4",3000,0,300,3000,0,300);
 fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 //fRecodiff[0] = tfs->make<TH2F>("Recofourvsthree","Reco4vs3", 100,0,1000,100,0,1000);
    //fEventPicky=tfs->make<TH1F>("event with picky", "event with picky", 25000,0,25000);
