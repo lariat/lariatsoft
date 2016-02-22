@@ -1,20 +1,7 @@
-#include "detectorclocks.fcl"
+#include "detectorclocks_lariat.fcl"
 
 BEGIN_PROLOG
 
-lariat_detectorclocks: @local::standard_detectorclocks
-
-lariat_detectorclocks.TrigModuleName:     "TriggerSim"
-lariat_detectorclocks.InheritClockConfig: false
-lariat_detectorclocks.G4RefTime:        -10. # G4 time [us] where electronics clock counting start
-lariat_detectorclocks.TriggerOffsetTPC:  -24.2 # Time [us] for TPC readout start w.r.t. trigger time
-lariat_detectorclocks.FramePeriod:       393.2 # Frame period [us]
-lariat_detectorclocks.ClockSpeedTPC:     7.8125  # TPC clock speed in MHz 3.90625 value for 256ns sampling time  
-lariat_detectorclocks.ClockSpeedOptical: 1000.   # Optical clock speed in MHz
-lariat_detectorclocks.ClockSpeedTrigger: 16.   # Trigger clock speed in MHz
-lariat_detectorclocks.DefaultTrigTime:   10. # Default trigger time [us].
-lariat_detectorclocks.DefaultBeamTime:   10. # Default beam time [us].
-
-
+lariat_detectorclocks: @local::lariat_detectorclocks
 
 END_PROLOG
