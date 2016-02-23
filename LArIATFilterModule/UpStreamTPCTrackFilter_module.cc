@@ -43,6 +43,42 @@
 #include <iostream>
 #include <memory>
 
+#include <TH1F.h>
+
+#include "art/Framework/Core/EDFilter.h"
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Core/FindOneP.h" 
+#include "art/Framework/Principal/Event.h"
+#include "art/Framework/Principal/Handle.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
+#include "art/Framework/Services/Optional/TFileService.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Persistency/Common/Ptr.h" 
+#include "art/Persistency/Common/PtrVector.h" 
+#include "art/Utilities/InputTag.h"
+#include "fhiclcpp/ParameterSet.h"
+#include "messagefacility/MessageLogger/MessageLogger.h"
+
+// ###########################
+// ### LArIATsoft Includes ###
+// ###########################
+#include "Geometry/Geometry.h"
+#include "RecoBase/Track.h"
+#include "RecoBase/SpacePoint.h"
+#include "Utilities/AssociationUtil.h"
+// ####################
+// ### C++ Includes ###
+// ####################
+#include <iostream>
+#include <memory>
+
+// #####################
+// ### ROOT includes ###
+// #####################
+#include <TH1F.h>
+
+
 class UpStreamTPCTrackFilter;
 
 class UpStreamTPCTrackFilter : public art::EDFilter {
@@ -71,6 +107,10 @@ private:
   std::string fTrackModuleLabel;
   double fupstreamZPosition;
   double fnTracksUpstream;
+
+  TH1F*  fNumberTracksTot;                  
+  TH1F*  fNumberTracksInUSPortion;
+  TH1F*  fNumberTracksInUSPortionPassingCut;     
   
   
 };
@@ -96,6 +136,11 @@ void UpStreamTPCTrackFilter::reconfigure(fhicl::ParameterSet const & p)
 // ---------------------- Begin Job ---------------------------
 void UpStreamTPCTrackFilter::beginJob()
 {
+  art::ServiceHandle<art::TFileService> tfs;
+  fNumberTracksTot                  = tfs->make<TH1F>("NumberTracksTot"  ,"N of Tracks Totale;N Tracks;N evt"             ,30,-0.5,29.5);
+  fNumberTracksInUSPortion          = tfs->make<TH1F>("NumberTracksInUSPortion"  ,"N of tracks in US portion;N Tracks;N evt"             ,30,-0.5,29.5);
+  fNumberTracksInUSPortionPassingCut= tfs->make<TH1F>("NumberTracksInUSPortionPassingCut","N of tracks in US portion passing Cuts;N Tracks;N evt",30,-0.5,29.5);
+
   // Implementation of optional member function here.
 }
 
@@ -111,10 +156,11 @@ art::Handle< std::vector<recob::Track> > trackListHandle; //<---Define trackList
 std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
    
 // === Filling the tracklist from the tracklistHandle ===
-if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
-   {art::fill_ptr_vector(tracklist, trackListHandle);}
-   
-// === Association between SpacePoints and Tracks ===
+ if (!evt.getByLabel(fTrackModuleLabel,trackListHandle)) return false;
+ 
+ art::fill_ptr_vector(tracklist, trackListHandle);
+ 
+ // === Association between SpacePoints and Tracks ===
 art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
 
 
@@ -166,10 +212,16 @@ for(size_t i=0; i<tracklist.size();++i)
    
    }//<---End i loop
 
+ fNumberTracksTot->Fill(tracklist.size());
+ fNumberTracksInUSPortion->Fill(ntrksUpStream);
 // ### If we didn't find enough upstream tracks then return false ###
 if(ntrksUpStream < fnTracksUpstream){return false;}
 // ### Otherwise, keep the event ###
-else{return true;}
+else{
+  fNumberTracksInUSPortionPassingCut->Fill(ntrksUpStream); 
+  return true;
+ }
+
 
 
 }//<---End evt loop

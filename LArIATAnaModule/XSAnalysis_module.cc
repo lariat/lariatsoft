@@ -156,9 +156,9 @@ private:
   //////////////////
   std::string      fSlicerSourceLabel;
   std::string      fWCTrackBuilderLabel;
-  std::string      fTPCTrackBuilderLabel;
   std::string      fCalorimetryModuleLabel;
-  std::string      fSpacePointModuleLabel;
+  std::string      fTPCTrackHandleLabel;
+  std::string      fNonStoppingTPCTrackBuildLabel;
 
   double fupstreamZPosition;
   // The parameters we'll read from the .fcl file.
@@ -180,20 +180,12 @@ private:
   float fRecombinationConstant; /// Doxygen comment
   float fMass;                  /// Mass of the particle we want to calculate the XS for
   float fInitialLostEn;         /// Energy Lost by the particle at in the Ar before the TPC
-  float	fEnStoppingCut;         /// Doxygen comment
   float fSlabThick;             /// Doxygen comment
   int   ntracks_reco;
   int   nwctrks;
 
-  ////////////////////  
-  //Geometry constants
-  ////////////////////
-  float fXLimitLow;             /// Doxygen comment
-  float fXLimitHigh;		/// Doxygen comment
-  float fYLimitLow;		/// Doxygen comment
-  float fYLimitHigh;		/// Doxygen comment
-  float fZLimitLow;		/// Doxygen comment
-  float fZLimitHigh;		/// Doxygen comment  
+  
+  
   //################################################
   //### Histogram declaration for whole analysis ###
   //################################################
@@ -251,6 +243,8 @@ XSAnalysis::XSAnalysis(fhicl::ParameterSet const & p)
 
 void XSAnalysis::analyze(art::Event const & e)
 {
+  std::cout<<"Puppa -1.0 \n";
+
   /**
      This functions expects events 
      with 1 wcTrack
@@ -271,50 +265,51 @@ void XSAnalysis::analyze(art::Event const & e)
   ///Retrieving the WCtracks from the sliced event
   //&&& This part needs changing fo MC
   // if (fAmIData)
+
   art::Handle< std::vector<ldp::WCTrack> > wcTrackHandle;        
   std::vector<art::Ptr<ldp::WCTrack> >     wctrack;                /// Define wctrack as a pointer to ldp::WCTrack
   if(!e.getByLabel(fWCTrackBuilderLabel, wcTrackHandle)) return;   /// If there are no wire chamber tracks for the right label, return 
   art::fill_ptr_vector(wctrack, wcTrackHandle);			   /// Filling the wctrack from the wcTrackHandle 	       
   nwctrks = wctrack.size();	
   if ( nwctrks !=1 ) return;                                       /// If there are more than 1 wire chamber tracks, return 
-    
-  ///Retrieving the TPC tracks from the sliced event
-  art::Handle< std::vector<recob::Track> > tpcTrackHandle;
-  std::vector<art::Ptr<recob::Track> > tracklist;                   /// Define tracklist as a pointer to recob::tracks
-  if (!e.getByLabel(fTPCTrackBuilderLabel,tpcTrackHandle)) return;  /// If there are no TPC tracks for the right label, return
-  art::fill_ptr_vector(tracklist, tpcTrackHandle);                  /// Filling the tracklist from the tracklistHandle 
-  ntracks_reco=tracklist.size();                                    /// Store the number of tracks per event                   
-  if ( !ntracks_reco ) return;                                      /// If there are no TPC tracks in general, return
-  
-  ///Association between Calorimetry objects and Tracks
-  art::FindManyP<anab::Calorimetry> fmcal(tpcTrackHandle, e, fCalorimetryModuleLabel);
-
-  // === Association between SpacePoints and Tracks ===
-  art::FindManyP<recob::SpacePoint> fmsp(tpcTrackHandle, e, fTPCTrackBuilderLabel);
-  
-  ///Fill hist info with total number of TPC and WC tracks per event
-  fTPCTrackEventNumbers->SetBinContent(fEventCounter,tpcTrackHandle->size());
-  fWCTrackEventNumbers->SetBinContent(fEventCounter,wcTrackHandle->size());
 
   // Take the wcTrack momentum
   float wcTrackMomentum = wctrack[0]->Momentum();
-  
-  // The following function returns the index of
-  // the right TPC track for this event.
-  int indexTPCTrack;
-  if (!findTheTPCTrack (indexTPCTrack, wctrack[0], tracklist, fmcal, fmsp)) return;
-  
-  // Get the calorimetry associated with the right tpcTrack
-  std::vector<art::Ptr<anab::Calorimetry> > caloTPCTrack = fmcal.at(indexTPCTrack);//here the track index is needed
 
+  ///Retrieving the TPC tracks from the sliced event
+  auto tpcTrackHandle = e.getValidHandle<art::PtrVector<recob::Track> >(fNonStoppingTPCTrackBuildLabel);
+  if( !tpcTrackHandle.isValid() ) return;
+ 
+  auto tracklist =  *tpcTrackHandle;   
+  ntracks_reco = tracklist.max_size();                                    /// Store the number of tracks per event                   
 
-  // Calculate the XS
-  calcXS(wcTrackMomentum, caloTPCTrack); 
+      
+  if ( !ntracks_reco ){ return; }       /// If there are no TPC tracks in general, return
+  ///Fill hist info with total number of TPC and WC tracks per event
+  fTPCTrackEventNumbers->SetBinContent(fEventCounter,ntracks_reco);
+  fWCTrackEventNumbers->SetBinContent(fEventCounter,wcTrackHandle->size());
   
+  // Get the rigth calorimtry: the calorimetry is associated with the TPC tracks
+  // not with the Stopping Tracks. We'll use the key of the non stopping track to
+  // understand which calo obj we need and a mock tpc handle to retreive the right calo handler.
+  art::Handle< std::vector<recob::Track> > mocktpcTrackHandle;
+  if(!e.getByLabel(fTPCTrackHandleLabel, mocktpcTrackHandle)) return;  
+  ///Association between Calorimetry objects and Tracks
+  art::FindManyP<anab::Calorimetry> fmcal(mocktpcTrackHandle, e, fCalorimetryModuleLabel);
+  
+  for ( auto const& thisTrack : tracklist )
+    {
+      unsigned int indexTPCTrack = thisTrack.key();
+      // Get the calorimetry associated with the right tpcTrack
+      std::vector<art::Ptr<anab::Calorimetry> > caloTPCTrack = fmcal.at(indexTPCTrack);//here the track index is needed
+      //// Calculate the XS
+      calcXS(wcTrackMomentum, caloTPCTrack); 
+    }
   
 
   fEventCounter++;
   
+
   // If you feel like talking, tell me all the info you've got
   if(fVerbose)
     {
@@ -410,33 +405,20 @@ void XSAnalysis::endJob()
 void XSAnalysis::reconfigure(fhicl::ParameterSet const & p)
 {
   // Implementation of optional member function here.
-  fSlicerSourceLabel       = p.get<std::string>("SourceLabel"           , "SlicerInput");
-  fWCTrackBuilderLabel     = p.get<std::string>("WCTrackBuilderLabel"   , "wctrack"    );
-  fTPCTrackBuilderLabel    = p.get<std::string>("TPCTrackBuilderLabel"  , "pmtrack"    );
-  fSpacePointModuleLabel   = p.get<std::string>("SpacePointBuilderLabel", "pmtrack"    );
-  fCalorimetryModuleLabel  = p.get<std::string>("CalorimetryModuleLabel", "calo"       );
+  fSlicerSourceLabel             = p.get<std::string>("SourceLabel"           , "SlicerInput"    );
+  fWCTrackBuilderLabel           = p.get<std::string>("WCTrackBuilderLabel"   , "wctrack"        );
+  fNonStoppingTPCTrackBuildLabel = p.get<std::string>("TPCTrackBuilderLabel"  , "NonStoppingTrk" );
+  fCalorimetryModuleLabel        = p.get<std::string>("CalorimetryModuleLabel", "calo"           );
+  fTPCTrackHandleLabel           = p.get<std::string>("TPCTrackHandle"        , "pmtrack"           );
   fNEvents                 = p.get< int   >("NumEvents");
   fEpsUpstream             = p.get< float >("UpstreamEpsilon");
   fRecombinationConstant   = p.get< float >("RecombinationFactor");
   fMass                    = p.get< float >("Mass"             ,493.677);
   fInitialLostEn           = p.get< float >("InitialLostEn"    ,  8.6  );
-  fEnStoppingCut           = p.get< float >("EnStoppingCut");
   fSlabThick  		   = p.get< float >("ThinSlabThickness");//in cm
-  fXLimitLow               = p.get< float >("XLimitLow"        ,   0. );
-  fXLimitHigh              = p.get< float >("XLimitHigh"       ,  47. );
-  fYLimitLow               = p.get< float >("YLimitLow"        , -20. );
-  fYLimitHigh              = p.get< float >("YLimitHigh"       ,  20. );
-  fZLimitLow 		   = p.get< float >("ZLowLimitCrossing",  89. );
-  fZLimitHigh 		   = p.get< float >("ZUpLimitCrossing" ,  91. );
   fAmIData                 = p.get< bool  >("AmIData"          , true );
   fVerbose                 = p.get< bool  >("Verbose"          , false);
   fXSVerbose               = p.get< bool  >("XSVerbose"        , true );
-  fupstreamZPosition       = p.get< double >("MaxUpstreamZPosition", 14.0);
-  
-  fLowLimitStop = p.get< double >("LowerLimitStoppingTrack", -0.43);
-  fUpLimitStop = p.get< double >("UpperLimitStoppingTrack", -0.35);
-
-
 }
 
 void XSAnalysis::calcXS (float momentum,
@@ -515,198 +497,7 @@ void XSAnalysis::calcXS (float momentum,
   
 }
 
-bool XSAnalysis::findTheTPCTrack (int                                  &tpcTrackID,
-				  art::Ptr<ldp::WCTrack>               wctrack    ,
-				  std::vector<art::Ptr<recob::Track>>  tracklist  ,
-				    art::FindManyP<anab::Calorimetry>  fmcal      ,
-				    art::FindManyP<recob::SpacePoint>  fmsp       )
-{
-  std::vector<recob::Track> iTrack;
-  // ### Looping over tracks we need to find the only one that matches the wcTrack ###
-  for ( auto const& thisTrack : tracklist )
-    { 
-      std::cout << "TPC track ID " << thisTrack.key() << std::endl;
-
-      // ### Setting a temp variables for this track ###
-      float tempZpoint = 100.;
-      
-      // ### Grabbing the SpacePoints associated with this track ###
-      std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(thisTrack.key());
-      
-      // ########################################
-      // ### Looping over all the SpacePoints ###
-      // ########################################
-      for (size_t j = 0; j<spts.size(); ++j)
-      {
-	// ################################################################################# 
-	// ### Recording the lowest Z point that is inside fiducial boundries of the TPC ###
-	// #################################################################################
-	if(spts[j]->XYZ()[2] < tempZpoint && 
-	   spts[j]->XYZ()[2] > 0   && spts[j]->XYZ()[2] < 90   && 
-	   spts[j]->XYZ()[0] > 0   && spts[j]->XYZ()[0] < 42.5 &&
-	   spts[j]->XYZ()[1] > -20 && spts[j]->XYZ()[1] < 20 )
-	  
-	  {tempZpoint = spts[j]->XYZ()[2];}
-	
-	// ### Only passing events with a track that has ###
-	// ###  a spacepoint within the first X cm in Z  ### 
-	// ###    And requiring it to be inside the TPC  ###
-	if(tempZpoint < fupstreamZPosition)
-	  {
-	    if(!isStoppingTrack(*thisTrack,fmcal)) // If your track made it to here, it's incoming and non stopping!
-	      iTrack.emplace_back(*thisTrack); 
-	    // Break from spacepoint loop: you don't need to keep looping, you found an incoming track.	           
-	    break; 
-	  }	
-      }//<---End of loop on spacepoints      
-    }//<---End of the loop on tracks
-
-  if(!iTrack.size()) return false;
-  /* here we need to understand the "best match" */
-  tpcTrackID = 0; // This is a fuck up for compilation sake. NEEDS CHANGING!!!!
-  return true;
-}
-
-
-
-				                       
-bool XSAnalysis::isStoppingTrack( recob::Track aTrack, art::FindManyP<anab::Calorimetry> fmcal )
-{
-  /**
-     In this function we decide if the given track is stopping or not
-  */
-  bool StoppingTrack = false;
-  // If the calorimetry is not valid, you consider the particle stopping. 
-  // You want the particle out from the interaction pool
-  if (!fmcal.isValid()) return true; 
-    
-  // ########################################################## 
-  // ### Looping over Calorimetry information for the track ###
-  // ########################################################## 
-  
-  // ### Putting calo information for this track (i) into pointer vector ###
-  std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(aTrack.ID());
-  
-  // ### Looping over each calorimetry point (similar to SpacePoint) ###
-  for (size_t j = 0; j<calos.size(); ++j)
-    {
-      // ### If we don't have calorimetry information for this plane skip ###
-      if (!calos[j]->PlaneID().isValid) continue;
-      
-      // ### Grabbing this calorimetry points plane number (0 == induction, 1 == collection) ###
-      int pl = calos[j]->PlaneID().Plane;
-      
-      // ### Skipping this point if the plane number doesn't make sense ###
-      if (pl<0||pl>1) continue;
-      
-      // ### Recording the number of calorimetry points for this track in this plane ####
-      trkhits[pl] = calos[j]->dEdx().size();
-      
-      // #### Recording the kinetic energy for this track in this plane ###
-      trkke[pl] = calos[j]->KineticEnergy();
-      
-      // ###############################################
-      // ### Looping over all the calorimetry points ###
-      // ###############################################
-      
-      //if(pl == 1) std::cout << "Number of calo hits for this track in plane 1 " << calos[j]->dEdx().size() << std::endl;
-      
-      double lastHitsdEdx[16]={0.};
-      double lastHitsRR[16]={0.};
-      
-      double ordereddEdx[1000]={0.};
-      double orderedRR[1000]={0.};
-      
-      for (size_t k = 0; k<calos[j]->dEdx().size(); ++k)
-	{
-	  // ### If we go over 1000 points just skip them ###
-	  if (k>=1000) continue;
-	  
-	  // ### Recording the dE/dX information for this calo point along the track in this plane ###
-	  trkdedx[pl][k] = calos[j]->dEdx()[k];
-	  
-	  // ### Recording the residual range for this calo point along the track in this plane ###
-	  trkrr[pl][k] = calos[j]->ResidualRange()[k];
-	  
-	  // ### Recording the pitch of this calo point along the track in this plane ###
-	  trkpitchhit[pl][k] = calos[j]->TrkPitchVec()[k];
-	  
-	  //### Analyzing caloHits ONLY from collection plane - 1
-	  
-	  if(pl == 1) {
-	    
-	    size_t dimCalo = 0;
-	    dimCalo = calos[j]->dEdx().size();
-	    //Fill histos with calo info from collection plane for each track
-	    fdEdx->Fill((calos[j]->dEdx()[k]));
-	    fdEdxRange->Fill(calos[j]->ResidualRange()[k],(calos[j]->dEdx()[k]));
-	    //In case the recorded CaloPoints are not ordered with decreasing RR: 
-	    if(k < calos[j]->dEdx().size()-1){
-	      if(calos[j]->ResidualRange()[k] > calos[j]->ResidualRange()[k+1]) {
-		//If the previous caloHit RR is higher than the next, that's the starting point of the track	
-		ordereddEdx[k]= calos[j]->dEdx()[k];
-		orderedRR[k]= calos[j]->ResidualRange()[k];
-	      }
-	      else {
-		ordereddEdx[dimCalo-k]= calos[j]->dEdx()[k];
-		orderedRR[dimCalo-k]= calos[j]->ResidualRange()[k];	
-	      }
-	    }
-	  }
-	}//<---End calo points (k)
-      
-      if(pl == 1){
-	//Actually to study the dEdx vs RR 
-	//and to provide a good fit for distinguishing stopping particles, I take in account only tracks longer than around 8 cm
-	if(calos[j]->dEdx().size() > 18){
-	  size_t hj=0;
-	  
-	  hj=calos[j]->dEdx().size()-17;
-	  int hjj=0;
-	  while(hj > calos[j]->dEdx().size()-18 && hj < calos[j]->dEdx().size()-1 ){
-	    //lastHits are the one with lower RR
-	    lastHitsdEdx[hjj]=ordereddEdx[hj];
-	    lastHitsRR[hjj]=orderedRR[hj];
-	    hj++;
-	    hjj++;
-	  }
-	  
-	  
-	} else {std::cout << "Too short track: "<< std::endl; }
-      }
-      
-      int check=0;
-      int h=0;
-      
-      //Doublechecking the lastHits vector has been filled
-      while(h < 16){
-	if(lastHitsRR[h]==0.) {h++; check++;}
-	else h++;
-      }
-      
-      double p1=0.;
-      
-      if(check != 16){
-	TGraph *g1 = new TGraph(16,lastHitsRR,lastHitsdEdx);
-	TF1 *fitFcn = new TF1("fitFcn","[0]*pow(x,[1])",0.,10.);
-	fitFcn->SetParameter(1,-0.4);
-	g1->Fit("fitFcn");
-	//In case of "invalid fit" we have to add a control <------
-	p1 = fitFcn->GetParameter(1);
-	//std::cout << "RR Fit Parameters "<< p1 << std::endl;
-	fFitPar->Fill(p1);
-      } 
-      
-      if(p1 < fUpLimitStop && p1 > fLowLimitStop) {
-	//std::cout << "Possible stopping track "	<< std::endl;
-	StoppingTrack = true;
-      }
-      
-	  
-    }//<---End looping over calo points (j)	  
-  
-  return StoppingTrack;
-}
+		
 
 
 DEFINE_ART_MODULE(XSAnalysis)

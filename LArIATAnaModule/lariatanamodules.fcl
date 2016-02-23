@@ -25,16 +25,12 @@ lariat_xsanalysis:
     module_type:              "XSAnalysis"
     SourceLabel:              "SlicerInput"
     WCTrackBuilderLabel:      "wctrack"
-    TPCTrackBuilderLabel:     "pmtrack"
+    #TPCTrackBuilderLabel:     "pmtrack"
     CalorimetryModuleLabel:   "calo"
     NumEvents:                10
     UpstreamEpsilon:          2.0
     RecombinationFactor:      1.3
-    EnStoppingCut:            50.
     ThinSlabThickness:        0.4725 #in cm                                                                                                                                                           
-    ZLowLimitCrossing:        89.
-    ZUpLimitCrossing: 91.
-
 }
 lariat_anatree.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
 

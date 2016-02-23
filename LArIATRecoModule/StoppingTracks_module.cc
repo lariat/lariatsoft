@@ -139,7 +139,7 @@ private:
   double fupstreamZPosition;
   
   double fParticleMass;
-  
+  int    fMinNofSpacePoints;
   double fLowLimitStop;
   double fUpLimitStop;
   bool   fCheckAssn;
@@ -202,47 +202,50 @@ void StoppingTracks::produce(art::Event & evt)
   //std::set<int> tpcIndeces;
   //tpcIndeces.clear();
   
-  if (fCheckAssn) {
-    
-    // ###################################################                                                                                                                                
-    // ### Getting the Wire Chamber Track  Information ###                                                                                                                                
-    // ###################################################                                                                                                                                
-    art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
-    if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) return;
-    // === Association between WC Tracks and TPC Tracks ===                                                                                                                               
-    art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
-    if (!fWC2TPC.isValid())  
-      {
-	evt.put(std::move(TrackNonStoppingVector));
-	return;
-      }
-    // === Loop on all the Assn WC-TPC tracks ===                                                          
-    for (unsigned int indexAssn = 0; indexAssn < fWC2TPC.size(); ++indexAssn )
-      {
-	// === Get the TPC track ===
-	cet::maybe_ref<recob::Track const> trackWC2TPC(*fWC2TPC.at(indexAssn));
-	if (!trackWC2TPC.isValid())
-	  {
-	    evt.put(std::move(TrackNonStoppingVector));
-	    return;
-	  }
-	recob::Track const& aTrack(trackWC2TPC.ref());
-	// === Loop on all the TPC Tracks and check if the track ID is the same ===
-	// === THIS WAY IS NOT ELEGANT, BUT GETS THE JOBS DONE ===
-	for ( auto const& thisTrack : tracklist )
-	  {
-	    if (thisTrack->ID() == aTrack.ID())
-	      {
-		if (isStoppingTrack(thisTrack,fmcal))  (*TrackNonStoppingVector).push_back(thisTrack);
-	      }
-	  }
-      }
-  } else 
+  if (fCheckAssn) 
     {
+      std::cout<<"Checking Ass\n";
+      
+      // ###################################################                                                                                                                                
+      // ### Getting the Wire Chamber Track  Information ###                                                                                                                                
+      // ###################################################                                                                                                                                
+      art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
+      if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) return;
+      // === Association between WC Tracks and TPC Tracks ===                                                                                                                               
+      art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
+      if (!fWC2TPC.isValid())  
+	{
+	  evt.put(std::move(TrackNonStoppingVector));
+	  return;
+	}
+      // === Loop on all the Assn WC-TPC tracks ===                                                          
+      for (unsigned int indexAssn = 0; indexAssn < fWC2TPC.size(); ++indexAssn )
+	{
+	  // === Get the TPC track ===
+	  cet::maybe_ref<recob::Track const> trackWC2TPC(*fWC2TPC.at(indexAssn));
+	  if (!trackWC2TPC.isValid())
+	    {
+	      evt.put(std::move(TrackNonStoppingVector));
+	      return;
+	    }
+	  recob::Track const& aTrack(trackWC2TPC.ref());
+	  // === Loop on all the TPC Tracks and check if the track ID is the same ===
+	  // === THIS WAY IS NOT ELEGANT, BUT GETS THE JOBS DONE ===
+	  for ( auto const& thisTrack : tracklist )
+	    {
+	      if (thisTrack->ID() == aTrack.ID())
+		{
+		  if (!isStoppingTrack(thisTrack,fmcal))  (*TrackNonStoppingVector).push_back(thisTrack);
+		}
+	    }
+	}
+    } else 
+    {
+      std::cout<<"Not checking Ass\n";
       // ### Looping over tracks and check every track if stopping###
       for ( auto const& thisTrack : tracklist )
 	{ 
-	  if (isStoppingTrack(thisTrack,fmcal))  (*TrackNonStoppingVector).push_back(thisTrack);   
+	  if (!isStoppingTrack(thisTrack,fmcal))  (*TrackNonStoppingVector).push_back(thisTrack);   
 	}
       
     }
@@ -277,12 +280,14 @@ void StoppingTracks::reconfigure(fhicl::ParameterSet const & p)
   //Range for the p1 parameter of the fit dEdx vs RR (low RR) to select stopping particles 
   fLowLimitStop = p.get< double >("LowerLimitStoppingTrack", -0.43);
   fUpLimitStop  = p.get< double >("UpperLimitStoppingTrack", -0.35);
-  //On wich subset of tracks does the module run?
-  fCheckAssn    = p.get< bool   >("CheckAssn", false);
+  
+  fMinNofSpacePoints  = p.get< int >("fMinNofSpacePoints", 16);
+  fCheckAssn          = p.get< bool   >("CheckAssn", false);
 }
 
 bool StoppingTracks::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindManyP<anab::Calorimetry> fmcal )
 {
+  std::cout<<"FUNCTION IS STOPPING CALLED\n";
   /**
      In this function we decide if the given track is stopping or not
   */
@@ -322,9 +327,12 @@ bool StoppingTracks::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindMa
       
       //if(pl == 1) std::cout << "Number of calo hits for this track in plane 1 " << calos[j]->dEdx().size() << std::endl;
       
-      double lastHitsdEdx[16]={0.};
-      double lastHitsRR[16]={0.};
+      // double lastHitsdEdx[16]={0.};
+      // double lastHitsRR[16]={0.};
       
+      double lastHitsdEdx[fMinNofSpacePoints]={0.};
+      double lastHitsRR[fMinNofSpacePoints]={0.};
+
       double ordereddEdx[1000]={0.};
       double orderedRR[1000]={0.};
       
@@ -367,12 +375,12 @@ bool StoppingTracks::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindMa
       if(pl == 1){
 	//Actually to study the dEdx vs RR 
 	//and to provide a good fit for distinguishing stopping particles, I take in account only tracks longer than around 8 cm
-	if(calos[j]->dEdx().size() > 18){
+	if(calos[j]->dEdx().size() - fMinNofSpacePoints > 0){
 	  size_t hj=0;
 	  
 	  hj=calos[j]->dEdx().size()-17;
 	  int hjj=0;
-	  while(hj > calos[j]->dEdx().size()-18 && hj < calos[j]->dEdx().size()-1 ){
+	  while(hj > calos[j]->dEdx().size()-fMinNofSpacePoints && hj < calos[j]->dEdx().size()-1 ){
 	    //lastHits are the one with lower RR
 	    lastHitsdEdx[hjj]=ordereddEdx[hj];
 	    lastHitsRR[hjj]=orderedRR[hj];
@@ -381,20 +389,24 @@ bool StoppingTracks::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindMa
 	  }
 	  
 	  
-	} else {std::cout << "Too short track: "<< std::endl; }
+	} else 
+	  {
+	    std::cout << "Too short track: "<< std::endl; 
+	    return false;
+	  }
       }
       
       int check=0;
       int h=0;
       //Doublechecking the lastHits vector has been filled
-      while(h < 16){
+      while(h < fMinNofSpacePoints){
 	if(lastHitsRR[h]==0.) {h++; check++;}
 	else h++;
       }
       
       double p1=0.;
       
-      if(check != 16){
+      if(check != fMinNofSpacePoints){
 	TGraph *g1 = new TGraph(16,lastHitsRR,lastHitsdEdx);
 	TF1 *fitFcn = new TF1("fitFcn","[0]*pow(x,[1])",0.,10.);
 	fitFcn->SetParameter(1,-0.4);

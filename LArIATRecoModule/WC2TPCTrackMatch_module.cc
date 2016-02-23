@@ -107,7 +107,13 @@ private:
   TH1F*		hDeltaY;
   TH1F*		hAlpha;
   TH1F*		hnMatch;
-  
+  TH1F*		hDeltaXAfterCut;   
+  TH1F*		hDeltaYAfterCut; 
+  TH1F*		hAlphaAfterCut;  
+  TH1F*		hnMatchAfterCut; 
+
+
+
 };
 
 
@@ -427,6 +433,10 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  DeltaX_WC_TPC_Track = UpStreamTrjPointX[aa] - (wctrk_XFace[bb]);
 	  DeltaY_WC_TPC_Track = UpStreamTrjPointY[aa] - (wctrk_YFace[bb]);
 	  
+	  hDeltaX->Fill(DeltaX_WC_TPC_Track);
+	  hDeltaY->Fill(DeltaY_WC_TPC_Track);
+	  hAlpha->Fill(alpha);
+
 	  
 	  // ### Only counting the track if it passes the alpha, DeltaX and Delta Y ###
 	  // ###       and is far enough upstream in the TPC in Z position          ###
@@ -438,9 +448,9 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
              UpStreamTrjPointZ[aa] < fMaxZPos){
 
 	      // ### Filling Histograms ###
-	      hDeltaX->Fill(DeltaX_WC_TPC_Track);
-	      hDeltaY->Fill(DeltaY_WC_TPC_Track);
-	      hAlpha->Fill(alpha);
+	      hDeltaXAfterCut->Fill(DeltaX_WC_TPC_Track);
+	      hDeltaYAfterCut->Fill(DeltaY_WC_TPC_Track);
+	      hAlphaAfterCut->Fill(alpha);
 	      nWC_TPC_TrackMatch++;
 
 	      // We store all possible wc-tpc track combination
@@ -490,10 +500,15 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 		   << (tracklist.at(it->second.second)->Vertex())[2]<<std::endl;
 	  // Enable a max number of associations
 	  ++matchCounter;
-	  if(matchCounter >= fMaxMatchedTracks) break;
+	  if(matchCounter >= fMaxMatchedTracks)
+	    {
+	      hnMatchAfterCut->Fill(matchCounter);
+	      break;
+	    }
 	}	
     }
   
+  hnMatch->Fill(mapCandidates.size());
 
   evt.put(std::move(wcTpcTrackAssn));
   
@@ -508,6 +523,12 @@ void WC2TPCTrackMatch::beginJob()
   hDeltaY = tfs->make<TH1F>("hDeltaY", "#Delta Y between TPC and WCtrk (TPC - WC)", 400, -20, 20);
   hAlpha  = tfs->make<TH1F>("hAlpha", "#alpha (Angle between TPC and WC Track)", 110, -5, 50);
   hnMatch = tfs->make<TH1F>("hnMatch", "Number of matched TPC/WC Tracks", 20, -1, 9);
+
+  hDeltaXAfterCut = tfs->make<TH1F>("hDeltaXAfterCut", "#Delta X between TPC and WCtrk (TPC - WC)", 400, -20, 20);
+  hDeltaYAfterCut = tfs->make<TH1F>("hDeltaYAfterCut", "#Delta Y between TPC and WCtrk (TPC - WC)", 400, -20, 20);
+  hAlphaAfterCut  = tfs->make<TH1F>("hAlphaAfterCut", "#alpha (Angle between TPC and WC Track)", 110, -5, 50);
+  hnMatchAfterCut = tfs->make<TH1F>("hnMatchAfterCut", "Number of matched TPC/WC Tracks", 20, -1, 9);
+
 }
 
 void WC2TPCTrackMatch::beginRun(art::Run & r)

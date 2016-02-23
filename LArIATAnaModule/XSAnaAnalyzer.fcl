@@ -118,7 +118,6 @@ outputs:
 
 #-----Analysis parameters:-----#
 #physics.analyzers.UpstreamEpsilon: 2.0 #in cm
-physics.analyzers.trigana.EnStoppingCut: 50.
 physics.analyzers.trigana.Verbose: true
 #physics.producers.trigana.ThinSlabThickness: 0.4725 #in cm
 #physics.producers.trigana.ZLowLimitCrossing: 89.0 #in cm
