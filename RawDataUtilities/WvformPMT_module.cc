@@ -27,8 +27,8 @@
 
 #include "TF1.h"
 
-#include "RawData/OpDetPulse.h"
-#include "RecoBase/OpHit.h"
+#include "lardata/RawData/OpDetPulse.h"
+#include "lardata/RecoBase/OpHit.h"
 
 // ROOT includes
 #include "TH1.h"

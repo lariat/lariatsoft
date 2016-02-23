@@ -16,7 +16,7 @@
 // LArSoft libraries
 #include "test/Geo/geometry_unit_test_lariat.h"
 #include "test/Geometry/GeometryIteratorLoopTestAlg.h"
-#include "Geometry/GeometryCore.h"
+#include "larcore/Geometry/GeometryCore.h"
 #include "Geo/ChannelMapLArIATAlg.h"
 
 // utility libraries
@@ -81,8 +81,7 @@ int main(int argc, char const** argv) {
   
   // second argument: path of the parameter set for geometry test configuration
   // (optional; default: "physics.analysers.geotest")
-  config.SetTesterParameterSetPath
-    ((++iParam < argc)? argv[iParam]: "physics.analyzers.geotest");
+  if (++iParam < argc) config.SetMainTesterParameterSetPath(argv[iParam]);
   
   // third argument: path of the parameter set for geometry configuration
   // (optional; default: "services.Geometry" from the inherited object)

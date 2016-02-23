@@ -7,8 +7,8 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "Geo/AuxDetGeoObjectSorterLArIAT.h"
-#include "Geometry/AuxDetGeo.h"
-#include "Geometry/AuxDetSensitiveGeo.h"
+#include "larcore/Geometry/AuxDetGeo.h"
+#include "larcore/Geometry/AuxDetSensitiveGeo.h"
 
 namespace geo{
 

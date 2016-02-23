@@ -1,11 +1,11 @@
 
 simple_plugin(CalWireT1034 "module"
-			        Utilities
-              Filters
-			        RawData
+			        lardata_Utilities
+              larevt_Filters
+			        lardata_RawData
               RawDataUtilities
-              RecoBase
-              RecoBaseArt
+              lardata_RecoBase
+              lardata_RecoBaseArt
 			        RawDataUtilities
 		          SignalShapingServiceT1034_service
               ${ART_FRAMEWORK_CORE}
@@ -28,11 +28,11 @@ simple_plugin(CalWireT1034 "module"
 )
 
 simple_plugin(CalWireROIT1034 "module"
-			        Utilities
-              Filters
-			        RawData
-              RecoBase
-              RecoBaseArt
+			        lardata_Utilities
+              larevt_Filters
+			        lardata_RawData
+              lardata_RecoBase
+              lardata_RecoBaseArt
 			        RawDataUtilities
 		          SignalShapingServiceT1034_service
               ${ART_FRAMEWORK_CORE}

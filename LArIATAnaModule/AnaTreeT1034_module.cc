@@ -29,42 +29,42 @@
 // ########################
 // ### LArSoft includes ###
 // ########################
-#include "SimpleTypesAndConstants/geo_types.h"
-#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
-#include "Geometry/WireGeo.h"
-#include "RecoBase/Wire.h"
-#include "RecoBase/Hit.h"
-#include "RecoBase/Cluster.h"
-#include "RecoBase/Track.h"
-#include "RecoBase/TrackHitMeta.h"
-#include "RecoBase/Vertex.h"
-#include "RecoBase/SpacePoint.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/SimpleTypesAndConstants/geo_types.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "larcore/Geometry/WireGeo.h"
+#include "lardata/RecoBase/Wire.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/RecoBase/Cluster.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/RecoBase/TrackHitMeta.h"
+#include "lardata/RecoBase/Vertex.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/Utilities/AssociationUtil.h"
 //#include "RawData/ExternalTrigger.h"
-#include "RawData/RawDigit.h"
-#include "RawData/raw.h"
-#include "MCCheater/BackTracker.h"
-#include "Simulation/SimChannel.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/raw.h"
+#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/Simulation/SimChannel.h"
 #include "SimulationBase/MCTruth.h"
-#include "Filters/ChannelFilter.h"
-#include "AnalysisBase/Calorimetry.h"
-#include "AnalysisBase/ParticleID.h"
-#include "RecoAlg/TrackMomentumCalculator.h"
+#include "larevt/Filters/ChannelFilter.h"
+#include "lardata/AnalysisBase/Calorimetry.h"
+#include "lardata/AnalysisBase/ParticleID.h"
+#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AGCounter.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
-#include "RecoBase/Shower.h"
-#include "RecoBase/EndPoint2D.h"
-#include "MCBase/MCShower.h"
-#include "MCBase/MCStep.h"
-#include "AnalysisAlg/CalorimetryAlg.h"
+#include "lardata/RecoBase/Shower.h"
+#include "lardata/RecoBase/EndPoint2D.h"
+#include "lardata/MCBase/MCShower.h"
+#include "lardata/MCBase/MCStep.h"
+#include "lardata/AnalysisAlg/CalorimetryAlg.h"
 
 // #####################
 // ### ROOT includes ###
@@ -405,9 +405,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Geometry Service ===
   art::ServiceHandle<geo::Geometry> geom;
   // === Liquid Argon Properties Services ===
-  art::ServiceHandle<util::LArProperties> larprop;
+  //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   // === Detector properties service ===
-  art::ServiceHandle<util::DetectorProperties> detprop;
+  auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   // === BackTracker service ===
   art::ServiceHandle<cheat::BackTracker> bt;
   const sim::ParticleList& plist = bt->ParticleList();
@@ -432,9 +432,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   evttime = tts.AsDouble();
    
   // === Electric Field ===
-  efield[0] = larprop->Efield(0);
-  efield[1] = larprop->Efield(1);
-  efield[2] = larprop->Efield(2);
+  // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
+  efield[0] = detprop->Efield(0);
+  efield[1] = detprop->Efield(1);
+  efield[2] = detprop->Efield(2);
    
   // === Trigger Offset ====
   t0 = detprop->TriggerOffset();

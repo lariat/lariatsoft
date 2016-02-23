@@ -32,17 +32,18 @@ extern "C" {
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-#include "Utilities/LArFFT.h"
-#include "RawData/RawDigit.h"
-#include "RawData/raw.h"
-#include "RawData/TriggerData.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/TimeService.h"
+#include "lardata/Utilities/LArFFT.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/raw.h"
+#include "lardata/RawData/TriggerData.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksServiceStandard.h" // special (see below)
 #include "Utilities/SignalShapingServiceT1034.h"
-#include "Geometry/Geometry.h"
-#include "Simulation/sim.h"
-#include "Simulation/SimChannel.h"
-#include "Utilities/DetectorProperties.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larsim/Simulation/sim.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "TMath.h"
 #include "TComplex.h"
@@ -103,7 +104,7 @@ namespace detsim {
     //be made a fcl parameter but not likely to ever change
     const float adcsaturation = 4095;
     
-    ::util::ElecClock fClock; ///< TPC electronics clock
+    ::detinfo::ElecClock fClock; ///< TPC electronics clock
     
   }; // class SimWireT1034
   
@@ -171,7 +172,7 @@ namespace detsim {
     
       }
     //detector properties information
-    art::ServiceHandle<util::DetectorProperties> detprop;
+    auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
     fNTimeSamples  = detprop->NumberTimeSamples();
 
  
@@ -209,10 +210,14 @@ namespace detsim {
 
   void SimWireT1034::produce(art::Event& evt)
   {
-
-    art::ServiceHandle<util::TimeService> ts;
+    
+    // the following code is non-portable;
+    // it requires a specific implementation of DetectorClocksService.
+    art::ServiceHandle<detinfo::DetectorClocksServiceStandard> tss;
     // In case trigger simulation is run in the same job...
-    ts->preProcessEvent(evt);
+    tss->preProcessEvent(evt);
+
+    auto const* ts = lar::providerFrom<detinfo::DetectorClocksService>();
 
     // get the geometry to be able to figure out signal types and chan -> plane mappings
     art::ServiceHandle<geo::Geometry> geo;

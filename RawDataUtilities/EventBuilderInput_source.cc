@@ -31,14 +31,14 @@
 #include "artdaq-core/Data/Fragments.hh"
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/RawDigit.h"
-#include "RawData/TriggerData.h"
-#include "SimpleTypesAndConstants/RawTypes.h"
-#include "SummaryData/RunData.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/RawData/AuxDetDigit.h"
+#include "lardata/RawData/OpDetPulse.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/TriggerData.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h"
+#include "larcore/SummaryData/RunData.h"
+#include "lardata/Utilities/AssociationUtil.h"
 
 // LArIATFragment includes
 #include "LArIATFragments/CAENFragment.h"

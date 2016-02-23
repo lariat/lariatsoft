@@ -22,10 +22,10 @@
 #include "cetlib/exception.h"
 
 // LArSoft includes
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/RawDigit.h"
-#include "RawData/TriggerData.h"
+#include "lardata/RawData/AuxDetDigit.h"
+#include "lardata/RawData/OpDetPulse.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/TriggerData.h"
 //#include "SimpleTypesAndConstants/RawTypes.h"
 //#include "SummaryData/RunData.h"
 //#include "Utilities/AssociationUtil.h"

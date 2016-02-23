@@ -23,14 +23,18 @@
 
 #include <vector>
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "Utilities/AssociationUtil.h"
+//<<<<<<< HEAD
+#include "lardata/Utilities/AssociationUtil.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
 
 //ROOT Things
 #include <TH1F.h>
 #include <TH2F.h>
-
+//=======
+#include "lardata/Utilities/AssociationUtil.h"
+//>>>>>>> b3e5168e67f85df14d1e0e2eddff6e4b2a2ec8f9
+//
 //LArIAT Things
 #include "RawDataUtilities/TriggerDigitUtility.h"
 #include "LArIATRecoAlg/WCTrackBuilderAlg_new.h"

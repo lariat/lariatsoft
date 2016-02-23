@@ -6,7 +6,7 @@ include_directories( $ENV{LARCORE_INC}          	       )
 
 art_make(BASENAME_ONLY
          LIBRARY_NAME     LArIATDataProducts
-	 LIB_LIBRARIES    RawData
+	 LIB_LIBRARIES    lardata_RawData
 			  ${ART_FRAMEWORK_CORE}
 			  ${ART_FRAMEWORK_PRINCIPAL}
 			  ${ART_PERSISTENCY_COMMON}
@@ -16,7 +16,7 @@ art_make(BASENAME_ONLY
 			  ${MF_UTILITIES}
 			  ${CETLIB}
 			  ${ROOT_BASIC_LIB_LIST}
-         DICT_LIBRARIES   RawData
+         DICT_LIBRARIES   lardata_RawData
 )
 
 

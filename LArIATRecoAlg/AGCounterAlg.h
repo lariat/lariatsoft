@@ -25,8 +25,8 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 // LAR/LARIAT-SOFT
-#include "Geometry/Geometry.h"
-#include "RawData/AuxDetDigit.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/RawData/AuxDetDigit.h"
 
 #include "LArIATDataProducts/AGCounter.h"
 

@@ -8,11 +8,11 @@
 ////////////////////////////////////////////////////////////////////////
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "Geometry/AuxDetGeo.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/AuxDetGeo.h"
 //add AuxDetGeoSensitive here when relevant
-#include "SimpleTypesAndConstants/geo_types.h"
-#include "RawData/AuxDetDigit.h"
+#include "larcore/SimpleTypesAndConstants/geo_types.h"
+#include "lardata/RawData/AuxDetDigit.h"
 
 //lariatsoft includes
 #include "LArIATDataProducts/WCTrack.h"

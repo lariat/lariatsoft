@@ -13,7 +13,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "Geometry/AuxDetGeo.h"
+#include "larcore/Geometry/AuxDetGeo.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 
 // LArIAT includes

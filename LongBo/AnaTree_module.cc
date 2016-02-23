@@ -25,24 +25,24 @@
 #include "cetlib/maybe_ref.h"
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "Geometry/PlaneGeo.h"
-#include "Geometry/WireGeo.h"
-#include "RecoBase/Hit.h"
-#include "RecoBase/Cluster.h"
-#include "RecoBase/Track.h"
-#include "RecoBase/SpacePoint.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "larcore/Geometry/WireGeo.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/RecoBase/Cluster.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/Utilities/AssociationUtil.h"
 //#include "RawData/ExternalTrigger.h"
-#include "RawData/RawDigit.h"
-#include "RawData/raw.h"
-#include "MCCheater/BackTracker.h"
-#include "Simulation/SimChannel.h"
-#include "AnalysisBase/Calorimetry.h"
-#include "AnalysisBase/ParticleID.h"
-#include "RecoAlg/TrackMomentumCalculator.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/raw.h"
+#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "lardata/AnalysisBase/Calorimetry.h"
+#include "lardata/AnalysisBase/ParticleID.h"
+#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 
 // ROOT includes
 #include "TTree.h"
@@ -165,8 +165,8 @@ void bo::AnaTree::analyze(art::Event const & evt)
   ResetVars();
 
   art::ServiceHandle<geo::Geometry> geom;
-  art::ServiceHandle<util::LArProperties> larprop;
-  art::ServiceHandle<util::DetectorProperties> detprop;
+  //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
+  auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   art::ServiceHandle<cheat::BackTracker> bt;
 
 //  for (size_t i = 0; i<geom->Nplanes(); ++i){
@@ -187,9 +187,10 @@ void bo::AnaTree::analyze(art::Event const & evt)
   evttime = tts.AsDouble();
 
 
-  efield[0] = larprop->Efield(0);
-  efield[1] = larprop->Efield(1);
-  efield[2] = larprop->Efield(2);
+  // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
+  efield[0] = detprop->Efield(0);
+  efield[1] = detprop->Efield(1);
+  efield[2] = detprop->Efield(2);
 
   t0 = detprop->TriggerOffset();
 

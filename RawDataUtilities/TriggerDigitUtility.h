@@ -24,10 +24,10 @@
 #include "art/Persistency/Common/Assns.h"
 
 // LArSoft Includes
-#include "RawData/RawDigit.h"
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/TriggerData.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/AuxDetDigit.h"
+#include "lardata/RawData/OpDetPulse.h"
+#include "lardata/RawData/TriggerData.h"
 
 namespace rdu{
 

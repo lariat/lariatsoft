@@ -3,7 +3,7 @@ art_make_library( LIBRARY_NAME Geo
 			     AuxDetGeoObjectSorterLArIAT.cxx  
 		             ChannelMapLArIATAlg.cxx 
 			     GeoObjectSorterLArIAT.cxx 
-		  LIBRARIES Geometry
+		  LIBRARIES larcore_Geometry
 		            ${MF_MESSAGELOGGER}
 		            ${MF_UTILITIES}
 			    ${FHICLCPP}
@@ -13,7 +13,7 @@ art_make_library( LIBRARY_NAME Geo
 )
 
 simple_plugin( LArIATGeometryHelper service
-	  	Geometry
+	  	larcore_Geometry
 		Geo
 		${ART_FRAMEWORK_CORE}
 		${ART_FRAMEWORK_IO_SOURCES}
@@ -30,7 +30,7 @@ simple_plugin( LArIATGeometryHelper service
 )
 
 simple_plugin( LArIATAuxDetGeometryHelper service
-	  	Geometry
+	  	larcore_Geometry
 		Geo
 		${ART_FRAMEWORK_CORE}
 		${ART_FRAMEWORK_IO_SOURCES}

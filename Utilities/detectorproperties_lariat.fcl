@@ -3,6 +3,11 @@
 BEGIN_PROLOG
 
 lariat_detproperties:                   @local::standard_detproperties
+
+lariat_detproperties.Temperature:       88.4  #(measured in ArgoNeut)
+lariat_detproperties.Efield:            [0.481,0.700,0.890]  #(measured in ArgoNeut)
+lariat_detproperties.Electronlifetime: 1600
+
 lariat_detproperties.ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
 lariat_detproperties.NumberTimeSamples: 3072
 lariat_detproperties.TimeOffsetU:       0.
