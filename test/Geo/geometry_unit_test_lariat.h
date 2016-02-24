@@ -70,15 +70,11 @@ namespace lariat {
           // overwrite the configuration that happened in the base class:
           base_t::SetApplicationName("LArIATGeometryTest");
           base_t::SetDefaultGeometryConfiguration(R"(
-              services: {
-                Geometry: {
-                  SurfaceY: 130.0e2 #in cm, vertical distance to the surface
-                  Name:     "lariat"
-                  GDML:     "lariat.gdml"
-                  ROOT:     "lariat.gdml"
-                  SortingParameters: {}
-                } # Geometry
-              } # services
+            SurfaceY: 130.0e2 #in cm, vertical distance to the surface
+            Name:     "lariat"
+            GDML:     "lariat.gdml"
+            ROOT:     "lariat.gdml"
+            SortingParameters: {}
             )");
         }
     }; // class LArIATGeometryEnvironmentConfiguration<>

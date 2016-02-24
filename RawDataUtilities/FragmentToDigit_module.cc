@@ -48,14 +48,14 @@
 #include "LArIATFragments/TDCFragment.h"
 #include "LArIATFragments/V1495Fragment.h"
 
-#include "SimpleTypesAndConstants/RawTypes.h"
-#include "RawData/RawDigit.h"
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/TriggerData.h"
-#include "SummaryData/RunData.h"
-#include "Geometry/Geometry.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/AuxDetDigit.h"
+#include "lardata/RawData/OpDetPulse.h"
+#include "lardata/RawData/TriggerData.h"
+#include "larcore/SummaryData/RunData.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/Utilities/AssociationUtil.h"
 
 #include "RawDataUtilities/FragmentUtility.h"
 

@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v04_34_00
+parent	lariatsoft v05_01_00
 defaultqual	e9
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
@@ -10,23 +10,20 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		v04_34_00
+larsoft		v05_01_00
 LariatFilters   v01_02
 lariatfragments v01_07_03
-artdaq_core     v1_04_27
+artdaq_core     v1_04_28
 LariatBeamFiles v01_00		-	optional
-lariatutil	v01_26_00 	-	optional
-cetbuildtools   v4_18_01 	-	only_for_build
+lariatutil	v01_26_02 	-	optional
+cetbuildtools   v4_18_02	-	only_for_build
 end_product_list
 
 # e9  - with gcc 4.9.2 and -std=c++11
 qualifier    	       larsoft	  LariatFilters	lariatfragments	  artdaq_core	    LariatBeamFiles	lariatutil	notes
-e9:debug	       e9:debug	  -nq-		e9:debug	  e9:nu:s28:debug   -nq-		e9:debug
-e9:opt		       e9:opt	  -nq-		e9:opt		  e9:nu:s28:opt	    -nq-		e9:opt
-e9:prof		       e9:prof	  -nq-		e9:prof		  e9:nu:s28:prof    -nq-		e9:prof
-e9:debug:nobeam	       e9:debug	  -nq-		e9:debug	  e9:nu:s28:debug   -			e9:debug
-e9:opt:nobeam	       e9:opt	  -nq-		e9:opt		  e9:nu:s28:opt	    -			e9:opt
-e9:prof:nobeam	       e9:prof	  -nq-		e9:prof		  e9:nu:s28:prof    -			e9:prof
+e9:debug	       e9:debug	  -nq-		e9:debug	  e9:nu:s30:debug   -nq-		e9:debug
+e9:opt		       e9:opt	  -nq-		e9:opt		  e9:nu:s30:opt	    -nq-		e9:opt
+e9:prof		       e9:prof	  -nq-		e9:prof		  e9:nu:s30:prof    -nq-		e9:prof
 
 end_qualifier_list
 
@@ -37,14 +34,14 @@ table_fragment_begin
     pathPrepend(FHICL_FILE_PATH,      .)
     envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
     envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
-    envSet(ART_WORKBOOK_QUAL,         "s28:e9")
+    envSet(ART_WORKBOOK_QUAL,         "s30:e9")
     envSet(LARIATDBNAME,              lariat_prd)
     envSet(LARIATDBPORT,              5443)
     envSet(LARIATDBHOST,              ifdbprod2.fnal.gov)
     envSet(LARIATDBUSER,              lariat_prd_user)
     envSet(LARIATDBRECONNECTWAITTIME, 10)
     envSet(LARIATCONNECTATTEMPTS,     3)
-    envSet(DB_PWD_FILE,               ${UPS_PROD_DIR}/pwd/Utilities/lariat_prd_passwd)
+    envSet(DB_PWD_FILE,               ${UPS_PROD_DIR}/pwd/lardata_Utilities/lariat_prd_passwd)
 table_fragment_end
 
 

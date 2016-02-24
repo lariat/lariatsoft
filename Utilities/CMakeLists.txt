@@ -1,10 +1,9 @@
 cet_enable_asserts()
 
-set( lariat_util_lib_list LArFFT_service
-     LArProperties_service
-     Geometry
-     Geometry_service
-     Utilities
+set( lariat_util_lib_list lardata_Utilities_LArFFT_service
+     larcore_Geometry
+     larcore_Geometry_Geometry_service
+     lardata_Utilities
      ${ART_FRAMEWORK_CORE}
      ${ART_FRAMEWORK_PRINCIPAL}
      ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -32,6 +31,7 @@ simple_plugin( SignalShapingServiceT1034  "service"
 )
 
 simple_plugin( DatabaseUtilityT1034  "service"
+               lardata_Utilities_DatabaseUtil_service
                ${MF_MESSAGELOGGER}
                ${MF_UTILITIES}
                ${FHICLCPP}
@@ -48,7 +48,7 @@ simple_plugin( DatabaseUtilityT1034  "service"
 )
 
 file(GLOB pwd_files *passwd)
-install( FILES ${pwd_files} DESTINATION ${product}/${version}/pwd/Utilities )
+install( FILES ${pwd_files} DESTINATION ${product}/${version}/pwd/lardata_Utilities )
 
 install_headers()
 install_fhicl()

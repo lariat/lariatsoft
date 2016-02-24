@@ -2,10 +2,10 @@
 include_directories( $ENV{NUTOOLS_INC} )
 
 art_make( BASENAME_ONLY
-          MODULE_LIBRARIES Simulation
-                        SummaryData
-                        Geometry
-                        Geometry_service
+          MODULE_LIBRARIES larsim_Simulation
+                        larcore_SummaryData
+                        larcore_Geometry
+                        larcore_Geometry_Geometry_service
                         ${SIMULATIONBASE}
                         ${ART_FRAMEWORK_CORE}
                         ${ART_FRAMEWORK_PRINCIPAL}
