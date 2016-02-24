@@ -164,8 +164,8 @@ physics.producers.pmtrack.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.FlipToBeam: true
 physics.producers.pmtrack.RunVertexing: true
 
-services.DetectorProperties.TimeOffsetV: 0.0
-services.LArProperties.Electronlifetime: 1600
+services.DetectorPropertiesService.TimeOffsetV: 0.0
+services.DetectorPropertiesService.Electronlifetime: 1600
 physics.producers.calo.CaloAlg.CalAreaConstants: [0.035,0.086]
 
 physics.producers.calo.TrackModuleLabel:      "pmtrack"

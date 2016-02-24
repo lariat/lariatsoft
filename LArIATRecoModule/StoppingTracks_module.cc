@@ -42,11 +42,11 @@
 // ######################## 
 // ### LArsoft Includes ### 
 // ########################
-#include "RecoBase/Track.h"
-#include "RecoBase/SpacePoint.h"
-#include "Utilities/AssociationUtil.h"
-#include "SimpleTypesAndConstants/geo_types.h"
-#include "Geometry/Geometry.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "larcore/SimpleTypesAndConstants/geo_types.h"
+#include "larcore/Geometry/Geometry.h"
 
 
 // ##########################
@@ -71,12 +71,12 @@
 // ###########################
 // ### LArIATsoft Includes ###
 // ###########################
-#include "Geometry/Geometry.h"
-#include "RecoBase/Track.h"
-#include "RecoBase/SpacePoint.h"
-#include "Utilities/AssociationUtil.h"
-#include "AnalysisBase/Calorimetry.h"
-#include "AnalysisBase/ParticleID.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "lardata/AnalysisBase/Calorimetry.h"
+#include "lardata/AnalysisBase/ParticleID.h"
 
 // ####################
 // ### C++ Includes ###

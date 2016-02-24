@@ -33,10 +33,10 @@
 // ###########################
 // ### LArIATsoft Includes ###
 // ###########################
-#include "Geometry/Geometry.h"
-#include "RecoBase/Track.h"
-#include "RecoBase/SpacePoint.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/Utilities/AssociationUtil.h"
 // ####################
 // ### C++ Includes ###
 // ####################
@@ -63,10 +63,10 @@
 // ###########################
 // ### LArIATsoft Includes ###
 // ###########################
-#include "Geometry/Geometry.h"
-#include "RecoBase/Track.h"
-#include "RecoBase/SpacePoint.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/Geometry/Geometry.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/Utilities/AssociationUtil.h"
 // ####################
 // ### C++ Includes ###
 // ####################

@@ -171,10 +171,7 @@ private:
 
   // === Geaaant inforamtion for reconstruction track
   int trkg4id[kMaxHits];         //<---geant track id for the track
-<<<<<<< HEAD
 
-=======
->>>>>>> develop
   int primarytrkkey;             //<---reco track index for primary particle
   // === Storing 2-d Hit information ===
   int    nhits;		//<---Number of 2-d hits in the event
@@ -263,6 +260,7 @@ private:
   double EndPointx[kMaxPrimaries];		//<---X position that this Geant4 particle ended at
   double EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
   double EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
+  int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
   int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
   int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
   int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
@@ -295,10 +293,7 @@ private:
   double     mcshwr_StartDirY[kMaxMCShower];      	//MC Shower Direction of begining of shower, Y direction 
   double     mcshwr_StartDirZ[kMaxMCShower];      	//MC Shower Direction of begining of shower, Z direction 
   int       mcshwr_isEngDeposited[kMaxMCShower];  	//tells whether if this shower deposited energy in the detector or not.
-<<<<<<< HEAD
 
-=======
->>>>>>> develop
    							//yes = 1; no =0;
   //MC Shower mother information
   int       mcshwr_Motherpdg[kMaxMCShower];       	//MC Shower's mother PDG code.

@@ -26,6 +26,10 @@
 
 #include "larcore/SummaryData/RunData.h"
 
+#include "LArIATDataProducts/WCTrack.h"
+
+
+
 /* template class std::vector<V1495Fragment>; */
 /* template class std::vector<V1495ChannelData>; */
 /* template class std::vector<V1495TriggerPatternData>; */
