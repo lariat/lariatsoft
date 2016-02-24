@@ -224,7 +224,6 @@ physics.producers.cctrack.MatchAlgs: 1
 services.DetectorPropertiesService.TimeOffsetV: -2.0
 services.DetectorPropertiesService.Electronlifetime: 1600
 
-
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"

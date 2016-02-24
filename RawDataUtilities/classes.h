@@ -23,6 +23,7 @@
 #include "lardata/RawData/AuxDetDigit.h"
 #include "lardata/RawData/OpDetPulse.h"
 #include "lardata/RawData/TriggerData.h"
+
 #include "larcore/SummaryData/RunData.h"
 
 /* template class std::vector<V1495Fragment>; */

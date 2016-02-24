@@ -171,7 +171,10 @@ private:
 
   // === Geaaant inforamtion for reconstruction track
   int trkg4id[kMaxHits];         //<---geant track id for the track
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
   int primarytrkkey;             //<---reco track index for primary particle
   // === Storing 2-d Hit information ===
   int    nhits;		//<---Number of 2-d hits in the event
@@ -292,7 +295,10 @@ private:
   double     mcshwr_StartDirY[kMaxMCShower];      	//MC Shower Direction of begining of shower, Y direction 
   double     mcshwr_StartDirZ[kMaxMCShower];      	//MC Shower Direction of begining of shower, Z direction 
   int       mcshwr_isEngDeposited[kMaxMCShower];  	//tells whether if this shower deposited energy in the detector or not.
+<<<<<<< HEAD
 
+=======
+>>>>>>> develop
    							//yes = 1; no =0;
   //MC Shower mother information
   int       mcshwr_Motherpdg[kMaxMCShower];       	//MC Shower's mother PDG code.
@@ -740,8 +746,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    {process_primary[i]=1;}
           // ### If this particle is not-primary, set = 0 ###
 	  else
-	    //<<<<<<< HEAD
-	     {process_primary[i]=0;}
+	    {process_primary[i]=0;}
           
 	  // ### Recording the process as a integer ###
 	  // 0 = primary
@@ -793,6 +798,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  
 	  //=======
 	    // {process_primary[i]=0;}
+=======
+	    {process_primary[i]=0;}
+>>>>>>> develop
    
 	    ///>>>>>>> develop
 	    */
