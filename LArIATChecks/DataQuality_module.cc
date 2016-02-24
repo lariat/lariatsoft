@@ -360,27 +360,27 @@ namespace DataQuality {
     fTPCIntervalsDeltaTZHistogram = tfs->make<TH1D>("TPCIntervalsDeltaTZ", ";#Delta t [ms];Entries per 0.001 ms",  1000,    0,    1);
 
     // TH1 objects for timestamps
-    fMWPCTDCTimeStampHistograms = timestampDir.make<TH1D>("mwpc_tdc_timestamps", ";Timestamp [s];Entries per 0.1 s", 120, 0, 60);
-    fWUTTimeStampHistograms     = timestampDir.make<TH1D>("wut_timestamps", ";Timestamp [s];Entries per 0.1 s", 120, 0, 60);
+    fMWPCTDCTimeStampHistograms = timestampDir.make<TH1D>("mwpc_tdc_timestamps", ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
+    fWUTTimeStampHistograms     = timestampDir.make<TH1D>("wut_timestamps", ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
 
     for (size_t i = 0; i < V1740_N_BOARDS; ++i) {
       std::string th1Title = "caen_board_" + std::to_string(i);
-      fCAENPedestalTimeStampHistograms[i] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.1 s", 120, 0, 60);
-      fCAENTimeStampHistograms[i]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.1 s", 120, 0, 60);
+      fCAENPedestalTimeStampHistograms[i] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
+      fCAENTimeStampHistograms[i]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
     }
 
     for (size_t i = 0; i < V1751_N_BOARDS; ++i) {
       size_t offset = 8;
       std::string th1Title = "caen_board_" + std::to_string(i + offset);
-      fCAENPedestalTimeStampHistograms[i + offset] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.1 s", 120, 0, 60);
-      fCAENTimeStampHistograms[i + offset]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.1 s", 120, 0, 60);
+      fCAENPedestalTimeStampHistograms[i + offset] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
+      fCAENTimeStampHistograms[i + offset]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
     }
 
     for (size_t i = 0; i < V1740B_N_BOARDS; ++i) {
       size_t offset = 24;
       std::string th1Title = "caen_board_" + std::to_string(i + offset);
-      fCAENPedestalTimeStampHistograms[i + offset] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.1 s", 120, 0, 60);
-      fCAENTimeStampHistograms[i + offset]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.1 s", 120, 0, 60);
+      fCAENPedestalTimeStampHistograms[i + offset] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
+      fCAENTimeStampHistograms[i + offset]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
     }
 
     // TH1 objects for TOF
@@ -398,10 +398,10 @@ namespace DataQuality {
         std::string th1Title = "caen_board_" + std::to_string(i) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
                                                                ";ADC;Entries per ADC",
-                                                               4096, 0-0.5, 4096-0.5);
+                                                               4096, 0, 4096);
         fCAENADCHistograms[i][j] = adcDir.make<TH1I>((th1Title + "_adc").c_str(),
                                                      ";ADC;Entries per ADC",
-                                                     4096, 0-0.5, 4096-0.5);
+                                                     4096, 0, 4096);
         fCAENMinADCHistograms[i][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
                                                            ";ADC;Entries per ADC",
                                                            4096, 0, 4096);
@@ -417,10 +417,10 @@ namespace DataQuality {
         std::string th1Title = "caen_board_" + std::to_string(i + offset) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i + offset][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
                                                                         ";ADC;Entries per ADC",
-                                                                        1024, 0-0.5, 1024-0.5);
+                                                                        1024, 0, 1024);
         fCAENADCHistograms[i + offset][j] = adcDir.make<TH1I>((th1Title + "_adc").c_str(),
                                                               ";ADC;Entries per ADC",
-                                                              1024, 0-0.5, 1024-0.5);
+                                                              1024, 0, 1024);
         fCAENMinADCHistograms[i + offset][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
                                                                     ";ADC;Entries per ADC",
                                                                     1024, 0, 1024);
@@ -436,10 +436,10 @@ namespace DataQuality {
         std::string th1Title = "caen_board_" + std::to_string(i + offset) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i + offset][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
                                                                         ";ADC;Entries per ADC",
-                                                                        4096, 0-0.5, 4096-0.5);
+                                                                        4096, 0, 4096);
         fCAENADCHistograms[i + offset][j] = adcDir.make<TH1I>((th1Title + "_adc").c_str(),
                                                               ";ADC;Entries per ADC",
-                                                              4096, 0-0.5, 4096-0.5);
+                                                              4096, 0, 4096);
         fCAENMinADCHistograms[i + offset][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
                                                                     ";ADC;Entries per ADC",
                                                                     4096, 0, 4096);
