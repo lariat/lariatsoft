@@ -14,7 +14,7 @@
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/Utilities/LArFFT.h"
 #include "TFile.h"
-//#include <fstream>
+#include <fstream>
 
 //----------------------------------------------------------------------
 // Constructor.
@@ -84,6 +84,8 @@ void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pse
   
   fScaleNegativeResponse = pset.get<std::vector<double> >("ScaleNegativeResponse");
   fScaleResponseTime     = pset.get<std::vector<double> >("ScaleResponseTime");
+
+  fDebugFieldShape       = pset.get<bool>("DebugFieldShape",false);
   
   // Construct parameterized collection filter function.
   if(!fGetFilterFromHisto)
@@ -696,22 +698,24 @@ void util::SignalShapingServiceT1034::SetResponseSampling()
     case 0: fIndSignalShaping.AddResponseFunction( SamplingResp, true ); break;
     default: fColSignalShaping.AddResponseFunction( SamplingResp, true ); break;
     }
-/*
-    if (iplane == 0){
-      std::ofstream outfile("resindtest.txt");
-      for (size_t i = 0; i<SamplingResp.size(); ++i){
-      outfile<<i<<" "<<SamplingResp[i]<<std::endl;
+
+    if (fDebugFieldShape){
+      if (iplane == 0){
+	std::ofstream outfile("resindtest.txt");
+	for (size_t i = 0; i<SamplingResp.size(); ++i){
+	  outfile<<i<<" "<<SamplingResp[i]<<std::endl;
+	}
+	outfile.close();
       }
-      outfile.close();
-    }
-    else{
-      std::ofstream outfile("rescoltest.txt");
-      for (size_t i = 0; i<SamplingResp.size(); ++i){
-	outfile<<i<<" "<<SamplingResp[i]<<std::endl;
+      else{
+	std::ofstream outfile("rescoltest.txt");
+	for (size_t i = 0; i<SamplingResp.size(); ++i){
+	  outfile<<i<<" "<<SamplingResp[i]<<std::endl;
+	}
+	outfile.close();
       }
-      outfile.close();
     }
-*/
+
 
   } // for ( int iplane = 0; iplane < fNPlanes; iplane++ )
 
