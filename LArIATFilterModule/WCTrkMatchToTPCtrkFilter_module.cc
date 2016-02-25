@@ -265,28 +265,27 @@ for(size_t i=0; i<tracklist.size();++i)
    tracklist[i]->Extent(trackStart,trackEnd); 
    tracklist[i]->Direction(larStart,larEnd);
   
+   //std::cout << "Track " << i << " in WCTPCMatch step" << std::endl;
    
    
    // ### Setting the number of Trajectory points for this track ###
    //nTrajPoints[i] = tracklist[ntrks]->NumberTrajectoryPoints();
+   
+   // ### Making temp variables to find the most upstream ###
+   // ###         of all the trajectory points            ###
+      FirstTrjPtZ = 999;
+      FirstTrjPtY = 999;
+      FirstTrjPtX = 999;
+      pHatX = 999;
+      pHatY = 999;
+      //pHatZ = 999;
+      //pHatMag = 999;
+   
    // ##############################################
    // ### Looping over all the trajectory points ###
    // ##############################################
    for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
       {
-      
-      
-      // ### Making temp variables to find the most upstream ###
-      // ###         of all the trajectory points            ###
-      FirstTrjPtZ = 999;
-      FirstTrjPtY = 999;
-      FirstTrjPtX = 999;
-      
-      pHatX = 999;
-      pHatY = 999;
-      //pHatZ = 999;
-      //pHatMag = 999;
-      
       
       // ### Recording this point if it is the most upstream point ###
       if(tracklist[i]->LocationAtPoint(iTrajPt).Z() < FirstTrjPtZ && 
@@ -320,8 +319,8 @@ for(size_t i=0; i<tracklist.size();++i)
 
       }//<---End iTrajPt loop
 		
-		// ### Calculating the Theta for the TPC Track ###
-		tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());
+    // ### Calculating the Theta for the TPC Track ###
+     tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());
    
    // ###################################################
    // ### Saving for looping later the upstream point ###
@@ -332,7 +331,7 @@ for(size_t i=0; i<tracklist.size();++i)
       UpStreamTrjPointZ[i] = FirstTrjPtZ;  
       UpStreamTrjPointY[i] = FirstTrjPtY;
       UpStreamTrjPointX[i] = FirstTrjPtX;
-   
+      //std::cout << " TrackSptsZMin "<< FirstTrjPtZ << std::endl;
       //UpStreamTrjPointPHatZ[ntrks] = pHatZ;
       UpStreamTrjPointPHatY[i] = pHatY;
       UpStreamTrjPointPHatX[i] = pHatX;
