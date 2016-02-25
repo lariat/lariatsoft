@@ -260,12 +260,8 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       
       // ### Setting the number of Trajectory points for this track ###
       //nTrajPoints[i] = tracklist[ntrks]->NumberTrajectoryPoints();
-      // ##############################################
-      // ### Looping over all the trajectory points ###
-      // ##############################################
-      for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
-	{
-	  // ### Making temp variables to find the most upstream ###
+      
+      // ### Making temp variables to find the most upstream ###
 	  // ###         of all the trajectory points            ###
 	  FirstTrjPtZ = 999;
 	  FirstTrjPtY = 999;
@@ -273,6 +269,12 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  
 	  pHatX = 999;
 	  pHatY = 999;
+      
+      // ##############################################
+      // ### Looping over all the trajectory points ###
+      // ##############################################
+      for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
+	{
 	  
 	  // ### Recording this point if it is the most upstream point ###
 	  if(tracklist[i]->LocationAtPoint(iTrajPt).Z() < FirstTrjPtZ && 
