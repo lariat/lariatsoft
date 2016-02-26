@@ -261,6 +261,18 @@ private:
   double EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
   double EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
   int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
+  // ### Recording the process as a integer ###
+	  // 0 = primary
+	  // 1 = PionMinusInelastic
+	  // 2 = NeutronInelastic
+	  // 3 = hadElastic
+	  // 4 = nCapture
+	  // 5 = CHIPSNuclearCaptureAtRest
+	  // 6 = Decay
+	  // 7 = KaonZeroLInelastic
+	  // 8 = CoulombScat
+	  // 9 = muMinusCaptureAtRest
+	  //10 = ProtonInelastic
   int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
   int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
   int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
@@ -734,7 +746,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Looping over all the Geant4 particles ###
       for( unsigned int i = 0; i < geant_part.size(); ++i )
 	{
-	  //std::cout<<"pdg= "<<geant_part[i]->PdgCode()<<" Process= "<<geant_part[i]->Process()<<" trackId= "<<geant_part[i]->TrackId()<<" E= "<<geant_part[i]->E()<<" P= "<<geant_part[i]->P()<<" "<<sqrt(geant_part[i]->Px()*geant_part[i]->Px() + geant_part[i]->Py()*geant_part[i]->Py()+ geant_part[i]->Pz()*geant_part[i]->Pz())<<" Mother= "<<geant_part[i]->Mother()<<" Vertex= ("<<geant_part[i]->Vx()<<","<<geant_part[i]->Vy()<<","<<geant_part[i]->Vz()<<" ) end=("<<geant_part[i]->EndPosition()[0]<<","<<geant_part[i]->EndPosition()[1]<<","<<geant_part[i]->EndPosition()[2]<<")"<<std::endl;
    
           // ### If this particle is primary, set = 1 ###
 	  if(geant_part[i]->Process()==pri)
@@ -755,7 +766,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  // 8 = CoulombScat
 	  // 9 = muMinusCaptureAtRest
 	  //10 = ProtonInelastic
-	  /*
+	  
 	  if(geant_part[i]->Process() == pri)
 	     {Process[i] = 0;}
 	     
@@ -789,16 +800,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  if(geant_part[i]->Process() == ProtonInelastic)
 	     {Process[i] = 10;}
 	     
-	  std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
+	  //std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
 	  
-	  //=======
-	    // {process_primary[i]=0;}
-=======
-	    {process_primary[i]=0;}
->>>>>>> develop
-   
-	    ///>>>>>>> develop
-	    */
 
 	  // ### Saving the particles mother TrackID ###
 	  Mother[i]=geant_part[i]->Mother();
