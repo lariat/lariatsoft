@@ -30,4 +30,112 @@ lariat_pimufilter:
  TOFModuleLabel: 		"tof"
 }
 
+lariat_particlefilter:
+{
+ module_type: 						ParticleFilter
+ SourceLabel: 						"daq"
+ ParticleProbabilityThreshold: 0.8
+ ParticlePDG: 						 211
+ ParticleIDModuleLabel:       "pid"
+ WCTrackModuleLabel: 			"wctrack"
+ TOFModuleLabel: 					"tof"
+}
+
+lariat_wctrackfilter:
+{
+module_type:      WCTrackFilter
+WCTrackLabel:     "wctrack"	# WCTrack module label
+minNumberWCTrack: 1 		# number of WCTracks in the event to pass the filter
+
+}
+
+lariat_toffilter:
+{
+module_type:	TOFFilter
+TOFModuleLabel:	"tof"	# TOF module label
+nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter
+TOFLowerBound:	0	# minimum time for the TOF object (ns)
+TOFUpperBound:  30	# maximum time for the TOF object (ns)
+
+}
+
+lariat_upstreamtpctrack:
+{
+module_type:		UpStreamTPCTrackFilter
+TrackModuleLabel:	"pmtrack"
+upstreamZPosition:	2	# the minimum upstream z position of the earliest spacepoint (cm)
+nTracksUpstream:	1	# number of tracks which must be in this upstream portion of the TPC
+}
+
+lariat_upstreamtpcmultiplicity:
+{
+module_type:		UpStreamTPCMultiplicityFilter
+TrackModuleLabel:	"pmtrack"
+MaxUpstreamZPosition:	14.	# the minimum upstream z position of the earliest spacepoint (cm)
+MaxNTracksUpstream:	4	# maximum number of tracks which can be in this upstream portion of the TPC
+}
+
+
+lariat_stoppingtracksfilter:
+{
+module_type:		StoppingTracksFilter
+TrackModuleLabel:	"pmtrack"
+upstreamZPosition: 2.
+CalorimetryModuleLabel: "calo"
+ParticleMass: 139.57
+LowerLimitStoppingTrack: -0.43
+UpperLimitStoppingTrack: -0.35
+
+}
+
+
+lariat_wctotpcmatchfilter:
+{
+module_type: 		WCTrkMatchToTPCtrkFilter
+TrackModuleLabel: 	"pmtrack"
+WCTrackLabel: 		"wctrack"
+alpha:			20.
+DeltaXLow:		-2.0
+DeltaXHigh:		6.0
+DeltaYLow:		-3.0
+DeltaYHigh:		6.0
+MaxZPos:		14.0
+MaxMatchedTracks:	1 # Max number of matched TPC and WC tracks (requires > 0)
+}
+
+#Showers rejection filter
+lariat_showerRej:
+{
+module_type: ShowerFilter
+TrackModuleLabel: "pmtrack"
+fnShortTks: 2
+fShortTkLength: 5.
+}
+
+#Filters for Quality-checks
+
+lariat_wctrackquality:
+{
+module_type:      WCTrackFilter
+WCTrackLabel:     "wctrack"	# WCTrack module label
+minNumberWCTrack: 1 		# number of WCTracks in the event to pass the filter
+
+}
+
+lariat_tofquality:
+{
+module_type:	TOFQuality
+TOFModuleLabel:	"tof"	# TOF module label
+nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter
+}
+
+lariat_calwirequality:
+{
+module_type:	CalWireTPCQuality
+CalDataModuleLabel:	"caldata"	# caldata module label
+nCalWireObjects: 	480 	# number of CalWire objects in the event to pass the filter
+}
+
+
+
 END_PROLOG
