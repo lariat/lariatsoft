@@ -6,7 +6,7 @@ process_name: WCTrackBuilder
 
 services:
 {
-  TFileService: { fileName: "WCTrackBuildernew_histo.root" }
+  TFileService: { fileName: "WCTrackBuildernew12high_histo.root" }
   message:      @local::standard_info
   user:         @local::lariat_services
 }
@@ -43,9 +43,9 @@ physics:
       NWC: 4
       NWperTDC: 64
       Verbose: false
-      PickyTracks: true
+      PickyTracks: false
       HighYield: true
-      CheckTracks: true
+      CheckTracks: false
     }
   }
  

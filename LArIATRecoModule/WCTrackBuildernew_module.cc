@@ -62,6 +62,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
+  //void beginJob(fhicl::ParameterSet const & p);
   void beginRun(art::Run & r) override;
   void beginSubRun(art::SubRun & sr) override;
   void endJob() override;
@@ -528,8 +529,8 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
     }
     
   }
-
-void WCTrackBuildernew::beginJob()
+//=========================================================================================
+void WCTrackBuildernew::beginJob()//fhicl::ParameterSet const & p)
 {
 
 
@@ -537,8 +538,10 @@ void WCTrackBuildernew::beginJob()
   // Implementation of optional member function here.
       // Implementation of optional member function here.
     art::ServiceHandle<art::TFileService> tfs;
+    
+//reconfigure(p);
 //Hists that should be used for diagnostics and deleted before production
-
+if(fCheckTracks){
   for(int i=0; i<76; ++i){
     fRecodiff.push_back(tfs->make<TH2F>());
   }
@@ -643,6 +646,7 @@ fRecodiff[76]=tfs->make<TH2F>("Best residual 4v2","best residual 4v2",3000,0,300
 fRecodiff[77]=tfs->make<TH2F>("Best residual 4v3","best residual 4v3",3000,0,300,3000,0,300);
 fRecodiff[78]=tfs->make<TH2F>("Best residual 4v4","best residual 4v4",3000,0,300,3000,0,300);
 fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
+}
 //fRecodiff[0] = tfs->make<TH2F>("Recofourvsthree","Reco4vs3", 100,0,1000,100,0,1000);
    //fEventPicky=tfs->make<TH1F>("event with picky", "event with picky", 25000,0,25000);
 //     fResSquare = tfs->make<TH1F>("Sum of Square of Residuals from Y points to Linear Regression","Sum of Square of Residuals from Y points to Linear Regression", 150,0,150);

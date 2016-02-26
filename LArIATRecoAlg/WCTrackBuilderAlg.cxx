@@ -147,7 +147,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
   fPickyTracks = pickytracks;
   fHighYield = highyield;
   fDiagnostics= diagnostics;
-  //std::cout<<"PickyTracks : "<<fPickyTracks<<"High Yield : "<<fHighYield<<std::endl;
+  std::cout<<"PickyTracks : "<<fPickyTracks<<"High Yield : "<<fHighYield<<"Diagnostics : "<<fDiagnostics<<std::endl;
   initialconst=-999999999;  //Just a number to use to initialize things before they get filled correctly.
   WCMissed=initialconst;  					 	
   //Determine if one should skip this trigger based on whether there is exactly one good hit in each wire chamber and axis
@@ -242,6 +242,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   if(good_hits[iWC][0].hits.size()>0 && good_hits[iWC][1].hits.size()>0){++NHits;}
   else{WCMissed=iWC+1;}
   }
+  if(fDiagnostics){
   WCDist->Fill(0);
   if(NHits>2){WCDist->Fill(1);}
   if(NHits>2 && (WCMissed==1)){WCDist->Fill(2);}
@@ -249,6 +250,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   if(NHits>2 && (WCMissed==3)){WCDist->Fill(4);}
   if(NHits>2 && (WCMissed==4)){WCDist->Fill(5);}
   if(NHits==4){WCDist->Fill(6);}
+  }
   //If we don't have 3 or 4 hits, skip.
   if(NHits<3){
     skip = true;
@@ -256,7 +258,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   if(fPickyTracks && fHighYield){
     for(size_t iWC=0; iWC<4; ++iWC){
       for(size_t iAX=0; iAX<2; ++iAX){
-        if(good_hits[iWC][iAX].hits.size() > 1 || WCMissed==1){  
+        if(good_hits[iWC][iAX].hits.size() > 1 || WCMissed==1 || WCMissed==4){  
 	//skip events that have more than 1 hit in an axis, or the missed WC is the first or last WC
           skip = true;
 	  break;
@@ -265,7 +267,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
     }   
   }
   if(!fPickyTracks && fHighYield){
-    if(WCMissed==1){ //skip events with less than 3 X/Y hits or is missing the first or last WC
+    if(WCMissed==1 || WCMissed==4){ //skip events with less than 3 X/Y hits or is missing the first or last WC
       skip = true;
     }  
   }
@@ -371,7 +373,7 @@ void WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList> 
   }
   //std::cout<<"All tracks Completed"<<std::endl;
   //std::cout<<bestResSq<<std::endl;
-  if(bestResSq<10){
+  if(bestResSq<12){
 //Now we should have the straightest track in Y, which will be the track that goes to the event.  Now we get the momentum and projections onto the TPC  
   calculateTheMomentum(best_track,x,y,z,reco_pz,bestRegressionStats);
   //std::cout<<"Momentum Calculated"<<std::endl;
@@ -466,7 +468,7 @@ std::vector<float> WCTrackBuilderAlg::Regression(float (&y)[4],
     residualsquare += (residual)*(residual); 
     }
   }
-  float avgresidual= std::sqrt(residualsquare)/Npoints;
+  float avgresidual= std::sqrt(residualsquare)/(Npoints-2);
   RegressionValues.push_back(slope);
   RegressionValues.push_back(intercept);
   RegressionValues.push_back(avgresidual);
@@ -733,7 +735,7 @@ void WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList>
       }		
     }
   }
-  if(bestResSq<10){
+  if(bestResSq<12){
   //std::cout<<"Best track residual"<<bestRegressionStats[2]<<std::endl;
   float reco_pz_three=0;  
 //Now we should have the straightest track in Y, which will be the track that goes to the event.  Now we get the momentum and projections onto the TPC  
@@ -1431,7 +1433,7 @@ if(WCMissed==4){
   for(int i=0; i<2;++i){
   Recodiff[i+70]->Fill(fourangles[i],fourmangles[i]);
   Recodiff[i+72]->Fill(fourwires[i+6],fourmwires[i+6]);
-  Recodiff[i+74]->Fill(fourface[i],fourmface[i]);
+  Recodiff[i+74]->Fill(fourface[0]-fourmface[0],fourface[1]-fourmface[1]);
   }
   Recodiff[76]->Fill(fourres,twores);
   Recodiff[77]->Fill(fourres,threeres);
