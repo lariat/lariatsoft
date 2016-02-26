@@ -70,6 +70,9 @@ private:
 };
 
 
+// ########################################
+// ### Calling the reconfigure function ###
+// ########################################
 ParticleFilter::ParticleFilter(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
@@ -79,6 +82,24 @@ ParticleFilter::ParticleFilter(fhicl::ParameterSet const & p)
 
 }
 
+// ############################
+// ### Reconfigure Function ###
+// ############################
+void ParticleFilter::reconfigure(fhicl::ParameterSet const & p)
+{
+  // Implementation of optional member function here.
+  fParticleProbCutOff = p.get<float>("ParticleProbabilityThreshold",0.5);
+  fParticleIDModuleLabel = p.get<std::string>("ParticleIDModuleLabel");
+  fWCTrackModuleLabel = p.get<std::string>("WCTrackModuleLabel");
+  fTOFModuleLabel = p.get<std::string>("TOFModuleLabel");
+  fParticlePDG = p.get<float>("ParticlePDG",211); //default value is for piplus
+
+}
+
+
+// ##################
+// ### Event Loop ###
+// ##################
 bool ParticleFilter::filter(art::Event & e)
 {
   // Implementation of required member function here.
@@ -96,16 +117,24 @@ bool ParticleFilter::filter(art::Event & e)
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   e.getByLabel(fTOFModuleLabel,TOFColHandle);
   
+  // #########################################################
+  // ## If there is no ParticleID object then return false ###
+  // #########################################################
   if(!particleIDCol->size()) return false;
 
   //Finding best-guess Particles
   double pdg_temp = 0;
   pdg_temp=fParticlePDG;
- 
+
+// ################################################################
+// ### Filling the TOF vs WC Track Momentum Histo prior to cuts ###
+// ################################################################ 
 fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
 
-std::cout << "I'm looking for particles with PDG " << pdg_temp << std::endl;
 
+// ###################################
+// ### Identifying Kaon Candidates ###
+// ###################################
 if(pdg_temp == 321 || pdg_temp == -321){
 	  if( particleIDCol->at(0).PDGCode() == 321 || particleIDCol->at(0).PDGCode() == -321 ){
           if( particleIDCol->at(0).KaonProbability() > fParticleProbCutOff ){
@@ -117,6 +146,9 @@ if(pdg_temp == 321 || pdg_temp == -321){
   return false;
 } 
 
+// ###################################
+// ### Identifying Pion Candidates ###
+// ###################################
 else if(pdg_temp == 211 || pdg_temp == -211){
   if( particleIDCol->at(0).PDGCode() == 211 || particleIDCol->at(0).PDGCode() == -211 ){
     if( particleIDCol->at(0).PionProbability() > fParticleProbCutOff ){
@@ -128,6 +160,9 @@ else if(pdg_temp == 211 || pdg_temp == -211){
   return false;
 }
 
+// ###################################
+// ### Identifying Muon Candidates ###
+// ###################################
 else if(pdg_temp == 13 || pdg_temp == -13){
   if( particleIDCol->at(0).PDGCode() == 13 || particleIDCol->at(0).PDGCode() == -13 ){
     if( particleIDCol->at(0).MuonProbability() > fParticleProbCutOff ){
@@ -139,6 +174,9 @@ else if(pdg_temp == 13 || pdg_temp == -13){
   return false;
 }
 
+// ########################################
+// ### Identifying Muon/Pion Candidates ### (Note: This is a degenerate case)
+// ########################################
 else if(pdg_temp == 21113){
     if( particleIDCol->at(0).PDGCode() == 21113 ){ 
 //PDG -> Pi: 211, Mu: 13, so PiMu is 21113
@@ -154,6 +192,9 @@ else if(pdg_temp == 21113){
   return false;
 }
 
+// #####################################
+// ### Identifying Proton Candidates ###
+// #####################################
 else if(pdg_temp == 2212 || pdg_temp == -2212){
   if( particleIDCol->at(0).PDGCode() == 2212 || particleIDCol->at(0).PDGCode() == -2212 ){
     if( particleIDCol->at(0).ProtonProbability() > fParticleProbCutOff ){
@@ -165,14 +206,23 @@ else if(pdg_temp == 2212 || pdg_temp == -2212){
   return false;
 }
 
+// ###########################################
+// ###    If you don't satisfy any of      ###
+// ### these, then the event does not pass ###
+// ###########################################
 else return false; 
    
 
 }
 
+// ##########################
+// ### Begin Job Function ###
+// ##########################
 void ParticleFilter::beginJob()
 {
-  // Implementation of optional member function here.
+  // #######################################
+  // ### Defining histograms to be saved ###
+  // #######################################
   art::ServiceHandle<art::TFileService> tfs;
   fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz Vs. TOF (All) ",160,0,1600,70,10,80);
   fParticlePzVsTOF = tfs->make<TH2F>("ParticlePzVsTOF","Particle Pz Vs. TOF",160,0,1600,70,10,80);  //that's for the selected particles
@@ -184,16 +234,7 @@ void ParticleFilter::endJob()
   // Implementation of optional member function here.
 }
 
-void ParticleFilter::reconfigure(fhicl::ParameterSet const & p)
-{
-  // Implementation of optional member function here.
-  fParticleProbCutOff = p.get<float>("ParticleProbabilityThreshold",0.5);
-  fParticleIDModuleLabel = p.get<std::string>("ParticleIDModuleLabel");
-  fWCTrackModuleLabel = p.get<std::string>("WCTrackModuleLabel");
-  fTOFModuleLabel = p.get<std::string>("TOFModuleLabel");
-  fParticlePDG = p.get<float>("ParticlePDG",211); //default value is for piplus
 
-}
 
 void ParticleFilter::respondToCloseInputFile(art::FileBlock const & fb)
 {

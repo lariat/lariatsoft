@@ -3,6 +3,7 @@
 #include "triggeralgo_service.fcl"
 #include "lariatanamodules.fcl"
 #include "StoppingTracksParameter.fcl"
+#include "WC2TPCParamConfig.fcl"
 
 ## You will write whatever name you want this process to be called 
 ## It is important to note that the same process name cannot be called
@@ -45,7 +46,7 @@ physics:
   ### random number saver
 
   #rns:                 { module_type: RandomNumberSaver }
-
+  WC2TPCtrk:  	@local::lariat_wc2tpcmatch
   NonStoppingTrk:  	@local::lariat_nonstoppingtracks
  }
  
@@ -65,9 +66,9 @@ physics:
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
  
- reco: [ NonStoppingTrk ]
+ reco: [ WC2TPCtrk, NonStoppingTrk ]
  
- ana:[ anatree ]
+ ana:[ ]#anatree ]
  
 
 

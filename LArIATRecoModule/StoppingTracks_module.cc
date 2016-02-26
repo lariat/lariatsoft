@@ -210,7 +210,8 @@ void StoppingTracks::produce(art::Event & evt)
       // ### Getting the Wire Chamber Track  Information ###                                                                                                                                
       // ###################################################                                                                                                                                
       art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
-      if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) return;
+      if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) 
+         {evt.put(std::move(TrackNonStoppingVector)); return;}
       // === Association between WC Tracks and TPC Tracks ===                                                                                                                               
       art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
       if (!fWC2TPC.isValid())  

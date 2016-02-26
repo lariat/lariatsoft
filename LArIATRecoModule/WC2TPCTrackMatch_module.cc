@@ -136,7 +136,14 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
   // #######################################
   // === Geometry Service ===
   art::ServiceHandle<geo::Geometry> geom;
+
+  //##########################################################################
+  // Make a std::unique_ptr<> for the thing you want to put into the event ###
+  // because that handles the memory management for you                    ###
+  //##########################################################################
+  std::unique_ptr< art::Assns<ldp::WCTrack , recob::Track> > wcTpcTrackAssn(new art::Assns<ldp::WCTrack , recob::Track>);
   
+    
   // #####################################
   // ### Getting the Track Information ###
   // #####################################
@@ -144,7 +151,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
   std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
   
   // === Filling the tracklist from the tracklistHandle ===
-  if (!evt.getByLabel(fTrackModuleLabel,trackListHandle)) return;
+  if (!evt.getByLabel(fTrackModuleLabel,trackListHandle)) {evt.put(std::move(wcTpcTrackAssn)); return;}
   art::fill_ptr_vector(tracklist, trackListHandle);
 
   // ###################################################
@@ -153,14 +160,10 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
   std::vector<art::Ptr<ldp::WCTrack> > wctrack;
    
-  if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) return;
+  if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) {evt.put(std::move(wcTpcTrackAssn)); return;}
   art::fill_ptr_vector(wctrack, wctrackHandle);
 
-  //##########################################################################
-  // Make a std::unique_ptr<> for the thing you want to put into the event ###
-  // because that handles the memory management for you                    ###
-  //##########################################################################
-  std::unique_ptr< art::Assns<ldp::WCTrack , recob::Track> > wcTpcTrackAssn(new art::Assns<ldp::WCTrack , recob::Track>);
+
   
   // #########################################################
   // ### Grabbing associations for use later in the Filter ###

@@ -18,6 +18,7 @@ lariat_anatree:
     ShowerModuleLabel:        "showerreco"
     MCShowerModuleLabel:      "mcreco"
     CalorimetryAlg:          @local::standard_calorimetryalgmc
+    WC2TPCModuleLabel:	      "WC2TPCtrk"
 }
 
 lariat_xsanalysis:

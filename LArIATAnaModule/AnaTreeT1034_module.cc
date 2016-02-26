@@ -23,8 +23,9 @@
 #include "art/Framework/Services/Optional/TFileService.h" 
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Core/FindOneP.h" 
+#include "art/Framework/Core/FindManyP.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
-#include "cetlib/maybe_ref.h"
+//#include "cetlib/maybe_ref.h"
 
 // ########################
 // ### LArSoft includes ###
@@ -46,6 +47,7 @@
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
+
 //#include "RawData/ExternalTrigger.h"
 #include "lardata/RawData/RawDigit.h"
 #include "lardata/RawData/raw.h"
@@ -142,6 +144,8 @@ private:
   double trkmomrange[kMaxTrack];	//<---Calculated track momentum from its length assuming a PID of 13
   double trkmommschi2[kMaxTrack];	//<---Calculated track momentum from multiple scattering using Chi2
   double trkmommsllhd[kMaxTrack];	//<---Calculated track momentum from multiple scattering
+  int    trkWCtoTPCMath;		//<---Using an association to see if there was a match between WC and TPC
+  					//    0 = match, 1 = no match
    
    
   // === Storing the tracks SpacePoints (Individual 3D points)
@@ -261,6 +265,18 @@ private:
   double EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
   double EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
   int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
+  // ### Recording the process as a integer ###
+	  // 0 = primary
+	  // 1 = PionMinusInelastic
+	  // 2 = NeutronInelastic
+	  // 3 = hadElastic
+	  // 4 = nCapture
+	  // 5 = CHIPSNuclearCaptureAtRest
+	  // 6 = Decay
+	  // 7 = KaonZeroLInelastic
+	  // 8 = CoulombScat
+	  // 9 = muMinusCaptureAtRest
+	  //10 = ProtonInelastic
   int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
   int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
   int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
@@ -359,6 +375,7 @@ private:
   std::string fG4ModuleLabel;
   std::string fShowerModuleLabel;       // Producer that makes showers from clustering
   std::string fMCShowerModuleLabel;	// Producer name that makes MCShower Object
+  std::string fWC2TPCModuleLabel;	// Producer which creates an association between WC and TPC Track
 
   calo::CalorimetryAlg fCalorimetryAlg;
 
@@ -384,13 +401,14 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
   fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel");
   fCalorimetryModuleLabel 	= pset.get< std::string >("CalorimetryModuleLabel");
   fParticleIDModuleLabel  	= pset.get< std::string >("ParticleIDModuleLabel");
-  fClusterModuleLabel          = pset.get< std::string >("ClusterModuleLabel");
+  fClusterModuleLabel          	= pset.get< std::string >("ClusterModuleLabel");
   fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
   fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
-  fAGModuleLabel               = pset.get< std::string >("AGModuleLabel");
-  fG4ModuleLabel               = pset.get< std::string >("G4ModuleLabel");
-  fShowerModuleLabel           = pset.get< std::string >("ShowerModuleLabel");
+  fAGModuleLabel               	= pset.get< std::string >("AGModuleLabel");
+  fG4ModuleLabel               	= pset.get< std::string >("G4ModuleLabel");
+  fShowerModuleLabel           	= pset.get< std::string >("ShowerModuleLabel");
   fMCShowerModuleLabel		= pset.get< std::string >("MCShowerModuleLabel");
+  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
   return;
 }
 
@@ -734,7 +752,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Looping over all the Geant4 particles ###
       for( unsigned int i = 0; i < geant_part.size(); ++i )
 	{
-	  //std::cout<<"pdg= "<<geant_part[i]->PdgCode()<<" Process= "<<geant_part[i]->Process()<<" trackId= "<<geant_part[i]->TrackId()<<" E= "<<geant_part[i]->E()<<" P= "<<geant_part[i]->P()<<" "<<sqrt(geant_part[i]->Px()*geant_part[i]->Px() + geant_part[i]->Py()*geant_part[i]->Py()+ geant_part[i]->Pz()*geant_part[i]->Pz())<<" Mother= "<<geant_part[i]->Mother()<<" Vertex= ("<<geant_part[i]->Vx()<<","<<geant_part[i]->Vy()<<","<<geant_part[i]->Vz()<<" ) end=("<<geant_part[i]->EndPosition()[0]<<","<<geant_part[i]->EndPosition()[1]<<","<<geant_part[i]->EndPosition()[2]<<")"<<std::endl;
    
           // ### If this particle is primary, set = 1 ###
 	  if(geant_part[i]->Process()==pri)
@@ -755,7 +772,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  // 8 = CoulombScat
 	  // 9 = muMinusCaptureAtRest
 	  //10 = ProtonInelastic
-	  /*
+	  
 	  if(geant_part[i]->Process() == pri)
 	     {Process[i] = 0;}
 	     
@@ -789,16 +806,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  if(geant_part[i]->Process() == ProtonInelastic)
 	     {Process[i] = 10;}
 	     
-	  std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
+	  //std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
 	  
-	  //=======
-	    // {process_primary[i]=0;}
-=======
-	    {process_primary[i]=0;}
->>>>>>> develop
-   
-	    ///>>>>>>> develop
-	    */
 
 	  // ### Saving the particles mother TrackID ###
 	  Mother[i]=geant_part[i]->Mother();
@@ -1040,6 +1049,35 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   std::vector<double> trackStart;
   std::vector<double> trackEnd;
   
+  // === Association between WC Tracks and TPC Tracks ===
+  int TempTrackMatchedID = -1;                                                                                                                               
+  /*art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
+  
+  if (fWC2TPC.isValid())
+     {
+     std::cout<<"Valid WC2TPC Track"<<std::endl;
+     
+     std::cout<<"fWC2TPC.size() = "<<fWC2TPC.size()<<std::endl;
+     // === Loop on all the Assn WC-TPC tracks ===                                                          
+     for (unsigned int indexAssn = 0; indexAssn < fWC2TPC.size(); ++indexAssn )
+         {
+	 std::cout<<"indexAssn = "<<indexAssn<<std::endl;
+	 // =========================
+	 // === Get the TPC track ===
+	 // =========================
+	 auto fake = *fWC2TPC.at(indexAssn);
+	 std::cout<<fake.ID()<<std::endl;
+	 cet::maybe_ref<recob::Track const> trackWC2TPC(*fWC2TPC.at(indexAssn));
+	 
+	 recob::Track const& aTrack(trackWC2TPC.ref());
+	 TempTrackMatchedID = aTrack.ID();
+	 std::cout<<"TempTrackMatchedID = "<<TempTrackMatchedID<<std::endl;
+	 
+	 }//<----End indexAssn loop
+     
+     
+     }//<---End checking that the WC2TPC is valid*/
+  
   // ### Looping over tracks ###
   double maxtrackenergy = -1;
   for(size_t i=0; i<tracklist.size();++i)
@@ -1053,7 +1091,17 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       memset(larEnd, 0, 3);
       tracklist[i]->Extent(trackStart,trackEnd); 
       tracklist[i]->Direction(larStart,larEnd);
-    
+      
+      // ### Stroing an integer for the match of a WC to TPC track ###
+      int trackMatch = 1;
+      if(TempTrackMatchedID == tracklist[i]->ID() )
+         {
+	 trackMatch = 0;
+	 }//<---End match
+	 
+      // ### Setting the WC to TPC match ###
+      trkWCtoTPCMath = trackMatch;
+      
       // ### Recording the track vertex x, y, z location ###
       trkvtxx[i]        = trackStart[0];
       trkvtxy[i]        = trackStart[1];
@@ -1428,6 +1476,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkenddcosx",trkenddcosx,"trkenddcosx[ntracks_reco]/D");
   fTree->Branch("trkenddcosy",trkenddcosy,"trkenddcosy[ntracks_reco]/D");
   fTree->Branch("trkenddcosz",trkenddcosz,"trkenddcosz[ntracks_reco]/D");
+  fTree->Branch("trkWCtoTPCMath",trkWCtoTPCMath,"trkWCtoTPCMath/I");
   fTree->Branch("trklength",trklength,"trklength[ntracks_reco]/D");
   fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/D");
   fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/D");
@@ -1625,6 +1674,7 @@ void lariat::AnaTreeT1034::ResetVars()
     trkendx[i] = -99999;
     trkendy[i] = -99999;
     trkendz[i] = -99999;
+    trkWCtoTPCMath = -99999;
     trkstartdcosx[i] = -99999;
     trkstartdcosy[i] = -99999;
     trkstartdcosz[i] = -99999;
