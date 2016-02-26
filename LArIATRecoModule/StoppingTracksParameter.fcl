@@ -1,0 +1,11 @@
+lariat_nonstoppingtracks:
+{
+    module_type:             StoppingTracks
+    TrackModuleLabel:        "pmtrack"
+    upstreamZPosition:       2.
+    CalorimetryModuleLabel:  "calo"
+    ParticleMass:            139.57
+    LowerLimitStoppingTrack: -0.43
+    UpperLimitStoppingTrack: -0.35
+    CheckAssn:               true
+}

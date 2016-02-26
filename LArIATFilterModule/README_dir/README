@@ -1,0 +1,5 @@
+Hello there!!!
+Elena created this README so that we can keep track of what needs to be done for the Pion Analsysis, filter wise.
+1. [  ]  We need to calibrate the Calorimetry constants. Tingjun said that he would try to fix the problem with bad wiring number.
+2. [  ]  Test Irene's StoppingParticle filter on decent calorimetry
+3. [  ]  Test Elena's modifications of Irene's code to see if we get the same results. 

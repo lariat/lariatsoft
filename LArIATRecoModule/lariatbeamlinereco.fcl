@@ -64,7 +64,7 @@ lariat_pid:
   KaonMassSigma: 		   265.
   ProtonMassMean: 		   1042.
   ProtonMassSigma: 		   108.
-
+  MaxMomentumForPID:   		   1000.
 
   ### MC INFORMATION ABOUT TERTIARY BEAM COMPOSITION ###
       ### DO NOT TOUCH THIS. THAT MEANS YOU!!! ###

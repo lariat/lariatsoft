@@ -140,7 +140,8 @@ namespace util {
 
     std::vector<double> fScaleNegativeResponse; ///< Scale negative response
     std::vector<double> fScaleResponseTime;     ///< Scale time scale of response function
-    
+    bool fDebugFieldShape; ///< Save field response shape to a text file.
+
     // Following attributes hold the convolution and deconvolution kernels
 
     util::SignalShaping fColSignalShaping;

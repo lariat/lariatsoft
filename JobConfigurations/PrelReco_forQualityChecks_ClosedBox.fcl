@@ -10,14 +10,20 @@
 #include "particleid.fcl"
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
-
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "services_lariat.fcl"
+#include "lariatcheckmodules.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatanamodules.fcl"
  
-process_name: Reco2D
+ 
+process_name: PrelReco_ClosedBox
 
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "reco2D_calwire_hist.root" }
+  TFileService: { fileName: "%ifb_BeamlineCalWire_histo.root" }
   #Timing:       {}
   #SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
@@ -49,6 +55,14 @@ physics:
   ### flash finders ###
   #opflash:             @local::lariat_opflash
   
+  ### beamline elements ###
+  
+  wctrack:     @local::lariat_wctrackbuilder
+  tof:         @local::lariat_tof
+  murs:        @local::lariat_murs
+  agcounter:   @local::lariat_aerogel
+  BeamPid:         @local::lariat_pid
+  
   ### calwire producers ###
   caldata:              @local::lariat_calroi
 
@@ -74,35 +88,43 @@ physics:
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
  }
-# analyzers:
-#{
 
+
+
+ analyzers:
+{
+  anatree: @local::lariat_anatree
  #showerquality: 	@local::standard_showerquality
-#}
+}
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
  reco: [ #rns,
 #         opflash,
          #FragmentToDigit,
-         caldata,
-#         cchit,
-	 gaushit,
+	 wctrack, 
+	 tof, 
+	 murs,
+	 #agcounter,
+	 BeamPid,
+         caldata
+        # cchit,
+	# gaushit,
         # cccluster,
-	 linecluster,
-         showerreco,
+	#linecluster,
+         #showerreco,
          #costrk,
-         pmtrack,
+         #pmtrack,
          #cctrack
-         calo,
-         pid
+         #calo,
+         #pid
          #gaushit
          #corner,
          #dbcluster,
 	 #hough 
- #        pandora
+         # pandora
           ]
-#ana: [ showerquality ]
+ana: [ anatree ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -113,7 +135,7 @@ physics:
 
  #end_paths is a keyword and contains the paths that do not modify the art::Event, 
  #ie analyzers and output streams.  these all run simultaneously
- end_paths:     [stream1]  
+ end_paths:     [ana,stream1]  
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
@@ -125,7 +147,7 @@ outputs:
  {
    module_type: RootOutput
    #fileName:    "%ifb_%tc_reco2D.root"
-   fileName:    "Reco2d.root"
+   fileName:    "%ifb_BeamlineCalWireReco2d.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1
  }
@@ -134,13 +156,19 @@ outputs:
 
 ### Here, we overwrite ALL module labels with the ones defined above.
 
+### Beamline elements ###
+physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: false
+
+physics.producers.BeamPid.MaxMomentumForPID: 	1500.
+
+### Optical elements ###
 #physics.producers.opflash.InputModule:                          "optreadout"
 #physics.producers.opflash.GenModule:                            "generator"
-
 #physics.producers.FragmentToDigit.pmt_channel_ids:[[9,0,1]]
 #physics.producers.FragmentToDigit.pmt_test:true
-physics.producers.caldata.DigitModuleLabel:                     "daq"
 
+### TPC elements ###
+physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 physics.producers.gaushit.Chi2NDFRetry:                          1000.
 #physics.producers.gaushit.MinSig:                               [8, 10]
@@ -175,8 +203,7 @@ physics.producers.linecluster.ClusterCrawlerAlg.ChgCut:     [2, 4, 8] # Max frac
 physics.producers.linecluster.ClusterCrawlerAlg.ChiCut:   [4, 8, 10]  # Max fit chisq for clusters
 physics.producers.linecluster.ClusterCrawlerAlg.MaxWirSkip:   [20, 4, 0] # Max number of wires to skip while crawling
 physics.producers.linecluster.ClusterCrawlerAlg.KinkChiRat: [1.2, 1.2, 2] # (1st cut) Max fit chisq ratio for identifying a kink
-#physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.2, 0.4, 1.5] # (2nd cut) Max kink angle
-physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.2, 0.2, 0.3] # (2nd cut) Max kink angle
+physics.producers.linecluster.ClusterCrawlerAlg.KinkAngCut: [0.2, 0.4, 1.5] # (2nd cut) Max kink angle
 physics.producers.linecluster.ClusterCrawlerAlg.DoMerge: [false, true, true] # Merge clusters on pass?
 physics.producers.linecluster.ClusterCrawlerAlg.TimeDelta: [8, 8, 20] # mMx tick difference at intersection for merging clusters
 physics.producers.linecluster.ClusterCrawlerAlg.MergeChgCut: [0.8, 0.8, 0.8] # Max charge ratio difference for merging clusters
@@ -220,7 +247,7 @@ physics.producers.cctrack.MatchAlgs: 1
 #physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
 #services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
 #services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
-#services.SignalShapingServiceT1034.UseHistogramFieldShape: true
+
 #services.DetectorPropertiesService.TimeOffsetV: -13.2
 services.DetectorPropertiesService.TimeOffsetV: -2.0
 services.DetectorPropertiesService.Electronlifetime: 1600
@@ -228,39 +255,6 @@ physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.calo.CaloAlg.CalAreaConstants: [0.028,0.048]
 physics.producers.showerreco.InputProducer:        "linecluster"
 
-#### Here we try to suppress known and pointless messages
-services.message.destinations :
-{
-  STDCOUT: 
-  {
-     type:      "cout"      #tells the message service to output this destination to cout
-     threshold: "WARNING"   #tells the message service that this destination applies to WARNING and higher level messages
-     append:     true       #says to append all messages to the output
-     categories:
-     {
-       ChannelFilter:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       TrackStitcher:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       CRHitRemoval:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       default:
-       {
-         limit: -1  #don't print anything at the infomsg level except the explicitly named categories
-         reportEvery: 1
-       }
-     }
-  }
-}
