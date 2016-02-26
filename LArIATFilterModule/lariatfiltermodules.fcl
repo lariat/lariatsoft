@@ -103,6 +103,14 @@ MaxZPos:		14.0
 MaxMatchedTracks:	1 # Max number of matched TPC and WC tracks (requires > 0)
 }
 
+#Showers rejection filter
+lariat_showerRej:
+{
+module_type: ShowerFilter
+TrackModuleLabel: "pmtrack"
+fnShortTks: 2
+fShortTkLength: 5.
+}
 
 #Filters for Quality-checks
 
