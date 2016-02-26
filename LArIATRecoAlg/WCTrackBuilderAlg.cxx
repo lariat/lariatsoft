@@ -142,13 +142,14 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 					     std::vector<double> & z_dist_list,
 					     int & WCMissed,
 					     std::vector<TH2F*>  & Recodiff,
-					     TH1F* & WCdistribution)
+					     TH1F* & WCdistribution,
+					     float & residual)
 {					   
   fPickyTracks = pickytracks;
   fHighYield = highyield;
   fDiagnostics= diagnostics;
-  std::cout<<"PickyTracks : "<<fPickyTracks<<"High Yield : "<<fHighYield<<"Diagnostics : "<<fDiagnostics<<std::endl;
-  initialconst=-999999999;  //Just a number to use to initialize things before they get filled correctly.
+  //std::cout<<"PickyTracks : "<<fPickyTracks<<"High Yield : "<<fHighYield<<"Diagnostics : "<<fDiagnostics<<std::endl;
+  initialconst=-999;  //Just a number to use to initialize things before they get filled correctly.
   WCMissed=initialconst;  					 	
   //Determine if one should skip this trigger based on whether there is exactly one good hit in each wire chamber and axis
   //If there isn't, continue after adding a new empty vector to the reco_pz_array contianer.
@@ -167,7 +168,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
   //of the kinks or end displacements (for now). For the "exactly one" condition set in the above
   //step, this won't matter, but if you want to set the condition to "at least one hit in each WC axis,
   //this will give many combinations.
-    buildFourPointTracks(good_hits,
+     trackres=buildFourPointTracks(good_hits,
 	                 reco_pz_list,
 			 x_face_list,
 		         y_face_list,
@@ -200,7 +201,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
   //If we have a three point track, we do some geometry and then scale the momentum based on some tuning on data.
   if(NHits==3)
   {
-    buildThreePointTracks(good_hits,
+     trackres=buildThreePointTracks(good_hits,
     		          reco_pz_list,
 			  x_face_list,
 			  y_face_list,
@@ -211,9 +212,10 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 			  x_dist_list,
 			  y_dist_list,
 			  z_dist_list,
-			  WCMissed);
+			  WCMissed);		
   //std::cout<<"Build three point track"<<std::endl;
   }
+  residual=trackres;
   //To compare four point tracks to three point tracks
   if(fDiagnostics==true && NHits==4){
     MakeDiagnosticPlots( good_hits,
@@ -228,7 +230,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 			 y_dist_list,
 			 z_dist_list,
 			 WCMissed);
-  }   
+  } 
 }
 //=====================================================================
 bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
@@ -306,7 +308,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
 
 }
 //===================================================================================
-void WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
+float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
 	                      std::vector<double> & reco_pz_list,
 			      std::vector<double> & x_face_list,
 		              std::vector<double> & y_face_list,
@@ -338,10 +340,7 @@ void WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList> 
 	    for( size_t iHit5 = 0; iHit5 < good_hits[2][1].hits.size(); ++iHit5 ){
 	      for( size_t iHit6 = 0; iHit6 < good_hits[3][0].hits.size(); ++iHit6 ){
 		for( size_t iHit7 = 0; iHit7 < good_hits[3][1].hits.size(); ++iHit7 ){
-		//std::cout<<iHit7<<std::endl;
 		  WCHitList track;
-		  //std::cout<<"At the top of the loop"<<std::endl;
-		  //std::cout<<iHit0<<iHit1<<iHit2<<iHit3<<iHit4<<iHit5<<iHit6<<iHit7<<std::endl;
 		  track.hits.push_back(good_hits[0][0].hits[iHit0]);
 		  track.hits.push_back(good_hits[0][1].hits[iHit1]);
 		  track.hits.push_back(good_hits[1][0].hits[iHit2]);
@@ -384,7 +383,8 @@ void WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList> 
   calculateTrackKink_Dists(x,y,z,bestRegressionStats,y_kink_list,x_dist_list,y_dist_list,z_dist_list);
   //std::cout<<"Track Kink/Dist calculated"<<std::endl;
   event_final_tracks.push_back(best_track);
-}  
+} 
+ return bestResSq; 
 }
 //==================================================================================
 void WCTrackBuilderAlg::findTheHitPositions(WCHitList & track,
@@ -573,7 +573,7 @@ void WCTrackBuilderAlg::calculateTrackKink_Dists(float (&x)[4],
    z_dist_list.push_back(z_mp_ds-z_mp_us);  
 }
 //====================================================================================
-void WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList> > & good_hits,
+float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList> > & good_hits,
 	                     		      std::vector<double> & reco_pz_list,
 			     	              std::vector<double> & x_face_list,
 		                              std::vector<double> & y_face_list,
@@ -764,6 +764,7 @@ void WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList>
   projectToTPC(best_track,x,y,z,bestRegressionStats,x_face_list,y_face_list,incoming_theta_list,incoming_phi_list);
 event_final_tracks.push_back(best_track);
 }
+return bestResSq;
 }
 //======================================================================================
 void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,

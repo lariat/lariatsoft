@@ -42,7 +42,8 @@ namespace ldp{
 		   float phi,
 		   std::vector<int> wcVect,
 		   std::vector<float> hitWireVect,
-		   int WCMissed)
+		   int WCMissed,
+		   float residual)
 		   //std::vector<float> hitTimeVect )
   { 
     fMomentum = momentum;
@@ -54,6 +55,7 @@ namespace ldp{
     fWC = wcVect;
     fHitWire = hitWireVect;
     fWCMissed=WCMissed;
+    fResidual=residual;
     //fHitTime = hitTimeVect;
   }
 

@@ -6,7 +6,7 @@ process_name: WCTrackBuilder
 
 services:
 {
-  TFileService: { fileName: "WCTrackBuildernew12high_histo.root" }
+  TFileService: { fileName: "WCTrackBuildertest2_histo.root" }
   message:      @local::standard_info
   user:         @local::lariat_services
 }
@@ -23,7 +23,7 @@ outputs:
 {
   output1: {
     module_type: RootOutput
-    fileName: "SlicedEventsWithTracksnew.root"
+    fileName: "SlicedEventsWithTracksnew2.root"
   }
 }
 
@@ -43,14 +43,14 @@ physics:
       NWC: 4
       NWperTDC: 64
       Verbose: false
-      PickyTracks: false
-      HighYield: true
-      CheckTracks: false
+      PickyTracks: false  #True: Only use events with EXACTLY 1 XY Hit in each WC
+      HighYield: true     #True: allows 3 or 4 point tracks to be made. False: Only allow 4 point tracks
+      CheckTracks: false  #SET TO FALSE IF YOU ARE DOING PHYSICS RUNS. THIS IS ONLY USED FOR DEBUGGING WHEN YOU ONLY WANT HISTOGRAMS		
     }
   }
  
   analysis: [ WCTrackBuilder ]
-  stream1: []#output1]
+  stream1: [output1]
   		       
   end_paths: [ analysis, stream1 ]
 }

@@ -220,7 +220,8 @@ void WCTrackBuildernew::produce(art::Event & e)
     std::vector<double> x_dist_list;
     std::vector<double> y_dist_list;
     std::vector<double> z_dist_list;
-    std::vector<WCHitList> final_tracks;  
+    std::vector<WCHitList> final_tracks;
+    float residual;  
     std::vector<std::vector<WCHitList> > good_hits; //Two vectors: WC#, axis. - Will be cleared for each trigger 
     int WCMissed; //The WC missed for the event, if there is one.
     //Initializing the good hit arrays to a default state - these clear for every trigger
@@ -258,7 +259,8 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 					 z_dist_list,
 					 WCMissed,
 					 fRecodiff,
-					 fWCDist);			       
+					 fWCDist,
+					 residual);			       
 
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
 //fTrack_Type->Fill(fWCTrackBuildernewAlg.getTrackType()); // neither does WCTrackBuildernewAlg_new::getTrackType()
@@ -292,7 +294,8 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 			     phi_list[iNewTrack],
 			     WC_vect,
 			     hit_wire_vect,
-			     WCMissed);
+			     WCMissed,
+			     residual);
       (*WCTrackCol).push_back( the_track );
     }
 

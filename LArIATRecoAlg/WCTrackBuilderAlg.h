@@ -56,13 +56,14 @@ class WCTrackBuilderAlg{
 					     std::vector<double> & z_dist_list,
 					     int & WCMissed,
 					     std::vector<TH2F*> & Recodiff,
-					     TH1F* & WCdistribution);
+					     TH1F* & WCdistribution,
+					     float & residual);
 		
    bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
    			  int & WCMissed,
 			  TH1F*  & WCDist);
    
-   void buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
+   float buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
 	                      std::vector<double> & reco_pz_list,
 			      std::vector<double> & x_face_list,
 		              std::vector<double> & y_face_list,
@@ -103,7 +104,7 @@ class WCTrackBuilderAlg{
 		    std::vector<double> & incoming_phi_list);
 		    
 		    				 
-   void buildThreePointTracks(std::vector<std::vector<WCHitList> > & good_hits,
+   float buildThreePointTracks(std::vector<std::vector<WCHitList> > & good_hits,
 	                      std::vector<double> & reco_pz_list,
 			      std::vector<double> & x_face_list,
 		              std::vector<double> & y_face_list,
@@ -163,6 +164,7 @@ class WCTrackBuilderAlg{
   bool   fDiagnostics;
   int NHits;
   int WCMissed;
+  float trackres;
   				 
   art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
  

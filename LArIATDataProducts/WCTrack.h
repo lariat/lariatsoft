@@ -31,7 +31,8 @@ namespace ldp {
     float fXYFace[2];                   //X and Y position of the track on the upstream face of the TPC
     float fTheta;                       //Theta defined from the Z axis of the TPC
     float fPhi;                         //Phi defined counterclockwise from the X axis of the TPC
-    int fWCMissed;                      //Which WC was missed.  Currently can be 2 or 3.  If 
+    int fWCMissed;                      //Which WC was missed.  Currently can be 2 or 3, or 0 if no WC was missed.
+    float fResidual;                    //Returns the goodness of fit to a linear regression for points used in track.
     
     //These are indexed by hit: each
     //hit is represented by the same
@@ -55,7 +56,8 @@ namespace ldp {
 	     float phi,
 	     std::vector<int> wcVect,
 	     std::vector<float> hitWireVect,
-	     int WCMissed);
+	     int WCMissed,
+	     float residual);
 	     //std::vector<float> hitTimeVect );
 	     
     // Get Methods
@@ -71,7 +73,7 @@ namespace ldp {
     //float               HitTime(size_t iHit)            const;
     size_t              NHits()                         const;
     int                 WCMissed()                      const;
-    
+    float               Residual()			const;
 
 #endif
   };
@@ -85,6 +87,7 @@ inline float  ldp::WCTrack::Theta()    const { return fTheta;         }
 inline float  ldp::WCTrack::Phi()      const { return fPhi;           }
 inline int    ldp::WCTrack::WCMissed() const { return fWCMissed;     }
 inline size_t ldp::WCTrack::NHits()    const {return  fWC.size();     }
+inline float  ldp::WCTrack::Residual() const {return fResidual;      }
 
 #endif
 
