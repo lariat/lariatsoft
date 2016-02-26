@@ -110,7 +110,11 @@ if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
 // ### Reject the event if there is no TOF info ###   
 if(tof.size() <  fnTOFObjects){return false;}  
 
-else {return true;}
+else {
+  //Remove the event is the TOFObject is created but it gives out a zero value/empty value for the Tof itself
+   if( TOFColHandle->at(0).NTOF() != 1 ) {return false;} 
+   
+  else return true;}
 
 }
 
