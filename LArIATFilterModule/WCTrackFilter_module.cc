@@ -5,9 +5,12 @@
 //
 // Generated at Tue Jan  5 11:09:15 2016 by Jonathan Asaadi using artmod
 // from cetpkgsupport v1_08_06.
+// Updated by Irene Nutini 
 //
+// WC track quality check module:
 // This module filters events based on the number of WCTracks that exist
 // in this event
+// Added Pz histogram for the WCtracks
 ////////////////////////////////////////////////////////////////////////
 
 // ##########################
@@ -34,6 +37,7 @@
 // ####################
 #include <iostream>
 #include <memory>
+#include <TH1F.h>
 
 class WCTrackFilter;
 
@@ -62,6 +66,7 @@ private:
   // Declare member data here.
   std::string fWCTrackLabel;
   double fminNumberWCTrack;
+   TH1F* fReco_Pz;
   
 };
 
@@ -88,6 +93,10 @@ void WCTrackFilter::reconfigure(fhicl::ParameterSet const & p)
 void WCTrackFilter::beginJob()
 {
   // Implementation of optional member function here.
+  art::ServiceHandle<art::TFileService> tfs;
+    fReco_Pz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum in XZ plane", 180, 0, 1800);
+    fReco_Pz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
+    fReco_Pz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
 }
 
 // ---------------------- Event Loop ---------------------------
@@ -105,7 +114,16 @@ if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
 // ###     If the number of WCTracks in the event       ###
 // ### is less than the min number set, skip this event ###
 if(wctrack.size() < fminNumberWCTrack){return false;}
-else {return true;}
+else {
+  for(size_t wct_count = 0; wct_count < wctrack.size(); wct_count++)
+    {
+      // ##############################################
+      // ### Filling histogram with Wire Chamber Track momentum Pz ###
+      // ##############################################
+     fReco_Pz->Fill(wctrack[wct_count]->Momentum());
+    }
+  
+   return true;}
 
 
 }//<---End Event Loop
