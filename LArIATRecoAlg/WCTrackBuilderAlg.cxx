@@ -326,6 +326,7 @@ float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList>
   float z[4]{0,0,0,0};
   float reco_pz=0;
   WCHitList best_track;
+  std::vector<float> track_stats;
   std::vector<float> bestRegressionStats;
   float bestResSq=initialconst;
     for(int i=0;i<3;i++){
@@ -353,7 +354,7 @@ float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList>
 		  findTheHitPositions(track,x,y,z,WCMissed);
 		  //std::cout<<"Found Hit position"<<std::endl;
 		  //Do regression on the four points to find the straightest track in Y
-		  std::vector<float> track_stats=Regression(y,z,WCMissed);
+		  track_stats=Regression(y,z,WCMissed);
 		  //std::cout<<"Regressed"<<std::endl;
 		  //std::cout<<"Regression value : "<<track_stats[2]<<std::endl;
 		  if(track_stats[2]<fabs(bestResSq)){
@@ -594,6 +595,7 @@ float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList
   std::vector<float> bestRegressionStats;
   WCHitList best_track;
   float bestResSq=initialconst;
+  std::vector<float> track_stats;
     for(int i=0;i<3;i++){
       bestRegressionStats.push_back(initialconst);
     }
@@ -637,7 +639,7 @@ float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList
 		    findTheHitPositions(track,x,y,z,WCMissed);
 		    //std::cout<<"Three Point Hit position found"<<std::endl;
 		    //Do regression on the four points to find the straightest track in Y
-		    std::vector<float> track_stats=Regression(y,z,WCMissed);
+		    track_stats=Regression(y,z,WCMissed);
 		    //std::cout<<"Track Res Sq :"<<track_stats[2]<<std::endl;
 		    //std::cout<<"Three Regressed"<<std::endl;
 		    if(track_stats[2]<fabs(bestResSq)){
@@ -677,7 +679,7 @@ float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList
 		    track.hits.push_back(good_hits[3][1].hits[iHit7]);
 		    findTheHitPositions(track,x,y,z,WCMissed);
 		    //Do regression on the four points to find the straightest track in Y
-		    std::vector<float> track_stats=Regression(y,z,WCMissed);
+		    track_stats=Regression(y,z,WCMissed);
 		     //std::cout<<"Track Res Sq :"<<track_stats[2]<<std::endl;
 		    if(track_stats[2]<fabs(bestResSq)){
 		      best_track=track;
@@ -718,7 +720,7 @@ float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList
 		    //track.hits.push_back(good_hits[3][1].hits[iHit7]);
 		    findTheHitPositions(track,x,y,z,WCMissed);
 		    //Do regression on the four points to find the straightest track in Y
-		    std::vector<float> track_stats=Regression(y,z,WCMissed);
+		     track_stats=Regression(y,z,WCMissed);
 		     //std::cout<<"Track Res Sq :"<<track_stats[2]<<std::endl;
 		    if(track_stats[2]<fabs(bestResSq)){
 		      best_track=track;
