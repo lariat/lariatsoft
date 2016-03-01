@@ -440,7 +440,7 @@ namespace DataQuality {
     }
 
     // TH1 objects for TDC time bit mismatches
-    fTDCTimeBitMismatchHistogram = tfs->make<TH1I>("TDCTimeBitMismatchHistogram", ";TDC with time bit mismatch;Entries per bin", 16, 0+1, 16+1);
+    fTDCTimeBitMismatchHistogram = tfs->make<TH1I>("TDCTimeBitMismatch", ";TDC with time bit mismatch;Entries per bin", 16, 0+1, 16+1);
 
     // TH1 objects for TOF
     fUSTOFHitsHistogram = tofDir.make<TH1I>("USTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
