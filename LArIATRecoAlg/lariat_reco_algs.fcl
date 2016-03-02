@@ -1,10 +1,17 @@
 BEGIN_PROLOG
 
+lariat_wctrackbuilderalgnew:
+{
+ # PickyTracks: false
+  MidplaneInterceptFactor: 1.01
+  MidplaneSlopeFactor: 2
+}
 lariat_wctrackbuilderalg:
 {
-  PickyTracks: false
 }
-
+lariat_wchitfinderalg:
+{
+}
 lariat_triggerfilteralg:
 {
   Verbosity: false
@@ -19,7 +26,9 @@ lariat_aerogel:
 {
 
 
-
+}
+lariat_wctrackbuilderalgbase:
+{
 }
 
 END_PROLOG

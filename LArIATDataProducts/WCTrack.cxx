@@ -27,7 +27,7 @@ namespace ldp{
     fPhi = 0;
     fWC = blank1;
     fHitWire = blank2;
-    fHitTime = blank2;
+    //fHitTime = blank2;
   }
 
   //----------------------------------------------------------------------
@@ -42,7 +42,9 @@ namespace ldp{
 		   float phi,
 		   std::vector<int> wcVect,
 		   std::vector<float> hitWireVect,
-		   std::vector<float> hitTimeVect )
+		   int WCMissed,
+		   float residual)
+		   //std::vector<float> hitTimeVect )
   { 
     fMomentum = momentum;
     fYKink = yKink;
@@ -52,19 +54,21 @@ namespace ldp{
     fPhi = phi;
     fWC = wcVect;
     fHitWire = hitWireVect;
-    fHitTime = hitTimeVect;
+    fWCMissed=WCMissed;
+    fResidual=residual;
+    //fHitTime = hitTimeVect;
   }
 
 
   //--------------------------------------------------
-  float WCTrack::DeltaDist(size_t i) const
-  {
-    if( i >= 3 || i < 0 ){
-      throw cet::exception("WCTrack") << "illegal index requested for DeltaDist vector: "
-				      << i << "\n";
-    }
-    return fDeltaDist[i];
-  }
+float WCTrack::DeltaDist(size_t i) const
+{
+ if( i >= 3 || i < 0 ){
+   throw cet::exception("WCTrack") << "illegal index requested for DeltaDist vector: "
+<< i << "\n";
+}
+return fDeltaDist[i];
+}
   
   //--------------------------------------------------
   float WCTrack::XYFace(size_t i) const
@@ -97,14 +101,14 @@ namespace ldp{
   }
 
   //--------------------------------------------------
-  float WCTrack::HitTime(size_t iHit) const
-  {
-    if( iHit >= fHitTime.size() ){
-      throw cet::exception("WCTrack") << "illegal index requested for HitTime vector: "
-				      << iHit << "\n";
-    }
-    return fHitTime[iHit];
-  }
+  //float WCTrack::HitTime(size_t iHit) const
+ // {
+   // if( iHit >= fHitTime.size() ){
+     // throw cet::exception("WCTrack") << "illegal index requested for HitTime vector: "
+				     // << iHit << "\n";
+ //   }
+  //  return fHitTime[iHit];
+  //}
 
 
 }

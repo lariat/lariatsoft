@@ -53,7 +53,9 @@
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,     void> >"/>
  <class name="art::Wrapper<art::Assns<ldp::TOF,     raw::Trigger,     void> >"/>
 
- <class name="ldp::WCTrack" ClassVersion="11"                                      >
+ <class name="ldp::WCTrack" ClassVersion="13"                                      >
+  <version ClassVersion="13" checksum="368485909"/>
+  <version ClassVersion="12" checksum="4258999282"/>
   <version ClassVersion="11" checksum="167827337"/>
   <version ClassVersion="10" checksum="4212739596"                                />
  </class>

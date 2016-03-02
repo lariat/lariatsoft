@@ -6,7 +6,7 @@ process_name: WCTrackBuilder
 
 services:
 {
-  TFileService: { fileName: "WireChamberTrackBuilder_histo.root" }
+  TFileService: { fileName: "WCTrackBuildertest2_histo.root" }
   message:      @local::standard_info
   user:         @local::lariat_services
 }
@@ -23,7 +23,7 @@ outputs:
 {
   output1: {
     module_type: RootOutput
-    fileName: "evtWithTracks.root"
+    fileName: "SlicedEventsWithTracksnew2.root"
   }
 }
 
@@ -35,12 +35,17 @@ physics:
   {
     WCTrackBuilder:
     {
-      module_type:         WCTrackBuilder
+      module_type:         WCTrackBuildernew
+      SourceLabel:         "daq"
       WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
+      WCHitFinderAlg:      @local::lariat_wchitfinderalg  
       TriggerUtility: "FragmentToDigit"
       NWC: 4
       NWperTDC: 64
       Verbose: false
+      PickyTracks: false  #True: Only use events with EXACTLY 1 XY Hit in each WC
+      HighYield: true     #True: allows 3 or 4 point tracks to be made. False: Only allow 4 point tracks
+      CheckTracks: false  #SET TO FALSE IF YOU ARE DOING PHYSICS RUNS. THIS IS ONLY USED FOR DEBUGGING WHEN YOU ONLY WANT HISTOGRAMS		
     }
   }
  
@@ -51,8 +56,5 @@ physics:
 }
 
 physics.producers.WCTrackBuilder.TriggerUtility: "FragmentToDigit"
-
-
-
-
-
+physics.producers.WCTrackBuilder.WCTrackBuilderAlg.MidplaneInterceptFactor: 1.05
+physics.producers.WCTrackBuilder.WCTrackBuilderAlg.MidplaneSlopeFactor: .98

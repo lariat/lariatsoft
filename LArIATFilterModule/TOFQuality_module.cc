@@ -6,9 +6,9 @@
 // Generated at 17 Feb 2016 by Irene Nutini using artmod
 // from cetpkgsupport v1_08_06.
 //
+// This is a QualityCheck on Time Of Flight from the beamline
 // This module filters on the number of TOF objects (by default requiring
-// at least 1) with a TOF (ns) value less than some cut 
-//(by default set to seperate pi/mu from protons
+// at least 1) with a TOF (ns) value that has to be non-zero
 ////////////////////////////////////////////////////////////////////////
 
 // ##########################
@@ -110,7 +110,25 @@ if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
 // ### Reject the event if there is no TOF info ###   
 if(tof.size() <  fnTOFObjects){return false;}  
 
-else {return true;}
+else {
+  //Remove the event is the TOFObject is created but it gives out a zero value/empty value for the Tof itself
+   if( TOFColHandle->at(0).NTOF() != 1 ) {return false;} 
+   
+  else {
+     // ################################
+// ### Looping over TOF objects to store Tof values in an histogram ###
+// ################################
+      for(size_t i = 0; i < tof.size(); i++)
+	{
+	  for (size_t tof_idx = 0; tof_idx < tof[i]->NTOF(); ++tof_idx)
+	    {
+	    //std::cout << tof[i]->SingleTOF(tof_idx) << std::endl;
+	    fTOFvalues->Fill( tof[i]->SingleTOF(tof_idx) );
+	      }//<---End tof_idx loop
+	  }//<---End i loop
+    return true;
+  }
+}
 
 }
 
