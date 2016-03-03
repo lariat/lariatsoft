@@ -186,6 +186,7 @@ namespace DataQuality {
     std::vector< std::vector< TH1I * > > fCAENPedestalHistograms;
     std::vector< std::vector< TH1I * > > fCAENADCHistograms;
     std::vector< std::vector< TH1I * > > fCAENMinADCHistograms;
+    std::vector< std::vector< TH1I * > > fCAENMaxADCHistograms;
 
     std::vector< TH1D * > fCAENPedestalTimeStampHistograms;
     std::vector< TH1D * > fCAENTimeStampHistograms;
@@ -333,6 +334,7 @@ namespace DataQuality {
     fCAENPedestalHistograms.resize(32);
     fCAENADCHistograms.resize(32);
     fCAENMinADCHistograms.resize(32);
+    fCAENMaxADCHistograms.resize(32);
 
     fCAENPedestalTimeStampHistograms.resize(32);
     fCAENTimeStampHistograms.resize(32);
@@ -350,6 +352,7 @@ namespace DataQuality {
     art::TFileDirectory pedestalDir = tfs->mkdir("pedestal");
     art::TFileDirectory adcDir      = tfs->mkdir("adc");
     art::TFileDirectory minADCDir   = tfs->mkdir("min_adc");
+    art::TFileDirectory maxADCDir   = tfs->mkdir("max_adc");
 
     // create TH1 objects
     fIntervalsDeltaTHistogram     = tfs->make<TH1D>("IntervalsDeltaT",     ";#Delta t [ms];Entries per ms",       10000, -0.5, 9999.5);
@@ -387,6 +390,7 @@ namespace DataQuality {
       fCAENPedestalHistograms[i].resize(V1740_N_CHANNELS);
       fCAENADCHistograms[i].resize(V1740_N_CHANNELS);
       fCAENMinADCHistograms[i].resize(V1740_N_CHANNELS);
+      fCAENMaxADCHistograms[i].resize(V1740_N_CHANNELS);
       for (size_t j = 0; j < V1740_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -398,6 +402,9 @@ namespace DataQuality {
         fCAENMinADCHistograms[i][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
                                                            ";ADC;Entries per ADC",
                                                            4096, 0, 4096);
+        fCAENMaxADCHistograms[i][j] = maxADCDir.make<TH1I>((th1Title + "_max_adc").c_str(),
+                                                           ";ADC;Entries per ADC",
+                                                           4096, 0, 4096);
       }
     }
 
@@ -406,6 +413,7 @@ namespace DataQuality {
       fCAENPedestalHistograms[i + offset].resize(V1751_N_CHANNELS);
       fCAENADCHistograms[i + offset].resize(V1751_N_CHANNELS);
       fCAENMinADCHistograms[i + offset].resize(V1751_N_CHANNELS);
+      fCAENMaxADCHistograms[i + offset].resize(V1751_N_CHANNELS);
       for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i + offset) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i + offset][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -417,6 +425,9 @@ namespace DataQuality {
         fCAENMinADCHistograms[i + offset][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
                                                                     ";ADC;Entries per ADC",
                                                                     1024, 0, 1024);
+        fCAENMaxADCHistograms[i + offset][j] = maxADCDir.make<TH1I>((th1Title + "_max_adc").c_str(),
+                                                                    ";ADC;Entries per ADC",
+                                                                    1024, 0, 1024);
       }
     }
 
@@ -425,6 +436,7 @@ namespace DataQuality {
       fCAENPedestalHistograms[i + offset].resize(V1740B_N_CHANNELS);
       fCAENADCHistograms[i + offset].resize(V1740B_N_CHANNELS);
       fCAENMinADCHistograms[i + offset].resize(V1740B_N_CHANNELS);
+      fCAENMaxADCHistograms[i + offset].resize(V1740B_N_CHANNELS);
       for (size_t j = 0; j < V1740B_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i + offset) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i + offset][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -434,6 +446,9 @@ namespace DataQuality {
                                                               ";ADC;Entries per ADC",
                                                               4096, 0, 4096);
         fCAENMinADCHistograms[i + offset][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
+                                                                    ";ADC;Entries per ADC",
+                                                                    4096, 0, 4096);
+        fCAENMaxADCHistograms[i + offset][j] = maxADCDir.make<TH1I>((th1Title + "_max_adc").c_str(),
                                                                     ";ADC;Entries per ADC",
                                                                     4096, 0, 4096);
       }
@@ -856,7 +871,10 @@ namespace DataQuality {
           }
           short unsigned int minADC = * std::min_element(std::begin(caenFrag.waveForms[k].data),
                                                          std::end(caenFrag.waveForms[k].data));
+          short unsigned int maxADC = * std::max_element(std::begin(caenFrag.waveForms[k].data),
+                                                         std::end(caenFrag.waveForms[k].data));
           fCAENMinADCHistograms[boardId][k]->Fill(minADC);
+          fCAENMaxADCHistograms[boardId][k]->Fill(maxADC);
         }
 
         if (boardId == 0 or boardId == 1 or boardId == 2 or

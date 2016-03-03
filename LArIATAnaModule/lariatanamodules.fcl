@@ -13,7 +13,7 @@ lariat_anatree:
     ClusterModuleLabel:       "linecluster"
     WCTrackLabel:             "WCTrackBuilder"
     TOFModuleLabel:	      "tof"
-    AGModuleLabel:            "aerogel"
+    AGModuleLabel:            "agcounter"
     G4ModuleLabel:            "largeant"
     ShowerModuleLabel:        "showerreco"
     MCShowerModuleLabel:      "mcreco"
