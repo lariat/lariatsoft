@@ -1,5 +1,6 @@
 #include "services_lariat.fcl"
 #include "lariatfiltermodules.fcl"
+#include "LArIATRecoAlg/ophitbuilderalg.fcl"
 
 process_name: OpDetSER
 
@@ -41,7 +42,8 @@ physics:
  {
    OpDetSER:
    {
-     module_type: OpDetSER 
+      module_type:      OpDetSER 
+      OpHitBuilderAlg:  @local::lariat_ophitbuilderalg
    }
  }
 
@@ -64,8 +66,7 @@ physics:
 
 #block to define where the output goes.  if you defined a filter in the physics
 #block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
-#entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
-outputs:
+
 {
 
 }

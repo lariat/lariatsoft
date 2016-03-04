@@ -47,42 +47,124 @@ public:
 private:
 
   // Tunable parameters defined by fcl
-  std::string   fDAQModule;
-  std::string   fInstanceName;
-  float         fMvPerADC;
-  bool          fAttemptFit;
-  size_t        fBaselineWindowLength;
-  float         fMean_set;
-  float         fMean_lowerLim;
-  float         fMean_upperLim;
-  size_t        fT1;
-  size_t        fT2;
-  float         fPulseHitThreshHigh;
-  float         fPulseHitRMSThresh;
-  float         fGradientCut;
-  size_t        fPostWindow;
-  size_t        fPreWindow;
+  std::string         fDAQModule;
+  std::string         fInstanceName;
+  size_t              fOpDetChannel;
+  float               fMvPerADC;
+  bool                fAttemptFit;
+  short               fBaselineWindowLength;
+  float               fMean_set;
+  float               fMean_lowerLim;
+  float               fMean_upperLim;
+  short               fT1;
+  short               fT2;
+  float               fPulseHitThreshHigh;
+  float               fPulseHitRMSThresh;
+  float               fGradientCut;
+  short               fPostWindow;
+  short               fPreWindow;
+
+  short              SER_bins;
+  bool                gotPMT;
+  size_t              NSamples;
+  raw::OpDetPulse     OpDetPulse;
+  std::vector<short>  Wfm;
+  float               Timestamp;
+  size_t              TrigSample;
+
+  // Alg objects
+  OpHitBuilderAlg     fOpHitBuilderAlg;
 
 };
 
 
+//#######################################################################
 OpDetSER::OpDetSER(fhicl::ParameterSet const & p)
-  :
-  EDAnalyzer(p)  // ,
- // More initializers here.
+: 
+ EDAnalyzer(p),
+ fOpHitBuilderAlg(p)
 {
-  
-  // Configures the ROOT histograms
   this->reconfigure(p);
-  
-    
+
+  SER_bins = fPreWindow + fPostWindow;
 }
 
+//#######################################################################
 void OpDetSER::analyze(art::Event const & e)
 {
-  // Implementation of required member function here.
+  // Get the OpDetPulses of the photodetectors
+  art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
+  e.getByLabel(fDAQModule,fInstanceName,WaveformHandle);
+
+  // Skip event if no waveforms found
+  if( (size_t)WaveformHandle->size() == 0 ){
+    LOG_DEBUG("OpDetSER") << "No optical detector data found; skipping event.";
+    return;
+ 
+  // If waveforms found, look for the specified PMT and save it
+  } else {
+    gotPMT = false;
+    for( size_t ipulse = 0; ipulse < (size_t)WaveformHandle->size(); ipulse++){
+      art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle,ipulse);
+      raw::OpDetPulse ThePulse = *ThePulsePtr;
+      if( ThePulse.OpChannel() == fOpDetChannel ) {
+        gotPMT = true;
+        OpDetPulse  = ThePulse; 
+        Wfm         = OpDetPulse.Waveform();
+        NSamples    = Wfm.size();
+        Timestamp   = (float(OpDetPulse.PMTFrame())*8.)/1.0e09;
+        TrigSample  = size_t(ThePulse.FirstSample()); 
+        
+    
+        LOG_DEBUG("OpDetSER")
+        << "PMT pulse recorded (" << NSamples << " samples, trigger at "<<TrigSample<<")\n"
+        << "Timestamp " << Timestamp << " sec";
+
+      }
+    }
+  }
+  // If we somehow after all this we still don't have
+  // the PMT we want, skip this weird event.
+  if( !gotPMT ) return;
+   
+   
+  // Now begin looking for single PEs
+  LOG_DEBUG("OpDetSER")
+  << "Beginning search for single PE candidates (RMS thresh x " << fPulseHitRMSThresh << ")";
+
+
+  // Get baseline and RMS
+  std::vector<float> tmp  = fOpHitBuilderAlg.GetBaselineAndRMS( Wfm, 0, fBaselineWindowLength );
+  float baseline          = tmp[0];
+  //float rms               = tmp[1];
+
+  // Make gradient
+  std::vector<float> g = fOpHitBuilderAlg.MakeGradient(Wfm);
+
+  // Baseline subtraction and signal inversion
+  std::vector<float> Wfm_corrected(NSamples);
+  for(size_t i=0; i<NSamples; i++) Wfm_corrected[i] = baseline - (float)Wfm[i];
+
+  // Make empty vector in which to store waveform for each PE candidate
+  // to be reset after each PE (or after added to average waveform)
+  int SER_bins = fPreWindow + fPostWindow;
+  std::vector<float> tmp_wfm(SER_bins);
+  //int tmp_wfm_i = 0;
+
+/*
+  size_t t1 = TrigSample + fT1;
+  size_t t2 = std::min(TrigSample + fT2, NSamples - fPostWindow);
+  float   integral    = 0;
+  bool    flag        = false;
+  int     windowsize  = 0;
+  int     counter     = 0;
+  int     flat_samples_count = 0;
+  float   prePE_baseline = -99;
+  float   prePE_rms       = 99;
+*/
 }
 
+//#######################################################################
 void OpDetSER::beginJob()
 {
   // Implementation of optional member function here.
@@ -117,18 +199,19 @@ void OpDetSER::reconfigure(fhicl::ParameterSet const & p)
 {
   fDAQModule              = p.get< std::string >  ("DAQModule","daq");
   fInstanceName           = p.get< std::string >  ("InstanceName","");
-  fBaselineWindowLength   = p.get< size_t >       ("BaselineWindowLength",1000);
+  fOpDetChannel           = p.get< size_t >       ("OpDetChannel",1);
+  fBaselineWindowLength   = p.get< short >       ("BaselineWindowLength",1000);
   fMean_set               = p.get< float >        ("Mean_set",50);
   fMean_lowerLim          = p.get< float >        ("Mean_lowerLim",30);
   fMean_upperLim          = p.get< float >        ("Mean_upperLim",80);
   fAttemptFit             = p.get< bool >         ("AttemptFit","true");
-  fT1                     = p.get< size_t >       ("fT1",1000);
-  fT2                     = p.get< size_t >       ("fT2",19000);
+  fT1                     = p.get< short >       ("fT1",1000);
+  fT2                     = p.get< short >       ("fT2",19000);
   fPulseHitThreshHigh     = p.get< float >        ("PulseHitThresh_high",10);
   fPulseHitRMSThresh      = p.get< float >        ("PulseHitRMSThresh",3.);
   fGradientCut            = p.get< float >        ("GradientCut",-4);
-  fPreWindow              = p.get< size_t >       ("PreWindow",5);
-  fPostWindow             = p.get< size_t >       ("PostWindow",45);
+  fPreWindow              = p.get< short >       ("PreWindow",5);
+  fPostWindow             = p.get< short >       ("PostWindow",45);
   fMvPerADC               = p.get< float >        ("MvPerADC",0.2);
 
 }

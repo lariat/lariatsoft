@@ -1,0 +1,29 @@
+BEGIN_PROLOG
+
+lariat_ophitbuilderalg:
+{
+  DAQModule:            "daq"
+  InstanceName:         ""
+  GradHitThresh:        -10
+  SignalHitThresh:      4
+  PulseHitThreshLow:    0
+  PulseHitThreshHigh:   999
+  PulseHitRMSThresh:    2.5
+  GradRMSThresh:        5
+  MinHitSeparation:     20
+  FirstHitSeparation:   50
+  BaselineWindowLength: 1000
+  PrePulseBaselineFit:  500
+  PrePulseDisplay:      500
+  PrePulseTau1:         1400
+  PrePulseTau2:         10
+  PromptWindowLength:   100
+  FullWindowLength:     7000
+  MvPerADC:             0.2
+  UsePrepulseFit:       "true"
+  TimestampCut:         0
+  HitTimeCutoffLow:     -100000
+  HitTimeCutoffHigh:    100000
+}
+
+END_PROLOG
