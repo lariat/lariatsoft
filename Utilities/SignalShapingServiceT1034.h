@@ -34,7 +34,7 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ActivityRegistry.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
-#include "Utilities/SignalShaping.h"
+#include "lardata/Utilities/SignalShaping.h"
 #include "TF1.h"
 #include "TH1D.h"
 
@@ -140,7 +140,8 @@ namespace util {
 
     std::vector<double> fScaleNegativeResponse; ///< Scale negative response
     std::vector<double> fScaleResponseTime;     ///< Scale time scale of response function
-    
+    bool fDebugFieldShape; ///< Save field response shape to a text file.
+
     // Following attributes hold the convolution and deconvolution kernels
 
     util::SignalShaping fColSignalShaping;

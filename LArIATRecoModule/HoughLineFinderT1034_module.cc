@@ -36,11 +36,11 @@
 #include <memory>
 
 //LArSoft Includes
-#include "RawData/RawDigit.h"
-#include "RecoBase/Cluster.h"
-#include "RecoBase/Hit.h"
-#include "Utilities/AssociationUtil.h"
-#include "RecoAlg/HoughBaseAlg.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RecoBase/Cluster.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/Utilities/AssociationUtil.h"
+#include "larreco/RecoAlg/HoughBaseAlg.h"
 
 // ROOT Includes
 

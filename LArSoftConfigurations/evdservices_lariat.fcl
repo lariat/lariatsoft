@@ -42,8 +42,8 @@ lariat_disp:
 {                                                                                  
  ExptGeoHelperInterface:                      @local::lariat_geometry_helper        
  Geometry:                                    @local::lariat_geo                    
- LArProperties:                               @local::lariat_properties             
- DetectorProperties:                          @local::lariat_detproperties          
+ LArPropertiesService:                               @local::lariat_properties             
+ DetectorPropertiesService:                          @local::lariat_detproperties          
  DatabaseUtil:		                      @local::lariat_database               
  ColorDrawingOptions:                         @local::lariat_colordrawingopt        
  SimulationDrawingOptions:                    @local::lariat_simdrawingopt          
@@ -56,9 +56,9 @@ lariat_disp:
  LArG4Parameters:                             @local::lariat_largeantparameters     
  LArVoxelCalculator:                          @local::lariat_larvoxelcalculator     
  InfoTransfer:		                      @local::lariat_infotransfer    
- TimeService:                  		      @local::lariat_timeservice
- IDetPedestalService:                         @local::lariat_detpedestalservice
- IChannelStatusService: @local::lariat_channel_filter
+ DetectorClocksService:                  		      @local::lariat_detectorclocks
+ DetPedestalService:                         @local::lariat_detpedestalservice
+ ChannelStatusService: @local::lariat_channel_filter
  
 }                                                                                  
                                                                                    

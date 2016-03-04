@@ -11,7 +11,7 @@
 #define GEO_AUXDETGEOMETRYTESTALG_H
 
 // LArSoft includes
-#include "SimpleTypesAndConstants/geo_types.h"
+#include "larcore/SimpleTypesAndConstants/geo_types.h"
 
 // C/C++ standard libraries
 #include <string>

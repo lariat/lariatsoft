@@ -19,8 +19,8 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "Geometry/GeometryCore.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/GeometryCore.h"
 #include "SimulationBase/MCParticle.h"
 
 // ROOT includes

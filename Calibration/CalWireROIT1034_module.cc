@@ -32,15 +32,15 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
 
 // LArSoft libraries
-#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "Geometry/Geometry.h"
-#include "Filters/ChannelFilter.h"
-#include "RawData/RawDigit.h"
-#include "RawData/raw.h"
-#include "RecoBase/Wire.h"
-#include "RecoBaseArt/WireCreator.h"
-#include "Utilities/LArFFT.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcore/Geometry/Geometry.h"
+#include "larevt/Filters/ChannelFilter.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/raw.h"
+#include "lardata/RecoBase/Wire.h"
+#include "lardata/RecoBaseArt/WireCreator.h"
+#include "lardata/Utilities/LArFFT.h"
+#include "lardata/Utilities/AssociationUtil.h"
 #include "Utilities/SignalShapingServiceT1034.h"
 
 
@@ -174,7 +174,7 @@ namespace caldata {
     //	<< "CalGausHFLBNE only supports zero-suppressed raw digit input!";
     //} // if
 
-    unsigned int dataSize = digitVec0->Samples(); //size of raw data vectors
+    unsigned int dataSize = 0; //size of raw data vectors
 
     raw::ChannelID_t channel = raw::InvalidChannelID; // channel number
     unsigned int bin(0);     // time bin loop variable
@@ -199,6 +199,7 @@ namespace caldata {
       if(!chanFilt->BadChannel(channel)) {
         holder.resize(transformSize);
         
+	dataSize = digitVec->Samples();
         // uncompress the data
         raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
         

@@ -1,6 +1,7 @@
 #include "services_lariat.fcl"
 #include "clockcorrectionalg.fcl"
 #include "eventbuilderalg.fcl"
+#include "RawDataUtilities_algs.fcl"
 
 process_name: DataQuality
 
@@ -37,6 +38,7 @@ physics:
 
       module_type:             "DataQuality"
       EventBuilderAlg:         @local::standard_eventbuilderalg
+      FragmentToDigitAlg:      @local::lariat_fragmenttodigit_alg
 
       # Pre-/post-acquisition windows in microseconds. A value of -1
       # will utilize values that are dependent on the lariat_prd

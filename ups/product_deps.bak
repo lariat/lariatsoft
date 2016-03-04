@@ -1,0 +1,55 @@
+# The parent line must be the first non-comment line in the file
+# This line defines the product name and version
+parent	lariatsoft v01_07_00
+defaultqual	e7
+
+# need this line for MRB to add the FHiCL directory (fcl by default)
+# to the search path in development environment
+fcldir product_dir
+
+# dependencies on external packages
+product         version
+
+larsoft		v04_19_00
+LariatFilters   v01_02
+lariatfragments v01_06_01
+artdaq_core     v1_04_15
+LariatBeamFiles v01_00 - optional
+
+cetbuildtools   v4_12_05 - only_for_build
+end_product_list
+  
+# e7  - with gcc 4.9.2 and -std=c++11
+qualifier	        larsoft          LariatFilters	lariatfragments artdaq_core	LariatBeamFiles	notes
+e7:debug		e7:debug         -nq-		e7:debug        e7:nu:s14:debug	-nq-					
+e7:opt			e7:opt	         -nq-		e7:opt		e7:nu:s14:opt	-nq-
+e7:prof			e7:prof	         -nq-		e7:prof		e7:nu:s14:prof	-nq-		
+e7:debug:noifdh		e7:debug:noifdh  -nq-		e7:debug        e7:nu:s14:debug	-nq-					
+e7:opt:noifdh		e7:opt:noifdh	 -nq-		e7:opt		e7:nu:s14:opt	-nq-
+e7:prof:noifdh		e7:prof:noifdh	 -nq-		e7:prof		e7:nu:s14:prof	-nq-		
+e7:debug:nobeam		e7:debug         -nq-		e7:debug        e7:nu:s14:debug	-		
+e7:opt:nobeam		e7:opt	         -nq-		e7:opt		e7:nu:s14:opt	-		
+e7:prof:nobeam		e7:prof	  	 -nq-		e7:prof		e7:nu:s14:prof	-		
+e7:debug:nobeam:noifdh	e7:debug:noifdh  -nq-		e7:debug        e7:nu:s14:debug	-		
+e7:opt:nobeam:noifdh	e7:opt:noifdh	 -nq-		e7:opt		e7:nu:s14:opt	-		
+e7:prof:nobeam:noifdh	e7:prof:noifdh	 -nq-		e7:prof		e7:nu:s14:prof	-		
+
+end_qualifier_list
+
+# table file fragment to set FW_DATA
+table_fragment_begin
+    envSet(DB_PWD_DIR,          /pwd/Utilities/)
+    pathPrepend(FW_DATA,        /grid/fermiapp/lariat/)
+    pathPrepend(FW_SEARCH_PATH, ${UPS_PROD_DIR}:${UPS_PROD_DIR}/gdml:${UPS_PROD_DIR}/pwd:/grid/fermiapp/lariat/:/grid/fermiapp/lbne/lar/aux/)
+    pathPrepend(FHICL_FILE_PATH, .)
+    envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
+    envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
+    envSet(ART_WORKBOOK_QUAL,         "s14:e7")
+table_fragment_end
+
+
+# Preserve tabs and formatting in emacs and vi / vim:
+
+### Local Variables:
+### tab-width: 8
+### End:

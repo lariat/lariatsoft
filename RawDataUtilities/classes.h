@@ -5,23 +5,30 @@
 
 #include "LArIATFragments/V1495Fragment.h"
 
-#include "RawData/RawDigit.h"
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/TriggerData.h"
-#include "RecoBase/Wire.h"
-#include "RecoBase/Hit.h"
-#include "RecoBase/Cluster.h"
-#include "RecoBase/Vertex.h"
-#include "RecoBase/EndPoint2D.h"
-#include "RecoBase/SpacePoint.h"
-#include "RecoBase/Track.h"
 
-#include "RawData/RawDigit.h"
-#include "RawData/AuxDetDigit.h"
-#include "RawData/OpDetPulse.h"
-#include "RawData/TriggerData.h"
-#include "SummaryData/RunData.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/AuxDetDigit.h"
+#include "lardata/RawData/OpDetPulse.h"
+#include "lardata/RawData/TriggerData.h"
+#include "lardata/RecoBase/Wire.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/RecoBase/Cluster.h"
+#include "lardata/RecoBase/Vertex.h"
+#include "lardata/RecoBase/EndPoint2D.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/RecoBase/Track.h"
+
+
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/AuxDetDigit.h"
+#include "lardata/RawData/OpDetPulse.h"
+#include "lardata/RawData/TriggerData.h"
+
+#include "larcore/SummaryData/RunData.h"
+
+#include "LArIATDataProducts/WCTrack.h"
+
+
 
 /* template class std::vector<V1495Fragment>; */
 /* template class std::vector<V1495ChannelData>; */
@@ -40,6 +47,8 @@ template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Track>      >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Vertex>     >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit>  >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>   >;
+//template class art::pair<art::Ptr<ldp::WCTrack>, art::Ptr<recob::Track>      >;
+
 
 template class std::pair<art::Ptr<raw::RawDigit>,     art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<recob::Wire>,       art::Ptr<raw::Trigger> >;
@@ -51,6 +60,8 @@ template class std::pair<art::Ptr<recob::Track>,      art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<recob::Vertex>,     art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<raw::AuxDetDigit>,  art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<raw::OpDetPulse>,   art::Ptr<raw::Trigger> >;
+//template class art::pair<art::Ptr<recob::Track>,      art::Ptr<ldp::WCTrack> >;
+
 
 template class art::Assns<raw::Trigger, raw::RawDigit,     void>;
 template class art::Assns<raw::Trigger, recob::Wire,       void>;
@@ -62,6 +73,8 @@ template class art::Assns<raw::Trigger, recob::SpacePoint, void>;
 template class art::Assns<raw::Trigger, recob::Track,      void>;
 template class art::Assns<raw::Trigger, raw::AuxDetDigit,  void>;
 template class art::Assns<raw::Trigger, raw::OpDetPulse,   void>;
+template class art::Assns<ldp::WCTrack, recob::Track,      void>;
+
 
 template class art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, recob::Wire,       void> >;
@@ -73,3 +86,6 @@ template class art::Wrapper<art::Assns<raw::Trigger, recob::Track,      void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, recob::Vertex,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit,  void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,   void> >;
+template class art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >;
+
+template class art::Wrapper<art::PtrVector<recob::Track> >;

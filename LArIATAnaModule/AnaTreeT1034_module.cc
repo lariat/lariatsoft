@@ -23,48 +23,50 @@
 #include "art/Framework/Services/Optional/TFileService.h" 
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "art/Framework/Core/FindOneP.h" 
+#include "art/Framework/Core/FindManyP.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
-#include "cetlib/maybe_ref.h"
+//#include "cetlib/maybe_ref.h"
 
 // ########################
 // ### LArSoft includes ###
 // ########################
-#include "SimpleTypesAndConstants/geo_types.h"
-#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "Geometry/Geometry.h"
-#include "Geometry/CryostatGeo.h"
-#include "Geometry/TPCGeo.h"
-#include "Geometry/PlaneGeo.h"
-#include "Geometry/WireGeo.h"
-#include "RecoBase/Wire.h"
-#include "RecoBase/Hit.h"
-#include "RecoBase/Cluster.h"
-#include "RecoBase/Track.h"
-#include "RecoBase/TrackHitMeta.h"
-#include "RecoBase/Vertex.h"
-#include "RecoBase/SpacePoint.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/SimpleTypesAndConstants/geo_types.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/CryostatGeo.h"
+#include "larcore/Geometry/TPCGeo.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "larcore/Geometry/WireGeo.h"
+#include "lardata/RecoBase/Wire.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/RecoBase/Cluster.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/RecoBase/TrackHitMeta.h"
+#include "lardata/RecoBase/Vertex.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/Utilities/AssociationUtil.h"
+
 //#include "RawData/ExternalTrigger.h"
-#include "RawData/RawDigit.h"
-#include "RawData/raw.h"
-#include "MCCheater/BackTracker.h"
-#include "Simulation/SimChannel.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/raw.h"
+#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/Simulation/SimChannel.h"
 #include "SimulationBase/MCTruth.h"
-#include "Filters/ChannelFilter.h"
-#include "AnalysisBase/Calorimetry.h"
-#include "AnalysisBase/ParticleID.h"
-#include "RecoAlg/TrackMomentumCalculator.h"
+#include "larevt/Filters/ChannelFilter.h"
+#include "lardata/AnalysisBase/Calorimetry.h"
+#include "lardata/AnalysisBase/ParticleID.h"
+#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AGCounter.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
-#include "RecoBase/Shower.h"
-#include "RecoBase/EndPoint2D.h"
-#include "MCBase/MCShower.h"
-#include "MCBase/MCStep.h"
-#include "AnalysisAlg/CalorimetryAlg.h"
+#include "lardata/RecoBase/Shower.h"
+#include "lardata/RecoBase/EndPoint2D.h"
+#include "lardata/MCBase/MCShower.h"
+#include "lardata/MCBase/MCStep.h"
+#include "lardata/AnalysisAlg/CalorimetryAlg.h"
 
 // #####################
 // ### ROOT includes ###
@@ -83,7 +85,7 @@ const int kMaxTrajHits   = 1000;  //maximum number of trajectory points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;   //maximum number of TOF objects
-const int kMaxAG         = 100;   //maximum number of AG objects
+const int kMaxAG         = 1000;   //maximum number of AG objects
 const int kMaxPrimaries  = 20000;  //maximum number of primary particles
 const int kMaxShower     = 100;   //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000; // maximum number of MCShower Object
@@ -142,6 +144,8 @@ private:
   double trkmomrange[kMaxTrack];	//<---Calculated track momentum from its length assuming a PID of 13
   double trkmommschi2[kMaxTrack];	//<---Calculated track momentum from multiple scattering using Chi2
   double trkmommsllhd[kMaxTrack];	//<---Calculated track momentum from multiple scattering
+  int    trkWCtoTPCMath;		//<---Using an association to see if there was a match between WC and TPC
+  					//    0 = match, 1 = no match
    
    
   // === Storing the tracks SpacePoints (Individual 3D points)
@@ -171,6 +175,7 @@ private:
 
   // === Geaaant inforamtion for reconstruction track
   int trkg4id[kMaxHits];         //<---geant track id for the track
+
   int primarytrkkey;             //<---reco track index for primary particle
   // === Storing 2-d Hit information ===
   int    nhits;		//<---Number of 2-d hits in the event
@@ -259,6 +264,19 @@ private:
   double EndPointx[kMaxPrimaries];		//<---X position that this Geant4 particle ended at
   double EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
   double EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
+  int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
+  // ### Recording the process as a integer ###
+	  // 0 = primary
+	  // 1 = PionMinusInelastic
+	  // 2 = NeutronInelastic
+	  // 3 = hadElastic
+	  // 4 = nCapture
+	  // 5 = CHIPSNuclearCaptureAtRest
+	  // 6 = Decay
+	  // 7 = KaonZeroLInelastic
+	  // 8 = CoulombScat
+	  // 9 = muMinusCaptureAtRest
+	  //10 = ProtonInelastic
   int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
   int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
   int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
@@ -291,6 +309,7 @@ private:
   double     mcshwr_StartDirY[kMaxMCShower];      	//MC Shower Direction of begining of shower, Y direction 
   double     mcshwr_StartDirZ[kMaxMCShower];      	//MC Shower Direction of begining of shower, Z direction 
   int       mcshwr_isEngDeposited[kMaxMCShower];  	//tells whether if this shower deposited energy in the detector or not.
+
    							//yes = 1; no =0;
   //MC Shower mother information
   int       mcshwr_Motherpdg[kMaxMCShower];       	//MC Shower's mother PDG code.
@@ -356,6 +375,7 @@ private:
   std::string fG4ModuleLabel;
   std::string fShowerModuleLabel;       // Producer that makes showers from clustering
   std::string fMCShowerModuleLabel;	// Producer name that makes MCShower Object
+  std::string fWC2TPCModuleLabel;	// Producer which creates an association between WC and TPC Track
 
   calo::CalorimetryAlg fCalorimetryAlg;
 
@@ -381,13 +401,14 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
   fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel");
   fCalorimetryModuleLabel 	= pset.get< std::string >("CalorimetryModuleLabel");
   fParticleIDModuleLabel  	= pset.get< std::string >("ParticleIDModuleLabel");
-  fClusterModuleLabel          = pset.get< std::string >("ClusterModuleLabel");
+  fClusterModuleLabel          	= pset.get< std::string >("ClusterModuleLabel");
   fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
   fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
-  fAGModuleLabel               = pset.get< std::string >("AGModuleLabel");
-  fG4ModuleLabel               = pset.get< std::string >("G4ModuleLabel");
-  fShowerModuleLabel           = pset.get< std::string >("ShowerModuleLabel");
+  fAGModuleLabel               	= pset.get< std::string >("AGModuleLabel");
+  fG4ModuleLabel               	= pset.get< std::string >("G4ModuleLabel");
+  fShowerModuleLabel           	= pset.get< std::string >("ShowerModuleLabel");
   fMCShowerModuleLabel		= pset.get< std::string >("MCShowerModuleLabel");
+  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
   return;
 }
 
@@ -405,9 +426,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Geometry Service ===
   art::ServiceHandle<geo::Geometry> geom;
   // === Liquid Argon Properties Services ===
-  art::ServiceHandle<util::LArProperties> larprop;
+  //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   // === Detector properties service ===
-  art::ServiceHandle<util::DetectorProperties> detprop;
+  auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   // === BackTracker service ===
   art::ServiceHandle<cheat::BackTracker> bt;
   const sim::ParticleList& plist = bt->ParticleList();
@@ -432,9 +453,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   evttime = tts.AsDouble();
    
   // === Electric Field ===
-  efield[0] = larprop->Efield(0);
-  efield[1] = larprop->Efield(1);
-  efield[2] = larprop->Efield(2);
+  // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
+  efield[0] = detprop->Efield(0);
+  efield[1] = detprop->Efield(1);
+  efield[2] = detprop->Efield(2);
    
   // === Trigger Offset ====
   t0 = detprop->TriggerOffset();
@@ -676,6 +698,37 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Setting a string for primary ###
       std::string pri("primary");
       
+      // ### Setting a string for PionMinusInelastic ###
+      std::string PionMinusInelastic("PionMinusInelastic");
+      
+      // ### Setting a string for NeutronInelastic ###
+      std::string NeutronInelastic("NeutronInelastic");
+      
+       // ### Setting a string for hadElastic ###
+      std::string hadElastic("hadElastic");
+      
+      // ### Setting a string for nCapture ###
+      std::string nCapture("nCapture");
+      
+      // ### Setting a string for CHIPSNuclearCaptureAtRest ###
+      std::string CHIPSNuclearCaptureAtRest("CHIPSNuclearCaptureAtRest");
+      
+      // ### Setting a string for Decay ###
+      std::string Decay("Decay");
+      
+      // ### Setting a string for KaonZeroLInelastic ###
+      std::string KaonZeroLInelastic("KaonZeroLInelastic");
+      
+      // ### Setting a string for CoulombScat ###
+      std::string CoulombScat("CoulombScat");
+      
+      // ### Setting a string for muMinusCaptureAtRest ###
+      std::string muMinusCaptureAtRest("muMinusCaptureAtRest");
+      
+      // ### Setting a string for ProtonInelastic ###
+      std::string ProtonInelastic("ProtonInelastic");
+      
+      
       int primary=0;
       int geant_particle=0;
       
@@ -699,7 +752,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Looping over all the Geant4 particles ###
       for( unsigned int i = 0; i < geant_part.size(); ++i )
 	{
-	  //std::cout<<"pdg= "<<geant_part[i]->PdgCode()<<" Process= "<<geant_part[i]->Process()<<" trackId= "<<geant_part[i]->TrackId()<<" E= "<<geant_part[i]->E()<<" P= "<<geant_part[i]->P()<<" "<<sqrt(geant_part[i]->Px()*geant_part[i]->Px() + geant_part[i]->Py()*geant_part[i]->Py()+ geant_part[i]->Pz()*geant_part[i]->Pz())<<" Mother= "<<geant_part[i]->Mother()<<" Vertex= ("<<geant_part[i]->Vx()<<","<<geant_part[i]->Vy()<<","<<geant_part[i]->Vz()<<" ) end=("<<geant_part[i]->EndPosition()[0]<<","<<geant_part[i]->EndPosition()[1]<<","<<geant_part[i]->EndPosition()[2]<<")"<<std::endl;
    
           // ### If this particle is primary, set = 1 ###
 	  if(geant_part[i]->Process()==pri)
@@ -707,8 +759,57 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           // ### If this particle is not-primary, set = 0 ###
 	  else
 	    {process_primary[i]=0;}
-   
-          // ### Saving the particles mother TrackID ###
+          
+	  // ### Recording the process as a integer ###
+	  // 0 = primary
+	  // 1 = PionMinusInelastic
+	  // 2 = NeutronInelastic
+	  // 3 = hadElastic
+	  // 4 = nCapture
+	  // 5 = CHIPSNuclearCaptureAtRest
+	  // 6 = Decay
+	  // 7 = KaonZeroLInelastic
+	  // 8 = CoulombScat
+	  // 9 = muMinusCaptureAtRest
+	  //10 = ProtonInelastic
+	  
+	  if(geant_part[i]->Process() == pri)
+	     {Process[i] = 0;}
+	     
+	  if(geant_part[i]->Process() == PionMinusInelastic)
+	     {Process[i] = 1;}
+	     
+	  if(geant_part[i]->Process() == NeutronInelastic)
+	     {Process[i] = 2;}
+	     
+	  if(geant_part[i]->Process() == hadElastic)
+	     {Process[i] = 3;}
+	  
+	  if(geant_part[i]->Process() == nCapture)
+	     {Process[i] = 4;}
+	     
+	  if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
+	     {Process[i] = 5;}
+	  
+	  if(geant_part[i]->Process() == Decay)
+	     {Process[i] = 6;}
+	  
+	  if(geant_part[i]->Process() == KaonZeroLInelastic)
+	     {Process[i] = 7;}
+	     
+	  if(geant_part[i]->Process() == CoulombScat)
+	     {Process[i] = 8;}
+	     
+	  if(geant_part[i]->Process() == muMinusCaptureAtRest)
+	     {Process[i] = 9;}
+	     
+	  if(geant_part[i]->Process() == ProtonInelastic)
+	     {Process[i] = 10;}
+	     
+	  //std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
+	  
+
+	  // ### Saving the particles mother TrackID ###
 	  Mother[i]=geant_part[i]->Mother();
 	  // ### Saving the particles TrackID ###
 	  TrackId[i]=geant_part[i]->TrackId();
@@ -777,7 +878,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     //for(const auto& wctrack : (*wctrackHandle)) //trackHandle works somewhat like a pointer to a vector of tracks, so dereference the handle to loop over
     //the vector, then use each "track" as a ldp::WCTrack
     {
-      
+	    std::cout<<"wct_count: "<<wct_count<<std::endl;
       //std::cout<<"wctrack[wct_count]->Momentum() = "<<wctrack[wct_count]->Momentum()<<std::endl;
       // ##############################################
       // ### Filling Wire Chamber Track information ###
@@ -806,7 +907,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
     }//<---end wctrack auto loop
       
-	 
    
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
@@ -814,14 +914,16 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   ntof = tof.size();
+  std::cout<<"tof.size(): "<<tof.size()<<std::endl;
   // ################################
   // ### Looping over TOF objects ###
   // ################################
   size_t tof_counter = 0; // book-keeping
   for(size_t i = 0; i < tof.size(); i++)
     {
-
+      std::cout<<"TOFi: "<<i<<std::endl;
       size_t number_tof = tof[i]->NTOF();
+      std::cout<<"tof[i]->NTOF(): "<<tof[i]->NTOF()<<std::endl;
 
       for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
 	tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
@@ -843,6 +945,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   //   std::cout<<"counter->size()"<<counter->size()<<std::endl;
 
   nAG = agc.size();
+  std::cout<<"agc.size(): "<<agc.size()<<std::endl;
+  //LOG_VERBATIM("HAHAHAHAHAHARHARHARHARHAR");
   // ################################
   // ### Looping over aerogel counter objects ###
   // ################################
@@ -850,30 +954,61 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   for(size_t i = 0; i < agc.size(); i++)
     {
 
-      auto number_agc = agc[i]->GetNHits();
-      std::cout<<"nAG: "<<nAG<<std::endl;
-      std::cout<<" number_agc: "<<number_agc<<std::endl;
+      size_t number_agc = agc[i]->GetNHits();
+      std::cout<<"i: "<<i<<std::endl;
       std::cout<<"agc[i]->GetNHits(): "<<agc[i]->GetNHits()<<std::endl;
+      //std::cout<<"agc[i]->size(): "<<agc[i]->size()<<std::endl;
+      //std::cout<<"agc.size(): "<<agc.size()<<std::endl;
+      //std::cout<<"nAG: "<<nAG<<std::endl;
+      //std::cout<<" number_agc: "<<number_agc<<std::endl;
+    
+      
 
       for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
-	//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
-	HitTimeStampUSE[i]=agc[agc_counter]->GetHitTimeStampUSE(agc_idx);
-	HitTimeStampUSW[i]=agc[agc_counter]->GetHitTimeStampUSW(agc_idx);
-	HitTimeStampDS1[i]=agc[agc_counter]->GetHitTimeStampDS1(agc_idx);
-	HitTimeStampDS2[i]=agc[agc_counter]->GetHitTimeStampDS2(agc_idx);
+	//std::cout<<"agc_counter: "<< agc_counter <<std::endl;
+	
+//        std::cout<<"i: "<<i<<std::endl;
+        std::cout<<"agc_idx: "<<agc_idx<<std::endl;
 
-	HitPulseAreaUSE[i]=agc[agc_counter]->GetHitPulseAreaUSE(agc_idx);
-	HitPulseAreaUSW[i]=agc[agc_counter]->GetHitPulseAreaUSW(agc_idx);
-	HitPulseAreaDS1[i]=agc[agc_counter]->GetHitPulseAreaDS1(agc_idx);
-	HitPulseAreaDS2[i]=agc[agc_counter]->GetHitPulseAreaDS2(agc_idx);
+	HitTimeStampUSE[agc_counter]=agc[i]->GetHitTimeStampUSE(agc_idx);
+        HitTimeStampUSW[agc_counter]=agc[i]->GetHitTimeStampUSW(agc_idx);
+        HitTimeStampDS1[agc_counter]=agc[i]->GetHitTimeStampDS1(agc_idx);
+        HitTimeStampDS2[agc_counter]=agc[i]->GetHitTimeStampDS2(agc_idx);
 
-	HitExistUSE[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistUSW[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistDS1[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistDS2[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+	std::cout<<"agc[i]->GetHitTimeStampUSE(agc_idx): "<<agc[i]->GetHitTimeStampUSE(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitTimeStampUSW(agc_idx): "<<agc[i]->GetHitTimeStampUSW(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitTimeStampDS1(agc_idx): "<<agc[i]->GetHitTimeStampDS1(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitTimeStampDS2(agc_idx): "<<agc[i]->GetHitTimeStampDS2(agc_idx)<<std::endl;
+
+	HitPulseAreaUSE[agc_counter]=agc[i]->GetHitPulseAreaUSE(agc_idx);
+        HitPulseAreaUSW[agc_counter]=agc[i]->GetHitPulseAreaUSW(agc_idx);
+        HitPulseAreaDS1[agc_counter]=agc[i]->GetHitPulseAreaDS1(agc_idx);
+        HitPulseAreaDS2[agc_counter]=agc[i]->GetHitPulseAreaDS2(agc_idx);
+        
+        std::cout<<"agc[i]->GetHitPulseAreaUSE(agc_idx): "<<agc[i]->GetHitPulseAreaUSE(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitPulseAreaUSW(agc_idx): "<<agc[i]->GetHitPulseAreaUSW(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitPulseAreaDS1(agc_idx): "<<agc[i]->GetHitPulseAreaDS1(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitPulseAreaDS2(agc_idx): "<<agc[i]->GetHitPulseAreaDS2(agc_idx)<<std::endl;
+
+	HitExistUSE[agc_counter]=agc[i]->GetHitExistUSE(agc_idx);
+        HitExistUSW[agc_counter]=agc[i]->GetHitExistUSW(agc_idx);
+        HitExistDS1[agc_counter]=agc[i]->GetHitExistDS1(agc_idx);
+        HitExistDS2[agc_counter]=agc[i]->GetHitExistDS2(agc_idx);
+
+        std::cout<<"agc[i]->GetHitExistUSE(agc_idx): "<<agc[i]->GetHitExistUSE(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitExistUSW(agc_idx): "<<agc[i]->GetHitExistUSW(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitExistDS1(agc_idx): "<<agc[i]->GetHitExistDS1(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitExistDS2(agc_idx): "<<agc[i]->GetHitExistDS2(agc_idx)<<std::endl;
+
+	std::cout<<"agc_counter: "<<agc_counter<<std::endl;
+        std::cout<<"HitExistUSE[agc_counter]: "<<HitExistUSE[agc_counter]<<std::endl;
+        std::cout<<"HitExistUSW[agc_counter]: "<<HitExistUSW[agc_counter]<<std::endl;
+        std::cout<<"HitExistDS1[agc_counter]: "<<HitExistDS1[agc_counter]<<std::endl;
+        std::cout<<"HitExistDS2[agc_counter]: "<<HitExistDS2[agc_counter]<<std::endl;
+
 	++agc_counter;
-      } // loop over aerogel pulses
 
+      } // loop over aerogel pulses
     }//<---End aerogel counters
      
 
@@ -948,6 +1083,35 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   std::vector<double> trackStart;
   std::vector<double> trackEnd;
   
+  // === Association between WC Tracks and TPC Tracks ===
+  int TempTrackMatchedID = -1;                                                                                                                               
+  /*art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
+  
+  if (fWC2TPC.isValid())
+     {
+     std::cout<<"Valid WC2TPC Track"<<std::endl;
+     
+     std::cout<<"fWC2TPC.size() = "<<fWC2TPC.size()<<std::endl;
+     // === Loop on all the Assn WC-TPC tracks ===                                                          
+     for (unsigned int indexAssn = 0; indexAssn < fWC2TPC.size(); ++indexAssn )
+         {
+	 std::cout<<"indexAssn = "<<indexAssn<<std::endl;
+	 // =========================
+	 // === Get the TPC track ===
+	 // =========================
+	 auto fake = *fWC2TPC.at(indexAssn);
+	 std::cout<<fake.ID()<<std::endl;
+	 cet::maybe_ref<recob::Track const> trackWC2TPC(*fWC2TPC.at(indexAssn));
+	 
+	 recob::Track const& aTrack(trackWC2TPC.ref());
+	 TempTrackMatchedID = aTrack.ID();
+	 std::cout<<"TempTrackMatchedID = "<<TempTrackMatchedID<<std::endl;
+	 
+	 }//<----End indexAssn loop
+     
+     
+     }//<---End checking that the WC2TPC is valid*/
+  
   // ### Looping over tracks ###
   double maxtrackenergy = -1;
   for(size_t i=0; i<tracklist.size();++i)
@@ -961,7 +1125,17 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       memset(larEnd, 0, 3);
       tracklist[i]->Extent(trackStart,trackEnd); 
       tracklist[i]->Direction(larStart,larEnd);
-    
+      
+      // ### Stroing an integer for the match of a WC to TPC track ###
+      int trackMatch = 1;
+      if(TempTrackMatchedID == tracklist[i]->ID() )
+         {
+	 trackMatch = 0;
+	 }//<---End match
+	 
+      // ### Setting the WC to TPC match ###
+      trkWCtoTPCMath = trackMatch;
+      
       // ### Recording the track vertex x, y, z location ###
       trkvtxx[i]        = trackStart[0];
       trkvtxy[i]        = trackStart[1];
@@ -1299,7 +1473,14 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       } // if cet::maybe_ref is valid
     }
   }
+
+  std::cout<<"agc_counter: "<<agc_counter<<std::endl;
+  std::cout<<"HitExistUSE[agc_counter]: "<<HitExistUSE[agc_counter]<<std::endl;
+  std::cout<<"HitExistUSW[agc_counter]: "<<HitExistUSW[agc_counter]<<std::endl;
+  std::cout<<"HitExistDS1[agc_counter]: "<<HitExistDS1[agc_counter]<<std::endl;
+  std::cout<<"HitExistDS2[agc_counter]: "<<HitExistDS2[agc_counter]<<std::endl;  
   fTree->Fill();
+//  fTree->Scan("HitExistUSE:HitExistUSW:HitExistDS1:HitExistDS2");
 }
 
 
@@ -1336,6 +1517,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkenddcosx",trkenddcosx,"trkenddcosx[ntracks_reco]/D");
   fTree->Branch("trkenddcosy",trkenddcosy,"trkenddcosy[ntracks_reco]/D");
   fTree->Branch("trkenddcosz",trkenddcosz,"trkenddcosz[ntracks_reco]/D");
+  fTree->Branch("trkWCtoTPCMath",trkWCtoTPCMath,"trkWCtoTPCMath/I");
   fTree->Branch("trklength",trklength,"trklength[ntracks_reco]/D");
   fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/D");
   fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/D");
@@ -1416,10 +1598,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/D");
   fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/D");
   fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/D");
-  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/D");
-  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/D");
-  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/D");
-  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/D");
+  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/O");
+  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/O");
+  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/O");
+  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/O");
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
@@ -1435,6 +1617,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("EndPointx",EndPointx,"EndPointx[geant_list_size]/D");
   fTree->Branch("EndPointy",EndPointy,"EndPointy[geant_list_size]/D");
   fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/D");
+  fTree->Branch("Process", Process, "Process[geant_list_size]/I");
   fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
   fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
   fTree->Branch("TrackId",TrackId,"TrackId[geant_list_size]/I");
@@ -1532,6 +1715,7 @@ void lariat::AnaTreeT1034::ResetVars()
     trkendx[i] = -99999;
     trkendy[i] = -99999;
     trkendz[i] = -99999;
+    trkWCtoTPCMath = -99999;
     trkstartdcosx[i] = -99999;
     trkstartdcosy[i] = -99999;
     trkstartdcosz[i] = -99999;
@@ -1663,6 +1847,7 @@ void lariat::AnaTreeT1034::ResetVars()
     EndPointx[i] = -99999;
     EndPointy[i] = -99999;
     EndPointz[i] = -99999;
+    Process[i] = -99999;
     NumberDaughters[i] = -99999;
     Mother[i] = -99999;
     TrackId[i] = -99999;
