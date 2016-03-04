@@ -30,6 +30,21 @@ lariat_pimufilter:
  TOFModuleLabel: 		"tof"
 }
 
+lariat_basic_pimufilter:
+{
+ module_type: 			BasicPiMuFilter
+ WCTrackModuleLabel: 		"wctrack"
+ minNumberWCTrack: 		1 		# number of WCTracks 
+ WCLowerBound: 			100.
+ WCUpperBound: 			1500.
+ TOFModuleLabel: 		"tof"
+ nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter
+ TOFLowerBound:	10.	# minimum time for the TOF object (ns)
+ TOFUpperBound:  25.	# maximum time for the TOF object (ns)
+
+
+}
+
 lariat_particlefilter:
 {
  module_type: 						ParticleFilter

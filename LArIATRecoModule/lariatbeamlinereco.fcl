@@ -15,14 +15,19 @@
 #include "murs_beamline_composition_bulk.fcl"
 
 BEGIN_PROLOG
-lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Ryan Linehan
+lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Greg Pulliam
 {
-  module_type:        WCTrackBuilderSlicing
-  WCTrackBuilderAlg:  @local::lariat_wctrackbuilderalg
-  SourceLabel:        "daq"
-  NWC:                4
-  NWperTDC:           64
-  Verbose:            false
+      module_type:         WCTrackBuildernew
+      SourceLabel:         "daq"
+      WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
+      WCHitFinderAlg:      @local::lariat_wchitfinderalg  
+      TriggerUtility: "FragmentToDigit"
+      NWC: 4
+      NWperTDC: 64
+      Verbose: false
+      PickyTracks: false  #True: Only use events with EXACTLY 1 XY Hit in each WC
+      HighYield: false    #True: allows 3 or 4 point tracks to be made, as long as missing WC is 2 or 3. False: Only allow 4 point tracks
+      CheckTracks: false  #SET TO FALSE IF YOU ARE DOING PHYSICS RUNS. THIS IS ONLY USED FOR DEBUGGING WHEN YOU ONLY WANT HISTOGRAMS
 }
 
 lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini

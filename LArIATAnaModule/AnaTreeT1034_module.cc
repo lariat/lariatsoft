@@ -85,7 +85,7 @@ const int kMaxTrajHits   = 1000;  //maximum number of trajectory points
 const int kMaxCluster    = 1000;  //maximum number of clusters
 const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;   //maximum number of TOF objects
-const int kMaxAG         = 100;   //maximum number of AG objects
+const int kMaxAG         = 1000;   //maximum number of AG objects
 const int kMaxPrimaries  = 20000;  //maximum number of primary particles
 const int kMaxShower     = 100;   //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000; // maximum number of MCShower Object
@@ -878,7 +878,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     //for(const auto& wctrack : (*wctrackHandle)) //trackHandle works somewhat like a pointer to a vector of tracks, so dereference the handle to loop over
     //the vector, then use each "track" as a ldp::WCTrack
     {
-      
+	    std::cout<<"wct_count: "<<wct_count<<std::endl;
       //std::cout<<"wctrack[wct_count]->Momentum() = "<<wctrack[wct_count]->Momentum()<<std::endl;
       // ##############################################
       // ### Filling Wire Chamber Track information ###
@@ -907,7 +907,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
     }//<---end wctrack auto loop
       
-	 
    
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
@@ -915,14 +914,16 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   ntof = tof.size();
+  std::cout<<"tof.size(): "<<tof.size()<<std::endl;
   // ################################
   // ### Looping over TOF objects ###
   // ################################
   size_t tof_counter = 0; // book-keeping
   for(size_t i = 0; i < tof.size(); i++)
     {
-
+      std::cout<<"TOFi: "<<i<<std::endl;
       size_t number_tof = tof[i]->NTOF();
+      std::cout<<"tof[i]->NTOF(): "<<tof[i]->NTOF()<<std::endl;
 
       for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
 	tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
@@ -944,6 +945,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   //   std::cout<<"counter->size()"<<counter->size()<<std::endl;
 
   nAG = agc.size();
+  std::cout<<"agc.size(): "<<agc.size()<<std::endl;
+  //LOG_VERBATIM("HAHAHAHAHAHARHARHARHARHAR");
   // ################################
   // ### Looping over aerogel counter objects ###
   // ################################
@@ -951,30 +954,61 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   for(size_t i = 0; i < agc.size(); i++)
     {
 
-      auto number_agc = agc[i]->GetNHits();
-      std::cout<<"nAG: "<<nAG<<std::endl;
-      std::cout<<" number_agc: "<<number_agc<<std::endl;
+      size_t number_agc = agc[i]->GetNHits();
+      std::cout<<"i: "<<i<<std::endl;
       std::cout<<"agc[i]->GetNHits(): "<<agc[i]->GetNHits()<<std::endl;
+      //std::cout<<"agc[i]->size(): "<<agc[i]->size()<<std::endl;
+      //std::cout<<"agc.size(): "<<agc.size()<<std::endl;
+      //std::cout<<"nAG: "<<nAG<<std::endl;
+      //std::cout<<" number_agc: "<<number_agc<<std::endl;
+    
+      
 
       for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
-	//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
-	HitTimeStampUSE[i]=agc[agc_counter]->GetHitTimeStampUSE(agc_idx);
-	HitTimeStampUSW[i]=agc[agc_counter]->GetHitTimeStampUSW(agc_idx);
-	HitTimeStampDS1[i]=agc[agc_counter]->GetHitTimeStampDS1(agc_idx);
-	HitTimeStampDS2[i]=agc[agc_counter]->GetHitTimeStampDS2(agc_idx);
+	//std::cout<<"agc_counter: "<< agc_counter <<std::endl;
+	
+//        std::cout<<"i: "<<i<<std::endl;
+        std::cout<<"agc_idx: "<<agc_idx<<std::endl;
 
-	HitPulseAreaUSE[i]=agc[agc_counter]->GetHitPulseAreaUSE(agc_idx);
-	HitPulseAreaUSW[i]=agc[agc_counter]->GetHitPulseAreaUSW(agc_idx);
-	HitPulseAreaDS1[i]=agc[agc_counter]->GetHitPulseAreaDS1(agc_idx);
-	HitPulseAreaDS2[i]=agc[agc_counter]->GetHitPulseAreaDS2(agc_idx);
+	HitTimeStampUSE[agc_counter]=agc[i]->GetHitTimeStampUSE(agc_idx);
+        HitTimeStampUSW[agc_counter]=agc[i]->GetHitTimeStampUSW(agc_idx);
+        HitTimeStampDS1[agc_counter]=agc[i]->GetHitTimeStampDS1(agc_idx);
+        HitTimeStampDS2[agc_counter]=agc[i]->GetHitTimeStampDS2(agc_idx);
 
-	HitExistUSE[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistUSW[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistDS1[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistDS2[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+	std::cout<<"agc[i]->GetHitTimeStampUSE(agc_idx): "<<agc[i]->GetHitTimeStampUSE(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitTimeStampUSW(agc_idx): "<<agc[i]->GetHitTimeStampUSW(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitTimeStampDS1(agc_idx): "<<agc[i]->GetHitTimeStampDS1(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitTimeStampDS2(agc_idx): "<<agc[i]->GetHitTimeStampDS2(agc_idx)<<std::endl;
+
+	HitPulseAreaUSE[agc_counter]=agc[i]->GetHitPulseAreaUSE(agc_idx);
+        HitPulseAreaUSW[agc_counter]=agc[i]->GetHitPulseAreaUSW(agc_idx);
+        HitPulseAreaDS1[agc_counter]=agc[i]->GetHitPulseAreaDS1(agc_idx);
+        HitPulseAreaDS2[agc_counter]=agc[i]->GetHitPulseAreaDS2(agc_idx);
+        
+        std::cout<<"agc[i]->GetHitPulseAreaUSE(agc_idx): "<<agc[i]->GetHitPulseAreaUSE(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitPulseAreaUSW(agc_idx): "<<agc[i]->GetHitPulseAreaUSW(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitPulseAreaDS1(agc_idx): "<<agc[i]->GetHitPulseAreaDS1(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitPulseAreaDS2(agc_idx): "<<agc[i]->GetHitPulseAreaDS2(agc_idx)<<std::endl;
+
+	HitExistUSE[agc_counter]=agc[i]->GetHitExistUSE(agc_idx);
+        HitExistUSW[agc_counter]=agc[i]->GetHitExistUSW(agc_idx);
+        HitExistDS1[agc_counter]=agc[i]->GetHitExistDS1(agc_idx);
+        HitExistDS2[agc_counter]=agc[i]->GetHitExistDS2(agc_idx);
+
+        std::cout<<"agc[i]->GetHitExistUSE(agc_idx): "<<agc[i]->GetHitExistUSE(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitExistUSW(agc_idx): "<<agc[i]->GetHitExistUSW(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitExistDS1(agc_idx): "<<agc[i]->GetHitExistDS1(agc_idx)<<std::endl;
+        std::cout<<"agc[i]->GetHitExistDS2(agc_idx): "<<agc[i]->GetHitExistDS2(agc_idx)<<std::endl;
+
+	std::cout<<"agc_counter: "<<agc_counter<<std::endl;
+        std::cout<<"HitExistUSE[agc_counter]: "<<HitExistUSE[agc_counter]<<std::endl;
+        std::cout<<"HitExistUSW[agc_counter]: "<<HitExistUSW[agc_counter]<<std::endl;
+        std::cout<<"HitExistDS1[agc_counter]: "<<HitExistDS1[agc_counter]<<std::endl;
+        std::cout<<"HitExistDS2[agc_counter]: "<<HitExistDS2[agc_counter]<<std::endl;
+
 	++agc_counter;
-      } // loop over aerogel pulses
 
+      } // loop over aerogel pulses
     }//<---End aerogel counters
      
 
@@ -1439,7 +1473,14 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       } // if cet::maybe_ref is valid
     }
   }
+
+  std::cout<<"agc_counter: "<<agc_counter<<std::endl;
+  std::cout<<"HitExistUSE[agc_counter]: "<<HitExistUSE[agc_counter]<<std::endl;
+  std::cout<<"HitExistUSW[agc_counter]: "<<HitExistUSW[agc_counter]<<std::endl;
+  std::cout<<"HitExistDS1[agc_counter]: "<<HitExistDS1[agc_counter]<<std::endl;
+  std::cout<<"HitExistDS2[agc_counter]: "<<HitExistDS2[agc_counter]<<std::endl;  
   fTree->Fill();
+//  fTree->Scan("HitExistUSE:HitExistUSW:HitExistDS1:HitExistDS2");
 }
 
 
@@ -1557,10 +1598,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/D");
   fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/D");
   fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/D");
-  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/D");
-  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/D");
-  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/D");
-  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/D");
+  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/O");
+  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/O");
+  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/O");
+  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/O");
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");

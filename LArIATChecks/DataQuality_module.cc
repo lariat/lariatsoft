@@ -26,9 +26,6 @@
 #include "lardata/RawData/OpDetPulse.h"
 #include "lardata/RawData/RawDigit.h"
 #include "lardata/RawData/TriggerData.h"
-//#include "SimpleTypesAndConstants/RawTypes.h"
-//#include "SummaryData/RunData.h"
-//#include "Utilities/AssociationUtil.h"
 
 // LArIATSoft includes
 #include "LArIATRecoAlg/TOFBuilderAlg.h"
@@ -189,11 +186,14 @@ namespace DataQuality {
     std::vector< std::vector< TH1I * > > fCAENPedestalHistograms;
     std::vector< std::vector< TH1I * > > fCAENADCHistograms;
     std::vector< std::vector< TH1I * > > fCAENMinADCHistograms;
+    std::vector< std::vector< TH1I * > > fCAENMaxADCHistograms;
 
     std::vector< TH1D * > fCAENPedestalTimeStampHistograms;
     std::vector< TH1D * > fCAENTimeStampHistograms;
     TH1D * fMWPCTDCTimeStampHistograms;
     TH1D * fWUTTimeStampHistograms;
+
+    TH1I * fTDCTimeBitMismatchHistogram;
 
     // pointer to n-tuples
     TTree * fEventBuilderTree;    ///< Tree holding variables on the performance of the event builder
@@ -334,6 +334,7 @@ namespace DataQuality {
     fCAENPedestalHistograms.resize(32);
     fCAENADCHistograms.resize(32);
     fCAENMinADCHistograms.resize(32);
+    fCAENMaxADCHistograms.resize(32);
 
     fCAENPedestalTimeStampHistograms.resize(32);
     fCAENTimeStampHistograms.resize(32);
@@ -351,6 +352,7 @@ namespace DataQuality {
     art::TFileDirectory pedestalDir = tfs->mkdir("pedestal");
     art::TFileDirectory adcDir      = tfs->mkdir("adc");
     art::TFileDirectory minADCDir   = tfs->mkdir("min_adc");
+    art::TFileDirectory maxADCDir   = tfs->mkdir("max_adc");
 
     // create TH1 objects
     fIntervalsDeltaTHistogram     = tfs->make<TH1D>("IntervalsDeltaT",     ";#Delta t [ms];Entries per ms",       10000, -0.5, 9999.5);
@@ -360,40 +362,35 @@ namespace DataQuality {
     fTPCIntervalsDeltaTZHistogram = tfs->make<TH1D>("TPCIntervalsDeltaTZ", ";#Delta t [ms];Entries per 0.001 ms",  1000,    0,    1);
 
     // TH1 objects for timestamps
-    fMWPCTDCTimeStampHistograms = timestampDir.make<TH1D>("mwpc_tdc_timestamps", ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
-    fWUTTimeStampHistograms     = timestampDir.make<TH1D>("wut_timestamps", ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
+    fMWPCTDCTimeStampHistograms = timestampDir.make<TH1D>("mwpc_tdc_timestamps", ";Timestamp [s];Entries per 0.2 s", 300, 0, 60);
+    fWUTTimeStampHistograms     = timestampDir.make<TH1D>("wut_timestamps", ";Timestamp [s];Entries per 0.2 s", 300, 0, 60);
 
     for (size_t i = 0; i < V1740_N_BOARDS; ++i) {
       std::string th1Title = "caen_board_" + std::to_string(i);
-      fCAENPedestalTimeStampHistograms[i] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
-      fCAENTimeStampHistograms[i]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
+      fCAENPedestalTimeStampHistograms[i] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.2 s", 300, 0, 60);
+      fCAENTimeStampHistograms[i]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.2 s", 300, 0, 60);
     }
 
     for (size_t i = 0; i < V1751_N_BOARDS; ++i) {
       size_t offset = 8;
       std::string th1Title = "caen_board_" + std::to_string(i + offset);
-      fCAENPedestalTimeStampHistograms[i + offset] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
-      fCAENTimeStampHistograms[i + offset]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
+      fCAENPedestalTimeStampHistograms[i + offset] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.2 s", 300, 0, 60);
+      fCAENTimeStampHistograms[i + offset]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.2 s", 300, 0, 60);
     }
 
     for (size_t i = 0; i < V1740B_N_BOARDS; ++i) {
       size_t offset = 24;
       std::string th1Title = "caen_board_" + std::to_string(i + offset);
-      fCAENPedestalTimeStampHistograms[i + offset] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
-      fCAENTimeStampHistograms[i + offset]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.5 s", 120, 0, 60);
+      fCAENPedestalTimeStampHistograms[i + offset] = timestampDir.make<TH1D>((th1Title + "_pedestal_timestamps").c_str(), ";Timestamp [s];Entries per 0.2 s", 300, 0, 60);
+      fCAENTimeStampHistograms[i + offset]         = timestampDir.make<TH1D>((th1Title + "_timestamps").c_str(), ";Timestamp [s];Entries per 0.2 s", 300, 0, 60);
     }
-
-    // TH1 objects for TOF
-    fUSTOFHitsHistogram = tofDir.make<TH1I>("USTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
-    fDSTOFHitsHistogram = tofDir.make<TH1I>("DSTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
-
-    fTOFHistogram = tofDir.make<TH1D>("TOF", ";TOF [ns];Entries per ns", 500, 0, 500);
 
     // create TH1 objects in pedestal and ADC sub-directories
     for (size_t i = 0; i < V1740_N_BOARDS; ++i) {
       fCAENPedestalHistograms[i].resize(V1740_N_CHANNELS);
       fCAENADCHistograms[i].resize(V1740_N_CHANNELS);
       fCAENMinADCHistograms[i].resize(V1740_N_CHANNELS);
+      fCAENMaxADCHistograms[i].resize(V1740_N_CHANNELS);
       for (size_t j = 0; j < V1740_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -405,6 +402,9 @@ namespace DataQuality {
         fCAENMinADCHistograms[i][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
                                                            ";ADC;Entries per ADC",
                                                            4096, 0, 4096);
+        fCAENMaxADCHistograms[i][j] = maxADCDir.make<TH1I>((th1Title + "_max_adc").c_str(),
+                                                           ";ADC;Entries per ADC",
+                                                           4096, 0, 4096);
       }
     }
 
@@ -413,6 +413,7 @@ namespace DataQuality {
       fCAENPedestalHistograms[i + offset].resize(V1751_N_CHANNELS);
       fCAENADCHistograms[i + offset].resize(V1751_N_CHANNELS);
       fCAENMinADCHistograms[i + offset].resize(V1751_N_CHANNELS);
+      fCAENMaxADCHistograms[i + offset].resize(V1751_N_CHANNELS);
       for (size_t j = 0; j < V1751_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i + offset) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i + offset][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -424,6 +425,9 @@ namespace DataQuality {
         fCAENMinADCHistograms[i + offset][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
                                                                     ";ADC;Entries per ADC",
                                                                     1024, 0, 1024);
+        fCAENMaxADCHistograms[i + offset][j] = maxADCDir.make<TH1I>((th1Title + "_max_adc").c_str(),
+                                                                    ";ADC;Entries per ADC",
+                                                                    1024, 0, 1024);
       }
     }
 
@@ -432,6 +436,7 @@ namespace DataQuality {
       fCAENPedestalHistograms[i + offset].resize(V1740B_N_CHANNELS);
       fCAENADCHistograms[i + offset].resize(V1740B_N_CHANNELS);
       fCAENMinADCHistograms[i + offset].resize(V1740B_N_CHANNELS);
+      fCAENMaxADCHistograms[i + offset].resize(V1740B_N_CHANNELS);
       for (size_t j = 0; j < V1740B_N_CHANNELS; ++j) {
         std::string th1Title = "caen_board_" + std::to_string(i + offset) + "_channel_" + std::to_string(j);
         fCAENPedestalHistograms[i + offset][j] = pedestalDir.make<TH1I>((th1Title + "_pedestal").c_str(),
@@ -443,8 +448,19 @@ namespace DataQuality {
         fCAENMinADCHistograms[i + offset][j] = minADCDir.make<TH1I>((th1Title + "_min_adc").c_str(),
                                                                     ";ADC;Entries per ADC",
                                                                     4096, 0, 4096);
+        fCAENMaxADCHistograms[i + offset][j] = maxADCDir.make<TH1I>((th1Title + "_max_adc").c_str(),
+                                                                    ";ADC;Entries per ADC",
+                                                                    4096, 0, 4096);
       }
     }
+
+    // TH1 objects for TDC time bit mismatches
+    fTDCTimeBitMismatchHistogram = tfs->make<TH1I>("TDCTimeBitMismatch", ";TDC with time bit mismatch;Entries per bin", 16, 0+1, 16+1);
+
+    // TH1 objects for TOF
+    fUSTOFHitsHistogram = tofDir.make<TH1I>("USTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
+    fDSTOFHitsHistogram = tofDir.make<TH1I>("DSTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
+    fTOFHistogram = tofDir.make<TH1D>("TOF", ";TOF [ns];Entries per ns", 500, 0, 500);
 
     // create TTree objects
     fEventRecord        = tfs->make<TTree>("artEventRecord",  "artEventRecord");
@@ -839,9 +855,7 @@ namespace DataQuality {
         if (fPedestalOn) {
           fCAENPedestalTimeStampHistograms[boardId]->Fill(timestamp * 1e-6);
         }
-        else {
-          fCAENTimeStampHistograms[boardId]->Fill(timestamp * 1e-6);
-        }
+        fCAENTimeStampHistograms[boardId]->Fill(timestamp * 1e-6);
 
         if (fCaenNumberSamples < 1) continue;
 
@@ -857,7 +871,10 @@ namespace DataQuality {
           }
           short unsigned int minADC = * std::min_element(std::begin(caenFrag.waveForms[k].data),
                                                          std::end(caenFrag.waveForms[k].data));
+          short unsigned int maxADC = * std::max_element(std::begin(caenFrag.waveForms[k].data),
+                                                         std::end(caenFrag.waveForms[k].data));
           fCAENMinADCHistograms[boardId][k]->Fill(minADC);
+          fCAENMaxADCHistograms[boardId][k]->Fill(maxADC);
         }
 
         if (boardId == 0 or boardId == 1 or boardId == 2 or
@@ -879,6 +896,13 @@ namespace DataQuality {
           }
 
           fCaenV1740DataTree->Fill();
+
+          //if (fCaenNumberSamples != fV1740RecordLength) {
+          //  std::cout << "CAEN record length mismatch!"                     << std::endl
+          //            << "  CAEN board:             " << boardId            << std::endl
+          //            << "  nSamples:               " << fCaenNumberSamples << std::endl
+          //            << "  Expected record length: " << fV1740RecordLength << std::endl;
+          //}
         }
 
         else if (boardId == 24) {
@@ -898,6 +922,13 @@ namespace DataQuality {
           }
 
           fCaenV1740BDataTree->Fill();
+
+          //if (fCaenNumberSamples != fV1740BRecordLength) {
+          //  std::cout << "CAEN record length mismatch!"                      << std::endl
+          //            << "  CAEN board:             " << boardId             << std::endl
+          //            << "  nSamples:               " << fCaenNumberSamples  << std::endl
+          //            << "  Expected record length: " << fV1740BRecordLength << std::endl;
+          //}
         }
 
         else if (boardId == 8 or boardId == 9) {
@@ -917,6 +948,13 @@ namespace DataQuality {
           }
 
           fCaenV1751DataTree->Fill();
+
+          //if (fCaenNumberSamples != fV1751RecordLength) {
+          //  std::cout << "CAEN record length mismatch!"                     << std::endl
+          //            << "  CAEN board:             " << boardId            << std::endl
+          //            << "  nSamples:               " << fCaenNumberSamples << std::endl
+          //            << "  Expected record length: " << fV1751RecordLength << std::endl;
+          //}
         }
       }
 
@@ -966,14 +1004,28 @@ namespace DataQuality {
 
         fMWPCTDCTimeStampHistograms->Fill(timestamp * 1e-6);
 
+        ///////////////////////////////////////////////////////////////////////
+        // Loop over TDCs to get a histogram of the TDC timestamps. The
+        // timestamp with the most counts is taken as the TDC timestamp of
+        // the TDC data block. We are doing this to work around the mismatches
+        // of the TDC timestamps.
+        ///////////////////////////////////////////////////////////////////////
+        std::map<uint32_t, unsigned int> tdcTimeStampCounts;
+
         std::vector<TDCFragment::TdcEventData> const& tdcDataBlock = Collection.tdcBlocks[j];
 
         for (size_t tdcIndex = 0; tdcIndex < TDCFragment::MAX_TDCS; ++tdcIndex) {
           TDCFragment::TdcEventData tdcEventData = tdcDataBlock.at(tdcIndex);
 
-          fMwpcTriggerCounter = tdcEventData.tdcEventHeader.triggerCounter;
-          fMwpcTdcTimeStamp   = tdcEventData.tdcEventHeader.tdcTimeStamp;
-          fMwpcNumberHits    += tdcEventData.tdcEventHeader.nHits;
+          fMwpcTriggerCounter      = tdcEventData.tdcEventHeader.triggerCounter;
+          fMwpcTdcTimeStamp        = tdcEventData.tdcEventHeader.tdcTimeStamp;
+          fMwpcNumberHits         += tdcEventData.tdcEventHeader.nHits;
+          fMwpcControllerTimeStamp = tdcEventData.tdcEventHeader.controllerTimeStamp;
+
+          tdcTimeStampCounts[tdcEventData.tdcEventHeader.tdcTimeStamp] += 1;
+
+          //std::cout << "tdcEventData.tdcEventHeader.tdcTimeStamp:        " << tdcEventData.tdcEventHeader.tdcTimeStamp << std::endl;
+          //std::cout << "tdcEventData.tdcEventHeader.controllerTimeStamp: " << tdcEventData.tdcEventHeader.controllerTimeStamp << std::endl;
 
           for (size_t hitIndex = 0; hitIndex < tdcEventData.tdcHits.size(); ++hitIndex) {
             TDCFragment::TdcHit const& hit = tdcEventData.tdcHits[hitIndex];
@@ -987,6 +1039,32 @@ namespace DataQuality {
 
         fMwpcTdcDataTree->Fill();
 
+        ///////////////////////////////////////////////////////////////////////
+        // Here, we try to figure out which TDCs have mismatch in time bits
+        ///////////////////////////////////////////////////////////////////////
+        unsigned int counts = 0;
+        uint32_t tdcTimeStamp = 0;
+
+        for (auto const& k : tdcTimeStampCounts) {
+          if (k.second > counts) {
+            tdcTimeStamp = k.first;
+            counts = k.second;
+          }
+        }
+
+        for (size_t tdcIndex = 0; tdcIndex < TDCFragment::MAX_TDCS; ++tdcIndex) {
+          TDCFragment::TdcEventData tdcEventData = tdcDataBlock.at(tdcIndex);
+
+          if (tdcEventData.tdcEventHeader.tdcTimeStamp != tdcTimeStamp) {
+            std::cout << "Mismatch in TDC time bits!"
+                      << "\n  TDC:                                      " << tdcIndex + 1
+                      << "\n  tdcEventData.tdcEventHeader.tdcTimeStamp: " << tdcEventData.tdcEventHeader.tdcTimeStamp
+                      << "\n  Reference tdcTimeStamp:                   " << tdcTimeStamp
+                      << "\n  Difference in tdcTimeStamp:               " << tdcEventData.tdcEventHeader.tdcTimeStamp - tdcTimeStamp
+                      << std::endl;
+            fTDCTimeBitMismatchHistogram->Fill(tdcIndex + 1);
+          }
+        }
       }
 
       if (fNumberTPCReadouts > 0) {
