@@ -73,7 +73,7 @@ class OpHitBuilderAlg{
 
   float fSER_PrePE_RMS_cut;
   float fSER_Grad_cut;
-  float fPulseHitRMSThresh;
+  float fPulseHitRMSThresh; 
   bool  fUsePrepulseFit;
   float fGradHitThresh;
   float fSignalHitThresh;
@@ -98,6 +98,8 @@ class OpHitBuilderAlg{
   std::vector<short> fIntegrationWindows;
   float fSinglePE;
   std::string fHitFindingMode;
+  std::string fDAQModule;
+  std::string fInstanceName;
 
  private:
   

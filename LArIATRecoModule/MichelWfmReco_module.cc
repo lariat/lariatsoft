@@ -92,6 +92,7 @@ public:
   
   // Custom functions
   bool IsPointInFiducialVolume(TVector3);
+  bool IsHitAtTrigger(short, short, int, float);
 
 private:
 
@@ -115,6 +116,7 @@ private:
   short               fPrePulseBaselineFit;
   short               fPromptLightDtCut;
   short               fPrePulseDisplay;
+  float               fTriggerTolerancePercent;
   float               fFiducialMargin_X;
   float               fFiducialMargin_Y;
   float               fFiducialMargin_Z; 
@@ -159,7 +161,7 @@ private:
   int                   iEvent;
   bool                  GotETL;
   bool                  flag;
-  std::vector<short>    ETL_waveform;
+  std::vector<short>    PMT_wfm;
   short                 PostPercentMark;
   int                   NSamples;
   int                   MuTrackIndex;
@@ -578,8 +580,8 @@ void MichelWfmReco::produce(art::Event & e)
       raw::OpDetPulse ThePulse = *ThePulsePtr;
       if( ThePulse.OpChannel() == 1) {
         ETL_opdetpulse  = ThePulse; 
-        ETL_waveform    = ThePulse.Waveform();
-        NSamples = ETL_waveform.size();
+        PMT_wfm    = ThePulse.Waveform();
+        NSamples = PMT_wfm.size();
         Timestamp = (float(ThePulse.PMTFrame())*8.)/1.0e09;
         PostPercentMark = short(ThePulse.FirstSample()); 
         GotETL = true;
@@ -605,8 +607,8 @@ void MichelWfmReco::produce(art::Event & e)
   h_TimeStructure->Fill(Timestamp);
 
   //  Get waveform baseline/RMS
-  std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(ETL_waveform,0,fBaselineWindowLength);
-  WaveformBaseline = tmp[0];
+  std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(PMT_wfm,0,fBaselineWindowLength);
+  WaveformBaseline    = tmp[0];
   WaveformBaselineRMS = tmp[1];
 
   // Perform hit-finding/filtering, and store hit times into
@@ -617,8 +619,8 @@ void MichelWfmReco::produce(art::Event & e)
  
   // For each hit, do all the needed reconstruction in single function call
   for (int i=0; i<NumHits; i++){
-    if( i==0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimesTmp[i], 0, fIntegrationWindows);
-    if( i >0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(ETL_waveform, vHitTimesTmp[i], vHitTimesTmp[i-1], fIntegrationWindows);
+    if( i==0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(PMT_wfm, vHitTimesTmp[i], 0, fIntegrationWindows);
+    if( i >0 ) hit_info = fOpHitBuilderAlg.GetHitInfo(PMT_wfm, vHitTimesTmp[i], vHitTimesTmp[i-1], fIntegrationWindows);
    
     // Skip if prompt PE doesn't pass threshold
     if( hit_info[1]/fSinglePE < fHitPromptPEThreshLow ) {
@@ -627,10 +629,10 @@ void MichelWfmReco::produce(art::Event & e)
     }
 
     vHitTimes       .push_back(vHitTimesTmp[i]);
-    hit_i           = vHitTimes.size() - 1; // iterator for easier tracking
+    hit_i           = vHitTimes.size() - 1;       // iterator for easier tracking
     h_HitTime       ->Fill(vHitTimes[hit_i]);
     if(IsBeamEvent) h_HitTime_beam->Fill(vHitTimes[hit_i]);
-    vHitAmplitude.push_back(hit_info[0]);
+    vHitAmplitude   .push_back(hit_info[0]);
     vHitADC_100ns   .push_back(hit_info[1]);
     vHitADC_250ns   .push_back(hit_info[2]);
     vHitADC_500ns   .push_back(hit_info[3]);
@@ -642,7 +644,7 @@ void MichelWfmReco::produce(art::Event & e)
     vHitPE_1000ns   .push_back(hit_info[4]/fSinglePE);
     vHitPE_Total    .push_back(hit_info[5]/fSinglePE);
     vHitPf          .push_back(vHitADC_100ns[hit_i]/vHitADC_Total[hit_i]);
-    vHitIsAtTrigger .push_back( fabs(vHitTimes[hit_i]-PostPercentMark) < 0.015*NSamples );
+    vHitIsAtTrigger .push_back(IsHitAtTrigger(vHitTimes[hit_i],PostPercentMark,NSamples,fTriggerTolerancePercent));
     
     vPrepulseBaseline.push_back(fOpHitBuilderAlg.prepulse_baseline);
     vPrepulseRMS.push_back(fOpHitBuilderAlg.prepulse_rms);
@@ -1051,7 +1053,7 @@ void MichelWfmReco::produce(art::Event & e)
     // Save the waveform
     HitWaveformIndex = NumHits-1;
     for(int i=0; i<HitWaveformBins; i++){
-      HitWaveform[i] = ETL_waveform[vHitTimes[HitWaveformIndex]-fPrePulseDisplay+i]; 
+      HitWaveform[i] = PMT_wfm[vHitTimes[HitWaveformIndex]-fPrePulseDisplay+i]; 
     }
   }
   
@@ -1125,25 +1127,25 @@ void MichelWfmReco::produce(art::Event & e)
     
      
     // Make average waveform of the "good" Michel events
-    if( (dT > fAveWfmCut_Dt)&&(vIsInSignalPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_aveMichel.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
+    if( (dT > fAveWfmCut_Dt)&&(vIsInSignalPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_aveMichel.GetHitInfo(PMT_wfm,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
     
     // Make average waveform of the BG events
-    if( (dT > fAveWfmCut_Dt)&&(vIsInBGPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_aveBG.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
+    if( (dT > fAveWfmCut_Dt)&&(vIsInBGPopulation[1])&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_aveBG.GetHitInfo(PMT_wfm,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
     
     // Make average waveform of the BG events in the lower peak in PromptPE
-    if( (dT > fAveWfmCut_Dt)&&(vHitPE_100ns[1]<14)&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_aveBG_lowPromptPE.GetHitInfo(ETL_waveform,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
+    if( (dT > fAveWfmCut_Dt)&&(vHitPE_100ns[1]<14)&&(vPrepulseRMS[1] <= 2.0) ) fOpHitBuilderAlg_aveBG_lowPromptPE.GetHitInfo(PMT_wfm,vHitTimes[1],vHitTimes[0],fIntegrationWindows);
 
   } // end quality cut condition (off-beam)
 
 
   // Make average waveform of muons
   if( (IsCleanBeamWaveform) && (NumTracks==1) && (abs(vTrackPID[0])==13) ) {
-    fOpHitBuilderAlg_aveMIP.GetHitInfo(ETL_waveform,vHitTimes[0],0,fIntegrationWindows);
+    fOpHitBuilderAlg_aveMIP.GetHitInfo(PMT_wfm,vHitTimes[0],0,fIntegrationWindows);
   }
   
   // Make average waveform of beam protons
   if( (IsCleanBeamWaveform) && (NumTracks==1) && (abs(vTrackPID[0])==2212) && (IsBeamEvent)) {
-    fOpHitBuilderAlg_aveProton.GetHitInfo(ETL_waveform,vHitTimes[0],0,fIntegrationWindows);
+    fOpHitBuilderAlg_aveProton.GetHitInfo(PMT_wfm,vHitTimes[0],0,fIntegrationWindows);
   }
   
   //=========================================================
@@ -1571,6 +1573,7 @@ void MichelWfmReco::beginSubRun(art::SubRun & sr)
 void MichelWfmReco::endJob()
 {
 
+/*
   TF1 ones("ones","1.",0.,1000000.);
 
   // Add function to correct BG baseline (to do)
@@ -1795,8 +1798,9 @@ void MichelWfmReco::endJob()
   
   }
   
-
+*/
 }
+
 
 void MichelWfmReco::endRun(art::Run & r)
 {
@@ -1850,11 +1854,12 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fSER_PulseHitThreshLow  = pset.get< float >("SER_PulseHitThreshLow",0.);
   fSER_PulseHitThreshHigh = pset.get< float >("SER_PulseHitThreshHigh",10.);
   fSER_PulseHitRMSThresh  = pset.get< float >("SER_PulseHitRMSThresh",3.);
-  fSER_PreWindow          = pset.get< short>("SER_PreWindow",10);
-  fSER_PostWindow         = pset.get< short>("SER_PostWindow",30);
-  fSER_Verbosity          = pset.get< bool> ("SER_Verbosity","false");
-  fMvPerADC               = pset.get< float> ("MvPerADC",0.2);
-  fHitPromptPEThreshLow   = pset.get< float> ("HitPromptPEThreshLow",0);
+  fSER_PreWindow          = pset.get< short >("SER_PreWindow",10);
+  fSER_PostWindow         = pset.get< short >("SER_PostWindow",30);
+  fSER_Verbosity          = pset.get< bool  >("SER_Verbosity","false");
+  fMvPerADC               = pset.get< float >("MvPerADC",0.2);
+  fHitPromptPEThreshLow   = pset.get< float >("HitPromptPEThreshLow",0);
+  fTriggerTolerancePercent= pset.get< float >("TriggerTolerancePercent",1.5);
 }
 
 void MichelWfmReco::respondToCloseInputFile(art::FileBlock const & fb)
@@ -1888,6 +1893,12 @@ bool MichelWfmReco::IsPointInFiducialVolume(TVector3 p)
   } else {
     return true;
   }
+}
+
+// Function for determining if hit is associated with trigger
+bool MichelWfmReco::IsHitAtTrigger(short hit, short trigger_sample, int n, float tol)
+{
+  return fabs(hit - trigger_sample) <= (float)n*tol*0.01;
 }
 
 DEFINE_ART_MODULE(MichelWfmReco)
