@@ -10,20 +10,20 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		v05_01_02
+larsoft		      v05_01_02
 LariatFilters   v01_02
 lariatfragments v01_07_04
 artdaq_core     v1_04_28
 LariatBeamFiles v01_00		-	optional
-lariatutil	v01_26_03 	-	optional
+lariatutil	    v01_26_03 	-	optional
 cetbuildtools   v4_18_03	-	only_for_build
 end_product_list
 
 # e9  - with gcc 4.9.2 and -std=c++11
-qualifier    	       larsoft	  LariatFilters	lariatfragments	  artdaq_core	    LariatBeamFiles	lariatutil	notes
-e9:debug	       e9:debug	  -nq-		e9:debug	  e9:nu:s30:debug   -nq-		e9:debug
-e9:opt		       e9:opt	  -nq-		e9:opt		  e9:nu:s30:opt	    -nq-		e9:opt
-e9:prof		       e9:prof	  -nq-		e9:prof		  e9:nu:s30:prof    -nq-		e9:prof
+qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	    LariatBeamFiles	lariatutil	notes
+e9:debug	e9:debug	-nq-		      e9:debug	       e9:nu:s30:debug  -nq-		        e9:debug
+e9:opt		e9:opt	  -nq-		      e9:opt		       e9:nu:s30:opt	  -nq-		        e9:opt
+e9:prof		e9:prof	  -nq-		      e9:prof		       e9:nu:s30:prof   -nq-		        e9:prof
 
 end_qualifier_list
 
