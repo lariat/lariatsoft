@@ -24,6 +24,7 @@ lariat_ophitbuilderalg:
   TimestampCut:         0
   HitTimeCutoffLow:     -100000
   HitTimeCutoffHigh:    100000
+  IntegrationWindows:   [100,7000]
 }
 
 END_PROLOG
