@@ -65,10 +65,11 @@ physics:
 #entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
 outputs:
 {
- out1:
  {
    module_type: RootOutput
-   fileName:      "reconstructed_beamline.root"
+   fileName:    "RecoBeamline.root"
+   dataTier:    "reconstructed-beamline"
+   compressionLevel: 1
  }
 }
 
