@@ -36,8 +36,7 @@
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<recob::Vertex>     >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit>  >"/>
   <class name="std::pair< art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>   >"/>
-  
-<!--  <class name="std::pair< art::Ptr<ldp::WCTrack>, art::Ptr<recob::Track>      >"/>-->
+  <class name="std::pair< art::Ptr<ldp::WCTrack>, art::Ptr<recob::Track>      >"/>
   
 
   <class name="std::pair< art::Ptr<raw::RawDigit>,     art::Ptr<raw::Trigger> >"/>
@@ -50,7 +49,7 @@
   <class name="std::pair< art::Ptr<recob::Vertex>,     art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<raw::AuxDetDigit>,  art::Ptr<raw::Trigger> >"/>
   <class name="std::pair< art::Ptr<raw::OpDetPulse>,   art::Ptr<raw::Trigger> >"/>
- <!-- <class name="std::pair< art::Ptr<recob::Track>,      art::Ptr<ldp::WCTrack> >"/>-->
+  <class name="std::pair< art::Ptr<recob::Track>,      art::Ptr<ldp::WCTrack> >"/>
   
 
   <class name="art::Assns<raw::Trigger, raw::RawDigit,     void>" />
@@ -64,7 +63,7 @@
   <class name="art::Assns<raw::Trigger, raw::AuxDetDigit,  void>" />
   <class name="art::Assns<raw::Trigger, raw::OpDetPulse,   void>" />
   <class name="art::Assns<ldp::WCTrack, recob::Track,      void>" />
-  
+
 
 
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,     void> >"/>
