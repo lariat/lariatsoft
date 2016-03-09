@@ -34,10 +34,10 @@ lariat_particlefilter:
 {
  module_type: 						ParticleFilter
  SourceLabel: 						"daq"
- ParticleProbabilityThreshold: 0.8
- ParticlePDG: 						 211
- ParticleIDModuleLabel:       "pid"
- WCTrackModuleLabel: 			"wctrack"
+ ParticleProbabilityThreshold:                           0.8
+ ParticlePDG: 						 21113
+ ParticleIDModuleLabel:                                 "BeamPid"
+ WCTrackModuleLabel: 			                "wctrack"
  TOFModuleLabel: 					"tof"
 }
 
