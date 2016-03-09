@@ -136,7 +136,7 @@ bool ParticleFilter::filter(art::Event & e)
   // ### Filling the TOF vs WC Track Momentum Histo prior to cuts ###
   // ################################################################ 
   fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
-  std::cout << "@@@@@@@@@1\n";
+
   
   // ###################################
   // ### Identifying Kaon Candidates ###
@@ -146,11 +146,9 @@ bool ParticleFilter::filter(art::Event & e)
       if( particleIDCol->at(0).KaonProbability() > fParticleProbCutOff ){
 	std::cout << "Selected Possible Kaon Run/Subrun/Event: " << e.run() << "/" << e.subRun() << "/" << e.event() << std::endl;
 	fParticlePzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
-	std::cout << "@@@@@@@@@2\n";
 	return true;
       }
     }
-    std::cout << "@@@@@@@@@3\n";
     return false;
   } 
   
@@ -162,11 +160,9 @@ bool ParticleFilter::filter(art::Event & e)
       if( particleIDCol->at(0).PionProbability() > fParticleProbCutOff ){
 	std::cout << "Selected Possible Pion Run/Subrun/Event: " << e.run() << "/" << e.subRun() << "/" << e.event() << std::endl;
 	fParticlePzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
-	std::cout << "@@@@@@@@@4\n";
 	return true;
       }
     }
-    std::cout << "@@@@@@@@@5\n";
     return false;
   }
   
@@ -178,11 +174,9 @@ bool ParticleFilter::filter(art::Event & e)
       if( particleIDCol->at(0).MuonProbability() > fParticleProbCutOff ){
 	std::cout << "Selected Possible Muon Run/Subrun/Event: " << e.run() << "/" << e.subRun() << "/" << e.event() << std::endl;
 	fParticlePzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
-	std::cout << "@@@@@@@@@6\n";
 	return true;
       }
     }
-    std::cout << "@@@@@@@@@7\n";
     return false;
   }
   
@@ -191,7 +185,7 @@ bool ParticleFilter::filter(art::Event & e)
   // ########################################
   else if(pdg_temp == 21113){
 
-    /*
+    
     auto WC = *WCTrackColHandle;
     auto TOF = *TOFColHandle;
   
@@ -204,7 +198,7 @@ bool ParticleFilter::filter(art::Event & e)
        TOF[0].SingleTOF(0) > 10 && TOF[0].SingleTOF(0) < 25)
       { return true;}
 	
-    */	
+    	
 	
     
     //PDG -> Pi: 211, Mu: 13, so PiMu is 21113
@@ -214,7 +208,12 @@ bool ParticleFilter::filter(art::Event & e)
     for (unsigned int i = 0; i<  particleIDCol->size();i++)  
       {
 	std::cout<<i<<" Particle 2113? "<<particleIDCol->at(i).PDGCode() <<"\n";
-	std::cout<<i<<" Particle 2113? "<<particleIDCol->at(i).PionProbability() <<" cutOff "<<fParticleProbCutOff <<"\n";
+	std::cout<<i<<" Particle p  ? "<<particleIDCol->at(i).ProtonProbability() <<" cutOff "<<fParticleProbCutOff <<"\n";
+	std::cout<<i<<" Particle mu ? "<<particleIDCol->at(i).MuonProbability() <<" cutOff "<<fParticleProbCutOff <<"\n";
+	std::cout<<i<<" Particle pi ? "<<particleIDCol->at(i).PionProbability() <<" cutOff "<<fParticleProbCutOff <<"\n";
+	std::cout<<i<<" Particle pimu? "<<particleIDCol->at(i).PiMuProbability() <<" cutOff "<<fParticleProbCutOff <<"\n";
+	std::cout<<i<<" Particle K? "<<particleIDCol->at(i).KaonProbability() <<" cutOff "<<fParticleProbCutOff <<"\n";
+
       }
     std::cout<< "###################################################### "<<(*particleIDCol).size()<<std::endl ;
     std::cout<< "###################################################### "<<particleIDCol->size()<<std::endl ;
