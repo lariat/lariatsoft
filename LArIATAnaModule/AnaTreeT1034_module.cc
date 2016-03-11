@@ -291,14 +291,14 @@ private:
   std::vector<std::string> G4Process;         //<---The process which created this particle
   std::vector<std::string> G4FinalProcess;    //<---The last process which this particle went under
 
-	// === Storing additionnal Geant4 MC Truth Information for the primary track only ===	   
-	int NTrTrajPts[kMaxPrimaryPart];							 //<--Nb. of true points in the true primary trajectories
-	double MidPosX[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--X position of a point in the true primary trajectory
-	double MidPosY[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Y position of a point in the true primary trajectory  
-	double MidPosZ[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Z position of a point in the true primary trajectory    
-   double MidPx[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<- Px momentum of a point in the true primary trajectory
-   double MidPy[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Py momentum of a point in the true primary trajectory
-   double MidPz[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Pz momentum of a point in the true primary trajectory
+  // === Storing additionnal Geant4 MC Truth Information for the primary track only ===	   
+  int NTrTrajPts[kMaxPrimaryPart];							 //<--Nb. of true points in the true primary trajectories
+  double MidPosX[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--X position of a point in the true primary trajectory
+  double MidPosY[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Y position of a point in the true primary trajectory  
+  double MidPosZ[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Z position of a point in the true primary trajectory    
+  double MidPx[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<- Px momentum of a point in the true primary trajectory
+  double MidPy[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Py momentum of a point in the true primary trajectory
+  double MidPz[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Pz momentum of a point in the true primary trajectory
  
   // ==== Storing MCShower MCTruth Information ===
    
@@ -1582,8 +1582,15 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/D");
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
-  fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
+  fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/D");
+  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][1000]/D");
+  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][1000]/D");
+  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][1000]/D");
+  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][1000]/D");
+  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][1000]/D");
+  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][1000]/D");
   
+  fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
   fTree->Branch("pdg",pdg,"pdg[geant_list_size]/I");
   fTree->Branch("Eng",Eng,"Eng[geant_list_size]/D");
   fTree->Branch("Px",Px,"Px[geant_list_size]/D");
@@ -1606,13 +1613,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
   fTree->Branch("G4Process",&G4Process);//,"G4Process[geant_list_size]");
   fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");  
-  fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/D");
-  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][1000]/D");
-  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][1000]/D");
-  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][1000]/D");
-  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][1000]/D");
-  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][1000]/D");
-  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][1000]/D");
+  
 
   fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
   fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
