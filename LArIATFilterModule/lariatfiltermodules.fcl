@@ -35,7 +35,7 @@ lariat_basic_pimufilter:
  module_type: 			BasicPiMuFilter
  WCTrackModuleLabel: 		"wctrack"
  minNumberWCTrack: 		1 		# number of WCTracks 
- WCLowerBound: 			100.
+ WCLowerBound: 			0.
  WCUpperBound: 			1500.
  TOFModuleLabel: 		"tof"
  nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter

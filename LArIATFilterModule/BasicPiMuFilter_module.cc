@@ -172,7 +172,7 @@ void BasicPiMuFilter::reconfigure(fhicl::ParameterSet const & p)
   fTOFUpperBound                = p.get< double >("TOFUpperBound", 25.0);
   fWCTrackModuleLabel           = p.get<  std::string  >("WCTrackModuleLabel");
   fminNumberWCTrack   		= p.get<     double    >("minNumberWCTrack", 1.0);
-  fWCLowerBound                 = p.get< double >("WCLowerBound", 100.0);
+  fWCLowerBound                 = p.get< double >("WCLowerBound", 0.0);
   fWCUpperBound                 = p.get< double >("WCUpperBound", 1500.0);
 
 }
