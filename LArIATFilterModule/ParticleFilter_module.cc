@@ -102,7 +102,7 @@ void ParticleFilter::reconfigure(fhicl::ParameterSet const & p)
 // ##################
 bool ParticleFilter::filter(art::Event & e)
 {
-  std::cout<<"Puppaaaaaaaaaaaaaaaaaa"<<"\n";
+  //  std::cout<<"Puppaaaaaaaaaaaaaaaaaa"<<"\n";
   // Implementation of required member function here.
   //Retrieving the Particle IDs from the event record
   art::Handle< std::vector<ldp::AuxDetParticleID> > particleIDCol;
@@ -117,27 +117,39 @@ bool ParticleFilter::filter(art::Event & e)
   //Get the collection of TOF objects produced by the TOF module
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   e.getByLabel(fTOFModuleLabel,TOFColHandle);
-
-  std::cout << "@@@@@@@@@Selected Possible Kaon Run/Subrun/Event: " << e.run() << "/" << e.subRun() << "/" << e.event() << std::endl;
-  
-
+  /*
+  std::cout << "/////////////////// Run/Subrun/Event: " << e.run() << "/" << e.subRun() << "/" << e.event() << std::endl;
+  if ( e.run() == 6326 && e.subRun() == 345 && e.event()==5) 
+    {
+      std::cout << "////////////////////////////////////////\n ";  
+      std::cout << "////////////////////////////////////////\n ";  
+      std::cout << "////////////////////////////////////////\n ";  
+    }
+*/
   // #########################################################
   // ## If there is no ParticleID object then return false ###
   // #########################################################
-  if(!particleIDCol->size()) return false;
-  
+  std::cout << "particleIDCol->size() "<<particleIDCol->size()<<"\n";
+  //if(!particleIDCol->size()) return false;
+  if(!TOFColHandle.isValid()) return false;
+  if(!WCTrackColHandle.isValid()) return false;
+
   //Finding best-guess Particles
   double pdg_temp = 0;
   pdg_temp=fParticlePDG;
-
-  std::cout<<"Particle PDG "<<pdg_temp<<"\n";
   
   // ################################################################
   // ### Filling the TOF vs WC Track Momentum Histo prior to cuts ###
   // ################################################################ 
-  fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
+  if ((*TOFColHandle).size() < 1) return false;
 
-  
+
+  for (auto tof : *TOFColHandle)
+    {
+      if (tof.NTOF())  fPzVsTOF->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
+      else return false;
+    }
+ 
   // ###################################
   // ### Identifying Kaon Candidates ###
   // ###################################
@@ -185,26 +197,28 @@ bool ParticleFilter::filter(art::Event & e)
   // ########################################
   else if(pdg_temp == 21113){
 
-    
     auto WC = *WCTrackColHandle;
     auto TOF = *TOFColHandle;
   
     if (TOF.size() < 1) return false;
-    
+    std::cout<< "Puppa2"<<TOF.size()<<"\n";
     // ### LOOP OVER THE WCTRACKS AND TOF OBJECTS ###
     
-    
+    //  std::cout<< "MomenutmWC/TOF: " << WC[0].Momentum()<< "/"<< TOF[0].SingleTOF(0) << "/" << TOF.size() << std::endl;
     if(WC[0].Momentum() > 100 && WC[0].Momentum() < 1500 && 
        TOF[0].SingleTOF(0) > 10 && TOF[0].SingleTOF(0) < 25)
-      { return true;}
+      {
+	std::cout<< "Hacked passed..... Run/Subrun/Event: " << e.run() << "/" << e.subRun() << "/" << e.event() << std::endl;
+	return true;
+      }
 	
     	
 	
     
     //PDG -> Pi: 211, Mu: 13, so PiMu is 21113
     //Use PiMu pdg flag due to lack of good MuRS Tracks (as it is now)  
-    std::cout<< "###################################################### "<<std::endl ;
-    std::cout<< "Looking At Every Event..... Run/Subrun/Event: " << e.run() << "/" << e.subRun() << "/" << e.event() << std::endl;
+    //    std::cout<< "###################################################### "<<std::endl ;
+    //std::cout<< "Looking At Every Event..... Run/Subrun/Event: " << e.run() << "/" << e.subRun() << "/" << e.event() << std::endl;
     for (unsigned int i = 0; i<  particleIDCol->size();i++)  
       {
 	std::cout<<i<<" Particle 2113? "<<particleIDCol->at(i).PDGCode() <<"\n";
