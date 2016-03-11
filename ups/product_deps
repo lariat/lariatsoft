@@ -10,12 +10,12 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		      v05_02_00
+larsoft		      v05_01_01
 LariatFilters   v01_02
-lariatfragments v01_07_04
+lariatfragments v01_07_03
 artdaq_core     v1_04_28
 LariatBeamFiles v01_00		-	optional
-lariatutil	    v01_26_04 -	optional
+lariatutil	    v01_26_02 -	optional
 cetbuildtools   v4_18_04	-	only_for_build
 end_product_list
 

@@ -21,6 +21,23 @@ lariat_anatree:
     WC2TPCModuleLabel:	      "WC2TPCtrk"
 }
 
+lariat_mcanalysis:
+{
+    module_type:              "MCAnalysis"
+    TriggerUtility:           "FragmentToDigit"
+    HitsModuleLabel:          "linecluster"
+    TrackModuleLabel:         "pmtrack"
+    CalorimetryModuleLabel:   "calo"
+    ParticleIDModuleLabel:    "pid"
+    ClusterModuleLabel:       "linecluster"
+    G4ModuleLabel:            "largeant"
+    ShowerModuleLabel:        "showerreco"
+    MCShowerModuleLabel:      "mcreco"
+    CalorimetryAlg:          @local::standard_calorimetryalgmc
+    WC2TPCModuleLabel:	      "WC2TPCtrk"
+}
+
+
 lariat_xsanalysis:
 {
     module_type:              "XSAnalysis"
@@ -34,5 +51,5 @@ lariat_xsanalysis:
     ThinSlabThickness:        0.4725 #in cm                                                                                                                                                           
 }
 lariat_anatree.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
-
+lariat_mcanalysis.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
 END_PROLOG
