@@ -10,6 +10,12 @@
 #include "particleid.fcl"
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "services_lariat.fcl"
+#include "lariatcheckmodules.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatanamodules.fcl"
 
  
 process_name: Reco2D
@@ -17,7 +23,7 @@ process_name: Reco2D
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "reco2D_calwire_hist.root" }
+  TFileService: { fileName: "anaTree_histo.root" }
   #Timing:       {}
   #SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
@@ -43,11 +49,12 @@ physics:
  producers:
  {
 
-  ### random number saver
-  #rns:                 { module_type: RandomNumberSaver }
-
-  ### flash finders ###
-  #opflash:             @local::lariat_opflash
+  ### beamline elements ###
+  
+  wctrack:     @local::lariat_wctrackbuilder
+  tof:         @local::lariat_tof
+  murs:        @local::lariat_murs
+  BeamPid:     @local::lariat_pid
   
   ### calwire producers ###
   caldata:              @local::lariat_calroi
@@ -74,35 +81,29 @@ physics:
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
  }
-# analyzers:
-#{
-
+ analyzers:
+{
+ anatree: @local::lariat_anatree
  #showerquality: 	@local::standard_showerquality
-#}
+}
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- reco: [ #rns,
-#         opflash,
-         #FragmentToDigit,
-         caldata,
-#         cchit,
+ reco: [ wctrack, 
+	 tof, 
+	 murs, 
+	 BeamPid,
+	 caldata,
 	 gaushit,
-        # cccluster,
 	 linecluster,
          showerreco,
-         #costrk,
          pmtrack,
-         #cctrack
          calo,
          pid
-         #gaushit
-         #corner,
-         #dbcluster,
-	 #hough 
- #        pandora
           ]
-#ana: [ showerquality ]
+	  
+	  
+ana: [ anatree ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -113,7 +114,7 @@ physics:
 
  #end_paths is a keyword and contains the paths that do not modify the art::Event, 
  #ie analyzers and output streams.  these all run simultaneously
- end_paths:     [stream1]  
+ end_paths:     [ana,stream1]  
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
@@ -125,7 +126,7 @@ outputs:
  {
    module_type: RootOutput
    #fileName:    "%ifb_%tc_reco2D.root"
-   fileName:    "Reco2d.root"
+   fileName:    "%ifb_Reco2d.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1
  }
@@ -134,36 +135,12 @@ outputs:
 
 ### Here, we overwrite ALL module labels with the ones defined above.
 
-#physics.producers.opflash.InputModule:                          "optreadout"
-#physics.producers.opflash.GenModule:                            "generator"
-
-#physics.producers.FragmentToDigit.pmt_channel_ids:[[9,0,1]]
-#physics.producers.FragmentToDigit.pmt_test:true
+physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: 	false
 physics.producers.caldata.DigitModuleLabel:                     "daq"
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 physics.producers.gaushit.Chi2NDFRetry:                          1000.
-#physics.producers.gaushit.MinSig:                               [8, 10]
-#physics.producers.rffhit.CalDataModuleLabel:                    "caldata"
 
-#physics.producers.corner.CornerAlgParamSet.RawDataModuleLabel:  "daq"
-#physics.producers.corner.CornerAlgParamSet.CalDataModuleLabel:  "caldata"
-
-#physics.producers.fuzzycluster.HitsModuleLabel:                 "gaushit"
-#physics.producers.fuzzycluster.CalDataModuleLabel:              "caldata"
-
-#physics.producers.cchit.CCHitFinderAlg.MinPeak:    [4, 4] # min peak signal in each plane
-#physics.producers.cchit.CCHitFinderAlg.MinRMS:     [8, 10] # min signal RMS in each plane
-#physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [1.1, 0.5]
-#physics.producers.cchit.CCHitFinderAlg.MaxBumps:    5    # make a crude hit if > MaxBumps are found in the RAT
-#physics.producers.cchit.CCHitFinderAlg.MaxXtraHits:   1
-#physics.producers.cchit.CCHitFinderAlg.ChiSplit:   20.   # Max chi/DOF for splitting hits for signal rms error = 1
-#physics.producers.cchit.CCHitFinderAlg.ChiNorms: [ 1.0, 1.0 ]  # chi/DOF normalization for each plane
-#physics.producers.cchit.CCHitFinderAlg.StudyHits: false
-#physics.producers.cchit.CCHitFinderAlg.UWireRange: [70, 100]
-#physics.producers.cchit.CCHitFinderAlg.UTickRange: [1560, 1660]
-#physics.producers.cchit.CCHitFinderAlg.VWireRange: [45, 85]
-#physics.producers.cchit.CCHitFinderAlg.VTickRange: [1500, 1800]
 
 physics.producers.linecluster.HitFinderModuleLabel: "gaushit"
 physics.producers.linecluster.ClusterCrawlerAlg.NumPass: 3      # Number of passes through the hit collection
@@ -185,7 +162,7 @@ physics.producers.linecluster.ClusterCrawlerAlg.LACrawl: [true, true, true] # Cr
 physics.producers.linecluster.ClusterCrawlerAlg.LAClusAngleCut: 45  # Angle (degrees) for using Large Angle crawling code
 physics.producers.linecluster.ClusterCrawlerAlg.LAClusMaxHitsFit: 4 # Max number of hits
 physics.producers.linecluster.ClusterCrawlerAlg.MinHitFrac: 0.6 # Discard clusters with fraction of (numHits/numWires) < value
-physics.producers.linecluster.ClusterCrawlerAlg.MinAmp: [5,5] # Min signal amplitude for merging clusters and cluster-vtx associations
+physics.producers.linecluster.ClusterCrawlerAlg.MinAmp: 5 # Min signal amplitude for merging clusters and cluster-vtx associations
 physics.producers.linecluster.ClusterCrawlerAlg.HitMergeChiCut: 2.5 # Max hit separation chisq to make hits available for merging
 physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0.1 # max angle difference (radians) for merging overlap clusters
 physics.producers.linecluster.ClusterCrawlerAlg.ChkClusterDS: true # Extend clusters DownStream after creating them?
