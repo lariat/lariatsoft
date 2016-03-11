@@ -206,7 +206,7 @@ physics.producers.linecluster.ClusterCrawlerAlg.LACrawl: [true, true, true] # Cr
 physics.producers.linecluster.ClusterCrawlerAlg.LAClusAngleCut: 45  # Angle (degrees) for using Large Angle crawling code
 physics.producers.linecluster.ClusterCrawlerAlg.LAClusMaxHitsFit: 4 # Max number of hits
 physics.producers.linecluster.ClusterCrawlerAlg.MinHitFrac: 0.6 # Discard clusters with fraction of (numHits/numWires) < value
-physics.producers.linecluster.ClusterCrawlerAlg.MinAmp: 5 # Min signal amplitude for merging clusters and cluster-vtx associations
+physics.producers.linecluster.ClusterCrawlerAlg.MinAmp: [5, 5] # Min signal amplitude for merging clusters and cluster-vtx associations
 physics.producers.linecluster.ClusterCrawlerAlg.HitMergeChiCut: 2.5 # Max hit separation chisq to make hits available for merging
 physics.producers.linecluster.ClusterCrawlerAlg.MergeOverlapAngCut: 0.1 # max angle difference (radians) for merging overlap clusters
 physics.producers.linecluster.ClusterCrawlerAlg.ChkClusterDS: true # Extend clusters DownStream after creating them?

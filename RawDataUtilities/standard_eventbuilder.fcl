@@ -75,8 +75,8 @@ physics:
 services.user.SeedService: @local::random_seedservice
 
 # parameters for EventBuilderAlg
-source.EventBuilderAlg.TPCReadoutBufferLow:  0.256
-source.EventBuilderAlg.TPCReadoutBufferHigh: 0.256
+source.EventBuilderAlg.TPCReadoutBufferLow:  10.0  # microseconds
+source.EventBuilderAlg.TPCReadoutBufferHigh: 10.0  # microseconds
 
 # parameters for ClockCorrectionAlg
 source.EventBuilderAlg.ClockCorrectionAlg.MinSamples:                   2

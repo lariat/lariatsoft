@@ -78,17 +78,19 @@
 #include "TTree.h"
 #include "TTimeStamp.h"
 
-const int kMaxTrack      = 1000;  //maximum number of tracks
-const int kMaxHits       = 20000; //maximum number of hits
-const int kMaxTrackHits  = 1000;  //maximum number of space points
-const int kMaxTrajHits   = 1000;  //maximum number of trajectory points
-const int kMaxCluster    = 1000;  //maximum number of clusters
-const int kMaxWCTracks   = 1000;   //maximum number of wire chamber tracks
-const int kMaxTOF        = 100;   //maximum number of TOF objects
-const int kMaxAG         = 1000;   //maximum number of AG objects
-const int kMaxPrimaries  = 20000;  //maximum number of primary particles
-const int kMaxShower     = 100;   //maximum number of Reconstructed showers
-const int kMaxMCShower   = 1000; // maximum number of MCShower Object
+const int kMaxTrack      = 1000;     //maximum number of tracks
+const int kMaxHits       = 20000;    //maximum number of hits
+const int kMaxTrackHits  = 1000;     //maximum number of space points
+const int kMaxTrajHits   = 1000;     //maximum number of trajectory points
+const int kMaxCluster    = 1000;     //maximum number of clusters
+const int kMaxWCTracks   = 1000;     //maximum number of wire chamber tracks
+const int kMaxTOF        = 100;      //maximum number of TOF objects
+const int kMaxAG         = 100;      //maximum number of AG objects
+const int kMaxPrimaryPart = 10;	    //maximum number of true primary particles
+const int kMaxPrimaries  = 20000;    //maximum number of true particles tracked
+const int kMaxShower     = 100;      //maximum number of Reconstructed showers
+const int kMaxMCShower   = 1000;     //maximum number of MCShower Object
+const int kMaxTruePrimaryPts = 1000; //maximum number of points in the true primary trajectory 
 
 namespace lariat 
 {
@@ -161,8 +163,7 @@ private:
   double trkke[kMaxTrack][2];
   double trkdedx[kMaxTrack][2][1000];
   double trkrr[kMaxTrack][2][1000];
-  double trkpitchhit[kMaxTrack][2][1000];
-   
+  double trkpitchhit[kMaxTrack][2][1000]; 
    
   // === Storing trajectory information for the track ===
   int nTrajPoint[kMaxTrack];			//<---Storing the number of trajectory points
@@ -173,7 +174,7 @@ private:
   double trjPt_Y[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Y
   double trjPt_Z[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Z
 
-  // === Geaaant inforamtion for reconstruction track
+  // === Geant information for reconstruction track
   int trkg4id[kMaxHits];         //<---geant track id for the track
 
   int primarytrkkey;             //<---reco track index for primary particle
@@ -254,16 +255,22 @@ private:
   int no_primaries;				//<---Number of primary Geant4 particles in the event
   int geant_list_size;				//<---Number of Geant4 particles tracked
   int pdg[kMaxPrimaries];			//<---PDG Code number of this particle
-  double Eng[kMaxPrimaries];			//<---Energy of the particle
-  double Px[kMaxPrimaries];			//<---Px momentum of the particle
-  double Py[kMaxPrimaries];			//<---Py momentum of the particle
-  double Pz[kMaxPrimaries];			//<---Pz momentum of the particle
   double StartPointx[kMaxPrimaries];		//<---X position that this Geant4 particle started at
   double StartPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle started at
   double StartPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle started at
+  double Eng[kMaxPrimaries];			//<---Initial Energy of the particle
+  double Px[kMaxPrimaries];			//<---Initial Px momentum of the particle
+  double Py[kMaxPrimaries];			//<---Initial Py momentum of the particle
+  double Pz[kMaxPrimaries];			//<---Initial Pz momentum of the particle
+
   double EndPointx[kMaxPrimaries];		//<---X position that this Geant4 particle ended at
   double EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
   double EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
+  double EndEng[kMaxPrimaries];			//<---End Energy of the particle
+  double EndPx[kMaxPrimaries];			//<---End Px momentum of the particle
+  double EndPy[kMaxPrimaries];			//<---End Py momentum of the particle
+  double EndPz[kMaxPrimaries];			//<---End Pz momentum of the particle
+
   int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
   // ### Recording the process as a integer ###
 	  // 0 = primary
@@ -280,40 +287,48 @@ private:
   int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
   int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
   int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
-  int process_primary[kMaxPrimaries];		//<---Is this particle primary (primary = 1, non-primary = 1)
+  int process_primary[kMaxPrimaries];		//<---Is this particle primary (primary = 1, non-primary = 0)
   std::vector<std::string> G4Process;         //<---The process which created this particle
   std::vector<std::string> G4FinalProcess;    //<---The last process which this particle went under
-   
-   
+
+	// === Storing additionnal Geant4 MC Truth Information for the primary track only ===	   
+	int NTrTrajPts[kMaxPrimaryPart];							 //<--Nb. of true points in the true primary trajectories
+	double MidPosX[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--X position of a point in the true primary trajectory
+	double MidPosY[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Y position of a point in the true primary trajectory  
+	double MidPosZ[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Z position of a point in the true primary trajectory    
+   double MidPx[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<- Px momentum of a point in the true primary trajectory
+   double MidPy[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Py momentum of a point in the true primary trajectory
+   double MidPz[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Pz momentum of a point in the true primary trajectory
+ 
   // ==== Storing MCShower MCTruth Information ===
    
   int     no_mcshowers;                         	//number of MC Showers in this event.
   int       mcshwr_origin[kMaxMCShower];            	//MC Shower origin information. 
   int       mcshwr_pdg[kMaxMCShower];            	//MC Shower particle PDG code.   
   int       mcshwr_TrackId[kMaxMCShower];        	//MC Shower particle G4 track ID.
-  double     mcshwr_startX[kMaxMCShower];            	//MC Shower particle G4 startX 
-  double     mcshwr_startY[kMaxMCShower];          	//MC Shower particle G4 startY 
-  double     mcshwr_startZ[kMaxMCShower];          	//MC Shower particle G4 startZ
-  double     mcshwr_endX[kMaxMCShower];            	//MC Shower particle G4 endX 
-  double     mcshwr_endY[kMaxMCShower];            	//MC Shower particle G4 endY 
-  double     mcshwr_endZ[kMaxMCShower];            	//MC Shower particle G4 endZ
+  double    mcshwr_startX[kMaxMCShower];            	//MC Shower particle G4 startX 
+  double    mcshwr_startY[kMaxMCShower];          	//MC Shower particle G4 startY 
+  double    mcshwr_startZ[kMaxMCShower];          	//MC Shower particle G4 startZ
+  double    mcshwr_endX[kMaxMCShower];            	//MC Shower particle G4 endX 
+  double    mcshwr_endY[kMaxMCShower];            	//MC Shower particle G4 endY 
+  double    mcshwr_endZ[kMaxMCShower];            	//MC Shower particle G4 endZ
   double    mcshwr_CombEngX[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point X Position. 
   double    mcshwr_CombEngY[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point Y Position.
   double    mcshwr_CombEngZ[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point Z Position.
-  double     mcshwr_CombEngPx[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
-  double     mcshwr_CombEngPy[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
-  double     mcshwr_CombEngPz[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
-  double     mcshwr_CombEngE[kMaxMCShower];            //MC Shower Combined energy deposition information, Energy
-  double     mcshwr_dEdx[kMaxMCShower];           	//MC Shower dEdx, MeV/cm
-  double     mcshwr_StartDirX[kMaxMCShower];      	//MC Shower Direction of begining of shower, X direction 
-  double     mcshwr_StartDirY[kMaxMCShower];      	//MC Shower Direction of begining of shower, Y direction 
-  double     mcshwr_StartDirZ[kMaxMCShower];      	//MC Shower Direction of begining of shower, Z direction 
+  double    mcshwr_CombEngPx[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+  double    mcshwr_CombEngPy[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+  double    mcshwr_CombEngPz[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+  double    mcshwr_CombEngE[kMaxMCShower];            //MC Shower Combined energy deposition information, Energy
+  double    mcshwr_dEdx[kMaxMCShower];           	//MC Shower dEdx, MeV/cm
+  double    mcshwr_StartDirX[kMaxMCShower];      	//MC Shower Direction of begining of shower, X direction 
+  double    mcshwr_StartDirY[kMaxMCShower];      	//MC Shower Direction of begining of shower, Y direction 
+  double    mcshwr_StartDirZ[kMaxMCShower];      	//MC Shower Direction of begining of shower, Z direction 
   int       mcshwr_isEngDeposited[kMaxMCShower];  	//tells whether if this shower deposited energy in the detector or not.
 
    							//yes = 1; no =0;
   //MC Shower mother information
-  int       mcshwr_Motherpdg[kMaxMCShower];       	//MC Shower's mother PDG code.
-  int       mcshwr_MotherTrkId[kMaxMCShower];     	//MC Shower's mother G4 track ID.
+  int        mcshwr_Motherpdg[kMaxMCShower];       	//MC Shower's mother PDG code.
+  int        mcshwr_MotherTrkId[kMaxMCShower];     	//MC Shower's mother G4 track ID.
   double     mcshwr_MotherstartX[kMaxMCShower];    	//MC Shower's mother  G4 startX .
   double     mcshwr_MotherstartY[kMaxMCShower];    	//MC Shower's mother  G4 startY .
   double     mcshwr_MotherstartZ[kMaxMCShower];    	//MC Shower's mother  G4 startZ .
@@ -322,16 +337,14 @@ private:
   double     mcshwr_MotherendZ[kMaxMCShower];          //MC Shower's mother  G4 endZ   .
    
   //MC Shower ancestor information
-  int       mcshwr_Ancestorpdg[kMaxMCShower];       	//MC Shower's ancestor PDG code.
-  int       mcshwr_AncestorTrkId[kMaxMCShower];     	//MC Shower's ancestor G4 track ID.
+  int        mcshwr_Ancestorpdg[kMaxMCShower];       	//MC Shower's ancestor PDG code.
+  int        mcshwr_AncestorTrkId[kMaxMCShower];     	//MC Shower's ancestor G4 track ID.
   double     mcshwr_AncestorstartX[kMaxMCShower];   	//MC Shower's ancestor  G4 startX
   double     mcshwr_AncestorstartY[kMaxMCShower];   	//MC Shower's ancestor  G4 startY
   double     mcshwr_AncestorstartZ[kMaxMCShower];   	//MC Shower's ancestor  G4 startZ
   double     mcshwr_AncestorendX[kMaxMCShower];     	//MC Shower's ancestor  G4 endX 
   double     mcshwr_AncestorendY[kMaxMCShower];     	//MC Shower's ancestor  G4 endY
-  double     mcshwr_AncestorendZ[kMaxMCShower];      	//MC Shower's ancestor  G4 endZ  
-
-   
+  double     mcshwr_AncestorendZ[kMaxMCShower];      	//MC Shower's ancestor  G4 endZ    
    
   // === Storing Shower Reco Information using ShowerReco3D ===
 
@@ -353,15 +366,12 @@ private:
    
    
   // ==== NEED TO FIX THESE VARIABLES....FILLED WITH DUMMY VALUES FOR NOW ===
-   
-   
-   
   double hit_rms[kMaxHits];
   double hit_nelec[kMaxHits];
   double hit_energy[kMaxHits];
   //int    hit_trkkey[kMaxHits];
   int    hit_clukey[kMaxHits];
-   
+  
    
   //std::string fTrigModuleLabel;
   std::string fClusterModuleLabel;
@@ -688,10 +698,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
       // ### Looping over all the Geant4 particles from the BackTracker ###
       for(size_t p = 0; p < plist.size(); ++p) 
-	{
-	  // ### Filling the vector with MC Particles ###
-	  geant_part.push_back(plist.Particle(p)); 
-	}
+		{
+	  		// ### Filling the vector with MC Particles ###
+	  		geant_part.push_back(plist.Particle(p)); 
+		}
 	
       //std::cout<<"No of geant part= "<<geant_part.size()<<std::endl;
       
@@ -736,12 +746,12 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Determine the number of primary particles from geant ###
       // ############################################################
       for( unsigned int i = 0; i < geant_part.size(); ++i )
-	{
-	  geant_particle++;
-	  // ### Counting the number of primary particles ###
-	  if(geant_part[i]->Process()==pri)
-	    { primary++;}
-	}//<---End i loop
+		{
+	  		geant_particle++;
+	  		// ### Counting the number of primary particles ###
+	  		if(geant_part[i]->Process()==pri)
+	    		{ primary++;}
+		}//<---End i loop
 	 
 	
       // ### Saving the number of primary particles ###
@@ -750,116 +760,126 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       geant_list_size=geant_particle;
        
       // ### Looping over all the Geant4 particles ###
+		int iPrim = 0;
       for( unsigned int i = 0; i < geant_part.size(); ++i )
-	{
+		{
    
-          // ### If this particle is primary, set = 1 ###
-	  if(geant_part[i]->Process()==pri)
-	    {process_primary[i]=1;}
-          // ### If this particle is not-primary, set = 0 ###
-	  else
-	    {process_primary[i]=0;}
+      	// ### If this particle is primary, set = 1 ###
+	  		if(geant_part[i]->Process()==pri)
+	    		{process_primary[i]=1;}
+         // ### If this particle is not-primary, set = 0 ###
+	  		else
+	    		{process_primary[i]=0;}
           
-	  // ### Recording the process as a integer ###
-	  // 0 = primary
-	  // 1 = PionMinusInelastic
-	  // 2 = NeutronInelastic
-	  // 3 = hadElastic
-	  // 4 = nCapture
-	  // 5 = CHIPSNuclearCaptureAtRest
-	  // 6 = Decay
-	  // 7 = KaonZeroLInelastic
-	  // 8 = CoulombScat
-	  // 9 = muMinusCaptureAtRest
-	  //10 = ProtonInelastic
+			// ### Recording the process as a integer ###
+			// 0 = primary
+			// 1 = PionMinusInelastic
+   		// 2 = NeutronInelastic
+			// 3 = hadElastic
+			// 4 = nCapture
+		   // 5 = CHIPSNuclearCaptureAtRest
+		   // 6 = Decay
+		   // 7 = KaonZeroLInelastic
+		   // 8 = CoulombScat
+		   // 9 = muMinusCaptureAtRest
+		   //10 = ProtonInelastic
 	  
-	  if(geant_part[i]->Process() == pri)
-	     {Process[i] = 0;}
+	  		if(geant_part[i]->Process() == pri)
+	     		{Process[i] = 0;}
 	     
-	  if(geant_part[i]->Process() == PionMinusInelastic)
-	     {Process[i] = 1;}
+	  		if(geant_part[i]->Process() == PionMinusInelastic)
+	     		{Process[i] = 1;}
 	     
-	  if(geant_part[i]->Process() == NeutronInelastic)
-	     {Process[i] = 2;}
+	  		if(geant_part[i]->Process() == NeutronInelastic)
+	     		{Process[i] = 2;}
 	     
-	  if(geant_part[i]->Process() == hadElastic)
-	     {Process[i] = 3;}
+	  		if(geant_part[i]->Process() == hadElastic)
+	     		{Process[i] = 3;}
 	  
-	  if(geant_part[i]->Process() == nCapture)
-	     {Process[i] = 4;}
+	  		if(geant_part[i]->Process() == nCapture)
+	     		{Process[i] = 4;}
 	     
-	  if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
-	     {Process[i] = 5;}
+	  		if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
+	     		{Process[i] = 5;}
 	  
-	  if(geant_part[i]->Process() == Decay)
-	     {Process[i] = 6;}
+	  		if(geant_part[i]->Process() == Decay)
+	     		{Process[i] = 6;}
 	  
-	  if(geant_part[i]->Process() == KaonZeroLInelastic)
-	     {Process[i] = 7;}
+	  		if(geant_part[i]->Process() == KaonZeroLInelastic)
+	     		{Process[i] = 7;}
 	     
-	  if(geant_part[i]->Process() == CoulombScat)
-	     {Process[i] = 8;}
+	  		if(geant_part[i]->Process() == CoulombScat)
+	     		{Process[i] = 8;}
 	     
-	  if(geant_part[i]->Process() == muMinusCaptureAtRest)
-	     {Process[i] = 9;}
+	  		if(geant_part[i]->Process() == muMinusCaptureAtRest)
+	     		{Process[i] = 9;}
 	     
-	  if(geant_part[i]->Process() == ProtonInelastic)
-	     {Process[i] = 10;}
+	  		if(geant_part[i]->Process() == ProtonInelastic)
+	     		{Process[i] = 10;}
 	     
-	  //std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
+	  		//std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
 	  
 
-	  // ### Saving the particles mother TrackID ###
-	  Mother[i]=geant_part[i]->Mother();
-	  // ### Saving the particles TrackID ###
-	  TrackId[i]=geant_part[i]->TrackId();
-	  // ### Saving the PDG Code ###
-	  pdg[i]=geant_part[i]->PdgCode();
-	  // ### Saving the particles Energy ###
-	  Eng[i]=geant_part[i]->E();
+	  		// ### Saving the particles mother TrackID ###
+	  		Mother[i]=geant_part[i]->Mother();
+	  		// ### Saving the particles TrackID ###
+	  		TrackId[i]=geant_part[i]->TrackId();
+	  		// ### Saving the PDG Code ###
+	  		pdg[i]=geant_part[i]->PdgCode();
+	  		// ### Saving the particles start and end Energy ###
+	  		Eng[i]=geant_part[i]->E();
+	  		EndEng[i]=geant_part[i]->EndE();
 	  
-	  // ### Saving the Px, Py, Pz info ###
-	  Px[i]=geant_part[i]->Px();
-	  Py[i]=geant_part[i]->Py();
-	  Pz[i]=geant_part[i]->Pz();
+	  		// ### Saving the start and end Px, Py, Pz info ###
+	  		Px[i]=geant_part[i]->Px();
+	  		Py[i]=geant_part[i]->Py();
+	  		Pz[i]=geant_part[i]->Pz();
+	  		EndPx[i]=geant_part[i]->EndPx();
+	  		EndPy[i]=geant_part[i]->EndPy();
+	  		EndPz[i]=geant_part[i]->EndPz();
 	  
-	  // ### Saving the Start and End Point for this particle ###
-	  StartPointx[i]=geant_part[i]->Vx();
-	  StartPointy[i]=geant_part[i]->Vy();
-	  StartPointz[i]=geant_part[i]->Vz();
-	  EndPointx[i]=geant_part[i]->EndPosition()[0];
-	  EndPointy[i]=geant_part[i]->EndPosition()[1];
-	  EndPointz[i]=geant_part[i]->EndPosition()[2];
+	  		// ### Saving the Start and End Point for this particle ###
+	  		StartPointx[i]=geant_part[i]->Vx();
+	  		StartPointy[i]=geant_part[i]->Vy();
+	  		StartPointz[i]=geant_part[i]->Vz();
+	  		EndPointx[i]=geant_part[i]->EndPosition()[0];
+	  		EndPointy[i]=geant_part[i]->EndPosition()[1];
+	  		EndPointz[i]=geant_part[i]->EndPosition()[2];
 
-	  // ### Saving the processes for this particle ###
-	  //std::cout<<"finding proc"<<std::endl;
-	  G4Process.push_back( geant_part[i]->Process() );
-	  G4FinalProcess.push_back( geant_part[i]->EndProcess() );
+		  // ### Saving the processes for this particle ###
+		  //std::cout<<"finding proc"<<std::endl;
+		  G4Process.push_back( geant_part[i]->Process() );
+		  G4FinalProcess.push_back( geant_part[i]->EndProcess() );
  	  
-	  // ### Saving the number of Daughters for this particle ###
-	  NumberDaughters[i]=geant_part[i]->NumberDaughters();
+		  // ### Saving the number of Daughters for this particle ###
+		  NumberDaughters[i]=geant_part[i]->NumberDaughters();
+
+		  // ### Save intermediary information for the primary track
+		  if(geant_part[i]->Process()==pri){
+		    NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();
+			 simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
+				
+			 int iPrimPt = 0;	
+			 for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj){
+
+		    	MidPosX[iPrim][iPrimPt] = truetraj.X(iPrimPt);
+				MidPosY[iPrim][iPrimPt] = truetraj.Y(iPrimPt);
+				MidPosZ[iPrim][iPrimPt] = truetraj.Z(iPrimPt);
+   			MidPx[iPrim][iPrimPt] = truetraj.Px(iPrimPt); 
+   			MidPy[iPrim][iPrimPt] = truetraj.Py(iPrimPt); 
+   			MidPz[iPrim][iPrimPt] = truetraj.Pz(iPrimPt);
+		
+				iPrimPt++;
+		    }//<--End loop on true trajectory points
+		    iPrim++;
+		  }//<--End if primary
+
+	}//<--End loop on geant particles
 	  
-	  //std::cout<<"length= "<<sqrt((EndPointx[i]-StartPointx[i])*(EndPointx[i]-StartPointx[i]) + (EndPointy[i]-StartPointy[i])*(EndPointy[i]-StartPointy[i])+ (EndPointz[i]-StartPointz[i])*(EndPointz[i]-StartPointz[i]))<<std::endl;
-	} //geant particles
-	  
-    }//<---End checking if this is data   
+ }//<---End checking if this is MC 
    
    
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
-   
+ 
    
    
   // ----------------------------------------------------------------------------------------------------------------------------
@@ -878,7 +898,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     //for(const auto& wctrack : (*wctrackHandle)) //trackHandle works somewhat like a pointer to a vector of tracks, so dereference the handle to loop over
     //the vector, then use each "track" as a ldp::WCTrack
     {
-	    std::cout<<"wct_count: "<<wct_count<<std::endl;
+      
       //std::cout<<"wctrack[wct_count]->Momentum() = "<<wctrack[wct_count]->Momentum()<<std::endl;
       // ##############################################
       // ### Filling Wire Chamber Track information ###
@@ -907,6 +927,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
     }//<---end wctrack auto loop
       
+	 
    
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
@@ -914,24 +935,21 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   ntof = tof.size();
-  std::cout<<"tof.size(): "<<tof.size()<<std::endl;
   // ################################
   // ### Looping over TOF objects ###
   // ################################
   size_t tof_counter = 0; // book-keeping
-  for(size_t i = 0; i < tof.size(); i++)
-    {
-      std::cout<<"TOFi: "<<i<<std::endl;
-      size_t number_tof = tof[i]->NTOF();
-      std::cout<<"tof[i]->NTOF(): "<<tof[i]->NTOF()<<std::endl;
+  for(size_t i = 0; i < tof.size(); i++) {
 
-      for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
-	tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
-	tof_timestamp[tof_counter] = tof[i]->TimeStamp(tof_idx);
-	++tof_counter;
-      } // loop over TOF
+	  size_t number_tof = tof[i]->NTOF();
 
-    }//<---End tof_count loop
+     for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
+			tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
+			tof_timestamp[tof_counter] = tof[i]->TimeStamp(tof_idx);
+			++tof_counter;
+     } // loop over TOF
+
+  }//<---End tof_count loop
 
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
@@ -945,8 +963,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   //   std::cout<<"counter->size()"<<counter->size()<<std::endl;
 
   nAG = agc.size();
-  std::cout<<"agc.size(): "<<agc.size()<<std::endl;
-  //LOG_VERBATIM("HAHAHAHAHAHARHARHARHARHAR");
   // ################################
   // ### Looping over aerogel counter objects ###
   // ################################
@@ -954,61 +970,30 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   for(size_t i = 0; i < agc.size(); i++)
     {
 
-      size_t number_agc = agc[i]->GetNHits();
-      std::cout<<"i: "<<i<<std::endl;
+      auto number_agc = agc[i]->GetNHits();
+      std::cout<<"nAG: "<<nAG<<std::endl;
+      std::cout<<" number_agc: "<<number_agc<<std::endl;
       std::cout<<"agc[i]->GetNHits(): "<<agc[i]->GetNHits()<<std::endl;
-      //std::cout<<"agc[i]->size(): "<<agc[i]->size()<<std::endl;
-      //std::cout<<"agc.size(): "<<agc.size()<<std::endl;
-      //std::cout<<"nAG: "<<nAG<<std::endl;
-      //std::cout<<" number_agc: "<<number_agc<<std::endl;
-    
-      
 
       for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
-	//std::cout<<"agc_counter: "<< agc_counter <<std::endl;
-	
-//        std::cout<<"i: "<<i<<std::endl;
-        std::cout<<"agc_idx: "<<agc_idx<<std::endl;
+	//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
+	HitTimeStampUSE[i]=agc[agc_counter]->GetHitTimeStampUSE(agc_idx);
+	HitTimeStampUSW[i]=agc[agc_counter]->GetHitTimeStampUSW(agc_idx);
+	HitTimeStampDS1[i]=agc[agc_counter]->GetHitTimeStampDS1(agc_idx);
+	HitTimeStampDS2[i]=agc[agc_counter]->GetHitTimeStampDS2(agc_idx);
 
-	HitTimeStampUSE[agc_counter]=agc[i]->GetHitTimeStampUSE(agc_idx);
-        HitTimeStampUSW[agc_counter]=agc[i]->GetHitTimeStampUSW(agc_idx);
-        HitTimeStampDS1[agc_counter]=agc[i]->GetHitTimeStampDS1(agc_idx);
-        HitTimeStampDS2[agc_counter]=agc[i]->GetHitTimeStampDS2(agc_idx);
+	HitPulseAreaUSE[i]=agc[agc_counter]->GetHitPulseAreaUSE(agc_idx);
+	HitPulseAreaUSW[i]=agc[agc_counter]->GetHitPulseAreaUSW(agc_idx);
+	HitPulseAreaDS1[i]=agc[agc_counter]->GetHitPulseAreaDS1(agc_idx);
+	HitPulseAreaDS2[i]=agc[agc_counter]->GetHitPulseAreaDS2(agc_idx);
 
-	std::cout<<"agc[i]->GetHitTimeStampUSE(agc_idx): "<<agc[i]->GetHitTimeStampUSE(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitTimeStampUSW(agc_idx): "<<agc[i]->GetHitTimeStampUSW(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitTimeStampDS1(agc_idx): "<<agc[i]->GetHitTimeStampDS1(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitTimeStampDS2(agc_idx): "<<agc[i]->GetHitTimeStampDS2(agc_idx)<<std::endl;
-
-	HitPulseAreaUSE[agc_counter]=agc[i]->GetHitPulseAreaUSE(agc_idx);
-        HitPulseAreaUSW[agc_counter]=agc[i]->GetHitPulseAreaUSW(agc_idx);
-        HitPulseAreaDS1[agc_counter]=agc[i]->GetHitPulseAreaDS1(agc_idx);
-        HitPulseAreaDS2[agc_counter]=agc[i]->GetHitPulseAreaDS2(agc_idx);
-        
-        std::cout<<"agc[i]->GetHitPulseAreaUSE(agc_idx): "<<agc[i]->GetHitPulseAreaUSE(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitPulseAreaUSW(agc_idx): "<<agc[i]->GetHitPulseAreaUSW(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitPulseAreaDS1(agc_idx): "<<agc[i]->GetHitPulseAreaDS1(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitPulseAreaDS2(agc_idx): "<<agc[i]->GetHitPulseAreaDS2(agc_idx)<<std::endl;
-
-	HitExistUSE[agc_counter]=agc[i]->GetHitExistUSE(agc_idx);
-        HitExistUSW[agc_counter]=agc[i]->GetHitExistUSW(agc_idx);
-        HitExistDS1[agc_counter]=agc[i]->GetHitExistDS1(agc_idx);
-        HitExistDS2[agc_counter]=agc[i]->GetHitExistDS2(agc_idx);
-
-        std::cout<<"agc[i]->GetHitExistUSE(agc_idx): "<<agc[i]->GetHitExistUSE(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitExistUSW(agc_idx): "<<agc[i]->GetHitExistUSW(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitExistDS1(agc_idx): "<<agc[i]->GetHitExistDS1(agc_idx)<<std::endl;
-        std::cout<<"agc[i]->GetHitExistDS2(agc_idx): "<<agc[i]->GetHitExistDS2(agc_idx)<<std::endl;
-
-	std::cout<<"agc_counter: "<<agc_counter<<std::endl;
-        std::cout<<"HitExistUSE[agc_counter]: "<<HitExistUSE[agc_counter]<<std::endl;
-        std::cout<<"HitExistUSW[agc_counter]: "<<HitExistUSW[agc_counter]<<std::endl;
-        std::cout<<"HitExistDS1[agc_counter]: "<<HitExistDS1[agc_counter]<<std::endl;
-        std::cout<<"HitExistDS2[agc_counter]: "<<HitExistDS2[agc_counter]<<std::endl;
-
+	HitExistUSE[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+	HitExistUSW[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+	HitExistDS1[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+	HitExistDS2[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
 	++agc_counter;
-
       } // loop over aerogel pulses
+
     }//<---End aerogel counters
      
 
@@ -1462,8 +1447,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	      
 	      for(size_t iv = 0; iv < idevec.size(); ++iv){ 
 
-		hit_nelec[i] += idevec[iv].numElectrons;
-		hit_energy[i] += idevec[iv].energy;
+				hit_nelec[i] += idevec[iv].numElectrons;
+				hit_energy[i] += idevec[iv].energy;
 	      }
 	    }
 	  }
@@ -1473,14 +1458,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       } // if cet::maybe_ref is valid
     }
   }
-
-  std::cout<<"agc_counter: "<<agc_counter<<std::endl;
-  std::cout<<"HitExistUSE[agc_counter]: "<<HitExistUSE[agc_counter]<<std::endl;
-  std::cout<<"HitExistUSW[agc_counter]: "<<HitExistUSW[agc_counter]<<std::endl;
-  std::cout<<"HitExistDS1[agc_counter]: "<<HitExistDS1[agc_counter]<<std::endl;
-  std::cout<<"HitExistDS2[agc_counter]: "<<HitExistDS2[agc_counter]<<std::endl;  
   fTree->Fill();
-//  fTree->Scan("HitExistUSE:HitExistUSW:HitExistDS1:HitExistDS2");
 }
 
 
@@ -1598,10 +1576,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/D");
   fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/D");
   fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/D");
-  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/O");
-  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/O");
-  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/O");
-  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/O");
+  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/D");
+  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/D");
+  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/D");
+  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/D");
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
@@ -1611,6 +1589,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("Px",Px,"Px[geant_list_size]/D");
   fTree->Branch("Py",Py,"Py[geant_list_size]/D");
   fTree->Branch("Pz",Pz,"Pz[geant_list_size]/D");
+  fTree->Branch("EndEng",EndEng,"EndEng[geant_list_size]/D");
+  fTree->Branch("EndPx",EndPx,"EndPx[geant_list_size]/D");
+  fTree->Branch("EndPy",EndPy,"EndPy[geant_list_size]/D");
+  fTree->Branch("EndPz",EndPz,"EndPz[geant_list_size]/D");
   fTree->Branch("StartPointx",StartPointx,"StartPointx[geant_list_size]/D");
   fTree->Branch("StartPointy",StartPointy,"StartPointy[geant_list_size]/D");
   fTree->Branch("StartPointz",StartPointz,"StartPointz[geant_list_size]/D");
@@ -1624,6 +1606,14 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
   fTree->Branch("G4Process",&G4Process);//,"G4Process[geant_list_size]");
   fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");  
+  fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/D");
+  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][1000]/D");
+  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][1000]/D");
+  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][1000]/D");
+  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][1000]/D");
+  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][1000]/D");
+  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][1000]/D");
+
   fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
   fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
   fTree->Branch("mcshwr_pdg", mcshwr_pdg, "mcshwr_pdg[no_mcshowers]/D");
@@ -1663,9 +1653,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("mcshwr_AncestorendX", mcshwr_AncestorendX, "mcshwr_AncestorendX[no_mcshowers]/I");
   fTree->Branch("mcshwr_AncestorendY", mcshwr_AncestorendY, "mcshwr_AncestorendY[no_mcshowers]/I");
   fTree->Branch("mcshwr_AncestorendZ", mcshwr_AncestorendZ, "mcshwr_AncestorendZ[no_mcshowers]/I");
-
       
-   
   fTree->Branch("nshowers",&nshowers,"nshowers/I");
   fTree->Branch("shwID",shwID,"shwI[nshowers]/I");
   fTree->Branch("BestPlaneShw",BestPlaneShw,"BestPlaneShw[nshowers]/I");
@@ -1744,9 +1732,9 @@ void lariat::AnaTreeT1034::ResetVars()
       trkke[i][j] = -99999;
       trkpida[i][j] = -99999;
       for (int k = 0; k<1000; ++k){
-	trkdedx[i][j][k] = -99999;
-	trkrr[i][j][k] = -99999;
-	trkpitchhit[i][j][k] = -99999;
+			trkdedx[i][j][k] = -99999;
+			trkrr[i][j][k] = -99999;
+			trkpitchhit[i][j][k] = -99999;
       }
     }
     trkg4id[i] = -9999;
@@ -1841,6 +1829,10 @@ void lariat::AnaTreeT1034::ResetVars()
     Px[i] = -99999;
     Py[i] = -99999;
     Pz[i] = -99999;
+    EndEng[i] = -99999;
+    EndPx[i] = -99999;
+    EndPy[i] = -99999;
+    EndPz[i] = -99999;
     StartPointx[i] = -99999;
     StartPointy[i] = -99999;
     StartPointz[i] = -99999;
@@ -1851,11 +1843,23 @@ void lariat::AnaTreeT1034::ResetVars()
     NumberDaughters[i] = -99999;
     Mother[i] = -99999;
     TrackId[i] = -99999;
-    process_primary[i] = -99999;}
+    process_primary[i] = -99999;
 
+  }
+
+	for(int i = 0; i<kMaxPrimaryPart; i++){
+		NTrTrajPts[i] = -99999;
+		for(int j = 0; j<kMaxTruePrimaryPts; j++){	
+			MidPosX[i][j] = -99999;
+			MidPosY[i][j] = -99999;
+			MidPosZ[i][j] = -99999;
+   		MidPx[i][j] = -99999; 
+   		MidPy[i][j] = -99999; 
+   		MidPz[i][j] = -99999;
+		}
+	}
 
   nshowers = -99999;
-
   for (int i = 0; i<kMaxShower; ++i) 
     {
       shwID[i] = -99999;
