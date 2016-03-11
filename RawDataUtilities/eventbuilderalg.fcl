@@ -6,8 +6,8 @@ standard_eventbuilderalg:
 {
     ClockCorrectionAlg:   @local::standard_clockcorrectionalg
 
-    TPCReadoutBufferLow:  0.256
-    TPCReadoutBufferHigh: 0.256
+    TPCReadoutBufferLow:  10.0  # microseconds
+    TPCReadoutBufferHigh: 10.0  # microseconds
 }
 
 END_PROLOG
