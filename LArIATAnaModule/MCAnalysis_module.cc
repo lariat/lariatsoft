@@ -508,6 +508,7 @@ else isdata = false;
 //						FILLING THE MCTruth Geant4 INFORMATION
 // ----------------------------------------------------------------------------------------------------------------------------
 // ----------------------------------------------------------------------------------------------------------------------------
+int primary=0;
 
 if(!isdata)
    {
@@ -560,7 +561,7 @@ if(!isdata)
    // ### Setting a string for PiMinusAbsorptionAtRest ###
    std::string PiMinusAbsorptionAtRest("PiMinusAbsorptionAtRest");
 
-   int primary=0;
+
    int geant_particle=0;
    // float g4PrimaryProcess[100] = {0};
    int g4Primary_TrkID[100] = {999};
@@ -702,6 +703,26 @@ if(!isdata)
       }//<--End i loop over all geant4 particles
        
 }//<---End checking if this is data   
+  
+  
+  
+//=======================================================================================================================
+//				Only looking at events where the primary particle enters the TPC
+//=======================================================================================================================
+   
+bool GoodMCEventInTPC = true;
+   
+// ##############################################
+// ### Looping over all the primary particles ###
+// ##############################################
+for(int npri = 0; npri < primary; npri++)
+   {
+   if(g4Primary_Zf[npri] < 0){GoodMCEventInTPC = false;}
+   
+   }//<---End npri loop
+if(GoodMCEventInTPC){fCutHistogram->Fill(1);}
+
+
    
    
       
@@ -775,10 +796,7 @@ if(!isdata)
 
     bool TrackTrjPtsZCut = false;
    
-  if(g4Primary_Zf[0]>=0)
-
-  {
-   fCutHistogram->Fill(1);
+   fCutHistogram->Fill(2);
     int nUpStreamTrk = 0;
 
 
@@ -1294,7 +1312,7 @@ for(int i =0; i<NTpts; i++)
    } //End of TrackTrjPtsZCut if loop
 
 
-} //End of Good Event if loop
+
 
 
 } // End of analyzer
