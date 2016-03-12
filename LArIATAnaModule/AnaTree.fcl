@@ -6,7 +6,7 @@
 ## You will write whatever name you want this process to be called 
 ## It is important to note that the same process name cannot be called
 ## twice on a ROOT file, so you may have to change this 
-process_name: TrigFilter
+process_name: AnaTree
 
 
 services:
