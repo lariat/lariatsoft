@@ -89,15 +89,15 @@ const int kMaxTruePrimaryPts = 100000; //maximum number of truth trajectory poin
 const double FirstSpacePointZPos = 2.0;
 
 
-// ########################################################
-// ### Delta X Between Wire Chamber Track and TPC Track ###
-// ########################################################
+// ##############################################################
+// ### Delta X Between Extrapolated MC Particle and TPC Track ###
+// ##############################################################
 const double DeltaXLowerBound = -2.0;
 const double DeltaXUpperBound = 6.0;
 
-// ########################################################
-// ### Delta Y Between Wire Chamber Track and TPC Track ###
-// ########################################################
+// ##############################################################
+// ### Delta Y Between Extrapolated MC Particle and TPC Track ###
+// ##############################################################
 const double DeltaYLowerBound = -3.0;
 const double DeltaYUpperBound = 6.0;
 
@@ -234,61 +234,116 @@ private:
 
 //################# Histogram for the Analysis ####################
 
-//################## Truth(Primary) Histogram ############################# //
+// ###################################   
+// ### MC Starting Point Histogram ###
+// ###################################
+TH1D *fStartXMC; 
+TH1D *fStartYMC;
+TH1D *fStartZMC;
+
+// ######################################   
+// ### MC Starting Momentum Histogram ###
+// ######################################
+TH1D *fStartPxMC;
+TH1D *fStartPyMC;
+TH1D *fStartPzMC;
+
+// #################################   
+// ### MC Ending Point Histogram ###
+// #################################
+TH1D *fEndXMC;
+TH1D *fEndYMC;
+TH1D *fEndZMC; 
+
+// ################################################   
+// ### Extrapolated MC Starting Point Histogram ###
+// ################################################   
+TH1D *fProjX0;
+TH1D *fProjY0;
+TH1D *fProjZ0;
+TH1D *fProcess;
    
-//############### Starting Pts##############################//
-   TH1D *fStartXMC; 
-   TH1D *fStartYMC;
-   TH1D *fStartZMC;
-//############### Momentum ##############################//
-   TH1D *fStartPxMC;
-   TH1D *fStartPyMC;
-   TH1D *fStartPzMC;
-//############### End Pts##############################//
-   TH1D *fEndXMC;
-   TH1D *fEndYMC;
-   TH1D *fEndZMC; 
-//############### Extrapolated Pts##############################// 
-   TH1D *fProjX0;
-   TH1D *fProjY0;
-   TH1D *fProjZ0;
-   TH1D *fProcess;
-//############### Primary X_f vs Z_f ##############################//
-   TH2D *fPrimaryEndXvsZ;
-   TH2D *fPrimaryEndYvsZ;
 
-//################ Histogram for cuts ##############################//
-   TH1D *fAlpha;
-   TH1D *fDeltaX;
-   TH1D *fDeltaY;
-   TH1D *fDeltaZ;
-   TH1D *fUpstZpts;
-   TH1D *fMCInitalKE;
-   TH1D *fDeltaEndX;
-   TH1D *fDeltaEndY;
-   TH1D *fDeltaEndZ;
-   TH1F *fCutHistogram;
-   TH1D *fnUpstmTrk;
+// ###################################
+// ### Primary Particle Z_f vs X_f ###
+// ###################################
+TH2D *fPrimaryEndXvsZ;
 
-//################ Histogram for Delta End Z vs process ###############//
+// ###################################
+// ### Primary Particle Y_f vs Z_f ###
+// ###################################
+TH2D *fPrimaryEndYvsZ;
 
-   TH1D *fDeltaEndZInElastic;
-   TH1D *fDeltaEndZNeutronInElastic;
-   TH1D *fDeltaEndZHadElastic;
-   TH1D *fDeltaEndZnCap;
-   TH1D *fDeltaEndZnuclearCapatureAtRest;
-   TH1D *fDeltaEndZDecay;
-   TH1D *fDeltaEndZKaonZeroInElastic;
-   TH1D *fDeltaEndZCoulombScat;
-   TH1D *fDeltaEndZMuMinusCapture;
-   TH1D *fDeltaEndZProtonInelastic;
-   TH1D *fDeltaEndZPiMinusAbsorptionAtRest;
-//  THStack *fStackDeltaEndZ;
-//######### Histogram for Cross-section Analysis ######################//
-   TH1D *fdataPiondEdX;
-   TH1D *fdataPionRR;
-   TH1D *fdataPionTrkPitch;
-   TH2D *fdataPiondEdXvsRR;
+// ##########################
+// ### Histogram for cuts ###
+// ##########################
+TH1D *fAlpha;
+TH1D *fDeltaX;
+TH1D *fDeltaY;
+TH1D *fDeltaZ;
+TH1D *fUpstZpts;
+TH1D *fMCInitalKE;
+TH1D *fDeltaEndX;
+TH1D *fDeltaEndY;
+TH1D *fDeltaEndZ;
+TH1F *fCutHistogram;
+TH1D *fnUpstmTrk;
+
+// ############################################
+// ### Histogram for Delta End Z vs process ###
+// ############################################
+TH1D *fDeltaEndZInElastic;
+TH1D *fDeltaEndZNeutronInElastic;
+TH1D *fDeltaEndZHadElastic;
+TH1D *fDeltaEndZnCap;
+TH1D *fDeltaEndZnuclearCapatureAtRest;
+TH1D *fDeltaEndZDecay;
+TH1D *fDeltaEndZKaonZeroInElastic;
+TH1D *fDeltaEndZCoulombScat;
+TH1D *fDeltaEndZMuMinusCapture;
+TH1D *fDeltaEndZProtonInelastic;
+TH1D *fDeltaEndZPiMinusAbsorptionAtRest;
+
+
+// ############################################
+// ### Histogram for Delta End Y vs process ###
+// ############################################
+TH1D *fDeltaEndYInElastic;
+TH1D *fDeltaEndYNeutronInElastic;
+TH1D *fDeltaEndYHadElastic;
+TH1D *fDeltaEndYnCap;
+TH1D *fDeltaEndYnuclearCapatureAtRest;
+TH1D *fDeltaEndYDecay;
+TH1D *fDeltaEndYKaonZeroInElastic;
+TH1D *fDeltaEndYCoulombScat;
+TH1D *fDeltaEndYMuMinusCapture;
+TH1D *fDeltaEndYProtonInelastic;
+TH1D *fDeltaEndYPiMinusAbsorptionAtRest;
+
+// ############################################
+// ### Histogram for Delta End X vs process ###
+// ############################################
+TH1D *fDeltaEndXInElastic;
+TH1D *fDeltaEndXNeutronInElastic;
+TH1D *fDeltaEndXHadElastic;
+TH1D *fDeltaEndXnCap;
+TH1D *fDeltaEndXnuclearCapatureAtRest;
+TH1D *fDeltaEndXDecay;
+TH1D *fDeltaEndXKaonZeroInElastic;
+TH1D *fDeltaEndXCoulombScat;
+TH1D *fDeltaEndXMuMinusCapture;
+TH1D *fDeltaEndXProtonInelastic;
+TH1D *fDeltaEndXPiMinusAbsorptionAtRest;
+
+
+// #########################################################
+// ### Histograms tracks which go into the Cross-Section ###
+// #########################################################
+TH1D *fdataPiondEdX;
+TH1D *fdataPionRR;
+TH1D *fdataPionTrkPitch;
+TH2D *fdataPiondEdXvsRR;
+
 //################### Cross-section ####################################//
    TH1D *fdataPionIncidentKE;
    TH1D *fPionInteractions;
@@ -303,9 +358,6 @@ private:
   std::string fTrackModuleLabel;
   std::string fCalorimetryModuleLabel;
   std::string fParticleIDModuleLabel;
-  std::string fWCTrackLabel; 		// The name of the producer that made tracks through the MWPCs
-  std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
-  std::string fAGModuleLabel;         // Name of the producer that made the aerogel objects
   std::string fG4ModuleLabel;
   std::string fShowerModuleLabel;       // Producer that makes showers from clustering
   std::string fMCShowerModuleLabel;	// Producer name that makes MCShower Object
@@ -343,311 +395,321 @@ void lariat::MCAnalysis::reconfigure(fhicl::ParameterSet const & pset)
 
 void lariat::MCAnalysis::analyze(art::Event const & evt)
 {
-   // #############################################
-   // ### Reset variables before we get started ###
-   // #############################################
-   ResetVars();
-   //std::cout<<"Check1"<<std::endl;
+// #############################################
+// ### Reset variables before we get started ###
+// #############################################
+ResetVars();
 
-  // #######################################
-  // ### Get potentially useful services ###
-  // #######################################
-  // === Geometry Service ===
-  art::ServiceHandle<geo::Geometry> geom;
-  // === Liquid Argon Properties Services ===
-  //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
-  // === Detector properties service ===
- // auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-  // === BackTracker service ===
-  art::ServiceHandle<cheat::BackTracker> bt;
-  const sim::ParticleList& plist = bt->ParticleList();
+// #######################################
+// ### Get potentially useful services ###
+// #######################################
+// === Geometry Service ===
+art::ServiceHandle<geo::Geometry> geom;
+// === BackTracker service ===
+art::ServiceHandle<cheat::BackTracker> bt;
+const sim::ParticleList& plist = bt->ParticleList();
    
    
-   // === Run Number ===
-   run = evt.run();
-   // === Sub-Run Number ===
-   subrun = evt.subRun();
-   // === Event Number ===
-   event = evt.id().event();
+// === Run Number ===
+run = evt.run();
+// === Sub-Run Number ===
+subrun = evt.subRun();
+// === Event Number ===
+event = evt.id().event();
    
-   std::cout<<std::endl;
-   std::cout<<"========================================="<<std::endl;
-   std::cout<<"Run = "<<run<<", SubRun = "<<subrun<<", Evt = "<<event<<std::endl;
-   std::cout<<"========================================="<<std::endl;
-   std::cout<<std::endl;
+std::cout<<std::endl;
+std::cout<<"========================================="<<std::endl;
+std::cout<<"Run = "<<run<<", SubRun = "<<subrun<<", Evt = "<<event<<std::endl;
+std::cout<<"========================================="<<std::endl;
+std::cout<<std::endl;
       
 
-   // #####################################
-   // ### Getting the Track Information ###
-   // #####################################
-   art::Handle< std::vector<recob::Track> > trackListHandle; //<---Define trackListHandle as a vector of recob::Track objects
-   std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
+// #####################################
+// ### Getting the Track Information ###
+// #####################################
+art::Handle< std::vector<recob::Track> > trackListHandle; //<---Define trackListHandle as a vector of recob::Track objects
+std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
    
-   // === Filling the tracklist from the tracklistHandle ===
-   if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
-      {art::fill_ptr_vector(tracklist, trackListHandle);}
+// === Filling the tracklist from the tracklistHandle ===
+if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
+   {art::fill_ptr_vector(tracklist, trackListHandle);}
    
-   // ###################################
-   // ### Getting the Hit Information ###
-   // ###################################
-   art::Handle< std::vector<recob::Hit> > hitListHandle; //<---Define hitListHandle as a vector of recob::Track objects
-   std::vector<art::Ptr<recob::Hit> > hitlist; //<---Define tracklist as a pointer to recob::tracks
+// ###################################
+// ### Getting the Hit Information ###
+// ###################################
+art::Handle< std::vector<recob::Hit> > hitListHandle; //<---Define hitListHandle as a vector of recob::Track objects
+std::vector<art::Ptr<recob::Hit> > hitlist; //<---Define tracklist as a pointer to recob::tracks
    
-   // === Filling the hitlist from the hitlistHandle ===
-   if (evt.getByLabel(fHitsModuleLabel,hitListHandle))
-      {art::fill_ptr_vector(hitlist, hitListHandle);}
+// === Filling the hitlist from the hitlistHandle ===
+if (evt.getByLabel(fHitsModuleLabel,hitListHandle))
+   {art::fill_ptr_vector(hitlist, hitListHandle);}
    
-   // ##########################################
-   // ### Getting the 2D Cluster Information ###
-   // ##########################################
-   art::Handle< std::vector<recob::Cluster> > clusterListHandle; //<---Define clusterListHandle as a vector of recob::Track objects
-   std::vector<art::Ptr<recob::Cluster> > clusterlist; //<---Define cluster as a pointer to recob::cluster
+// ##########################################
+// ### Getting the 2D Cluster Information ###
+// ##########################################
+art::Handle< std::vector<recob::Cluster> > clusterListHandle; //<---Define clusterListHandle as a vector of recob::Track objects
+std::vector<art::Ptr<recob::Cluster> > clusterlist; //<---Define cluster as a pointer to recob::cluster
    
-   // === Filling the clusterlist from the clusterlistHandle ===
-   if (evt.getByLabel(fClusterModuleLabel,clusterListHandle))
-      {art::fill_ptr_vector(clusterlist, clusterListHandle);}
+// === Filling the clusterlist from the clusterlistHandle ===
+if (evt.getByLabel(fClusterModuleLabel,clusterListHandle))
+   {art::fill_ptr_vector(clusterlist, clusterListHandle);}
       
-      
-
-      
-   // #####################################
-   // ### Getting the Shower Information ###
-   // #####################################
-   art::Handle< std::vector<recob::Shower> > shwListHandle; 
-   std::vector<art::Ptr<recob::Shower> > shwlist;
+// #####################################
+// ### Getting the Shower Information ###
+// #####################################
+art::Handle< std::vector<recob::Shower> > shwListHandle; 
+std::vector<art::Ptr<recob::Shower> > shwlist;
    
-   // === Filling the shwlist from the shwlistHandle ===
-   if (evt.getByLabel(fShowerModuleLabel,shwListHandle))
-      {art::fill_ptr_vector(shwlist, shwListHandle);}
+// === Filling the shwlist from the shwlistHandle ===
+if (evt.getByLabel(fShowerModuleLabel,shwListHandle))
+   {art::fill_ptr_vector(shwlist, shwListHandle);}
 
    
-   // ##########################################################
-   // ### Grabbing associations for use later in the AnaTool ###
-   // ##########################################################
-   // === Associations between hits and raw digits ===
-   art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
-   // === Association between SpacePoints and Tracks ===
-   art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
-   // === Association between Tracks and 2d Hits ===
-   art::FindManyP<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
-   // === Association between Calorimetry objects and Tracks ===
-   art::FindManyP<anab::Calorimetry> fmcal(trackListHandle, evt, fCalorimetryModuleLabel);
-   // === Association between Particle ID objects (PID) and Tracks ===
-   art::FindManyP<anab::ParticleID>  fmpid(trackListHandle, evt, fParticleIDModuleLabel);
-   // ==== Association between Clusters and Hits ===
-   art::FindManyP<recob::Cluster>     fmc(hitListHandle,   evt, fClusterModuleLabel);
-   // ==== Association between Clusters and Showers ===
-   art::FindManyP<recob::Shower> fms (clusterListHandle, evt, fShowerModuleLabel);
-   // ==== Association between Tracks and Hits
-   art::FindManyP<recob::Hit> fmth(trackListHandle, evt, fTrackModuleLabel);
-   art::FindManyP<recob::Hit, recob::TrackHitMeta> fmthm(trackListHandle, evt, fTrackModuleLabel);
+// ##########################################################
+// ### Grabbing associations for use later in the AnaTool ###
+// ##########################################################
+// === Associations between hits and raw digits ===
+art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
+// === Association between SpacePoints and Tracks ===
+art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
+// === Association between Tracks and 2d Hits ===
+art::FindManyP<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
+// === Association between Calorimetry objects and Tracks ===
+art::FindManyP<anab::Calorimetry> fmcal(trackListHandle, evt, fCalorimetryModuleLabel);
+// === Association between Particle ID objects (PID) and Tracks ===
+art::FindManyP<anab::ParticleID>  fmpid(trackListHandle, evt, fParticleIDModuleLabel);
+// ==== Association between Clusters and Hits ===
+art::FindManyP<recob::Cluster>     fmc(hitListHandle,   evt, fClusterModuleLabel);
+// ==== Association between Clusters and Showers ===
+art::FindManyP<recob::Shower> fms (clusterListHandle, evt, fShowerModuleLabel);
+// ==== Association between Tracks and Hits
+art::FindManyP<recob::Hit> fmth(trackListHandle, evt, fTrackModuleLabel);
+art::FindManyP<recob::Hit, recob::TrackHitMeta> fmthm(trackListHandle, evt, fTrackModuleLabel);
   
    
-   // ### Something to do with SimChannels...need to come back to ###
-   std::vector<const sim::SimChannel*> fSimChannels;
-   try
-      {evt.getView("largeant", fSimChannels);}
-   catch (art::Exception const&e){ }
+// ### Something to do with SimChannels...need to come back to ###
+std::vector<const sim::SimChannel*> fSimChannels;
+try
+   {evt.getView("largeant", fSimChannels);}
+catch (art::Exception const&e){ }
    
-   // ###################################################################
-   // ### Setting a boolian to only output MC info if this is MC-info ###
-   // ###################################################################
-   bool isdata = false;
-   if (evt.isRealData())
-   	{isdata = true;}
-	
-   else isdata = false;
+// ###################################################################
+// ### Setting a boolian to only output MC info if this is MC-info ###
+// ###################################################################
+bool isdata = false;
+if (evt.isRealData())
+   {isdata = true;}
+else isdata = false;
    
    
       
-   // ----------------------------------------------------------------------------------------------------------------------------
-   // ----------------------------------------------------------------------------------------------------------------------------
-   //							FILLING THE MCTruth Geant4 INFORMATION
-   // ----------------------------------------------------------------------------------------------------------------------------
-   // ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
+//						FILLING THE MCTruth Geant4 INFORMATION
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
 
-   if(!isdata)
+if(!isdata)
+   {
+   // ######################################
+   // ### Making a vector of MCParticles ###
+   // ######################################   
+   std::vector<const simb::MCParticle* > geant_part;
+      
+   // ### Looping over all the Geant4 particles from the BackTracker ###
+   for(size_t p = 0; p < plist.size(); ++p) 
       {
-      // ######################################
-      // ### Making a vector of MCParticles ###
-      // ######################################   
-      std::vector<const simb::MCParticle* > geant_part;
-      
-      // ### Looping over all the Geant4 particles from the BackTracker ###
-      for(size_t p = 0; p < plist.size(); ++p) 
-         {
-	 // ### Filling the vector with MC Particles ###
-	 geant_part.push_back(plist.Particle(p)); 
-	 }
+      // ### Filling the vector with MC Particles ###
+      geant_part.push_back(plist.Particle(p));
+      }
 	
-      //std::cout<<"No of geant part= "<<geant_part.size()<<std::endl;
       
-      // ### Setting a string for primary ###
-      std::string pri("primary");
+   // ### Setting a string for primary ###
+   std::string pri("primary");
       
-      // ### Setting a string for PionMinusInelastic ###
-      std::string PionMinusInelastic("PionMinusInelastic");
+   // ### Setting a string for PionMinusInelastic ###
+   std::string PionMinusInelastic("PionMinusInelastic");
       
-      // ### Setting a string for NeutronInelastic ###
-      std::string NeutronInelastic("NeutronInelastic");
+   // ### Setting a string for NeutronInelastic ###
+   std::string NeutronInelastic("NeutronInelastic");
       
-       // ### Setting a string for hadElastic ###
-      std::string hadElastic("hadElastic");
+    // ### Setting a string for hadElastic ###
+   std::string hadElastic("hadElastic");
       
-      // ### Setting a string for nCapture ###
-      std::string nCapture("nCapture");
+   // ### Setting a string for nCapture ###
+   std::string nCapture("nCapture");
       
-      // ### Setting a string for CHIPSNuclearCaptureAtRest ###
-      std::string CHIPSNuclearCaptureAtRest("CHIPSNuclearCaptureAtRest");
+   // ### Setting a string for CHIPSNuclearCaptureAtRest ###
+   std::string CHIPSNuclearCaptureAtRest("CHIPSNuclearCaptureAtRest");
       
-      // ### Setting a string for Decay ###
-      std::string Decay("Decay");
+   // ### Setting a string for Decay ###
+   std::string Decay("Decay");
+     
+   // ### Setting a string for KaonZeroLInelastic ###
+   std::string KaonZeroLInelastic("KaonZeroLInelastic");
       
-      // ### Setting a string for KaonZeroLInelastic ###
-      std::string KaonZeroLInelastic("KaonZeroLInelastic");
+   // ### Setting a string for CoulombScat ###
+   std::string CoulombScat("CoulombScat");
       
-      // ### Setting a string for CoulombScat ###
-      std::string CoulombScat("CoulombScat");
+   // ### Setting a string for muMinusCaptureAtRest ###
+   std::string muMinusCaptureAtRest("muMinusCaptureAtRest");
       
-      // ### Setting a string for muMinusCaptureAtRest ###
-      std::string muMinusCaptureAtRest("muMinusCaptureAtRest");
+   // ### Setting a string for ProtonInelastic ###
+   std::string ProtonInelastic("ProtonInelastic");
       
-      // ### Setting a string for ProtonInelastic ###
-      std::string ProtonInelastic("ProtonInelastic");
-      
-     // ### Setting a string for PiMinusAbsorptionAtRest ###
-      std::string PiMinusAbsorptionAtRest("PiMinusAbsorptionAtRest");
+   // ### Setting a string for PiMinusAbsorptionAtRest ###
+   std::string PiMinusAbsorptionAtRest("PiMinusAbsorptionAtRest");
 
-      int primary=0;
-      int geant_particle=0;
-     // float g4PrimaryProcess[100] = {0};
-      int g4Primary_TrkID[100] = {999};
-      // ############################################################
-      // ### Determine the number of primary particles from geant ###
-      // ############################################################
-      for( unsigned int i = 0; i < geant_part.size(); ++i )
-	{
-	geant_particle++;
-	if(geant_part[i]->Process()==pri)
-	   {
-	   simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
-	   int iPrimPt = 0;	
-	   for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj)
-	       {
-	       MidE[iPrimPt]  = truetraj.E(iPrimPt)*1000;
-	       iPrimPt++;
-	       }//<--End loop on true trajectory points
-           NTpts = iPrimPt;
-           g4Primary_X0[primary] = geant_part[i]->Vx();
-           g4Primary_Y0[primary] = geant_part[i]->Vy();
-           g4Primary_Z0[primary] = geant_part[i]->Vz();
+   int primary=0;
+   int geant_particle=0;
+   // float g4PrimaryProcess[100] = {0};
+   int g4Primary_TrkID[100] = {999};
+   // ############################################################
+   // ### Determine the number of primary particles from geant ###
+   // ############################################################
+   for( unsigned int i = 0; i < geant_part.size(); ++i )
+      {
+      geant_particle++;
+      
+      // ##################################################
+      // ### Grabbing the primary particles information ###
+      // ##################################################
+      if(geant_part[i]->Process()==pri)
+         {
+	 
+	 // ##############################################################
+	 // ### Getting the trajectory points for the primary particle ###
+	 // ##############################################################
+	 simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
+	 
+	 // ### Number of MC trajectory points ###
+	 int iPrimPt = 0;	
+	 for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj)
+	    {
+	    MidE[iPrimPt]  = truetraj.E(iPrimPt)*1000;
+	    iPrimPt++;
+	    }//<--End loop on true trajectory points
+         NTpts = iPrimPt;
+         
+	 // ### Getting the primary particles starting information ###
+	 g4Primary_X0[primary] = geant_part[i]->Vx();
+         g4Primary_Y0[primary] = geant_part[i]->Vy();
+         g4Primary_Z0[primary] = geant_part[i]->Vz();
 
-           g4Primary_Px[primary] = geant_part[i]->Px()*1000;
-           g4Primary_Py[primary] = geant_part[i]->Py()*1000;
-           g4Primary_Pz[primary] = geant_part[i]->Pz()*1000;
+         g4Primary_Px[primary] = geant_part[i]->Px()*1000;
+         g4Primary_Py[primary] = geant_part[i]->Py()*1000;
+         g4Primary_Pz[primary] = geant_part[i]->Pz()*1000;
+	 
+	 // #########################################################################
+	 // ## Extrapolating the MC Primary particle to the front face of the TPC ###
+	 // #########################################################################
+	 
+	 double PX0 = -999, PY0 = -999; 
+	 if(geant_part[i]->Vz() < 0)
+	    {
+	    double b1 = geant_part[i]->Vz() - geant_part[i]->Vx()*geant_part[i]->Pz()/geant_part[i]->Px();
+	    double b2 = geant_part[i]->Vz() - geant_part[i]->Vy()*geant_part[i]->Pz()/geant_part[i]->Py();
 
+            PX0 = -b1*geant_part[i]->Px()/geant_part[i]->Pz();
+	    PY0 = -b2*geant_part[i]->Py()/geant_part[i]->Pz();
 
-	   g4Primary_Xf[primary] =geant_part[i]->EndPosition()[0];
-           g4Primary_Yf[primary] =geant_part[i]->EndPosition()[1];
-           g4Primary_Zf[primary] =geant_part[i]->EndPosition()[2];
-
-        
-	   double b1 = geant_part[i]->Vz() - geant_part[i]->Vx()*geant_part[i]->Pz()/geant_part[i]->Px();
-	   double b2 = geant_part[i]->Vz() - geant_part[i]->Vy()*geant_part[i]->Pz()/geant_part[i]->Py();
-
-           double PX0 = -b1*geant_part[i]->Px()/geant_part[i]->Pz();
-	   double PY0 = -b2*geant_part[i]->Py()/geant_part[i]->Pz();
-
-           g4Primary_ProjX0[primary] = PX0;
-	   g4Primary_ProjY0[primary] = PY0;
-	   g4Primary_ProjZ0[primary] = 0.0;
+            g4Primary_ProjX0[primary] = PX0;
+	    g4Primary_ProjY0[primary] = PY0;
+	    g4Primary_ProjZ0[primary] = 0.0;
+	    }//<---End projecting the particle if it started outside the TPC
  
        
-           g4Primary_TrkID[primary] = geant_part[i]->TrackId();
-           
-	   // ##########################
-	   // ### Filling Histograms ###
-	   // ##########################
-	   fProjX0->Fill(PX0);
-	   fProjY0->Fill(PY0);
-	   fProjZ0->Fill(0.0);
-	   fStartXMC->Fill(geant_part[i]->Vx());
-	   fStartYMC->Fill(geant_part[i]->Vy());
-	   fStartZMC->Fill(geant_part[i]->Vz());
-	   fStartPxMC->Fill(geant_part[i]->Px()*1000);
-	   fStartPyMC->Fill(geant_part[i]->Py()*1000);
-	   fStartPzMC->Fill(geant_part[i]->Pz()*1000);
+         // ### Getting the primary particles ending information ###
+	 g4Primary_TrkID[primary] = geant_part[i]->TrackId();
+	 g4Primary_Xf[primary] =geant_part[i]->EndPosition()[0];
+         g4Primary_Yf[primary] =geant_part[i]->EndPosition()[1];
+         g4Primary_Zf[primary] =geant_part[i]->EndPosition()[2];
+	 
+	 // ##########################
+	 // ### Filling Histograms ###
+	 // ##########################
+	 fProjX0->Fill(PX0);
+	 fProjY0->Fill(PY0);
+	 fProjZ0->Fill(0.0);
+	 fStartXMC->Fill(geant_part[i]->Vx());
+	 fStartYMC->Fill(geant_part[i]->Vy());
+	 fStartZMC->Fill(geant_part[i]->Vz());
+	 fStartPxMC->Fill(geant_part[i]->Px()*1000);
+	 fStartPyMC->Fill(geant_part[i]->Py()*1000);
+	 fStartPzMC->Fill(geant_part[i]->Pz()*1000);
 
-	   fEndXMC->Fill(geant_part[i]->EndPosition()[0]);
-	   fEndYMC->Fill(geant_part[i]->EndPosition()[1]);
-	   fEndZMC->Fill(geant_part[i]->EndPosition()[2]);
-           fPrimaryEndXvsZ->Fill(geant_part[i]->EndPosition()[2],geant_part[i]->EndPosition()[0]);
-           fPrimaryEndYvsZ->Fill(geant_part[i]->EndPosition()[2],geant_part[i]->EndPosition()[1]);
-        
-           primary++;
-           fCutHistogram->Fill(0);
-	   } // End of if particle is primary
-	trkidmot = geant_part[i]->Mother();
+	 fEndXMC->Fill(geant_part[i]->EndPosition()[0]);
+	 fEndYMC->Fill(geant_part[i]->EndPosition()[1]);
+	 fEndZMC->Fill(geant_part[i]->EndPosition()[2]);
+         fPrimaryEndXvsZ->Fill(geant_part[i]->EndPosition()[2],geant_part[i]->EndPosition()[0]);
+         fPrimaryEndYvsZ->Fill(geant_part[i]->EndPosition()[2],geant_part[i]->EndPosition()[1]);
 
-	}  // End of geant_part size
+	 // ### Counting the number of primaries
+	 primary++;
+	 
+	 fCutHistogram->Fill(0);
+	 } // End of if particle is primary
+      trkidmot = geant_part[i]->Mother();
+      }  // End of geant_part size
 
-       
- //################# Storing the process name for primary #########################//
-       for( unsigned int i = 0; i < geant_part.size(); ++i )
+
+   // ############################################
+   // ### Storing the process name for primary ###
+   // ############################################
+   for( unsigned int i = 0; i < geant_part.size(); ++i )
+      {
+      for( int jprime = 0; jprime < primary; jprime++)
          {
-           
-          if(geant_part[i]->Mother() == g4Primary_TrkID[primary -1])
-           {
-              
-           if(geant_part[i]->Process() == PionMinusInelastic)
-	     {g4PrimaryProcess[primary -1] = 1;}
+         if(geant_part[i]->Mother() == g4Primary_TrkID[jprime])
+            {
+	 
+	    if(geant_part[i]->Process() == PionMinusInelastic)
+	       {g4PrimaryProcess[primary -1] = 1;}
 	     
-	  if(geant_part[i]->Process() == NeutronInelastic)
-	     {g4PrimaryProcess[primary -1] = 2;}
+	    if(geant_part[i]->Process() == NeutronInelastic)
+	       {g4PrimaryProcess[primary -1] = 2;}
 	     
-	  if(geant_part[i]->Process() == hadElastic)
-	     {g4PrimaryProcess[primary -1] = 3;}
+	    if(geant_part[i]->Process() == hadElastic)
+	       {g4PrimaryProcess[primary -1] = 3;}
 	  
-	  if(geant_part[i]->Process() == nCapture)
-	     {g4PrimaryProcess[primary -1] = 4;}
+	    if(geant_part[i]->Process() == nCapture)
+	       {g4PrimaryProcess[primary -1] = 4;}
 	     
-	  if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
-	     {g4PrimaryProcess[primary -1] = 5;}
+	    if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
+	       {g4PrimaryProcess[primary -1] = 5;}
 	  
-	  if(geant_part[i]->Process() == Decay)
-	     {g4PrimaryProcess[primary -1] = 6;}
+	    if(geant_part[i]->Process() == Decay)
+	       {g4PrimaryProcess[primary -1] = 6;}
 	  
-	  if(geant_part[i]->Process() == KaonZeroLInelastic)
-	     {g4PrimaryProcess[primary -1] = 7;}
+	    if(geant_part[i]->Process() == KaonZeroLInelastic)
+	       {g4PrimaryProcess[primary -1] = 7;}
 	     
-	  if(geant_part[i]->Process() == CoulombScat)
-	     {g4PrimaryProcess[primary -1] = 8;}
+	    if(geant_part[i]->Process() == CoulombScat)
+	       {g4PrimaryProcess[primary -1] = 8;}
 	     
-	  if(geant_part[i]->Process() == muMinusCaptureAtRest)
-	     {g4PrimaryProcess[primary -1] = 9;}
+	    if(geant_part[i]->Process() == muMinusCaptureAtRest)
+	       {g4PrimaryProcess[primary -1] = 9;}
 	     
-	  if(geant_part[i]->Process() == ProtonInelastic)
-	     {g4PrimaryProcess[primary -1] = 10;}
+	    if(geant_part[i]->Process() == ProtonInelastic)
+	       {g4PrimaryProcess[primary -1] = 10;}
 
-          if(geant_part[i]->Process()==PiMinusAbsorptionAtRest)
-            {g4PrimaryProcess[primary -1] = 0;}
+            if(geant_part[i]->Process()==PiMinusAbsorptionAtRest)
+               {g4PrimaryProcess[primary -1] = 0;}
 
-	  } // End of TrackID if loop
-	}   // End of for loop
-
+            }//<---End getting the particles associated with the primary
+         fProcess->Fill(g4PrimaryProcess[jprime]);
+         }//<---End jprime loop
+      }//<--End i loop over all geant4 particles
        
-
-        fProcess->Fill(g4PrimaryProcess[primary -1]);
-	  
-      }//<---End checking if this is data   
+}//<---End checking if this is data   
    
    
       
-   // ----------------------------------------------------------------------------------------------------------------------------
-   // ----------------------------------------------------------------------------------------------------------------------------
-   //							FILLING THE 3-D TRACK INFORMATION
-   // ----------------------------------------------------------------------------------------------------------------------------
-   // ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
+//						FILLING THE 3-D TRACK INFORMATION
+// ----------------------------------------------------------------------------------------------------------------------------
+// ----------------------------------------------------------------------------------------------------------------------------
    
 //####################Filling Trk Pitchhit, dE/dX info for all tracks###########################################
 
