@@ -512,6 +512,9 @@ int primary=0;
 
 if(!isdata)
    {
+   
+   // ### Filling all MC Events in the Cut histogram ###
+   fCutHistogram->Fill(0);
    // ######################################
    // ### Making a vector of MCParticles ###
    // ######################################   
@@ -648,7 +651,7 @@ if(!isdata)
 	 // ### Counting the number of primaries
 	 primary++;
 	 
-	 fCutHistogram->Fill(0);
+	 
 	 } // End of if particle is primary
       trkidmot = geant_part[i]->Mother();
       }  // End of geant_part size
@@ -720,9 +723,108 @@ for(int npri = 0; npri < primary; npri++)
    if(g4Primary_Zf[npri] < 0){GoodMCEventInTPC = false;}
    
    }//<---End npri loop
+   
+// ### Filling the cut histogram if the primary enters the TPC ###
 if(GoodMCEventInTPC){fCutHistogram->Fill(1);}
 
 
+
+//=======================================================================================================================
+//						Low Z Spacepoint Track Cut
+//=======================================================================================================================
+bool TrackTrjPtsZCut = false;
+int nUpStreamTrk = 0;
+
+// ##################################################
+// ### Loop over all the Reconstructed TPC Tracks ###
+// ##################################################
+for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
+   {
+   TVector3 p_hat_dm0;
+   // ### Resetting the variables for each track ###
+   dummyXpoint = 999, dummyYpoint = 999, dummyZpoint = 999;
+   // ########################################################
+   // ### Looping over the trajectory points for the track ###
+   // ########################################################
+   for(size_t iTrjPt = 0; iTrjPt<tracklist[iTrk]->NumberTrajectoryPoints(); iTrjPt++)
+      {
+      p_hat_dm0 = tracklist[iTrk]->DirectionAtPoint(iTrjPt);
+      
+      // ### Need to understand this .... ###
+      if( p_hat_dm0.Z() < 0 )
+         {
+	 p_hat_dm0.SetX(p_hat_dm0.X()*-1);
+	 p_hat_dm0.SetY(p_hat_dm0.Y()*-1);
+	 p_hat_dm0.SetZ(p_hat_dm0.Z()*-1);
+	 }
+      trjPt_dmX[iTrk][iTrjPt] = tracklist[iTrk]->LocationAtPoint(iTrjPt).X();
+      trjPt_dmY[iTrk][iTrjPt] = tracklist[iTrk]->LocationAtPoint(iTrjPt).Y();
+      trjPt_dmZ[iTrk][iTrjPt] = tracklist[iTrk]->LocationAtPoint(iTrjPt).Z();
+      
+      // ###########################################################################
+      // ### Setting our dummypoints if this is the lowest Z point on this track ###
+      // ###           and still within the active volume of the TPC             ###
+      // ###########################################################################
+      if(trjPt_dmZ[iTrk][iTrjPt] < dummyZpoint && trjPt_dmZ[iTrk][iTrjPt] > 0.0 && 
+	 trjPt_dmY[iTrk][iTrjPt] > -20.0 && trjPt_dmY[iTrk][iTrjPt] < 20.0 &&       
+	 trjPt_dmX[iTrk][iTrjPt] > 0.0 && trjPt_dmX[iTrk][iTrjPt] < 47 )
+         {
+	 dummyXpoint = trjPt_dmX[iTrk][iTrjPt];
+	 dummyYpoint = trjPt_dmY[iTrk][iTrjPt];
+	 dummyZpoint = trjPt_dmZ[iTrk][iTrjPt];
+	 
+	 dummypoint_TempTrjX = p_hat_dm0.X();
+	 dummypoint_TempTrjY = p_hat_dm0.Y();
+	 dummypoint_TempTrjZ = p_hat_dm0.Z();
+	 
+	 dummyPointTrkInd = iTrk;
+	  
+	 } //--End sorting for the lowest point in Z
+ 
+
+
+      }  //---End iTrjPt loop
+
+      // ################################################################
+      // ### Record this track if the upstream point is less than 2cm ###
+      // ################################################################
+     
+      if(dummyZpoint < 2)
+       {
+       	 dummyTrkX[nUpStreamTrk] = dummyXpoint;
+	 dummyTrkY[nUpStreamTrk] = dummyYpoint;
+	 dummyTrkZ[nUpStreamTrk] = dummyZpoint;
+
+
+	  dummyTrk_pHat0X[nUpStreamTrk] = dummypoint_TempTrjX;
+	  dummyTrk_pHat0Y[nUpStreamTrk] = dummypoint_TempTrjY;
+	  dummyTrk_pHat0Z[nUpStreamTrk] = dummypoint_TempTrjZ;  
+	  dummyTrk_Index[nUpStreamTrk] = dummyPointTrkInd;
+
+	  nUpStreamTrk++;
+          TrackTrjPtsZCut = true;
+          
+	} // End of If loop 
+        
+      
+        //} //End of Spacept Loop
+       fUpstZpts->Fill(dummyZpoint);
+
+
+   }  // End iTrk
+
+
+   fnUpstmTrk->Fill(nUpStreamTrk);
+
+   // ###############################################
+   // ### Skipping events that don't have a track ###
+   // ###   in the front of the TPC (Z) Position  ###
+   // ###############################################
+   if(TrackTrjPtsZCut)
+   {
+   // ### Counting Events w/ front face TPC Track ###
+   nEvtsTrackZPos++;
+   fCutHistogram->Fill(2);
    
    
       
@@ -790,120 +892,7 @@ if(GoodMCEventInTPC){fCutHistogram->Fill(1);}
 
       }
 
-//#################################################################################################################
-  // === Saving the number of tracks per event ===
-   
 
-    bool TrackTrjPtsZCut = false;
-   
-   fCutHistogram->Fill(2);
-    int nUpStreamTrk = 0;
-
-
-   // ##################################################
-   // ### Loop over all the Reconstructed TPC Tracks ###
-   // ##################################################
-   for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
-   {
-     // std::cout<<"test00"<<std::endl;
-
-      TVector3 p_hat_dm0;
-
-      // ### Resetting the variables for each track ###
-      dummyXpoint = 999, dummyYpoint = 999, dummyZpoint = 999;
-
-      //nTrajPoint[i] = tracklist[i]->NumberTrajectoryPoints();
-      // ########################################################
-      // ### Looping over the trajectory points for the track ###
-      // ########################################################
-      for(size_t iTrjPt = 0; iTrjPt<tracklist[iTrk]->NumberTrajectoryPoints(); iTrjPt++)
-         {
-	
-         p_hat_dm0 = tracklist[iTrk]->DirectionAtPoint(iTrjPt);
-
-         if( p_hat_dm0.Z() < 0 )
-         {
-	 p_hat_dm0.SetX(p_hat_dm0.X()*-1);
-	 p_hat_dm0.SetY(p_hat_dm0.Y()*-1);
-	 p_hat_dm0.SetZ(p_hat_dm0.Z()*-1);
-	 }
-
-  
-   
-	trjPt_dmX[iTrk][iTrjPt] = tracklist[iTrk]->LocationAtPoint(iTrjPt).X();
-	trjPt_dmY[iTrk][iTrjPt] = tracklist[iTrk]->LocationAtPoint(iTrjPt).Y();
-	trjPt_dmZ[iTrk][iTrjPt] = tracklist[iTrk]->LocationAtPoint(iTrjPt).Z();
-         
-
-	 // ###########################################################################
-	 // ### Setting our dummypoints if this is the lowest Z point on this track ###
-	 // ###           and still within the active volume of the TPC             ###
-	 // ###########################################################################
-
-
-        if(trjPt_dmZ[iTrk][iTrjPt] < dummyZpoint && trjPt_dmZ[iTrk][iTrjPt] > 0.0 && 
-	    trjPt_dmY[iTrk][iTrjPt] > -20.0 && trjPt_dmY[iTrk][iTrjPt] < 20.0 &&       
-	    trjPt_dmX[iTrk][iTrjPt] > 0.0 && trjPt_dmX[iTrk][iTrjPt] < 47 )
-          
-         {
-
-            dummyXpoint = trjPt_dmX[iTrk][iTrjPt];
-	    dummyYpoint = trjPt_dmY[iTrk][iTrjPt];
-	    dummyZpoint = trjPt_dmZ[iTrk][iTrjPt];
-
-
-            dummypoint_TempTrjX = p_hat_dm0.X();
-	    dummypoint_TempTrjY = p_hat_dm0.Y();
-	    dummypoint_TempTrjZ = p_hat_dm0.Z();   
-
-	    dummyPointTrkInd = iTrk;
-	  
-	 } //--End sorting for the lowest point in Z
- 
-
-
-         }  //---End iTrjPt loop
-
-      // ################################################################
-      // ### Record this track if the upstream point is less than 2cm ###
-      // ################################################################
-     
-      if(dummyZpoint < 2)
-       {
-       	 dummyTrkX[nUpStreamTrk] = dummyXpoint;
-	 dummyTrkY[nUpStreamTrk] = dummyYpoint;
-	 dummyTrkZ[nUpStreamTrk] = dummyZpoint;
-
-
-	  dummyTrk_pHat0X[nUpStreamTrk] = dummypoint_TempTrjX;
-	  dummyTrk_pHat0Y[nUpStreamTrk] = dummypoint_TempTrjY;
-	  dummyTrk_pHat0Z[nUpStreamTrk] = dummypoint_TempTrjZ;  
-	  dummyTrk_Index[nUpStreamTrk] = dummyPointTrkInd;
-
-	  nUpStreamTrk++;
-          TrackTrjPtsZCut = true;
-          
-	} // End of If loop 
-        
-      
-        //} //End of Spacept Loop
-       fUpstZpts->Fill(dummyZpoint);
-
-
-   }  // End iTrk
-
-
-   fnUpstmTrk->Fill(nUpStreamTrk);
-
-   // ###############################################
-   // ### Skipping events that don't have a track ###
-   // ###   in the front of the TPC (Z) Position  ###
-   // ###############################################
-   if(TrackTrjPtsZCut)
-   {
-   // ### Counting Events w/ front face TPC Track ###
-   nEvtsTrackZPos++;
-   fCutHistogram->Fill(2);
 
    //=======================================================================================================================
    //					Cutting on the number of tracks in the upstream TPC
