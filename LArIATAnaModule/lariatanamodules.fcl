@@ -11,7 +11,7 @@ lariat_anatree:
     CalorimetryModuleLabel:   "calo"
     ParticleIDModuleLabel:    "pid"
     ClusterModuleLabel:       "linecluster"
-    WCTrackLabel:             "WCTrackBuilder"
+    WCTrackLabel:             "wctrack"
     TOFModuleLabel:	      "tof"
     AGModuleLabel:            "agcounter"
     G4ModuleLabel:            "largeant"

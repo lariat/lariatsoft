@@ -1,24 +1,35 @@
 #include "FragmentToDigit_config.fcl"
 #include "services_lariat.fcl"
 #include "triggeralgo_service.fcl"
-#include "lariatanamodules.fcl"
+#include "lariatfiltermodules.fcl"
+#include "FragmentToDigit_config.fcl"
+#include "RawDataUtilities_algs.fcl"
+#include "caldata_lariat.fcl"	
+
 
 ## You will write whatever name you want this process to be called 
 ## It is important to note that the same process name cannot be called
 ## twice on a ROOT file, so you may have to change this 
-process_name: AnaTree
+
+### 	THE STAGE0 FILTER IS RELATED TO THE QUALITY CHECKS ON THE SAMPLE
+###     THE QUALITY CHECKS ARE:
+###	1) TOF EXISTENCE (and non-zero value for the ToF itself)
+###     2) WCTRACK EXISTENCE
+###     3) CALWIRE HITS EXISTENCE (dim CalWire 480)
+
+process_name: Stage0Filter
 
 
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "anaTree.root" }
+  TFileService: { fileName: "Stage0_QualityChecks_hist.root" }
   #Timing:       {}
   #SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
   #message:      @local::lariat_message_services
   @table::lariat_services
-  #lsuser:         @local::lariat_simulation_services
+  #user:         @local::lariat_simulation_services
 }
 #services.user.DatabaseUtil.ShouldConnect: false
 
@@ -49,14 +60,16 @@ physics:
  ### Here you will define any analyzer modules you want to run ###
  analyzers:
  {
-   anatree: @local::lariat_anatree
+
  
  }
  
  ### Here you will define any filter modules you want to run ###
  filters:
  {
- 
+ TOFQual:	@local::lariat_tofquality
+ WCQual:	@local::lariat_wctrackquality
+ CalWireQual:	@local::lariat_calwirequality
  
  }
 
@@ -65,16 +78,20 @@ physics:
  
  reco: [  ]
  
- ana:[ anatree ]
+ ana:[ ]
  
- filt:[  ]
+ filt:[ 
+        TOFQual,
+        WCQual,
+        CalWireQual
+ ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
 
  #trigger_paths is a keyword and contains the paths that modify the art::event, 
  #ie filters and producers
- trigger_paths: [reco] 
+ trigger_paths: [filt,reco] 
 
  #end_paths is a keyword and contains the paths that do not modify the art::Event, 
  #ie analyzers and output streams.  these all run simultaneously
@@ -89,27 +106,11 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   #SelectEvents: {SelectEvents:[reco]}
-   fileName:    "BeamOn_NoPileUp_Filter.root"
+   SelectEvents: {SelectEvents:[filt]}
+   fileName:    "Stage0_QualityChecks_Filter.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1
  }
 }
 
 
-### Here, we overwrite ALL module labels with the ones defined above.
-###########################################################
-# See RawDataUtilities/TriggerDigitUtility Lines 86 - 111 #
-#              for definition of triggers                 #
-###########################################################
-#physics.filters.TrigPattern.TriggerPattern: "<+BEAMON-PILEUP>"
-#physics.filters.TrigPattern.TriggerFilterAlg.Verbosity: true
-
-
-physics.analyzers.anatree.WCTrackLabel: "wctrack"
-#physics.producers.pandora.GeantModuleLabel:                     "largeant"
-#physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
-services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
-services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
-
-services.DetectorPropertiesService.TimeOffsetV: -13.2
