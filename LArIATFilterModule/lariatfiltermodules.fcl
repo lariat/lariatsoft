@@ -39,7 +39,7 @@ lariat_basic_pimufilter:
  WCUpperBound: 			1500.
  TOFModuleLabel: 		"tof"
  nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter
- TOFLowerBound:	10.	# minimum time for the TOF object (ns)
+ TOFLowerBound:	 0.	# minimum time for the TOF object (ns)
  TOFUpperBound:  25.	# maximum time for the TOF object (ns)
 
 

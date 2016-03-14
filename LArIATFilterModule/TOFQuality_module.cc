@@ -98,25 +98,40 @@ void TOFQuality::beginJob()
 // ---------------------- Event Loop ---------------------------
 bool TOFQuality::filter(art::Event & evt)
 {
-// ####################################################
-// ### Getting the Time of Flight (TOF) Information ###
-// ####################################################
-art::Handle< std::vector<ldp::TOF> > TOFColHandle;
-std::vector<art::Ptr<ldp::TOF> > tof;
-   
-if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
-   {art::fill_ptr_vector(tof, TOFColHandle);}
-
-// ### Reject the event if there is no TOF info ###   
-if(tof.size() <  fnTOFObjects){return false;}  
-
-else {
+  std::cout<<"PUPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAAAAAAAA \n";
+  // ####################################################
+  // ### Getting the Time of Flight (TOF) Information ###
+  // ####################################################
+  art::Handle< std::vector<ldp::TOF> > TOFColHandle;
+  std::vector<art::Ptr<ldp::TOF> > tof;
+  
+  std::cout<<"Puppa1\n";
+  if(evt.getByLabel(fTOFModuleLabel,TOFColHandle)) art::fill_ptr_vector(tof, TOFColHandle);
+  
+  std::cout<<"Puppa2\n";
+  // ### Reject the event if there is no TOF info ###   
+  if(tof.size() <  fnTOFObjects)  return false;  
+ 
+  std::cout<<"Puppa4\n";
   //Remove the event is the TOFObject is created but it gives out a zero value/empty value for the Tof itself
-   if( TOFColHandle->at(0).NTOF() < 1 ) {return false;} 
-   
-  else return true;}
-
+  
+  //if( TOFColHandle->at(0).NTOF() < 1 ) return false;
+  return true;
+    
 }
+
+
+/*
+bool tofGood = true;
+if(ntof < 1){continue;}
+for(int mmtof = 0; mmtof < ntof; mmtof++)
+  {
+    if(tofObject[mmtof] < 0 && tofObject[mmtof] > 30)
+      {tofGood = false;}
+
+  }//<---End mmtof                                                                                                                                                                                  
+
+*/
 
 
 
