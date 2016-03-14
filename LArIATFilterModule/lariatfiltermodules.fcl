@@ -153,11 +153,11 @@ nCalWireObjects: 	480 	# number of CalWire objects in the event to pass the filt
 
 lariat_triggerefficiency:
 {
-module_type:    BeamlineTrigger
-CalDataModuleLabel:	"caldata"	# caldata module label
-nCalWireObjects: 	480 	# number of CalWire objects in the event to pass the filter
-TOFModuleLabel:	"tof"	# TOF module label
-nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter
+module_type:    		BeamlineTrigger
+CalDataModuleLabel:		"caldata"	# caldata module label
+nCalWireObjects:	 	480 	# number of CalWire objects in the event to pass the filter
+TOFModuleLabel:			"tof"	# TOF module label
+nTOFObjects: 			1 	# number of TOF objects in the event to pass the filter
 WCTrackModuleLabel: 		"wctrack"
 minNumberWCTrack: 		1 		# number of WCTracks
 WCLowerBound: 			0.
