@@ -23,7 +23,6 @@
 
 // LArIATSoft includes
 #include "RawDataUtilities/ClockCorrectionAlg.h"
-#include "RawDataUtilities/FragmentUtility.h"
 #include "RawDataUtilities/SpillWrapper.h"
 
 // ROOT includes
