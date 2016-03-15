@@ -64,6 +64,7 @@ physics:
       TDCPreAcquisitionWindow:     -1  # 1.196 or 1.20525?
       TDCPostAcquisitionWindow:    -1  # 0
       TDCAcquisitionWindow:        -1  # 1.196 or 1.20525?
+      MURSThreshold:                2020 #it's most probably not saved in a database, so will put it here
     }
   }
 
