@@ -473,7 +473,7 @@ namespace DataQuality {
 	//TH1 objects for MURS
 	fMURSPaddleHitsHistogram = mursDir.make<TH1I>("MURSHits", ";Paddle number, PT is 0;Entries ", 17, -1, 16);
 	fMuRSHitTimingHistogram = mursDir.make<TH1D>("MURSTiming", ";Hit time, Clock ticks;Entries ", 3073, 0, 3073);
-	fOutbackHistogram = mursDir.make<TH2D>("Paddles Alive", ";Plane Number (Punch Through is a 0th), Paddle Number;Entries ", 5,0,5,4,0,4);
+	fOutbackHistogram = mursDir.make<TH2D>("Paddles Alive", ";Plane Number (Punch Through is a 0th); Paddle Number in Plane ", 5,0,5,4,0,4);
     // create TTree objects
     fEventRecord        = tfs->make<TTree>("artEventRecord",  "artEventRecord");
     fSpillTrailerTree   = tfs->make<TTree>("spillTrailer",    "spillTrailer");
@@ -1166,7 +1166,7 @@ namespace DataQuality {
 	  fMURSPaddleHitsHistogram->Fill(nPaddle-TrigIter*16);
 			if(murs_alive.at(nPaddle-TrigIter*16) == false){
 				fOutbackHistogram->Fill(double(1+((nPaddle-TrigIter*16)/4)),double((nPaddle-TrigIter*16)-4*((nPaddle-TrigIter*16)/4)));
-				murs_alive.at(nPaddle-TrigIter*16) = true;
+				murs_alive[nPaddle-TrigIter*16] = true;
 			}
 		}
       }
