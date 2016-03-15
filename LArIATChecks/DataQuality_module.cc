@@ -30,8 +30,8 @@
 // LArIATSoft includes
 #include "LArIATRecoAlg/TOFBuilderAlg.h"
 #include "RawDataUtilities/FragmentToDigitAlg.h"
-#include "RawDataUtilities/FragmentUtility.h"
 #include "RawDataUtilities/EventBuilderAlg.h"
+#include "RawDataUtilities/SpillWrapper.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
 // ROOT includes
@@ -100,6 +100,15 @@ namespace DataQuality {
 
     // DatabaseUtilityT1034 service handle
     art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
+
+    // number of fragments in raw data file
+    size_t fNumberFragmentsPerSpill;
+
+    // unique pointer to SpillWrapper
+    std::unique_ptr<rdu::SpillWrapper> fSpillWrapper;
+
+    // complete LariatFragment for event record
+    LariatFragment * fLariatFragment;
 
     // event builder algorithm
     rdu::EventBuilderAlg fEventBuilderAlg;
@@ -289,6 +298,9 @@ namespace DataQuality {
   // constructor
   DataQuality::DataQuality(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
+    , fNumberFragmentsPerSpill(pset.get<std::size_t>("NumberFragmentsPerSpill", 4))
+    , fSpillWrapper(new rdu::SpillWrapper(fNumberFragmentsPerSpill))
+    , fLariatFragment(nullptr)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
     , fTOFBuilderAlg(pset)
@@ -695,6 +707,8 @@ namespace DataQuality {
     fRawFragmentLabel    = pset.get< std::string >("RawFragmentLabel",    "daq"  );
     fRawFragmentInstance = pset.get< std::string >("RawFragmentInstance", "SPILL");
 
+    //fNumberFragmentsPerSpill = pset.get< size_t >("NumberFragmentsPerSpill", 4);
+
     fV1740PreAcquisitionWindow   = pset.get< double >("V1740PreAcquisitionWindow",   -1);
     fV1740PostAcquisitionWindow  = pset.get< double >("V1740PostAcquisitionWindow",  -1);
     fV1740AcquisitionWindow      = pset.get< double >("V1740AcquisitionWindow",      -1);
@@ -719,12 +733,30 @@ namespace DataQuality {
     fEvent         = event.event();
     fTimeStampLow  = event.time().timeLow();
     fTimeStampHigh = event.time().timeHigh();
- 
-    // make the utility to access the fragments from the event record
-    rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
+
+    // access fragments from the event record
+    if (!fSpillWrapper->ready()) {
+        std::cout << "Adding event to spill wrapper." << std::endl;
+        fSpillWrapper->add(event);
+        std::cout << "Done!" << std::endl;
+    }
+    if (!fSpillWrapper->ready()) {
+        return;
+    }
+
+    const uint8_t * SpillDataPtr(fSpillWrapper->get());
+
+    mf::LogInfo("EventBuilderCheck") << "Spill is " << fSpillWrapper->size() <<
+      " bytes, starting at " << static_cast<const void*>(SpillDataPtr);
+
+    //const char * bytePtr = reinterpret_cast<const char *> (fSpillWrapper->get());
+    //fLariatFragment = new LariatFragment((char *) bytePtr, fSpillWrapper->size());
+    fLariatFragment = new LariatFragment((char *) SpillDataPtr, fSpillWrapper->size());
+
+    fSpillWrapper.reset(nullptr);
 
     // get SpillTrailer
-    LariatFragment::SpillTrailer const& spillTrailer = (&fragUtil.DAQFragment())->spillTrailer;
+    LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
     fSpillTrailerRunNumber = spillTrailer.runNumber;
     fSpillTrailerSpillNumber = spillTrailer.spillNumber;
     fSpillTrailerTimeStamp = spillTrailer.timeStamp;
@@ -751,7 +783,7 @@ namespace DataQuality {
 
     // group data blocks into collections
     std::vector< rdu::DataBlockCollection > Collections;
-    Collections = fEventBuilderAlg.Build(&fragUtil.DAQFragment());
+    Collections = fEventBuilderAlg.Build(fLariatFragment);
 
     // flag for PEDESTALON gate
     // PEDESTALON: $00 to $00+999 milliseconds 
@@ -1176,7 +1208,7 @@ namespace DataQuality {
     }
 
     std::vector< rdu::DataBlock > DataBlocks;
-    DataBlocks = fEventBuilderAlg.GetDataBlocks(&fragUtil.DAQFragment());
+    DataBlocks = fEventBuilderAlg.GetDataBlocks(fLariatFragment);
     std::vector< std::pair< double, double > > CAENBoard0Intervals;
     //CAENBoard0Intervals = fEventBuilderAlg.CreateIntervals(DataBlocks, 0, fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow, fV1740AcquisitionWindow);
     CAENBoard0Intervals = fEventBuilderAlg.CreateIntervals(DataBlocks, 0, 0.128, 0.128, fV1740AcquisitionWindow);
@@ -1199,9 +1231,9 @@ namespace DataQuality {
       }
     }
 
-    size_t const& numberWutFrags = fragUtil.DAQFragment().wutFrags.size();
+    size_t const& numberWutFrags = fLariatFragment->wutFrags.size();
     for (size_t i = 0; i < numberWutFrags; ++i) {
-      WUTFragment const& wutFrag = fragUtil.DAQFragment().wutFrags[i];
+      WUTFragment const& wutFrag = fLariatFragment->wutFrags[i];
       std::vector<WUTFragment::WutHit> const& wutHits = wutFrag.hits;
       fWutNumberHits = wutFrag.header.nHits;
       fWutHitChannel.clear();

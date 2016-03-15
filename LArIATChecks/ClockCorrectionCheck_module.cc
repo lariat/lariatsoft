@@ -24,6 +24,7 @@
 // LArIATSoft includes
 #include "RawDataUtilities/ClockCorrectionAlg.h"
 #include "RawDataUtilities/FragmentUtility.h"
+#include "RawDataUtilities/SpillWrapper.h"
 
 // ROOT includes
 #include "TTree.h"
@@ -75,6 +76,15 @@ namespace ClockCorrectionCheck {
     // run number
     //int fRun;
 
+    // number of fragments in raw data file
+    size_t fNumberFragmentsPerSpill;
+
+    // unique pointer to SpillWrapper
+    std::unique_ptr<rdu::SpillWrapper> fSpillWrapper;
+
+    // complete LariatFragment for event record
+    LariatFragment * fLariatFragment;
+
     // clock correction algorithm
     rdu::ClockCorrectionAlg fClockCorrectionAlg;
 
@@ -104,6 +114,9 @@ namespace ClockCorrectionCheck {
   // constructor
   ClockCorrectionCheck::ClockCorrectionCheck(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
+    , fNumberFragmentsPerSpill(pset.get<std::size_t>("NumberFragmentsPerSpill", 4))
+    , fSpillWrapper(new rdu::SpillWrapper(fNumberFragmentsPerSpill))
+    , fLariatFragment(nullptr)
     , fClockCorrectionAlg(pset.get<fhicl::ParameterSet>("ClockCorrectionAlg"))
   {
     // read in the parameters from the .fcl file
@@ -150,6 +163,8 @@ namespace ClockCorrectionCheck {
     fRawFragmentLabel    = pset.get< std::string >("RawFragmentLabel",    "daq"  );
     fRawFragmentInstance = pset.get< std::string >("RawFragmentInstance", "SPILL");
 
+    //fNumberFragmentsPerSpill = pset.get< size_t >("NumberFragmentsPerSpill", 4);
+
     return;
   }
 
@@ -159,12 +174,30 @@ namespace ClockCorrectionCheck {
     fRun = event.run();
     fSubRun = event.subRun();
 
-    // make the utility to access the fragments from the event record
-    rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
+    // access fragments from the event record
+    if (!fSpillWrapper->ready()) {
+        std::cout << "Adding event to spill wrapper." << std::endl;
+        fSpillWrapper->add(event);
+        std::cout << "Done!" << std::endl;
+    }
+    if (!fSpillWrapper->ready()) {
+        return;
+    }
+
+    const uint8_t * SpillDataPtr(fSpillWrapper->get());
+
+    mf::LogInfo("EventBuilderCheck") << "Spill is " << fSpillWrapper->size() <<
+      " bytes, starting at " << static_cast<const void*>(SpillDataPtr);
+
+    //const char * bytePtr = reinterpret_cast<const char *> (fSpillWrapper->get());
+    //fLariatFragment = new LariatFragment((char *) bytePtr, fSpillWrapper->size());
+    fLariatFragment = new LariatFragment((char *) SpillDataPtr, fSpillWrapper->size());
+
+    fSpillWrapper.reset(nullptr);
 
     std::vector< rdu::DataBlock > DataBlocks;
     std::map< unsigned int, std::vector< double > > TimeStampMap;
-    fClockCorrectionAlg.GetDataBlocksTimeStampMap(&fragUtil.DAQFragment(), DataBlocks, TimeStampMap);
+    fClockCorrectionAlg.GetDataBlocksTimeStampMap(fLariatFragment, DataBlocks, TimeStampMap);
 
     for (std::map< unsigned int, std::vector< double> >::const_iterator
          iter = TimeStampMap.begin(); iter != TimeStampMap.end(); ++iter) {
