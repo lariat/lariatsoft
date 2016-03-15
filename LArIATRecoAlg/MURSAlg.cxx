@@ -1,9 +1,10 @@
 /////////////////////////////////////////////////////////////////
 //                                                             //
-// This is a class definition for the muon range stack hit finding algorithm // 
+// This is a class definition for the muon range stack hit     //
+// finding algorithm                                           //  
 //                                                             //
-// Authors: Pawel Kryczynski pkrycyzn@fnal.gov, but he's just  //                           
-// adapted te code by Greg Pulliam                             //
+// Authors: Pawel Kryczynski pkryczyn@fnal.gov, but he's just  //                           
+// adapted the code by Greg Pulliam                            //
 /////////////////////////////////////////////////////////////////
 
 //Framework includes
