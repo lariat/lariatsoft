@@ -4,66 +4,66 @@ include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 include_directories( $ENV{ARTDAQ_CORE_INC}                     )
 include_directories( $ENV{LARIATFRAGMENTS_INC}/LArIATFragments )
 include_directories( $ENV{LARDATA_INC}                         )
-include_directories( $ENV{LARCORE_INC}          	       )
-include_directories( $ENV{LARSIM_INC}           	       )
-include_directories( $ENV{POSTGRESQL_INC}       	       )
+include_directories( $ENV{LARCORE_INC}                         )
+include_directories( $ENV{LARSIM_INC}                          )
+include_directories( $ENV{POSTGRESQL_INC}                      )
 
 art_make(BASENAME_ONLY
          LIBRARY_NAME     RawDataUtilities
-	       LIB_LIBRARIES    lardata_RawData
-	                        LariatFragments
-                  			  DatabaseUtilityT1034_service
-			                    ${ART_FRAMEWORK_CORE}
-			                    ${ART_FRAMEWORK_PRINCIPAL}
-			                    ${ART_PERSISTENCY_COMMON}
-			                    ${ART_PERSISTENCY_PROVENANCE}
-			                    ${ART_UTILITIES}
-			                    ${MF_MESSAGELOGGER}
-			                    ${MF_UTILITIES}
-			                    ${CETLIB}
-			                    ${ROOT_BASIC_LIB_LIST}
-			                    ${Boost_SYSTEM_LIBRARY}
+         LIB_LIBRARIES    lardata_RawData
+                          LariatFragments
+                          DatabaseUtilityT1034_service
+                          ${ART_FRAMEWORK_CORE}
+                          ${ART_FRAMEWORK_PRINCIPAL}
+                          ${ART_PERSISTENCY_COMMON}
+                          ${ART_PERSISTENCY_PROVENANCE}
+                          ${ART_UTILITIES}
+                          ${MF_MESSAGELOGGER}
+                          ${MF_UTILITIES}
+                          ${CETLIB}
+                          ${ROOT_BASIC_LIB_LIST}
+                          ${Boost_SYSTEM_LIBRARY}
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-			                    ${ART_FRAMEWORK_SERVICES_BASIC}
-			                    ${ART_FRAMEWORK_SERVICES_OPTIONAL}
+                          ${ART_FRAMEWORK_SERVICES_BASIC}
+                          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
-                          ${FHICLCPP}	  
+                          ${FHICLCPP}
          DICT_LIBRARIES   lardata_RawData
-	 		                    larcore_SummaryData
-        SOURCE_LIBRARIES  lardata_RawData
-	                        lardata_Utilities
-	 		                    LariatFragments
+                          larcore_SummaryData
+         SOURCE_LIBRARIES lardata_RawData
+                          lardata_Utilities
+                          LariatFragments
                           LArIATDataProducts
-			                    larcore_SummaryData
-			                    RawDataUtilities
-			                    DatabaseUtilityT1034_service
-	                        ${ART_FRAMEWORK_SERVICES_REGISTRY}
-			                    ${ART_FRAMEWORK_SERVICES_BASIC}
-			                    ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-			                    ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                          larcore_SummaryData
+                          RawDataUtilities
+                          DatabaseUtilityT1034_service
+                          ${ART_FRAMEWORK_SERVICES_REGISTRY}
+                          ${ART_FRAMEWORK_SERVICES_BASIC}
+                          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
+                          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                           ${ART_FRAMEWORK_IO_ROOT}
-			                    ${MF_MESSAGELOGGER}
+                          ${MF_MESSAGELOGGER}
                           ${ROOT_BASIC_LIB_LIST}
          MODULE_LIBRARIES lardata_RawData
-	                        larcore_SummaryData
-			                    larcore_Geometry_Geometry_service
+                          larcore_SummaryData
+                          larcore_Geometry_Geometry_service
                           LariatFragments
                           RawDataUtilities
-			                    ${ART_FRAMEWORK_CORE}
-			                    ${ART_FRAMEWORK_PRINCIPAL}
-			                    ${ART_FRAMEWORK_SERVICES_REGISTRY}
-			                    ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-			                    ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			                    ${ART_PERSISTENCY_COMMON}
-			                    ${ART_PERSISTENCY_PROVENANCE}
-			                    ${ART_UTILITIES}
-			                    ${MF_MESSAGELOGGER}
-			                    ${MF_UTILITIES}
-			                    ${FHICLCPP}
-			                    ${CETLIB}
-			                    ${CLHEP}
-			                    ${ROOT_BASIC_LIB_LIST}
+                          ${ART_FRAMEWORK_CORE}
+                          ${ART_FRAMEWORK_PRINCIPAL}
+                          ${ART_FRAMEWORK_SERVICES_REGISTRY}
+                          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
+                          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                          ${ART_PERSISTENCY_COMMON}
+                          ${ART_PERSISTENCY_PROVENANCE}
+                          ${ART_UTILITIES}
+                          ${MF_MESSAGELOGGER}
+                          ${MF_UTILITIES}
+                          ${FHICLCPP}
+                          ${CETLIB}
+                          ${CLHEP}
+                          ${ROOT_BASIC_LIB_LIST}
 )
 
 

@@ -36,6 +36,14 @@ physics:
 
       module_type:             "ClockCorrectionCheck"
       ClockCorrectionAlg:      @local::standard_clockcorrectionalg
+
+      # The number of fragments in a sub-run. This is set in the
+      # lariat-online repository in the following file
+      #
+      #     daq/lariat-artdaq/tools/fcl/BoardReader_for_Lariat_hardware_base_1x1x2.fcl
+      #
+
+      NumberFragmentsPerSpill:         4
     }
   }
 

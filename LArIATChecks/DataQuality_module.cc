@@ -30,14 +30,15 @@
 // LArIATSoft includes
 #include "LArIATRecoAlg/TOFBuilderAlg.h"
 #include "RawDataUtilities/FragmentToDigitAlg.h"
-#include "RawDataUtilities/FragmentUtility.h"
 #include "RawDataUtilities/EventBuilderAlg.h"
+#include "RawDataUtilities/SpillWrapper.h"
 #include "Utilities/DatabaseUtilityT1034.h"
+//#include "LArIATDataProducts/MuonRangeStackHits.h"
 
 // ROOT includes
 #include "TH1.h"
 #include "TTree.h"
-
+#include "TH2.h"
 // C++ includes
 #include <algorithm>
 #include <iomanip>
@@ -100,6 +101,15 @@ namespace DataQuality {
 
     // DatabaseUtilityT1034 service handle
     art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
+
+    // number of fragments in raw data file
+    size_t fNumberFragmentsPerSpill;
+
+    // unique pointer to SpillWrapper
+    std::unique_ptr<rdu::SpillWrapper> fSpillWrapper;
+
+    // complete LariatFragment for event record
+    LariatFragment * fLariatFragment;
 
     // event builder algorithm
     rdu::EventBuilderAlg fEventBuilderAlg;
@@ -172,6 +182,9 @@ namespace DataQuality {
     double fTDCPostAcquisitionWindow;
     double fTDCAcquisitionWindow;
 
+	// MURS parameters
+	int fThresholdMURS;
+
     // pointer to histograms
     TH1D * fIntervalsDeltaTHistogram;
     TH1D * fIntervalsDeltaTZHistogram;
@@ -182,7 +195,9 @@ namespace DataQuality {
     TH1I * fUSTOFHitsHistogram;
     TH1I * fDSTOFHitsHistogram;
     TH1D * fTOFHistogram;
-
+    TH1I * fMURSPaddleHitsHistogram;
+    TH1D * fMuRSHitTimingHistogram;
+    TH2D * fOutbackHistogram;
     std::vector< std::vector< TH1I * > > fCAENPedestalHistograms;
     std::vector< std::vector< TH1I * > > fCAENADCHistograms;
     std::vector< std::vector< TH1I * > > fCAENMinADCHistograms;
@@ -289,6 +304,9 @@ namespace DataQuality {
   // constructor
   DataQuality::DataQuality(fhicl::ParameterSet const& pset)
     : EDAnalyzer(pset)
+    , fNumberFragmentsPerSpill(pset.get<std::size_t>("NumberFragmentsPerSpill", 4))
+    , fSpillWrapper(new rdu::SpillWrapper(fNumberFragmentsPerSpill))
+    , fLariatFragment(nullptr)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
     , fTOFBuilderAlg(pset)
@@ -347,6 +365,9 @@ namespace DataQuality {
 
     // create sub-directory for TOF
     art::TFileDirectory tofDir = tfs->mkdir("tof");
+
+    // create sub-directory for MURS
+    art::TFileDirectory mursDir = tfs->mkdir("murs");
 
     // create sub-directories for pedestal and ADC histograms
     art::TFileDirectory pedestalDir = tfs->mkdir("pedestal");
@@ -461,7 +482,10 @@ namespace DataQuality {
     fUSTOFHitsHistogram = tofDir.make<TH1I>("USTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
     fDSTOFHitsHistogram = tofDir.make<TH1I>("DSTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
     fTOFHistogram = tofDir.make<TH1D>("TOF", ";TOF [ns];Entries per ns", 500, 0, 500);
-
+	//TH1 objects for MURS
+	fMURSPaddleHitsHistogram = mursDir.make<TH1I>("MURSHits", ";Paddle number, PT is 0;Entries ", 17, -1, 16);
+	fMuRSHitTimingHistogram = mursDir.make<TH1D>("MURSTiming", ";Hit time, Clock ticks;Entries ", 3073, 0, 3073);
+	fOutbackHistogram = mursDir.make<TH2D>("Paddles Alive", ";Plane Number (Punch Through is a 0th); Paddle Number in Plane ", 5,0,5,4,0,4);
     // create TTree objects
     fEventRecord        = tfs->make<TTree>("artEventRecord",  "artEventRecord");
     fSpillTrailerTree   = tfs->make<TTree>("spillTrailer",    "spillTrailer");
@@ -472,6 +496,7 @@ namespace DataQuality {
     fCaenV1751DataTree  = tfs->make<TTree>("v1751",            "v1751");
     fMwpcTdcDataTree    = tfs->make<TTree>("mwpc",             "mwpc");
     fWutDataTree        = tfs->make<TTree>("wut",              "wut");
+
 
     // fEventBuilderTree branches
     fEventBuilderTree->Branch("Run",                         &fRun,                         "Run/I");
@@ -695,6 +720,8 @@ namespace DataQuality {
     fRawFragmentLabel    = pset.get< std::string >("RawFragmentLabel",    "daq"  );
     fRawFragmentInstance = pset.get< std::string >("RawFragmentInstance", "SPILL");
 
+    //fNumberFragmentsPerSpill = pset.get< size_t >("NumberFragmentsPerSpill", 4);
+
     fV1740PreAcquisitionWindow   = pset.get< double >("V1740PreAcquisitionWindow",   -1);
     fV1740PostAcquisitionWindow  = pset.get< double >("V1740PostAcquisitionWindow",  -1);
     fV1740AcquisitionWindow      = pset.get< double >("V1740AcquisitionWindow",      -1);
@@ -707,6 +734,7 @@ namespace DataQuality {
     fTDCPreAcquisitionWindow     = pset.get< double >("TDCPreAcquisitionWindow",     -1);
     fTDCPostAcquisitionWindow    = pset.get< double >("TDCPostAcquisitionWindow",    -1);
     fTDCAcquisitionWindow        = pset.get< double >("TDCAcquisitionWindow",        -1);
+    fThresholdMURS        = pset.get< int >("MURSThreshold",        -1);
 
     return;
   }
@@ -719,12 +747,30 @@ namespace DataQuality {
     fEvent         = event.event();
     fTimeStampLow  = event.time().timeLow();
     fTimeStampHigh = event.time().timeHigh();
- 
-    // make the utility to access the fragments from the event record
-    rdu::FragmentUtility fragUtil(event, fRawFragmentLabel, fRawFragmentInstance);
+
+    // access fragments from the event record
+    if (!fSpillWrapper->ready()) {
+        std::cout << "Adding event to spill wrapper." << std::endl;
+        fSpillWrapper->add(event);
+        std::cout << "Done!" << std::endl;
+    }
+    if (!fSpillWrapper->ready()) {
+        return;
+    }
+
+    const uint8_t * SpillDataPtr(fSpillWrapper->get());
+
+    mf::LogInfo("EventBuilderCheck") << "Spill is " << fSpillWrapper->size() <<
+      " bytes, starting at " << static_cast<const void*>(SpillDataPtr);
+
+    //const char * bytePtr = reinterpret_cast<const char *> (fSpillWrapper->get());
+    //fLariatFragment = new LariatFragment((char *) bytePtr, fSpillWrapper->size());
+    fLariatFragment = new LariatFragment((char *) SpillDataPtr, fSpillWrapper->size());
+
+    fSpillWrapper.reset(nullptr);
 
     // get SpillTrailer
-    LariatFragment::SpillTrailer const& spillTrailer = (&fragUtil.DAQFragment())->spillTrailer;
+    LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
     fSpillTrailerRunNumber = spillTrailer.runNumber;
     fSpillTrailerSpillNumber = spillTrailer.spillNumber;
     fSpillTrailerTimeStamp = spillTrailer.timeStamp;
@@ -751,7 +797,7 @@ namespace DataQuality {
 
     // group data blocks into collections
     std::vector< rdu::DataBlockCollection > Collections;
-    Collections = fEventBuilderAlg.Build(&fragUtil.DAQFragment());
+    Collections = fEventBuilderAlg.Build(fLariatFragment);
 
     // flag for PEDESTALON gate
     // PEDESTALON: $00 to $00+999 milliseconds 
@@ -1103,6 +1149,67 @@ namespace DataQuality {
                                         opDetPulses);
 
       ////////////////////////////////////////////////////////
+      // muon range stack - based on a code in MuonRangeStackHitsSlicing_module.cc
+      ////////////////////////////////////////////////////////
+
+
+  	  std::vector<raw::AuxDetDigit *> MuRSDigits;
+  	  std::vector<raw::AuxDetDigit *> PunchthroughDigits;
+			bool punch_alive = false;
+;
+      for (size_t j = 0; j < auxDetDigits.size(); ++j) {
+
+        if (auxDetDigits[j].AuxDetName() == "MuonRangeStack")
+          MuRSDigits.push_back(&(auxDetDigits[j]));
+        if (auxDetDigits[j].AuxDetName() == "PUNCH")
+          PunchthroughDigits.push_back(&(auxDetDigits[j]));
+      }
+
+
+
+
+  if( PunchthroughDigits.size() > 1 ) std::cout << "WARNING: MORE THAN ONE PUNCHTHROUGH DIGIT." << std::endl;
+  
+	if( PunchthroughDigits.size() == 1 ){
+  	for( size_t iADC = 0; iADC < PunchthroughDigits.at(0)->NADC() ; ++iADC ){
+			if( PunchthroughDigits.at(0)->ADC(iADC) < fThresholdMURS ){
+		  	fMURSPaddleHitsHistogram->Fill(0);
+				if(punch_alive == false){
+					fOutbackHistogram->Fill(0.0,0.0);
+					fOutbackHistogram->Fill(0.0,1.0);
+					fOutbackHistogram->Fill(0.0,2.0);
+					fOutbackHistogram->Fill(0.0,3.0);
+					punch_alive = true;
+
+				}
+    	}
+  	}
+	}
+  int size=MuRSDigits.size();
+	std::vector<bool> murs_alive;
+	murs_alive.resize(size,false);
+  int TrigMult=size/16;
+  for (int TrigIter=0; TrigIter<TrigMult; ++TrigIter){
+    for (int nPaddle=TrigIter*16; nPaddle<(TrigIter+1)*16; ++nPaddle){
+      auto PaddleDigit=MuRSDigits.at(nPaddle);
+      for (size_t i=0; i<PaddleDigit->NADC(); ++i){
+	if(PaddleDigit->ADC(i)<fThresholdMURS){
+		fMuRSHitTimingHistogram->Fill(i);
+	  fMURSPaddleHitsHistogram->Fill(nPaddle-TrigIter*16);
+			if(murs_alive.at(nPaddle-TrigIter*16) == false){
+				fOutbackHistogram->Fill(double(1+((nPaddle-TrigIter*16)/4)),double((nPaddle-TrigIter*16)-4*((nPaddle-TrigIter*16)/4)));
+				murs_alive[nPaddle-TrigIter*16] = true;
+			}
+		}
+      }
+
+    }
+
+
+  }
+
+
+      ////////////////////////////////////////////////////////
       // begin time of flight shenanigans
       ////////////////////////////////////////////////////////
 
@@ -1176,7 +1283,7 @@ namespace DataQuality {
     }
 
     std::vector< rdu::DataBlock > DataBlocks;
-    DataBlocks = fEventBuilderAlg.GetDataBlocks(&fragUtil.DAQFragment());
+    DataBlocks = fEventBuilderAlg.GetDataBlocks(fLariatFragment);
     std::vector< std::pair< double, double > > CAENBoard0Intervals;
     //CAENBoard0Intervals = fEventBuilderAlg.CreateIntervals(DataBlocks, 0, fV1740PreAcquisitionWindow, fV1740PostAcquisitionWindow, fV1740AcquisitionWindow);
     CAENBoard0Intervals = fEventBuilderAlg.CreateIntervals(DataBlocks, 0, 0.128, 0.128, fV1740AcquisitionWindow);
@@ -1199,9 +1306,9 @@ namespace DataQuality {
       }
     }
 
-    size_t const& numberWutFrags = fragUtil.DAQFragment().wutFrags.size();
+    size_t const& numberWutFrags = fLariatFragment->wutFrags.size();
     for (size_t i = 0; i < numberWutFrags; ++i) {
-      WUTFragment const& wutFrag = fragUtil.DAQFragment().wutFrags[i];
+      WUTFragment const& wutFrag = fLariatFragment->wutFrags[i];
       std::vector<WUTFragment::WutHit> const& wutHits = wutFrag.hits;
       fWutNumberHits = wutFrag.header.nHits;
       fWutHitChannel.clear();
