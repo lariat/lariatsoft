@@ -33,6 +33,7 @@
 #include "RawDataUtilities/FragmentUtility.h"
 #include "RawDataUtilities/EventBuilderAlg.h"
 #include "Utilities/DatabaseUtilityT1034.h"
+#include "LArIATDataProducts/MuonRangeStackHits.h"
 
 // ROOT includes
 #include "TH1.h"
@@ -172,6 +173,9 @@ namespace DataQuality {
     double fTDCPostAcquisitionWindow;
     double fTDCAcquisitionWindow;
 
+	// MURS parameters
+	int fThresholdMURS;
+
     // pointer to histograms
     TH1D * fIntervalsDeltaTHistogram;
     TH1D * fIntervalsDeltaTZHistogram;
@@ -182,6 +186,8 @@ namespace DataQuality {
     TH1I * fUSTOFHitsHistogram;
     TH1I * fDSTOFHitsHistogram;
     TH1D * fTOFHistogram;
+    TH1I * fMURSPaddleHitsHistogram;
+    TH1D * fMuRSHitTimingHistogram;
 
     std::vector< std::vector< TH1I * > > fCAENPedestalHistograms;
     std::vector< std::vector< TH1I * > > fCAENADCHistograms;
@@ -348,6 +354,9 @@ namespace DataQuality {
     // create sub-directory for TOF
     art::TFileDirectory tofDir = tfs->mkdir("tof");
 
+    // create sub-directory for MURS
+    art::TFileDirectory mursDir = tfs->mkdir("murs");
+
     // create sub-directories for pedestal and ADC histograms
     art::TFileDirectory pedestalDir = tfs->mkdir("pedestal");
     art::TFileDirectory adcDir      = tfs->mkdir("adc");
@@ -461,7 +470,9 @@ namespace DataQuality {
     fUSTOFHitsHistogram = tofDir.make<TH1I>("USTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
     fDSTOFHitsHistogram = tofDir.make<TH1I>("DSTOFHits", ";Clock tick;Entries per clock tick", V1751_N_SAMPLES, 0, V1751_N_SAMPLES);
     fTOFHistogram = tofDir.make<TH1D>("TOF", ";TOF [ns];Entries per ns", 500, 0, 500);
-
+	//TH1 objects for MURS
+	fMURSPaddleHitsHistogram = mursDir.make<TH1I>("MURSHits", ";Paddle number, PT is 0;Entries ", 17, -1, 16);
+	fMuRSHitTimingHistogram = mursDir.make<TH1D>("MURSTiming", ";Hit time, Clock ticks;Entries ", 3073, 0, 3073);
     // create TTree objects
     fEventRecord        = tfs->make<TTree>("artEventRecord",  "artEventRecord");
     fSpillTrailerTree   = tfs->make<TTree>("spillTrailer",    "spillTrailer");
@@ -472,6 +483,7 @@ namespace DataQuality {
     fCaenV1751DataTree  = tfs->make<TTree>("v1751",            "v1751");
     fMwpcTdcDataTree    = tfs->make<TTree>("mwpc",             "mwpc");
     fWutDataTree        = tfs->make<TTree>("wut",              "wut");
+
 
     // fEventBuilderTree branches
     fEventBuilderTree->Branch("Run",                         &fRun,                         "Run/I");
@@ -707,6 +719,7 @@ namespace DataQuality {
     fTDCPreAcquisitionWindow     = pset.get< double >("TDCPreAcquisitionWindow",     -1);
     fTDCPostAcquisitionWindow    = pset.get< double >("TDCPostAcquisitionWindow",    -1);
     fTDCAcquisitionWindow        = pset.get< double >("TDCAcquisitionWindow",        -1);
+    fThresholdMURS        = pset.get< int >("MURSThreshold",        -1);
 
     return;
   }
@@ -1101,6 +1114,55 @@ namespace DataQuality {
                                         auxDetDigits,
                                         rawDigits,
                                         opDetPulses);
+
+      ////////////////////////////////////////////////////////
+      // muon range stack
+      ////////////////////////////////////////////////////////
+
+
+  	  std::vector<raw::AuxDetDigit *> MuRSDigits;
+  	  std::vector<raw::AuxDetDigit *> PunchthroughDigits;
+
+      for (size_t j = 0; j < auxDetDigits.size(); ++j) {
+        //std::cout << "AuxDetName(): " << auxDetDigits[j].AuxDetName() << std::endl;
+        if (auxDetDigits[j].AuxDetName() == "MuonRangeStack")
+          MuRSDigits.push_back(&(auxDetDigits[j]));
+        if (auxDetDigits[j].AuxDetName() == "PUNCH")
+          PunchthroughDigits.push_back(&(auxDetDigits[j]));
+      }
+
+
+std::cout<<"PUNCH through digits size "<<PunchthroughDigits.size()<<std::endl;
+
+  if( PunchthroughDigits.size() > 1 ) std::cout << "WARNING: MORE THAN ONE PUNCHTHROUGH DIGIT." << std::endl;
+  
+	if( PunchthroughDigits.size() == 1 ){
+  	for( size_t iADC = 0; iADC < PunchthroughDigits.at(0)->NADC() ; ++iADC ){
+			if( PunchthroughDigits.at(0)->ADC(iADC) < fThresholdMURS ){
+		  	fMURSPaddleHitsHistogram->Fill(0);
+    	}
+  	}
+	}
+  int size=MuRSDigits.size();
+std::cout<<" size of murs digits "<<size<<std::endl;
+
+
+  int TrigMult=size/16;
+  for (int TrigIter=0; TrigIter<TrigMult; ++TrigIter){
+    for (int nPaddle=TrigIter*16; nPaddle<(TrigIter+1)*16; ++nPaddle){
+      auto PaddleDigit=MuRSDigits.at(nPaddle);
+      for (size_t i=0; i<PaddleDigit->NADC(); ++i){
+	if(PaddleDigit->ADC(i)<fThresholdMURS){
+		fMuRSHitTimingHistogram->Fill(i);
+	  	fMURSPaddleHitsHistogram->Fill(nPaddle-TrigIter*16);
+		}
+      }
+
+    }
+
+
+  }
+
 
       ////////////////////////////////////////////////////////
       // begin time of flight shenanigans
