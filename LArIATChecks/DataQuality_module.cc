@@ -33,7 +33,7 @@
 #include "RawDataUtilities/FragmentUtility.h"
 #include "RawDataUtilities/EventBuilderAlg.h"
 #include "Utilities/DatabaseUtilityT1034.h"
-#include "LArIATDataProducts/MuonRangeStackHits.h"
+//#include "LArIATDataProducts/MuonRangeStackHits.h"
 
 // ROOT includes
 #include "TH1.h"
