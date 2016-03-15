@@ -1,0 +1,13 @@
+#include "clockcorrectionalg.fcl"
+
+BEGIN_PROLOG
+
+standard_eventbuilderalg:
+{
+    ClockCorrectionAlg:   @local::standard_clockcorrectionalg
+
+    TPCReadoutBufferLow:  10.0  # microseconds
+    TPCReadoutBufferHigh: 10.0  # microseconds
+}
+
+END_PROLOG

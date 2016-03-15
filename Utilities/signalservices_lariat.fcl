@@ -28,32 +28,42 @@ lariat_signalshapingservice:
   
 
   Col3DCorrection:  2.5
-  Ind3DCorrection:  1.5
+  #Ind3DCorrection:  1.5
+  Ind3DCorrection: 1.25
   ColFieldRespAmp:  1.0
   IndFieldRespAmp:  1.0
 
   FieldResponseTOffset: [-32.5e3, -32.5e3 ] # in ns, time offset of field response shape
-  CalibResponseTOffset: [0.0, 0.0 ] # in ns time offset to align all three planes  
-
+  
+  #CalibResponseTOffset: [0.0, 0.0 ] # in ns time offset to align all three planes  
+  CalibResponseTOffset: [ 28000, 27500] # in ns time offset to align all three planes
 
   # For IndFilter and ColFilter, frequency (x) is measured in
   # cycles/microsecond.  The conversion to frequency bin depends on FFT size
   # samping rate.
-
-  IndFilter:       "(x>0.0)*gaus*exp(-0.5*pow(x/[3],[4]))"
+  
+  
+  IndFilter: "(x>0.)*[0]*(1-1/(1+exp(-(x-[1])/[2])))*(1/(1+exp(-(x-[3])/[4])))"
+  IndFilterParams: [2, 0.25, 0.02, 0.025, 0.005]
+  
+  #IndFilter:       "(x>0.0)*gaus*exp(-0.5*pow(x/[3],[4]))"
+  #IndFilterParams: [ 1.74, 1.46, 1., 0.23, 4.89 ]
+  
   # IndVFilterParams: [ .454, 0.0, 0.1875, 0.25, 8.0 ]
   #IndVFilterParams: [ 0.05, 0.0, 0.1875, 0.25, 8.0 ]
-  IndFilterParams: [ 1.74, 1.46, 1.33, 0.23, 4.89 ]
-  #IndFilterParams: [ 1.74, 1.46, 1., 0.23, 4.89 ]
-
-#  IndFilter:       "(x>0)*[0]*exp(-0.5*(((x-[1])/[2])^2)^[3])"
-#  IndFilterParams: [ 1.03, 0.08, 0.15, 2.17 ]
+  #IndFilterParams: [ 1.74, 1.46, 1.33, 0.23, 4.89 ]
+  
 
 
-  ColFilter:       "(x>0)*[0]*exp(-0.5*(((x-[1])/[2])^2)^[3])"
+  ColFilter: "(x>0.)*[0]*(1-1/(1+exp(-(x-[1])/[2])))"
+  ColFilterParams: [5, 0.11, 0.04]
+  
+  #ColFilter:       "(x>0)*[0]*exp(-0.5*(((x-[1])/[2])^2)^[3])"
+  #ColFilterParams: [ 1.03, 0.08, 0.15, 2.17 ]  
+  
   # ColFilterParams: [ 79258.0, 0.0, 0.1875, 1.5 ]
   #ColFilterParams: [ 0.0792580, 0.0, 0.1875, 1.5 ]
-  ColFilterParams: [ 1.03, 0.08, 0.15, 2.17 ]  
+  
 
   GetFilterFromHisto:   false  
 
@@ -62,16 +72,20 @@ lariat_signalshapingservice:
   
 
   UseFunctionFieldShape: false
-  UseHistogramFieldShape: true
+  UseHistogramFieldShape: false
   #FieldResponseFname:     "dune35t_response_v1.0.root"
   FieldResponseFname:     "uboone_response_v1.3.root"
   FieldResponseHistoName: "FieldResponse"
 
   ScaleNegativeResponse: [3,    1    ]
   ScaleResponseTime:     [0.98, 0.98 ]
- 
-  IndFieldShape: "[0]*(1.0+[3]*tanh(x-[4]))*([4]-x)*exp(-0.5*((x-[4])/[2])^2.0)"
-  IndFieldParams:  [.00843,.1534,1.77,0.,0.5]    #last parameter needs to be half of FFT vector, correct for in code
+
+  DebugFieldShape:    false
+
+  #IndFieldShape: "[0]*(1.0+[3]*tanh(x-[4]))*([4]-x)*exp(-0.5*((x-[4])/[2])^2.0)"
+  IndFieldShape: ""
+  #IndFieldParams:  [.00843,.1534,1.77,0.,0.5]    #last parameter needs to be half of FFT vector, correct for in code
+  IndFieldParams: [ 0.85]
   ColFieldShape: "x^[2]/(1.0+(x/[0])^[1])"
   ColFieldParams: [ 8.0,16.0,.75 ]  
 

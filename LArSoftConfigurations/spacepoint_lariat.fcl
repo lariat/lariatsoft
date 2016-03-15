@@ -21,8 +21,8 @@ services:
 # services_lariat.fcl
 services.user.ExptGeoHelperInterface: @local::lariat_geometry_helper
 services.user.Geometry:           @local::lariat_geo 
-services.user.DetectorProperties: @local::lariat_detproperties
-services.user.LArProperties:      @local::lariat_properties
+services.user.DetectorPropertiesService: @local::lariat_detproperties
+services.user.LArPropertiesService:      @local::lariat_properties
 services.user.LArFFT:             @local::lariat_larfft  
 services.user.DatabaseUtil:       @local::lariat_database
 services.user.BackTracker:        @local::lariat_backtracker

@@ -13,6 +13,8 @@
 #include <vector>
 #include <utility> // std::move()
 #include <memory> // std::unique_ptr<>
+// BB temp
+#include <fstream>
 
 // ROOT libraries
 #include "TComplex.h"
@@ -30,15 +32,15 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
 
 // LArSoft libraries
-#include "SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "Geometry/Geometry.h"
-#include "Filters/ChannelFilter.h"
-#include "RawData/RawDigit.h"
-#include "RawData/raw.h"
-#include "RecoBase/Wire.h"
-#include "RecoBaseArt/WireCreator.h"
-#include "Utilities/LArFFT.h"
-#include "Utilities/AssociationUtil.h"
+#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcore/Geometry/Geometry.h"
+#include "larevt/Filters/ChannelFilter.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/raw.h"
+#include "lardata/RecoBase/Wire.h"
+#include "lardata/RecoBaseArt/WireCreator.h"
+#include "lardata/Utilities/LArFFT.h"
+#include "lardata/Utilities/AssociationUtil.h"
 #include "Utilities/SignalShapingServiceT1034.h"
 
 
@@ -151,7 +153,7 @@ namespace caldata {
     // Get signal shaping service.
     art::ServiceHandle<util::SignalShapingServiceT1034> sss;
     double DeconNorm = sss->GetDeconNorm();
-
+ 
     // make a collection of Wires
     std::unique_ptr<std::vector<recob::Wire> > wirecol(new std::vector<recob::Wire>);
     // ... and an association set
@@ -162,13 +164,6 @@ namespace caldata {
     art::Handle< std::vector<raw::RawDigit> > digitVecHandle;
     evt.getByLabel(fDigitModuleLabel, fSpillName, digitVecHandle);
 
-    if (!digitVecHandle->size())  
-       {
-       // ### Adding a fix which requires CalWire to write to the event regardless ###
-       evt.put(std::move(wirecol), fSpillName);
-       evt.put(std::move(WireDigitAssn), fSpillName);
-       return;
-       }
     mf::LogInfo("CalWireROIT1034") << "CalWireROIT1034:: digitVecHandle size is " << digitVecHandle->size();
 
     // Use the handle to get a particular (0th) element of collection.
@@ -179,10 +174,7 @@ namespace caldata {
     //	<< "CalGausHFLBNE only supports zero-suppressed raw digit input!";
     //} // if
 
-
-
-    unsigned int dataSize = digitVec0->Samples(); //size of raw data vectors
-    //std::cout << "Xin " << dataSize << std::endl;
+    unsigned int dataSize = 0; //size of raw data vectors
 
     raw::ChannelID_t channel = raw::InvalidChannelID; // channel number
     unsigned int bin(0);     // time bin loop variable
@@ -193,7 +185,8 @@ namespace caldata {
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
     std::vector<TComplex> freqHolder(transformSize+1); // temporary frequency data
     
-    // loop over all wires    
+
+    // loop over all wires
     wirecol->reserve(digitVecHandle->size());
     for(size_t rdIter = 0; rdIter < digitVecHandle->size(); ++rdIter){ // ++ move
       holder.clear();
@@ -201,150 +194,126 @@ namespace caldata {
       // get the reference to the current raw::RawDigit
       art::Ptr<raw::RawDigit> digitVec(digitVecHandle, rdIter);
       channel = digitVec->Channel();
-
+      
       // skip bad channels
       if(!chanFilt->BadChannel(channel)) {
-	holder.resize(transformSize);
-	
-	// uncompress the data
-	raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
-	
-	// loop over all adc values and subtract the pedestal
-	for(bin = 0; bin < dataSize; ++bin) 
-	  //holder[bin]=(rawadc[bin]-digitVec->GetPedestal());
-	  holder[bin]=rawadc[bin]; //pedestal is already subtracted
-
-	//Xin fill the remaining bin with data
-	for (bin = dataSize;bin<holder.size();bin++){
-	  //holder[bin] = (rawadc[bin-dataSize]-digitVec->GetPedestal());
-	  holder[bin] = rawadc[bin-dataSize];
-	}
-
-	// Do deconvolution.
-	sss->Deconvolute(channel, holder);
-	for(bin = 0; bin < holder.size(); ++bin) holder[bin]=holder[bin]/DeconNorm;
-      } // end if not a bad channel 
+        holder.resize(transformSize);
+        
+	dataSize = digitVec->Samples();
+        // uncompress the data
+        raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
+        
+        // loop over all adc values. Pedestal is already subtracted
+        for(bin = 0; bin < dataSize; ++bin) holder[bin]=rawadc[bin];
+        // pad with zeros
+        for (bin = dataSize; bin < holder.size(); ++bin) holder[bin] = 0;
+        
+        // Do deconvolution.
+        sss->Deconvolute(channel, holder);
+        for(bin = 0; bin < holder.size(); ++bin) holder[bin]=holder[bin]/DeconNorm;
+      } // end if not a bad channel
       
-      holder.resize(dataSize,1e-5);
-
       //This restores the DC component to signal removed by the deconvolution.
       if(fPostsample) {
         double average=0.0;
-	for(bin=0; bin < (unsigned int)fPostsample; ++bin) 
-	  average+=holder[holder.size()-1-bin]/(double)fPostsample;
+        for(bin=0; bin < (unsigned int)fPostsample; ++bin)
+          average+=holder[holder.size()-1-bin]/(double)fPostsample;
         for(bin = 0; bin < holder.size(); ++bin) holder[bin]-=average;
-      }  
-       // adaptive baseline subtraction
+      }
+      // adaptive baseline subtraction
       if(fDoBaselineSub) SubtractBaseline(holder);
 
       if (fDoROI){
-	// work out the ROI 
-	recob::Wire::RegionsOfInterest_t ROIVec;
-	std::vector<std::pair<unsigned int, unsigned int>> holderInfo;
-	std::vector<std::pair<unsigned int, unsigned int>> rois;
+        // work out the ROI
+        recob::Wire::RegionsOfInterest_t ROIVec;
+        std::vector<std::pair<unsigned int, unsigned int>> holderInfo;
+        std::vector<std::pair<unsigned int, unsigned int>> rois;
+        
+        double max = 0;
+        double deconNoise = sss->GetDeconNoise(channel);
+        // find out all ROI
+        unsigned int roiStart = 0;
+        for(bin = 0; bin < dataSize; ++bin) {
+          double SigVal = holder[bin];
+          if (SigVal > max) max = SigVal;
+          if(roiStart == 0) {
+            if (SigVal > 3*deconNoise) roiStart = bin; // 3 sigma above noise
+          }else{
+            if (SigVal < deconNoise){
+              rois.push_back(std::make_pair(roiStart, bin));
+              roiStart = 0;
+            }
+          }
+        }
+        if (roiStart!=0){
+          rois.push_back(std::make_pair(roiStart, dataSize-1));
+          roiStart = 0;
+        }
 	
-	double max = 0;
-	double deconNoise = sss->GetDeconNoise(channel);
-	// find out all ROI
-	unsigned int roiStart = 0;
-	for(bin = 0; bin < dataSize; ++bin) {
-	  double SigVal = holder[bin];
-	  if (SigVal > max) max = SigVal;
-	  if(roiStart == 0) {
-	    if (SigVal > 3*deconNoise) roiStart = bin; // 3 sigma above noise
-	  }else{
-	    if (SigVal < deconNoise){
-	      rois.push_back(std::make_pair(roiStart, bin));
-	      roiStart = 0;
-	    }
-	  }
-	}
-	if (roiStart!=0){
-	  rois.push_back(std::make_pair(roiStart, dataSize-1));
-	  roiStart = 0;
-	}
+        if(rois.size() == 0) continue;
+        holderInfo.clear();
+        for(unsigned int ii = 0; ii < rois.size(); ++ii) {
+          // low ROI end
+          int low = rois[ii].first - fPreROIPad;
+          if(low < 0) low = 0;
+          rois[ii].first = low;
+          // high ROI end
+          unsigned int high = rois[ii].second + fPostROIPad;
+          if(high >= dataSize) high = dataSize-1;
+          rois[ii].second = high;
+          
+        }
+        // merge them
+        if(rois.size() >= 1) {
+          // temporary vector for merged ROIs
+          
+          for (unsigned int ii = 0; ii<rois.size();ii++){
+            unsigned int roiStart = rois[ii].first;
+            unsigned int roiEnd = rois[ii].second;
+            
+            int flag1 = 1;
+            unsigned int jj=ii+1;
+            while(flag1){
+              if (jj<rois.size()){
+                if(rois[jj].first <= roiEnd  ) {
+                  roiEnd = rois[jj].second;
+                  ii = jj;
+                  jj = ii+1;
+                }else{
+                  flag1 = 0;
+                }
+              }else{
+                flag1 = 0;
+              }
+            }
+            std::vector<float> sigTemp;
+            for(unsigned int kk = roiStart; kk < roiEnd; ++kk) {
+              sigTemp.push_back(holder[kk]);
+            } // jj
+            ROIVec.add_range(roiStart, std::move(sigTemp));
+         }
+        }
 	
-	// pad them
-	// if (channel==512){
-	// 	for (bin = 0; bin< holder.size();++bin){
-	// 	  if (fabs(holder[bin]) > 2)
-	// 	      std::cout << "Xin1: " << holder[bin] << std::endl;
-	// 	}
-	// }
-	//std::cout << "Xin: "  << max << " "<< channel << " " << deconNoise << " " << rois.size() << std::endl;
-	
-	if(rois.size() == 0) continue;
-	holderInfo.clear();
-	for(unsigned int ii = 0; ii < rois.size(); ++ii) {
-	  // low ROI end
-	  int low = rois[ii].first - fPreROIPad;
-	  if(low < 0) low = 0;
-	  rois[ii].first = low;
-	  // high ROI end
-	  unsigned int high = rois[ii].second + fPostROIPad;
-	  if(high >= dataSize) high = dataSize-1;
-	  rois[ii].second = high;
-	  
-	}
-	// merge them
-	if(rois.size() >= 1) {
-	  // temporary vector for merged ROIs
-	  
-	  for (unsigned int ii = 0; ii<rois.size();ii++){
-	    unsigned int roiStart = rois[ii].first;
-	    unsigned int roiEnd = rois[ii].second;
-	    
-	    int flag1 = 1;
-	    unsigned int jj=ii+1;
-	    while(flag1){	
-	      if (jj<rois.size()){
-		if(rois[jj].first <= roiEnd  ) {
-		  roiEnd = rois[jj].second;
-		  ii = jj;
-		  jj = ii+1;
-		}else{
-		  flag1 = 0;
-		}
-	      }else{
-		flag1 = 0;
-	      }
-	    }
-	    std::vector<float> sigTemp;
-	    for(unsigned int kk = roiStart; kk < roiEnd; ++kk) {
-	      sigTemp.push_back(holder[kk]);
-	    } // jj
-	    //	  std::cout << "Xin: " << roiStart << std::endl;
-	    ROIVec.add_range(roiStart, std::move(sigTemp));
-	    //trois.push_back(std::make_pair(roiStart,roiEnd));	    
-	  }
-	}
-	
-	// save them
-	wirecol->push_back(recob::WireCreator(std::move(ROIVec),*digitVec).move());
-	
-	// Make a single ROI that spans the entire data size
-	//wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
-	
-	
-	
-	
-	// add an association between the last object in wirecol
-	// (that we just inserted) and digitVec
-	if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
-	  throw art::Exception(art::errors::InsertFailure)
-	    << "Can't associate wire #" << (wirecol->size() - 1)
-	    << " with raw digit #" << digitVec.key();
-	} // if failed to add association
+        // save them
+        wirecol->push_back(recob::WireCreator(std::move(ROIVec),*digitVec).move());
+        
+        // add an association between the last object in wirecol
+        // (that we just inserted) and digitVec
+        if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
+          throw art::Exception(art::errors::InsertFailure)
+          << "Can't associate wire #" << (wirecol->size() - 1)
+          << " with raw digit #" << digitVec.key();
+        } // if failed to add association
       }
       else{
-	wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
-	// add an association between the last object in wirecol
-	// (that we just inserted) and digitVec
-	if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
-	  throw art::Exception(art::errors::InsertFailure)
-	    << "Can't associate wire #" << (wirecol->size() - 1)
-	    << " with raw digit #" << digitVec.key();
-  } // if failed to add association
+        wirecol->push_back(recob::WireCreator(holder,*digitVec).move());
+        // add an association between the last object in wirecol
+        // (that we just inserted) and digitVec
+        if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
+          throw art::Exception(art::errors::InsertFailure)
+          << "Can't associate wire #" << (wirecol->size() - 1)
+          << " with raw digit #" << digitVec.key();
+        } // if failed to add association
       }
     }
     
@@ -358,8 +327,8 @@ namespace caldata {
     return;
   }
 
-   void CalWireROIT1034::SubtractBaseline(std::vector<float>& holder)
-   {
+  void CalWireROIT1034::SubtractBaseline(std::vector<float>& holder)
+  {
     
     float min = 0,max=0;
     for (unsigned int bin = 0; bin < holder.size(); bin++){
@@ -370,20 +339,20 @@ namespace caldata {
     if (nbin!=0){
       TH1F *h1 = new TH1F("h1","h1",nbin,min,max);
       for (unsigned int bin = 0; bin < holder.size(); bin++){
-	h1->Fill(holder[bin]);
+        h1->Fill(holder[bin]);
       }
       float ped = h1->GetMaximum();
       float ave=0,ncount = 0;
       for (unsigned int bin = 0; bin < holder.size(); bin++){
-	if (fabs(holder[bin]-ped)<2){
-	  ave +=holder[bin];
-	  ncount ++;
-	}
+        if (fabs(holder[bin]-ped)<2){
+          ave +=holder[bin];
+          ncount ++;
+        }
       }
       if (ncount==0) ncount=1;
       ave = ave/ncount;
       for (unsigned int bin = 0; bin < holder.size(); bin++){
-	holder[bin] -= ave;
+        holder[bin] -= ave;
       }
       h1->Delete();
     }

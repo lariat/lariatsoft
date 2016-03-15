@@ -68,7 +68,9 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   fileName:      "reconstructed_beamline.root"
+   fileName:    "RecoBeamline.root"
+   dataTier:    "reconstructed-beamline"
+   compressionLevel: 1
  }
 }
 

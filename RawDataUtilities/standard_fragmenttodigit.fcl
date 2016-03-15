@@ -31,7 +31,7 @@ LariatProducer: [FragmentToDigit]
  end_paths:     [stream1]
 
 }
-physics.producers.FragmentToDigit.pmt_channel_ids:[[9,0,1]]
+physics.producers.FragmentToDigit.pmt_channel_ids:[[9,0,1,2,3,4]]
 physics.producers.FragmentToDigit.pmt_test:true
 #WHF 11/13/14
 #Had to add the "outputCommands line since one of the export sub-branches is not present in the import TTree

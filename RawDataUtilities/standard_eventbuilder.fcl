@@ -1,0 +1,94 @@
+#include "services_lariat.fcl"
+#include "eventbuilderalg.fcl"
+#include "RawDataUtilities_algs.fcl"
+
+process_name: EventBuilder
+
+services:
+{
+  Timing:       {}
+  RandomNumberGenerator: {} 
+  message:      @local::standard_info
+  user:         @local::lariat_services
+}
+
+source:
+{
+  module_type: EventBuilderInput
+
+  # Number of events to analyze; "-1" means all of the events in the input
+  # file. You can override this value with the "-n" option on the command line. 
+  maxEvents:    -1 
+
+  SourceName:           "daq"  # RawDataLabel
+  EventBuilderAlg:    @local::standard_eventbuilderalg
+
+  FragmentToDigitAlg: @local::lariat_fragmenttodigit_alg
+
+  # Events with number of TPC readouts outside the range of
+  #
+  #   [ MinTPCReadoutPerEvent, MaxTPCReadoutPerEvent ]
+  #
+  # will not be written to the resulting ROOT file. This
+  # can also be taken care of in a filter module downstream.
+  MinTPCReadoutsPerEvent:       0
+  MaxTPCReadoutsPerEvent:       100
+
+  # Parameters for the slicing algorithm. A value of "-1" means that the
+  # values will be obtained from the lariat_prd database. This is what
+  # we want 99.9% of the time.
+  V1740PreAcquisitionWindow:   -1
+  V1740PostAcquisitionWindow:  -1
+  V1740AcquisitionWindow:      -1
+  V1740BPreAcquisitionWindow:  -1
+  V1740BPostAcquisitionWindow: -1
+  V1740BAcquisitionWindow:     -1
+  V1751PreAcquisitionWindow:   -1
+  V1751PostAcquisitionWindow:  -1
+  V1751AcquisitionWindow:      -1
+  TDCPreAcquisitionWindow:     -1
+  TDCPostAcquisitionWindow:    -1
+  TDCAcquisitionWindow:        -1
+}
+
+outputs:
+{
+  out1:
+  {
+    module_type: RootOutput
+    fileName:    "standard_eventbuilder.root" # default file name, can override from command line with -o or --output
+    dataTier:    "raw"
+    streamName:  "all"
+    compressionLevel: 1
+  }
+}
+
+physics:
+{
+  producers: {}
+
+  stream1: [ out1 ]
+
+  end_paths: [ stream1 ]  
+}
+
+services.user.SeedService: @local::random_seedservice
+
+# parameters for EventBuilderAlg
+source.EventBuilderAlg.TPCReadoutBufferLow:  10.0  # microseconds
+source.EventBuilderAlg.TPCReadoutBufferHigh: 10.0  # microseconds
+
+# parameters for ClockCorrectionAlg
+source.EventBuilderAlg.ClockCorrectionAlg.MinSamples:                   2
+source.EventBuilderAlg.ClockCorrectionAlg.ResidualThreshold:            1
+source.EventBuilderAlg.ClockCorrectionAlg.MaxTrials:                    10000
+source.EventBuilderAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
+source.EventBuilderAlg.ClockCorrectionAlg.StopResidualsSum:             0
+source.EventBuilderAlg.ClockCorrectionAlg.StopProbability:              1
+source.EventBuilderAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e4  # microseconds
+source.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
+source.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
+source.EventBuilderAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
+source.EventBuilderAlg.ClockCorrectionAlg.MinNumberTimeStamps:          3
+source.EventBuilderAlg.ClockCorrectionAlg.MinNumberDataPoints:          3
+

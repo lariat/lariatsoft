@@ -25,24 +25,24 @@
 #include "cetlib/maybe_ref.h"
 
 // LArSoft includes
-#include "Geometry/Geometry.h"
-#include "Geometry/PlaneGeo.h"
-#include "Geometry/WireGeo.h"
-#include "RecoBase/Hit.h"
-#include "RecoBase/Cluster.h"
-#include "RecoBase/Track.h"
-#include "RecoBase/SpacePoint.h"
-#include "Utilities/LArProperties.h"
-#include "Utilities/DetectorProperties.h"
-#include "Utilities/AssociationUtil.h"
-#include "RawData/ExternalTrigger.h"
-#include "RawData/RawDigit.h"
-#include "RawData/raw.h"
-#include "MCCheater/BackTracker.h"
-#include "Simulation/SimChannel.h"
-#include "AnalysisBase/Calorimetry.h"
-#include "AnalysisBase/ParticleID.h"
-#include "RecoAlg/TrackMomentumCalculator.h"
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/PlaneGeo.h"
+#include "larcore/Geometry/WireGeo.h"
+#include "lardata/RecoBase/Hit.h"
+#include "lardata/RecoBase/Cluster.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/Utilities/AssociationUtil.h"
+//#include "RawData/ExternalTrigger.h"
+#include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/raw.h"
+#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/Simulation/SimChannel.h"
+#include "lardata/AnalysisBase/Calorimetry.h"
+#include "lardata/AnalysisBase/ParticleID.h"
+#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 
 // ROOT includes
 #include "TTree.h"
@@ -79,7 +79,7 @@ private:
   double evttime;
   double efield[3];
   int t0;
-  int trigtime[16];
+  //int trigtime[16];
   int ntracks_reco;         //number of reconstructed tracks
   double trkvtxx[kMaxTrack];
   double trkvtxy[kMaxTrack];
@@ -134,7 +134,7 @@ private:
   int    hit_trkkey[kMaxHits];
   int    hit_clukey[kMaxHits];
 
-  std::string fTrigModuleLabel;
+  //  std::string fTrigModuleLabel;
   std::string fHitsModuleLabel;
   std::string fClusterModuleLabel;
   std::string fTrackModuleLabel;
@@ -145,7 +145,7 @@ private:
 
 bo::AnaTree::AnaTree(fhicl::ParameterSet const & pset)
   : EDAnalyzer(pset)
-  , fTrigModuleLabel       (pset.get< std::string >("TrigModuleLabel"))
+    //  , fTrigModuleLabel       (pset.get< std::string >("TrigModuleLabel"))
   , fHitsModuleLabel       (pset.get< std::string >("HitsModuleLabel"))
   , fClusterModuleLabel     (pset.get< std::string >("ClusterModuleLabel"))
   , fTrackModuleLabel       (pset.get< std::string >("TrackModuleLabel"))
@@ -165,8 +165,8 @@ void bo::AnaTree::analyze(art::Event const & evt)
   ResetVars();
 
   art::ServiceHandle<geo::Geometry> geom;
-  art::ServiceHandle<util::LArProperties> larprop;
-  art::ServiceHandle<util::DetectorProperties> detprop;
+  //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
+  auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   art::ServiceHandle<cheat::BackTracker> bt;
 
 //  for (size_t i = 0; i<geom->Nplanes(); ++i){
@@ -187,12 +187,14 @@ void bo::AnaTree::analyze(art::Event const & evt)
   evttime = tts.AsDouble();
 
 
-  efield[0] = larprop->Efield(0);
-  efield[1] = larprop->Efield(1);
-  efield[2] = larprop->Efield(2);
+  // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
+  efield[0] = detprop->Efield(0);
+  efield[1] = detprop->Efield(1);
+  efield[2] = detprop->Efield(2);
 
   t0 = detprop->TriggerOffset();
 
+  /*
   art::Handle< std::vector<raw::ExternalTrigger> > trigListHandle;
   std::vector<art::Ptr<raw::ExternalTrigger> > triglist;
   if (evt.getByLabel(fTrigModuleLabel,trigListHandle))
@@ -201,6 +203,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
   for (size_t i = 0; i<triglist.size(); ++i){
     trigtime[i] = triglist[i]->GetTrigTime();
   }
+  */
 
   art::Handle< std::vector<recob::Cluster> > clusterListHandle;
   std::vector<art::Ptr<recob::Cluster> > clusterlist;
@@ -424,7 +427,7 @@ void bo::AnaTree::beginJob()
   fTree->Branch("evttime",&evttime,"evttime/D");
   fTree->Branch("efield",efield,"efield[3]/D");
   fTree->Branch("t0",&t0,"t0/I");
-  fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
+  //fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
   fTree->Branch("nclus",&nclus,"nclus/I");
   fTree->Branch("clustartwire",clustartwire,"clustartwire[nclus]/D");
   fTree->Branch("clustarttick",clustarttick,"clustarttick[nclus]/D");
@@ -494,9 +497,9 @@ void bo::AnaTree::ResetVars(){
     efield[i] = -99999;
   }
   t0 = -99999;
-  for (int i = 0; i < 16; ++i){
-     trigtime[i]=-99999;
-  }
+//  for (int i = 0; i < 16; ++i){
+//     trigtime[i]=-99999;
+//  }
   nclus = -99999;
   for (int i = 0; i < kMaxCluster; ++i){
     clustartwire[i] = -99999;

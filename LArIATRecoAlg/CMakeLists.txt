@@ -1,8 +1,8 @@
 
 art_make( LIBRARY_NAME  LArIATRecoAlg
-	  LIB_LIBRARIES Utilities
-	                Geometry
-			RawData
+	  LIB_LIBRARIES lardata_Utilities
+	                larcore_Geometry
+			lardata_RawData
 			DatabaseUtilityT1034_service
 	  		${ART_FRAMEWORK_CORE}
 			${ART_FRAMEWORK_PRINCIPAL}

@@ -36,7 +36,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 //LArSoft includes
-#include "RawData/TriggerData.h"
+#include "lardata/RawData/TriggerData.h"
 
 //LArIATSoft includes
 #include "Utilities/DatabaseUtilityT1034.h"
