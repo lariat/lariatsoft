@@ -51,7 +51,14 @@
 #include "LArIATDataProducts/ConditionsSummary.h"
 #include "RawDataUtilities/EventBuilderAlg.h"
 #include "RawDataUtilities/FragmentToDigitAlg.h"
+#include "RawDataUtilities/SpillWrapper.h"
 #include "Utilities/DatabaseUtilityT1034.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 // ROOT includes
 #include "TFile.h"
@@ -173,7 +180,7 @@ namespace rdu
 
     // Private member functions are appended with an underscore.
 
-    void loadDigits_(LariatFragment * & LArIATFragment);
+    void loadFragments_();
 
     void makeEventAndPutDigits_(art::EventPrincipal * & outEvent);
 
@@ -195,6 +202,10 @@ namespace rdu
     art::RunNumber_t       fCachedRunNumber;
     art::SubRunNumber_t    fCachedSubRunNumber;
 
+    // unique pointer to SpillWrapper
+    std::unique_ptr<rdu::SpillWrapper> fSpillWrapper;
+
+    // complete LariatFragment for event record
     LariatFragment * fLariatFragment;
 
     // collection of data blocks
@@ -308,6 +319,7 @@ namespace rdu
     , fEventNumber()
     , fCachedRunNumber(-1)
     , fCachedSubRunNumber(-1)
+    , fSpillWrapper(nullptr)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
   {
@@ -424,8 +436,41 @@ namespace rdu
     // reset flag
     fDoneWithFile = false;
 
+    fSpillWrapper.reset(new SpillWrapper(fNumberInputEvents));
+
     // load the data blocks
-    this->loadDigits_(fLariatFragment);
+    //this->loadDigits_(fLariatFragment);
+    // load the artdaq fragments
+    this->loadFragments_();
+
+    // Be aware that SpillWrapper OWNS the binary blob - if it's
+    // destroyed, you lose the blob, and spillDataPtr will point
+    // to deallocated memory.
+
+    if (fSpillWrapper->ready()) {
+      std::cout << "Spill construction complete" << std::endl;
+      std::cout << "Spill starts at " << static_cast< const void * > (fSpillWrapper->get()) << ", can pass this pointer to the LariatFragment constructor" << std::endl;
+      std::cout << "Spill appears to be " << fSpillWrapper->size() << " bytes" << std::endl;
+
+      const uint8_t * spillDataPtr(fSpillWrapper->get());
+
+      mf::LogInfo("EventBuilderInput") << "Spill is "
+                                       << fSpillWrapper->size()
+                                       << " bytes, starting at "    
+                                       << static_cast< const void * > (spillDataPtr);
+
+      //const char * bytePtr = reinterpret_cast<const char *> (fSpillWrapper->get());
+      //fLariatFragment = new LariatFragment((char *) bytePtr, fSpillWrapper->size());
+      fLariatFragment = new LariatFragment((char *) spillDataPtr, fSpillWrapper->size());
+    } else {
+      throw cet::exception("EventBuilder") << "Spill construction failed; spill is incomplete\n";
+    }
+
+    // get SpillTrailer
+    LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
+
+    // get timestamp from SpillTrailer, cast as uint64_t
+    fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
 
     // group data blocks into collections
     fCollectionIndex = 0;
@@ -434,6 +479,8 @@ namespace rdu
 
     // we are done with this file if there are no data blocks
     if (fCollections.size() < 1) fDoneWithFile = true;
+
+    fSpillWrapper.reset(nullptr);
 
     delete fLariatFragment;
 
@@ -481,25 +528,75 @@ namespace rdu
   }
 
   //-----------------------------------------------------------------------
-  void EventBuilder::loadDigits_(LariatFragment * & LArIATFragment)
+  void EventBuilder::loadFragments_()
   {
 
-    if (fTreeIndex != fNumberInputEvents) {
-      artdaq::Fragments * fragments = getFragments(fFragmentsBranch, fTreeIndex++);
+    for (fTreeIndex = 0; fTreeIndex < fNumberInputEvents; ++fTreeIndex) {
+
+      //      std::cout << "fFragmentsBranch located at " << static_cast<const void*>( fFragmentsBranch ) << std::endl;
+
+      //      std::cout << "fFragmentsBranch entries: ";
+      //      std::cout << fFragmentsBranch->GetEntries() << std::endl;
+
+      artdaq::Fragments * fragments = getFragments(fFragmentsBranch, fTreeIndex);
 
       if ((*fragments).size() > 1)
         throw cet::exception("EventBuilder") << "artdaq::Fragment vector contains more than one fragment.";
 
       artdaq::Fragment frag = fragments->at(0);
-      const char * bytePtr = reinterpret_cast <const char *> (&*frag.dataBegin());
-      LArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(artdaq::RawDataType));
+      fSpillWrapper->add(frag);
 
-      // get SpillTrailer
-      LariatFragment::SpillTrailer const& spillTrailer = LArIATFragment->spillTrailer;
-
-      // get timestamp from SpillTrailer, cast as uint64_t
-      fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
     }
+
+    //if (fSpillWrapper->ready()) {
+    //  const uint8_t * spillDataPtr(fSpillWrapper->get());
+
+    //  mf::LogInfo("EventBuilderInput") << "Spill is "
+    //                                   << fSpillWrapper->size()
+    //                                   << " bytes, starting at "    
+    //                                   << static_cast< const void * > (spillDataPtr);
+
+    //  //const char * bytePtr = reinterpret_cast<const char *> (fSpillWrapper->get());
+    //  //fLariatFragment = new LariatFragment((char *) bytePtr, fSpillWrapper->size());
+    //  fLariatFragment = new LariatFragment((char *) spillDataPtr, fSpillWrapper->size());
+
+    //  // get SpillTrailer
+    //  LariatFragment::SpillTrailer const& spillTrailer = LArIATFragment->spillTrailer;
+
+    //  // get timestamp from SpillTrailer, cast as uint64_t
+    //  fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
+    //}
+
+    //if (fTreeIndex != fNumberInputEvents) {
+    //  artdaq::Fragments * fragments = getFragments(fFragmentsBranch, fTreeIndex++);
+
+    //  if ((*fragments).size() > 1)
+    //    throw cet::exception("EventBuilder") << "artdaq::Fragment vector contains more than one fragment.";
+
+    //  artdaq::Fragment frag = fragments->at(0);
+
+    //  fSpillWrapper->add(frag);
+
+    //  const uint8_t * spillDataPtr(fSpillWrapper->get());
+
+    //  mf::LogInfo("EventBuilderInput") << "Spill is "
+    //                                   << fSpillWrapper->size()
+    //                                   << " bytes, starting at "    
+    //                                   << static_cast< const void * > (spillDataPtr);
+
+    //  //const char * bytePtr = reinterpret_cast<const char *> (fSpillWrapper->get());
+    //  //fLariatFragment = new LariatFragment((char *) bytePtr, fSpillWrapper->size());
+    //  fLariatFragment = new LariatFragment((char *) spillDataPtr, fSpillWrapper->size());
+
+    //  //const char * bytePtr = reinterpret_cast <const char *> (&*frag.dataBegin());
+    //  //LArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(artdaq::RawDataType));
+
+    //  // get SpillTrailer
+    //  LariatFragment::SpillTrailer const& spillTrailer = LArIATFragment->spillTrailer;
+
+    //  // get timestamp from SpillTrailer, cast as uint64_t
+    //  fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
+    //}
 
   }
 
