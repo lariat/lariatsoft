@@ -5,7 +5,7 @@ process_name: OpDetSER
 
 services:
 {
-  TFileService: { fileName: "OpDetSER_histos.root" }
+  TFileService: { fileName: "SER.root" }
   Timing:       {}
   RandomNumberGenerator: {}
   message:      @local::standard_info
@@ -39,12 +39,22 @@ physics:
 ################################################################
 # Single photoelectron calibration parameters
 
+physics.analyzers.OpDetSER.OpDetChannel:            1
+physics.analyzers.OpDetSER.PreWindow:               5
+physics.analyzers.OpDetSER.PostWindow:              35
+physics.analyzers.OpDetSER.UsePrePEBaseline:        1
+physics.analyzers.OpDetSER.WfmAbsRMSCut:            0.4 # mV
+physics.analyzers.OpDetSER.PrePE_RMSCut:            1.5 # mV 
+physics.analyzers.OpDetSER.PulseHitThresh_high:     10  # mV
+physics.analyzers.OpDetSER.PulseHitRMSThresh:       3
+physics.analyzers.OpDetSER.GradientCut:             -3
+physics.analyzers.OpDetSER.ThreshPersist:           2 
 physics.analyzers.OpDetSER.AttemptFit:              "true"
-physics.analyzers.OpDetSER.Mean_set:                50 
-physics.analyzers.OpDetSER.Mean_lowerLim:           30 
+physics.analyzers.OpDetSER.Mean_set:                53 
+physics.analyzers.OpDetSER.Mean_lowerLim:           40 
 physics.analyzers.OpDetSER.Mean_upperLim:           80 
-physics.analyzers.OpDetSER.SinglePE:                85
-physics.analyzers.OpDetSER.PrePE_RMSCut:            2.5
+physics.analyzers.OpDetSER.SinglePE:                50
+physics.analyzers.OpDetSER.SinglePE_tolerance:      10
 
 # Irrelevant settings (no need to change these)
 physics.analyzers.OpDetSER.IntegrationWindows:      [100,7000]
