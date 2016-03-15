@@ -67,7 +67,6 @@
 // C++ includes
 #include <map>
 #include <memory>
-#include <regex>
 #include <string>
 #include <vector>
 #include <utility>
@@ -98,16 +97,6 @@ namespace {
     br->GetEntry(entry);
     return reinterpret_cast <artdaq::Fragments *> (br->GetAddress());
   }
-
-  // Assumed file format is
-  //
-  //     "lariat_r[digits]_sr[digits]_other_stuff.root"
-  //
-  // This regex object is used to extract the run and subrun numbers.
-  // The '()' groupings correspond to regex matches that can be
-  // extracted using the std::regex_match facility.
-
-  std::regex const filename_format(".*\\lariat_r(\\d+)_sr(\\d+).*\\.root");
 
 }
 
@@ -201,6 +190,10 @@ namespace rdu
     art::EventNumber_t     fEventNumber;
     art::RunNumber_t       fCachedRunNumber;
     art::SubRunNumber_t    fCachedSubRunNumber;
+
+    // EventAuxiliary for fetching run and sub-run numbers
+    art::EventAuxiliary    fEventAux;
+    art::EventAuxiliary *  fEventAuxPtr;
 
     // unique pointer to SpillWrapper
     std::unique_ptr<rdu::SpillWrapper> fSpillWrapper;
@@ -313,9 +306,10 @@ namespace rdu
     , fInputTag("daq:SPILL:DAQ")
     , fSourceHelper(shelper)
     , fFragmentsBranch(nullptr)
+    , fEventAuxBranch(nullptr)
     , fNumberInputEvents()
-    , fRunNumber(1)       // Defaults in case input filename does not
-    , fSubRunNumber(0)    // follow assumed filename_format above.
+    , fRunNumber(1)
+    , fSubRunNumber(0)
     , fEventNumber()
     , fCachedRunNumber(-1)
     , fCachedSubRunNumber(-1)
@@ -382,20 +376,36 @@ namespace rdu
   //-----------------------------------------------------------------------
   bool EventBuilder::readFile(std::string const& filename, art::FileBlock * & fileblock)
   {
-    // Run numbers determined based on file name... see comment in
-    // unnamed namespace above.
-    std::smatch matches;
-    if (std::regex_match(filename, matches, filename_format)) {
-      fRunNumber    = std::stoul(matches[1]);
-      fSubRunNumber = std::stoul(matches[2]);
-    }
+
+    // get artdaq::Fragments branch
+    fFile.reset(new TFile(filename.data()));
+    TTree * eventTree  = reinterpret_cast <TTree *> (fFile->Get(art::rootNames::eventTreeName().c_str()));
+    fFragmentsBranch   = eventTree->GetBranch(getBranchName<artdaq::Fragments>(fInputTag)); // get branch for specific input tag
+    fEventAuxBranch    = eventTree->GetBranch("EventAuxiliary");
+    fNumberInputEvents = static_cast <size_t> (fFragmentsBranch->GetEntries()); // Number of fragment-containing events to read in from input file
+    fTreeIndex         = 0ul;
+
+    fEventAuxPtr = &fEventAux;
+    fEventAuxBranch->SetAddress(&fEventAuxPtr);
+
+    fEventAuxBranch->GetEntry(fTreeIndex);
 
     LOG_VERBATIM("EventBuilderInput")
-    << "\n////////////////////////////////////"
-    << "\nfRunNumber:       " << fRunNumber
-    << "\nfSubRunNumber:    " << fSubRunNumber
-    << "\nfCachedRunNumber: " << fCachedRunNumber
-    << "\n////////////////////////////////////\n";
+        << "\n////////////////////////////////////"
+        << "\nfEventAux.run():    " << fEventAux.run()
+        << "\nfEventAux.subRun(): " << fEventAux.subRun()
+        << "\nfEventAux.event():  " << fEventAux.event()
+        << "\n////////////////////////////////////";
+
+    fRunNumber    = fEventAux.run();
+    fSubRunNumber = fEventAux.subRun();
+
+    LOG_VERBATIM("EventBuilderInput")
+        << "\n////////////////////////////////////"
+        << "\nfRunNumber:       " << fRunNumber
+        << "\nfSubRunNumber:    " << fSubRunNumber
+        << "\nfCachedRunNumber: " << fCachedRunNumber
+        << "\n////////////////////////////////////\n";
 
     // get database parameters
     // TODO: Check to see if the current run number is the same as the
@@ -417,14 +427,6 @@ namespace rdu
                                fTDCPreAcquisitionWindow,
                                fTDCPostAcquisitionWindow,
                                fTDCAcquisitionWindow);
-
-    // get artdaq::Fragments branch
-    fFile.reset(new TFile(filename.data()));
-    TTree * eventTree  = reinterpret_cast <TTree *> (fFile->Get(art::rootNames::eventTreeName().c_str()));
-    fFragmentsBranch   = eventTree->GetBranch(getBranchName<artdaq::Fragments>(fInputTag)); // get branch for specific input tag
-    //fEventAuxBranch    = eventTree->GetBranch("EventAuxiliary");
-    fNumberInputEvents = static_cast <size_t> (fFragmentsBranch->GetEntries()); // Number of fragment-containing events to read in from input file
-    fTreeIndex         = 0ul;
 
     // new fileblock
     fileblock = new art::FileBlock(art::FileFormatVersion(), filename);
