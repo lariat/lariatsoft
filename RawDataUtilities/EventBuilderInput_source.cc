@@ -544,8 +544,10 @@ namespace rdu
       if ((*fragments).size() > 1)
         throw cet::exception("EventBuilder") << "artdaq::Fragment vector contains more than one fragment.";
 
-      artdaq::Fragment frag = fragments->at(0);
-      fSpillWrapper->add(frag);
+      //artdaq::Fragment const& frag = fragments->at(0);
+      //fSpillWrapper->add(frag);
+
+      fSpillWrapper->add(fragments->at(0));
     }
   }
 
