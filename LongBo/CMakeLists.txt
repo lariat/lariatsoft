@@ -9,6 +9,7 @@ art_make( MODULE_LIBRARIES larcore_Geometry
 			larevt_Filters
 			lardata_RawData
 			lardata_RecoBase
+			lardata_RecoBaseArt
 			lardata_RecoObjects  
 			larreco_RecoAlg
                         ${SIMULATIONBASE}
