@@ -32,6 +32,7 @@
 #include "lardata/RecoBase/Cluster.h"
 #include "lardata/RecoBase/Track.h"
 #include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/RecoBaseArt/TrackUtils.h" // lar::utils::TrackPitchInView()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -283,9 +284,9 @@ void bo::AnaTree::analyze(art::Event const & evt)
     for (int j = 0; j<2; ++j){
       try{
 	if (j==0)
-	  trkpitch[i][j] = tracklist[i]->PitchInView(geo::kU);
+	  trkpitch[i][j] = lar::utils::TrackPitchInView(*(tracklist[i]), geo::kU);
 	else if (j==1)
-	  trkpitch[i][j] = tracklist[i]->PitchInView(geo::kV);
+	  trkpitch[i][j] = lar::utils::TrackPitchInView(*(tracklist[i]), geo::kV);
       }
       catch( cet::exception &e){
 	mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
