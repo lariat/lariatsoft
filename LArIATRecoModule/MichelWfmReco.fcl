@@ -59,7 +59,7 @@ services.scheduler.SkipEvent:                         [ ProductNotFound ]
 physics.producers.MichelWfmReco.HitTimeCutoffLow:     -100000   # default -1000000
 physics.producers.MichelWfmReco.HitTimeCutoffHigh:    100000  # default  1000000
 
-physics.producers.MichelWfmReco.SER_Mode:               "false"
+physics.producers.MichelWfmReco.SER_Mode:               "true"
 physics.producers.MichelWfmReco.SER_Fit:                "true"
 physics.producers.MichelWfmReco.SER_mean_low:           75.
 physics.producers.MichelWfmReco.SER_mean_set:           85.

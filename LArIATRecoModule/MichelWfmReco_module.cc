@@ -47,11 +47,10 @@
 #include <TTree.h>
 
 // LArSoft Includes
-#include "Utilities/AssociationUtil.h"
-#include "RawData/TriggerData.h"
-#include "RecoBase/Track.h"
-#include "AnalysisBase/Calorimetry.h"
-#include "AnalysisBase/ParticleID.h"
+#include "lardata/RawData/TriggerData.h"
+#include "lardata/RecoBase/Track.h"
+#include "lardata/AnalysisBase/Calorimetry.h"
+#include "lardata/AnalysisBase/ParticleID.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardata/RawData/TriggerData.h"
 #include "lardata/RecoBase/Track.h"
@@ -157,7 +156,6 @@ private:
   OpHitBuilderAlg     fOpHitBuilderAlg_aveBG;
   OpHitBuilderAlg     fOpHitBuilderAlg_aveBG_lowPromptPE;
   OpHitBuilderAlg     fOpHitBuilderAlg_aveMIP;
-  OpHitBuilderAlg     fOpHitBuilderAlg_aveProton;
   OpHitBuilderAlg     fOpHitBuilderAlg_SER;
   TriggerFilterAlg    fTrigFiltAlg;
 
@@ -268,7 +266,6 @@ private:
   TH1F* h_AverageWaveform_BG;
   TH1F* h_AverageWaveform_BG_lowPromptPE;
   TH1F* h_AverageWaveformMIP;
-  TH1F* h_AverageWaveformProton;
   TH1F* h_AverageWaveformSER;
 
   // TTree
@@ -375,7 +372,6 @@ fOpHitBuilderAlg_aveMichel(pset),
 fOpHitBuilderAlg_aveBG(pset),
 fOpHitBuilderAlg_aveBG_lowPromptPE(pset), 
 fOpHitBuilderAlg_aveMIP(pset), 
-fOpHitBuilderAlg_aveProton(pset), 
 fOpHitBuilderAlg_SER(pset),
 fTrigFiltAlg(pset)
 {
@@ -410,7 +406,6 @@ fTrigFiltAlg(pset)
   fOpHitBuilderAlg_aveBG.AddHitToAverageWaveform       = 1;  
   fOpHitBuilderAlg_aveBG_lowPromptPE.AddHitToAverageWaveform = 1;  
   fOpHitBuilderAlg_aveMIP.AddHitToAverageWaveform     = 1;  
-  fOpHitBuilderAlg_aveProton.AddHitToAverageWaveform  = 1;  
  
   // Switch to apply baseline correction (prepulse
   // expeonential fit method) to averaged waveforms:
@@ -419,13 +414,11 @@ fTrigFiltAlg(pset)
     fOpHitBuilderAlg_aveBG.fUsePrepulseFit       = true;  
     fOpHitBuilderAlg_aveBG_lowPromptPE.fUsePrepulseFit       = true;  
     fOpHitBuilderAlg_aveMIP.fUsePrepulseFit     = true;  
-    fOpHitBuilderAlg_aveProton.fUsePrepulseFit  = true; 
   } else {
     fOpHitBuilderAlg_aveMichel.fUsePrepulseFit       = false;  
     fOpHitBuilderAlg_aveBG.fUsePrepulseFit       = false;  
     fOpHitBuilderAlg_aveBG_lowPromptPE.fUsePrepulseFit       = false;  
     fOpHitBuilderAlg_aveMIP.fUsePrepulseFit     = false;  
-    fOpHitBuilderAlg_aveProton.fUsePrepulseFit  = false; 
   }
   
 
@@ -1147,10 +1140,6 @@ void MichelWfmReco::produce(art::Event & e)
     fOpHitBuilderAlg_aveMIP.GetHitInfo(PMT_wfm,vHitTimes[0],0,fIntegrationWindows);
   }
   
-  // Make average waveform of beam protons
-  if( (IsCleanBeamWaveform) && (NumTracks==1) && (abs(vTrackPID[0])==2212) && (IsBeamEvent)) {
-    fOpHitBuilderAlg_aveProton.GetHitInfo(PMT_wfm,vHitTimes[0],0,fIntegrationWindows);
-  }
   
   //=========================================================
   // SER-finder
@@ -1558,10 +1547,6 @@ void MichelWfmReco::beginJob()
   h_AverageWaveformMIP    ->GetXaxis()->SetTitle("ns");
   h_AverageWaveformMIP    ->GetYaxis()->SetTitle("mV");
  
-  h_AverageWaveformProton = tfs->make<TH1F>("AverageWaveformProton","Average waveform of protons",
-                            HitWaveformBins,0.,(float)HitWaveformBins);
-  h_AverageWaveformProton ->GetXaxis()->SetTitle("ns");
-  h_AverageWaveformProton ->GetYaxis()->SetTitle("mV");
 }
 
 void MichelWfmReco::beginRun(art::Run & r)
@@ -1577,7 +1562,6 @@ void MichelWfmReco::beginSubRun(art::SubRun & sr)
 void MichelWfmReco::endJob()
 {
 
-/*
   TF1 ones("ones","1.",0.,1000000.);
 
   // Add function to correct BG baseline (to do)
@@ -1683,29 +1667,6 @@ void MichelWfmReco::endJob()
   std::cout<<"   ratio: "<< integral_prompt / integral_total<<std::endl;
   std::cout<<"================================\n";
 
-
-  // Proton average waveform
-  N_entries = fOpHitBuilderAlg_aveProton.AverageWaveform_count;
-  integral_prompt = 0.;
-  integral_total = 0.;
-  if( N_entries > 0 ){
-    for( int i = 1; i <=(int)fOpHitBuilderAlg_aveProton.AverageWaveform.size(); i++) {
-      float w = fOpHitBuilderAlg_aveProton.AverageWaveform.at(i) / float(N_entries); 
-      h_AverageWaveformProton->Fill(i-1,w);
-      if( (i-1>fPrePulseDisplay-10)&&(i-1<fPrePulseDisplay+fPromptWindowLength) ) integral_prompt += w;
-      if( (i-1>fPrePulseDisplay-10) ) integral_total += w; 
-    }
-  }
-  //min = h_AverageWaveformProton->GetMinimum() - 0.001;
-  //h_AverageWaveformProton->Add(&ones,-1.*min);
-  std::cout<<"=================================\n";
-  std::cout<<"Protons:\n";
-  std::cout<<"Average of "<<N_entries<<" waveforms.\n";
-  std::cout<<"   prompt ("<<fPromptWindowLength<<" ns): "<<integral_prompt<<std::endl;
-  std::cout<<"   total ("<<fFullWindowLength<<" ns): "<<integral_total<<std::endl;
-  std::cout<<"   ratio: "<< integral_prompt / integral_total<<std::endl;
-  std::cout<<"================================\n";
-
   std::cout<<"================================\n";
   std::cout<<"SUMMARY:\n\n";
   std::cout<<"  total events     "<<iEvent<<std::endl;
@@ -1802,7 +1763,6 @@ void MichelWfmReco::endJob()
   
   }
   
-*/
 }
 
 

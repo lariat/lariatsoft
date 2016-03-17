@@ -322,9 +322,9 @@ std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<float> wfm, s
 {
   float mean = 0;
   float sumSquares = 0;
-  int N = x2 - x1;
-  for ( int i = x1; i < x2; i++ ) mean += wfm[i]/N;
-  for ( int i = x1; i < x2; i++ ) sumSquares += pow(wfm[i]-mean,2);
+  short N = x2 - x1;
+  for ( short i = x1; i < x2; i++ ) mean += wfm[i]/N;
+  for ( short i = x1; i < x2; i++ ) sumSquares += pow(wfm[i]-mean,2);
   std::vector<float> out(2);
   out[0] = mean;
   out[1] = sqrt(sumSquares/N);

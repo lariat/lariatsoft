@@ -58,8 +58,8 @@ class OpHitBuilderAlg{
   std::vector<std::pair<float,float>>  GetSinglePEs( raw::OpDetPulse& );
   
   // Average waveform vector
-  std::vector<float>   AverageWaveform;
-  std::vector<float>   SERWaveform;
+  std::vector<float>    AverageWaveform;
+  std::vector<float>    SERWaveform;
   int                   AverageWaveform_count;
   int                   SERWaveform_count;
   int                   AddHitToAverageWaveform;
