@@ -47,7 +47,6 @@
 #include <TTree.h>
 
 // LArSoft Includes
-//#include "Utilities/AssociationUtil.h"
 #include "lardata/RawData/TriggerData.h"
 #include "lardata/RecoBase/Track.h"
 #include "lardata/AnalysisBase/Calorimetry.h"
