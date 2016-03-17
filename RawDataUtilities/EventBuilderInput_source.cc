@@ -51,7 +51,14 @@
 #include "LArIATDataProducts/ConditionsSummary.h"
 #include "RawDataUtilities/EventBuilderAlg.h"
 #include "RawDataUtilities/FragmentToDigitAlg.h"
+#include "RawDataUtilities/SpillWrapper.h"
 #include "Utilities/DatabaseUtilityT1034.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-variable"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
 
 // ROOT includes
 #include "TFile.h"
@@ -60,7 +67,6 @@
 // C++ includes
 #include <map>
 #include <memory>
-#include <regex>
 #include <string>
 #include <vector>
 #include <utility>
@@ -91,16 +97,6 @@ namespace {
     br->GetEntry(entry);
     return reinterpret_cast <artdaq::Fragments *> (br->GetAddress());
   }
-
-  // Assumed file format is
-  //
-  //     "lariat_r[digits]_sr[digits]_other_stuff.root"
-  //
-  // This regex object is used to extract the run and subrun numbers.
-  // The '()' groupings correspond to regex matches that can be
-  // extracted using the std::regex_match facility.
-
-  std::regex const filename_format(".*\\lariat_r(\\d+)_sr(\\d+).*\\.root");
 
 }
 
@@ -173,7 +169,7 @@ namespace rdu
 
     // Private member functions are appended with an underscore.
 
-    void loadDigits_(LariatFragment * & LArIATFragment);
+    void loadFragments_();
 
     void makeEventAndPutDigits_(art::EventPrincipal * & outEvent);
 
@@ -195,6 +191,14 @@ namespace rdu
     art::RunNumber_t       fCachedRunNumber;
     art::SubRunNumber_t    fCachedSubRunNumber;
 
+    // EventAuxiliary for fetching run and sub-run numbers
+    art::EventAuxiliary    fEventAux;
+    art::EventAuxiliary *  fEventAuxPtr;
+
+    // unique pointer to SpillWrapper
+    std::unique_ptr<rdu::SpillWrapper> fSpillWrapper;
+
+    // complete LariatFragment for event record
     LariatFragment * fLariatFragment;
 
     // collection of data blocks
@@ -302,12 +306,14 @@ namespace rdu
     , fInputTag("daq:SPILL:DAQ")
     , fSourceHelper(shelper)
     , fFragmentsBranch(nullptr)
+    , fEventAuxBranch(nullptr)
     , fNumberInputEvents()
-    , fRunNumber(1)       // Defaults in case input filename does not
-    , fSubRunNumber(0)    // follow assumed filename_format above.
+    , fRunNumber(1)
+    , fSubRunNumber(0)
     , fEventNumber()
     , fCachedRunNumber(-1)
     , fCachedSubRunNumber(-1)
+    , fSpillWrapper(nullptr)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
   {
@@ -370,20 +376,36 @@ namespace rdu
   //-----------------------------------------------------------------------
   bool EventBuilder::readFile(std::string const& filename, art::FileBlock * & fileblock)
   {
-    // Run numbers determined based on file name... see comment in
-    // unnamed namespace above.
-    std::smatch matches;
-    if (std::regex_match(filename, matches, filename_format)) {
-      fRunNumber    = std::stoul(matches[1]);
-      fSubRunNumber = std::stoul(matches[2]);
-    }
+
+    // get artdaq::Fragments branch
+    fFile.reset(new TFile(filename.data()));
+    TTree * eventTree  = reinterpret_cast <TTree *> (fFile->Get(art::rootNames::eventTreeName().c_str()));
+    fFragmentsBranch   = eventTree->GetBranch(getBranchName<artdaq::Fragments>(fInputTag)); // get branch for specific input tag
+    fEventAuxBranch    = eventTree->GetBranch("EventAuxiliary");
+    fNumberInputEvents = static_cast <size_t> (fFragmentsBranch->GetEntries()); // Number of fragment-containing events to read in from input file
+    fTreeIndex         = 0ul;
+
+    fEventAuxPtr = &fEventAux;
+    fEventAuxBranch->SetAddress(&fEventAuxPtr);
+
+    fEventAuxBranch->GetEntry(fTreeIndex);
 
     LOG_VERBATIM("EventBuilderInput")
-    << "\n////////////////////////////////////"
-    << "\nfRunNumber:       " << fRunNumber
-    << "\nfSubRunNumber:    " << fSubRunNumber
-    << "\nfCachedRunNumber: " << fCachedRunNumber
-    << "\n////////////////////////////////////\n";
+        << "\n////////////////////////////////////"
+        << "\nfEventAux.run():    " << fEventAux.run()
+        << "\nfEventAux.subRun(): " << fEventAux.subRun()
+        << "\nfEventAux.event():  " << fEventAux.event()
+        << "\n////////////////////////////////////";
+
+    fRunNumber    = fEventAux.run();
+    fSubRunNumber = fEventAux.subRun();
+
+    LOG_VERBATIM("EventBuilderInput")
+        << "\n////////////////////////////////////"
+        << "\nfRunNumber:       " << fRunNumber
+        << "\nfSubRunNumber:    " << fSubRunNumber
+        << "\nfCachedRunNumber: " << fCachedRunNumber
+        << "\n////////////////////////////////////\n";
 
     // get database parameters
     // TODO: Check to see if the current run number is the same as the
@@ -406,14 +428,6 @@ namespace rdu
                                fTDCPostAcquisitionWindow,
                                fTDCAcquisitionWindow);
 
-    // get artdaq::Fragments branch
-    fFile.reset(new TFile(filename.data()));
-    TTree * eventTree  = reinterpret_cast <TTree *> (fFile->Get(art::rootNames::eventTreeName().c_str()));
-    fFragmentsBranch   = eventTree->GetBranch(getBranchName<artdaq::Fragments>(fInputTag)); // get branch for specific input tag
-    //fEventAuxBranch    = eventTree->GetBranch("EventAuxiliary");
-    fNumberInputEvents = static_cast <size_t> (fFragmentsBranch->GetEntries()); // Number of fragment-containing events to read in from input file
-    fTreeIndex         = 0ul;
-
     // new fileblock
     fileblock = new art::FileBlock(art::FileFormatVersion(), filename);
     if (fileblock == nullptr) {
@@ -424,8 +438,41 @@ namespace rdu
     // reset flag
     fDoneWithFile = false;
 
-    // load the data blocks
-    this->loadDigits_(fLariatFragment);
+    fSpillWrapper.reset(new SpillWrapper(fNumberInputEvents));
+
+    // load the artdaq fragments
+    this->loadFragments_();
+
+    // Be aware that SpillWrapper OWNS the binary blob - if it's
+    // destroyed, you lose the blob, and spillDataPtr will point
+    // to deallocated memory.
+
+    if (fSpillWrapper->ready()) {
+
+      mf::LogInfo("EventBuilderInput") << "Spill construction complete\n"
+                                       << "Spill starts at "
+                                       << static_cast< const void * > (fSpillWrapper->get())
+                                       << ", can pass this pointer to the LariatFragment constructor\n"
+                                       << "Spill appears to be " << fSpillWrapper->size() << " bytes\n";
+
+      const uint8_t * spillDataPtr(fSpillWrapper->get());
+
+      mf::LogInfo("EventBuilderInput") << "Spill is "
+                                       << fSpillWrapper->size()
+                                       << " bytes, starting at "    
+                                       << static_cast< const void * > (spillDataPtr);
+
+      fLariatFragment = new LariatFragment((char *) spillDataPtr, fSpillWrapper->size());
+
+    } else {
+      throw cet::exception("EventBuilder") << "Spill construction failed; spill is incomplete\n";
+    }
+
+    // get SpillTrailer
+    LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
+
+    // get timestamp from SpillTrailer, cast as uint64_t
+    fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
 
     // group data blocks into collections
     fCollectionIndex = 0;
@@ -434,6 +481,8 @@ namespace rdu
 
     // we are done with this file if there are no data blocks
     if (fCollections.size() < 1) fDoneWithFile = true;
+
+    fSpillWrapper.reset(nullptr);
 
     delete fLariatFragment;
 
@@ -481,26 +530,25 @@ namespace rdu
   }
 
   //-----------------------------------------------------------------------
-  void EventBuilder::loadDigits_(LariatFragment * & LArIATFragment)
+  void EventBuilder::loadFragments_()
   {
+    for (fTreeIndex = 0; fTreeIndex < fNumberInputEvents; ++fTreeIndex) {
 
-    if (fTreeIndex != fNumberInputEvents) {
-      artdaq::Fragments * fragments = getFragments(fFragmentsBranch, fTreeIndex++);
+      //      std::cout << "fFragmentsBranch located at " << static_cast<const void*>( fFragmentsBranch ) << std::endl;
+
+      //      std::cout << "fFragmentsBranch entries: ";
+      //      std::cout << fFragmentsBranch->GetEntries() << std::endl;
+
+      artdaq::Fragments * fragments = getFragments(fFragmentsBranch, fTreeIndex);
 
       if ((*fragments).size() > 1)
         throw cet::exception("EventBuilder") << "artdaq::Fragment vector contains more than one fragment.";
 
-      artdaq::Fragment frag = fragments->at(0);
-      const char * bytePtr = reinterpret_cast <const char *> (&*frag.dataBegin());
-      LArIATFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(artdaq::RawDataType));
+      //artdaq::Fragment const& frag = fragments->at(0);
+      //fSpillWrapper->add(frag);
 
-      // get SpillTrailer
-      LariatFragment::SpillTrailer const& spillTrailer = LArIATFragment->spillTrailer;
-
-      // get timestamp from SpillTrailer, cast as uint64_t
-      fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
+      fSpillWrapper->add(fragments->at(0));
     }
-
   }
 
   //-----------------------------------------------------------------------

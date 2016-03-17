@@ -41,8 +41,8 @@ namespace rdu {
   //-----------------------------------------------------------------------
   void EventBuilderAlg::reconfigure(fhicl::ParameterSet const& pset)
   {
-    fTPCReadoutBufferLow  = pset.get< double >("TPCReadoutBufferLow",  0.256);
-    fTPCReadoutBufferHigh = pset.get< double >("TPCReadoutBufferHigh", 0.256);
+    fTPCReadoutBufferLow  = pset.get< double >("TPCReadoutBufferLow",  10.0);
+    fTPCReadoutBufferHigh = pset.get< double >("TPCReadoutBufferHigh", 10.0);
 
     return;
   }
@@ -554,13 +554,16 @@ namespace rdu {
 
         std::cout << "    CAEN block: " << j << std::endl;
         std::cout << "      Board ID: " << boardId << std::endl;
-        //std::cout << "           TTT: " << caenFrag->header.triggerTimeTag << std::endl;
+        std::cout << "           TTT: " << caenFrag.header.triggerTimeTag << std::endl;
         std::cout << "      Timestamp: " << timestamp << std::endl;
 
-        // a +- 128-ns buffer time should be sufficient
+        // a +- 10-microsecond buffer time should be sufficient
         // in a TPCReadout "interval"
         double TPCReadoutLow  = timestamp - fTPCReadoutBufferLow;
         double TPCReadoutHigh = timestamp + fTPCReadoutBufferHigh;
+
+        std::cout << "      TPCReadoutLow:  " << TPCReadoutLow  << std::endl;
+        std::cout << "      TPCReadoutHigh: " << TPCReadoutHigh << std::endl;
 
         TPCReadout.push_back(std::make_pair(TPCReadoutLow, TPCReadoutHigh));
       }
