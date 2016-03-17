@@ -47,16 +47,16 @@ physics.analyzers.OpDetSER.T1:                      2000
 physics.analyzers.OpDetSER.T2:                      19000
 physics.analyzers.OpDetSER.DeadTimeMin:             100
 physics.analyzers.OpDetSER.WfmAbsRMSCut:            0.4 # mV
-physics.analyzers.OpDetSER.PrePE_RMSCut:            1.2 # mV 
+physics.analyzers.OpDetSER.PrePE_RMSCut:            1.5 # mV 
 physics.analyzers.OpDetSER.PulseHitThresh_high:     5  # mV
 physics.analyzers.OpDetSER.PulseHitRMSThresh:       3 # factor (xRMS)
 physics.analyzers.OpDetSER.GradientCut:             -1  # ADC/ns
-physics.analyzers.OpDetSER.ThreshPersist:           0   # thresh must satisfy this many consecutive samples 
+physics.analyzers.OpDetSER.ThreshPersist:           2   # thresh must satisfy this many consecutive samples 
 physics.analyzers.OpDetSER.AttemptFit:              "true"
-physics.analyzers.OpDetSER.Mean_set:                53 
-physics.analyzers.OpDetSER.Mean_lowerLim:           40 
-physics.analyzers.OpDetSER.Mean_upperLim:           80 
-physics.analyzers.OpDetSER.SinglePE:                55
+physics.analyzers.OpDetSER.Mean_set:                100 
+physics.analyzers.OpDetSER.Mean_lowerLim:           60 
+physics.analyzers.OpDetSER.Mean_upperLim:           130 
+physics.analyzers.OpDetSER.SinglePE:                100
 physics.analyzers.OpDetSER.SinglePE_tolerance:      2.5
 
 # Irrelevant settings (no need to change these)

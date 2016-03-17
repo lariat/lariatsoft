@@ -91,6 +91,7 @@ private:
   TH1F* h_SER;
   TH1F* h_SER_g;
   TH1F* h_AvePEWfm;
+  TH1F* h_WfmRMS;
 };
 
 
@@ -150,6 +151,7 @@ void OpDetSER::analyze(art::Event const & e)
   std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS( Wfm, 0, fBaselineWindowLength );
   float baseline  = tmp[0];
   float rms       = tmp[1]; 
+  h_WfmRMS        ->Fill(rms);
 
   std::cout << "Waveform raw baseline: " << baseline << " +/- " << rms <<" ADC\n";
   if( rms*fMvPerADC >= fWfmAbsRMSCut ) return;
@@ -338,6 +340,9 @@ void OpDetSER::beginJob()
   h_AvePEWfm  = tfs->make<TH1F>("AvePEWfm","Average PE waveform",SER_bins,0.,(float)SER_bins);
   h_AvePEWfm  ->GetXaxis()->SetTitle("ns");
   h_AvePEWfm  ->GetYaxis()->SetTitle("mV");
+  h_WfmRMS    = tfs->make<TH1F>("WfmRMS","RMS of photodetector waveforms",100,0.,1.);
+  h_WfmRMS    ->GetXaxis()->SetTitle("Baseline RMS [mV]");
+  h_WfmRMS    ->GetYaxis()->SetTitle("Counts");
 }
 
 void OpDetSER::reconfigure(fhicl::ParameterSet const & p)
