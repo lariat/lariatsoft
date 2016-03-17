@@ -40,23 +40,27 @@ physics:
 # Single photoelectron calibration parameters
 
 physics.analyzers.OpDetSER.OpDetChannel:            1
-physics.analyzers.OpDetSER.PreWindow:               5
-physics.analyzers.OpDetSER.PostWindow:              35
 physics.analyzers.OpDetSER.UsePrePEBaseline:        1
+physics.analyzers.OpDetSER.PreWindow:               5   # samples (ns)
+physics.analyzers.OpDetSER.PostWindow:              35  # samples (ns)
+physics.analyzers.OpDetSER.T1:                      2000
+physics.analyzers.OpDetSER.T2:                      19000
+physics.analyzers.OpDetSER.DeadTimeMin:             100
 physics.analyzers.OpDetSER.WfmAbsRMSCut:            0.4 # mV
-physics.analyzers.OpDetSER.PrePE_RMSCut:            1.5 # mV 
-physics.analyzers.OpDetSER.PulseHitThresh_high:     10  # mV
-physics.analyzers.OpDetSER.PulseHitRMSThresh:       3
-physics.analyzers.OpDetSER.GradientCut:             -3
-physics.analyzers.OpDetSER.ThreshPersist:           2 
+physics.analyzers.OpDetSER.PrePE_RMSCut:            1.2 # mV 
+physics.analyzers.OpDetSER.PulseHitThresh_high:     5  # mV
+physics.analyzers.OpDetSER.PulseHitRMSThresh:       3 # factor (xRMS)
+physics.analyzers.OpDetSER.GradientCut:             -1  # ADC/ns
+physics.analyzers.OpDetSER.ThreshPersist:           0   # thresh must satisfy this many consecutive samples 
 physics.analyzers.OpDetSER.AttemptFit:              "true"
 physics.analyzers.OpDetSER.Mean_set:                53 
 physics.analyzers.OpDetSER.Mean_lowerLim:           40 
 physics.analyzers.OpDetSER.Mean_upperLim:           80 
-physics.analyzers.OpDetSER.SinglePE:                50
-physics.analyzers.OpDetSER.SinglePE_tolerance:      10
+physics.analyzers.OpDetSER.SinglePE:                55
+physics.analyzers.OpDetSER.SinglePE_tolerance:      2.5
 
 # Irrelevant settings (no need to change these)
 physics.analyzers.OpDetSER.IntegrationWindows:      [100,7000]
+services.message.destinations.infomsg.categories.OpDetSER.limit: 1e6
 
 #################################################################

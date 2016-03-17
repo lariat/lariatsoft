@@ -72,6 +72,7 @@ private:
   float               fUsePrePEBaseline;
   short               fThreshPersist;
   float               fWfmAbsRMSCut;
+  short               fDeadTimeMin;
 
   short               SER_bins;
   bool                gotPMT;
@@ -157,7 +158,8 @@ void OpDetSER::analyze(art::Event const & e)
   bool    flag = false;
   int     windowsize = 0;
   int     counter = 0;
-  int     flat_samples_count = 0;
+  //int     flat_samples_count = 0;
+  short   quietTime = 0;
   float   prePE_baseline = -99;
   float   prePE_rms = 99;
   
@@ -193,7 +195,7 @@ void OpDetSER::analyze(art::Event const & e)
      
       std::cout
       << "  " << i << "  yy = " << yy << " mV (wfm RMS " << rms*fMvPerADC << " mV), "
-      << " thresh " << fPulseHitRMSThresh*rms*fMvPerADC << " mV, g " << g[i]<<"\n";
+      << " thresh " << fPulseHitRMSThresh*rms*fMvPerADC << " mV, g " << g[i]<<", deadTime = "<<quietTime<<"\n";
       
       counter++;
       windowsize++;
@@ -206,21 +208,22 @@ void OpDetSER::analyze(art::Event const & e)
       }
       
       // If another PE is detected after at least 5 ns, extend the window by resetting counter
-      if( counter >=5 && IsPECandidate ){
+      if( counter >=10 && IsPECandidate ){
         std::cout << "  Secondary hit, extending window\n";
         counter = 0;
       }
       
       // If pulse extends above upper limit or if window length
       // is exceeded due to multiple merges, abort mission.
-      if( IsOverLimit || (windowsize > 2*fPostWindow) ){
+      if( IsOverLimit || (windowsize > fPreWindow + 2*fPostWindow) ){
         std::cout << "  abort!\n";
         counter = 0;
         hit_grad = 0;
         integral = 0;
         flag = false;
         windowsize = 0;
-        flat_samples_count = 0;
+        //flat_samples_count = 0;
+        quietTime = 0;
         tmp_wfm.clear();
         tmp_wfm_i = 0;
         continue;
@@ -252,7 +255,8 @@ void OpDetSER::analyze(art::Event const & e)
         hit_grad = 0;
         windowsize = 0;
         counter = 0;
-        flat_samples_count = 0;
+        //flat_samples_count = 0;
+        quietTime = 0;
         flag = false;
         tmp_wfm.clear();
         tmp_wfm_i=0;
@@ -263,31 +267,35 @@ void OpDetSER::analyze(art::Event const & e)
 
     int buffer_min = 100;
 
-    if( !IsOverThresh && flat_samples_count <= 50 ) flat_samples_count++;
+    if( !IsOverThresh ) quietTime++;
 
     // If we're not yet integrating a PE window, signal is within bounds,
-    // and the previous 10 samples were below threshold, then we're in business!
-    if( !flag && IsPECandidate ){
+    // and enough dead-time (quietTime) has elapsed, then we're in business
+    if( !flag && IsPECandidate && quietTime >= fDeadTimeMin ){
       
       // Find pre-PE baseline
       prePE_baseline = 99;
       prePE_rms      = 99;
-      std::vector<float> tmp = fOpHitBuilderAlg.GetPedestalAndRMS(wfm_corrected,i-buffer_min,i);
+      //std::vector<float> tmp = fOpHitBuilderAlg.GetPedestalAndRMS(wfm_corrected,i-buffer_min,i);
+      std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS(wfm_corrected,i-buffer_min,i);
       prePE_baseline = tmp[0];
       prePE_rms      = tmp[1];
      
       std::cout
       << "  " << i << "  yy = " << yy << " mV (wfm RMS " << rms*fMvPerADC << " mV), "
       << " thresh " << fPulseHitRMSThresh*rms*fMvPerADC << ", g " << g[i] << ", flag " << flag << "\n"
-      << "  Potential PE!  preBS = "<< prePE_baseline*fMvPerADC << " mV, preRMS = "<< prePE_rms*fMvPerADC <<" mV\n";
+      << "  Potential PE!  preBS = "<< prePE_baseline*fMvPerADC << " mV, preRMS = "<< prePE_rms*fMvPerADC <<" mV, quietTime count "<<quietTime<<"\n";
  
       // Look a few samples ahead and make sure the signal
       // remains above threshold for some time...
       bool flagger = true;
-      for( short j=0; j<fThreshPersist; j++ ){
-        if ( wfm_corrected[i+j] < fPulseHitRMSThresh*rms ) flagger = false;
+      if( fThreshPersist > 0 ){
+        std::cout<< "  Peeking at next few samples....\n";
+        for( short j=0; j<fThreshPersist; j++ ){
+          std::cout<<"    "<<j<<"  "<<wfm_corrected[i+j]*fMvPerADC << " mV \n";
+          if ( wfm_corrected[i+j] < fPulseHitRMSThresh*rms ) flagger = false;
+        }
       }
-
       // Require flat pre-PE region and that signal stays over thresh
       // for at least 5 samples
       if( (prePE_rms <= fPrePE_RMSCut*rms) && (flagger)){
@@ -308,12 +316,12 @@ void OpDetSER::analyze(art::Event const & e)
       
         std::cout << "  Looks good!  Beginning integration...\n"; 
       } else {
-        std::cout << "  Doesn't pass preBS cut, moving on...\n"; 
+        std::cout << "  Doesn't pass quality cuts, moving on...\n"; 
       }
 
     } // <-- end if(PE cand)
     
-    if( IsOverThresh ) flat_samples_count = 0;
+    if( IsOverThresh ) quietTime = 0;
 
   } // <-- end scan over waveform 
 }
@@ -348,14 +356,15 @@ void OpDetSER::reconfigure(fhicl::ParameterSet const & p)
   fSinglePE               = p.get< float >        ("SinglePE",85);
   fSinglePE_tolerance     = p.get< float >        ("SinglePE_tolerance",5);
   fAttemptFit             = p.get< bool >         ("AttemptFit","true");
-  fT1                     = p.get< short >       ("fT1",3000);
-  fT2                     = p.get< short >       ("fT2",19000);
+  fT1                     = p.get< short >       ("T1",3000);
+  fT2                     = p.get< short >       ("T2",19000);
   fPreWindow              = p.get< short >       ("PreWindow",5);
   fPostWindow             = p.get< short >       ("PostWindow",45);
   fMvPerADC               = p.get< float >        ("MvPerADC",0.2);
   fUsePrePEBaseline       = p.get< float >        ("UsePrePEBaseline",1);
   fThreshPersist          = p.get< short >        ("ThreshPersist",3);
   fWfmAbsRMSCut           = p.get< float >        ("WfmAbsRMSCut",0.5);
+  fDeadTimeMin            = p.get< short >        ("DeadTimeMin",100);
 }
 
 void OpDetSER::beginRun(art::Run const & r){}
@@ -365,7 +374,7 @@ void OpDetSER::beginSubRun(art::SubRun const & sr){}
 void OpDetSER::endJob()
 {
 
-  LOG_VERBATIM("OpDetSER")
+  std::cout 
     << "============================================================\n"
     << "Ending SER program.\n"
     << "Parameters: \n"
@@ -378,8 +387,7 @@ void OpDetSER::endJob()
     << "  Graident cut            " << fGradientCut << "\n"
     << "  Pre / Post Window       " << fPreWindow << "," << fPostWindow << "\n\n";
  
-  LOG_VERBATIM("OpDetSER")
-    << "Found "<< h_SER->GetEntries() << " single PE candidates.";
+  std::cout << "Found "<< h_SER->GetEntries() << " single PE candidates.";
   
   // SER average waveform
   float integral = 0;
@@ -397,7 +405,7 @@ void OpDetSER::endJob()
         std::cout<<i<<"     "<<w<<"\n";
       }
     }
-    LOG_VERBATIM("OpDetSER") 
+    std::cout 
       << "-------------------------------------------------------\n"
       << "Ave PE wfm integral: "<<integral<< " ADC ("<<SERWaveform_count<<" waveforms averaged)\n";
  
@@ -425,9 +433,9 @@ void OpDetSER::endJob()
     SER_fit.SetParameter(0,max);
     SER_fit.SetParLimits(0,0.,1.2*max);
     SER_fit.SetParameter(1,0);
-    SER_fit.SetParLimits(1,-15,15);
+    SER_fit.SetParLimits(1,-10,10);
     SER_fit.SetParameter(2,20);
-    SER_fit.SetParLimits(2,5.,30.);
+    SER_fit.SetParLimits(2,5,30.);
 
     // 1PE (gaus)
     SER_fit.SetParameter(3,max);
@@ -435,7 +443,7 @@ void OpDetSER::endJob()
     SER_fit.SetParameter(4,fMean_set);
     SER_fit.SetParLimits(4,fMean_lowerLim,fMean_upperLim);
     SER_fit.SetParameter(5,35);
-    SER_fit.SetParLimits(5,10.,60.);
+    SER_fit.SetParLimits(5,20.,60.);
 
     // 2PE (gaus)
     SER_fit.SetParameter(6,0.1*max);
