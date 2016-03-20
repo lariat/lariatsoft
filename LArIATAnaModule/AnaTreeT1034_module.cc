@@ -86,11 +86,11 @@ const int kMaxCluster    = 1000;     //maximum number of clusters
 const int kMaxWCTracks   = 1000;     //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;      //maximum number of TOF objects
 const int kMaxAG         = 100;      //maximum number of AG objects
-const int kMaxPrimaryPart = 10;	    //maximum number of true primary particles
+//const int kMaxPrimaryPart = 10;	    //maximum number of true primary particles
 const int kMaxPrimaries  = 20000;    //maximum number of true particles tracked
 const int kMaxShower     = 100;      //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000;     //maximum number of MCShower Object
-const int kMaxTruePrimaryPts = 1000; //maximum number of points in the true primary trajectory 
+const int kMaxTruePts = 1000; //maximum number of points in the true trajectory 
 
 namespace lariat 
 {
@@ -297,14 +297,14 @@ private:
   std::vector<std::string> G4Process;         //<---The process which created this particle
   std::vector<std::string> G4FinalProcess;    //<---The last process which this particle went under
 
-  // === Storing additionnal Geant4 MC Truth Information for the primary track only ===	   
-  int NTrTrajPts[kMaxPrimaryPart];							 //<--Nb. of true points in the true primary trajectories
-  double MidPosX[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--X position of a point in the true primary trajectory
-  double MidPosY[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Y position of a point in the true primary trajectory  
-  double MidPosZ[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Z position of a point in the true primary trajectory    
-  double MidPx[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<- Px momentum of a point in the true primary trajectory
-  double MidPy[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Py momentum of a point in the true primary trajectory
-  double MidPz[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Pz momentum of a point in the true primary trajectory
+  // === Storing additionnal Geant4 MC Truth Information ===	   
+  int NTrTrajPts[kMaxPrimaries];							 //<--Nb. of true points in the true primary trajectories
+  double MidPosX[kMaxPrimaries][kMaxTruePts];//<--X position of a point in the true trajectory
+  double MidPosY[kMaxPrimaries][kMaxTruePts];//<--Y position of a point in the true trajectory  
+  double MidPosZ[kMaxPrimaries][kMaxTruePts];//<--Z position of a point in the true trajectory    
+  double MidPx[kMaxPrimaries][kMaxTruePts];  //<- Px momentum of a point in the true trajectory
+  double MidPy[kMaxPrimaries][kMaxTruePts];  //<--Py momentum of a point in the true trajectory
+  double MidPz[kMaxPrimaries][kMaxTruePts];  //<--Pz momentum of a point in the true trajectory
  
   // ==== Storing MCShower MCTruth Information ===
    
@@ -766,7 +766,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       geant_list_size=geant_particle;
        
       // ### Looping over all the Geant4 particles ###
-		int iPrim = 0;
+		//int iPrim = 0;
       for( unsigned int i = 0; i < geant_part.size(); ++i )
 		{
    
@@ -864,38 +864,36 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 		  int iPrimPt = 0;	
 		  simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
 
-		  for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj){
+		  if(pdg[i] < 4000){
+			  for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj){
 	
-		  		if(geant_part[i]->Process()==pri){
+			  		//if(geant_part[i]->Process()==pri){
 		    
-					NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();		
-
-		    		MidPosX[iPrim][iPrimPt] = truetraj.X(iPrimPt);
-					MidPosY[iPrim][iPrimPt] = truetraj.Y(iPrimPt);
-					MidPosZ[iPrim][iPrimPt] = truetraj.Z(iPrimPt);
-   				MidPx[iPrim][iPrimPt] = truetraj.Px(iPrimPt); 
-   				MidPy[iPrim][iPrimPt] = truetraj.Py(iPrimPt); 
-   				MidPz[iPrim][iPrimPt] = truetraj.Pz(iPrimPt);
+						NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();		
+	
+			    		MidPosX[i][iPrimPt] = truetraj.X(iPrimPt);
+						MidPosY[i][iPrimPt] = truetraj.Y(iPrimPt);
+						MidPosZ[i][iPrimPt] = truetraj.Z(iPrimPt);
+	   				MidPx[i][iPrimPt] = truetraj.Px(iPrimPt); 
+	   				MidPy[i][iPrimPt] = truetraj.Py(iPrimPt); 
+	   				MidPz[i][iPrimPt] = truetraj.Pz(iPrimPt);
 		
-		    		iPrim++;
-		  		}//<--End if primary
+			    		//iPrim++;
+			  		//}//<--End if primary
 
-				iPrimPt++;
-		  }//<--End loop on true trajectory points
-  		  
-		  // ### Save the 2nd to last information for all true primaries
-		  End2Pointx[i] = truetraj.X(iPrimPt-2);
- 		  End2Pointy[i] = truetraj.Y(iPrimPt-2);
-  		  End2Pointz[i] = truetraj.Z(iPrimPt-2);
-  		  End2Eng[i] = truetraj.E(iPrimPt-2);
-  		  End2Px[i] = truetraj.Px(iPrimPt-2);
-  		  End2Py[i] = truetraj.Px(iPrimPt-2);
-  		  End2Pz[i] = truetraj.Px(iPrimPt-2);
+					iPrimPt++;
+			  }//<--End loop on true trajectory points
+			  		  
+			  // ### Save the 2nd to last information for all true primaries
+			  End2Pointx[i] = truetraj.X(iPrimPt-2);
+	 		  End2Pointy[i] = truetraj.Y(iPrimPt-2);
+	  		  End2Pointz[i] = truetraj.Z(iPrimPt-2);
+	  		  End2Eng[i] = truetraj.E(iPrimPt-2);
+	  		  End2Px[i] = truetraj.Px(iPrimPt-2);
+	  		  End2Py[i] = truetraj.Px(iPrimPt-2);
+	  		  End2Pz[i] = truetraj.Px(iPrimPt-2);
+		  }//End if not a nucleus
 
-		  /*if(pdg[i] == 211 || pdg[i] == -211 || pdg[i] == 2212){
-		  	  std::cout <<"EndEng: "<< EndEng[i]*1000 <<" "<< truetraj.E(iPrimPt-1) <<" End2Eng: "<< End2Eng[i]*1000 << std::endl;
-			  std::cout << truetraj.E(iPrimPt)*1000 << std::endl;	
-		  }*/
 	}//<--End loop on geant particles
 	  
  }//<---End checking if this is MC 
@@ -1604,14 +1602,6 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/D");
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
-  fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/I");
-  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][1000]/D");
-  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][1000]/D");
-  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][1000]/D");
-  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][1000]/D");
-  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][1000]/D");
-  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][1000]/D");
-  
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
   fTree->Branch("pdg",pdg,"pdg[geant_list_size]/I");
   fTree->Branch("StartPointx",StartPointx,"StartPointx[geant_list_size]/D");
@@ -1635,7 +1625,13 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("End2Px",End2Px,"End2Px[geant_list_size]/D");
   fTree->Branch("End2Py",End2Py,"End2Py[geant_list_size]/D");
   fTree->Branch("End2Pz",End2Pz,"End2Pz[geant_list_size]/D");
-
+  fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[geant_list_size]/I");
+  fTree->Branch("MidPosX",MidPosX,"MidPosX[geant_list_size][1000]/D");
+  fTree->Branch("MidPosY",MidPosY,"MidPosY[geant_list_size][1000]/D");
+  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[geant_list_size][1000]/D");
+  fTree->Branch("MidPx",MidPx,"MidPx[geant_list_size][1000]/D");
+  fTree->Branch("MidPy",MidPy,"MidPy[geant_list_size][1000]/D");
+  fTree->Branch("MidPz",MidPz,"MidPz[geant_list_size][1000]/D");
 
   fTree->Branch("Process", Process, "Process[geant_list_size]/I");
   fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
@@ -1886,19 +1882,18 @@ void lariat::AnaTreeT1034::ResetVars()
     TrackId[i] = -99999;
     process_primary[i] = -99999;
 
-  }
+	 NTrTrajPts[i] = -99999;
 
-	for(int i = 0; i<kMaxPrimaryPart; i++){
-		NTrTrajPts[i] = -99999;
-		for(int j = 0; j<kMaxTruePrimaryPts; j++){	
-			MidPosX[i][j] = -99999;
-			MidPosY[i][j] = -99999;
-			MidPosZ[i][j] = -99999;
-   		MidPx[i][j] = -99999; 
-   		MidPy[i][j] = -99999; 
-   		MidPz[i][j] = -99999;
-		}
-	}
+	 for(int j = 0; j<kMaxTruePts; j++){	
+		MidPosX[i][j] = -99999;
+		MidPosY[i][j] = -99999;
+		MidPosZ[i][j] = -99999;
+		MidPx[i][j] = -99999; 
+		MidPy[i][j] = -99999; 
+ 		MidPz[i][j] = -99999;
+	 }
+
+  }
 
   nshowers = -99999;
   for (int i = 0; i<kMaxShower; ++i) 
