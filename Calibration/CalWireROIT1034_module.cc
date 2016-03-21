@@ -75,6 +75,9 @@ namespace caldata {
     unsigned short fPreROIPad; ///< ROI padding
     unsigned short fPostROIPad; ///< ROI padding
 
+    bool                        fDodQdxCalib;          ///< Do we apply wire-by-wire calibration?
+    std::string                 fdQdxCalibFileName;    ///< Text file for constants to do wire-by-wire calibration
+    std::map<unsigned int, float> fdQdxCalib;          ///< Map to do wire-by-wire calibration, key is channel number, content is correction factor
 
     void SubtractBaseline(std::vector<float>& holder);
 
@@ -127,7 +130,35 @@ namespace caldata {
       fSpillName = fDigitModuleLabel.substr( pos+1 );
       fDigitModuleLabel = fDigitModuleLabel.substr( 0, pos );
     }
-    
+
+    //wire-by-wire calibration
+    fDodQdxCalib        = p.get< bool >                          ("DodQdxCalib", false);
+    if (fDodQdxCalib){
+      fdQdxCalibFileName = p.get< std::string >                  ("dQdxCalibFileName");
+      std::string fullname;
+      cet::search_path sp("FW_SEARCH_PATH");
+      sp.find_file(fdQdxCalibFileName, fullname);
+
+      if (fullname.empty()) {
+	std::cout << "Input file " << fdQdxCalibFileName << " not found" << std::endl;
+	throw cet::exception("File not found");
+      }
+      else
+	std::cout << "Applying wire-by-wire calibration using file " << fdQdxCalibFileName << std::endl;
+
+      std::ifstream inFile(fullname, std::ios::in);
+      std::string line;
+      
+      while (std::getline(inFile,line)) {
+	unsigned int channel;
+	float        constant;
+	std::stringstream linestream(line);
+	linestream >> channel >> constant;
+	fdQdxCalib[channel] = constant;
+	if (channel%100==0) std::cout<<"Channel "<<channel<<" correction factor "<<fdQdxCalib[channel]<<std::endl;
+      }
+    }
+
   }
 
   //-------------------------------------------------
@@ -222,6 +253,18 @@ namespace caldata {
       }
       // adaptive baseline subtraction
       if(fDoBaselineSub) SubtractBaseline(holder);
+
+      // apply wire-by-wire calibration
+      if (fDodQdxCalib){
+	if(fdQdxCalib.find(channel) != fdQdxCalib.end()){
+	  float constant = fdQdxCalib[channel];
+	  //std::cout<<channel<<" "<<constant<<std::endl;
+	  for (size_t iholder = 0; iholder < holder.size(); ++iholder){
+	    holder[iholder] *= constant;
+	  }
+	}
+      }
+
 
       if (fDoROI){
         // work out the ROI

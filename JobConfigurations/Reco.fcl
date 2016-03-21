@@ -137,6 +137,7 @@ outputs:
 
 physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: 	false
 physics.producers.caldata.DigitModuleLabel:                     "daq"
+physics.producers.caldata.DodQdxCalib:                          false
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 physics.producers.gaushit.Chi2NDFRetry:                          1000.
