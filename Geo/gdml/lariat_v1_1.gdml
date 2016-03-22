@@ -1228,7 +1228,7 @@
     <position name="volTPCWPlaneWidthSide_718involTPCPlaneCollectionpos" x="0" y="0" z="-22.5" unit="cm"/>
     <position name="volTPCPlaneCollection_727involTPCpos" x="-24.785" y="0" z="0" unit="cm"/>
     <rotation name="volTPCPlaneCollection_727involTPCrot" x="90" y="-0" z="-90" unit="deg"/>
-    <position name="volTPC_738involCryostatpos" x="0.435" y="-0.2" z="-2.0" unit="cm"/>
+    <position name="volTPC_738involCryostatpos" x="0.435" y="-0.2" z="-0.76" unit="cm"/>
     <position name="volInner_ring_739involCryostatpos" x="0" y="0" z="-40.7225" unit="cm"/>
     <position name="volInner_ring2_740involCryostatpos" x="0" y="0" z="-47.39" unit="cm"/>
     <position name="volInner_endcap_front_mod_741involCryostatpos" x="0" y="0" z="-0.24376844" unit="cm"/>
@@ -1917,7 +1917,7 @@
     <subtraction name="Argon_cap_front">
       <first ref="Argon_cap_front0"/>
       <second ref="TPC"/>
-      <position name="Argon_cap_frontTPC_solidpos" x="-0.435" y="-0.2" z="1.86423" unit="cm"/>
+      <position name="Argon_cap_frontTPC_solidpos" x="-0.435" y="-0.2" z="0.59423" unit="cm"/>
 
     </subtraction>
 
