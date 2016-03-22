@@ -54,12 +54,6 @@
 #include "RawDataUtilities/SpillWrapper.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
 // ROOT includes
 #include "TFile.h"
 #include "TTree.h"
