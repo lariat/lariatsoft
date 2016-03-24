@@ -1,0 +1,66 @@
+#include "services_lariat.fcl"
+#include "ophitbuilderalg.fcl"
+
+process_name: OpDetSER
+
+services:
+{
+  TFileService: { fileName: "SER.root" }
+  Timing:       {}
+  RandomNumberGenerator: {}
+  message:      @local::standard_info
+  user:         @local::lariat_services 	     
+  #user:         @local::lariat_simulation_services
+  scheduler:    { }
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        
+}
+
+outputs: {}
+
+physics:
+{
+  analyzers:
+  {
+    OpDetSER:
+    {
+      module_type:      OpDetSER 
+      OpHitBuilderAlg:  @local::lariat_ophitbuilderalg
+    }
+  }
+  analysis:   [ OpDetSER ]
+  end_paths:  [ analysis ]
+}
+
+################################################################
+# Single photoelectron calibration parameters
+
+physics.analyzers.OpDetSER.OpDetChannel:            1
+physics.analyzers.OpDetSER.UsePrePEBaseline:        1
+physics.analyzers.OpDetSER.PreWindow:               5   # samples (ns)
+physics.analyzers.OpDetSER.PostWindow:              35  # samples (ns)
+physics.analyzers.OpDetSER.T1:                      2000
+physics.analyzers.OpDetSER.T2:                      19000
+physics.analyzers.OpDetSER.DeadTimeMin:             100
+physics.analyzers.OpDetSER.WfmAbsRMSCut:            0.4 # mV
+physics.analyzers.OpDetSER.PrePE_RMSCut:            1.5 # mV 
+physics.analyzers.OpDetSER.PulseHitThresh_high:     5  # mV
+physics.analyzers.OpDetSER.PulseHitRMSThresh:       3 # factor (xRMS)
+physics.analyzers.OpDetSER.GradientCut:             -1  # ADC/ns
+physics.analyzers.OpDetSER.ThreshPersist:           2   # thresh must satisfy this many consecutive samples 
+physics.analyzers.OpDetSER.AttemptFit:              "true"
+physics.analyzers.OpDetSER.Mean_set:                100 
+physics.analyzers.OpDetSER.Mean_lowerLim:           60 
+physics.analyzers.OpDetSER.Mean_upperLim:           130 
+physics.analyzers.OpDetSER.SinglePE:                100
+physics.analyzers.OpDetSER.SinglePE_tolerance:      2.5
+
+# Irrelevant settings (no need to change these)
+physics.analyzers.OpDetSER.IntegrationWindows:      [100,7000]
+services.message.destinations.infomsg.categories.OpDetSER.limit: 1e6
+
+#################################################################

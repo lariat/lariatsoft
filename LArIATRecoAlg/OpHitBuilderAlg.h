@@ -40,38 +40,69 @@ class OpHitBuilderAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
 
-  std::vector<short>                GetHits( std::vector<short>&);
-  std::vector<Double_t>             MakeGradient( std::vector<short> );
-  std::vector<Double_t>             GetBaselineAndRMS( std::vector<short>, short, short);
-  Double_t                          GetLocalRMSOfGradient( std::vector<Double_t>, short, short);
-  std::vector<Double_t>             GetHitInfo( std::vector<short>, short, short);
-  Double_t                          GetHitAmplitude( std::vector<short>, short);
-  Double_t                          GetHitIntegral( std::vector<short>, short, int);  
-  bool                              IsCleanBeamWaveform( raw::OpDetPulse );
-   
+  std::vector<short>            GetHits( raw::OpDetPulse& );
+  bool                          IsCleanBeamWaveform( raw::OpDetPulse& );
+  
+  std::vector<short>            HitMerger( std::vector<short>, short, int);
+  std::vector<float>            MakeGradient( std::vector<short> );
+  std::vector<float>            GetBaselineAndRMS( std::vector<short>, short, short);
+  std::vector<float>            GetBaselineAndRMS( std::vector<float>, short, short);
+  std::vector<float>            GetHitInfo( std::vector<short>, short, short, std::vector<short>);
+  float                         GetHitAmplitude( std::vector<short>, short, short);
+  float                         GetHitPromptIntegral( std::vector<short>, short, short);
+  float                         GetHitFullIntegral(   std::vector<short>, short, short);  
+  short                         GetLocalMinimum( std::vector<short>, short);
+  float                         GetLocalMinimum( std::vector<float>, short);
+  std::vector<float>           GetPedestalAndRMS( std::vector<float>, short, short);
+  std::vector<float>           GetPedestalAndRMS( std::vector<short>, short, short);
+  std::vector<std::pair<float,float>>  GetSinglePEs( raw::OpDetPulse& );
+  
   // Average waveform vector
-  std::vector<double>   AverageWaveform;
-  Int_t                 AverageWaveform_count;
+  std::vector<float>    AverageWaveform;
+  std::vector<float>    SERWaveform;
+  int                   AverageWaveform_count;
+  int                   SERWaveform_count;
+  int                   AddHitToAverageWaveform;
 
   // Fit parameters
-  double prepulse_baseline;
-  double prepulse_rms;
-  double fit_norm;
-  double fit_tau;
+  float prepulse_baseline;
+  float prepulse_rms;
+  float fit_SlowNorm;
+  float fit_SlowTau;
+  float fit_ReducedChi2;
+
+  float fSER_PrePE_RMS_cut;
+  float fSER_Grad_cut;
+  float fPulseHitRMSThresh; 
+  bool  fUsePrepulseFit;
+  float fGradHitThresh;
+  float fSignalHitThresh;
+  float fPulseHitThreshLow;
+  float fPulseHitThreshHigh;
+  float fGradRMSThresh;
+  short fMinHitSeparation; 
+  short fFirstHitSeparation; 
+  short fBaselineWindowLength;
+  short fPrePulseBaselineFit;
+  short fPrePulseDisplay;
+  short fPromptWindowLength;
+  short fFullWindowLength;
+  float fMvPerADC;
+  float fTimestampCut;
+  float fPrePulseTau1;
+  float fPrePulseTau2;
+  int   fHitTimeCutoffLow;
+  int   fHitTimeCutoffHigh;
+  short fSER_PreWindow;
+  short fSER_PostWindow;
+  std::vector<short> fIntegrationWindows;
+  float fSinglePE;
+  std::string fHitFindingMode;
+  std::string fDAQModule;
+  std::string fInstanceName;
 
  private:
   
-  Double_t  fGradientHitThreshold;
-  Double_t  fPulseHitThreshold;
-  Double_t  fGradientRMSFilterThreshold;
-  Double_t  fMinHitSeparation;  
-  short     fBaselineWindowLength;
-  short     fPrePulseBaselineFit;
-  short     fPromptWindowLength;
-  short     fFullWindowLength;
-  double    fMvPerADC;
-  bool      fUsePrepulseFit;
-  double    fTimestampCut;
   
 };
 
