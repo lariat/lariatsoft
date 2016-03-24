@@ -67,6 +67,8 @@ public:
   void 						ImportWaveform(std::string, std::vector<raw::AuxDetDigit>);  
   std::vector<std::vector<AGCHits> >		AGCHitsWrapper();
 
+  void clear_aerogel();
+
 private:
   std::vector<raw::AuxDetDigit> 		fUSEDigits;
   std::vector<raw::AuxDetDigit> 		fUSWDigits;
