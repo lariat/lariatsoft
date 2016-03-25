@@ -542,6 +542,10 @@ namespace rdu {
       std::cout << "  Number of CAEN data blocks: " << NumberCaenBlocks << std::endl;
       std::cout << "  Number of TDC data blocks:  " << NumberTdcBlocks << std::endl;
 
+      if (NumberCaenBlocks < 1) {
+        throw cet::exception("EventBuilderAlg") << "No CAEN data blocks found!\n";
+      }
+
       // used for counting the number of TPC readouts
       std::vector< std::pair< double, double > > TPCReadout;
       size_t NumberTPCReadouts = 0;

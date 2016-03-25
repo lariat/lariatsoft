@@ -187,3 +187,8 @@ std::vector<std::vector<AGCHits> > AGCounterAlg::AGCHitsWrapper() {
 	
 	return fAllHitsInEvent;
 }
+
+void AGCounterAlg::clear_aerogel()
+{
+  fAllHitsInEvent.clear();
+}
