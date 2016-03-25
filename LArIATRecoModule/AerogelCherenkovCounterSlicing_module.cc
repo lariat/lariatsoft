@@ -88,6 +88,9 @@ lrm::AerogelCherenkovCounterSlicing::AerogelCherenkovCounterSlicing(fhicl::Param
 
 void lrm::AerogelCherenkovCounterSlicing::produce(art::Event & e)
 {
+
+  fAGCounterAlg.clear_aerogel();
+
   // Implementation of required member function here.
   std::unique_ptr<std::vector<ldp::AGCounter> > AGCHitsCol(new std::vector<ldp::AGCounter>);
 

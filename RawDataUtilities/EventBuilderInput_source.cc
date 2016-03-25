@@ -471,7 +471,14 @@ namespace rdu
     // group data blocks into collections
     fCollectionIndex = 0;
     fCollections.clear();
-    fCollections = fEventBuilderAlg.Build(fLariatFragment);
+
+    try {
+      fCollections = fEventBuilderAlg.Build(fLariatFragment);
+    }
+    catch (cet::exception &e) {
+      mf::LogWarning("EventBuilder") << "caught exception\n"
+                                     << e;
+    }
 
     // we are done with this file if there are no data blocks
     if (fCollections.size() < 1) fDoneWithFile = true;
