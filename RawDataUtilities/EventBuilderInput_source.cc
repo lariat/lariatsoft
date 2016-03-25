@@ -475,7 +475,7 @@ namespace rdu
     try {
       fCollections = fEventBuilderAlg.Build(fLariatFragment);
     }
-    catch (cet::exception &e) {
+    catch (art::Exception &e) {
       mf::LogWarning("EventBuilder") << "caught exception\n"
                                      << e;
     }
