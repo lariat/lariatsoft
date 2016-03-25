@@ -2,7 +2,6 @@
 #include "services_lariat.fcl"
 #include "RawDataUtilities_algs.fcl"
 #include "caldata_lariat.fcl"
-##include "triggeralgo_service.fcl"
 #include "hitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
@@ -53,8 +52,6 @@ physics:
   
   wctrack:     @local::lariat_wctrackbuilder
   tof:         @local::lariat_tof
-  murs:        @local::lariat_murs
-  BeamPid:     @local::lariat_pid
   
   ### calwire producers ###
   caldata:              @local::lariat_calroi
@@ -62,21 +59,17 @@ physics:
   ### hit-finder producers ###
    gaushit:             @local::gaus_hitfinder
    cchit:               @local::standard_clustercrawlerhit
-#  rffhit:              @local::lariat_rffhitfinder   
 
   ### cluster-finder producers
-  #cccluster:		@local::standard_clustercrawler
   linecluster:          @local::standard_linecluster
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
   cctrack:              @local::standard_cctrackmaker
-  #dbcluster:            @local::lariat_dbcluster
-  #hough:                @local::lariat_houghlinefinder
-
+  
   ### Shower-Finder producers
  showerreco:  	 	@local::standard_showerreco3d
   ### pandora
-#  pandora:             @local::standard_pandora
+
 
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
@@ -84,15 +77,13 @@ physics:
  analyzers:
 {
  anatree: @local::lariat_anatree
- #showerquality: 	@local::standard_showerquality
+
 }
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
  reco: [ wctrack, 
 	 tof, 
-	 murs, 
-	 BeamPid,
 	 caldata,
 	 gaushit,
 	 linecluster,
@@ -137,7 +128,7 @@ outputs:
 
 physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: 	false
 physics.producers.caldata.DigitModuleLabel:                     "daq"
-physics.producers.caldata.DodQdxCalib:                          false
+physics.producers.caldata.DodQdxCalib:                          true
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 physics.producers.gaushit.Chi2NDFRetry:                          1000.
