@@ -1,0 +1,7 @@
+#include "standard_reco_lariat_old.fcl"
+
+services.SeedService.policy: "preDefinedSeed"
+services.SeedService.baseSeed: 1234
+
+#services.RandomNumberGenerator.restoreFrom: "RecoRandomSeeds_Ref.dat"
+#services.RandomNumberGenerator.saveTo: "RecoRandomSeeds.dat"
