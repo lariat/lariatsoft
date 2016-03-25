@@ -97,8 +97,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   //Survey constants
   //fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );  //this will recalculated using geometry instead of hardcoding. 
   //fDelta_z_ds 		= pset.get<float >("DeltaZds",   	  1570.06   );   
-  //fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
-  fL_eff        	= pset.get<float >("LEffective", 	  1204);	
+  fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
   fmm_to_m    		= pset.get<float >("MMtoM",        	  0.001     );	
   fGeV_to_MeV 		= pset.get<float >("GeVToMeV",    	  1000.0    );   
   fMP_X                 = pset.get<float> ("MidplaneInterceptFactor", 1);
@@ -117,8 +116,12 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
 {
   fRun = run;
   fSubRun = subrun;
-  current=fabs(std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun)));
-  fB_field_tesla= (-.1538*pow(10,-4)*pow(current,3)+.2245*pow(10,-2)*pow(current,2)-.1012*current+36.59)*current/10000; // Doug Jensen's cubic equation for magnetic field as a function of current.
+  current=std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
+  if(fabs(current)>90){fB_field_tesla= .003375*current;}
+  if(fabs(current)<90 && fabs(current)>70){fB_field_tesla= .0034875*current;}
+  if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}
+  if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  
+  if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
   std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl;
 }
 //--------------------------------------------------------------
@@ -851,7 +854,7 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
      // float theta_y_us=atan(((y[1]-y[0])/(z[1]-z[0])));
       //reco_pz =(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /( float(3.3 * (theta_x_ds-theta_x_us)*cos(theta_y_us))); 
       reco_pz =(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /( float(3.3 * (sin(theta_x_ds)-sin(theta_x_us))*cos(atan(BestTrackStats[0])))); 
-   //Caibrate depending on WCMissed
+   //Calibrate depending on WCMissed
       reco_pz=(reco_pz-7)/.91;
     
   }
@@ -1050,20 +1053,10 @@ void WCTrackBuilderAlg::MakeDiagnosticPlots(std::vector<std::vector<WCHitList> >
   float fourx[4]={x[0],x[1],x[2],x[3]};
   float foury[4]={y[0],y[1],y[2],y[3]};
   float fourz[4]={z[0],z[1],z[2],z[3]};
-  //Checking Doug Jensen's method of finding residual of WC2 and WC3 point to line through WC1 and WC4
-  float slope_doug=(y[3]-y[0])/(z[3]-z[0]);
-  float intercept_doug=y[0]-slope_doug*z[0];
-  float restwo_doug=(y[1]-slope_doug*z[1]-intercept_doug)/(std::sqrt(1+slope_doug*slope_doug));
-  float resthree_doug=(y[2]-slope_doug*z[2]-intercept_doug)/(std::sqrt(1+slope_doug*slope_doug));
-  Recodiff[86]->Fill(reco_pz,restwo_doug);
-  Recodiff[87]->Fill(reco_pz,resthree_doug);
-  //Ending Doug's method.
   float fourmom=reco_pz;
   float fourwires[8]={0,0,0,0,0,0,0,0};
-  float fourtimes[8]={0,0,0,0,0,0,0,0};
   for(int i=0; i<8; ++i){
     fourwires[i]=best_track.hits[i].wire;
-    fourtimes[i]=best_track.hits[i].time;
   }
   //std::cout<<"Momentum Calculated"<<std::endl;
   //reco_pz_list.push_back(reco_pz);
@@ -1413,7 +1406,6 @@ if(WCMissed==4){
   for(int i=0; i<8; ++i){
     Recodiff[i]->Fill(fourwires[i],twowires[i]);
     Recodiff[i+8]->Fill(fourwires[i],threewires[i]);
-  
   }
   for(int i=0; i<4; ++i){
     Recodiff[i+16]->Fill(fourx[i],twox[i]);
@@ -1424,8 +1416,6 @@ if(WCMissed==4){
     Recodiff[i+36]->Fill(fourz[i],threez[i]);    
     Recodiff[i+48]->Fill(fourdistlist[i],twodistlist[i]);
     Recodiff[i+52]->Fill(fourdistlist[i],threedistlist[i]);
-    Recodiff[i+66]->Fill(fourdistlist[i],fourmdistlist[i]);
-
     
   }
   for(int i=0; i<2; ++i){
@@ -1433,9 +1423,6 @@ if(WCMissed==4){
     Recodiff[i+42]->Fill(fourface[i],threeface[i]);
     Recodiff[i+44]->Fill(fourangles[i],twoangles[i]);
     Recodiff[i+46]->Fill(fourangles[i],threeangles[i]);
-    Recodiff[i+70]->Fill(fourangles[i],fourmangles[i]);
-    Recodiff[i+72]->Fill(fourwires[i+6],fourmwires[i+6]);
-    Recodiff[i+74]->Fill(fourface[0]-fourmface[0],fourface[1]-fourmface[1]);
   }
   Recodiff[56]->Fill(fourmom,(twomom-fourmom)/fourmom);
   Recodiff[57]->Fill(fourmom,(threemom-fourmom)/fourmom);
@@ -1443,16 +1430,17 @@ if(WCMissed==4){
   Recodiff[63]->Fill(fourx[3],fourmx[3]);
   Recodiff[64]->Fill(foury[3],fourmy[3]);
   Recodiff[65]->Fill(fourz[3],fourmz[3]);
+  for(int i=0; i<4; ++i){   
+  Recodiff[i+66]->Fill(fourdistlist[i],fourmdistlist[i]);
+  }
+  for(int i=0; i<2;++i){
+  Recodiff[i+70]->Fill(fourangles[i],fourmangles[i]);
+  Recodiff[i+72]->Fill(fourwires[i+6],fourmwires[i+6]);
+  Recodiff[i+74]->Fill(fourface[0]-fourmface[0],fourface[1]-fourmface[1]);
+  }
   Recodiff[76]->Fill(fourres,twores);
   Recodiff[77]->Fill(fourres,threeres);
   Recodiff[78]->Fill(fourres,fourmres);
-  Recodiff[79]->Fill(fourwires[4]-threewires[4],fourwires[4]-threewires[4]);
-  Recodiff[80]->Fill(fourmom,fourmom);
-  Recodiff[81]->Fill(fourtimes[1]-fourtimes[0],fourtimes[1]-fourtimes[0]);
-  Recodiff[82]->Fill(fourtimes[3]-fourtimes[2],fourtimes[3]-fourtimes[2]);
-  Recodiff[83]->Fill(fourtimes[5]-fourtimes[4],fourtimes[5]-fourtimes[4]);
-  Recodiff[84]->Fill(fourtimes[7]-fourtimes[6],fourtimes[7]-fourtimes[6]);
-  Recodiff[85]->Fill(fourmom,fourres);
 //}
 }
-  
+
