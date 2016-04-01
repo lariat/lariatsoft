@@ -11,7 +11,7 @@ lariat_calroi:
  DoROI: false
  PlaneROIPad: [ 50, 50 ] # number of bins to pad both ends of the ROIs
  DodQdxCalib:     false
- dQdxCalibFileName: "LArIAT_Charge_Correction_Factors_v1.txt"
+ dQdxCalibFileName: "LArIATChargeCorrectionFactorsv1.txt"
 }
 
 lariat_calwire:
