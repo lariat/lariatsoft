@@ -21,9 +21,9 @@ end_product_list
 
 # e9  - with gcc 4.9.2 and -std=c++11
 qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	    LariatBeamFiles	lariatutil	notes
-e9:debug	e9:debug	-nq-		      e9:debug	       e9:nu:s30:debug  -nq-		        e9:debug
-e9:opt		e9:opt	  -nq-		      e9:opt		       e9:nu:s30:opt	  -nq-		        e9:opt
-e9:prof		e9:prof	  -nq-		      e9:prof		       e9:nu:s30:prof   -nq-		        e9:prof
+e9:debug	e9:debug	-nq-		      e9:debug	       e9:nu:s31:debug  -nq-		        e9:debug
+e9:opt		e9:opt	  -nq-		      e9:opt		       e9:nu:s31:opt	  -nq-		        e9:opt
+e9:prof		e9:prof	  -nq-		      e9:prof		       e9:nu:s31:prof   -nq-		        e9:prof
 
 end_qualifier_list
 
@@ -34,7 +34,7 @@ table_fragment_begin
     pathPrepend(FHICL_FILE_PATH,      .)
     envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
     envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
-    envSet(ART_WORKBOOK_QUAL,         "s30:e9")
+    envSet(ART_WORKBOOK_QUAL,         "s31:e9")
     envSet(LARIATDBNAME,              lariat_prd)
     envSet(LARIATDBPORT,              5443)
     envSet(LARIATDBHOST,              ifdbprod2.fnal.gov)
