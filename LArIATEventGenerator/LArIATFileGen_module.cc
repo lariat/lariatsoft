@@ -199,7 +199,7 @@ void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
     bool fUseTrigger; 
   
     
-    ifstream *fMuonFile;
+    std::ifstream *fMuonFile;
     TFile *fMuonFileR;
     TTree *TNtuple;
     TTree *TNtupleSmall;
