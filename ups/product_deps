@@ -13,10 +13,10 @@ product         version
 larsoft		      v05_06_00
 LariatFilters   v01_02
 lariatfragments v01_07_04
-artdaq_core     v1_04_28
+artdaq_core     v1_04_29
 LariatBeamFiles v01_00		-	optional
 lariatutil	    v01_26_06 -	optional
-cetbuildtools   v4_18_04	-	only_for_build
+cetbuildtools   v4_19_04	-	only_for_build
 end_product_list
 
 # e9  - with gcc 4.9.2 and -std=c++11
