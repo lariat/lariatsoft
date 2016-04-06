@@ -131,9 +131,5 @@
  <class name="art::Wrapper<MuRSTrack>"                                            />
  <class name="std::vector<MuRSTrack>"                                             />
  <class name="art::Wrapper<std::vector<MuRSTrack> >"                              />
- <class name="std::pair<int,int>"                                                 />
- <class name="art::Wrapper<std::pair<int,int> >"                                  />
- <class name="std::vector<std::pair<int,int> >"                                   />
- <class name="art::Wrapper<std::vector<std::pair<int,int> > >"                    />
 
 </lcgdict>
