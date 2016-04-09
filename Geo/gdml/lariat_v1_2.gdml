@@ -2171,7 +2171,7 @@
     <box name="MWPC3" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC4" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="volAuxDetHalo0" x="39" y="38" z="1" lunit="cm"/>
-    <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="5.08" lunit="cm"/>
+    <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="1.0" lunit="cm"/>
     <box name="PunchPaddles" x="31" y="101" z="5" lunit="cm"/>
     <box name="volAuxDetPunch" x="31" y="101" z="1" lunit="cm"/>
     <box name="MuonRangeStack" x="66.04" y="64.77" z="121.77014" lunit="cm"/>

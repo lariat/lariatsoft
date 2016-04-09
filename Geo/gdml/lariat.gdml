@@ -2152,6 +2152,7 @@
       <section zOrder="0" zPosition="0" xOffset="0" yOffset="0" scalingFactor="1"/>
       <section zOrder="1" zPosition="12.7" xOffset="0" yOffset="0" scalingFactor="1"/>
     </xtru>
+    <tube name="HaloHole" rmin="0" rmax="6.5" z="1.5" startphi="0" deltaphi="360" aunit="deg" lunit="cm"/>
     <box name="volAuxDetTOFUS0x1" x="15" y="15" z="5.08" lunit="cm"/>
     <box name="MWPC1" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="volAuxDetDet" x="12.8" y="12.5" z="2.5" lunit="cm"/>
@@ -2161,7 +2162,7 @@
     <box name="MWPC2" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC3" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC4" x="12.8" y="25.4" z="2.5" lunit="cm"/>
-    <box name="volAuxDetHalo0x1" x="39" y="38" z="1" lunit="cm"/>
+    <box name="volAuxDetHalo0" x="39" y="38" z="1" lunit="cm"/>
     <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="5.08" lunit="cm"/>
     <box name="PunchPaddles" x="31" y="101" z="5" lunit="cm"/>
     <box name="volAuxDetPunch" x="31" y="101" z="1" lunit="cm"/>
@@ -2174,6 +2175,12 @@
     <trap name="volAuxDetCosmic10x1" z="3.02" theta="0" phi="0" x1="26.7" x2="32.2" x3="26.7" x4="32.2" y1="61" y2="61" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
     <trap name="volAuxDetCosmic40x1" z="3.02" theta="0" phi="0" x1="27" x2="33.2" x3="27" x4="33.2" y1="70.8" y2="70.8" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
     <trap name="volAuxDetCosmic20x1" z="3.02" theta="0" phi="0" x1="26.7" x2="32.2" x3="26.7" x4="32.2" y1="61" y2="61" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
+
+    <subtraction name="volAuxDetHalo0x1">
+      <first ref="volAuxDetHalo0"/>
+      <second ref="HaloHole"/>
+      <position name="HaloHoleInHalopos" x="0" y="0" z="0" unit="cm"/>
+    </subtraction>
   </solids>
   <structure>
     <volume name="volTubBottom">
