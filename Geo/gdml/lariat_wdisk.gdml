@@ -327,24 +327,24 @@
 <solids>
  <tube name="TPCShieldPlaneWire"
    rmax="0.0075"
-   z="40"
+   z="40.0"
    deltaphi="360"
    aunit="deg"
    lunit="cm"/>
   <box name="TPCShieldPlaneLengthSide"
-   x="5"
+   x="5.0"
    y="0.4"
-   z="40"
+   z="40.0"
    lunit="cm"/>
   <box name="TPCShieldPlaneWidthSide"
-   x="100"
+   x="100.0"
    y="0.4"
-   z="5"
+   z="5.0"
    lunit="cm"/>
   <box name="TPCShieldPlane"
-   x="100"
+   x="100.0"
    y="0.4"
-   z="50"
+   z="50.0"
    lunit="cm"/>
 
 <tube name="SteelFlangeDisk"
@@ -944,19 +944,19 @@
 
 
   <box name="TPCWPlaneLengthSide"
-   x="5"
+   x="5.0"
    y="0.4"
-   z="40"
+   z="40.0"
    lunit="cm"/>
   <box name="TPCWPlaneWidthSide"
-   x="100"
+   x="100.0"
    y="0.4"
-   z="5"
+   z="5.0"
    lunit="cm"/>
   <box name="TPCPlane"
-   x="100"
+   x="100.0"
    y="0.4"
-   z="50"
+   z="50.0"
    lunit="cm"/>
 
  <box name="TPCWidthFace"
@@ -968,22 +968,22 @@
   lunit="cm"
   z="1.27"
   x="47.5"
-  y="40"/>
+  y="40.0"/>
  <box name="TPCBottomFace"
   lunit="cm"
-  z="100"
+  z="100.0"
   x="1.27"
-  y="50"/>
+  y="50.0"/>
  <box name="TPC"
   lunit="cm"
   x="49.97"
-  y="50"
-  z="100"/>
+  y="50.0"
+  z="100.0"/>
  <box name="TPCActive"
   lunit="cm"
   x="47.5"
-  y="40"
-  z="90"/>
+  y="40.0"
+  z="90.0"/>
 
  <tube name="Cryostat_ph1"
   rmax="53.34"
@@ -2264,899 +2264,899 @@ lunit="cm"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire2" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire2" unit="cm" x="-44.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire3" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire3" unit="cm" x="-44.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire4" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire4" unit="cm" x="-43.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire5" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire5" unit="cm" x="-43.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire6" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire6" unit="cm" x="-43.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire7" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire7" unit="cm" x="-42.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire8" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire8" unit="cm" x="-42.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire9" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire9" unit="cm" x="-41.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire10" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire10" unit="cm" x="-41.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire11" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire11" unit="cm" x="-41.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire12" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire12" unit="cm" x="-40.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire13" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire13" unit="cm" x="-40.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire14" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire14" unit="cm" x="-39.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire15" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire15" unit="cm" x="-39.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire16" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire16" unit="cm" x="-39.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire17" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire17" unit="cm" x="-38.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire18" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire18" unit="cm" x="-38.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire19" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire19" unit="cm" x="-37.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire20" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire20" unit="cm" x="-37.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire21" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire21" unit="cm" x="-37.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire22" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire22" unit="cm" x="-36.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire23" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire23" unit="cm" x="-36.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire24" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire24" unit="cm" x="-35.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire25" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire25" unit="cm" x="-35.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire26" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire26" unit="cm" x="-35.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire27" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire27" unit="cm" x="-34.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire28" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire28" unit="cm" x="-34.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire29" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire29" unit="cm" x="-33.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire30" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire30" unit="cm" x="-33.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire31" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire31" unit="cm" x="-33.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire32" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire32" unit="cm" x="-32.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire33" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire33" unit="cm" x="-32.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire34" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire34" unit="cm" x="-31.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire35" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire35" unit="cm" x="-31.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire36" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire36" unit="cm" x="-31.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire37" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire37" unit="cm" x="-30.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire38" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire38" unit="cm" x="-30.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire39" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire39" unit="cm" x="-29.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire40" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire40" unit="cm" x="-29.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire41" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire41" unit="cm" x="-29.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire42" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire42" unit="cm" x="-28.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire43" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire43" unit="cm" x="-28.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire44" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire44" unit="cm" x="-27.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire45" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire45" unit="cm" x="-27.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire46" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire46" unit="cm" x="-27.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire47" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire47" unit="cm" x="-26.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire48" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire48" unit="cm" x="-26.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire49" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire49" unit="cm" x="-25.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire50" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire50" unit="cm" x="-25.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire51" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire51" unit="cm" x="-25.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire52" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire52" unit="cm" x="-24.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire53" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire53" unit="cm" x="-24.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire54" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire54" unit="cm" x="-23.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire55" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire55" unit="cm" x="-23.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire56" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire56" unit="cm" x="-23.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire57" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire57" unit="cm" x="-22.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire58" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire58" unit="cm" x="-22.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire59" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire59" unit="cm" x="-21.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire60" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire60" unit="cm" x="-21.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire61" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire61" unit="cm" x="-21.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire62" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire62" unit="cm" x="-20.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire63" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire63" unit="cm" x="-20.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire64" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire64" unit="cm" x="-19.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire65" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire65" unit="cm" x="-19.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire66" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire66" unit="cm" x="-19.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire67" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire67" unit="cm" x="-18.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire68" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire68" unit="cm" x="-18.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire69" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire69" unit="cm" x="-17.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire70" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire70" unit="cm" x="-17.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire71" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire71" unit="cm" x="-17.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire72" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire72" unit="cm" x="-16.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire73" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire73" unit="cm" x="-16.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire74" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire74" unit="cm" x="-15.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire75" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire75" unit="cm" x="-15.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire76" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire76" unit="cm" x="-15.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire77" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire77" unit="cm" x="-14.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire78" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire78" unit="cm" x="-14.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire79" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire79" unit="cm" x="-13.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire80" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire80" unit="cm" x="-13.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire81" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire81" unit="cm" x="-13.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire82" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire82" unit="cm" x="-12.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire83" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire83" unit="cm" x="-12.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire84" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire84" unit="cm" x="-11.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire85" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire85" unit="cm" x="-11.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire86" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire86" unit="cm" x="-11.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire87" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire87" unit="cm" x="-10.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire88" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire88" unit="cm" x="-10.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire89" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire89" unit="cm" x="-9.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire90" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire90" unit="cm" x="-9.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire91" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire91" unit="cm" x="-9.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire92" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire92" unit="cm" x="-8.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire93" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire93" unit="cm" x="-8.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire94" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire94" unit="cm" x="-7.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire95" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire95" unit="cm" x="-7.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire96" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire96" unit="cm" x="-7.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire97" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire97" unit="cm" x="-6.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire98" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire98" unit="cm" x="-6.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire99" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire99" unit="cm" x="-5.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire100" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire100" unit="cm" x="-5.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire101" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire101" unit="cm" x="-5.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire102" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire102" unit="cm" x="-4.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire103" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire103" unit="cm" x="-4.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire104" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire104" unit="cm" x="-3.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire105" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire105" unit="cm" x="-3.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire106" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire106" unit="cm" x="-3.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire107" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire107" unit="cm" x="-2.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire108" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire108" unit="cm" x="-2.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire109" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire109" unit="cm" x="-1.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire110" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire110" unit="cm" x="-1.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire111" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire111" unit="cm" x="-1.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire112" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire112" unit="cm" x="-0.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire113" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire113" unit="cm" x="-0.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire114" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire114" unit="cm" x="0.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire115" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire115" unit="cm" x="0.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire116" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire116" unit="cm" x="1.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire117" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire117" unit="cm" x="1.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire118" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire118" unit="cm" x="1.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire119" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire119" unit="cm" x="2.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire120" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire120" unit="cm" x="2.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire121" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire121" unit="cm" x="3.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire122" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire122" unit="cm" x="3.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire123" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire123" unit="cm" x="3.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire124" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire124" unit="cm" x="4.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire125" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire125" unit="cm" x="4.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire126" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire126" unit="cm" x="5.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire127" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire127" unit="cm" x="5.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire128" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire128" unit="cm" x="5.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire129" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire129" unit="cm" x="6.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire130" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire130" unit="cm" x="6.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire131" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire131" unit="cm" x="7.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire132" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire132" unit="cm" x="7.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire133" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire133" unit="cm" x="7.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire134" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire134" unit="cm" x="8.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire135" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire135" unit="cm" x="8.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire136" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire136" unit="cm" x="9.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire137" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire137" unit="cm" x="9.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire138" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire138" unit="cm" x="9.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire139" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire139" unit="cm" x="10.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire140" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire140" unit="cm" x="10.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire141" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire141" unit="cm" x="11.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire142" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire142" unit="cm" x="11.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire143" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire143" unit="cm" x="11.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire144" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire144" unit="cm" x="12.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire145" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire145" unit="cm" x="12.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire146" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire146" unit="cm" x="13.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire147" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire147" unit="cm" x="13.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire148" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire148" unit="cm" x="13.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire149" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire149" unit="cm" x="14.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire150" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire150" unit="cm" x="14.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire151" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire151" unit="cm" x="15.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire152" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire152" unit="cm" x="15.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire153" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire153" unit="cm" x="15.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire154" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire154" unit="cm" x="16.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire155" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire155" unit="cm" x="16.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire156" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire156" unit="cm" x="17.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire157" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire157" unit="cm" x="17.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire158" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire158" unit="cm" x="17.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire159" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire159" unit="cm" x="18.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire160" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire160" unit="cm" x="18.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire161" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire161" unit="cm" x="19.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire162" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire162" unit="cm" x="19.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire163" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire163" unit="cm" x="19.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire164" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire164" unit="cm" x="20.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire165" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire165" unit="cm" x="20.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire166" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire166" unit="cm" x="21.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire167" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire167" unit="cm" x="21.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire168" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire168" unit="cm" x="21.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire169" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire169" unit="cm" x="22.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire170" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire170" unit="cm" x="22.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire171" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire171" unit="cm" x="23.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire172" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire172" unit="cm" x="23.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire173" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire173" unit="cm" x="23.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire174" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire174" unit="cm" x="24.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire175" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire175" unit="cm" x="24.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire176" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire176" unit="cm" x="25.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire177" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire177" unit="cm" x="25.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire178" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire178" unit="cm" x="25.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire179" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire179" unit="cm" x="26.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire180" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire180" unit="cm" x="26.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire181" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire181" unit="cm" x="27.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire182" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire182" unit="cm" x="27.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire183" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire183" unit="cm" x="27.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire184" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire184" unit="cm" x="28.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire185" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire185" unit="cm" x="28.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire186" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire186" unit="cm" x="29.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire187" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire187" unit="cm" x="29.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire188" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire188" unit="cm" x="29.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire189" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire189" unit="cm" x="30.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire190" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire190" unit="cm" x="30.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire191" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire191" unit="cm" x="31.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire192" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire192" unit="cm" x="31.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire193" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire193" unit="cm" x="31.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire194" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire194" unit="cm" x="32.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire195" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire195" unit="cm" x="32.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire196" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire196" unit="cm" x="33.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire197" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire197" unit="cm" x="33.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire198" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire198" unit="cm" x="33.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire199" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire199" unit="cm" x="34.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire200" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire200" unit="cm" x="34.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire201" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire201" unit="cm" x="35.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire202" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire202" unit="cm" x="35.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire203" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire203" unit="cm" x="35.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire204" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire204" unit="cm" x="36.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire205" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire205" unit="cm" x="36.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire206" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire206" unit="cm" x="37.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire207" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire207" unit="cm" x="37.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire208" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire208" unit="cm" x="37.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire209" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire209" unit="cm" x="38.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire210" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire210" unit="cm" x="38.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire211" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire211" unit="cm" x="39.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire212" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire212" unit="cm" x="39.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire213" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire213" unit="cm" x="39.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire214" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire214" unit="cm" x="40.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire215" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire215" unit="cm" x="40.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire216" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire216" unit="cm" x="41.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire217" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire217" unit="cm" x="41.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire218" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire218" unit="cm" x="41.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire219" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire219" unit="cm" x="42.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire220" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire220" unit="cm" x="42.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire221" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire221" unit="cm" x="43.0" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire222" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire222" unit="cm" x="43.4" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire223" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire223" unit="cm" x="43.8" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire224" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire224" unit="cm" x="44.2" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
-   <position name="posTPCShieldPlaneWire225" unit="cm" x="-45.0" y="0.2" z="0"/>
+   <position name="posTPCShieldPlaneWire225" unit="cm" x="44.6" y="0.2" z="0"/>
   </physvol>
   <physvol>
    <volumeref ref="volTPCShieldPlaneWire"/>
