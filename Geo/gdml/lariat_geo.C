@@ -34,10 +34,10 @@ drawopt optArgoNeuT[] = {
   {0, 0}
 };
 
-for (int i=0;; ++i) {
+/*for (int i=0;; ++i) {
   if (optArgoNeuT[i].volume==0) break;
     gGeoManager->FindVolumeFast(optArgoNeuT[i].volume)->SetLineColor(optArgoNeuT[i].color);
-}
+}*/
 
 TList* mat = gGeoManager->GetListOfMaterials();
 TIter next(mat);
