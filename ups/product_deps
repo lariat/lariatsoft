@@ -12,7 +12,7 @@ product         version
 
 larsoft		      v06_00_00_rc1
 LariatFilters   v01_02
-lariatfragments v06_00_00_rc1
+lariatfragments v01_07_04
 artdaq_core     v1_04_29
 LariatBeamFiles v01_00		-	optional
 lariatutil	    v06_00_00_rc1 -	optional
