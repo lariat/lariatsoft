@@ -63,9 +63,19 @@
   <class name="art::Assns<raw::Trigger, recob::Vertex,     void>" />
   <class name="art::Assns<raw::Trigger, raw::AuxDetDigit,  void>" />
   <class name="art::Assns<raw::Trigger, raw::OpDetPulse,   void>" />
-  <class name="art::Assns<ldp::WCTrack, recob::Track,      void>" />
+  <!-- <class name="art::Assns<ldp::WCTrack, recob::Track,      void>" /> -->
   
-
+  <class name="art::Assns<raw::RawDigit, raw::Trigger,     void>" />
+  <class name="art::Assns<recob::Wire,       raw::Trigger, void>" />
+  <class name="art::Assns<recob::Hit,        raw::Trigger, void>" />
+  <class name="art::Assns<recob::Cluster,    raw::Trigger, void>" />
+  <class name="art::Assns<recob::EndPoint2D, raw::Trigger, void>" />
+  <class name="art::Assns<recob::SpacePoint, raw::Trigger, void>" />
+  <class name="art::Assns<recob::Track,      raw::Trigger, void>" />
+  <class name="art::Assns<recob::Vertex,     raw::Trigger, void>" />
+  <class name="art::Assns<raw::AuxDetDigit,  raw::Trigger, void>" />
+  <class name="art::Assns<raw::OpDetPulse,   raw::Trigger, void>" />
+  <!-- <class name="art::Assns<recob::Track,      raw::Trigger, void>" /> -->
 
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,     void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Wire,       void> >"/>
@@ -77,8 +87,20 @@
   <class name="art::Wrapper<art::Assns<raw::Trigger, recob::Vertex,     void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit,  void> >"/>
   <class name="art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,   void> >"/>
-  <class name="art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >"/>
+  <!-- <class name="art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >"/> -->
+
+  <class name="art::Wrapper<art::Assns<raw::RawDigit,     raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<recob::Wire,       raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<recob::Hit,        raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<recob::Cluster,    raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<recob::EndPoint2D, raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<recob::SpacePoint, raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<recob::Track,      raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<recob::Vertex,     raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit,  raw::Trigger, void> >"/>
+  <class name="art::Wrapper<art::Assns<raw::OpDetPulse,   raw::Trigger, void> >"/>
+  <!-- <class name="art::Wrapper<art::Assns<recob::Track,      ldp::WCTrack, void> >"/> -->
+
   <class name="art::Wrapper<art::PtrVector<recob::Track>>"/>
   
-
 </lcgdict>
