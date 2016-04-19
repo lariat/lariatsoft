@@ -115,9 +115,9 @@ void lrm::AerogelCherenkovCounterSlicing::produce(art::Event & e)
   fAGCounterAlg.ImportWaveform("DS1", AGCDS1Digits);
   fAGCounterAlg.ImportWaveform("DS2", AGCDS2Digits);
   
-  std::vector<std::vector<AGCHits> > AllAGCHits = fAGCounterAlg.AGCHitsWrapper();
+  std::vector<std::vector<ldp::AGCHits> > AllAGCHits = fAGCounterAlg.AGCHitsWrapper();
   // Linearization
-  std::vector<AGCHits> AllAGCHitsLinearized;
+  std::vector<ldp::AGCHits> AllAGCHitsLinearized;
   AllAGCHitsLinearized.clear();
   for (size_t i = 0; i < AllAGCHits.size(); i++) {
 	AllAGCHitsLinearized.insert(AllAGCHitsLinearized.end(), AllAGCHits.at(i).begin(), AllAGCHits.at(i).end());
