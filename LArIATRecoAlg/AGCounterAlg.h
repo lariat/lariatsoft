@@ -33,27 +33,6 @@
 // ROOT
 #include <TH1F.h>
 
-/*
-struct AGCHits {
-	long unsigned int 	TriggerTimeStamp;
-	
-	long unsigned int 	HitTimeStampUSE;
-	long unsigned int 	HitTimeStampUSW;
-	long unsigned int 	HitTimeStampDS1;
-	long unsigned int 	HitTimeStampDS2;
-	
-	float		HitPulseAreaUSE;
-	float		HitPulseAreaUSW;
-	float		HitPulseAreaDS1;
-	float		HitPulseAreaDS2;
-	
-	bool 			HitExistUSE;
-	bool 			HitExistUSW;
-	bool 			HitExistDS1;
-	bool 			HitExistDS2;
-};
-*/
-
 
 //--------------------------------------------
 class AGCounterAlg{
@@ -64,23 +43,29 @@ public:
   
   void reconfigure( fhicl::ParameterSet const& pset );
   
-  void 						ImportWaveform(std::string, std::vector<raw::AuxDetDigit>);  
-  std::vector<std::vector<AGCHits> >		AGCHitsWrapper();
+  void ImportWaveform(std::string                   const& string,
+                      std::vector<raw::AuxDetDigit> const& digits);
+  std::vector<std::vector<ldp::AGCHits> >	AGCHitsWrapper();
 
   void clear_aerogel();
 
 private:
+  std::vector<int> HitsFinder(raw::AuxDetDigit);
+  std::vector<std::vector<int> > HitsTimeMatching(std::vector<int> const&,
+                                                  std::vector<int> const&,
+                                                  std::vector<int> const&,
+                                                  std::vector<int> const&);
+  float PulseAreaFinder(raw::AuxDetDigit  const& digit,
+                        long unsigned int const&);
+  bool	CheckMatched(std::vector<int> const&);
+
   std::vector<raw::AuxDetDigit> 		fUSEDigits;
   std::vector<raw::AuxDetDigit> 		fUSWDigits;
   std::vector<raw::AuxDetDigit>		 	fDS1Digits;
   std::vector<raw::AuxDetDigit> 		fDS2Digits;
   
-  std::vector<std::vector<AGCHits> >		fAllHitsInEvent;
+  std::vector<std::vector<ldp::AGCHits> > fAllHitsInEvent;
   
-  std::vector<int>			HitsFinder(raw::AuxDetDigit);
-  std::vector<std::vector<int> >	HitsTimeMatching(std::vector<int>, std::vector<int>, std::vector<int>, std::vector<int>);
-  float					PulseAreaFinder(raw::AuxDetDigit, long unsigned int);
-  bool					CheckMatched(std::vector<int>);
 };
 
 #endif

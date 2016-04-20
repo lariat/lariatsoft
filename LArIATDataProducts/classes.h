@@ -99,9 +99,9 @@ template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void>
 template class std::vector<ldp::AGCounter>;
 template class art::Wrapper<ldp::AGCounter>;
 template class art::Wrapper<std::vector<ldp::AGCounter > >;
-template class std::vector<AGCHits>;
-template class art::Wrapper<AGCHits>;
-template class art::Wrapper<std::vector<AGCHits > >;
+template class std::vector<ldp::AGCHits>;
+template class art::Wrapper<ldp::AGCHits>;
+template class art::Wrapper<std::vector<ldp::AGCHits > >;
 
 //Stuff regarding/belonging to Edge Rec
 template class std::vector<ldp::Edge>;
@@ -129,9 +129,9 @@ template class art::Wrapper<ldp::MuonRangeStackHits>;
 template class art::Wrapper<std::vector<ldp::MuonRangeStackHits> >;
 template class std::map<int, std::vector<int> >;
 template class art::Wrapper<std::map<int, std::vector<int> > >;
-template class art::Wrapper<MuRSTrack>;
-template class std::vector<MuRSTrack>;
-template class art::Wrapper<std::vector<MuRSTrack> >;
+template class art::Wrapper<ldp::MuRSTrack>;
+template class std::vector<ldp::MuRSTrack>;
+template class art::Wrapper<std::vector<ldp::MuRSTrack> >;
 template class std::pair<int, int>;
 template class art::Wrapper<std::pair<int, int> >;
 template class std::vector<std::pair<int, int> >;
