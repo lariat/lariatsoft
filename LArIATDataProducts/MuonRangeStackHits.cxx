@@ -29,8 +29,8 @@ namespace ldp{
   }
   
   //##########################################
-  MuonRangeStackHits::MuonRangeStackHits(std::map<int, std::vector<int> > paddlemap,
-					 std::vector<MuRSTrack> trackVector )
+  MuonRangeStackHits::MuonRangeStackHits(std::map<int, std::vector<int> > const& paddlemap,
+                                         std::vector<ldp::MuRSTrack>           const& trackVector )
   {
     if( paddlemap.size() == 0 && trackVector.size() == 0 ) fIsInitializedEmpty = true;
     else{ fIsInitializedEmpty = false; }
@@ -43,7 +43,8 @@ namespace ldp{
     for( size_t iTrack = 0; iTrack < fMuRSTrackVector.size(); ++iTrack ){
       int PenPlane = fMuRSTrackVector.at(iTrack).HitVect.size();
       fMuRSTrackVector.at(iTrack).penetrationDepth = PenPlane;
-      fMuRSTrackVector.at(iTrack).arrivalTime = fMuRSTrackVector.at(iTrack).HitVect.at(0).at(2); //Arbitrarily Setting to first hit (since all hits are really close together in time  anyway)
+      //Arbitrarily Setting to first hit (since all hits are really close together in time  anyway)
+      fMuRSTrackVector.at(iTrack).arrivalTime = fMuRSTrackVector.at(iTrack).HitVect.at(0).at(2);
     }
   }
   
@@ -54,16 +55,26 @@ namespace ldp{
   {
     int lastpaddle=fPaddleTimeTickMap.end()->first;
     if(iPaddle > lastpaddle  ){
-      throw cet::exception("MuonRangeStackHits") << "Requested time tick vector for paddle "<<iPaddle<<".  That doesn't exist for this event.  The last paddle number you can reference is ""<<lastpaddle<<" <<"\n";
+      throw cet::exception("MuonRangeStackHits")
+      << "Requested time tick vector for paddle "
+      << iPaddle
+      << ".  That doesn't exist for this event.  "
+      << "The last paddle number you can reference is "
+      << lastpaddle;
     }
     return fPaddleTimeTickMap.find(iPaddle)->second;
   }
 
   //########################################
-  MuRSTrack MuonRangeStackHits::GetTrack( int iTrack )
+  ldp::MuRSTrack MuonRangeStackHits::GetTrack( int iTrack )
   {
     if( size_t(iTrack) >= fMuRSTrackVector.size() ){
-      throw cet::exception("MuonRangeStackHits") << "Requested track number: " << iTrack << ". This doesn't exist for this event. The last track index you can access is: " << fMuRSTrackVector.size()-1 << "\n";
+      throw cet::exception("MuonRangeStackHits")
+      << "Requested track number: "
+      << iTrack
+      << ". This doesn't exist for this event. "
+      << "The last track index you can access is: "
+      << fMuRSTrackVector.size() - 1;
     }
     return fMuRSTrackVector.at(iTrack);
   }
@@ -72,7 +83,12 @@ namespace ldp{
   int MuonRangeStackHits::GetArrivalTime( int iTrack ) const
   {
     if( size_t(iTrack) >= fMuRSTrackVector.size() ){
-      throw cet::exception("MuonRangeStackHits") << "Requested arrival time for track number: " << iTrack << ". This doesn't exist for this event. The last track index you can access is: " << fMuRSTrackVector.size()-1 << "\n";
+      throw cet::exception("MuonRangeStackHits")
+      << "Requested arrival time for track number: "
+      << iTrack
+      << ". This doesn't exist for this event. "
+      << "The last track index you can access is: "
+      << fMuRSTrackVector.size()-1;
     }
     return fMuRSTrackVector.at(iTrack).arrivalTime;
   }
@@ -81,17 +97,14 @@ namespace ldp{
   int MuonRangeStackHits::GetPenetrationDepth( int iTrack ) const
   {
     if( size_t(iTrack) >= fMuRSTrackVector.size() ){
-      throw cet::exception("MuonRangeStackHits") << "Requested penetration depth for track number: " << iTrack << ". This doesn't exist for this event. The last track index you can access is: " << fMuRSTrackVector.size()-1 << "\n";
+      throw cet::exception("MuonRangeStackHits")
+      << "Requested penetration depth for track number: "
+      << iTrack
+      << ". This doesn't exist for this event. "
+      << "The last track index you can access is: "
+      << fMuRSTrackVector.size()-1;
     }
     return fMuRSTrackVector.at(iTrack).penetrationDepth;
   }
 
-
-  //########################################  
-  size_t MuonRangeStackHits::NTracks(){ return fMuRSTrackVector.size(); }
-
-  //########################################  
-  bool MuonRangeStackHits::WasItInitializedEmpty(){ return fIsInitializedEmpty; }
-
-  
 }// end namespace

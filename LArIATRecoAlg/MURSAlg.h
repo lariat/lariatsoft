@@ -29,7 +29,7 @@
 //ROOT
 #include <TH1F.h>
 
-
+#include "LArIATDataProducts/MuonRangeStackHits.h"
 
 //--------------------------------------------
 class MURSAlg{
@@ -41,20 +41,20 @@ class MURSAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
   void makeTheMuRSTracks( std::map<int, std::vector<int> > MuonRangeStackMap,
-						   std::vector<MuRSTrack> & finalMuRSTrackVect,
-						   std::vector<size_t> const punchHits );
-  void disambiguateTracks( std::vector<MuRSTrack> & theMuRSTrackVect,
-						    std::vector<MuRSTrack> & finalMuRSTrackVect);
-
+                         std::vector<ldp::MuRSTrack> & finalMuRSTrackVect,
+                         std::vector<size_t> const punchHits );
+  void disambiguateTracks( std::vector<ldp::MuRSTrack> & theMuRSTrackVect,
+                          std::vector<ldp::MuRSTrack> & finalMuRSTrackVect);
+  
   void trackArchitect( std::vector<std::vector<int> > ptHits,
-						std::vector<std::vector<int> > p1Hits,
-						std::vector<std::vector<int> > p2Hits,
-						std::vector<std::vector<int> > p3Hits,
-						std::vector<std::vector<int> > p4Hits,
-						std::vector<MuRSTrack> & theMuRSTrackVect );
-
+                      std::vector<std::vector<int> > p1Hits,
+                      std::vector<std::vector<int> > p2Hits,
+                      std::vector<std::vector<int> > p3Hits,
+                      std::vector<std::vector<int> > p4Hits,
+                      std::vector<ldp::MuRSTrack> & theMuRSTrackVect );
+  
   void comparePlanes( std::vector<std::vector<int> > & thePlaneVector,
-					       std::vector<MuRSTrack> & aNewMuRSTrackVect);
+                     std::vector<ldp::MuRSTrack> & aNewMuRSTrackVect);
 
 
  private:

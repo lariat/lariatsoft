@@ -426,7 +426,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
     if( fVerbose )LOG_VERBATIM("ParticleIdentificationSlicing") << "PiMu probability above threshold.";
     
     
-    MuRSTrack theGoodMuRSTrack;
+    ldp::MuRSTrack theGoodMuRSTrack;
     int thePenetrationDepth = 9989;
     bool goodMuRS = isThereAGoodMuRSTrack( MuRSColHandle, thePenetrationDepth );
     foundGoodMuRSTrack = goodMuRS;

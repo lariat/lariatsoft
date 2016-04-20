@@ -77,7 +77,7 @@ function compare_data_products
 
     trap - ERR
 
-    DIFF=$(diff  <(echo "${OUTPUT_REFERENCE}" | awk -v MYNF=$((1-$1)) 'NF{NF-=MYNF}1' | sed 's/\.//g' ) <(echo "${OUTPUT_CURRENT}" | awk -v MYNF=$((1-$1)) 'NF{NF-=MYNF}1' | sed 's/\.//g' ) )
+    DIFF=$(diff  <(echo "${OUTPUT_REFERENCE}" | cut -d "|" -f -$((4+$1)) | sed 's/\.//g' ) <(echo "${OUTPUT_CURRENT}" | cut -d "|" -f -$((4+$1)) | sed 's/\.//g' ) )
 
     trap 'LASTERR=$?; echo -e "\nCI MSG BEGIN\n `basename $0`: error at line ${LINENO}\n Stage: ${STEPS[STEP]}\n Task: ${TASKSTRING}\n exit status: ${LASTERR}\nCI MSG END\n"; exit ${LASTERR}' ERR
 
@@ -114,19 +114,34 @@ initialize $@
 
 exitstatus $?
 
-TASKSTRING="larsoft_data_production"
-larsoft_data_production
+if [ $(sed -n '1p' testmask.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
+    TASKSTRING="larsoft_data_production"
+    larsoft_data_production
 
-exitstatus $?
-
+    exitstatus $?
+else
+    TASKSTRING="larsoft_data_production"
+    echo -e "\nCI MSG BEGIN\n Stage: ${STEPS[STEP]}\n Task: ${TASKSTRING}\n skipped\nCI MSG END\n"
+fi
 
 COMPAREINIT=0
-TASKSTRING="compare_data_products 0"
-compare_data_products 0 #Check for added/removed data products
 
-exitstatus $?
+if [ $(sed -n '2p' testmask.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
+    TASKSTRING="compare_data_products 0"
+    compare_data_products 0 #Check for added/removed data products
 
-TASKSTRING="compare_data_products 1"
-compare_data_products 1 #Check for differences in the size of data products
+    exitstatus $?
+else
+    TASKSTRING="compare_data_products 0"
+    echo -e "\nCI MSG BEGIN\n Stage: ${STEPS[STEP]}\n Task: ${TASKSTRING}\n skipped\nCI MSG END\n"
+fi
 
-exitstatus $?
+if [ $(sed -n '3p' testmask.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
+    TASKSTRING="compare_data_products 1"
+    compare_data_products 1 #Check for differences in the size of data products
+
+    exitstatus $?
+else
+    TASKSTRING="compare_data_products 1"
+    echo -e "\nCI MSG BEGIN\n Stage: ${STEPS[STEP]}\n Task: ${TASKSTRING}\n skipped\nCI MSG END\n"
+fi
