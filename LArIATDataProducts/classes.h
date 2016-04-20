@@ -51,94 +51,91 @@ template class std::vector<ldp::AuxDetParticleID>;
 template class art::Wrapper<ldp::AuxDetParticleID>;
 template class art::Wrapper<std::vector<ldp::AuxDetParticleID> >;
 
+// For the TOF
 template class std::vector<ldp::TOF>;
 
-template class art::Wrapper< ldp::TOF                  >;
+template class art::Wrapper<ldp::TOF>;
 
-template class art::Wrapper< std::vector<ldp::TOF >    >;
+template class art::Wrapper<std::vector<ldp::TOF> >;
 
-template class std::vector<ldp::AGCounter>;
+template class std::pair<art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF>         >;
+template class std::pair<art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF>         >;
+template class std::pair<art::Ptr<ldp::TOF>,         art::Ptr<raw::Trigger>     >;
+template class std::pair<art::Ptr<ldp::TOF>,         art::Ptr<raw::AuxDetDigit> >;
 
-template class art::Wrapper< ldp::AGCounter                  >;
+template class art::Assns<ldp::TOF,         raw::Trigger,     void>;
+template class art::Assns<ldp::TOF,         raw::AuxDetDigit, void>;
+template class art::Assns<raw::Trigger,     ldp::TOF,         void>;
+template class art::Assns<raw::AuxDetDigit, ldp::TOF,         void>;
 
-template class art::Wrapper< std::vector<ldp::AGCounter >    >;
+template class art::Wrapper<art::Assns<ldp::TOF,         raw::Trigger,     void> >;
+template class art::Wrapper<art::Assns<ldp::TOF,         raw::AuxDetDigit, void> >;
+template class art::Wrapper<art::Assns<raw::Trigger,     ldp::TOF,         void> >;
+template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,         void> >;
 
-template class  std::vector<AGCHits>;
-
-template class art::Wrapper< AGCHits                  >;
-
-template class art::Wrapper< std::vector<AGCHits >    >;
-
-template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::TOF> >    ;
-template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::TOF> >    ;
-
-template class std::pair< art::Ptr<ldp::TOF>,     art::Ptr<raw::Trigger> >    ;
-template class std::pair< art::Ptr<ldp::TOF>,     art::Ptr<raw::AuxDetDigit> >;
-
-template class art::Assns<ldp::TOF,     raw::Trigger,      void>; 
-template class art::Assns<raw::Trigger,     ldp::TOF,      void>; 
-template class art::Assns<raw::AuxDetDigit, ldp::TOF,      void>;
-
-template class art::Wrapper<art::Assns<raw::Trigger,     ldp::TOF,     void> >;
-template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,     void> >;
-template class art::Wrapper<art::Assns<ldp::TOF,     raw::Trigger,     void> >;
-
+// For the WCTrack
 template class std::vector<ldp::WCTrack>;
 
-template class art::Wrapper< ldp::WCTrack                  >;
+template class art::Wrapper<ldp::WCTrack>;
 
-template class art::Wrapper< std::vector<ldp::WCTrack >    >;
+template class art::Wrapper<std::vector<ldp::WCTrack > >;
 
-template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::WCTrack> >    ;
-template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::WCTrack> >    ;
+template class std::pair<art::Ptr<ldp::WCTrack>,     art::Ptr<raw::Trigger>     >;
+template class std::pair<art::Ptr<ldp::WCTrack>,     art::Ptr<raw::AuxDetDigit> >;
+template class std::pair<art::Ptr<raw::Trigger>,     art::Ptr<ldp::WCTrack>     >;
+template class std::pair<art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::WCTrack>     >;
 
-template class std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::Trigger> >    ;
-template class std::pair< art::Ptr<ldp::WCTrack>,     art::Ptr<raw::AuxDetDigit> >;
+template class art::Assns<ldp::WCTrack,     raw::Trigger,     void>;
+template class art::Assns<ldp::WCTrack,     raw::AuxDetDigit, void>;
+template class art::Assns<raw::Trigger,     ldp::WCTrack,     void>;
+template class art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void>;
 
-template class art::Assns<ldp::WCTrack,     raw::Trigger,      void>; 
-template class art::Assns<raw::Trigger,     ldp::WCTrack,      void>; 
-template class art::Assns<raw::AuxDetDigit, ldp::WCTrack,      void>;
-
+template class art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >;
+template class art::Wrapper<art::Assns<ldp::WCTrack,     raw::AuxDetDigit, void> >;
 template class art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >;
 template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >;
-template class art::Wrapper<art::Assns<ldp::WCTrack,     raw::Trigger,     void> >;
 
-
+// For the AGCounter
+template class std::vector<ldp::AGCounter>;
+template class art::Wrapper<ldp::AGCounter>;
+template class art::Wrapper<std::vector<ldp::AGCounter > >;
+template class std::vector<AGCHits>;
+template class art::Wrapper<AGCHits>;
+template class art::Wrapper<std::vector<AGCHits > >;
 
 //Stuff regarding/belonging to Edge Rec
 template class std::vector<ldp::Edge>;
-template class art::Wrapper< ldp::Edge                  >;
-template class art::Wrapper< std::vector<ldp::Edge >    >;
+template class art::Wrapper<ldp::Edge>;
+template class art::Wrapper<std::vector<ldp::Edge > >;
 
-template class std::pair< art::Ptr<raw::Trigger>,     art::Ptr<ldp::Edge> >    ;
-template class std::pair< art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::Edge> >    ;
+template class std::pair<art::Ptr<ldp::Edge>,        art::Ptr<raw::Trigger>     >;
+template class std::pair<art::Ptr<ldp::Edge>,        art::Ptr<raw::AuxDetDigit> >;
+template class std::pair<art::Ptr<raw::Trigger>,     art::Ptr<ldp::Edge>        >;
+template class std::pair<art::Ptr<raw::AuxDetDigit>, art::Ptr<ldp::Edge>        >;
 
-template class std::pair< art::Ptr<ldp::Edge>,     art::Ptr<raw::Trigger> >    ;
-template class std::pair< art::Ptr<ldp::Edge>,     art::Ptr<raw::AuxDetDigit> >;
+template class art::Assns<ldp::Edge,        raw::Trigger,     void>;
+template class art::Assns<ldp::Edge,        raw::AuxDetDigit, void>;
+template class art::Assns<raw::Trigger,     ldp::Edge,        void>;
+template class art::Assns<raw::AuxDetDigit, ldp::Edge,        void>;
 
-template class art::Assns<ldp::Edge,     raw::Trigger,      void>; 
-template class art::Assns<raw::Trigger,     ldp::Edge,      void>; 
-template class art::Assns<raw::AuxDetDigit, ldp::Edge,      void>;
-
-template class art::Wrapper<art::Assns<raw::Trigger,     ldp::Edge,     void> >;
-template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::Edge,     void> >;
-template class art::Wrapper<art::Assns<ldp::Edge,     raw::Trigger,     void> >;
-
-
+template class art::Wrapper<art::Assns<ldp::Edge,        raw::Trigger,     void> >;
+template class art::Wrapper<art::Assns<ldp::Edge,        raw::AuxDetDigit, void> >;
+template class art::Wrapper<art::Assns<raw::Trigger,     ldp::Edge,        void> >;
+template class art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::Edge,        void> >;
 
 //Stuff regarding/belonging to Muon Range Stack Reco
-template class std::vector<ldp::MuonRangeStackHits >;
-template class art::Wrapper< ldp::MuonRangeStackHits               >;
-template class art::Wrapper< std::vector<ldp::MuonRangeStackHits >    >;
-template class std::map<int,std::vector<int> >;
-template class art::Wrapper<std::map<int,std::vector<int> > >;
+template class std::vector<ldp::MuonRangeStackHits>;
+template class art::Wrapper<ldp::MuonRangeStackHits>;
+template class art::Wrapper<std::vector<ldp::MuonRangeStackHits> >;
+template class std::map<int, std::vector<int> >;
+template class art::Wrapper<std::map<int, std::vector<int> > >;
 template class art::Wrapper<MuRSTrack>;
 template class std::vector<MuRSTrack>;
 template class art::Wrapper<std::vector<MuRSTrack> >;
-template class std::pair<int,int>;
-template class art::Wrapper<std::pair<int,int> >;
-template class std::vector<std::pair<int,int> >;
-template class art::Wrapper<std::vector<std::pair<int,int> > >;
+template class std::pair<int, int>;
+template class art::Wrapper<std::pair<int, int> >;
+template class std::vector<std::pair<int, int> >;
+template class art::Wrapper<std::vector<std::pair<int, int> > >;
 
 
 template class art::Wrapper<ldp::ConditionsSummary>;

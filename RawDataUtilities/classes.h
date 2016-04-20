@@ -73,8 +73,19 @@ template class art::Assns<raw::Trigger, recob::SpacePoint, void>;
 template class art::Assns<raw::Trigger, recob::Track,      void>;
 template class art::Assns<raw::Trigger, raw::AuxDetDigit,  void>;
 template class art::Assns<raw::Trigger, raw::OpDetPulse,   void>;
-template class art::Assns<ldp::WCTrack, recob::Track,      void>;
+//template class art::Assns<ldp::WCTrack, recob::Track,      void>;
 
+template class art::Assns<raw::RawDigit,     raw::Trigger, void>;
+template class art::Assns<recob::Wire,       raw::Trigger, void>;
+template class art::Assns<recob::Hit,        raw::Trigger, void>;
+template class art::Assns<recob::Cluster,    raw::Trigger, void>;
+template class art::Assns<recob::Vertex,     raw::Trigger, void>;
+template class art::Assns<recob::EndPoint2D, raw::Trigger, void>;
+template class art::Assns<recob::SpacePoint, raw::Trigger, void>;
+template class art::Assns<recob::Track,      raw::Trigger, void>;
+template class art::Assns<raw::AuxDetDigit,  raw::Trigger, void>;
+template class art::Assns<raw::OpDetPulse,   raw::Trigger, void>;
+//template class art::Assns<recob::Track,      ldp::WCTrack, void>;
 
 template class art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, recob::Wire,       void> >;
@@ -86,6 +97,18 @@ template class art::Wrapper<art::Assns<raw::Trigger, recob::Track,      void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, recob::Vertex,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit,  void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,   void> >;
-template class art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >;
+//template class art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >;
+
+template class art::Wrapper<art::Assns<raw::RawDigit,     raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<recob::Wire,       raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<recob::Hit,        raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<recob::Cluster,    raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<recob::Vertex,     raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<recob::EndPoint2D, raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<recob::SpacePoint, raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<recob::Track,      raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<raw::AuxDetDigit,  raw::Trigger, void> >;
+template class art::Wrapper<art::Assns<raw::OpDetPulse,   raw::Trigger, void> >;
+//template class art::Wrapper<art::Assns<recob::Track,      ldp::WCTrack, void> >;
 
 template class art::Wrapper<art::PtrVector<recob::Track> >;
