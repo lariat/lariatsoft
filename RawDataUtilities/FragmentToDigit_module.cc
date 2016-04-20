@@ -1526,6 +1526,7 @@ void FragmentToDigit::makeAeroGelDigits(std::vector<CAENFragment>     const& cae
   std::set<uint32_t> boardChans;
 
   // Call this for each AeroGel counter
+  if(fRunNumber <= 5876){
   for(uint32_t bc = chanOff; bc < 6; ++bc) boardChans.insert(bc);
   this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelUS");
 
@@ -1533,6 +1534,17 @@ void FragmentToDigit::makeAeroGelDigits(std::vector<CAENFragment>     const& cae
   chanOff = 6;
   for(uint32_t bc = chanOff; bc < 8; ++bc) boardChans.insert(bc);
   this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelDS");
+  }
+
+  if(fRunNumber < 5876){
+    for(uint32_t bc = chanOff; bc < 6; ++bc) boardChans.insert(bc);
+    this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelDS");
+
+    boardChans.clear();
+    chanOff = 6; 
+    for(uint32_t bc = chanOff; bc < 8; ++bc) boardChans.insert(bc);
+    this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChans, chanOff, "AeroGelUS");
+  }
 
   return;
 }
