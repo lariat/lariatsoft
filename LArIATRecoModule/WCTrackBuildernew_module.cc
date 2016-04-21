@@ -10,6 +10,7 @@
 #ifndef WCTRACKBUILDERNEW_H
 #define WCTRACKBUILDERNEW_H
 
+
 #include "art/Framework/Core/EDProducer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -30,6 +31,7 @@
 //ROOT Things
 #include <TH1F.h>
 #include <TH2F.h>
+#include <TTree.h>
 
 //LArIAT Things
 #include "RawDataUtilities/TriggerDigitUtility.h"
@@ -41,7 +43,7 @@
 #include <memory>
 #include <utility>
 #include <string>
-
+#include <fstream>
 namespace wct{
 class WCTrackBuildernew;
 
@@ -110,7 +112,8 @@ private:
     //Hardware constants
     int fNumber_wire_chambers;
     int fNumber_wires_per_tdc;
-
+    
+    //int evtcounter = 0;
     //Histograms for plotting
     TH1F* fReco_Pz;
     TH1F* fY_Kink;
@@ -161,6 +164,8 @@ private:
     bool fPickyTracks;
     bool fHighYield;
     bool fCheckTracks;
+    TTree *tree = new TTree("WCVars", "WCVars");
+    
 };
 
 
@@ -177,6 +182,7 @@ WCTrackBuildernew::WCTrackBuildernew(fhicl::ParameterSet const & p)
 
 void WCTrackBuildernew::produce(art::Event & e)
 {
+  //evtcounter++; //counting events
   // Implementation of required member function here.
     //Creating the WCTrack Collection
     std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
@@ -209,8 +215,9 @@ void WCTrackBuildernew::produce(art::Event & e)
 			    WC4Digits,
 			    tdc_number_vect,
 			    hit_channel_vect,
-			    hit_time_bin_vect );   
-			    		    
+			    hit_time_bin_vect ); 
+			      
+   		    		    
     std::vector<double> reco_pz_list;                  //Final reco pz result for full_track_info = true, not indexed by trigger
     std::vector<double> x_face_list;
     std::vector<double> y_face_list;
@@ -221,6 +228,7 @@ void WCTrackBuildernew::produce(art::Event & e)
     std::vector<double> y_dist_list;
     std::vector<double> z_dist_list;
     std::vector<WCHitList> final_tracks;
+    std::vector<std::vector<float> > hit_position_vect;
     float residual;  
     std::vector<std::vector<WCHitList> > good_hits; //Two vectors: WC#, axis. - Will be cleared for each trigger 
     int WCMissed; //The WC missed for the event, if there is one.
@@ -232,6 +240,12 @@ void WCTrackBuildernew::produce(art::Event & e)
     std::vector<WCHitList> hitListAxis;
     for( int iAx = 0; iAx < 2; ++iAx ){ hitListAxis.push_back(hitList); }
     for( int iWC = 0; iWC < fNumber_wire_chambers; ++iWC ){ good_hits.push_back(hitListAxis); }
+    
+    //initialize the position array for the hits in the track put on the event
+    std::vector<float> dimensionvect;
+    for(int iAx=0; iAx<3; ++iAx){dimensionvect.push_back((float)99999);}
+    for(int iWC=0; iWC< 4; ++iWC){ hit_position_vect.push_back(dimensionvect);}
+    
     //int good_trigger_counter = 0;
     fWCHitFinderAlg.createHits(tdc_number_vect,
     			       hit_channel_vect,
@@ -241,7 +255,7 @@ void WCTrackBuildernew::produce(art::Event & e)
    // MakeSomePlotsFromHits(good_hits);		
     
     	       
-fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
+    fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 //std::cout<<"Hit Finding done, going to Track Building"<<std::endl;
   fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
 					 x_face_list,
@@ -260,8 +274,10 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 					 WCMissed,
 					 fRecodiff,
 					 fWCDist,
-					 residual);			       
-
+					 residual,
+					 hit_position_vect);			       
+tree->Branch("reco_pz",&reco_pz_list[0],"reco_pz/D");
+tree->Fill();
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
 //fTrack_Type->Fill(fWCTrackBuildernewAlg.getTrackType()); // neither does WCTrackBuildernewAlg_new::getTrackType()
                                                         // but WCTrackBuildernewAlg::getTrackType() exists!
@@ -294,6 +310,7 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 			     phi_list[iNewTrack],
 			     WC_vect,
 			     hit_wire_vect,
+			     hit_position_vect,
 			     WCMissed,
 			     residual);
       (*WCTrackCol).push_back( the_track );
@@ -312,7 +329,8 @@ fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
     
     
     //Put objects into event (root file)
-    e.put(std::move(WCTrackCol));   				
+    e.put(std::move(WCTrackCol)); 
+    hit_position_vect.clear();//clear the position vector for the next event.				
 }
   //==================================================================================================
   void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
@@ -545,7 +563,7 @@ void WCTrackBuildernew::beginJob()//fhicl::ParameterSet const & p)
 //reconfigure(p);
 //Hists that should be used for diagnostics and deleted before production
 if(fCheckTracks){
-  for(int i=0; i<76; ++i){
+  for(int i=0; i<99; ++i){
     fRecodiff.push_back(tfs->make<TH2F>());
   }
 fRecodiff[0]= tfs->make<TH2F>("WC1XWire4v2","WC1XWire4v2",500,-250,250,500,-250,250);
@@ -648,8 +666,31 @@ fRecodiff[75]=tfs->make<TH2F>("TPCy4v4","TPCy4v4",400,-200,200,400,-200,200);
 fRecodiff[76]=tfs->make<TH2F>("Best residual 4v2","best residual 4v2",3000,0,300,3000,0,300);
 fRecodiff[77]=tfs->make<TH2F>("Best residual 4v3","best residual 4v3",3000,0,300,3000,0,300);
 fRecodiff[78]=tfs->make<TH2F>("Best residual 4v4","best residual 4v4",3000,0,300,3000,0,300);
-fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
+
+fRecodiff[79]=tfs->make<TH2F>("XwirediffS3","Difference in Xwire hit in WC3 (Actual-recreated)",600,-300,300,600,-300,300);
+fRecodiff[80]=tfs->make<TH2F>("momentum","Reconstructed momentum",2000,0,2000,2000,0,2000);
+fRecodiff[81]=tfs->make<TH2F>("WC1Timediff","Difference in time tick of X and Y hit in WC1",300,-150,150,300,-150,150);
+fRecodiff[82]=tfs->make<TH2F>("WC2Timediff","Difference in time tick of X and Y hit in WC2",300,-150,150,300,-150,150);
+fRecodiff[83]=tfs->make<TH2F>("WC3Timediff","Difference in time tick of X and Y hit in WC3",300,-150,150,300,-150,150);
+fRecodiff[84]=tfs->make<TH2F>("WC4Timediff","Difference in time tick of X and Y hit in WC4",300,-150,150,300,-150,150);
+fRecodiff[85]=tfs->make<TH2F>("4momvsres"," Residual versus momentum for 4 point tracks",180,0,1800,120,0,12);
+fRecodiff[86]=tfs->make<TH2F>("dougsresidualtwo", "Distance WC2 Misses line through WC1 and WC4 (y,z) vs Momentum", 180,0,1800,1000,-500,500);
+fRecodiff[87]=tfs->make<TH2F>("dougsresidualthree", "Distance WC3 Misses line through WC1 and WC4 (y,z) vs Momentum", 180,0,1800,1000,-500,500);
+fRecodiff[88]=tfs->make<TH2F>("MomentumError","Fractional error of momentum",180,0,1800,200,0,.2);
+fRecodiff[89]=tfs->make<TH2F>("mom2minus","Fractional Change in Momentum with -3mm shift in WC2X vs Orginal Momentum",1800,0,1800,500,-.05,.05);
+fRecodiff[90]=tfs->make<TH2F>("mom2plus","Fractional Change in Momentum with +3mm shift in WC2X vs Orginal Momentum",1800,0,1800,500,-.05,.05);
+fRecodiff[91]=tfs->make<TH2F>("mom3minus","Fractional Change in Momentum with -3mm shift in WC3X vs Orginal Momentum",1800,0,1800,500,-.05,.05);
+fRecodiff[92]=tfs->make<TH2F>("mom3plus","Fractional Change in Momentum with +3mm shift in WC3X vs Orginal Momentum",1800,0,1800,500,-.05,.05);
+fRecodiff[93]=tfs->make<TH2F>("Momplusplus","Fractional Change with WC 2 +3mm amd WC 3 + 3mm",1800,0,1800,1000,-.1,.1);
+fRecodiff[94]=tfs->make<TH2F>("Momplusminus","Fractional Change with WC 2 +3mm amd WC 3 - 3mm",1800,0,1800,1000,-.1,.1);
+fRecodiff[95]=tfs->make<TH2F>("Momminusplus","Fractional Change with WC 2 -3mm amd WC 3 + 3mm",1800,0,1800,1000,-.1,.1);
+fRecodiff[96]=tfs->make<TH2F>("Momminusminus","Fractional Change with WC 2 -3mm amd WC 3 - 3mm",1800,0,1800,1000,-.1,.1);
+fRecodiff[97]=tfs->make<TH2F>("XZMidplane", "XZ point halfway between line of closest approach", 1000,-5000,-4000,1000,0,1000);
+fRecodiff[98]=tfs->make<TH2F>("dist","Distance of Closest Approach", 100,0,100,100,0,100);
 }
+fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
+
+
 //fRecodiff[0] = tfs->make<TH2F>("Recofourvsthree","Reco4vs3", 100,0,1000,100,0,1000);
    //fEventPicky=tfs->make<TH1F>("event with picky", "event with picky", 25000,0,25000);
 //     fResSquare = tfs->make<TH1F>("Sum of Square of Residuals from Y points to Linear Regression","Sum of Square of Residuals from Y points to Linear Regression", 150,0,150);
@@ -878,8 +919,11 @@ fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 						     std::vector<float> & hit_channel_vect,
 						     std::vector<float> & hit_time_bin_vect )
   {  
+    //std::ofstream outfile;
+    //outfile.open("rawhits100A.txt", fstream::app);
+    //outfile<<"Event number: "<<evtcounter<<std::endl;	
+    //int hitcounter=0;
     if (fVerbose) {  std::cout << "Digits' sizes, 1:2:3:4: " << the_digits_1.size() << ":" << the_digits_2.size() << ":"  << the_digits_3.size() << ":" << the_digits_4.size() << std::endl;}
-    
     //Loop through digits for WC1
     for( size_t iDigit = 0; iDigit < the_digits_1.size() ; ++iDigit ){
       raw::AuxDetDigit a_digit = (the_digits_1.at(iDigit));
@@ -888,6 +932,8 @@ fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 	hit_time_bin_vect.push_back(a_digit.ADC(iHit));
 	tdc_number_vect.push_back(int(a_digit.Channel()/fNumber_wires_per_tdc)+1);
 	hit_channel_vect.push_back(a_digit.Channel() % 64);
+	//outfile<<"TDC: "<<int(a_digit.Channel()/fNumber_wires_per_tdc)+1<<", Wire: "<<a_digit.Channel() % 64<<", Time: "<<a_digit.ADC(iHit)<<std::endl;
+	//hitcounter++;
       }
     }
 
@@ -900,6 +946,8 @@ fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 	  hit_time_bin_vect.push_back(a_digit.ADC(iHit));
 	  tdc_number_vect.push_back(int(a_digit.Channel()/fNumber_wires_per_tdc)+5);
 	  hit_channel_vect.push_back(a_digit.Channel() % 64);
+	  //outfile<<"TDC: "<<int(a_digit.Channel()/fNumber_wires_per_tdc)+5<<", Wire: "<<a_digit.Channel() % 64<<", Time: "<<a_digit.ADC(iHit)<<std::endl;
+	  //hitcounter++;
 	}
       }
     }
@@ -913,6 +961,8 @@ fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 	  hit_time_bin_vect.push_back(a_digit.ADC(iHit));
 	  tdc_number_vect.push_back(int(a_digit.Channel()/fNumber_wires_per_tdc)+9);
 	  hit_channel_vect.push_back(a_digit.Channel() % 64);
+	  //outfile<<"TDC: "<<int(a_digit.Channel()/fNumber_wires_per_tdc)+9<<", Wire: "<<a_digit.Channel() % 64<<", Time: "<<a_digit.ADC(iHit)<<std::endl;
+	  //hitcounter++;
 	}
       }
     }
@@ -926,9 +976,13 @@ fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 	  hit_time_bin_vect.push_back(a_digit.ADC(iHit));
 	  tdc_number_vect.push_back(int(a_digit.Channel()/fNumber_wires_per_tdc)+13);
 	  hit_channel_vect.push_back(a_digit.Channel() % 64);
+	  //outfile<<"TDC: "<<int(a_digit.Channel()/fNumber_wires_per_tdc)+13<<", Wire: "<<a_digit.Channel() % 64<<", Time: "<<a_digit.ADC(iHit)<<std::endl;
+	  //hitcounter++;
 	}
       }
     }
+   //outfile<<"Number of Hits for event: "<<hitcounter<<std::endl;
+   //outfile.close();
   }
 
 void WCTrackBuildernew::beginRun(art::Run & r)
