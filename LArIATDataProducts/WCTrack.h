@@ -40,7 +40,7 @@ namespace ldp {
     //index in all three.
     std::vector<int> fWC;               //Defined from 1 to 4, like the Wire Chambers
     std::vector<float> fHitWire;  
-    std::vector<std::vector<float> > fHitPosition;   //WC is first index, dimension (x,y,z) as the second index. A [4][3] object.  
+    float fHitPosition[4][3];   //WC is first index, dimension (x,y,z) as the second index. A [4][3] object.  
 //    std::vector<float> fHitTime;
     
 #ifndef __GCCXML__
@@ -58,7 +58,7 @@ namespace ldp {
 	     float phi,
 	     std::vector<int> wcVect,
 	     std::vector<float> hitWireVect,
-	     std::vector<std::vector<float> > hitPositionVect,
+	     float hitPositionVect[4][3],
 	     int WCMissed,
 	     float residual);
 	     //std::vector<float> hitTimeVect );
@@ -73,7 +73,7 @@ namespace ldp {
     float               Phi()                           const;
     int                 WC(size_t iHit)                 const;
     float               HitWire(size_t iHit)            const;
-    float		HitPosition(size_t iWC, size_t iAx )        const;
+    float		HitPosition(int iWC, int iAx )        const;
     //float               HitTime(size_t iHit)            const;
     size_t              NHits()                         const;
     int                 WCMissed()                      const;

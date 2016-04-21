@@ -147,12 +147,17 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 					     std::vector<TH2F*>  & Recodiff,
 					     TH1F* & WCdistribution,
 					     float & residual,
-					     std::vector<std::vector<float> > & hit_position_vect)
+					     float (&hit_position_vect)[4][3])
 {					   
   fPickyTracks = pickytracks;
   fHighYield = highyield;
   fDiagnostics= diagnostics;
-  hit_position_vect_alg=hit_position_vect;
+  for(int i=0; i<4; ++i){
+    for(int j=0; j<3; ++j){
+      hit_position_vect_alg[i][j]=hit_position_vect[i][j];
+    }
+  }
+  std::cout<<"Time to make some tracks!"<<std::endl;
   //std::cout<<"PickyTracks : "<<fPickyTracks<<"High Yield : "<<fHighYield<<"Diagnostics : "<<fDiagnostics<<std::endl;
   initialconst=-999;  //Just a number to use to initialize things before they get filled correctly.
   WCMissed=initialconst;  					 	

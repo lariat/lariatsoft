@@ -58,7 +58,7 @@ class WCTrackBuilderAlg{
 					     std::vector<TH2F*> & Recodiff,
 					     TH1F* & WCdistribution,
 					     float & residual,
-					     std::vector<std::vector<float> > & hit_position_vect);
+					     float(&hit_position_vect)[4][3]);
 		
    bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
    			  int & WCMissed,
@@ -193,7 +193,7 @@ class WCTrackBuilderAlg{
   int NHits;
   int WCMissed;
   float trackres;
-  std::vector<std::vector<float> > hit_position_vect_alg;				 
+  float hit_position_vect_alg[4][3];				 
   art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
  
  

@@ -228,7 +228,7 @@ void WCTrackBuildernew::produce(art::Event & e)
     std::vector<double> y_dist_list;
     std::vector<double> z_dist_list;
     std::vector<WCHitList> final_tracks;
-    std::vector<std::vector<float> > hit_position_vect;
+    float hit_position_vect[4][3];
     float residual;  
     std::vector<std::vector<WCHitList> > good_hits; //Two vectors: WC#, axis. - Will be cleared for each trigger 
     int WCMissed; //The WC missed for the event, if there is one.
@@ -242,9 +242,11 @@ void WCTrackBuildernew::produce(art::Event & e)
     for( int iWC = 0; iWC < fNumber_wire_chambers; ++iWC ){ good_hits.push_back(hitListAxis); }
     
     //initialize the position array for the hits in the track put on the event
-    std::vector<float> dimensionvect;
-    for(int iAx=0; iAx<3; ++iAx){dimensionvect.push_back((float)99999);}
-    for(int iWC=0; iWC< 4; ++iWC){ hit_position_vect.push_back(dimensionvect);}
+    for(int i=0; i<4; ++i){
+      for(int j=0; j<3; ++j){
+       hit_position_vect[i][j]=99999;
+       }
+     }
     
     //int good_trigger_counter = 0;
     fWCHitFinderAlg.createHits(tdc_number_vect,
@@ -330,7 +332,7 @@ tree->Fill();
     
     //Put objects into event (root file)
     e.put(std::move(WCTrackCol)); 
-    hit_position_vect.clear();//clear the position vector for the next event.				
+    //hit_position_vect.clear();//clear the position vector for the next event.				
 }
   //==================================================================================================
   void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
