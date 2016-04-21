@@ -491,11 +491,11 @@ namespace rdu {
     if (numberCaenFrags > 0) {
       mf::LogInfo("ClockCorrectionAlg") << "Looking at CAEN fragments...";
     }
-    //else {
-    //  // continue to the next file if no CAEN fragments are found
-    //  throw art::Exception(art::errors::NotFound)
-    //    << "No CAEN fragments found.";
-    //}
+    else {
+      // continue to the next file if no CAEN fragments are found
+      throw art::Exception(art::errors::NotFound)
+        << "No CAEN fragments found.";
+    }
 
     for (size_t i = 0; i < numberCaenFrags; ++i) {
 

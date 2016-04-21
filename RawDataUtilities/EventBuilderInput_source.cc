@@ -54,12 +54,6 @@
 #include "RawDataUtilities/SpillWrapper.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-variable"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-
 // ROOT includes
 #include "TFile.h"
 #include "TTree.h"
@@ -477,7 +471,14 @@ namespace rdu
     // group data blocks into collections
     fCollectionIndex = 0;
     fCollections.clear();
-    fCollections = fEventBuilderAlg.Build(fLariatFragment);
+
+    try {
+      fCollections = fEventBuilderAlg.Build(fLariatFragment);
+    }
+    catch (art::Exception &e) {
+      mf::LogWarning("EventBuilder") << "caught exception\n"
+                                     << e;
+    }
 
     // we are done with this file if there are no data blocks
     if (fCollections.size() < 1) fDoneWithFile = true;
