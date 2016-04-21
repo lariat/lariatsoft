@@ -132,10 +132,5 @@ template class art::Wrapper<std::map<int, std::vector<int> > >;
 template class art::Wrapper<ldp::MuRSTrack>;
 template class std::vector<ldp::MuRSTrack>;
 template class art::Wrapper<std::vector<ldp::MuRSTrack> >;
-template class std::pair<int, int>;
-template class art::Wrapper<std::pair<int, int> >;
-template class std::vector<std::pair<int, int> >;
-template class art::Wrapper<std::vector<std::pair<int, int> > >;
-
 
 template class art::Wrapper<ldp::ConditionsSummary>;
