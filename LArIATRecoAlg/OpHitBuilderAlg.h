@@ -82,7 +82,7 @@ class OpHitBuilderAlg{
   float fGradRMSThresh;
   short fMinHitSeparation; 
   short fFirstHitSeparation; 
-  short fBaselineWindowLength;
+  short fBaselineWindowSize;
   short fPrePulseBaselineFit;
   short fPrePulseDisplay;
   short fPromptWindowLength;

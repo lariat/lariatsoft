@@ -74,6 +74,9 @@ OpHitBuilderAlg::~OpHitBuilderAlg()
 
 //--------------------------------------------------------------
 void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
+
+  std::vector< short > IntegrationWindows { 100, 7000 };
+
   fDAQModule            = pset.get< std::string >("DAQModule","daq");
   fInstanceName         = pset.get< std::string >("InstanceName","");
   fGradHitThresh        = pset.get< float >("GradHitThresh",-10);
@@ -84,14 +87,14 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fGradRMSThresh        = pset.get< float >("GradRMSThresh",5); 
   fMinHitSeparation     = pset.get< short >("MinHitSeparation",20);
   fFirstHitSeparation   = pset.get< short >("FirstHitSeparation",250);
-  fBaselineWindowLength = pset.get< short >("BaselineWindowLength",1000);
+  fBaselineWindowSize = pset.get< short >("BaselineWindowLength",1000);
   fPrePulseBaselineFit  = pset.get< short >("PrePulseBaselineFit",500);
   fPrePulseDisplay      = pset.get< short >("PrePulseDisplay",500);
   fPrePulseTau1         = pset.get< float >("PrePulseTau1",1400.);
   fPrePulseTau2         = pset.get< float >("PrePulseTau1",1600.);
   fPromptWindowLength   = pset.get< short >("PromptWindowLength",100);
   fFullWindowLength     = pset.get< short >("FullWindowLength",7000);
-  fIntegrationWindows   = pset.get< std::vector<short> >("IntegrationWindows");
+  fIntegrationWindows   = pset.get< std::vector<short> >("IntegrationWindows",IntegrationWindows);
   fMvPerADC             = pset.get< float >("MvPerADC",0.2);
   fUsePrepulseFit       = pset.get< bool  >("UsePrepulseFit","true");
   fTimestampCut         = pset.get< float >("TimestampCut",5.25);
@@ -137,7 +140,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse )
   // Create an empty vector to be filled with select
   // waveform values within the baseline region.  
   std::vector<short> BaselineWindow;
-  BaselineWindow.reserve(fBaselineWindowLength);
+  BaselineWindow.reserve(fBaselineWindowSize);
 
   // After every gradient hit is found, skip this many
   // of the following samples
@@ -146,9 +149,9 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse )
   // Look for hits in the gradient within this baseline window.
   // If a hit is found in the gradient, exclude next N samples
   // (where N is the defined by mask_interval above)
-  for(size_t i = 0; i < (size_t)fBaselineWindowLength; i++){
+  for(size_t i = 0; i < (size_t)fBaselineWindowSize; i++){
     if ( g[i] <= fGradHitThresh ){
-      i = std::min( (size_t)fBaselineWindowLength, i + mask_interval );
+      i = std::min( (size_t)fBaselineWindowSize, i + mask_interval );
     }
     else {
       BaselineWindow.push_back(wfm[i]);
@@ -170,7 +173,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse )
   if( fHitFindingMode=="grad" )
   {
     
-    LOG_DEBUG("OpHitBuilder") 
+    LOG_DEBUG("OpHitBuilder")
     << "Scanning for hits using gradient-threshold method: \n"
     << "(1st-pass thresh " << fGradHitThresh << " ADC/ns, RMS thresh x"<<fGradRMSThresh<<")";
   
@@ -377,7 +380,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   }
 
   // Get baseline
-  size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hit-10));
+  size_t baseline_win_size = std::min(int(fBaselineWindowSize),int(hit-10));
   std::vector<float> tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
   float baseline = tmp[0];
   float rms      = tmp[1];
@@ -626,7 +629,7 @@ std::vector<std::pair<float,float>> OpHitBuilderAlg::GetSinglePEs( raw::OpDetPul
   int t2 = std::min(TriggerTime + fHitTimeCutoffHigh,(int)wfm.size());
 
   // Find waveform baseline and RMS 
-  std::vector<float> tmp = GetBaselineAndRMS( wfm, 0, fBaselineWindowLength );
+  std::vector<float> tmp = GetBaselineAndRMS( wfm, 0, fBaselineWindowSize );
   float baseline  = tmp[0];
   float rms       = tmp[1]; 
 
