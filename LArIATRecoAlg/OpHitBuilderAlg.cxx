@@ -120,11 +120,43 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
 //              - GradRMSThresh (default 5)
 //              - MinHitSeparation (default 20 [ns])
 //
-std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse) 
+std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse ) 
 {
   // Extract relevant information from the OpDetPulse object
   std::vector<short> wfm = opdetpulse.Waveform();
   size_t TriggerTime = (int)opdetpulse.FirstSample();
+
+  // Get baseline and RMS of the waveform.  First, we want to check
+  // that there are no pulses in the first part of the waveform where
+  // the baseline will be calculated.  If there are, we should mask
+  // these out.
+  
+  // First make the gradient
+  std::vector<float> g = MakeGradient(wfm);
+
+  // Create an empty vector to be filled with select
+  // waveform values within the baseline region.  
+  std::vector<short> BaselineWindow;
+  BaselineWindow.reserve(fBaselineWindowLength);
+
+  // After every gradient hit is found, skip this many
+  // of the following samples
+  size_t mask_interval = 100;
+   
+  // Look for hits in the gradient within this baseline window.
+  // If a hit is found in the gradient, exclude next N samples
+  // (where N is the defined by mask_interval above)
+  for(size_t i = 0; i < (size_t)fBaselineWindowLength; i++){
+    if ( g[i] <= fGradHitThresh ){
+      i = std::min( (size_t)fBaselineWindowLength, i + mask_interval );
+    }
+    else {
+      BaselineWindow.push_back(wfm[i]);
+    }
+  }
+ 
+  // Now get baseline and RMS using this masked region as input 
+  float baseline  = GetBaselineAndRMS(BaselineWindow,0,BaselineWindow.size())[0];
 
   // Hit finding limits (+/- trigger time) set in fcl
   size_t t1 = std::max((int)TriggerTime + fHitTimeCutoffLow,0);
@@ -144,9 +176,6 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse)
   
     // Set rising_edge to false before starting hit finding loop
     bool rising_edge = false;
-
-    // Make the gradient
-    std::vector<float> g = MakeGradient(wfm);
     
     // Scan over gradient
     for(size_t i = 0; i < g.size(); i++){
@@ -197,9 +226,6 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse)
       float g_amp = g_mean - GetLocalMinimum(g,hits[i]);
   
       // Calculate quick amplitude of pulse to use in discrimination
-      size_t baseline_win_size = std::min(int(fBaselineWindowLength),int(hits[i]-10));
-      tmp = GetBaselineAndRMS(wfm,0,baseline_win_size);
-      float baseline  = tmp[0];
       float hit_amp   = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
       
       LOG_DEBUG("OpHitBuilder")
@@ -224,9 +250,6 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse)
     LOG_DEBUG("OpHitBuilder") 
     << "Scanning for hits using signal/pulse-threshold method: \n"
     << "(threshold " << fSignalHitThresh << ")";
-
-    // Get wfm baseline
-    float baseline = GetPedestalAndRMS(wfm,0,fBaselineWindowLength)[0];
     
     // Set rising_edge to false before starting hit finding loop
     bool rising_edge = false;
@@ -243,13 +266,12 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse)
       }
          
       // When we leave the hit candidate, reset rising_edge to false
-      if ( (baseline - wfm[i])*fMvPerADC < fSignalHitThresh && rising_edge == true){
+      if ( (baseline - wfm[i])*fMvPerADC > fSignalHitThresh && rising_edge == true){
         rising_edge = false;
       }
   
     } // <-- end scan over waveform
     LOG_DEBUG("OpHitBuilder") << "Found " << hits_filtered.size() << " hits.";
-
   
   } // Endif SIGNAL mode
   // End hitfinding

@@ -3,10 +3,15 @@
 // Module Type: analyzer
 // File:        OpDetSER_module.cc
 //
+// This module looks for single photoelectron (PE) candidates in the
+// optical detector waveforms and makes a histogram of their integrals
+// for calibration of the detector's single electron response (SER).
+//
 // Generated at Fri Mar  4 04:40:04 2016 by William Foreman using artmod
 // from cetpkgsupport v1_08_06.
 ////////////////////////////////////////////////////////////////////////
 
+// Framework includes
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
@@ -89,7 +94,6 @@ private:
   
   // Histograms
   TH1F* h_SER;
-  TH1F* h_SER_g;
   TH1F* h_AvePEWfm;
   TH1F* h_WfmRMS;
 };
@@ -240,7 +244,6 @@ void OpDetSER::analyze(art::Event const & e)
         << integral << " ADCs, g = " << hit_grad << "\n";
         
         h_SER   ->Fill(integral);
-        h_SER_g ->Fill(hit_grad);
         
         // Add to average waveform if it looks good
         if( (windowsize == SER_bins) && fabs(integral - fSinglePE)<=fSinglePE_tolerance ){
@@ -336,7 +339,6 @@ void OpDetSER::beginJob()
   
   // Create histograms
   h_SER       = tfs->make<TH1F>("SER","SER;Integrated ADC;Counts",500,-50.,450.);
-  h_SER_g     = tfs->make<TH1F>("SER_g","SER_g;Gradient at SER candidate hit;Counts",64,-8,8.);
   h_AvePEWfm  = tfs->make<TH1F>("AvePEWfm","Average PE waveform",SER_bins,0.,(float)SER_bins);
   h_AvePEWfm  ->GetXaxis()->SetTitle("ns");
   h_AvePEWfm  ->GetYaxis()->SetTitle("mV");
@@ -418,21 +420,20 @@ void OpDetSER::endJob()
        
       // Fit out the SER
       TF1 f_gaus("f_gaus","[0]*exp(-0.5*pow((x-[1])/[2],2))",-1000,1000);
-      TF1 SER_fit("SER_fit","[0]*exp(-0.5*pow((x-[1])/[2],2)) + [3]*exp(-0.5*pow((x-[4])/[5],2)) + [6]*exp(-0.5*pow((x-2.*[4])/[7],2)) + [8]*exp(-0.5*pow((x-3.*[4])/[9],2))",-50,400);
+      //TF1 SER_fit("SER_fit","[0]*exp(-0.5*pow((x-[1])/[2],2)) + [3]*exp(-0.5*pow((x-[4])/[5],2)) + [6]*exp(-0.5*pow((x-2.*[4])/[7],2)) + [8]*exp(-0.5*pow((x-3.*[4])/[9],2))",-50,400);
+      TF1 SER_fit("SER_fit","[0]*exp(-0.5*pow((x-[1])/[2],2)) + [3]*exp(-0.5*pow((x-[4])/(sqrt(1)*[5]),2)) + [6]*exp(-0.5*pow((x-2.*[4])/(sqrt(2)*[5]),2)) + [7]*exp(-0.5*pow((x-3.*[4])/(sqrt(3)*[5]),2))",-50,400);
   
-    float max = (float)h_SER->GetMaximum();
-    std::cout<<"histogram max: "<<max<<"\n";
+      float max = (float)h_SER->GetMaximum();
+      std::cout<<"histogram max: "<<max<<"\n";
   
-    SER_fit.SetParName(0,"Noise norm");
-    SER_fit.SetParName(1,"Noise mean ADC");
-    SER_fit.SetParName(2,"Noise sigma");
-    SER_fit.SetParName(3,"1PE norm");
-    SER_fit.SetParName(4,"1PE mean ADC");
-    SER_fit.SetParName(5,"1PE sigma");
-    SER_fit.SetParName(6,"2PE norm");
-    SER_fit.SetParName(7,"2PE sigma");
-    SER_fit.SetParName(8,"3PE norm");
-    SER_fit.SetParName(9,"3PE sigma");
+      SER_fit.SetParName(0,"Noise norm");
+      SER_fit.SetParName(1,"Noise mean ADC");
+      SER_fit.SetParName(2,"Noise sigma");
+      SER_fit.SetParName(3,"1PE norm");
+      SER_fit.SetParName(4,"1PE mean ADC");
+      SER_fit.SetParName(5,"1PE sigma");
+      SER_fit.SetParName(6,"2PE norm");
+      SER_fit.SetParName(7,"3PE norm");
   
     // "Noise" component (gaus)
     SER_fit.SetParameter(0,max);
@@ -453,14 +454,10 @@ void OpDetSER::endJob()
     // 2PE (gaus)
     SER_fit.SetParameter(6,0.1*max);
     SER_fit.SetParLimits(6,0.,0.3*max);
-    SER_fit.SetParameter(7,50);
-    SER_fit.SetParLimits(7,20.,100.);
 
     // 3PE (gaus)
-    SER_fit.SetParameter(8,1.);
-    SER_fit.SetParLimits(8,0.,0.3*max);
-    SER_fit.SetParameter(9,80);
-    SER_fit.SetParLimits(9,40.,150.);
+    SER_fit.SetParameter(7,1.);
+    SER_fit.SetParLimits(7,0.,0.3*max);
 
     h_SER->Fit("SER_fit","R");
     std::cout<<"SER fit results:\n";
