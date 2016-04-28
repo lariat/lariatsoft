@@ -62,7 +62,8 @@ class OpHitBuilderAlg{
   std::vector<float>    SERWaveform;
   int                   AverageWaveform_count;
   int                   SERWaveform_count;
-  int                   AddHitToAverageWaveform;
+  int                   fAddHitsToAverageWaveform;
+  int                   AveWfmBins;
 
   // Fit parameters
   float prepulse_baseline;

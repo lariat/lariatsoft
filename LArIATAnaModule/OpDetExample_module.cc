@@ -33,6 +33,7 @@
 
 class OpDetExample;
 
+// -----------------------------------------------------------------------
 class OpDetExample : public art::EDAnalyzer {
 public:
   explicit OpDetExample(fhicl::ParameterSet const & p);
@@ -64,16 +65,16 @@ private:
   std::string       fDAQModuleInstanceName;
   size_t            fOpDetChannel;
   short             fBaselineWindowSize;
+  size_t            fNWaveformSamples;
 
-  // Histograms
-  TH1D* nOpHits;
-  TH1D* hitTimes;
-  TH1D* hitAmplitudes;
-  TH1D* hitIntegrals;
-  
-  // TO DO:
-  // - individual waveform histograms?
-  // - average waveform?
+  // Declare pointers to histograms we want (these are initialized
+  // in the OpDetExample::beginJob method below)
+  TH1F* h_eventTimestamps;
+  TH1I* h_nOpHits;
+  TH1I* h_hitTimes;
+  TH1F* h_hitAmplitudes;
+  TH1F* h_hitPromptLight;
+  TH1F* h_AverageWaveform;
 
   // Create the algorithm object of the OpHitBuilderAlg class.
   // We'll be using functions from this class to do hit-finding
@@ -84,15 +85,18 @@ private:
 
 };
 
+// -----------------------------------------------------------------------
 OpDetExample::OpDetExample(fhicl::ParameterSet const & p)
   :
   EDAnalyzer(p),
   fOpHitBuilderAlg(p)
 {
   // Read in fhicl parameters
-  this->reconfigure(p);  
+  this->reconfigure(p);
+   
 }
 
+// -----------------------------------------------------------------------
 void OpDetExample::analyze(art::Event const & e)
 {
   // This function will run over each event individually.  The event
@@ -145,12 +149,16 @@ void OpDetExample::analyze(art::Event const & e)
         // OpDetPulse members variables.  Remember: the timestamp tells us 
         // where in the supercycle the event took place (beam spill usually
         // is seconds 1-5, with everything beyond ~5s being cosmic or Michel data).
+        float timeStamp = ((float)pulse.PMTFrame()*8.)/1.0e09;
         std::cout
+        <<"-----------------------------------------------------------\n"
         <<"Photodetector " << pulse.OpChannel() << " found in event " << e.event()    << "\n"
-        <<"   timestamp               : " << ((float)pulse.PMTFrame()*8.)/1.0e09  << " sec\n"
-        <<"   # of samples            : " << wfm.size()                           << "\n"
-        <<"   trigger T0 is at sample : " << pulse.FirstSample()                  << "\n";
+        <<"   timestamp               : " << timeStamp  << " sec\n"
+        <<"   # of samples            : " << wfm.size() << "\n"
+        <<"   trigger T0 is at sample : " << pulse.FirstSample() << "\n";
 
+        // Fill the timestamp histogram:
+        h_eventTimestamps->Fill(timeStamp);
 
         // Let's check out the baseline and RMS first using OpHitBuilderAlg::
         // GetBaselineAndRMS().  This takes the waveform as input (std::vector) as 
@@ -160,7 +168,9 @@ void OpDetExample::analyze(art::Event const & e)
         float baseline          = tmp[0];
         float rms               = tmp[1];
 
-        std::cout<<"Baseline: "<<baseline<<" ADC,    RMS: "<<rms<<" ADC \n";
+        std::cout
+        <<"Baseline: "<<baseline<<" ADC\n" 
+        <<"RMS     : "<<rms<<" ADC \n";
 
         // Now let's do some hit-finding!
         //
@@ -171,58 +181,129 @@ void OpDetExample::analyze(art::Event const & e)
         // containing all the samples where hits were detected.
         std::vector<short> hitTimes = fOpHitBuilderAlg.GetHits( pulse );
 
+        // Print out the found hits and fill some histograms
         std::cout<< "Found "<<hitTimes.size()<<" hits in this waveform: \n";
+        h_nOpHits->Fill(hitTimes.size());
         for(size_t i = 0; i < hitTimes.size(); i++){
-        std::cout<< "   hit " << i << ", sample\n"; 
+          std::cout<< "   hit " << i << ", sample "<<hitTimes[i]<<"\n"; 
+          h_hitTimes->Fill(hitTimes[i]);
         }
 
-        // Now let's get integrals
+        // Calculate amplitude and integral of each of these hits with
+        // OpHitBuilderAlg::GetHitInfo.  This function takes in the waveform (vector of 
+        // floats/shorts), the hit sample, the "previous" hit, and a vector<short> of 
+        // integration windows.  We can specify this list in the fhicl (by default it is 
+        // [100,7000]), which is then stored in the variable fIntegrationWindows.  For clarity, 
+        // we'll just define a new vector here.
+        std::vector<short> intWindows{ 100, 7000 };
 
+        // The function GetHitInfo returns vector<float> = (amplitude, intWindow1, intWindow2, ... ).
+        // Amplitude is in mV, while the integrals are each in ADCs.  We'll loop over all the
+        // hits that were found and do the calculation for each.  (Also note that since we have 
+        // turned on "AddHitsToAverageWaveform" in the fhicl for the hit-finding alg, it will save 
+        // each hit into a summed waveform which we will access and normalize in the endJob method.)
+        for(size_t i=0; i<hitTimes.size(); i++ ){
+          
+          // For demonstrative purposes, let's skip any events outside the beam spill. Let's also 
+          // exclude pulses occurring than 500ns prior to the trigger T0.  This is light from activity 
+          // in the TPC that happens prior to the beam or cosmic event we're actually interested in.  
+          // For the triggered Michel events, these pulses are from the initial stopping muon. 
+          if( timeStamp > 5.2 || hitTimes[i] < (short)pulse.FirstSample() - 500 ) continue;
+
+          short prev_hit;
+          if(i==0) prev_hit = 0;
+          if(i>=1) prev_hit = hitTimes[i-1];
+          
+          std::vector<float> hitInfo = fOpHitBuilderAlg.GetHitInfo( wfm, hitTimes[i], prev_hit, intWindows );
+          float hit_amp             = hitInfo[0];
+          float hit_integral_100ns  = hitInfo[1];
+          float hit_integral_7us    = hitInfo[2];
+
+          std::cout<<"Amplitude of hit "<<i<<" = "<<hit_amp<<" mV\n";
+          std::cout<<"Integral (100ns) of hit "<<i<<" = "<<hit_integral_100ns<<" ADC\n";
+          std::cout<<"Integral (7us) of hit "<<i<<" = "<<hit_integral_7us<<" ADC\n";
+          
+          // Fill some histograms
+          h_hitAmplitudes->Fill(hit_amp);
+          h_hitPromptLight->Fill(hit_integral_100ns);
+        }
 
       } // end if OpChannel = fOpDetChannel
     } // end loop over opdetpulses
   } // end if opdetHandle->size() != 0
+
+  // White-space to separate events in printout
+  std::cout<<"\n";
 }
 
+// -----------------------------------------------------------------------
 void OpDetExample::beginJob()
 {
-  // Implementation of optional member function here.
+  // Opens up the file service to deal with the output ROOT file
+  art::ServiceHandle<art::TFileService> tfs;
+
+  // Use TFileService to create all the histograms we made pointers to
+  // in the constructor above.  This way, they'll automatically be written
+  // to the output histogram file when the job finishes.
+  h_eventTimestamps       = tfs->make<TH1F>("eventTimestamps","Event supercycle timestamps (sec)", 120, 0, 60);
+  h_nOpHits               = tfs->make<TH1I>("nOpHits", "Optical hits per event", 10, 0, 10); 
+  h_hitTimes              = tfs->make<TH1I>("hitTimes", "Times of optical hits within waveforms", 200, 0, fNWaveformSamples); 
+  h_hitAmplitudes         = tfs->make<TH1F>("hitAmplitudes","Optical hit amplitudes (mV)", 110, 0, 220);
+  h_hitPromptLight        = tfs->make<TH1F>("hitPromptLight" ,"Optical hit prompt light <100ns (ADC)", 200, 0, 3000);
+  
+  int AveWfmBins = fOpHitBuilderAlg.AveWfmBins;
+  h_AverageWaveform       = tfs->make<TH1F>("AverageWaveform","Average waveform;sample [ns];amplitude [mV]",AveWfmBins,0.,AveWfmBins); 
+
 }
 
+// -----------------------------------------------------------------------
 void OpDetExample::beginRun(art::Run const & r)
 {
 }
 
+// -----------------------------------------------------------------------
 void OpDetExample::beginSubRun(art::SubRun const & sr)
 {
-  // Implementation of optional member function here.
 }
 
+// -----------------------------------------------------------------------
 void OpDetExample::endJob()
 {
-  // Implementation of optional member function here.
+  // At the end of the job, grab the summed waveform from all the hits that
+  // were fed into OpHitBuilderAlg::GetHitInfo and normalize it.
+  size_t N_entries = fOpHitBuilderAlg.AverageWaveform_count;
+  if( N_entries > 0 ){
+    for(size_t i = 1; i <= fOpHitBuilderAlg.AverageWaveform.size(); i++) {
+      h_AverageWaveform->Fill(i, fOpHitBuilderAlg.AverageWaveform.at(i-1) / float(N_entries)  );
+    }
+    std::cout<<"Average waveform saved.\n"; 
+  }
+
 }
 
+// -----------------------------------------------------------------------
 void OpDetExample::endRun(art::Run const & r)
 {
-  // Implementation of optional member function here.
 }
 
+// -----------------------------------------------------------------------
 void OpDetExample::endSubRun(art::SubRun const & sr)
 {
-  // Implementation of optional member function here.
 }
 
+// -----------------------------------------------------------------------
 void OpDetExample::reconfigure(fhicl::ParameterSet const & p)
 {
-  // Tell the OpHitBuilderAlg to grab its configuration parameters
-  // from a special parameterset defined in the fhicl
-  fOpHitBuilderAlg.reconfigure(p.get<fhicl::ParameterSet>("OpHitBuilderAlg"));
-
+  // Read in fhicl parameters defined at the bottom of OpDetExample.fcl
   fDAQModuleLabel               = p.get< std::string >  ("DAQModule","daq");
   fDAQModuleInstanceName        = p.get< std::string >  ("DAQInstanceName","");
   fOpDetChannel                 = p.get< size_t >       ("OpDetChannel",1);
   fBaselineWindowSize           = p.get< short >        ("BaselineWindowSize",1000);
+  fNWaveformSamples             = p.get< size_t >       ("NWaveformSamples",28672);
+
+  // Tell the OpHitBuilderAlg to grab its configuration parameters
+  // from a special sub-parameterset defined in the fhicl
+  fOpHitBuilderAlg.reconfigure(p.get<fhicl::ParameterSet>("OpHitBuilderAlg"));
 }
 
 

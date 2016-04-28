@@ -1,13 +1,5 @@
-#include "lariat_reco_algs.fcl"
 #include "services_lariat.fcl"
 #include "lariatanamodules.fcl"
-#include "caldata_lariat.fcl"
-#include "hitfindermodules.fcl"
-#include "cluster_lariat.fcl"
-#include "lariattrackfindermodules.fcl"
-#include "trackfindermodules_lariat.fcl"
-#include "trackfindermodules.fcl"
-#include "lariatfiltermodules.fcl"
 
 process_name: OpDetExample
 
@@ -17,9 +9,22 @@ services:
   TFileService: { fileName: "OpDetExample_histo.root" }
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
-  message:      @local::standard_info
-  user:         @local::lariat_services
+  #message:      @local::standard_info
+  message:       @local::standard_debug
   scheduler:    { } 	     
+  @table::lariat_services
+}
+
+# Configuration of the messaging service to show/hide
+# debug messages from the optical hit finding algorithms.
+# (To suppress messages, set limit: 0).
+services.message.destinations.debugmsg: {
+  type: "cout"
+  threshold: "INFO"
+  append: true
+  categories: {
+    OpHitBuilder: { limit: 1e6 timespan: 0 }
+  }
 }
 
 source:
@@ -84,8 +89,9 @@ outputs:
 # ==============================================================================================
 # Module-specific input parameters
 # 
-physics.analyzers.opdet.OpDetChannel:                           1 # 0 = Hmm PMT, 1 = ETL PMT
-physics.analyzers.opdet.BaselineWindowSize:                     1000 # ns
+physics.analyzers.opdet.OpDetChannel:                           1     # 0 = Hmm PMT, 1 = ETL PMT
+physics.analyzers.opdet.BaselineWindowSize:                     1000  # ns
+physics.analyzers.opdet.NWaveformSamples:                       28672 # default 28672 samples
 
 #================================================================================================
 # Tunable settings for hit-finding, integration, etc.  Most of these can be left as default.
@@ -94,11 +100,17 @@ physics.analyzers.opdet.OpHitBuilderAlg.HitFindingMode:         "grad"  # "grad"
 physics.analyzers.opdet.OpHitBuilderAlg.GradHitThresh:          -10  # default -10 ADC/ns
 physics.analyzers.opdet.OpHitBuilderAlg.GradRMSThresh:          5    # default 5 (x grad RMS)
 physics.analyzers.opdet.OpHitBuilderAlg.SignalHitThresh:        4    # default 4 mV
-physics.analyzers.opdet.OpHitBuilderAlg.IntegrationWindows:     [100,7000]  
-physics.analyzers.opdet.OpHitBuilderAlg.BaselineWindowSize:     1000  
+physics.analyzers.opdet.OpHitBuilderAlg.IntegrationWindows:     [100,7000]  # integration lengths in samples (ns)  
+physics.analyzers.opdet.OpHitBuilderAlg.BaselineWindowSize:     1000  # samples (ns)
+physics.analyzers.opdet.OpHitBuilderAlg.MvPerADC:               0.2   # V1751 board 9 digitizer conversion 
+physics.analyzers.opdet.OpHitBuilderAlg.UsePrepulseFit:         false
+
+# Average waveform settings.  Full waveform length = PrePulseDisplay + FullWindowLength
+physics.analyzers.opdet.OpHitBuilderAlg.AddHitsToAverageWaveform: true
+physics.analyzers.opdet.OpHitBuilderAlg.PrepulseDisplay:        1000
+physics.analyzers.opdet.OpHitBuilderAlg.FullWindowLength:       7000
 
 
 # Service-related settings.
 # Print out messages from OpHitBuilderAlg
-services.message.destinations.infomsg.categories.OpHitBuilder.limit: 1e6
 services.scheduler.SkipEvent:                                   [ ProductNotFound ]
