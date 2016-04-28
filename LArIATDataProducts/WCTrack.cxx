@@ -42,6 +42,7 @@ namespace ldp{
 		   float phi,
 		   std::vector<int> wcVect,
 		   std::vector<float> hitWireVect,
+		   float hitPositionVect[4][3],
 		   int WCMissed,
 		   float residual)
 		   //std::vector<float> hitTimeVect )
@@ -54,6 +55,11 @@ namespace ldp{
     fPhi = phi;
     fWC = wcVect;
     fHitWire = hitWireVect;
+    for(int i=0; i<4; ++i){
+      for(int j=0; j<3; ++j){
+    fHitPosition[i][j]= hitPositionVect[i][j];
+      }
+    }
     fWCMissed=WCMissed;
     fResidual=residual;
     //fHitTime = hitTimeVect;
@@ -98,6 +104,19 @@ return fDeltaDist[i];
 			 	      << iHit << "\n";
     }
     return fHitWire[iHit];
+  }
+//=====================================================  
+  float WCTrack::HitPosition(int iWC, int iAx) const
+  {
+    if(iWC >3 ){
+      throw cet::exception("WCTrack") <<"illegal WC index requested for HitPosition: "
+      				      << iWC << "\n";
+    }
+    if(iAx >2){
+      throw cet::exception("WCTrack") <<"illegal dimension index requested for HitPosition: "
+      				      << iAx << "\n";
+    }
+    return fHitPosition[iWC][iAx];
   }
 
   //--------------------------------------------------

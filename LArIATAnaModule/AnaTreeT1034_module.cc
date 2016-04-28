@@ -971,27 +971,27 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   for(size_t i = 0; i < agc.size(); i++)
     {
 
-      auto number_agc = agc[i]->GetNHits();
-      std::cout<<"nAG: "<<nAG<<std::endl;
-      std::cout<<" number_agc: "<<number_agc<<std::endl;
-      std::cout<<"agc[i]->GetNHits(): "<<agc[i]->GetNHits()<<std::endl;
+      size_t number_agc = agc[i]->GetNHits();
+    
+      
+     
 
       for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
 	//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
-	HitTimeStampUSE[i]=agc[agc_counter]->GetHitTimeStampUSE(agc_idx);
-	HitTimeStampUSW[i]=agc[agc_counter]->GetHitTimeStampUSW(agc_idx);
-	HitTimeStampDS1[i]=agc[agc_counter]->GetHitTimeStampDS1(agc_idx);
-	HitTimeStampDS2[i]=agc[agc_counter]->GetHitTimeStampDS2(agc_idx);
+	HitTimeStampUSE[agc_counter]=agc[i]->GetHitTimeStampUSE(agc_idx);
+	HitTimeStampUSW[agc_counter]=agc[i]->GetHitTimeStampUSW(agc_idx);
+	HitTimeStampDS1[agc_counter]=agc[i]->GetHitTimeStampDS1(agc_idx);
+	HitTimeStampDS2[agc_counter]=agc[i]->GetHitTimeStampDS2(agc_idx);
 
-	HitPulseAreaUSE[i]=agc[agc_counter]->GetHitPulseAreaUSE(agc_idx);
-	HitPulseAreaUSW[i]=agc[agc_counter]->GetHitPulseAreaUSW(agc_idx);
-	HitPulseAreaDS1[i]=agc[agc_counter]->GetHitPulseAreaDS1(agc_idx);
-	HitPulseAreaDS2[i]=agc[agc_counter]->GetHitPulseAreaDS2(agc_idx);
+	HitPulseAreaUSE[agc_counter]=agc[i]->GetHitPulseAreaUSE(agc_idx);
+	HitPulseAreaUSW[agc_counter]=agc[i]->GetHitPulseAreaUSW(agc_idx);
+	HitPulseAreaDS1[agc_counter]=agc[i]->GetHitPulseAreaDS1(agc_idx);
+	HitPulseAreaDS2[agc_counter]=agc[i]->GetHitPulseAreaDS2(agc_idx);
 
-	HitExistUSE[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistUSW[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistDS1[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
-	HitExistDS2[i]=agc[agc_counter]->GetHitExistUSE(agc_idx);
+	HitExistUSE[agc_counter]=agc[i]->GetHitExistUSE(agc_idx);
+	HitExistUSW[agc_counter]=agc[i]->GetHitExistUSW(agc_idx);
+	HitExistDS1[agc_counter]=agc[i]->GetHitExistDS1(agc_idx);
+	HitExistDS2[agc_counter]=agc[i]->GetHitExistDS2(agc_idx);
 	++agc_counter;
       } // loop over aerogel pulses
 
@@ -1573,14 +1573,14 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("HitTimeStampUSW", HitTimeStampUSW, "HitTimeStampUSW[nAG]/D");
   fTree->Branch("HitTimeStampDS1", HitTimeStampDS1, "HitTimeStampDS1[nAG]/D");
   fTree->Branch("HitTimeStampDS2", HitTimeStampDS2, "HitTimeStampDS2[nAG]/D");
-  fTree->Branch("HitPulseAreaUSE", HitPulseAreaUSE, "HitPulseAreaUSE[nAG]/D");
-  fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/D");
-  fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/D");
-  fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/D");
-  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/D");
-  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/D");
-  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/D");
-  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/D");
+  fTree->Branch("HitPulseAreaUSE", HitPulseAreaUSE, "HitPulseAreaUSE[nAG]/F");
+  fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/F");
+  fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/F");
+  fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/F");
+  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/O");
+  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/O");
+  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/O");
+  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/O");
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");

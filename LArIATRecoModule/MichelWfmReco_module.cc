@@ -402,10 +402,10 @@ fTrigFiltAlg(pset)
 
   // Some instances of OpHitBuilder were created solely 
   // to save summed/average waveforms:
-  fOpHitBuilderAlg_aveMichel.AddHitToAverageWaveform       = 1;  
-  fOpHitBuilderAlg_aveBG.AddHitToAverageWaveform       = 1;  
-  fOpHitBuilderAlg_aveBG_lowPromptPE.AddHitToAverageWaveform = 1;  
-  fOpHitBuilderAlg_aveMIP.AddHitToAverageWaveform     = 1;  
+  fOpHitBuilderAlg_aveMichel.fAddHitsToAverageWaveform        = true;  
+  fOpHitBuilderAlg_aveBG.fAddHitsToAverageWaveform       = true;  
+  fOpHitBuilderAlg_aveBG_lowPromptPE.fAddHitsToAverageWaveform  = true;  
+  fOpHitBuilderAlg_aveMIP.fAddHitsToAverageWaveform     = true;  
  
   // Switch to apply baseline correction (prepulse
   // expeonential fit method) to averaged waveforms:
