@@ -44,6 +44,7 @@
 #include "lardata/RecoBase/TrackHitMeta.h"
 #include "lardata/RecoBase/Vertex.h"
 #include "lardata/RecoBase/SpacePoint.h"
+#include "lardata/RecoBaseArt/TrackUtils.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -397,6 +398,7 @@ void lariat::PurityOnlineT1034::analyze(art::Event const & evt)
       trkvtxx[i]        = trackStart[0];
       trkendx[i]        = trackEnd[0];    
 
+
       // ###########################################
       // ### Calculating the pitch for the track ###
       // ###########################################
@@ -407,15 +409,15 @@ void lariat::PurityOnlineT1034::analyze(art::Event const & evt)
 	 try
 	 {
 	    // ### If we are in the induction plane calculate the tracks pitch in that view ###
-	    if (j==0) trkpitch[i][j] = tracklist[i]->PitchInView(geo::kU);
+	    if (j==0) trkpitch[i][j] = lar::utils::TrackPitchInView(*tracklist[i], geo::kU);
 	    // ### If we are in the collection plane calculate the tracks pitch in that view ###
-	    else if (j==1) trkpitch[i][j] = tracklist[i]->PitchInView(geo::kV);
+	    else if (j==1) trkpitch[i][j] = lar::utils::TrackPitchInView(*(tracklist[i]), geo::kV);
 	 }//<---End Try statement
 	 catch( cet::exception &e)
 	 {
             mf::LogWarning("PurityOnline")<<"caught exeption "<<e<<"\n setting pitch to 0";
 	    trkpitch[i][j] = 0;
-	 }//<---End catch statement
+ 	 }//<---End catch statement
       }// <---End looping over planes (j)
    }// <---End looping over tracks   
 
