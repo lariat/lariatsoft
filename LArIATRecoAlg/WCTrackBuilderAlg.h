@@ -22,7 +22,7 @@
 //ROOT includes
 #include <TH1F.h>
 #include <TH2F.h>
-
+#include <TVector3.h>
 //Structs for organizational purposes pulling from the HitFinderAlg
 #include "LArIATRecoAlg/WCHitFinderAlg.h"
 
@@ -57,7 +57,8 @@ class WCTrackBuilderAlg{
 					     int & WCMissed,
 					     std::vector<TH2F*> & Recodiff,
 					     TH1F* & WCdistribution,
-					     float & residual);
+					     float & residual,
+					     float(&hit_position_vect)[4][3]);
 		
    bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
    			  int & WCMissed,
@@ -87,6 +88,13 @@ class WCTrackBuilderAlg{
 				 int & WCMissed);
 				 
    void calculateTheMomentum(WCHitList & best_track,
+		             float (&x)[4],
+			     float (&y)[4],
+			     float (&z)[4],
+			     float & reco_pz,
+			     std::vector<float> & BestTrackStats);
+			     
+   void calculateTheMomentumGiven(WCHitList & best_track,
 		             float (&x)[4],
 			     float (&y)[4],
 			     float (&z)[4],
@@ -156,6 +164,26 @@ class WCTrackBuilderAlg{
 			      	            std::vector<double> & y_dist_list,
 			      	            std::vector<double> & z_dist_list,
 			      	            int & WCMissed);
+					    
+					    
+  TVector3 PlotTheMidplane(float (&x)[4],
+        	       float (&y)[4],
+		       float (&z)[4],
+		       float dist);
+		       
+		       
+  float PlotTheMidplane(float (&x)[4],
+        	       float (&y)[4],
+		       float (&z)[4]);
+		       
+		       
+  float CalculateTheMomentumError(float (&x)[4],
+				  float (&y)[4],
+			          float (&z)[4],
+				  float & reco_pz);
+				  
+ // void MakeATree(					    
+					    
 		
   private:
   
@@ -165,7 +193,7 @@ class WCTrackBuilderAlg{
   int NHits;
   int WCMissed;
   float trackres;
-  				 
+  float hit_position_vect_alg[4][3];				 
   art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
  
  

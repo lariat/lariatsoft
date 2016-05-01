@@ -28,6 +28,7 @@
 #include <TH1F.h>
 #include <string>
 #include <TH2F.h>
+#include <TVector3.h>
 
 WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
 {
@@ -97,7 +98,8 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   //Survey constants
   //fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );  //this will recalculated using geometry instead of hardcoding. 
   //fDelta_z_ds 		= pset.get<float >("DeltaZds",   	  1570.06   );   
-  fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
+  //fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
+  fL_eff        	= pset.get<float >("LEffective", 	  1204);	
   fmm_to_m    		= pset.get<float >("MMtoM",        	  0.001     );	
   fGeV_to_MeV 		= pset.get<float >("GeVToMeV",    	  1000.0    );   
   fMP_X                 = pset.get<float> ("MidplaneInterceptFactor", 1);
@@ -116,12 +118,13 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
 {
   fRun = run;
   fSubRun = subrun;
-  current=std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun));
-  if(fabs(current)>90){fB_field_tesla= .003375*current;}
-  if(fabs(current)<90 && fabs(current)>70){fB_field_tesla= .0034875*current;}
-  if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}
-  if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  
-  if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
+  current=fabs(std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun)));
+//if(fabs(current)>90){fB_field_tesla= .003375*current;}
+//if(fabs(current)<90 && fabs(current)>70){fB_field_tesla= .0034875*current;}	
+//if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}	
+//if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  	
+//if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
+  fB_field_tesla= (-.1538*pow(10,-4)*pow(current,3)+.2245*pow(10,-2)*pow(current,2)-.1012*current+36.59)*current/10000; // Doug Jensen's cubic equation for magnetic field as a function of current.
   std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl;
 }
 //--------------------------------------------------------------
@@ -143,11 +146,18 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 					     int & WCMissed,
 					     std::vector<TH2F*>  & Recodiff,
 					     TH1F* & WCdistribution,
-					     float & residual)
+					     float & residual,
+					     float (&hit_position_vect)[4][3])
 {					   
   fPickyTracks = pickytracks;
   fHighYield = highyield;
   fDiagnostics= diagnostics;
+  for(int i=0; i<4; ++i){
+    for(int j=0; j<3; ++j){
+      hit_position_vect_alg[i][j]=hit_position_vect[i][j];
+    }
+  }
+  std::cout<<"Time to make some tracks!"<<std::endl;
   //std::cout<<"PickyTracks : "<<fPickyTracks<<"High Yield : "<<fHighYield<<"Diagnostics : "<<fDiagnostics<<std::endl;
   initialconst=-999;  //Just a number to use to initialize things before they get filled correctly.
   WCMissed=initialconst;  					 	
@@ -376,6 +386,14 @@ float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList>
   if(bestResSq<12){
 //Now we should have the straightest track in Y, which will be the track that goes to the event.  Now we get the momentum and projections onto the TPC  
   calculateTheMomentum(best_track,x,y,z,reco_pz,bestRegressionStats);
+  std::cout<<"Setting 4 point position arrays"<<std::endl;
+  for(size_t i=0; i<4; ++i){
+    hit_position_vect_alg[i][0]=x[i];
+    hit_position_vect_alg[i][1]=y[i];
+    hit_position_vect_alg[i][2]=z[i];
+  }
+  std::cout<<"4 point position array set!"<<std::endl;
+  //float mom_error= CalculateTheMomentumError(x,y,z);
   //std::cout<<"Momentum Calculated"<<std::endl;
   reco_pz_list.push_back(reco_pz);
 //We should also have the x,y,z points of the best_track, so now find where it hits the TPC
@@ -761,6 +779,14 @@ float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList
     best_track.hits[6].wire=missed_wire_hits[0];
     best_track.hits[7].wire=missed_wire_hits[1];
   } 
+  findTheHitPositions(best_track,x,y,z,initialconst); //Find the hit positions again, with the now complete track, with WCMissed=initialconst to avoid skipping the hit we extrapolated.
+  std::cout<<"Setting the 3 point position vector"<<std::endl;
+  for(int i=0; i<4; ++i){
+    hit_position_vect_alg[i][0]=x[i];
+    hit_position_vect_alg[i][1]=y[i];
+    hit_position_vect_alg[i][2]=z[i];
+  }
+  std::cout<<"3 point position set!"<<std::endl;
 //We should also have the x,y,z points of the best_track, so now find where it hits the TPC
    calculateTrackKink_Dists(x,y,z,bestRegressionStats,y_kink_list,x_dist_list,y_dist_list,z_dist_list);
   projectToTPC(best_track,x,y,z,bestRegressionStats,x_face_list,y_face_list,incoming_theta_list,incoming_phi_list);
@@ -854,7 +880,7 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
      // float theta_y_us=atan(((y[1]-y[0])/(z[1]-z[0])));
       //reco_pz =(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /( float(3.3 * (theta_x_ds-theta_x_us)*cos(theta_y_us))); 
       reco_pz =(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /( float(3.3 * (sin(theta_x_ds)-sin(theta_x_us))*cos(atan(BestTrackStats[0])))); 
-   //Calibrate depending on WCMissed
+   //Caibrate depending on WCMissed
       reco_pz=(reco_pz-7)/.91;
     
   }
@@ -1050,13 +1076,70 @@ void WCTrackBuilderAlg::MakeDiagnosticPlots(std::vector<std::vector<WCHitList> >
   float fourres=bestResSq;
 //Now we should have the straightest track in Y, which will be the track that goes to the event.  Now we get the momentum and projections onto the TPC  
   calculateTheMomentum(best_track,x,y,z,reco_pz,bestRegressionStats);
+  float fourmom=reco_pz;
   float fourx[4]={x[0],x[1],x[2],x[3]};
   float foury[4]={y[0],y[1],y[2],y[3]};
   float fourz[4]={z[0],z[1],z[2],z[3]};
-  float fourmom=reco_pz;
+  //float xmidplane_calculated=0;
+  //float ymidplane_calculated=0;
+  //float zmidplane_calculated=0;
+  float closest_distance_fake=0;
+  //Recodiff[97]->Fill(zmidplane_calculated,xmidplane_calculated);
+  //Recodiff[98]->Fill(closest_distance,closest_distance);
+  TVector3 MidplaneVect=PlotTheMidplane(fourx,foury,fourz,closest_distance_fake);
+  float closest_distance=PlotTheMidplane(fourx,foury,fourz);
+  Recodiff[97]->Fill(MidplaneVect.Z(),MidplaneVect.X());
+  Recodiff[98]->Fill(closest_distance,closest_distance);
+  float x2minus[4]= {x[0],x[1]-3,x[2],x[3]};
+  calculateTheMomentumGiven(best_track,x2minus,y,z,reco_pz,bestRegressionStats);
+  float mom2minus=reco_pz;
+  float x2plus[4]= {x[0],x[1]+3,x[2],x[3]};
+  calculateTheMomentumGiven(best_track,x2plus,y,z,reco_pz,bestRegressionStats);
+  float mom2plus=reco_pz;
+  float x3minus[4]= {x[0],x[1],x[2]-3,x[3]};
+  calculateTheMomentumGiven(best_track,x3minus,y,z,reco_pz,bestRegressionStats);
+  float mom3minus=reco_pz;
+  float x3plus[4]= {x[0],x[1],x[2]+3,x[3]};
+  calculateTheMomentumGiven(best_track,x3plus,y,z,reco_pz,bestRegressionStats);
+  float mom3plus=reco_pz;
+  
+  float xplusplus[4]= {x[0],x[1]+3,x[2]+3,x[3]};
+  calculateTheMomentumGiven(best_track,xplusplus,y,z,reco_pz,bestRegressionStats);
+  float momplusplus=reco_pz;
+    float xplusminus[4]= {x[0],x[1]+3,x[2]-3,x[3]};
+  calculateTheMomentumGiven(best_track,xplusminus,y,z,reco_pz,bestRegressionStats);
+  float momplusminus=reco_pz;
+    float xminusplus[4]= {x[0],x[1]-3,x[2]+3,x[3]};
+  calculateTheMomentumGiven(best_track,xminusplus,y,z,reco_pz,bestRegressionStats);
+  float momminusplus=reco_pz;
+    float xminusminus[4]= {x[0],x[1]-3,x[2]-3,x[3]};
+  calculateTheMomentumGiven(best_track,xminusminus,y,z,reco_pz,bestRegressionStats);
+  float momminusminus=reco_pz;
+  calculateTheMomentum(best_track,x,y,z,reco_pz,bestRegressionStats);
+  Recodiff[89]->Fill(fourmom,-(fourmom-mom2minus)/fourmom);
+  Recodiff[90]->Fill(fourmom,-(fourmom-mom2plus)/fourmom);
+  Recodiff[91]->Fill(fourmom,-(fourmom-mom3minus)/fourmom);
+  Recodiff[92]->Fill(fourmom,-(fourmom-mom3plus)/fourmom);
+  Recodiff[93]->Fill(fourmom,-(fourmom-momplusplus)/fourmom);
+  Recodiff[94]->Fill(fourmom,-(fourmom-momplusminus)/fourmom);
+  Recodiff[95]->Fill(fourmom,-(fourmom-momminusplus)/fourmom);
+  Recodiff[96]->Fill(fourmom,-(fourmom-momminusminus)/fourmom);
+  float mom_error= CalculateTheMomentumError(fourx,foury,fourz,reco_pz);
+  Recodiff[88]->Fill(reco_pz,mom_error/reco_pz);
+  //Checking Doug Jensen's method of finding residual of WC2 and WC3 point to line through WC1 and WC4
+  float slope_doug=(y[3]-y[0])/(z[3]-z[0]);
+  float intercept_doug=y[0]-slope_doug*z[0];
+  float restwo_doug=(y[1]-slope_doug*z[1]-intercept_doug)/(std::sqrt(1+slope_doug*slope_doug));
+  float resthree_doug=(y[2]-slope_doug*z[2]-intercept_doug)/(std::sqrt(1+slope_doug*slope_doug));
+  Recodiff[86]->Fill(reco_pz,restwo_doug);
+  Recodiff[87]->Fill(reco_pz,resthree_doug);
+  //Ending Doug's method.
+  //float fourmom=reco_pz;
   float fourwires[8]={0,0,0,0,0,0,0,0};
+  float fourtimes[8]={0,0,0,0,0,0,0,0};
   for(int i=0; i<8; ++i){
     fourwires[i]=best_track.hits[i].wire;
+    fourtimes[i]=best_track.hits[i].time;
   }
   //std::cout<<"Momentum Calculated"<<std::endl;
   //reco_pz_list.push_back(reco_pz);
@@ -1406,6 +1489,7 @@ if(WCMissed==4){
   for(int i=0; i<8; ++i){
     Recodiff[i]->Fill(fourwires[i],twowires[i]);
     Recodiff[i+8]->Fill(fourwires[i],threewires[i]);
+  
   }
   for(int i=0; i<4; ++i){
     Recodiff[i+16]->Fill(fourx[i],twox[i]);
@@ -1416,6 +1500,8 @@ if(WCMissed==4){
     Recodiff[i+36]->Fill(fourz[i],threez[i]);    
     Recodiff[i+48]->Fill(fourdistlist[i],twodistlist[i]);
     Recodiff[i+52]->Fill(fourdistlist[i],threedistlist[i]);
+    Recodiff[i+66]->Fill(fourdistlist[i],fourmdistlist[i]);
+
     
   }
   for(int i=0; i<2; ++i){
@@ -1423,6 +1509,9 @@ if(WCMissed==4){
     Recodiff[i+42]->Fill(fourface[i],threeface[i]);
     Recodiff[i+44]->Fill(fourangles[i],twoangles[i]);
     Recodiff[i+46]->Fill(fourangles[i],threeangles[i]);
+    Recodiff[i+70]->Fill(fourangles[i],fourmangles[i]);
+    Recodiff[i+72]->Fill(fourwires[i+6],fourmwires[i+6]);
+    Recodiff[i+74]->Fill(fourface[0]-fourmface[0],fourface[1]-fourmface[1]);
   }
   Recodiff[56]->Fill(fourmom,(twomom-fourmom)/fourmom);
   Recodiff[57]->Fill(fourmom,(threemom-fourmom)/fourmom);
@@ -1430,17 +1519,129 @@ if(WCMissed==4){
   Recodiff[63]->Fill(fourx[3],fourmx[3]);
   Recodiff[64]->Fill(foury[3],fourmy[3]);
   Recodiff[65]->Fill(fourz[3],fourmz[3]);
-  for(int i=0; i<4; ++i){   
-  Recodiff[i+66]->Fill(fourdistlist[i],fourmdistlist[i]);
-  }
-  for(int i=0; i<2;++i){
-  Recodiff[i+70]->Fill(fourangles[i],fourmangles[i]);
-  Recodiff[i+72]->Fill(fourwires[i+6],fourmwires[i+6]);
-  Recodiff[i+74]->Fill(fourface[0]-fourmface[0],fourface[1]-fourmface[1]);
-  }
   Recodiff[76]->Fill(fourres,twores);
   Recodiff[77]->Fill(fourres,threeres);
   Recodiff[78]->Fill(fourres,fourmres);
+  Recodiff[79]->Fill(fourwires[4]-threewires[4],fourwires[4]-threewires[4]);
+  Recodiff[80]->Fill(fourmom,fourmom);
+  Recodiff[81]->Fill(fourtimes[1]-fourtimes[0],fourtimes[1]-fourtimes[0]);
+  Recodiff[82]->Fill(fourtimes[3]-fourtimes[2],fourtimes[3]-fourtimes[2]);
+  Recodiff[83]->Fill(fourtimes[5]-fourtimes[4],fourtimes[5]-fourtimes[4]);
+  Recodiff[84]->Fill(fourtimes[7]-fourtimes[6],fourtimes[7]-fourtimes[6]);
+  Recodiff[85]->Fill(fourmom,fourres);
 //}
 }
+//=====================================================================================
+float WCTrackBuilderAlg::CalculateTheMomentumError(float (&x)[4],
+						   float (&y)[4],
+						   float (&z)[4],
+						   float & reco_pz) 
+{
+  float dB=fB_field_tesla*.02;
+  float dwire=10;
+  float dxalign=25.4;
+  float dzalign=25.4;
+  float alpha=1/3.3;
+  float theta_ds=atan((x[3]-x[2])/(z[3]-z[2]));
+  float theta_us=atan((x[1]-x[0])/(z[1]-z[0]));
+  float xerror_us=dxalign+dwire*cos(theta_us);
+  float xerror_ds=dxalign+dwire*cos(theta_ds);
+  float zerror_us=dzalign+dwire*sin(theta_us);
+  float zerror_ds=dzalign+dwire*sin(theta_ds);
+  float dz_ds=z[3]-z[2];
+  float dz_us=z[1]-z[0];
+  float Berror=pow(alpha*fL_eff*dB/(sin(theta_ds)-sin(theta_us)),2);
+  float gamma_us=pow(alpha*fB_field_tesla*fL_eff/(sin(theta_ds)-sin(theta_us))/cos(theta_us)/dz_us,2);
+  float gamma_ds=pow(alpha*fB_field_tesla*fL_eff/(sin(theta_ds)-sin(theta_us))/cos(theta_ds)/dz_ds,2);
+  float error_us=gamma_us*(2*pow(xerror_us,2)+pow(theta_us,2)*(2*pow(zerror_us,2)));
+  float error_ds=gamma_ds*(2*pow(xerror_ds,2)+pow(theta_ds,2)*(2*pow(zerror_ds,2)));
+  float error_mom=pow(Berror+error_us+error_ds,.5);
+  std::cout<<theta_us<<" "<<theta_ds<<" "<<xerror_us<<" "<<xerror_ds<<" "<<zerror_us<<" "<<zerror_ds<<" "<<Berror<<" "<<error_us<<" "<<error_ds<<" "<<error_mom<<" "<<reco_pz<<" "<<error_mom/reco_pz<<std::endl;
+  return error_mom;
+}
+//========================================================================================
+void WCTrackBuilderAlg::calculateTheMomentumGiven(WCHitList & best_track,
+					     float (&x)[4],
+					     float (&y)[4],
+					     float (&z)[4],
+					     float & reco_pz,
+					     std::vector<float> & BestTrackStats)
+{
+//We need the x,y,z again, which would be for the last track combination tried. So we need to find the positions again
+  //findTheHitPositions(best_track,x,y,z,WCMissed);
+  //std::cout<<"Best track hit position found"<<std::endl;
+//Calculate the angle of the track, in the x,z and y,z planes, in upstream(us) and downstream(ds) ends of the WC
+  float dx_us=x[1]-x[0];
+  float dx_ds=x[3]-x[2];
+  //float dy_us=y[1]-y[0];
+  //float dy_ds=y[3]-y[2];
+  float dz_us=z[1]-z[0];
+  float dz_ds=z[3]-z[2];
+  float theta_x_us= atan(dx_us/dz_us);
+  float theta_x_ds= atan(dx_ds/dz_ds);
+  //float theta_y_us= atan(dy_us/dz_us);
+  //float theta_y_ds= atan(dy_ds/dz_ds);
+  reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (3.3*(sin(theta_x_ds) - sin(theta_x_us)))/cos(atan(BestTrackStats[0]));
+  
+}  
+//=======================================================================================
+TVector3 WCTrackBuilderAlg::PlotTheMidplane(float (&x)[4],
+					float (&y)[4],
+					float (&z)[4],
+					float dist)
+{
 
+TVector3 v0(x[0],y[0],z[0]);
+TVector3 v1(x[1],y[1],z[1]);
+TVector3 v2(x[2],y[2],z[2]);
+TVector3 v3(x[3],y[3],z[3]);
+TVector3 v10=v1-v0;
+TVector3 v23=v2-v3;
+TVector3 v03=v0-v3;
+TVector3 v10_unit=v10.Unit();
+TVector3 v23_unit=v23.Unit();
+double b=v10_unit.Dot(v23_unit);
+double d=v10_unit.Dot(v03);
+double e=v23_unit.Dot(v03);
+double s_us=(b*e-d)/(1-b*b);
+double s_ds=(e-b*d)/(1-b*b);
+TVector3 closest_dist_vect=v03+((b*e-d)*v10_unit-(e-b*d)*v23_unit)*(1/(1-b*b));
+float dist_temp=float(closest_dist_vect.Mag());
+dist=dist_temp;
+TVector3 v23_close=v3+s_ds*v23_unit; //Q(t_c)
+TVector3 closest_vect=v03+s_us*v10_unit-s_ds*v23_unit; //w_c
+TVector3 midpointvect=v23_close + 0.5*closest_vect;
+return midpointvect;
+//std::cout<<"midpoint: ["<<x_mid<<", "<<y_mid<<", "<<z_mid<<"]"<<std::endl;
+//std::cout<<"distance of closest approach: "<<dist<<std::endl;
+}
+//-===========================================================
+float WCTrackBuilderAlg::PlotTheMidplane(float (&x)[4],
+					float (&y)[4],
+					float (&z)[4])
+{
+
+TVector3 v0(x[0],y[0],z[0]);
+TVector3 v1(x[1],y[1],z[1]);
+TVector3 v2(x[2],y[2],z[2]);
+TVector3 v3(x[3],y[3],z[3]);
+TVector3 v10=v1-v0;
+TVector3 v23=v2-v3;
+TVector3 v03=v0-v3;
+TVector3 v10_unit=v10.Unit();
+TVector3 v23_unit=v23.Unit();
+double b=v10_unit.Dot(v23_unit);
+double d=v10_unit.Dot(v03);
+double e=v23_unit.Dot(v03);
+//double s_us=(b*e-d)/(1-b*b);
+//double s_ds=(e-b*d)/(1-b*b);
+TVector3 closest_dist_vect=v03+((b*e-d)*v10_unit-(e-b*d)*v23_unit)*(1/(1-b*b));
+float dist_temp=float(closest_dist_vect.Mag());
+float dist=dist_temp;
+//TVector3 v23_close=v3+s_ds*v23_unit;
+//TVector3 closest_vect=v03+s_us*v10_unit-s_ds*v23_unit;
+//TVector3 midpointvect=v3+s_ds*v23_unit+.5*closest_vect;
+return dist;
+//std::cout<<"midpoint: ["<<x_mid<<", "<<y_mid<<", "<<z_mid<<"]"<<std::endl;
+//std::cout<<"distance of closest approach: "<<dist<<std::endl;
+}					
