@@ -31,8 +31,23 @@ lariat_xsanalysis:
     NumEvents:                10
     UpstreamEpsilon:          2.0
     RecombinationFactor:      1.3
-    ThinSlabThickness:        0.4725 #in cm                                                                                                                                                           
+    ThinSlabThickness:        0.4725 #in cm
 }
+
+lariat_purityonline:
+{
+    module_type:              "PurityOnlineT1034"
+    HitsModuleLabel:          "linecluster"
+    TrackModuleLabel:         "pmtrack"
+    ClusterModuleLabel:       "linecluster"
+    ChargeCut:                6000.                   #####   uppercut on hit charge  Run1 Value: 2000
+    SamplingTime:             0.128                   #####   TPC sampling rate
+    PreSampling:              189                     #####   = 24.2 mus of pre-sampling
+    Variable:                 [1000., 1000., 5000.]   #####   Starting values for minimization. Run1 values: [1000., 1000., 2000.]
+    Step:                     [1., 1., 1.]            #####   Minimization Steps
+    Verbose:                  false                   #####   Set how much I want to print on screen
+}
+
 lariat_anatree.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
 
 END_PROLOG

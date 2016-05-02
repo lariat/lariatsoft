@@ -60,7 +60,7 @@ physics.analyzers.OpDetSER.SinglePE:                100
 physics.analyzers.OpDetSER.SinglePE_tolerance:      2.5
 
 # Irrelevant settings (no need to change these)
-physics.analyzers.OpDetSER.IntegrationWindows:      [100,7000]
+physics.analyzers.OpDetSER.OpHitBuilderAlg.IntegrationWindows:      [100,7000]
 services.message.destinations.infomsg.categories.OpDetSER.limit: 1e6
 
 #################################################################
