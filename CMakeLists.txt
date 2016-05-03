@@ -58,7 +58,6 @@ find_ups_product( lareventdisplay v03_02_04 )
 # art related products
 find_ups_product( art             v1_12_02 )
 find_ups_product( artdaq_core     v1_04_06 )
-# find_ups_product( artextensions   v1_00_00 )
 
 # products that LArIAT needs for input data
 find_ups_product( LariatFilters   v01_00    )
