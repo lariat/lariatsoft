@@ -152,15 +152,17 @@ void OpDetExample::analyze(art::Event const & e)
         // in pulse.Waveform().  Let's save this to another variable to make
         // the next steps less cumbersome..
         std::vector<short> wfm = pulse.Waveform();
-	int length_of_pulse= wfm.size();
-	//setting name of the histogram so it would be unique in each run subrun, event and channel
-	sprintf(fHistName, "OpDet_%i_Pulse_run_%i_subrun_%i_event_%i", int(pulse.OpChannel()),runnr,subrunnr, eventnr);
+	if(fPrintWvforms){
+		int length_of_pulse= wfm.size();
+		//setting name of the histogram so it would be unique in each run subrun, event and channel
+		sprintf(fHistName, "OpDet_%i_Pulse_run_%i_subrun_%i_event_%i", int(pulse.OpChannel()),runnr,subrunnr, eventnr);
 
-	wvhist= tfs->make<TH1F>(fHistName, ";t (ns);",length_of_pulse, 0, length_of_pulse);
-        for (int ii=0;ii<(int)wfm.size();++ii){
-		wvhist->SetBinContent(ii,(float)wfm.at(ii));
-	}
-        // Let's print stuff to the screen to demonstrate how to interpert the
+		wvhist= tfs->make<TH1F>(fHistName, ";t (ns);",length_of_pulse, 0, length_of_pulse);
+        	for (int ii=0;ii<(int)wfm.size();++ii){
+			wvhist->SetBinContent(ii,(float)wfm.at(ii));
+		}
+        }//if wvforms are printed
+	// Let's print stuff to the screen to demonstrate how to interpert the
         // OpDetPulse members variables.  Remember: the timestamp tells us 
         // where in the supercycle the event took place (beam spill usually
         // is seconds 1-5, with everything beyond ~5s being cosmic or Michel data).
