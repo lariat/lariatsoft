@@ -104,7 +104,7 @@ physics.analyzers.opdet.OpHitBuilderAlg.IntegrationWindows:     [100,7000]  # in
 physics.analyzers.opdet.OpHitBuilderAlg.BaselineWindowSize:     1000  # samples (ns)
 physics.analyzers.opdet.OpHitBuilderAlg.MvPerADC:               0.2   # V1751 board 9 digitizer conversion 
 physics.analyzers.opdet.OpHitBuilderAlg.UsePrepulseFit:         false
-
+physics.analyzers.opdet.PrintWvforms:         true
 # Average waveform settings.  Full waveform length = PrePulseDisplay + FullWindowLength
 physics.analyzers.opdet.OpHitBuilderAlg.AddHitsToAverageWaveform: true
 physics.analyzers.opdet.OpHitBuilderAlg.PrepulseDisplay:        1000

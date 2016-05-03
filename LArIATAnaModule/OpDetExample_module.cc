@@ -66,7 +66,11 @@ private:
   size_t            fOpDetChannel;
   short             fBaselineWindowSize;
   size_t            fNWaveformSamples;
-
+  bool              fPrintWvforms;
+  int eventnr;
+  int runnr;
+  int subrunnr;
+  char fHistName[50];
   // Declare pointers to histograms we want (these are initialized
   // in the OpDetExample::beginJob method below)
   TH1F* h_eventTimestamps;
@@ -75,7 +79,7 @@ private:
   TH1F* h_hitAmplitudes;
   TH1F* h_hitPromptLight;
   TH1F* h_AverageWaveform;
-
+  TH1F *wvhist;
   // Create the algorithm object of the OpHitBuilderAlg class.
   // We'll be using functions from this class to do hit-finding
   // and integration of pulses.  Feel free to take a look at the
@@ -111,9 +115,13 @@ void OpDetExample::analyze(art::Event const & e)
   // these objects to the event in the previous stage.  This is set in
   // the fhicl file.  (You can always run eventdump.fcl on a file to 
   // check what data products it contains).
+  art::ServiceHandle<art::TFileService> tfs;
+
   art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
   e.getByLabel(fDAQModuleLabel, fDAQModuleInstanceName, opdetHandle);
-
+  eventnr=e.id().event();
+  runnr=e.run();
+  subrunnr=e.subRun();
   // We now have an art::Handle pointing to a vector of raw::OpDetPulse
   // objects.  We can check the size of opdetHandle to verify that this 
   // event actually contains data from the photosystem.  If empty, we use
@@ -144,7 +152,14 @@ void OpDetExample::analyze(art::Event const & e)
         // in pulse.Waveform().  Let's save this to another variable to make
         // the next steps less cumbersome..
         std::vector<short> wfm = pulse.Waveform();
-      
+	int length_of_pulse= wfm.size();
+	//setting name of the histogram so it would be unique in each run subrun, event and channel
+	sprintf(fHistName, "OpDet_%i_Pulse_run_%i_subrun_%i_event_%i", int(pulse.OpChannel()),runnr,subrunnr, eventnr);
+
+	wvhist= tfs->make<TH1F>(fHistName, ";t (ns);",length_of_pulse, 0, length_of_pulse);
+        for (int ii=0;ii<(int)wfm.size();++ii){
+		wvhist->SetBinContent(ii,(float)wfm.at(ii));
+	}
         // Let's print stuff to the screen to demonstrate how to interpert the
         // OpDetPulse members variables.  Remember: the timestamp tells us 
         // where in the supercycle the event took place (beam spill usually
@@ -300,7 +315,7 @@ void OpDetExample::reconfigure(fhicl::ParameterSet const & p)
   fOpDetChannel                 = p.get< size_t >       ("OpDetChannel",1);
   fBaselineWindowSize           = p.get< short >        ("BaselineWindowSize",1000);
   fNWaveformSamples             = p.get< size_t >       ("NWaveformSamples",28672);
-
+  fPrintWvforms			= p.get< bool >		("PrintWvforms",false);
   // Tell the OpHitBuilderAlg to grab its configuration parameters
   // from a special sub-parameterset defined in the fhicl
   fOpHitBuilderAlg.reconfigure(p.get<fhicl::ParameterSet>("OpHitBuilderAlg"));
