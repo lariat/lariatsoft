@@ -91,6 +91,7 @@ add_subdirectory(RawDataUtilities)
 add_subdirectory(Utilities)
 add_subdirectory(mccconfigs)
 add_subdirectory(LongBo)
+add_subdirectory(LArIATDataProviders)
 
 # tests
 add_subdirectory(test)

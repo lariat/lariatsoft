@@ -500,7 +500,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Filling the tracklist from the tracklistHandle ===
   if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
     {art::fill_ptr_vector(tracklist, trackListHandle);}
-   
+
   // ###################################
   // ### Getting the Hit Information ###
   // ###################################
