@@ -33,7 +33,7 @@ lariat_services:
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
  DetectorClocksService:                  @local::lariat_detectorclocks
  BackTracker:                  @local::standard_backtracker
- SeedService:                  @local::standard_seedservice
+ LArSeedService:                  @local::standard_seedservice
  DetPedestalService:          @local::lariat_detpedestalservice
  ChannelStatusService:        @local::lariat_channel_filter
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
@@ -56,7 +56,7 @@ lariat_simulation_services:
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
  DetectorClocksService:                  @local::lariat_detectorclocks
  BackTracker:                  @local::standard_backtracker
- SeedService:                  @local::standard_seedservice
+ LArSeedService:                  @local::standard_seedservice
  ChannelStatusService:        @local::lariat_channel_filter
  #OpDetResponseInterface:      @local::lariat_opdetresponse
  #UBOpticalChConfig:           @local::lariat_optical_ch_config

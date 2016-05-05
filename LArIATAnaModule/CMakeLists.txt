@@ -23,7 +23,7 @@ art_make(BASENAME_ONLY
          
          
          larsim_MCCheater_BackTracker_service
-         ${SEEDSERVICE_SERVICE} # artextensions
+         larsim_RandomUtils_LArSeedService_service
          ${SIMULATIONBASE}
          ${ART_FRAMEWORK_CORE}
          ${ART_FRAMEWORK_PRINCIPAL}
