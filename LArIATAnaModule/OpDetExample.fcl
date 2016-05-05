@@ -92,6 +92,9 @@ outputs:
 physics.analyzers.opdet.OpDetChannel:                           1     # 0 = Hmm PMT, 1 = ETL PMT
 physics.analyzers.opdet.BaselineWindowSize:                     1000  # ns
 physics.analyzers.opdet.NWaveformSamples:                       28672 # default 28672 samples
+physics.analyzers.opdet.PrintWvforms:                           true  # waveforms will be saved to histograms
+physics.analyzers.opdet.MaxSavedWaveforms:                      20    # max number of waveforms to save into
+                                                                      # histogram file (default: 10)
 
 #================================================================================================
 # Tunable settings for hit-finding, integration, etc.  Most of these can be left as default.

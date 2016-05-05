@@ -27,6 +27,8 @@
 // ROOT includes
 #include <TF1.h>
 #include <TH1F.h>
+#include <TCanvas.h>
+#include <TLine.h>
 
 //LAriatSoft Includes
 #include "LArIATRecoAlg/OpHitBuilderAlg.h"
@@ -66,7 +68,19 @@ private:
   size_t            fOpDetChannel;
   short             fBaselineWindowSize;
   size_t            fNWaveformSamples;
+  bool              fPrintWvforms;
+  size_t            fMaxSavedWaveforms;
+  
+  // Variables
+  size_t            SavedWaveformCount;
+  int               eventnr;
+  int               runnr;
+  int               subrunnr;
+  char              fHistName[50];
 
+  // Opens up the file service used to make and save histograms
+  art::ServiceHandle<art::TFileService> tfs;
+  
   // Declare pointers to histograms we want (these are initialized
   // in the OpDetExample::beginJob method below)
   TH1F* h_eventTimestamps;
@@ -75,6 +89,7 @@ private:
   TH1F* h_hitAmplitudes;
   TH1F* h_hitPromptLight;
   TH1F* h_AverageWaveform;
+  TH1F* h_wvhist;
 
   // Create the algorithm object of the OpHitBuilderAlg class.
   // We'll be using functions from this class to do hit-finding
@@ -93,6 +108,9 @@ OpDetExample::OpDetExample(fhicl::ParameterSet const & p)
 {
   // Read in fhicl parameters
   this->reconfigure(p);
+
+  // Set waved waveform count to 0
+  SavedWaveformCount = 0;
    
 }
 
@@ -101,7 +119,12 @@ void OpDetExample::analyze(art::Event const & e)
 {
   // This function will run over each event individually.  The event
   // itself is accessible as an art::Event object "e" here.
-  //
+  // Let's start by saving information relevant to this event (run #, 
+  // subrun #, event #) in case we need to use it at any point:
+  eventnr   = e.id().event();
+  runnr     = e.run();
+  subrunnr  = e.subRun();
+  
   // Optical data is stored by LArSoft as raw::OpDetPulse objects, which
   // can be accessed from the event the same way as most other data types.
   //
@@ -113,6 +136,7 @@ void OpDetExample::analyze(art::Event const & e)
   // check what data products it contains).
   art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
   e.getByLabel(fDAQModuleLabel, fDAQModuleInstanceName, opdetHandle);
+  
 
   // We now have an art::Handle pointing to a vector of raw::OpDetPulse
   // objects.  We can check the size of opdetHandle to verify that this 
@@ -144,7 +168,20 @@ void OpDetExample::analyze(art::Event const & e)
         // in pulse.Waveform().  Let's save this to another variable to make
         // the next steps less cumbersome..
         std::vector<short> wfm = pulse.Waveform();
-      
+	
+        // If option fPrintWvforms is turned on in fhicl, save individual waveforms
+        // as separate histograms in the output file.  We will only save a max of 
+        // "fMaxSavedWaveforms" of these (if you want to save ALL waveforms, just set
+        // this to some ridiculously high number like 1e10).
+        if(fPrintWvforms && SavedWaveformCount < fMaxSavedWaveforms){
+          // Setting name of the histogram so it would be unique 
+          // in each run subrun, event and channel
+	  sprintf(fHistName, "OpDet_%i_r%i_sr%i_e%i", int(pulse.OpChannel()),runnr,subrunnr, eventnr);
+	  h_wvhist  = tfs->make<TH1F>(fHistName, ";t (ns);", wfm.size(), 0, wfm.size());
+          for (int ii=0; ii<(int)wfm.size(); ++ii) h_wvhist->SetBinContent(ii,(float)wfm.at(ii));
+          SavedWaveformCount++;
+        }// endif wvforms are printed
+	
         // Let's print stuff to the screen to demonstrate how to interpert the
         // OpDetPulse members variables.  Remember: the timestamp tells us 
         // where in the supercycle the event took place (beam spill usually
@@ -180,8 +217,8 @@ void OpDetExample::analyze(art::Event const & e)
         // (HitFindingMode: "grad" or "signal").  GetHits returns a std::vector<short> 
         // containing all the samples where hits were detected.
         std::vector<short> hitTimes = fOpHitBuilderAlg.GetHits( pulse );
-
-        // Print out the found hits and fill some histograms
+        
+        // Print out the found hits and fill some histograms.
         std::cout<< "Found "<<hitTimes.size()<<" hits in this waveform: \n";
         h_nOpHits->Fill(hitTimes.size());
         for(size_t i = 0; i < hitTimes.size(); i++){
@@ -239,9 +276,6 @@ void OpDetExample::analyze(art::Event const & e)
 // -----------------------------------------------------------------------
 void OpDetExample::beginJob()
 {
-  // Opens up the file service to deal with the output ROOT file
-  art::ServiceHandle<art::TFileService> tfs;
-
   // Use TFileService to create all the histograms we made pointers to
   // in the constructor above.  This way, they'll automatically be written
   // to the output histogram file when the job finishes.
@@ -300,7 +334,9 @@ void OpDetExample::reconfigure(fhicl::ParameterSet const & p)
   fOpDetChannel                 = p.get< size_t >       ("OpDetChannel",1);
   fBaselineWindowSize           = p.get< short >        ("BaselineWindowSize",1000);
   fNWaveformSamples             = p.get< size_t >       ("NWaveformSamples",28672);
-
+  fPrintWvforms			= p.get< bool >		("PrintWvforms",false);
+  fMaxSavedWaveforms            = p.get< size_t >       ("MaxSavedWaveforms",10);
+  
   // Tell the OpHitBuilderAlg to grab its configuration parameters
   // from a special sub-parameterset defined in the fhicl
   fOpHitBuilderAlg.reconfigure(p.get<fhicl::ParameterSet>("OpHitBuilderAlg"));
