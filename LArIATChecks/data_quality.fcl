@@ -73,7 +73,7 @@ physics:
   end_paths: [ analysis ]  
 }
 
-services.user.SeedService: @local::random_seedservice
+services.user.LArSeedService: @local::random_seedservice
 #physics.analyzers.DataQuality.EventBuilderAlg.ClockCorrectionAlg.MinSamples:                   2
 #physics.analyzers.DataQuality.EventBuilderAlg.ClockCorrectionAlg.ResidualThreshold:            1
 #physics.analyzers.DataQuality.EventBuilderAlg.ClockCorrectionAlg.MaxTrials:                    10000
