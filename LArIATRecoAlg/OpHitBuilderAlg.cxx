@@ -158,7 +158,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse )
     }
   }
  
-  // Now get baseline and RMS using this masked region as input 
+  // Now get baseline using this masked region as input 
   float baseline  = GetBaselineAndRMS(BaselineWindow,0,BaselineWindow.size())[0];
 
   // Hit finding limits (+/- trigger time) set in fcl
