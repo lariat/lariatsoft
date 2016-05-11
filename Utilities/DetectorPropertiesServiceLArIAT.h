@@ -15,6 +15,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Registry/ServiceMacros.h"
 #include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/Event.h"
 #include "LArIATDataProviders/DetectorPropertiesLArIAT.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
@@ -82,7 +83,7 @@ namespace ldp{
       virtual void   reconfigure(fhicl::ParameterSet const& pset) override;
       void   preProcessEvent(const art::Event& evt);
       void   postOpenFile(const std::string& filename);
-      void   preBeginRun(const art::Run& run) { fProp->Update(run.id().run()); }
+      void   preBeginRun(const art::Run& run) { fGotElectronLifetimeFromDB=false; }
 	
       virtual const provider_type* provider() const override { return fProp.get();}
       
@@ -94,6 +95,9 @@ namespace ldp{
       bool fInheritNumberTimeSamples; ///< Flag saying whether to inherit NumberTimeSamples
       
       bool isDetectorPropertiesServiceLArIAT(const fhicl::ParameterSet& ps) const;
+
+      bool fUseDatabaseForMC;
+      bool fGotElectronLifetimeFromDB;
       
     }; // class DetectorPropertiesService
 } //namespace detinfo

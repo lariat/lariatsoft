@@ -26,8 +26,10 @@ namespace ldp{
   //--------------------------------------------------------------------
   DetectorPropertiesServiceLArIAT::DetectorPropertiesServiceLArIAT
     (fhicl::ParameterSet const& pset, art::ActivityRegistry &reg)
-    : fInheritNumberTimeSamples(pset.get<bool>("InheritNumberTimeSamples", false))
+      : fInheritNumberTimeSamples(pset.get<bool>("InheritNumberTimeSamples", false)),
+	fUseDatabaseForMC(pset.get<bool>("UseDatabaseForMC", false))
   {
+    fGotElectronLifetimeFromDB = false;
     // Register for callbacks.
 
     reg.sPostOpenFile.watch    (this, &DetectorPropertiesServiceLArIAT::postOpenFile);
@@ -50,7 +52,7 @@ namespace ldp{
       detinfo::LArPropertiesService,
       detinfo::DetectorClocksService
       >(),
-        std::set<std::string>({ "InheritNumberTimeSamples" })
+      std::set<std::string>({ "InheritNumberTimeSamples", "UseDatabaseForMC" })
       );
     
     // at this point we need and expect the provider to be fully configured
@@ -77,6 +79,15 @@ namespace ldp{
   {
     // Make sure TPC Clock is updated with TimeService (though in principle it shouldn't change
     fProp->UpdateClocks(lar::providerFrom<detinfo::DetectorClocksService>());
+
+    // don't get elifetime from database if we don't want to use it for MC
+    if (!evt.isRealData() && !fUseDatabaseForMC) return;
+    
+    if (!fGotElectronLifetimeFromDB) {
+      fProp->Update(evt.getRun().run());
+      fGotElectronLifetimeFromDB = true;
+    }
+    
   }
 
   //--------------------------------------------------------------------

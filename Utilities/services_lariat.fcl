@@ -25,8 +25,7 @@ lariat_services:
  Geometry:                     @local::lariat_geo 	        
  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
  AuxDetGeometry:               @local::lariat_auxdetgeo            
-# DetectorPropertiesService:           @local::lariat_detproperties
- DetectorPropertiesServiceLArIAT:     @local::lariat_detproperties
+ DetectorPropertiesService:           @local::lariat_detproperties
  LArPropertiesService:                @local::lariat_properties
  LArFFT:                       @local::lariat_larfft
  DatabaseUtil:	               @local::lariat_database
@@ -49,8 +48,7 @@ lariat_simulation_services:
  Geometry:                     @local::lariat_geo
  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
  AuxDetGeometry:               @local::lariat_auxdetgeo            
-# DetectorPropertiesService:           @local::lariat_detproperties
- DetectorPropertiesLArIATService:     @local::lariat_detproperties
+ DetectorPropertiesService:           @local::lariat_detproperties
  LArPropertiesService:                @local::lariat_properties
  LArFFT:                       @local::lariat_larfft
  DatabaseUtil:	               @local::lariat_database
