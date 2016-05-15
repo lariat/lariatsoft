@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v05_11_01
+parent	lariatsoft v05_11_01_01
 defaultqual	e9
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
@@ -15,7 +15,7 @@ LariatFilters   v01_02
 lariatfragments v01_07_04
 artdaq_core     v1_04_28
 LariatBeamFiles v01_00		-	optional
-lariatutil	    v01_26_12 -	optional
+lariatutil	    v01_26_13 -	optional
 cetbuildtools   v4_19_04	-	only_for_build
 end_product_list
 
