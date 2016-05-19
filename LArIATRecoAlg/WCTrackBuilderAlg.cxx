@@ -152,11 +152,11 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
   fPickyTracks = pickytracks;
   fHighYield = highyield;
   fDiagnostics= diagnostics;
-  for(int i=0; i<4; ++i){
-    for(int j=0; j<3; ++j){
-      hit_position_vect_alg[i][j]=hit_position_vect[i][j];
-    }
-  }
+//  for(int i=0; i<4; ++i){
+//    for(int j=0; j<3; ++j){
+//      hit_position_vect_alg[i][j]=hit_position_vect[i][j];
+//    }
+//  }
   std::cout<<"Time to make some tracks!"<<std::endl;
   //std::cout<<"PickyTracks : "<<fPickyTracks<<"High Yield : "<<fHighYield<<"Diagnostics : "<<fDiagnostics<<std::endl;
   initialconst=-999;  //Just a number to use to initialize things before they get filled correctly.
@@ -189,7 +189,8 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 			 x_dist_list,
 			 y_dist_list,
 			 z_dist_list,
-			 WCMissed);
+			 WCMissed,
+			 hit_position_vect);
 					   
    //std::cout<<"Built four point track"<<std::endl;					     
   //Need to use the cut information to whittle down track candidates
@@ -222,7 +223,8 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 			  x_dist_list,
 			  y_dist_list,
 			  z_dist_list,
-			  WCMissed);		
+			  WCMissed,
+			  hit_position_vect);		
   //std::cout<<"Build three point track"<<std::endl;
   }
   residual=trackres;
@@ -329,7 +331,8 @@ float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList>
 			      std::vector<double> & x_dist_list,
 			      std::vector<double> & y_dist_list,
 			      std::vector<double> & z_dist_list,
-			      int & WCMissed)
+			      int & WCMissed,
+			      float (&hit_position_vect)[4][3])
 {
   float x[4]{0,0,0,0};
   float y[4]{0,0,0,0};
@@ -388,9 +391,9 @@ float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList>
   calculateTheMomentum(best_track,x,y,z,reco_pz,bestRegressionStats);
   std::cout<<"Setting 4 point position arrays"<<std::endl;
   for(size_t i=0; i<4; ++i){
-    hit_position_vect_alg[i][0]=x[i];
-    hit_position_vect_alg[i][1]=y[i];
-    hit_position_vect_alg[i][2]=z[i];
+    hit_position_vect[i][0]=x[i];
+    hit_position_vect[i][1]=y[i];
+    hit_position_vect[i][2]=z[i];
   }
   std::cout<<"4 point position array set!"<<std::endl;
   //float mom_error= CalculateTheMomentumError(x,y,z);
@@ -603,7 +606,8 @@ float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList
 					      std::vector<double> & x_dist_list,
 					      std::vector<double> & y_dist_list,
 					      std::vector<double> & z_dist_list,
-					      int & WCMissed)
+					      int & WCMissed,
+					      float (&hit_position_vect)[4][3])
 {
 //Code here is similar to the buildFourPointTrack version, but we have to allow for missed WC, and require some additional geometry to find the momentum
   float x[4]{0,0,0,0};
@@ -782,9 +786,9 @@ float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList
   findTheHitPositions(best_track,x,y,z,initialconst); //Find the hit positions again, with the now complete track, with WCMissed=initialconst to avoid skipping the hit we extrapolated.
   std::cout<<"Setting the 3 point position vector"<<std::endl;
   for(int i=0; i<4; ++i){
-    hit_position_vect_alg[i][0]=x[i];
-    hit_position_vect_alg[i][1]=y[i];
-    hit_position_vect_alg[i][2]=z[i];
+    hit_position_vect[i][0]=x[i];
+    hit_position_vect[i][1]=y[i];
+    hit_position_vect[i][2]=z[i];
   }
   std::cout<<"3 point position set!"<<std::endl;
 //We should also have the x,y,z points of the best_track, so now find where it hits the TPC
