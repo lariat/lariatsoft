@@ -51,7 +51,7 @@ physics:
   }
  
   analysis: [ WCTrackBuilder ]
-  stream1: []#output1]
+  stream1: [output1]
   		       
   end_paths: [ analysis, stream1 ]
 }
