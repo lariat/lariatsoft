@@ -167,9 +167,9 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
   //This can be modified to permit more than one good hit in each wire chamber axis - see comments in function
   bool skip = shouldSkipTrigger(good_hits,WCMissed,WCdistribution);
   //std::cout<<"should skip trigger done"<<std::endl;
-  //std::cout<<"Hits : "<<NHits<<"WC Missed : "<<WCMissed<<std::endl;
+  std::cout<<"Hits : "<<NHits<<"WC Missed : "<<WCMissed<<std::endl;
   if( skip == true ) return;
-  
+  std::cout<<NHits<<std::endl;
   //Depending on if an event has a hit in all 4 WC or whether it missed WC2 or WC3 (but not both), we reconstruct the momentum differently. This code doesn't change from before we allowed 3 point tracks.
   if(NHits==4){
   
@@ -253,8 +253,8 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   bool skip = false;
   NHits=0;
   for( size_t iWC = 0; iWC < 4 ; ++iWC ){
-  if(good_hits[iWC][0].hits.size()>0 && good_hits[iWC][1].hits.size()>0){++NHits;}
-  else{WCMissed=iWC+1;}
+    if(good_hits[iWC][0].hits.size()>0 && good_hits[iWC][1].hits.size()>0){++NHits;}
+    else{WCMissed=iWC+1;}
   }
   if(fDiagnostics){
   WCDist->Fill(0);
