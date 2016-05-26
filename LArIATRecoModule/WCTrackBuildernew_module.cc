@@ -164,7 +164,7 @@ private:
     bool fPickyTracks;
     bool fHighYield;
     bool fCheckTracks;
-    TTree *tree = new TTree("WCVars", "WCVars");
+    //TTree *tree = new TTree("WCVars", "WCVars");
     
 };
 
@@ -278,8 +278,8 @@ void WCTrackBuildernew::produce(art::Event & e)
 					 fWCDist,
 					 residual,
 					 hit_position_vect);			       
-tree->Branch("reco_pz",&reco_pz_list[0],"reco_pz/D");
-tree->Fill();
+//tree->Branch("reco_pz",&reco_pz_list[0],"reco_pz/D");
+//tree->Fill();
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
 //fTrack_Type->Fill(fWCTrackBuildernewAlg.getTrackType()); // neither does WCTrackBuildernewAlg_new::getTrackType()
                                                         // but WCTrackBuildernewAlg::getTrackType() exists!
