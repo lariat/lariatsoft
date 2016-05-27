@@ -710,10 +710,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       std::string pri("primary");
       
       // ### Setting a string for PionMinusInelastic ###
-      std::string PionMinusInelastic("PionMinusInelastic");
+      std::string PionMinusInelastic("pi-Inelastic");
       
       // ### Setting a string for NeutronInelastic ###
-      std::string NeutronInelastic("NeutronInelastic");
+      std::string NeutronInelastic("neutronInelastic");
       
        // ### Setting a string for hadElastic ###
       std::string hadElastic("hadElastic");
@@ -721,6 +721,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Setting a string for nCapture ###
       std::string nCapture("nCapture");
       
+      // This may not be called hBertiniCaptureAtRest ?
       // ### Setting a string for CHIPSNuclearCaptureAtRest ###
       std::string CHIPSNuclearCaptureAtRest("CHIPSNuclearCaptureAtRest");
       
@@ -737,7 +738,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       std::string muMinusCaptureAtRest("muMinusCaptureAtRest");
       
       // ### Setting a string for ProtonInelastic ###
-      std::string ProtonInelastic("ProtonInelastic");
+      std::string ProtonInelastic("protonInelastic");
       
       
       int primary=0;
@@ -818,8 +819,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  		if(geant_part[i]->Process() == ProtonInelastic)
 	     		{Process[i] = 10;}
 	     
-	  		//std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
-	  
+			//std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;		       
 
 	  		// ### Saving the particles mother TrackID ###
 	  		Mother[i]=geant_part[i]->Mother();
