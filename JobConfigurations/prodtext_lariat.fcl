@@ -20,7 +20,7 @@ source:
 {
   module_type: EmptyEvent
   timestampPlugin: { plugin_type: "GeneratedEventTimestamp" }
-  maxEvents:   1           # Number of events to create
+  maxEvents:   100000           # Number of events to create
   firstRun:    1           # Run number to use for this file
   firstEvent:  1           # number of first event in the file
 }
@@ -66,5 +66,5 @@ outputs:
    fileName:    "text_gen.root" #default file name, can override from command line with -o or --output
  }
 }
-physics.producers.generator.InputFileName:"hepevt.txt"
+physics.producers.generator.InputFileName:"/lariat/app/users/gpulliam/lariatslicers/v05_11_01_01/hepevt.txt"
 
