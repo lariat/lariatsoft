@@ -1,8 +1,9 @@
-#define Pion_cxx
-#include "Pion.h"
+#define Proton_cxx
+#include "Proton.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+
 
 // ===================================================================================================================
 // ====================================       PUT HISTOGRAMS HERE           ==========================================
@@ -83,31 +84,31 @@ TH1D *hDeltaLength = new TH1D("hDeltaLength", "#Delta Length of the most upstrea
 
 
 
-/////////////////////////////////// "Pion" initial Kinetic Energy (MeV) //////////////////////////////////////////
-TH1D *hMCInitalKE = new TH1D("hMCInitalKE", "Pion Initial Kinetic Energy (MeV)", 500, 0, 2500);
-/////////////////////////////////// "Pion" dE/dX //////////////////////////////////////////
-TH1D *hdataPiondEdX = new TH1D("hdataPiondEdX", "Pion dE/dX", 200, 0, 50);
-/////////////////////////////////// "Pion" Residual Range //////////////////////////////////////////
-TH1D *hdataPionRR = new TH1D("hdataPionRR", "Pion Residual Range", 240, -10, 110);
-/////////////////////////////////// "Pion" Track Pitch //////////////////////////////////////////
-TH1D *hdataPionTrkPitch = new TH1D("hdataPionTrkPitch", "Track Pitch", 1000, 0, 5);
-///////////////////////////////// "Pion dE/dX vs RR ///////////////////////////////////////////
-TH2D *hdataPiondEdXvsRR = new TH2D("", "dE/dX vs Residual Range",200, 0, 100, 200, 0, 50);
-/////////////////////////////////// "Pion" Incident to the slab Kinetic Energy (MeV) //////////////////////////////////////////
-TH1D *hdataPionIncidentKE = new TH1D("hdataPionIncidentKE", "Pion Incident Kinetic Energy (MeV)", 40, 0, 2000);
-/////////////////////////////////// "Pion" Exiting the slab Kinetic Energy (MeV) //////////////////////////////////////////
-TH1D *fPionInteractions = new TH1D("fPionInteractions", "Pion Out Kinetic Energy (MeV)", 40, 0, 2000);
+/////////////////////////////////// "Proton" initial Kinetic Energy (MeV) //////////////////////////////////////////
+TH1D *hMCInitalKE = new TH1D("hMCInitalKE", "Proton Initial Kinetic Energy (MeV)", 500, 0, 2500);
+/////////////////////////////////// "Proton" dE/dX //////////////////////////////////////////
+TH1D *hdataProtondEdX = new TH1D("hdataProtondEdX", "Proton dE/dX", 200, 0, 50);
+/////////////////////////////////// "Proton" Residual Range //////////////////////////////////////////
+TH1D *hdataProtonRR = new TH1D("hdataProtonRR", "Proton Residual Range", 240, -10, 110);
+/////////////////////////////////// "Proton" Track Pitch //////////////////////////////////////////
+TH1D *hdataProtonTrkPitch = new TH1D("hdataProtonTrkPitch", "Track Pitch", 1000, 0, 5);
+///////////////////////////////// "Proton dE/dX vs RR ///////////////////////////////////////////
+TH2D *hdataProtondEdXvsRR = new TH2D("", "dE/dX vs Residual Range",200, 0, 100, 200, 0, 50);
+/////////////////////////////////// "Proton" Incident to the slab Kinetic Energy (MeV) //////////////////////////////////////////
+TH1D *hdataProtonIncidentKE = new TH1D("hdataProtonIncidentKE", "Proton Incident Kinetic Energy (MeV)", 40, 0, 2000);
+/////////////////////////////////// "Proton" Exiting the slab Kinetic Energy (MeV) //////////////////////////////////////////
+TH1D *fProtonInteractions = new TH1D("fProtonInteractions", "Proton Out Kinetic Energy (MeV)", 40, 0, 2000);
 /////////////////////////////////// Cross-Section //////////////////////////////////////////////////////////////////////
 TH1F *fCrossSection = new TH1F("fCrossSection", "Cross-Section", 40, 0, 2000); 
 
-////////////////////////////////// Pion Track Start and End Positions //////////////////////////////////////////////////
-TH1D *hdataPionTrackEndX = new TH1D("hdataPionTrackEndX", "Pion Track End X Position", 50, 0, 50);
-TH1D *hdataPionTrackEndY = new TH1D("hdataPionTrackEndY", "Pion Track End Y Position", 40, -20, 20);
-TH1D *hdataPionTrackEndZ = new TH1D("hdataPionTrackEndZ", "Pion Track End Z Position", 100, 0, 100);
+////////////////////////////////// Proton Track Start and End Positions //////////////////////////////////////////////////
+TH1D *hdataProtonTrackEndX = new TH1D("hdataProtonTrackEndX", "Proton Track End X Position", 50, 0, 50);
+TH1D *hdataProtonTrackEndY = new TH1D("hdataProtonTrackEndY", "Proton Track End Y Position", 40, -20, 20);
+TH1D *hdataProtonTrackEndZ = new TH1D("hdataProtonTrackEndZ", "Proton Track End Z Position", 100, 0, 100);
 
-TH1D *hdataPionTrackStartX = new TH1D("hdataPionTrackStartX", "Pion Track Start X Position", 50, 0, 50);
-TH1D *hdataPionTrackStartY = new TH1D("hdataPionTrackStartY", "Pion Track Start Y Position", 40, -20, 20);
-TH1D *hdataPionTrackStartZ = new TH1D("hdataPionTrackStartZ", "Pion Track Start Z Position", 100, 0, 100);
+TH1D *hdataProtonTrackStartX = new TH1D("hdataProtonTrackStartX", "Proton Track Start X Position", 50, 0, 50);
+TH1D *hdataProtonTrackStartY = new TH1D("hdataProtonTrackStartY", "Proton Track Start Y Position", 40, -20, 20);
+TH1D *hdataProtonTrackStartZ = new TH1D("hdataProtonTrackStartZ", "Proton Track Start Z Position", 100, 0, 100);
 
 
 /////////////////////////////////// Delta End X Position //////////////////////////////////////////
@@ -202,19 +203,16 @@ THStack *hStackDeltaEndY = new THStack("hStackDeltaEndY", "#Delta Y_{f}");
 // ### Delta X Stacked  ###
 THStack *hStackDeltaEndX = new THStack("hStackDeltaEndX", "#Delta X_{f}");
 
-//-----------------------------------------------------------------------------------------------------------------------------------------------
 
-
-
-void Pion::Loop()
+void Proton::Loop()
 {
 //   In a ROOT session, you can do:
-//      Root > .L Pion.C
-//      Root > Pion t
-//      Root > t.GetEntry(12); // Fill t data members with entry number 12
-//      Root > t.Show();       // Show values of entry 12
-//      Root > t.Show(16);     // Read and show values of entry 16
-//      Root > t.Loop();       // Loop on all entries
+//      root> .L Proton.C
+//      root> Proton t
+//      root> t.GetEntry(12); // Fill t data members with entry number 12
+//      root> t.Show();       // Show values of entry 12
+//      root> t.Show(16);     // Read and show values of entry 16
+//      root> t.Loop();       // Loop on all entries
 //
 
 //     This is the loop skeleton where:
@@ -243,7 +241,7 @@ void Pion::Loop()
 // ###    which is used when calculating the energy loss before  ###
 // ###                       entering the TPC                    ###
 
-float particle_mass = 139.57; //<---Mass of Pion in MeV
+float particle_mass = 139.57; //<---Mass of Proton in MeV
 
 
 // ### Number of centimeters in Z we require a track ###
@@ -325,12 +323,6 @@ float EventWeight = 1.0;
 bool UseEventWeight = true;
 
 
-// ###############################################
-// ### Creating a file to output my histograms ###
-// ###############################################
-TFile myfile("PionMCXSection_weighted_histos_nonScaleddEdX.root","RECREATE");
-
-
 
 
 // ----------------------------------------------------------------
@@ -365,8 +357,8 @@ int counter = 0;
 // ###############################
 // ### Looping over all Events ###
 // ###############################
-for (Long64_t jentry=0; jentry<nentries;jentry++)
-//for (Long64_t jentry=0; jentry<5000;jentry++)
+//for (Long64_t jentry=0; jentry<nentries;jentry++)
+for (Long64_t jentry=0; jentry<5000;jentry++)
    {
    Long64_t ientry = LoadTree(jentry);
    if (ientry < 0) break;
@@ -596,7 +588,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	       
 	       DifferenceInEnergy +=  Energy_Point1 - Energy_Point2;
 	       
-	       //std::cout<<"z = "<<g4Primary_TrueTrjZ[npri][ntrj]<<", DifferenceInEnergy = "<<DifferenceInEnergy<<std::endl;
+	       std::cout<<"z = "<<g4Primary_TrueTrjZ[npri][ntrj]<<", DifferenceInEnergy = "<<DifferenceInEnergy<<std::endl;
 	       
 	       
 	       }//<---End only look at points which are upstream of the TPC
@@ -996,9 +988,9 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    // ===========================================================================================================================================   
    
    // ### The assumed energy loss between the cryostat and the TPC ###
-   float entryTPCEnergyLoss = 36; //MeV
+   float entryTPCEnergyLoss = 8.6; //MeV
 
-   // ### The assumed mass of the incident particle (here we assume a pion) ###
+   // ### The assumed mass of the incident particle (here we assume a Proton) ###
    float mass = 139.57;
    
    // #################################################
@@ -1028,11 +1020,11 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    // ########################################################################
    // ### Variables for the track we are calculating the cross-section for ###
    // ########################################################################
-   double Piondedx[1000]={0.};
-   double Pionresrange[1000]={0.};
-   double Pionpitchhit[1000]={0.};
-   int nPionSpts = 0;
-   double PionSumEnergy = 0;
+   double Protondedx[1000]={0.};
+   double Protonresrange[1000]={0.};
+   double Protonpitchhit[1000]={0.};
+   int nProtonSpts = 0;
+   double ProtonSumEnergy = 0;
    
    // ### Variables for determining the matching of the end point ###
    float TrackEndX = 999, TrackEndY = 999, TrackEndZ = 999;
@@ -1049,17 +1041,19 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
       TrackEndY = trkendy[nTPCtrk];
       TrackEndZ = trkendz[nTPCtrk];
       
-      hdataPionTrackEndX->Fill(TrackEndX);
-      hdataPionTrackEndY->Fill(TrackEndY);
-      hdataPionTrackEndZ->Fill(TrackEndZ);
+      hdataProtonTrackEndX->Fill(TrackEndX);
+      hdataProtonTrackEndY->Fill(TrackEndY);
+      hdataProtonTrackEndZ->Fill(TrackEndZ);
       
       // ### Recording the start-point of this track ###
       
-      hdataPionTrackStartX->Fill(trkvtxx[nTPCtrk]);
-      hdataPionTrackStartY->Fill(trkvtxy[nTPCtrk]);
-      hdataPionTrackStartZ->Fill(trkvtxz[nTPCtrk]);
+      hdataProtonTrackStartX->Fill(trkvtxx[nTPCtrk]);
+      hdataProtonTrackStartY->Fill(trkvtxy[nTPCtrk]);
+      hdataProtonTrackStartZ->Fill(trkvtxz[nTPCtrk]);
       
-      RecoLength = trklength[nTPCtrk];
+      RecoLength = sqrt( ((trkendz[nTPCtrk]-trkvtxz[nTPCtrk])*(trkendz[nTPCtrk]-trkvtxz[nTPCtrk])) + 
+	                    ((trkendy[nTPCtrk]-trkvtxy[nTPCtrk])*(trkendy[nTPCtrk]-trkvtxy[nTPCtrk])) + 
+	                    ((trkendx[nTPCtrk]-trkvtxx[nTPCtrk])*(trkendx[nTPCtrk]-trkvtxx[nTPCtrk])) );
       
       hRecoLength->Fill(RecoLength);
       
@@ -1071,7 +1065,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
          TrackEndY < -19 || TrackEndZ > 89.0)
 	 {ExitingTrack = true;}
       
-      nPionSpts = 0;
+      nProtonSpts = 0;
       // ###################################################
       // ### Looping over the spacepoints for this track ###
       // ###################################################
@@ -1079,36 +1073,36 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
          {
 	 // ###                 Note: Format for this variable is:             ###
 	 // ### [trk number][plane 0 = induction, 1 = collection][spts number] ###
-         Piondedx[nPionSpts]     = trkdedx[nTPCtrk][1][nspts];// * 0.90;//<----Scaling dEdX
+         Protondedx[nProtonSpts]     = trkdedx[nTPCtrk][1][nspts];
 	 
 	 // ### Putting in a fix in the case that the dE/dX is negative in this step ### 
 	 // ###  then take the point before and the point after and average them
-	 if(Piondedx[nPionSpts] < 0 && nspts < ntrkhits[nTPCtrk] && nspts > 0)
-	    {Piondedx[nPionSpts] = ( (trkdedx[nTPCtrk][1][nspts - 1] + trkdedx[nTPCtrk][1][nspts + 1]) / 2);}
+	 if(Protondedx[nProtonSpts] < 0 && nspts < ntrkhits[nTPCtrk] && nspts > 0)
+	    {Protondedx[nProtonSpts] = ( (trkdedx[nTPCtrk][1][nspts - 1] + trkdedx[nTPCtrk][1][nspts + 1]) / 2);}
 	 
 	 // ### If this didn't fix it, then just put in a flat 2.4 MeV / cm fix ###
-	 if(Piondedx[nPionSpts] < 0)
+	 if(Protondedx[nProtonSpts] < 0)
 	    {
-	    Piondedx[nPionSpts] = 2.4;
+	    Protondedx[nProtonSpts] = 2.4;
 	    continue;
 	    }
 	 
-         Pionresrange[nPionSpts] = trkrr[nTPCtrk][1][nspts];
-         Pionpitchhit[nPionSpts] = trkpitchhit[nTPCtrk][1][nspts];
+         Protonresrange[nProtonSpts] = trkrr[nTPCtrk][1][nspts];
+         Protonpitchhit[nProtonSpts] = trkpitchhit[nTPCtrk][1][nspts];
          
-	 PionSumEnergy = (Piondedx[nPionSpts] * Pionpitchhit[nPionSpts]) + PionSumEnergy;
+	 ProtonSumEnergy = (Protondedx[nProtonSpts] * Protonpitchhit[nProtonSpts]) + ProtonSumEnergy;
 	 
 	 // ### Recording the dE/dX ###
-	 hdataPiondEdX->Fill(Piondedx[nPionSpts], EventWeight);
+	 hdataProtondEdX->Fill(Protondedx[nProtonSpts]);
 	 // ### Recording the residual range ###
-	 hdataPionRR->Fill(Pionresrange[nPionSpts]);
+	 hdataProtonRR->Fill(Protonresrange[nProtonSpts]);
 	 // ### Recording the Pitch ###
-	 hdataPionTrkPitch->Fill(Pionpitchhit[nPionSpts], EventWeight);
+	 hdataProtonTrkPitch->Fill(Protonpitchhit[nProtonSpts]);
 	 
 	 // ### Filling 2d dE/dX vs RR ###
-	 hdataPiondEdXvsRR->Fill(Pionresrange[nPionSpts], Piondedx[nPionSpts]);
+	 hdataProtondEdXvsRR->Fill(Protonresrange[nProtonSpts], Protondedx[nProtonSpts]);
 	 
-	 nPionSpts++;
+	 nProtonSpts++;
          }//<---End nspts loop
       
       
@@ -1164,17 +1158,17 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    // ###########################################################
    // ### Looping over the spacepoints to fill the histograms ###
    // ###########################################################
-   for(size_t npoints = 0; npoints < nPionSpts; npoints++)
+   for(size_t npoints = 0; npoints < nProtonSpts; npoints++)
       {
       // ### Filling the incidient histogram ###
-      hdataPionIncidentKE->Fill(kineticEnergy, EventWeight);
+      hdataProtonIncidentKE->Fill(kineticEnergy, EventWeight);
       
       // ### Filling the interaction histogram for the last spt ###
-      if(npoints == nPionSpts -1 && !ExitingTrack)
-         {fPionInteractions->Fill(kineticEnergy, EventWeight);}
+      if(npoints == nProtonSpts -1 && !ExitingTrack)
+         {fProtonInteractions->Fill(kineticEnergy, EventWeight);}
       
-      //float energyLossInStep = Piondedx[npoints] * Pionresrange[npoints] * RecombinationFactor;
-      float energyLossInStep = Piondedx[npoints] * Pionpitchhit[npoints];
+      //float energyLossInStep = Protondedx[npoints] * Protonresrange[npoints] * RecombinationFactor;
+      float energyLossInStep = Protondedx[npoints] * Protonpitchhit[npoints];
       
       kineticEnergy -= energyLossInStep;
       
@@ -1360,15 +1354,15 @@ hStackDeltaEndX->Add(hDeltaEndXProtonInelastic);
 // ###################################################################
 // #### Looping over the exiting bins to extract the cross-section ###
 // ###################################################################
-for( int iBin = 1; iBin <= fPionInteractions->GetNbinsX(); ++iBin )
+for( int iBin = 1; iBin <= fProtonInteractions->GetNbinsX(); ++iBin )
    {
    
    std::cout<<std::endl;
    // ### If an incident bin is equal to zero then skip that bin ###
-   if( hdataPionIncidentKE->GetBinContent(iBin) == 0 )continue; //Temporary fix to ensure that no Infinities are propagated to pad
+   if( hdataProtonIncidentKE->GetBinContent(iBin) == 0 )continue; //Temporary fix to ensure that no Infinities are propagated to pad
    
    // ### Cross-section = (Exit Bins / Incident Bins) * (1/Density) * (1/slab width) ###
-   float TempCrossSection = (fPionInteractions->GetBinContent(iBin)/hdataPionIncidentKE->GetBinContent(iBin)) * (1/number_density) * (1/slab_width);
+   float TempCrossSection = (fProtonInteractions->GetBinContent(iBin)/hdataProtonIncidentKE->GetBinContent(iBin)) * (1/number_density) * (1/slab_width);
    
    //std::cout<<"Cross-Section before conversion to barns = "<<TempCrossSection<<std::endl;
    
@@ -1378,16 +1372,16 @@ for( int iBin = 1; iBin <= fPionInteractions->GetNbinsX(); ++iBin )
    
    fCrossSection->SetBinContent(iBin,crossSection);
    
-   float numError = pow(fPionInteractions->GetBinContent(iBin),0.5);
-   float num = fPionInteractions->GetBinContent(iBin);
+   float numError = pow(fProtonInteractions->GetBinContent(iBin),0.5);
+   float num = fProtonInteractions->GetBinContent(iBin);
 
    
    if(num == 0){num = 1;}
    float term1 = numError/num;
    //std::cout<<"term1 = "<<term1<<std::endl;
    
-   float denomError = pow(hdataPionIncidentKE->GetBinContent(iBin),0.5);
-   float denom = hdataPionIncidentKE->GetBinContent(iBin);
+   float denomError = pow(hdataProtonIncidentKE->GetBinContent(iBin),0.5);
+   float denom = hdataProtonIncidentKE->GetBinContent(iBin);
    if(denom == 0){denom = 1;}
    float term2 = denomError/denom;
    //std::cout<<"term2 = "<<term2<<std::endl;
@@ -1466,7 +1460,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1516,7 +1510,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1566,7 +1560,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1615,7 +1609,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1666,7 +1660,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1718,7 +1712,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1771,7 +1765,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1825,7 +1819,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1878,7 +1872,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1932,7 +1926,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1983,7 +1977,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2033,7 +2027,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2084,7 +2078,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2134,7 +2128,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2192,7 +2186,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2246,7 +2240,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2298,7 +2292,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2350,7 +2344,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2402,7 +2396,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2454,7 +2448,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2470,22 +2464,22 @@ c21->SetTicks();
 c21->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPiondEdX->SetLineColor(kBlack);
-hdataPiondEdX->SetLineStyle(0);
-hdataPiondEdX->SetLineWidth(3);
-hdataPiondEdX->SetMarkerStyle(8);
-hdataPiondEdX->SetMarkerSize(0.9);
+hdataProtondEdX->SetLineColor(kBlack);
+hdataProtondEdX->SetLineStyle(0);
+hdataProtondEdX->SetLineWidth(3);
+hdataProtondEdX->SetMarkerStyle(8);
+hdataProtondEdX->SetMarkerSize(0.9);
 
 
 // ### Labeling the axis ###
-hdataPiondEdX->GetXaxis()->SetTitle("dE/dX (MeV/cm)");
-hdataPiondEdX->GetXaxis()->CenterTitle();
+hdataProtondEdX->GetXaxis()->SetTitle("dE/dX (MeV/cm)");
+hdataProtondEdX->GetXaxis()->CenterTitle();
 
-hdataPiondEdX->GetYaxis()->SetTitle("");
-hdataPiondEdX->GetYaxis()->CenterTitle();
+hdataProtondEdX->GetYaxis()->SetTitle("");
+hdataProtondEdX->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPiondEdX->Draw();
+hdataProtondEdX->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2508,7 +2502,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2524,21 +2518,21 @@ c22->SetTicks();
 c22->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPionRR->SetLineColor(kBlack);
-hdataPionRR->SetLineStyle(0);
-hdataPionRR->SetLineWidth(3);
-hdataPionRR->SetMarkerStyle(8);
-hdataPionRR->SetMarkerSize(0.9);
+hdataProtonRR->SetLineColor(kBlack);
+hdataProtonRR->SetLineStyle(0);
+hdataProtonRR->SetLineWidth(3);
+hdataProtonRR->SetMarkerStyle(8);
+hdataProtonRR->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-hdataPionRR->GetXaxis()->SetTitle("Residual Range (cm)");
-hdataPionRR->GetXaxis()->CenterTitle();
+hdataProtonRR->GetXaxis()->SetTitle("Residual Range (cm)");
+hdataProtonRR->GetXaxis()->CenterTitle();
 
-hdataPionRR->GetYaxis()->SetTitle("Events / 0.5 cm");
-hdataPionRR->GetYaxis()->CenterTitle();
+hdataProtonRR->GetYaxis()->SetTitle("Events / 0.5 cm");
+hdataProtonRR->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPionRR->Draw();
+hdataProtonRR->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2561,7 +2555,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2576,21 +2570,21 @@ c23->SetTicks();
 c23->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPionTrkPitch->SetLineColor(kBlack);
-hdataPionTrkPitch->SetLineStyle(0);
-hdataPionTrkPitch->SetLineWidth(3);
-hdataPionTrkPitch->SetMarkerStyle(8);
-hdataPionTrkPitch->SetMarkerSize(0.9);
+hdataProtonTrkPitch->SetLineColor(kBlack);
+hdataProtonTrkPitch->SetLineStyle(0);
+hdataProtonTrkPitch->SetLineWidth(3);
+hdataProtonTrkPitch->SetMarkerStyle(8);
+hdataProtonTrkPitch->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-hdataPionTrkPitch->GetXaxis()->SetTitle("Track Pitch (cm)");
-hdataPionTrkPitch->GetXaxis()->CenterTitle();
+hdataProtonTrkPitch->GetXaxis()->SetTitle("Track Pitch (cm)");
+hdataProtonTrkPitch->GetXaxis()->CenterTitle();
 
-hdataPionTrkPitch->GetYaxis()->SetTitle("Events / 0.005 cm");
-hdataPionTrkPitch->GetYaxis()->CenterTitle();
+hdataProtonTrkPitch->GetYaxis()->SetTitle("Events / 0.005 cm");
+hdataProtonTrkPitch->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPionTrkPitch->Draw();
+hdataProtonTrkPitch->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2613,7 +2607,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2628,21 +2622,21 @@ c24->SetTicks();
 c24->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPionIncidentKE->SetLineColor(kBlack);
-hdataPionIncidentKE->SetLineStyle(0);
-hdataPionIncidentKE->SetLineWidth(3);
-hdataPionIncidentKE->SetMarkerStyle(8);
-hdataPionIncidentKE->SetMarkerSize(0.9);
+hdataProtonIncidentKE->SetLineColor(kBlack);
+hdataProtonIncidentKE->SetLineStyle(0);
+hdataProtonIncidentKE->SetLineWidth(3);
+hdataProtonIncidentKE->SetMarkerStyle(8);
+hdataProtonIncidentKE->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-hdataPionIncidentKE->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
-hdataPionIncidentKE->GetXaxis()->CenterTitle();
+hdataProtonIncidentKE->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
+hdataProtonIncidentKE->GetXaxis()->CenterTitle();
 
-hdataPionIncidentKE->GetYaxis()->SetTitle("Events / 50 MeV");
-hdataPionIncidentKE->GetYaxis()->CenterTitle();
+hdataProtonIncidentKE->GetYaxis()->SetTitle("Events / 50 MeV");
+hdataProtonIncidentKE->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPionIncidentKE->Draw();
+hdataProtonIncidentKE->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2665,7 +2659,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2680,21 +2674,21 @@ c25->SetTicks();
 c25->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-fPionInteractions->SetLineColor(kBlack);
-fPionInteractions->SetLineStyle(0);
-fPionInteractions->SetLineWidth(3);
-fPionInteractions->SetMarkerStyle(8);
-fPionInteractions->SetMarkerSize(0.9);
+fProtonInteractions->SetLineColor(kBlack);
+fProtonInteractions->SetLineStyle(0);
+fProtonInteractions->SetLineWidth(3);
+fProtonInteractions->SetMarkerStyle(8);
+fProtonInteractions->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-fPionInteractions->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
-fPionInteractions->GetXaxis()->CenterTitle();
+fProtonInteractions->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
+fProtonInteractions->GetXaxis()->CenterTitle();
 
-fPionInteractions->GetYaxis()->SetTitle("Events / 50 MeV");
-fPionInteractions->GetYaxis()->CenterTitle();
+fProtonInteractions->GetYaxis()->SetTitle("Events / 50 MeV");
+fProtonInteractions->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-fPionInteractions->Draw();
+fProtonInteractions->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2717,7 +2711,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2770,7 +2764,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2785,21 +2779,21 @@ c27->SetTicks();
 c27->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPiondEdXvsRR->SetLineColor(kBlack);
-hdataPiondEdXvsRR->SetLineStyle(0);
-hdataPiondEdXvsRR->SetLineWidth(3);
-hdataPiondEdXvsRR->SetMarkerStyle(8);
-hdataPiondEdXvsRR->SetMarkerSize(0.9);
+hdataProtondEdXvsRR->SetLineColor(kBlack);
+hdataProtondEdXvsRR->SetLineStyle(0);
+hdataProtondEdXvsRR->SetLineWidth(3);
+hdataProtondEdXvsRR->SetMarkerStyle(8);
+hdataProtondEdXvsRR->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-hdataPiondEdXvsRR->GetXaxis()->SetTitle("Residual Range (cm)");
-hdataPiondEdXvsRR->GetXaxis()->CenterTitle();
+hdataProtondEdXvsRR->GetXaxis()->SetTitle("Residual Range (cm)");
+hdataProtondEdXvsRR->GetXaxis()->CenterTitle();
 
-hdataPiondEdXvsRR->GetYaxis()->SetTitle("dE/dX (MeV/cm)");
-hdataPiondEdXvsRR->GetYaxis()->CenterTitle();
+hdataProtondEdXvsRR->GetYaxis()->SetTitle("dE/dX (MeV/cm)");
+hdataProtondEdXvsRR->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPiondEdXvsRR->Draw("colz");
+hdataProtondEdXvsRR->Draw("colz");
 
 // ############################
 // # Setting the Latex Header #
@@ -2822,7 +2816,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2874,7 +2868,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2926,7 +2920,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2978,7 +2972,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -3025,7 +3019,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 leg->AddEntry(hDeltaEndZInElastic, "InElastic");
 leg->AddEntry(hDeltaEndZNeutronInElastic, "Neutron InElastic");
 leg->AddEntry(hDeltaEndZHadElastic, "Hadronic Elastic");
@@ -3080,7 +3074,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 leg->AddEntry(hDeltaEndYInElastic, "InElastic");
 leg->AddEntry(hDeltaEndYNeutronInElastic, "Neutron InElastic");
 leg->AddEntry(hDeltaEndYHadElastic, "Hadronic Elastic");
@@ -3135,7 +3129,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 leg->AddEntry(hDeltaEndXInElastic, "InElastic");
 leg->AddEntry(hDeltaEndXNeutronInElastic, "Neutron InElastic");
 leg->AddEntry(hDeltaEndXHadElastic, "Hadronic Elastic");
@@ -3198,7 +3192,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 leg->Draw();
 
 
@@ -3252,7 +3246,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 leg->Draw();
 
 
@@ -3305,7 +3299,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("Proton MC");
 leg->Draw();
 
 // ---------------------------------------------------------------------------------------------------
@@ -3314,7 +3308,10 @@ leg->Draw();
 // ===========================================================================================
 // ============================  Writing out histograms to ROOT File =========================
 // ===========================================================================================
-
+// ###############################################
+// ### Creating a file to output my histograms ###
+// ###############################################
+TFile myfile("ProtonMCXSection_weighted_histos.root","RECREATE");
 
 // ### Reco Info ###
 hdataUpstreamZPos->Write();
@@ -3341,13 +3338,13 @@ hDeltaX->Write();
 hDeltaY->Write();
 hDeltaZ->Write();  
 hMCInitalKE->Write(); 
-hdataPiondEdX->Write();
-hdataPionRR->Write();
-hdataPionTrkPitch->Write();
-hdataPionIncidentKE->Write();
-fPionInteractions->Write();
+hdataProtondEdX->Write();
+hdataProtonRR->Write();
+hdataProtonTrkPitch->Write();
+hdataProtonIncidentKE->Write();
+fProtonInteractions->Write();
 fCrossSection->Write();
-hdataPiondEdXvsRR->Write();
+hdataProtondEdXvsRR->Write();
 hDeltaEndX->Write();
 hDeltaEndY->Write();
 hDeltaEndZ->Write();
@@ -3394,12 +3391,12 @@ hStackDeltaEndX->Write();
 
 hMCELossUpstream->Write();
 
-hdataPionTrackEndX->Write();
-hdataPionTrackEndY->Write();
-hdataPionTrackEndZ->Write();
-hdataPionTrackStartX->Write();
-hdataPionTrackStartY->Write();
-hdataPionTrackStartZ->Write();
+hdataProtonTrackEndX->Write();
+hdataProtonTrackEndY->Write();
+hdataProtonTrackEndZ->Write();
+hdataProtonTrackStartX->Write();
+hdataProtonTrackStartY->Write();
+hdataProtonTrackStartZ->Write();
 
 }//<---End Loop Function
 
@@ -3413,7 +3410,7 @@ hdataPionTrackStartZ->Write();
 // 				### Function for plotting the Low Z track location ###
 //------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------
-void Pion::LowZCut()
+void Proton::LowZCut()
 {
 
 // ################################################################
