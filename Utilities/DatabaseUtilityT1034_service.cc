@@ -27,13 +27,13 @@ namespace util {
   // constructor
   DatabaseUtilityT1034::DatabaseUtilityT1034(fhicl::ParameterSet   const& pset,
                                              art::ActivityRegistry      & reg)
-  : fDBHost                 ( getenv("LARIATDBHOST")                         )
-  , fDBPort                 ( getenv("LARIATDBPORT")                         )
-  , fDBName                 ( getenv("LARIATDBNAME")                         )
-  , fDBUser                 ( getenv("LARIATDBUSER")                         )
-  , fDBPasswordFile         ( getenv("DB_PWD_FILE")                          )
-  , fDBReconnectWaitTime    ( std::atoi(getenv("LARIATDBRECONNECTWAITTIME")) )
-  , fDBNumberConnectAttempts( std::atoi(getenv("LARIATCONNECTATTEMPTS"))     )
+    : fDBHost                 ( "" )
+    , fDBPort                 ( "" )
+    , fDBName                 ( "" )
+    , fDBUser                 ( "")
+    , fDBPasswordFile         ( "" )
+    , fDBReconnectWaitTime    ( 0 )
+    , fDBNumberConnectAttempts( 0 )
   {
 
     // read in parameters from .fcl files
@@ -48,6 +48,28 @@ namespace util {
   //-----------------------------------------------------------------------
   void DatabaseUtilityT1034::reconfigure(fhicl::ParameterSet const& pset) {
 
+    char* buff = getenv("LARIATDBHOST");
+    if (buff)
+      fDBHost = buff;
+    buff = getenv("LARIATDBPORT");
+    if (buff)
+      fDBPort = buff;
+    buff = getenv("LARIATDBNAME");
+    if (buff)
+      fDBName = buff;
+    buff = getenv("LARIATDBUSER");
+    if (buff)
+      fDBUser = buff;
+    buff = getenv("DB_PWD_FILE");
+    if (buff)
+      fDBPasswordFile = buff;
+    buff = getenv("LARIATDBRECONNECTWAITTIME");
+    if (buff)
+      fDBReconnectWaitTime = std::atoi(buff);
+    buff = getenv("LARIATCONNECTATTEMPTS");
+    if (buff)
+      fDBNumberConnectAttempts = std::atoi(buff);
+    
     // get parameters from .fcl files
     fConfigTableName =              pset.get< std::string >("ConfigTableName", "lariat_xml_database");
     fIFBeamTableName =              pset.get< std::string >("IFBeamTableName", "lariat_ifbeam_database");
