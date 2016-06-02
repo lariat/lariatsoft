@@ -4,7 +4,9 @@ include_directories( $ENV{LARCORE_INC}    )
 include_directories( $ENV{LARSIM_INC}     )
 include_directories( $ENV{POSTGRESQL_INC} )
 
-simple_plugin(SimWireT1034 "module"
+
+simple_plugin(          
+                        SimWireT1034 "module"
 			larcore_Geometry
                         larcore_Geometry_Geometry_service
                         larsim_Simulation
