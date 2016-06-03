@@ -11,7 +11,7 @@
 #include "art/Framework/Core/FileBlock.h"
 #include "art/Framework/Core/InputSourceMacros.h"
 #include "art/Framework/Core/ProductRegistryHelper.h"
-#include "art/Framework/IO/Root/rootNames.h"
+#include "canvas/Persistency/Provenance/rootNames.h"
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/IO/Sources/SourceHelper.h"
 #include "art/Framework/IO/Sources/SourceTraits.h"
@@ -19,11 +19,11 @@
 #include "art/Framework/Principal/EventPrincipal.h"
 #include "art/Framework/Principal/RunPrincipal.h"
 #include "art/Framework/Principal/SubRunPrincipal.h"
-#include "art/Persistency/Provenance/EventID.h"
+#include "canvas/Persistency/Provenance/EventID.h"
 #include "art/Persistency/Provenance/MasterProductRegistry.h"
-#include "art/Persistency/Provenance/RunID.h"
-#include "art/Persistency/Provenance/SubRunID.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Persistency/Provenance/RunID.h"
+#include "canvas/Persistency/Provenance/SubRunID.h"
+#include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // artdaq includes
@@ -32,12 +32,12 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/RawData/AuxDetDigit.h"
-#include "lardata/RawData/OpDetPulse.h"
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RawData/TriggerData.h"
-#include "larcore/SimpleTypesAndConstants/RawTypes.h"
-#include "larcore/SummaryData/RunData.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
+#include "lardataobj/RawData/OpDetPulse.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/TriggerData.h"
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
+#include "larcoreobj/SummaryData/RunData.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
 // LArIATFragment includes

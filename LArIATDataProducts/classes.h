@@ -16,20 +16,20 @@
 //    plans to fix it soon.  We can always work around it 
 //    by putting the string inside another object.
 
-#include "art/Persistency/Common/Wrapper.h"
-#include "art/Persistency/Common/Assns.h"
-#include "art/Persistency/Common/Ptr.h"
-#include "art/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/Wrapper.h"
+#include "canvas/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/PtrVector.h"
 
 
 
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RawData/OpDetPulse.h"
-#include "lardata/RawData/AuxDetDigit.h"
-#include "lardata/RawData/BeamInfo.h"
-#include "lardata/RawData/ExternalTrigger.h"
-#include "lardata/RawData/TriggerData.h"
-#include "lardata/RawData/OpDetWaveform.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/OpDetPulse.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
+#include "lardataobj/RawData/BeamInfo.h"
+#include "lardataobj/RawData/ExternalTrigger.h"
+#include "lardataobj/RawData/TriggerData.h"
+#include "lardataobj/RawData/OpDetWaveform.h"
 #include "LArIATDataProducts/AGCounter.h"
 #include "LArIATDataProducts/AuxDetParticleID.h"
 #include "LArIATDataProducts/ConditionsSummary.h"

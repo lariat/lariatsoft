@@ -11,8 +11,8 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/AuxDetGeo.h"
 //add AuxDetGeoSensitive here when relevant
-#include "larcore/SimpleTypesAndConstants/geo_types.h"
-#include "lardata/RawData/AuxDetDigit.h"
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
 
 //lariatsoft includes
 #include "LArIATDataProducts/WCTrack.h"
@@ -25,7 +25,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Core/FindManyP.h"
+#include "canvas/Persistency/Common/FindManyP.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "cetlib/exception.h"

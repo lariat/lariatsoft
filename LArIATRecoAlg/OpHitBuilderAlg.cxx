@@ -21,7 +21,7 @@
 
 // LArSoft Includes
 #include "lardata/Utilities/AssociationUtil.h"
-#include "lardata/RawData/TriggerData.h"
+#include "lardataobj/RawData/TriggerData.h"
 
 //LAriatSoft Includes
 #include "LArIATRecoAlg/OpHitBuilderAlg.h"

@@ -24,7 +24,7 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
-set(CMAKE_MODULE_PATH $ENV{ART_DIR}/Modules
+set(CMAKE_MODULE_PATH $ENV{CANVAS_DIR}/Modules
 		      $ENV{CETBUILDTOOLS_DIR}/Modules
 		      ${CMAKE_MODULE_PATH})
 
@@ -46,6 +46,7 @@ cet_report_compiler_flags()
 
 # these are the larsoft products 
 find_ups_product( larsoft         v03_04_05 )
+find_ups_product( larcoreobj )
 find_ups_product( larcore         v03_03_01 )
 find_ups_product( lardata         v03_03_01 )
 find_ups_product( larevt          v03_02_04 )
@@ -54,6 +55,7 @@ find_ups_product( larreco         v03_03_01 )
 find_ups_product( larana          v03_03_01 )
 find_ups_product( larpandora      v03_03_03 )
 find_ups_product( lareventdisplay v03_02_04 )
+find_ups_product( cetbuildtools )
 
 # art related products
 find_ups_product( art             v1_12_02 )

@@ -20,14 +20,14 @@
 
 // ART Framework Includes
 #include "art/Framework/Principal/Event.h"
-#include "art/Persistency/Common/PtrVector.h"
-#include "art/Persistency/Common/Assns.h"
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "canvas/Persistency/Common/Assns.h"
 
 // LArSoft Includes
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RawData/AuxDetDigit.h"
-#include "lardata/RawData/OpDetPulse.h"
-#include "lardata/RawData/TriggerData.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
+#include "lardataobj/RawData/OpDetPulse.h"
+#include "lardataobj/RawData/TriggerData.h"
 
 namespace rdu{
 

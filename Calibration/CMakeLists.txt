@@ -2,9 +2,9 @@
 simple_plugin(CalWireT1034 "module"
 			        lardata_Utilities
               larevt_Filters
-			        lardata_RawData
+			        lardataobj_RawData
               RawDataUtilities
-              lardata_RecoBase
+              lardataobj_RecoBase
               lardata_RecoBaseArt
 			        RawDataUtilities
 		          SignalShapingServiceT1034_service
@@ -13,9 +13,9 @@ simple_plugin(CalWireT1034 "module"
 			        ${ART_FRAMEWORK_SERVICES_REGISTRY}
 			        ${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			        ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			        ${ART_PERSISTENCY_COMMON}
-			        ${ART_PERSISTENCY_PROVENANCE}
-			        ${ART_UTILITIES}
+			        art_Persistency_Common canvas_Persistency_Common
+			        art_Persistency_Provenance canvas_Persistency_Provenance
+			        art_Utilities canvas_Utilities
 			        ${MF_MESSAGELOGGER}
 			        ${MF_UTILITIES}
               ${FHICLCPP}
@@ -30,8 +30,8 @@ simple_plugin(CalWireT1034 "module"
 simple_plugin(CalWireROIT1034 "module"
 			        lardata_Utilities
               larevt_Filters
-			        lardata_RawData
-              lardata_RecoBase
+			        lardataobj_RawData
+              lardataobj_RecoBase
               lardata_RecoBaseArt
 			        RawDataUtilities
 		          SignalShapingServiceT1034_service
@@ -40,9 +40,9 @@ simple_plugin(CalWireROIT1034 "module"
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
 			        ${ART_FRAMEWORK_SERVICES_OPTIONAL}
 			        ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-			        ${ART_PERSISTENCY_COMMON}
-			        ${ART_PERSISTENCY_PROVENANCE}
-			        ${ART_UTILITIES}
+			        art_Persistency_Common canvas_Persistency_Common
+			        art_Persistency_Provenance canvas_Persistency_Provenance
+			        art_Utilities canvas_Utilities
 			        ${MF_MESSAGELOGGER}
 			        ${MF_UTILITIES}
               ${FHICLCPP}
