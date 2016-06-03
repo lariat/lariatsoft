@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v06_00_00_rc3
-defaultqual	e9
+parent	lariatsoft v06_00_00_rc4
+defaultqual	e10
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
 # to the search path in development environment
@@ -10,20 +10,20 @@ fcldir product_dir
 # dependencies on external packages
 product         version
 
-larsoft		      v06_00_00_rc3
+larsoft		      v06_00_00_rc4
 LariatFilters   v01_02
-lariatfragments v01_07_04
-artdaq_core     v1_04_29
+lariatfragments v06_00_00_rc4
+artdaq_core     v1_04_31
 LariatBeamFiles v01_00		-	optional
-lariatutil	    v06_00_00_rc3 -	optional
-cetbuildtools   v5_02_02	-	only_for_build
+lariatutil	    v06_00_00_rc4 -	optional
+cetbuildtools   v5_02_04	-	only_for_build
 end_product_list
 
-# e9  - with gcc 4.9.2 and -std=c++11
+# e10  - with gcc 4.9.2 and -std=c++11
 qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	    LariatBeamFiles	lariatutil	notes
-e9:debug	e9:debug	-nq-		      e9:debug	       e9:nu:s31:debug  -nq-		        e9:debug
-e9:opt		e9:opt	  -nq-		      e9:opt		       e9:nu:s31:opt	  -nq-		        e9:opt
-e9:prof		e9:prof	  -nq-		      e9:prof		       e9:nu:s31:prof   -nq-		        e9:prof
+e10:debug	e10:debug -nq-		e10:debug	 e10:nu:s33:debug  -nq-		        e10:debug
+e10:opt		e10:opt	  -nq-		e10:opt		 e10:nu:s33:opt	   -nq-		        e10:opt
+e10:prof	e10:prof  -nq-		e10:prof	 e10:nu:s33:prof   -nq-		        e10:prof
 
 end_qualifier_list
 
@@ -34,7 +34,7 @@ table_fragment_begin
     pathPrepend(FHICL_FILE_PATH,      .)
     envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
     envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
-    envSet(ART_WORKBOOK_QUAL,         "s31:e9")
+    envSet(ART_WORKBOOK_QUAL,         "s33:e10")
     envSet(LARIATDBNAME,              lariat_prd)
     envSet(LARIATDBPORT,              5443)
     envSet(LARIATDBHOST,              ifdbprod2.fnal.gov)
