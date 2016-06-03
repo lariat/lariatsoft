@@ -1607,7 +1607,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
   fTree->Branch("G4Process",&G4Process);//,"G4Process[geant_list_size]");
   fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");  
-  fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/D");
+  fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/I");
   fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][1000]/D");
   fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][1000]/D");
   fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][1000]/D");
