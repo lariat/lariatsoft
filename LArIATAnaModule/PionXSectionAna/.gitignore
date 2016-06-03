@@ -1,0 +1,4 @@
+*.root
+ROOTFILES/*.root
+PionMCAna/*.root
+ClosedBoxData/*.root

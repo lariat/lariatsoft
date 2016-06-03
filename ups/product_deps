@@ -42,6 +42,13 @@ table_fragment_begin
     envSet(LARIATDBRECONNECTWAITTIME, 10)
     envSet(LARIATCONNECTATTEMPTS,     3)
     envSet(DB_PWD_FILE,               ${UPS_PROD_DIR}/pwd/lardata_Utilities/lariat_prd_passwd)
+    envSet(DBIHOST,		      ifdbprod.fnal.gov)
+    envSet(DBIWSURL,		      http://dbdata0vm.fnal.gov:8205/lariat_con_prod/app/)
+    envSet(DBINAME,		      lariatcalib_prod)
+    envSet(DBIWSURLPUT,		      http://dbdata0vm.fnal.gov:8205/lariat_con_prod/app/)
+    envSet(DBIPORT,		      5447)
+    envSet(DBIWSURLINT,		      http://dbdata0vm.fnal.gov:8205/lariat_con_prod/app/)
+
 table_fragment_end
 
 
