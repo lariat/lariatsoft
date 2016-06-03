@@ -91,7 +91,7 @@ const int kMaxPrimaryPart = 10;	    //maximum number of true primary particles
 const int kMaxPrimaries  = 20000;    //maximum number of true particles tracked
 const int kMaxShower     = 100;      //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000;     //maximum number of MCShower Object
-const int kMaxTruePrimaryPts = 1000; //maximum number of points in the true primary trajectory 
+const int kMaxTruePrimaryPts = 5000; //maximum number of points in the true primary trajectory 
 
 namespace lariat 
 {
@@ -285,6 +285,8 @@ private:
 	  // 8 = CoulombScat
 	  // 9 = muMinusCaptureAtRest
 	  //10 = ProtonInelastic
+	  //11 = KaonPlusInelastic
+	  //12 = hBertiniCaptureAtRest
   int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
   int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
   int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
@@ -699,9 +701,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
       // ### Looping over all the Geant4 particles from the BackTracker ###
       for(size_t p = 0; p < plist.size(); ++p) 
-	{
-	// ### Filling the vector with MC Particles ###
-	geant_part.push_back(plist.Particle(p)); 
+		{
+	  		// ### Filling the vector with MC Particles ###
+	  		geant_part.push_back(plist.Particle(p)); 
 		}
 	
       //std::cout<<"No of geant part= "<<geant_part.size()<<std::endl;
@@ -740,6 +742,12 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Setting a string for ProtonInelastic ###
       std::string ProtonInelastic("protonInelastic");
       
+      // ### Setting a string for Kaon Inelastic ###
+      std::string KaonPlusInelastic("kaon+Inelastic");
+      
+      // ### Setting a string for BertiniCaptureAtRest
+      std::string hBertiniCaptureAtRest("hBertiniCaptureAtRest");
+      
       
       int primary=0;
       int geant_particle=0;
@@ -748,12 +756,12 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Determine the number of primary particles from geant ###
       // ############################################################
       for( unsigned int i = 0; i < geant_part.size(); ++i )
-	{
-	geant_particle++;
-	// ### Counting the number of primary particles ###
-	if(geant_part[i]->Process()==pri)
-	   { primary++;}
-        }//<---End i loop
+		{
+	  		geant_particle++;
+	  		// ### Counting the number of primary particles ###
+	  		if(geant_part[i]->Process()==pri)
+	    		{ primary++;}
+		}//<---End i loop
 	 
 	
       // ### Saving the number of primary particles ###
@@ -762,21 +770,21 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       geant_list_size=geant_particle;
        
       // ### Looping over all the Geant4 particles ###
-      int iPrim = 0;
+		int iPrim = 0;
       for( unsigned int i = 0; i < geant_part.size(); ++i )
          {
-	 
-	 // ### If this particle is primary, set = 1 ###
+   
+      	 // ### If this particle is primary, set = 1 ###
 	 if(geant_part[i]->Process()==pri)
 	    {process_primary[i]=1;}
          // ### If this particle is not-primary, set = 0 ###
 	 else
 	    {process_primary[i]=0;}
           
-         // ### Recording the process as a integer ###
+	 // ### Recording the process as a integer ###
 	 // 0 = primary
 	 // 1 = PionMinusInelastic
-	 // 2 = NeutronInelastic
+   	 // 2 = NeutronInelastic
 	 // 3 = hadElastic
 	 // 4 = nCapture
 	 // 5 = CHIPSNuclearCaptureAtRest
@@ -785,31 +793,48 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 // 8 = CoulombScat
 	 // 9 = muMinusCaptureAtRest
 	 //10 = ProtonInelastic
-	 	 
-	 if(geant_part[i]->Process() == pri) {Process[i] = 0;}
-	 
-	 if(geant_part[i]->Process() == PionMinusInelastic) {Process[i] = 1;}
-	 
-	 if(geant_part[i]->Process() == NeutronInelastic) {Process[i] = 2;}
-	     
-	 if(geant_part[i]->Process() == hadElastic) {Process[i] = 3;}
 	  
-	 if(geant_part[i]->Process() == nCapture) {Process[i] = 4;}
-	 
-	 if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest) {Process[i] = 5;}
-	 
-	 if(geant_part[i]->Process() == Decay) {Process[i] = 6;}
-	 
-	 if(geant_part[i]->Process() == KaonZeroLInelastic) {Process[i] = 7;}
-	 
-	 if(geant_part[i]->Process() == CoulombScat) {Process[i] = 8;}
-	 
-	 if(geant_part[i]->Process() == muMinusCaptureAtRest) {Process[i] = 9;}
-	 
-	 if(geant_part[i]->Process() == ProtonInelastic) {Process[i] = 10;}
-	 
-	 //std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;
-	 
+	 if(geant_part[i]->Process() == pri)
+	    {Process[i] = 0;}
+	     
+	 if(geant_part[i]->Process() == PionMinusInelastic)
+	    {Process[i] = 1;}
+	     
+	 if(geant_part[i]->Process() == NeutronInelastic)
+	    {Process[i] = 2;}
+	     
+	 if(geant_part[i]->Process() == hadElastic)
+	    {Process[i] = 3;}
+	  
+	 if(geant_part[i]->Process() == nCapture)
+	    {Process[i] = 4;}
+	     
+	 if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
+	    {Process[i] = 5;}
+	  
+	 if(geant_part[i]->Process() == Decay)
+	    {Process[i] = 6;}
+	  
+	 if(geant_part[i]->Process() == KaonZeroLInelastic)
+	    {Process[i] = 7;}
+	     
+	 if(geant_part[i]->Process() == CoulombScat)
+	    {Process[i] = 8;}
+	     
+	 if(geant_part[i]->Process() == muMinusCaptureAtRest)
+	    {Process[i] = 9;}
+	     
+	 if(geant_part[i]->Process() == ProtonInelastic)
+	    {Process[i] = 10;}
+			
+	 if(geant_part[i]->Process() == KaonPlusInelastic)
+	    {Process[i] = 11;}
+			
+	 if(geant_part[i]->Process() == hBertiniCaptureAtRest)
+	    {Process[i] = 12;}
+	     
+	 //std::cout<<"Process = "<<geant_part[i]->Process()<<std::endl;		       
+
 	 // ### Saving the particles mother TrackID ###
 	 Mother[i]=geant_part[i]->Mother();
 	 // ### Saving the particles TrackID ###
@@ -819,7 +844,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 // ### Saving the particles start and end Energy ###
 	 Eng[i]=geant_part[i]->E();
 	 EndEng[i]=geant_part[i]->EndE();
-	 
+	  
 	 // ### Saving the start and end Px, Py, Pz info ###
 	 Px[i]=geant_part[i]->Px();
 	 Py[i]=geant_part[i]->Py();
@@ -827,7 +852,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 EndPx[i]=geant_part[i]->EndPx();
 	 EndPy[i]=geant_part[i]->EndPy();
 	 EndPz[i]=geant_part[i]->EndPz();
-	 
+	  
 	 // ### Saving the Start and End Point for this particle ###
 	 StartPointx[i]=geant_part[i]->Vx();
 	 StartPointy[i]=geant_part[i]->Vy();
@@ -835,39 +860,34 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 EndPointx[i]=geant_part[i]->EndPosition()[0];
 	 EndPointy[i]=geant_part[i]->EndPosition()[1];
 	 EndPointz[i]=geant_part[i]->EndPosition()[2];
-	 
-	 // ### Saving the processes for this particle ###
-	  //std::cout<<"finding proc"<<std::endl;
-	  G4Process.push_back( geant_part[i]->Process() );
-	  G4FinalProcess.push_back( geant_part[i]->EndProcess() );
-	  
-	  // ### Saving the number of Daughters for this particle ###
-	  NumberDaughters[i]=geant_part[i]->NumberDaughters();
-	  
-	  // ### Save intermediary information for the primary track
-	  if(geant_part[i]->Process()==pri)
-	     {
-	     //std::cout<<i<<" "<<geant_part[i]->NumberTrajectoryPoints()<<std::endl;
-	     NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();
-	     std::cout<<"NTrTrajPts[i] = "<<NTrTrajPts[i]<<std::endl;
-	     simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
-	      
-	     int iPrimPt = 0;
-	     for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj)
-	         {
-		 MidPosX[iPrim][iPrimPt] = truetraj.X(iPrimPt);
-		 MidPosY[iPrim][iPrimPt] = truetraj.Y(iPrimPt);
-		 MidPosZ[iPrim][iPrimPt] = truetraj.Z(iPrimPt);
-		 MidPx[iPrim][iPrimPt] = truetraj.Px(iPrimPt);
-		 MidPy[iPrim][iPrimPt] = truetraj.Py(iPrimPt); 
-		 MidPz[iPrim][iPrimPt] = truetraj.Pz(iPrimPt);
-		 std::cout<<"MidPx[iPrim][iPrimPt] = "<<MidPx[iPrim][iPrimPt]<<std::endl;
-		 iPrimPt++;
-		 }//<--End loop on true trajectory points
-             iPrim++;
-	     }//<--End if primary
 
-	}//<--End loop on geant particles
+	 // ### Saving the processes for this particle ###
+	 //std::cout<<"finding proc"<<std::endl;
+	 G4Process.push_back( geant_part[i]->Process() );
+	 G4FinalProcess.push_back( geant_part[i]->EndProcess() );
+ 	  
+	 // ### Saving the number of Daughters for this particle ###
+	 NumberDaughters[i]=geant_part[i]->NumberDaughters();
+
+	 // ### Save intermediary information for the primary track
+	 if(geant_part[i]->Process()==pri){
+	 NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();
+	 simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
+				
+	 int iPrimPt = 0;	
+	 for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj)
+	    {
+	    MidPosX[iPrim][iPrimPt] = truetraj.X(iPrimPt);
+	    MidPosY[iPrim][iPrimPt] = truetraj.Y(iPrimPt);
+	    MidPosZ[iPrim][iPrimPt] = truetraj.Z(iPrimPt);
+	    MidPx[iPrim][iPrimPt] = truetraj.Px(iPrimPt);
+	    MidPy[iPrim][iPrimPt] = truetraj.Py(iPrimPt);
+	    MidPz[iPrim][iPrimPt] = truetraj.Pz(iPrimPt);
+	    iPrimPt++;
+	    }//<--End loop on true trajectory points
+	 iPrim++;
+	}//<--End if primary
+     }//<--End loop on geant particles
 	  
  }//<---End checking if this is MC 
    
@@ -1600,12 +1620,12 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("G4Process",&G4Process);//,"G4Process[geant_list_size]");
   fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");  
   fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/I");
-  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][1000]/D");
-  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][1000]/D");
-  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][1000]/D");
-  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][1000]/D");
-  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][1000]/D");
-  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][1000]/D");
+  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][5000]/D");
+  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][5000]/D");
+  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][5000]/D");
+  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][5000]/D");
+  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][5000]/D");
+  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][5000]/D");
 
   fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
   fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
