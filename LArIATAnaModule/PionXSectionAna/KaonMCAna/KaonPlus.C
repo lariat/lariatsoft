@@ -1,5 +1,5 @@
-#define Pion_cxx
-#include "Pion.h"
+#define KaonPlus_cxx
+#include "KaonPlus.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
@@ -202,19 +202,15 @@ THStack *hStackDeltaEndY = new THStack("hStackDeltaEndY", "#Delta Y_{f}");
 // ### Delta X Stacked  ###
 THStack *hStackDeltaEndX = new THStack("hStackDeltaEndX", "#Delta X_{f}");
 
-//-----------------------------------------------------------------------------------------------------------------------------------------------
-
-
-
-void Pion::Loop()
+void KaonPlus::Loop()
 {
 //   In a ROOT session, you can do:
-//      Root > .L Pion.C
-//      Root > Pion t
-//      Root > t.GetEntry(12); // Fill t data members with entry number 12
-//      Root > t.Show();       // Show values of entry 12
-//      Root > t.Show(16);     // Read and show values of entry 16
-//      Root > t.Loop();       // Loop on all entries
+//      root> .L KaonPlus.C
+//      root> KaonPlus t
+//      root> t.GetEntry(12); // Fill t data members with entry number 12
+//      root> t.Show();       // Show values of entry 12
+//      root> t.Show(16);     // Read and show values of entry 16
+//      root> t.Loop();       // Loop on all entries
 //
 
 //     This is the loop skeleton where:
@@ -231,7 +227,6 @@ void Pion::Loop()
 // METHOD2: replace line
 //    fChain->GetEntry(jentry);       //read all branches
 //by  b_branchname->GetEntry(ientry); //read only this branch
-
 // -------------------------------------------------------------------------------------------------------------------
 // -------------------------------------------------------------------------------------------------------------------
 // 					  Putting Flexible Cuts here
@@ -325,12 +320,6 @@ float EventWeight = 1.0;
 bool UseEventWeight = true;
 
 
-// ###############################################
-// ### Creating a file to output my histograms ###
-// ###############################################
-TFile myfile("PionMCXSection_weighted_histos_nonScaleddEdX.root","RECREATE");
-
-
 
 
 // ----------------------------------------------------------------
@@ -365,8 +354,8 @@ int counter = 0;
 // ###############################
 // ### Looping over all Events ###
 // ###############################
-for (Long64_t jentry=0; jentry<nentries;jentry++)
-//for (Long64_t jentry=0; jentry<5000;jentry++)
+//for (Long64_t jentry=0; jentry<nentries;jentry++)
+for (Long64_t jentry=0; jentry<5000;jentry++)
    {
    Long64_t ientry = LoadTree(jentry);
    if (ientry < 0) break;
@@ -509,7 +498,6 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	 
 	 nG4TrajPoints = 0;
 	 
-	 std::cout<<"NTrTrajPts[iG4] = "<<NTrTrajPts[iG4]<<std::endl;
 	 // ### Recording the primary particles trajectory points ###
 	 for(int iG4Tr = 0; iG4Tr < NTrTrajPts[iG4]; iG4Tr++)
 	    {
@@ -597,7 +585,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	       
 	       DifferenceInEnergy +=  Energy_Point1 - Energy_Point2;
 	       
-	       std::cout<<"z = "<<g4Primary_TrueTrjZ[npri][ntrj]<<", DifferenceInEnergy = "<<DifferenceInEnergy<<std::endl;
+	       //std::cout<<"z = "<<g4Primary_TrueTrjZ[npri][ntrj]<<", DifferenceInEnergy = "<<DifferenceInEnergy<<std::endl;
 	       
 	       
 	       }//<---End only look at points which are upstream of the TPC
@@ -997,7 +985,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    // ===========================================================================================================================================   
    
    // ### The assumed energy loss between the cryostat and the TPC ###
-   float entryTPCEnergyLoss = 36; //MeV
+   float entryTPCEnergyLoss = 8.6; //MeV
 
    // ### The assumed mass of the incident particle (here we assume a pion) ###
    float mass = 139.57;
@@ -1060,7 +1048,9 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
       hdataPionTrackStartY->Fill(trkvtxy[nTPCtrk]);
       hdataPionTrackStartZ->Fill(trkvtxz[nTPCtrk]);
       
-      RecoLength = trklength[nTPCtrk];
+      RecoLength = sqrt( ((trkendz[nTPCtrk]-trkvtxz[nTPCtrk])*(trkendz[nTPCtrk]-trkvtxz[nTPCtrk])) + 
+	                    ((trkendy[nTPCtrk]-trkvtxy[nTPCtrk])*(trkendy[nTPCtrk]-trkvtxy[nTPCtrk])) + 
+	                    ((trkendx[nTPCtrk]-trkvtxx[nTPCtrk])*(trkendx[nTPCtrk]-trkvtxx[nTPCtrk])) );
       
       hRecoLength->Fill(RecoLength);
       
@@ -1080,7 +1070,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
          {
 	 // ###                 Note: Format for this variable is:             ###
 	 // ### [trk number][plane 0 = induction, 1 = collection][spts number] ###
-         Piondedx[nPionSpts]     = trkdedx[nTPCtrk][1][nspts];// * 0.90;//<----Scaling dEdX
+         Piondedx[nPionSpts]     = trkdedx[nTPCtrk][1][nspts];
 	 
 	 // ### Putting in a fix in the case that the dE/dX is negative in this step ### 
 	 // ###  then take the point before and the point after and average them
@@ -1100,11 +1090,11 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	 PionSumEnergy = (Piondedx[nPionSpts] * Pionpitchhit[nPionSpts]) + PionSumEnergy;
 	 
 	 // ### Recording the dE/dX ###
-	 hdataPiondEdX->Fill(Piondedx[nPionSpts], EventWeight);
+	 hdataPiondEdX->Fill(Piondedx[nPionSpts]);
 	 // ### Recording the residual range ###
 	 hdataPionRR->Fill(Pionresrange[nPionSpts]);
 	 // ### Recording the Pitch ###
-	 hdataPionTrkPitch->Fill(Pionpitchhit[nPionSpts], EventWeight);
+	 hdataPionTrkPitch->Fill(Pionpitchhit[nPionSpts]);
 	 
 	 // ### Filling 2d dE/dX vs RR ###
 	 hdataPiondEdXvsRR->Fill(Pionresrange[nPionSpts], Piondedx[nPionSpts]);
@@ -1467,7 +1457,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1517,7 +1507,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1567,7 +1557,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1616,7 +1606,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1667,7 +1657,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1719,7 +1709,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1772,7 +1762,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1826,7 +1816,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1879,7 +1869,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1933,7 +1923,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -1984,7 +1974,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2034,7 +2024,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2085,7 +2075,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2135,7 +2125,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2193,7 +2183,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2247,7 +2237,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2299,7 +2289,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2351,7 +2341,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2403,7 +2393,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2455,7 +2445,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2509,7 +2499,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2562,7 +2552,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2614,7 +2604,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2666,7 +2656,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2718,7 +2708,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2744,7 +2734,7 @@ fCrossSection->SetMarkerSize(0.9);
 fCrossSection->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
 fCrossSection->GetXaxis()->CenterTitle();
 
-fCrossSection->GetYaxis()->SetTitle("#sigma(Inclusive #pi) (barns)");
+fCrossSection->GetYaxis()->SetTitle("#sigma(Inclusive K) (barns)");
 fCrossSection->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
@@ -2771,7 +2761,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2823,7 +2813,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2875,7 +2865,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2927,7 +2917,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -2979,7 +2969,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 //leg->AddEntry(hMCPrimaryStartX, "X_{0}");
 leg->Draw();
 
@@ -3026,7 +3016,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 leg->AddEntry(hDeltaEndZInElastic, "InElastic");
 leg->AddEntry(hDeltaEndZNeutronInElastic, "Neutron InElastic");
 leg->AddEntry(hDeltaEndZHadElastic, "Hadronic Elastic");
@@ -3081,7 +3071,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 leg->AddEntry(hDeltaEndYInElastic, "InElastic");
 leg->AddEntry(hDeltaEndYNeutronInElastic, "Neutron InElastic");
 leg->AddEntry(hDeltaEndYHadElastic, "Hadronic Elastic");
@@ -3136,7 +3126,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 leg->AddEntry(hDeltaEndXInElastic, "InElastic");
 leg->AddEntry(hDeltaEndXNeutronInElastic, "Neutron InElastic");
 leg->AddEntry(hDeltaEndXHadElastic, "Hadronic Elastic");
@@ -3199,7 +3189,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 leg->Draw();
 
 
@@ -3253,7 +3243,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 leg->Draw();
 
 
@@ -3306,7 +3296,7 @@ leg->SetTextAlign(12);
 leg->SetFillColor(kWhite);
 leg->SetLineColor(kWhite);
 leg->SetShadowColor(kWhite);
-leg->SetHeader("#pi^{-} MC");
+leg->SetHeader("K^{-} MC");
 leg->Draw();
 
 // ---------------------------------------------------------------------------------------------------
@@ -3315,7 +3305,10 @@ leg->Draw();
 // ===========================================================================================
 // ============================  Writing out histograms to ROOT File =========================
 // ===========================================================================================
-
+// ###############################################
+// ### Creating a file to output my histograms ###
+// ###############################################
+TFile myfile("KaonMinusMCXSection_weighted_histos.root","RECREATE");
 
 // ### Reco Info ###
 hdataUpstreamZPos->Write();
@@ -3414,7 +3407,7 @@ hdataPionTrackStartZ->Write();
 // 				### Function for plotting the Low Z track location ###
 //------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------
-void Pion::LowZCut()
+void KaonPlus::LowZCut()
 {
 
 // ################################################################

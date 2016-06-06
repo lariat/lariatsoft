@@ -1,12 +1,12 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Fri Jun  3 16:28:47 2016 by ROOT version 5.34/36
+// Thu Jun  2 17:46:27 2016 by ROOT version 5.34/36
 // from TTree anatree/analysis tree
-// found on file: ../ROOTFILES/ProtonAnaTree.root
+// found on file: ../ROOTFILES/KaonPlusAnaTree.root
 //////////////////////////////////////////////////////////
 
-#ifndef ProtonEnergyCorrections_h
-#define ProtonEnergyCorrections_h
+#ifndef KaonPlus_h
+#define KaonPlus_h
 
 #include <TROOT.h>
 #include <TChain.h>
@@ -17,7 +17,7 @@
 
 // Fixed size dimensions of array or collections stored in the TTree if any.
 
-class ProtonEnergyCorrections {
+class KaonPlus {
 public :
    TTree          *fChain;   //!pointer to the analyzed TTree or TChain
    Int_t           fCurrent; //!current Tree number in a TChain
@@ -30,75 +30,75 @@ public :
    Double_t        efield[3];
    Int_t           t0;
    Int_t           nclus;
-   Double_t        clustertwire[46];   //[nclus]
-   Double_t        clusterttick[46];   //[nclus]
-   Double_t        cluendwire[46];   //[nclus]
-   Double_t        cluendtick[46];   //[nclus]
-   Int_t           cluplane[46];   //[nclus]
+   Double_t        clustertwire[88];   //[nclus]
+   Double_t        clusterttick[88];   //[nclus]
+   Double_t        cluendwire[88];   //[nclus]
+   Double_t        cluendtick[88];   //[nclus]
+   Int_t           cluplane[88];   //[nclus]
    Int_t           ntracks_reco;
-   Double_t        trkvtxx[15];   //[ntracks_reco]
-   Double_t        trkvtxy[15];   //[ntracks_reco]
-   Double_t        trkvtxz[15];   //[ntracks_reco]
-   Double_t        trkendx[15];   //[ntracks_reco]
-   Double_t        trkendy[15];   //[ntracks_reco]
-   Double_t        trkendz[15];   //[ntracks_reco]
-   Double_t        trkstartdcosx[15];   //[ntracks_reco]
-   Double_t        trkstartdcosy[15];   //[ntracks_reco]
-   Double_t        trkstartdcosz[15];   //[ntracks_reco]
-   Double_t        trkenddcosx[15];   //[ntracks_reco]
-   Double_t        trkenddcosy[15];   //[ntracks_reco]
-   Double_t        trkenddcosz[15];   //[ntracks_reco]
+   Double_t        trkvtxx[29];   //[ntracks_reco]
+   Double_t        trkvtxy[29];   //[ntracks_reco]
+   Double_t        trkvtxz[29];   //[ntracks_reco]
+   Double_t        trkendx[29];   //[ntracks_reco]
+   Double_t        trkendy[29];   //[ntracks_reco]
+   Double_t        trkendz[29];   //[ntracks_reco]
+   Double_t        trkstartdcosx[29];   //[ntracks_reco]
+   Double_t        trkstartdcosy[29];   //[ntracks_reco]
+   Double_t        trkstartdcosz[29];   //[ntracks_reco]
+   Double_t        trkenddcosx[29];   //[ntracks_reco]
+   Double_t        trkenddcosy[29];   //[ntracks_reco]
+   Double_t        trkenddcosz[29];   //[ntracks_reco]
    Int_t           trkWCtoTPCMath;
-   Double_t        trklength[15];   //[ntracks_reco]
-   Double_t        trkmomrange[15];   //[ntracks_reco]
-   Double_t        trkmommschi2[15];   //[ntracks_reco]
-   Double_t        trkmommsllhd[15];   //[ntracks_reco]
-   Int_t           ntrkhits[15];   //[ntracks_reco]
-   Double_t        trkx[15][1000];   //[ntracks_reco]
-   Double_t        trky[15][1000];   //[ntracks_reco]
-   Double_t        trkz[15][1000];   //[ntracks_reco]
-   Double_t        trkpitch[15][2];   //[ntracks_reco]
-   Int_t           trkhits[15][2];   //[ntracks_reco]
-   Double_t        trkdedx[15][2][1000];   //[ntracks_reco]
-   Double_t        trkrr[15][2][1000];   //[ntracks_reco]
-   Double_t        trkpitchhit[15][2][1000];   //[ntracks_reco]
-   Double_t        trkke[15][2];   //[ntracks_reco]
-   Double_t        trkpida[15][2];   //[ntracks_reco]
-   Int_t           nTrajPoint[15];   //[ntracks_reco]
-   Double_t        pHat0_X[15][1000];   //[ntracks_reco]
-   Double_t        pHat0_Y[15][1000];   //[ntracks_reco]
-   Double_t        pHat0_Z[15][1000];   //[ntracks_reco]
-   Double_t        trjPt_X[15][1000];   //[ntracks_reco]
-   Double_t        trjPt_Y[15][1000];   //[ntracks_reco]
-   Double_t        trjPt_Z[15][1000];   //[ntracks_reco]
-   Int_t           trkg4id[15];   //[ntracks_reco]
+   Double_t        trklength[29];   //[ntracks_reco]
+   Double_t        trkmomrange[29];   //[ntracks_reco]
+   Double_t        trkmommschi2[29];   //[ntracks_reco]
+   Double_t        trkmommsllhd[29];   //[ntracks_reco]
+   Int_t           ntrkhits[29];   //[ntracks_reco]
+   Double_t        trkx[29][1000];   //[ntracks_reco]
+   Double_t        trky[29][1000];   //[ntracks_reco]
+   Double_t        trkz[29][1000];   //[ntracks_reco]
+   Double_t        trkpitch[29][2];   //[ntracks_reco]
+   Int_t           trkhits[29][2];   //[ntracks_reco]
+   Double_t        trkdedx[29][2][1000];   //[ntracks_reco]
+   Double_t        trkrr[29][2][1000];   //[ntracks_reco]
+   Double_t        trkpitchhit[29][2][1000];   //[ntracks_reco]
+   Double_t        trkke[29][2];   //[ntracks_reco]
+   Double_t        trkpida[29][2];   //[ntracks_reco]
+   Int_t           nTrajPoint[29];   //[ntracks_reco]
+   Double_t        pHat0_X[29][1000];   //[ntracks_reco]
+   Double_t        pHat0_Y[29][1000];   //[ntracks_reco]
+   Double_t        pHat0_Z[29][1000];   //[ntracks_reco]
+   Double_t        trjPt_X[29][1000];   //[ntracks_reco]
+   Double_t        trjPt_Y[29][1000];   //[ntracks_reco]
+   Double_t        trjPt_Z[29][1000];   //[ntracks_reco]
+   Int_t           trkg4id[29];   //[ntracks_reco]
    Int_t           primarytrkkey;
    Int_t           nhits;
-   Int_t           hit_plane[679];   //[nhits]
-   Int_t           hit_wire[679];   //[nhits]
-   Int_t           hit_channel[679];   //[nhits]
-   Double_t        hit_peakT[679];   //[nhits]
-   Double_t        hit_charge[679];   //[nhits]
-   Double_t        hit_ph[679];   //[nhits]
-   Double_t        hit_tstart[679];   //[nhits]
-   Double_t        hit_tend[679];   //[nhits]
-   Int_t           hit_trkid[679];   //[nhits]
-   Int_t           hit_trkkey[679];   //[nhits]
-   Int_t           hit_clukey[679];   //[nhits]
-   Int_t           hit_pk[679];   //[nhits]
-   Int_t           hit_t[679];   //[nhits]
-   Int_t           hit_ch[679];   //[nhits]
-   Int_t           hit_fwhh[679];   //[nhits]
-   Double_t        hit_rms[679];   //[nhits]
-   Double_t        hit_nelec[679];   //[nhits]
-   Double_t        hit_energy[679];   //[nhits]
-   Float_t         hit_dQds[679];   //[nhits]
-   Float_t         hit_dEds[679];   //[nhits]
-   Float_t         hit_ds[679];   //[nhits]
-   Float_t         hit_resrange[679];   //[nhits]
-   Float_t         hit_x[679];   //[nhits]
-   Float_t         hit_y[679];   //[nhits]
-   Float_t         hit_z[679];   //[nhits]
+   Int_t           hit_plane[1483];   //[nhits]
+   Int_t           hit_wire[1483];   //[nhits]
+   Int_t           hit_channel[1483];   //[nhits]
+   Double_t        hit_peakT[1483];   //[nhits]
+   Double_t        hit_charge[1483];   //[nhits]
+   Double_t        hit_ph[1483];   //[nhits]
+   Double_t        hit_tstart[1483];   //[nhits]
+   Double_t        hit_tend[1483];   //[nhits]
+   Int_t           hit_trkid[1483];   //[nhits]
+   Int_t           hit_trkkey[1483];   //[nhits]
+   Int_t           hit_clukey[1483];   //[nhits]
+   Int_t           hit_pk[1483];   //[nhits]
+   Int_t           hit_t[1483];   //[nhits]
+   Int_t           hit_ch[1483];   //[nhits]
+   Int_t           hit_fwhh[1483];   //[nhits]
+   Double_t        hit_rms[1483];   //[nhits]
+   Double_t        hit_nelec[1483];   //[nhits]
+   Double_t        hit_energy[1483];   //[nhits]
+   Float_t         hit_dQds[1483];   //[nhits]
+   Float_t         hit_dEds[1483];   //[nhits]
+   Float_t         hit_ds[1483];   //[nhits]
+   Float_t         hit_resrange[1483];   //[nhits]
+   Float_t         hit_x[1483];   //[nhits]
+   Float_t         hit_y[1483];   //[nhits]
+   Float_t         hit_z[1483];   //[nhits]
    Int_t           nwctrks;
    Double_t        wctrk_XFaceCoor[1];   //[nwctrks]
    Double_t        wctrk_YFaceCoor[1];   //[nwctrks]
@@ -131,35 +131,35 @@ public :
    Bool_t          HitExistDS2[1];   //[nAG]
    Int_t           no_primaries;
    Int_t           geant_list_size;
-   Int_t           pdg[209];   //[geant_list_size]
-   Double_t        Eng[209];   //[geant_list_size]
-   Double_t        Px[209];   //[geant_list_size]
-   Double_t        Py[209];   //[geant_list_size]
-   Double_t        Pz[209];   //[geant_list_size]
-   Double_t        EndEng[209];   //[geant_list_size]
-   Double_t        EndPx[209];   //[geant_list_size]
-   Double_t        EndPy[209];   //[geant_list_size]
-   Double_t        EndPz[209];   //[geant_list_size]
-   Double_t        StartPointx[209];   //[geant_list_size]
-   Double_t        StartPointy[209];   //[geant_list_size]
-   Double_t        StartPointz[209];   //[geant_list_size]
-   Double_t        EndPointx[209];   //[geant_list_size]
-   Double_t        EndPointy[209];   //[geant_list_size]
-   Double_t        EndPointz[209];   //[geant_list_size]
-   Int_t           Process[209];   //[geant_list_size]
-   Int_t           NumberDaughters[209];   //[geant_list_size]
-   Int_t           Mother[209];   //[geant_list_size]
-   Int_t           TrackId[209];   //[geant_list_size]
-   Int_t           process_primary[209];   //[geant_list_size]
+   Int_t           pdg[314];   //[geant_list_size]
+   Double_t        Eng[314];   //[geant_list_size]
+   Double_t        Px[314];   //[geant_list_size]
+   Double_t        Py[314];   //[geant_list_size]
+   Double_t        Pz[314];   //[geant_list_size]
+   Double_t        EndEng[314];   //[geant_list_size]
+   Double_t        EndPx[314];   //[geant_list_size]
+   Double_t        EndPy[314];   //[geant_list_size]
+   Double_t        EndPz[314];   //[geant_list_size]
+   Double_t        StartPointx[314];   //[geant_list_size]
+   Double_t        StartPointy[314];   //[geant_list_size]
+   Double_t        StartPointz[314];   //[geant_list_size]
+   Double_t        EndPointx[314];   //[geant_list_size]
+   Double_t        EndPointy[314];   //[geant_list_size]
+   Double_t        EndPointz[314];   //[geant_list_size]
+   Int_t           Process[314];   //[geant_list_size]
+   Int_t           NumberDaughters[314];   //[geant_list_size]
+   Int_t           Mother[314];   //[geant_list_size]
+   Int_t           TrackId[314];   //[geant_list_size]
+   Int_t           process_primary[314];   //[geant_list_size]
    vector<string>  *G4Process;
    vector<string>  *G4FinalProcess;
    Int_t           NTrTrajPts[1];   //[no_primaries]
-   Double_t        MidPosX[1][5000];   //[no_primaries]
-   Double_t        MidPosY[1][5000];   //[no_primaries]
-   Double_t        MidPosZ[1][5000];   //[no_primaries]
-   Double_t        MidPx[1][5000];   //[no_primaries]
-   Double_t        MidPy[1][5000];   //[no_primaries]
-   Double_t        MidPz[1][5000];   //[no_primaries]
+   Double_t        MidPosX[1][1000];   //[no_primaries]
+   Double_t        MidPosY[1][1000];   //[no_primaries]
+   Double_t        MidPosZ[1][1000];   //[no_primaries]
+   Double_t        MidPx[1][1000];   //[no_primaries]
+   Double_t        MidPy[1][1000];   //[no_primaries]
+   Double_t        MidPz[1][1000];   //[no_primaries]
    Int_t           no_mcshowers;
    Double_t        mcshwr_origin[1];   //[no_mcshowers]
    Double_t        mcshwr_pdg[1];   //[no_mcshowers]
@@ -394,49 +394,50 @@ public :
    TBranch        *b_dEdxPerPlaneShw;   //!
    TBranch        *b_TotalMIPEShw;   //!
 
-   ProtonEnergyCorrections(TTree *tree=0);
-   virtual ~ProtonEnergyCorrections();
+   KaonPlus(TTree *tree=0);
+   virtual ~KaonPlus();
    virtual Int_t    Cut(Long64_t entry);
    virtual Int_t    GetEntry(Long64_t entry);
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
    virtual void     Loop();
+   virtual void     LowZCut();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
 
 #endif
 
-#ifdef ProtonEnergyCorrections_cxx
-ProtonEnergyCorrections::ProtonEnergyCorrections(TTree *tree) : fChain(0) 
+#ifdef KaonPlus_cxx
+KaonPlus::KaonPlus(TTree *tree) : fChain(0) 
 {
 // if parameter tree is not specified (or zero), connect the file
 // used to generate this class and read the Tree.
    if (tree == 0) {
-      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../ROOTFILES/ProtonAnaTree.root");
+      TFile *f = (TFile*)gROOT->GetListOfFiles()->FindObject("../ROOTFILES/KaonPlusAnaTree.root");
       if (!f || !f->IsOpen()) {
-         f = new TFile("../ROOTFILES/ProtonAnaTree.root");
+         f = new TFile("../ROOTFILES/KaonPlusAnaTree.root");
       }
-      TDirectory * dir = (TDirectory*)f->Get("../ROOTFILES/ProtonAnaTree.root:/anatree");
+      TDirectory * dir = (TDirectory*)f->Get("../ROOTFILES/KaonPlusAnaTree.root:/anatree");
       dir->GetObject("anatree",tree);
 
    }
    Init(tree);
 }
 
-ProtonEnergyCorrections::~ProtonEnergyCorrections()
+KaonPlus::~KaonPlus()
 {
    if (!fChain) return;
    delete fChain->GetCurrentFile();
 }
 
-Int_t ProtonEnergyCorrections::GetEntry(Long64_t entry)
+Int_t KaonPlus::GetEntry(Long64_t entry)
 {
 // Read contents of entry.
    if (!fChain) return 0;
    return fChain->GetEntry(entry);
 }
-Long64_t ProtonEnergyCorrections::LoadTree(Long64_t entry)
+Long64_t KaonPlus::LoadTree(Long64_t entry)
 {
 // Set the environment to read one entry
    if (!fChain) return -5;
@@ -449,7 +450,7 @@ Long64_t ProtonEnergyCorrections::LoadTree(Long64_t entry)
    return centry;
 }
 
-void ProtonEnergyCorrections::Init(TTree *tree)
+void KaonPlus::Init(TTree *tree)
 {
    // The Init() function is called when the selector needs to initialize
    // a new tree or chain. Typically here the branch addresses and branch
@@ -655,7 +656,7 @@ void ProtonEnergyCorrections::Init(TTree *tree)
    Notify();
 }
 
-Bool_t ProtonEnergyCorrections::Notify()
+Bool_t KaonPlus::Notify()
 {
    // The Notify() function is called when a new file is opened. This
    // can be either for a new TTree in a TChain or when when a new TTree
@@ -666,18 +667,18 @@ Bool_t ProtonEnergyCorrections::Notify()
    return kTRUE;
 }
 
-void ProtonEnergyCorrections::Show(Long64_t entry)
+void KaonPlus::Show(Long64_t entry)
 {
 // Print contents of entry.
 // If entry is not specified, print current entry
    if (!fChain) return;
    fChain->Show(entry);
 }
-Int_t ProtonEnergyCorrections::Cut(Long64_t entry)
+Int_t KaonPlus::Cut(Long64_t entry)
 {
 // This function may be called from Loop.
 // returns  1 if entry is accepted.
 // returns -1 otherwise.
    return 1;
 }
-#endif // #ifdef ProtonEnergyCorrections_cxx
+#endif // #ifdef KaonPlus_cxx
