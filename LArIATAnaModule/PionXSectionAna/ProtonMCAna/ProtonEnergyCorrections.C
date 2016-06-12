@@ -24,13 +24,34 @@ TH1D *hInitialKEAtTPC = new TH1D("hInitialKEAtTPC", "Initial Kinetic Energy at t
 TH1D *hFinalKEInTPC = new TH1D("hFinalKEInTPC", "Final Kinetic Energy in the TPC", 110, -100, 1000);
 
 /////////////////////////////////// E Loss upstream of the TPC /////////////////////////
-TH2D *hELossXvsY = new TH2D("hELossXvsY", "Energy Loss X vs Y", 86, 0, 43, 80, -20, 20);
+TH2D *hELossXvsY = new TH2D("hELossXvsY", "Energy Loss X vs Y", 100, 0, 50, 100, -25, 25);
 
 /////////////////////////////////// E Loss upstream of the Flux TPC /////////////////////////
-TH2D *hELossXvsYFlux = new TH2D("hELossXvsYFlux", "Energy Loss X vs Y", 86, 0, 43, 80, -20, 20);
+TH2D *hELossXvsYFlux = new TH2D("hELossXvsYFlux", "Energy Loss X vs Y", 100, 0, 50, 100, -25, 25);
 
 /////////////////////////////////// Divided E Loss /////////////////////////
-TH2D *hELossXvsYDivide = new TH2D("hELossXvsYDivide", "Energy Loss X vs Y", 86, 0, 43, 80, -20, 20);
+TH2D *hELossXvsYDivide = new TH2D("hELossXvsYDivide", "Energy Loss X vs Y", 100, 0, 50, 100, -25, 25);
+
+
+////////////////////////////////// MC Theta  //////////////////////////////
+TH1D *hMCTheta = new TH1D("hMCTheta", "Theta", 360, -180, 180);
+
+////////////////////////////////// MC Phi  //////////////////////////////
+TH1D *hMCPhi = new TH1D("hMCPhi", "Phi", 360, 0, 360);
+
+
+/////////////////////////////////// Phi vs ELoss /////////////////////////
+TH2D *hPhivsELoss = new TH2D("hPhivsELoss", "Phi vs Energy Loss", 360, 0, 360, 400, 0, 400);
+
+
+/////////////////////////////////// Phi vs Theta ELoss /////////////////////////
+TH2D *hPhivsThetaELoss = new TH2D("hPhivsThetaELoss", "Phi vs Energy Loss", 360, 0, 360, 360, -180, 180);
+
+/////////////////////////////////// Phi vs Theta ELoss Flux /////////////////////////
+TH2D *hPhivsThetaELossFlux = new TH2D("hPhivsThetaELossFlux", "Phi vs Energy Loss", 360, 0, 360, 360, -180, 180);
+
+/////////////////////////////////// Phi vs Theta ELoss Divided /////////////////////////
+TH2D *hPhivsThetaELossDivided = new TH2D("hPhivsThetaELossDivided", "Phi vs Energy Loss", 360, 0, 360, 360, -180, 180);
 
 
 void ProtonEnergyCorrections::Loop()
@@ -88,8 +109,8 @@ Long64_t nbytes = 0, nb = 0;
 // ###########################
 // ### Looping over events ###
 // ###########################
-for (Long64_t jentry=0; jentry<nentries;jentry++) 
-//for (Long64_t jentry=0; jentry<2000;jentry++)
+//for (Long64_t jentry=0; jentry<nentries;jentry++) 
+for (Long64_t jentry=0; jentry<8000;jentry++)
    {
    Long64_t ientry = LoadTree(jentry);
    if (ientry < 0) break;
@@ -110,6 +131,15 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    
    // ### Assume the particle does stop ###
    EventsWhereParticleStops = true;
+   
+   
+   
+   // #############################################
+   // ###       Defining variables for the      ###
+   // ### momentum at the front face of the TPC ###
+   // #############################################
+   
+   float FrontFace_Px = 0, FrontFace_Py = 0, FrontFace_Pz = 0;
       
    //=======================================================================================================================
    //					      GEANT 4 Information
@@ -161,6 +191,12 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	 
 	 hInitialKE->Fill(InitialKE);
 	 
+	 // ### Defining first point ###
+	 float FirstPoint_Z = 999;
+	 
+	 // ##################################################
+	 // ### Looping over all primary trajectory points ###
+	 // ##################################################
 	 for(int iPriTrj = 1; iPriTrj < NTrTrajPts[iG4]; iPriTrj++)
 	    {
 	    	    
@@ -182,12 +218,17 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	       
 	       EnergyLossOutsideTPC +=  Energy_Point1 - Energy_Point2;
 	       }//<---End Looking at energy loss upstream of TPC
+	    
+	    
 	       
 	    // ### Only looking at points which are inside of the TPC ###
 	    if(MidPosZ[iG4][iPriTrj] >= 0 && MidPosZ[iG4][iPriTrj] < 90 &&
 	       MidPosX[iG4][iPriTrj] > 0 && MidPosX[iG4][iPriTrj] < 43 &&
 	       MidPosY[iG4][iPriTrj] > -20 && MidPosY[iG4][iPriTrj] < 20 )
 	       {
+	       
+	       
+	       
 	       
 	       float Momentum_Point1 = (sqrt((MidPx[iG4][iPriTrj-1]*MidPx[iG4][iPriTrj-1]) + 
 	                               (MidPy[iG4][iPriTrj-1]*MidPy[iG4][iPriTrj-1]) +
@@ -196,6 +237,19 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	       float Momentum_Point2 = (sqrt((MidPx[iG4][iPriTrj]*MidPx[iG4][iPriTrj]) + 
 	                               (MidPy[iG4][iPriTrj]*MidPy[iG4][iPriTrj]) +
 				       (MidPz[iG4][iPriTrj]*MidPz[iG4][iPriTrj])))*1000;
+	       
+	       // ### Storing the upstream point ###
+	       if(MidPosZ[iG4][iPriTrj] < FirstPoint_Z)
+	          {
+		  FirstPoint_Z = MidPosZ[iG4][iPriTrj];
+		  //std::cout<<"FirstPoint_Z = "<<FirstPoint_Z<<std::endl;
+		  //std::cout<<"MidPx[iG4][iPriTrj] = "<<MidPx[iG4][iPriTrj]<<std::endl;
+		  FrontFace_Px = MidPx[iG4][iPriTrj] * 1000;
+		  FrontFace_Py = MidPy[iG4][iPriTrj] * 1000;
+		  FrontFace_Pz = MidPz[iG4][iPriTrj] * 1000;
+		  
+		  
+		  }//<---End finding upstream point
 				       
 	       float Energy_Point1 = sqrt( (Momentum_Point1*Momentum_Point1) + (particle_mass*particle_mass)  );
 	       
@@ -246,10 +300,72 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	 
 	 hELossXvsYFlux->Fill(g4Primary_ProjX0, g4Primary_ProjY0);
 	 
+	 
+	 
+	 // ----------------------------------------------------------------------- 
+	 // ------------        Calculating the theta and phi at the       --------
+	 // ------------           at the front face of the TPC            --------
+	 // -----------------------------------------------------------------------
+	 
+	 // ################################################
+   	 // ### Calculating the angles for the Geant4 MC ###
+   	 // ################################################
+   	 TVector3 z_hat_MC(0,0,1);
+   	 TVector3 p_hat_0_MC;
+	 
+	 // ### Setting the vector for the MC using the ###
+   	 // ###  extrapolated Momentum vector   ###
+   	 /*p_hat_0_MC.SetX(Px[iG4]);
+   	 p_hat_0_MC.SetY(Py[iG4]);
+   	 p_hat_0_MC.SetZ(Pz[iG4]); */
+	 
+	 p_hat_0_MC.SetX(FrontFace_Px);
+   	 p_hat_0_MC.SetY(FrontFace_Py);
+   	 p_hat_0_MC.SetZ(FrontFace_Pz); 
+   
+   	 // ### Getting everything in the same convention ###
+   	 float mcPhi = 0;
+   	 float mcTheta = 0;
+   
+   	 // === Calculating Theta for MC ===
+   	 mcTheta = acos(z_hat_MC.Dot(p_hat_0_MC)/p_hat_0_MC.Mag());
+   
+   	 // === Calculating Phi for MC ===
+   	 //---------------------------------------------------------------------------------------------------------------------
+   	 if( p_hat_0_MC.Y() > 0 && p_hat_0_MC.X() > 0 ){ mcPhi = atan(p_hat_0_MC.Y()/p_hat_0_MC.X()); }
+   	 else if( p_hat_0_MC.Y() > 0 && p_hat_0_MC.X() < 0 ){ mcPhi = atan(p_hat_0_MC.Y()/p_hat_0_MC.X())+3.141592654; }
+   	 else if( p_hat_0_MC.Y() < 0 && p_hat_0_MC.X() < 0 ){ mcPhi = atan(p_hat_0_MC.Y()/p_hat_0_MC.X())+3.141592654; }
+   	 else if( p_hat_0_MC.Y() < 0 && p_hat_0_MC.X() > 0 ){ mcPhi = atan(p_hat_0_MC.Y()/p_hat_0_MC.X())+6.28318; }
+   	 else if( p_hat_0_MC.Y() == 0 && p_hat_0_MC.X() == 0 ){ mcPhi = 0; }//defined by convention
+   	 else if( p_hat_0_MC.Y() == 0 )
+      	    {if( p_hat_0_MC.X() > 0 ){ mcPhi = 0; }
+
+      	     else{ mcPhi = 3.141592654; }
+
+      	    }
+   	 else if( p_hat_0_MC.X() == 0 )
+      	    {
+      	    if( p_hat_0_MC.Y() > 0 ){ mcPhi = 3.141592654/2; }
+      	    else{ mcPhi = 3.141592654*3/2; }
+
+      	    }
+	 
+	 //std::cout<<"mcTheta = "<<mcTheta*(180/3.14159)<<std::endl;
+	 //std::cout<<"FrontFace_Px = "<<FrontFace_Px<<std::endl;
+	 hMCTheta->Fill(mcTheta*(180/3.14159));
+	 hMCPhi->Fill(mcPhi*(180/3.14159));
+	 
+	 
+	 hPhivsELoss->Fill(mcPhi*(180/3.14159) ,EnergyLossOutsideTPC);
+	 hPhivsThetaELoss->Fill(mcPhi*(180/3.14159) ,mcTheta*(180/3.14159), EnergyLossOutsideTPC);
+	 hPhivsThetaELossFlux->Fill(mcPhi*(180/3.14159) ,mcTheta*(180/3.14159));
 	 }//<---Only looking at primary particles
       
       float P = sqrt( (Px[iG4]*Px[iG4]) + (Py[iG4]*Py[iG4]) + (Pz[iG4]*Pz[iG4])) * 1000;
       //if(FinalKEInTPC == 0){std::cout<<"Run "<<run<<", SubRun "<<subrun<<", Event "<<event<<" P "<<P<<std::endl;}
+      
+      
+      
       }//<---End iG4Pri loop
    
    
@@ -660,5 +776,206 @@ t->DrawLatex(0.13,0.84,"");
 //leg->SetShadowColor(kWhite);
 //leg->SetHeader("Proton MC");
 //leg->Draw();
+
+
+//----------------------------------------------------------------------------------------------
+
+// ########################
+// ### Making a TCanvas ###
+// ########################
+TCanvas *c09= new TCanvas("c09","MC Theta");
+c09->SetTicks();
+c09->SetFillColor(kWhite);
+
+// ### Formatting the histograms ###
+hMCTheta->SetLineColor(kBlue);
+hMCTheta->SetLineStyle(0);
+hMCTheta->SetLineWidth(3);
+hMCTheta->SetMarkerStyle(8);
+hMCTheta->SetMarkerSize(0.9);
+
+
+// ### Labeling the axis ###
+hMCTheta->GetXaxis()->SetTitle("#theta (Degrees)");
+hMCTheta->GetXaxis()->CenterTitle();
+
+hMCTheta->GetYaxis()->SetTitle("Events / Degree");
+hMCTheta->GetYaxis()->CenterTitle();
+
+// ### Drawing the histogram ### 
+hMCTheta->Draw("");
+
+// ############################
+// # Setting the Latex Header #
+// ############################
+//TLatex *t = new TLatex();
+t->SetNDC();
+t->SetTextFont(62);
+t->SetTextSize(0.04);
+t->SetTextAlign(40);
+t->DrawLatex(0.1,0.90,"LArIAT Preliminary");
+t->DrawLatex(0.13,0.84,""); 
+
+// ######################
+// # Setting the Legend #
+// ######################
+//TLegend *leg = new TLegend();
+//leg = new TLegend(0.58,0.65,0.88,0.88);
+//leg->SetTextSize(0.04);
+//leg->SetTextAlign(12);
+//leg->SetFillColor(kWhite);
+//leg->SetLineColor(kWhite);
+//leg->SetShadowColor(kWhite);
+//leg->SetHeader("Proton MC");
+//leg->Draw();
+
+
+//----------------------------------------------------------------------------------------------
+
+// ########################
+// ### Making a TCanvas ###
+// ########################
+TCanvas *c10= new TCanvas("c10","MC Phi");
+c10->SetTicks();
+c10->SetFillColor(kWhite);
+
+// ### Formatting the histograms ###
+hMCPhi->SetLineColor(kBlue);
+hMCPhi->SetLineStyle(0);
+hMCPhi->SetLineWidth(3);
+hMCPhi->SetMarkerStyle(8);
+hMCPhi->SetMarkerSize(0.9);
+
+
+// ### Labeling the axis ###
+hMCPhi->GetXaxis()->SetTitle("#phi (Degrees)");
+hMCPhi->GetXaxis()->CenterTitle();
+
+hMCPhi->GetYaxis()->SetTitle("Events / Degree");
+hMCPhi->GetYaxis()->CenterTitle();
+
+// ### Drawing the histogram ### 
+hMCPhi->Draw("");
+
+// ############################
+// # Setting the Latex Header #
+// ############################
+//TLatex *t = new TLatex();
+t->SetNDC();
+t->SetTextFont(62);
+t->SetTextSize(0.04);
+t->SetTextAlign(40);
+t->DrawLatex(0.1,0.90,"LArIAT Preliminary");
+t->DrawLatex(0.13,0.84,""); 
+
+// ######################
+// # Setting the Legend #
+// ######################
+//TLegend *leg = new TLegend();
+//leg = new TLegend(0.58,0.65,0.88,0.88);
+//leg->SetTextSize(0.04);
+//leg->SetTextAlign(12);
+//leg->SetFillColor(kWhite);
+//leg->SetLineColor(kWhite);
+//leg->SetShadowColor(kWhite);
+//leg->SetHeader("Proton MC");
+//leg->Draw();
+
+
+//----------------------------------------------------------------------------------------------
+
+// ########################
+// ### Making a TCanvas ###
+// ########################
+TCanvas *c11= new TCanvas("c11","ELoss vs Phi");
+c11->SetTicks();
+c11->SetFillColor(kWhite);
+
+// ### Formatting the histograms ###
+
+
+// ### Labeling the axis ###
+hPhivsELoss->GetXaxis()->SetTitle("#phi (Degrees)");
+hPhivsELoss->GetXaxis()->CenterTitle();
+
+hPhivsELoss->GetYaxis()->SetTitle("Energy Loss (MeV)");
+hPhivsELoss->GetYaxis()->CenterTitle();
+
+// ### Drawing the histogram ### 
+hPhivsELoss->Draw("colz");
+
+// ############################
+// # Setting the Latex Header #
+// ############################
+//TLatex *t = new TLatex();
+t->SetNDC();
+t->SetTextFont(62);
+t->SetTextSize(0.04);
+t->SetTextAlign(40);
+t->DrawLatex(0.1,0.90,"LArIAT Preliminary");
+t->DrawLatex(0.13,0.84,""); 
+
+// ######################
+// # Setting the Legend #
+// ######################
+//TLegend *leg = new TLegend();
+//leg = new TLegend(0.58,0.65,0.88,0.88);
+//leg->SetTextSize(0.04);
+//leg->SetTextAlign(12);
+//leg->SetFillColor(kWhite);
+//leg->SetLineColor(kWhite);
+//leg->SetShadowColor(kWhite);
+//leg->SetHeader("Proton MC");
+//leg->Draw();
+
+//----------------------------------------------------------------------------------------------
+
+// ########################
+// ### Making a TCanvas ###
+// ########################
+TCanvas *c12= new TCanvas("c12","ELoss vs Phi");
+c12->SetTicks();
+c12->SetFillColor(kWhite);
+
+// ### Formatting the histograms ###
+hPhivsThetaELossDivided->Divide(hPhivsThetaELoss, hPhivsThetaELossFlux);
+
+// ### Labeling the axis ###
+hPhivsThetaELossDivided->GetXaxis()->SetTitle("#phi (Degrees)");
+hPhivsThetaELossDivided->GetXaxis()->CenterTitle();
+
+hPhivsThetaELossDivided->GetYaxis()->SetTitle("#theta (Degrees)");
+hPhivsThetaELossDivided->GetYaxis()->CenterTitle();
+
+// ### Drawing the histogram ### 
+hPhivsThetaELossDivided->Draw("colz");
+
+// ############################
+// # Setting the Latex Header #
+// ############################
+//TLatex *t = new TLatex();
+t->SetNDC();
+t->SetTextFont(62);
+t->SetTextSize(0.04);
+t->SetTextAlign(40);
+t->DrawLatex(0.1,0.90,"LArIAT Preliminary");
+t->DrawLatex(0.13,0.84,""); 
+
+// ######################
+// # Setting the Legend #
+// ######################
+//TLegend *leg = new TLegend();
+//leg = new TLegend(0.58,0.65,0.88,0.88);
+//leg->SetTextSize(0.04);
+//leg->SetTextAlign(12);
+//leg->SetFillColor(kWhite);
+//leg->SetLineColor(kWhite);
+//leg->SetShadowColor(kWhite);
+//leg->SetHeader("Proton MC");
+//leg->Draw();
+
+
+
+
 
 }//<---End Loop()
