@@ -255,4 +255,51 @@ leg->AddEntry(wrong_histo2,"Wrong Match");
 leg->Draw();
 
 
+//--------------------------------------------------------------------------------------------------------------
+//						Alpha
+//--------------------------------------------------------------------------------------------------------------
+
+// ### Getting the data Delta X plot ###
+TH1F *hAlpha = (TH1F*)f1->Get("hdataAlpha");
+
+// ########################
+// ### Making a TCanvas ###
+// ########################
+TCanvas *c03 = new TCanvas("c03", "Alpha");
+c03->SetTicks();
+c03->SetFillColor(kWhite);
+
+
+// ################################
+// ### Formatting the histogram ###
+// ################################
+hAlpha->SetLineColor(kBlack);
+hAlpha->SetLineStyle(0);
+hAlpha->SetLineWidth(3);
+hAlpha->SetMarkerStyle(8);
+hAlpha->SetMarkerSize(0.9);
+
+// ### Labeling the axis ###
+hAlpha->GetXaxis()->SetTitle("#alpha (Degrees)");
+hAlpha->GetXaxis()->CenterTitle();
+
+hAlpha->GetYaxis()->SetTitle("Events / Degree");
+hAlpha->GetYaxis()->CenterTitle();
+
+// ### Drawing the histogram ###
+hAlpha->Draw("E1");
+
+
+// ############################
+// # Setting the Latex Header #
+// ############################
+TLatex *t = new TLatex();
+t->SetNDC();
+t->SetTextFont(62);
+t->SetTextSize(0.04);
+t->SetTextAlign(40);
+t->DrawLatex(0.1,0.90,"LArIAT Preliminary");
+t->DrawLatex(0.13,0.84,"");
+
+
 }//<---End file

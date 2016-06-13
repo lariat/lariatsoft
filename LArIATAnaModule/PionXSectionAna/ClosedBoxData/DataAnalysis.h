@@ -1,6 +1,6 @@
 //////////////////////////////////////////////////////////
 // This class has been automatically generated on
-// Wed May 25 13:33:33 2016 by ROOT version 5.34/36
+// Sun Jun 12 22:06:34 2016 by ROOT version 5.34/36
 // from TTree anatree/analysis tree
 // found on file: ../ROOTFILES/ClosedBoxData.root
 //////////////////////////////////////////////////////////
@@ -30,75 +30,75 @@ public :
    Double_t        efield[3];
    Int_t           t0;
    Int_t           nclus;
-   Double_t        clustertwire[638];   //[nclus]
-   Double_t        clusterttick[638];   //[nclus]
-   Double_t        cluendwire[638];   //[nclus]
-   Double_t        cluendtick[638];   //[nclus]
-   Int_t           cluplane[638];   //[nclus]
+   Double_t        clustertwire[585];   //[nclus]
+   Double_t        clusterttick[585];   //[nclus]
+   Double_t        cluendwire[585];   //[nclus]
+   Double_t        cluendtick[585];   //[nclus]
+   Int_t           cluplane[585];   //[nclus]
    Int_t           ntracks_reco;
-   Double_t        trkvtxx[117];   //[ntracks_reco]
-   Double_t        trkvtxy[117];   //[ntracks_reco]
-   Double_t        trkvtxz[117];   //[ntracks_reco]
-   Double_t        trkendx[117];   //[ntracks_reco]
-   Double_t        trkendy[117];   //[ntracks_reco]
-   Double_t        trkendz[117];   //[ntracks_reco]
-   Double_t        trkstartdcosx[117];   //[ntracks_reco]
-   Double_t        trkstartdcosy[117];   //[ntracks_reco]
-   Double_t        trkstartdcosz[117];   //[ntracks_reco]
-   Double_t        trkenddcosx[117];   //[ntracks_reco]
-   Double_t        trkenddcosy[117];   //[ntracks_reco]
-   Double_t        trkenddcosz[117];   //[ntracks_reco]
+   Double_t        trkvtxx[131];   //[ntracks_reco]
+   Double_t        trkvtxy[131];   //[ntracks_reco]
+   Double_t        trkvtxz[131];   //[ntracks_reco]
+   Double_t        trkendx[131];   //[ntracks_reco]
+   Double_t        trkendy[131];   //[ntracks_reco]
+   Double_t        trkendz[131];   //[ntracks_reco]
+   Double_t        trkstartdcosx[131];   //[ntracks_reco]
+   Double_t        trkstartdcosy[131];   //[ntracks_reco]
+   Double_t        trkstartdcosz[131];   //[ntracks_reco]
+   Double_t        trkenddcosx[131];   //[ntracks_reco]
+   Double_t        trkenddcosy[131];   //[ntracks_reco]
+   Double_t        trkenddcosz[131];   //[ntracks_reco]
    Int_t           trkWCtoTPCMath;
-   Double_t        trklength[117];   //[ntracks_reco]
-   Double_t        trkmomrange[117];   //[ntracks_reco]
-   Double_t        trkmommschi2[117];   //[ntracks_reco]
-   Double_t        trkmommsllhd[117];   //[ntracks_reco]
-   Int_t           ntrkhits[117];   //[ntracks_reco]
-   Double_t        trkx[117][1000];   //[ntracks_reco]
-   Double_t        trky[117][1000];   //[ntracks_reco]
-   Double_t        trkz[117][1000];   //[ntracks_reco]
-   Double_t        trkpitch[117][2];   //[ntracks_reco]
-   Int_t           trkhits[117][2];   //[ntracks_reco]
-   Double_t        trkdedx[117][2][1000];   //[ntracks_reco]
-   Double_t        trkrr[117][2][1000];   //[ntracks_reco]
-   Double_t        trkpitchhit[117][2][1000];   //[ntracks_reco]
-   Double_t        trkke[117][2];   //[ntracks_reco]
-   Double_t        trkpida[117][2];   //[ntracks_reco]
-   Int_t           nTrajPoint[117];   //[ntracks_reco]
-   Double_t        pHat0_X[117][1000];   //[ntracks_reco]
-   Double_t        pHat0_Y[117][1000];   //[ntracks_reco]
-   Double_t        pHat0_Z[117][1000];   //[ntracks_reco]
-   Double_t        trjPt_X[117][1000];   //[ntracks_reco]
-   Double_t        trjPt_Y[117][1000];   //[ntracks_reco]
-   Double_t        trjPt_Z[117][1000];   //[ntracks_reco]
-   Int_t           trkg4id[117];   //[ntracks_reco]
+   Double_t        trklength[131];   //[ntracks_reco]
+   Double_t        trkmomrange[131];   //[ntracks_reco]
+   Double_t        trkmommschi2[131];   //[ntracks_reco]
+   Double_t        trkmommsllhd[131];   //[ntracks_reco]
+   Int_t           ntrkhits[131];   //[ntracks_reco]
+   Double_t        trkx[131][1000];   //[ntracks_reco]
+   Double_t        trky[131][1000];   //[ntracks_reco]
+   Double_t        trkz[131][1000];   //[ntracks_reco]
+   Double_t        trkpitch[131][2];   //[ntracks_reco]
+   Int_t           trkhits[131][2];   //[ntracks_reco]
+   Double_t        trkdedx[131][2][1000];   //[ntracks_reco]
+   Double_t        trkrr[131][2][1000];   //[ntracks_reco]
+   Double_t        trkpitchhit[131][2][1000];   //[ntracks_reco]
+   Double_t        trkke[131][2];   //[ntracks_reco]
+   Double_t        trkpida[131][2];   //[ntracks_reco]
+   Int_t           nTrajPoint[131];   //[ntracks_reco]
+   Double_t        pHat0_X[131][1000];   //[ntracks_reco]
+   Double_t        pHat0_Y[131][1000];   //[ntracks_reco]
+   Double_t        pHat0_Z[131][1000];   //[ntracks_reco]
+   Double_t        trjPt_X[131][1000];   //[ntracks_reco]
+   Double_t        trjPt_Y[131][1000];   //[ntracks_reco]
+   Double_t        trjPt_Z[131][1000];   //[ntracks_reco]
+   Int_t           trkg4id[131];   //[ntracks_reco]
    Int_t           primarytrkkey;
    Int_t           nhits;
-   Int_t           hit_plane[16456];   //[nhits]
-   Int_t           hit_wire[16456];   //[nhits]
-   Int_t           hit_channel[16456];   //[nhits]
-   Double_t        hit_peakT[16456];   //[nhits]
-   Double_t        hit_charge[16456];   //[nhits]
-   Double_t        hit_ph[16456];   //[nhits]
-   Double_t        hit_tstart[16456];   //[nhits]
-   Double_t        hit_tend[16456];   //[nhits]
-   Int_t           hit_trkid[16456];   //[nhits]
-   Int_t           hit_trkkey[16456];   //[nhits]
-   Int_t           hit_clukey[16456];   //[nhits]
-   Int_t           hit_pk[16456];   //[nhits]
-   Int_t           hit_t[16456];   //[nhits]
-   Int_t           hit_ch[16456];   //[nhits]
-   Int_t           hit_fwhh[16456];   //[nhits]
-   Double_t        hit_rms[16456];   //[nhits]
-   Double_t        hit_nelec[16456];   //[nhits]
-   Double_t        hit_energy[16456];   //[nhits]
-   Float_t         hit_dQds[16456];   //[nhits]
-   Float_t         hit_dEds[16456];   //[nhits]
-   Float_t         hit_ds[16456];   //[nhits]
-   Float_t         hit_resrange[16456];   //[nhits]
-   Float_t         hit_x[16456];   //[nhits]
-   Float_t         hit_y[16456];   //[nhits]
-   Float_t         hit_z[16456];   //[nhits]
+   Int_t           hit_plane[16402];   //[nhits]
+   Int_t           hit_wire[16402];   //[nhits]
+   Int_t           hit_channel[16402];   //[nhits]
+   Double_t        hit_peakT[16402];   //[nhits]
+   Double_t        hit_charge[16402];   //[nhits]
+   Double_t        hit_ph[16402];   //[nhits]
+   Double_t        hit_tstart[16402];   //[nhits]
+   Double_t        hit_tend[16402];   //[nhits]
+   Int_t           hit_trkid[16402];   //[nhits]
+   Int_t           hit_trkkey[16402];   //[nhits]
+   Int_t           hit_clukey[16402];   //[nhits]
+   Int_t           hit_pk[16402];   //[nhits]
+   Int_t           hit_t[16402];   //[nhits]
+   Int_t           hit_ch[16402];   //[nhits]
+   Int_t           hit_fwhh[16402];   //[nhits]
+   Double_t        hit_rms[16402];   //[nhits]
+   Double_t        hit_nelec[16402];   //[nhits]
+   Double_t        hit_energy[16402];   //[nhits]
+   Float_t         hit_dQds[16402];   //[nhits]
+   Float_t         hit_dEds[16402];   //[nhits]
+   Float_t         hit_ds[16402];   //[nhits]
+   Float_t         hit_resrange[16402];   //[nhits]
+   Float_t         hit_x[16402];   //[nhits]
+   Float_t         hit_y[16402];   //[nhits]
+   Float_t         hit_z[16402];   //[nhits]
    Int_t           nwctrks;
    Double_t        wctrk_XFaceCoor[1];   //[nwctrks]
    Double_t        wctrk_YFaceCoor[1];   //[nwctrks]
@@ -121,45 +121,31 @@ public :
    Double_t        HitTimeStampUSW[1];   //[nAG]
    Double_t        HitTimeStampDS1[1];   //[nAG]
    Double_t        HitTimeStampDS2[1];   //[nAG]
-   Double_t        HitPulseAreaUSE[1];   //[nAG]
-   Double_t        HitPulseAreaUSW[1];   //[nAG]
-   Double_t        HitPulseAreaDS1[1];   //[nAG]
-   Double_t        HitPulseAreaDS2[1];   //[nAG]
-   Double_t        HitExistUSE[1];   //[nAG]
-   Double_t        HitExistUSW[1];   //[nAG]
-   Double_t        HitExistDS1[1];   //[nAG]
-   Double_t        HitExistDS2[1];   //[nAG]
+   Float_t         HitPulseAreaUSE[1];   //[nAG]
+   Float_t         HitPulseAreaUSW[1];   //[nAG]
+   Float_t         HitPulseAreaDS1[1];   //[nAG]
+   Float_t         HitPulseAreaDS2[1];   //[nAG]
+   Bool_t          HitExistUSE[1];   //[nAG]
+   Bool_t          HitExistUSW[1];   //[nAG]
+   Bool_t          HitExistDS1[1];   //[nAG]
+   Bool_t          HitExistDS2[1];   //[nAG]
    Int_t           no_primaries;
    Int_t           geant_list_size;
    Int_t           pdg[1];   //[geant_list_size]
-   Double_t        StartPointx[1];   //[geant_list_size]
-   Double_t        StartPointy[1];   //[geant_list_size]
-   Double_t        StartPointz[1];   //[geant_list_size]
    Double_t        Eng[1];   //[geant_list_size]
    Double_t        Px[1];   //[geant_list_size]
    Double_t        Py[1];   //[geant_list_size]
    Double_t        Pz[1];   //[geant_list_size]
-   Double_t        EndPointx[1];   //[geant_list_size]
-   Double_t        EndPointy[1];   //[geant_list_size]
-   Double_t        EndPointz[1];   //[geant_list_size]
    Double_t        EndEng[1];   //[geant_list_size]
    Double_t        EndPx[1];   //[geant_list_size]
    Double_t        EndPy[1];   //[geant_list_size]
    Double_t        EndPz[1];   //[geant_list_size]
-   Double_t        End2Pointx[1];   //[geant_list_size]
-   Double_t        End2Pointy[1];   //[geant_list_size]
-   Double_t        End2Pointz[1];   //[geant_list_size]
-   Double_t        End2Eng[1];   //[geant_list_size]
-   Double_t        End2Px[1];   //[geant_list_size]
-   Double_t        End2Py[1];   //[geant_list_size]
-   Double_t        End2Pz[1];   //[geant_list_size]
-   Int_t           NTrTrajPts[1];   //[geant_list_size]
-   Double_t        MidPosX[1][1000];   //[geant_list_size]
-   Double_t        MidPosY[1][1000];   //[geant_list_size]
-   Double_t        MidPosZ[1][1000];   //[geant_list_size]
-   Double_t        MidPx[1][1000];   //[geant_list_size]
-   Double_t        MidPy[1][1000];   //[geant_list_size]
-   Double_t        MidPz[1][1000];   //[geant_list_size]
+   Double_t        StartPointx[1];   //[geant_list_size]
+   Double_t        StartPointy[1];   //[geant_list_size]
+   Double_t        StartPointz[1];   //[geant_list_size]
+   Double_t        EndPointx[1];   //[geant_list_size]
+   Double_t        EndPointy[1];   //[geant_list_size]
+   Double_t        EndPointz[1];   //[geant_list_size]
    Int_t           Process[1];   //[geant_list_size]
    Int_t           NumberDaughters[1];   //[geant_list_size]
    Int_t           Mother[1];   //[geant_list_size]
@@ -167,6 +153,13 @@ public :
    Int_t           process_primary[1];   //[geant_list_size]
    vector<string>  *G4Process;
    vector<string>  *G4FinalProcess;
+   Double_t        NTrTrajPts[1];   //[no_primaries]
+   Double_t        MidPosX[1][1000];   //[no_primaries]
+   Double_t        MidPosY[1][1000];   //[no_primaries]
+   Double_t        MidPosZ[1][1000];   //[no_primaries]
+   Double_t        MidPx[1][1000];   //[no_primaries]
+   Double_t        MidPy[1][1000];   //[no_primaries]
+   Double_t        MidPz[1][1000];   //[no_primaries]
    Int_t           no_mcshowers;
    Double_t        mcshwr_origin[1];   //[no_mcshowers]
    Double_t        mcshwr_pdg[1];   //[no_mcshowers]
@@ -325,34 +318,20 @@ public :
    TBranch        *b_no_primaries;   //!
    TBranch        *b_geant_list_size;   //!
    TBranch        *b_pdg;   //!
-   TBranch        *b_StartPointx;   //!
-   TBranch        *b_StartPointy;   //!
-   TBranch        *b_StartPointz;   //!
    TBranch        *b_Eng;   //!
    TBranch        *b_Px;   //!
    TBranch        *b_Py;   //!
    TBranch        *b_Pz;   //!
-   TBranch        *b_EndPointx;   //!
-   TBranch        *b_EndPointy;   //!
-   TBranch        *b_EndPointz;   //!
    TBranch        *b_EndEng;   //!
    TBranch        *b_EndPx;   //!
    TBranch        *b_EndPy;   //!
    TBranch        *b_EndPz;   //!
-   TBranch        *b_End2Pointx;   //!
-   TBranch        *b_End2Pointy;   //!
-   TBranch        *b_End2Pointz;   //!
-   TBranch        *b_End2Eng;   //!
-   TBranch        *b_End2Px;   //!
-   TBranch        *b_End2Py;   //!
-   TBranch        *b_End2Pz;   //!
-   TBranch        *b_NTrTrajPts;   //!
-   TBranch        *b_MidPosX;   //!
-   TBranch        *b_MidPosY;   //!
-   TBranch        *b_MidPosZ;   //!
-   TBranch        *b_MidPx;   //!
-   TBranch        *b_MidPy;   //!
-   TBranch        *b_MidPz;   //!
+   TBranch        *b_StartPointx;   //!
+   TBranch        *b_StartPointy;   //!
+   TBranch        *b_StartPointz;   //!
+   TBranch        *b_EndPointx;   //!
+   TBranch        *b_EndPointy;   //!
+   TBranch        *b_EndPointz;   //!
    TBranch        *b_Process;   //!
    TBranch        *b_NumberDaughters;   //!
    TBranch        *b_Mother;   //!
@@ -360,6 +339,13 @@ public :
    TBranch        *b_process_primary;   //!
    TBranch        *b_G4Process;   //!
    TBranch        *b_G4FinalProcess;   //!
+   TBranch        *b_NTrTrajPts;   //!
+   TBranch        *b_MidPosX;   //!
+   TBranch        *b_MidPosY;   //!
+   TBranch        *b_MidPosZ;   //!
+   TBranch        *b_MidPx;   //!
+   TBranch        *b_MidPy;   //!
+   TBranch        *b_MidPz;   //!
    TBranch        *b_no_mcshowers;   //!
    TBranch        *b_mcshwr_origin;   //!
    TBranch        *b_mcshwr_pdg;   //!
@@ -415,6 +401,7 @@ public :
    virtual Long64_t LoadTree(Long64_t entry);
    virtual void     Init(TTree *tree);
    virtual void     Loop();
+   virtual void     LowZCut();
    virtual Bool_t   Notify();
    virtual void     Show(Long64_t entry = -1);
 };
@@ -576,49 +563,35 @@ void DataAnalysis::Init(TTree *tree)
    fChain->SetBranchAddress("tofObject", tofObject, &b_tofObject);
    fChain->SetBranchAddress("tof_timestamp", tof_timestamp, &b_tof_timestamp);
    fChain->SetBranchAddress("nAG", &nAG, &b_nAG);
-   fChain->SetBranchAddress("HitTimeStampUSE", &HitTimeStampUSE, &b_HitTimeStampUSE);
-   fChain->SetBranchAddress("HitTimeStampUSW", &HitTimeStampUSW, &b_HitTimeStampUSW);
-   fChain->SetBranchAddress("HitTimeStampDS1", &HitTimeStampDS1, &b_HitTimeStampDS1);
-   fChain->SetBranchAddress("HitTimeStampDS2", &HitTimeStampDS2, &b_HitTimeStampDS2);
-   fChain->SetBranchAddress("HitPulseAreaUSE", &HitPulseAreaUSE, &b_HitPulseAreaUSE);
-   fChain->SetBranchAddress("HitPulseAreaUSW", &HitPulseAreaUSW, &b_HitPulseAreaUSW);
-   fChain->SetBranchAddress("HitPulseAreaDS1", &HitPulseAreaDS1, &b_HitPulseAreaDS1);
-   fChain->SetBranchAddress("HitPulseAreaDS2", &HitPulseAreaDS2, &b_HitPulseAreaDS2);
-   fChain->SetBranchAddress("HitExistUSE", &HitExistUSE, &b_HitExistUSE);
-   fChain->SetBranchAddress("HitExistUSW", &HitExistUSW, &b_HitExistUSW);
-   fChain->SetBranchAddress("HitExistDS1", &HitExistDS1, &b_HitExistDS1);
-   fChain->SetBranchAddress("HitExistDS2", &HitExistDS2, &b_HitExistDS2);
+   fChain->SetBranchAddress("HitTimeStampUSE", HitTimeStampUSE, &b_HitTimeStampUSE);
+   fChain->SetBranchAddress("HitTimeStampUSW", HitTimeStampUSW, &b_HitTimeStampUSW);
+   fChain->SetBranchAddress("HitTimeStampDS1", HitTimeStampDS1, &b_HitTimeStampDS1);
+   fChain->SetBranchAddress("HitTimeStampDS2", HitTimeStampDS2, &b_HitTimeStampDS2);
+   fChain->SetBranchAddress("HitPulseAreaUSE", HitPulseAreaUSE, &b_HitPulseAreaUSE);
+   fChain->SetBranchAddress("HitPulseAreaUSW", HitPulseAreaUSW, &b_HitPulseAreaUSW);
+   fChain->SetBranchAddress("HitPulseAreaDS1", HitPulseAreaDS1, &b_HitPulseAreaDS1);
+   fChain->SetBranchAddress("HitPulseAreaDS2", HitPulseAreaDS2, &b_HitPulseAreaDS2);
+   fChain->SetBranchAddress("HitExistUSE", HitExistUSE, &b_HitExistUSE);
+   fChain->SetBranchAddress("HitExistUSW", HitExistUSW, &b_HitExistUSW);
+   fChain->SetBranchAddress("HitExistDS1", HitExistDS1, &b_HitExistDS1);
+   fChain->SetBranchAddress("HitExistDS2", HitExistDS2, &b_HitExistDS2);
    fChain->SetBranchAddress("no_primaries", &no_primaries, &b_no_primaries);
    fChain->SetBranchAddress("geant_list_size", &geant_list_size, &b_geant_list_size);
    fChain->SetBranchAddress("pdg", &pdg, &b_pdg);
-   fChain->SetBranchAddress("StartPointx", &StartPointx, &b_StartPointx);
-   fChain->SetBranchAddress("StartPointy", &StartPointy, &b_StartPointy);
-   fChain->SetBranchAddress("StartPointz", &StartPointz, &b_StartPointz);
    fChain->SetBranchAddress("Eng", &Eng, &b_Eng);
    fChain->SetBranchAddress("Px", &Px, &b_Px);
    fChain->SetBranchAddress("Py", &Py, &b_Py);
    fChain->SetBranchAddress("Pz", &Pz, &b_Pz);
-   fChain->SetBranchAddress("EndPointx", &EndPointx, &b_EndPointx);
-   fChain->SetBranchAddress("EndPointy", &EndPointy, &b_EndPointy);
-   fChain->SetBranchAddress("EndPointz", &EndPointz, &b_EndPointz);
    fChain->SetBranchAddress("EndEng", &EndEng, &b_EndEng);
    fChain->SetBranchAddress("EndPx", &EndPx, &b_EndPx);
    fChain->SetBranchAddress("EndPy", &EndPy, &b_EndPy);
    fChain->SetBranchAddress("EndPz", &EndPz, &b_EndPz);
-   fChain->SetBranchAddress("End2Pointx", &End2Pointx, &b_End2Pointx);
-   fChain->SetBranchAddress("End2Pointy", &End2Pointy, &b_End2Pointy);
-   fChain->SetBranchAddress("End2Pointz", &End2Pointz, &b_End2Pointz);
-   fChain->SetBranchAddress("End2Eng", &End2Eng, &b_End2Eng);
-   fChain->SetBranchAddress("End2Px", &End2Px, &b_End2Px);
-   fChain->SetBranchAddress("End2Py", &End2Py, &b_End2Py);
-   fChain->SetBranchAddress("End2Pz", &End2Pz, &b_End2Pz);
-   fChain->SetBranchAddress("NTrTrajPts", &NTrTrajPts, &b_NTrTrajPts);
-   fChain->SetBranchAddress("MidPosX", &MidPosX, &b_MidPosX);
-   fChain->SetBranchAddress("MidPosY", &MidPosY, &b_MidPosY);
-   fChain->SetBranchAddress("MidPosZ", &MidPosZ, &b_MidPosZ);
-   fChain->SetBranchAddress("MidPx", &MidPx, &b_MidPx);
-   fChain->SetBranchAddress("MidPy", &MidPy, &b_MidPy);
-   fChain->SetBranchAddress("MidPz", &MidPz, &b_MidPz);
+   fChain->SetBranchAddress("StartPointx", &StartPointx, &b_StartPointx);
+   fChain->SetBranchAddress("StartPointy", &StartPointy, &b_StartPointy);
+   fChain->SetBranchAddress("StartPointz", &StartPointz, &b_StartPointz);
+   fChain->SetBranchAddress("EndPointx", &EndPointx, &b_EndPointx);
+   fChain->SetBranchAddress("EndPointy", &EndPointy, &b_EndPointy);
+   fChain->SetBranchAddress("EndPointz", &EndPointz, &b_EndPointz);
    fChain->SetBranchAddress("Process", &Process, &b_Process);
    fChain->SetBranchAddress("NumberDaughters", &NumberDaughters, &b_NumberDaughters);
    fChain->SetBranchAddress("Mother", &Mother, &b_Mother);
@@ -626,6 +599,13 @@ void DataAnalysis::Init(TTree *tree)
    fChain->SetBranchAddress("process_primary", &process_primary, &b_process_primary);
    fChain->SetBranchAddress("G4Process", &G4Process, &b_G4Process);
    fChain->SetBranchAddress("G4FinalProcess", &G4FinalProcess, &b_G4FinalProcess);
+   fChain->SetBranchAddress("NTrTrajPts", &NTrTrajPts, &b_NTrTrajPts);
+   fChain->SetBranchAddress("MidPosX", &MidPosX, &b_MidPosX);
+   fChain->SetBranchAddress("MidPosY", &MidPosY, &b_MidPosY);
+   fChain->SetBranchAddress("MidPosZ", &MidPosZ, &b_MidPosZ);
+   fChain->SetBranchAddress("MidPx", &MidPx, &b_MidPx);
+   fChain->SetBranchAddress("MidPy", &MidPy, &b_MidPy);
+   fChain->SetBranchAddress("MidPz", &MidPz, &b_MidPz);
    fChain->SetBranchAddress("no_mcshowers", &no_mcshowers, &b_no_mcshowers);
    fChain->SetBranchAddress("mcshwr_origin", &mcshwr_origin, &b_mcshwr_origin);
    fChain->SetBranchAddress("mcshwr_pdg", &mcshwr_pdg, &b_mcshwr_pdg);
