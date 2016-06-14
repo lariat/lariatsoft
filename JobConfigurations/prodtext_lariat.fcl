@@ -2,6 +2,7 @@
 #include "textfilegen.fcl"
 #include "largeantmodules_lariat.fcl"
 #include "detsimmodules_lariat.fcl"
+#include "magfield.fcl"
 
 process_name: TextGen
 
@@ -11,7 +12,8 @@ services:
   TFileService: { fileName: "text_hist.root" }
   Timing:       {}
   RandomNumberGenerator: {} #ART native random number generator
-  user:         @local::lariat_simulation_services
+  #user:         @local::lariat_simulation_services
+  @table::lariat_simulation_services
 }
 
 
@@ -67,4 +69,7 @@ outputs:
  }
 }
 physics.producers.generator.InputFileName:"/lariat/app/users/gpulliam/lariatslicers/v05_11_01_01/hepevt.txt"
+services.MagneticField.UseField: 1
+services.MagneticField.ConstantField: [ 0.0, -.175, 0.0]
+services.MagneticField.MagnetizedVolume: "magnet"
 

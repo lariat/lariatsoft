@@ -108,6 +108,9 @@ private:
   double exitmomy[kMaxDet][kMaxIDE];
   double exitmomz[kMaxDet][kMaxIDE];
   double AuxDetID[kMaxDet];
+  int iterarray[kMaxDet];
+  double TOFangle[kMaxIDE];
+  double TrackID[kMaxDet][kMaxIDE];  
   //double enterx;
   //double entery;
   //double enterz;
@@ -140,20 +143,25 @@ void SimLArIATDigits::produce(art::Event & e)
      const sim::AuxDetSimChannel & aux = *auxiter;
      AuxDetID[iter]=aux.AuxDetID();
      ID=aux.AuxDetID();
+     iterarray[iter]=iter;
      std::vector<sim::AuxDetIDE> SimIDE=aux.AuxDetIDEs();
      numIDEs[iter]=SimIDE.size();  
      std::cout<<"For AuxDetID: "<<iter<<", there are "<<SimIDE.size()<<" IDEs. Also: "<<aux.AuxDetID()<<std::endl;
      for(size_t nIDE=0; nIDE<SimIDE.size(); ++nIDE){
        sim::AuxDetIDE TheIDE=SimIDE[nIDE];
-       entryx[ID][nIDE]=TheIDE.entryX;
-       entryy[ID][nIDE]=TheIDE.entryY;
-       entryz[ID][nIDE]=TheIDE.entryZ;
-       exitx[ID][nIDE]=TheIDE.exitX;
-       exity[ID][nIDE]=TheIDE.exitY;
-       exitz[ID][nIDE]=TheIDE.exitZ;
-       exitmomx[ID][nIDE]=TheIDE.exitMomentumX;
-       exitmomy[ID][nIDE]=TheIDE.exitMomentumY;
-       exitmomz[ID][nIDE]=TheIDE.exitMomentumZ;    
+       entryx[iter][nIDE]=TheIDE.entryX;
+       entryy[iter][nIDE]=TheIDE.entryY;
+       entryz[iter][nIDE]=TheIDE.entryZ;
+       exitx[iter][nIDE]=TheIDE.exitX;
+       exity[iter][nIDE]=TheIDE.exitY;
+       exitz[iter][nIDE]=TheIDE.exitZ;
+       TrackID[iter][nIDE]=TheIDE.trackID; 
+       exitmomx[iter][nIDE]=TheIDE.exitMomentumX;
+       exitmomy[iter][nIDE]=TheIDE.exitMomentumY;
+       exitmomz[iter][nIDE]=TheIDE.exitMomentumZ;
+       if(iter==0){
+         TOFangle[nIDE]=180/(3.141593)*tan(TheIDE.exitMomentumX/TheIDE.exitMomentumZ);
+       } 
        std::cout<<"ID: "<<ID<<" nIDE: "<<nIDE<<" Total IDEs: "<<SimIDE.size()<<std::endl;
        //enterx=TheIDE.entryX;
        //entery=TheIDE.entryY;
@@ -181,10 +189,13 @@ void SimLArIATDigits::beginJob()
   fTree->Branch("exitmomx",exitmomx,"exitmomx[numSimChannels][1000]/D");
   fTree->Branch("exitmomy",exitmomy,"exitmomy[numSimChannels][1000]/D");
   fTree->Branch("exitmomz",exitmomz,"exitmomz[numSimChannels][1000]/D");
+  fTree->Branch("TrackID",TrackID,"TrackID[numSimChannels][1000]/D");
   //fTree->Branch("enterx",enterx,"enterx/D");
   //fTree->Branch("entery",entery,"entery/D");
   //fTree->Branch("enterz",enterz,"enterz/D");
   fTree->Branch("AuxDetID",AuxDetID,"AuxDetID[numSimChannels]/D");
+  fTree->Branch("iterarray",iterarray,"iter[numSimChannels]/I");
+  fTree->Branch("TOFangle",TOFangle,"TOFangle[numIDEs]/D");
   XZHit = tfs->make<TH2D>("XZHit", "XZHit", 1500,-1000,500,1500,-150,150);  
   
   
@@ -194,6 +205,7 @@ void SimLArIATDigits::ResetVars()
   numSimChannels=-9999;
   for(int i=0; i<kMaxDet; ++i){
     AuxDetID[i]=-9999;
+    iterarray[i]=-9999;
     numIDEs[i]=-9999;
     for(int j=0; j<kMaxIDE; ++j){
       entryx[i][j]=-9999;
@@ -205,6 +217,8 @@ void SimLArIATDigits::ResetVars()
       exitmomx[i][j]=-9999;
       exitmomy[i][j]=-9999;
       exitmomz[i][j]=-9999;
+      TrackID[i][j]=-9999;
+      TOFangle[j]=-9999;
     }
   }
 }
