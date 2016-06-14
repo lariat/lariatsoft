@@ -68,8 +68,8 @@ outputs:
    fileName:    "text_gen.root" #default file name, can override from command line with -o or --output
  }
 }
-physics.producers.generator.InputFileName:"/lariat/app/users/gpulliam/lariatslicers/v05_11_01_01/hepevt.txt"
-services.MagneticField.UseField: 1
+physics.producers.generator.InputFileName:"g4blevents.txt"
+services.MagneticField.UseField: 0
 services.MagneticField.ConstantField: [ 0.0, -.175, 0.0]
 services.MagneticField.MagnetizedVolume: "magnet"
 
