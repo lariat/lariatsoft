@@ -2,7 +2,7 @@
 // #######################
 // ### Load Data Plots ###
 // #######################
-TFile *f1 = new TFile("./PionXSection_histos_05_12_00.root");
+TFile *f1 = new TFile("./PionXSection_histos_data.root");
 
 
 // ###################################
@@ -61,7 +61,7 @@ hMCdEdX->Draw("histosame");
 //hMCdEdX->Fit("landau","","",0, 50);
 
 // ### Fitting the Data ###
-hDatadEdX->Fit("landau","","",1.0, 10);
+//hDatadEdX->Fit("landau","","",1.0, 10);
 
 // ############################
 // # Setting the Latex Header #
