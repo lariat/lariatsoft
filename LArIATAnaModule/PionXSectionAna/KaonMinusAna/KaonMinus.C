@@ -1,8 +1,9 @@
-#define Pion_cxx
-#include "Pion.h"
+#define KaonMinus_cxx
+#include "KaonMinus.h"
 #include <TH2.h>
 #include <TStyle.h>
 #include <TCanvas.h>
+
 
 // ===================================================================================================================
 // ====================================       PUT HISTOGRAMS HERE           ==========================================
@@ -83,31 +84,31 @@ TH1D *hDeltaLength = new TH1D("hDeltaLength", "#Delta Length of the most upstrea
 
 
 
-/////////////////////////////////// "Pion" initial Kinetic Energy (MeV) //////////////////////////////////////////
-TH1D *hMCInitalKE = new TH1D("hMCInitalKE", "Pion Initial Kinetic Energy (MeV)", 500, 0, 2500);
-/////////////////////////////////// "Pion" dE/dX //////////////////////////////////////////
-TH1D *hdataPiondEdX = new TH1D("hdataPiondEdX", "Pion dE/dX", 200, 0, 50);
-/////////////////////////////////// "Pion" Residual Range //////////////////////////////////////////
-TH1D *hdataPionRR = new TH1D("hdataPionRR", "Pion Residual Range", 240, -10, 110);
-/////////////////////////////////// "Pion" Track Pitch //////////////////////////////////////////
-TH1D *hdataPionTrkPitch = new TH1D("hdataPionTrkPitch", "Track Pitch", 1000, 0, 5);
-///////////////////////////////// "Pion dE/dX vs RR ///////////////////////////////////////////
-TH2D *hdataPiondEdXvsRR = new TH2D("", "dE/dX vs Residual Range",200, 0, 100, 200, 0, 50);
-/////////////////////////////////// "Pion" Incident to the slab Kinetic Energy (MeV) //////////////////////////////////////////
-TH1D *hdataPionIncidentKE = new TH1D("hdataPionIncidentKE", "Pion Incident Kinetic Energy (MeV)", 40, 0, 2000);
-/////////////////////////////////// "Pion" Exiting the slab Kinetic Energy (MeV) //////////////////////////////////////////
-TH1D *fPionInteractions = new TH1D("fPionInteractions", "Pion Out Kinetic Energy (MeV)", 40, 0, 2000);
+/////////////////////////////////// "KaonMinus" initial Kinetic Energy (MeV) //////////////////////////////////////////
+TH1D *hMCInitalKE = new TH1D("hMCInitalKE", "KaonMinus Initial Kinetic Energy (MeV)", 500, 0, 2500);
+/////////////////////////////////// "KaonMinus" dE/dX //////////////////////////////////////////
+TH1D *hdataKaonMinusdEdX = new TH1D("hdataKaonMinusdEdX", "KaonMinus dE/dX", 200, 0, 50);
+/////////////////////////////////// "KaonMinus" Residual Range //////////////////////////////////////////
+TH1D *hdataKaonMinusRR = new TH1D("hdataKaonMinusRR", "KaonMinus Residual Range", 240, -10, 110);
+/////////////////////////////////// "KaonMinus" Track Pitch //////////////////////////////////////////
+TH1D *hdataKaonMinusTrkPitch = new TH1D("hdataKaonMinusTrkPitch", "Track Pitch", 1000, 0, 5);
+///////////////////////////////// "KaonMinus dE/dX vs RR ///////////////////////////////////////////
+TH2D *hdataKaonMinusdEdXvsRR = new TH2D("", "dE/dX vs Residual Range",200, 0, 100, 200, 0, 50);
+/////////////////////////////////// "KaonMinus" Incident to the slab Kinetic Energy (MeV) //////////////////////////////////////////
+TH1D *hdataKaonMinusIncidentKE = new TH1D("hdataKaonMinusIncidentKE", "KaonMinus Incident Kinetic Energy (MeV)", 40, 0, 2000);
+/////////////////////////////////// "KaonMinus" Exiting the slab Kinetic Energy (MeV) //////////////////////////////////////////
+TH1D *fKaonMinusInteractions = new TH1D("fKaonMinusInteractions", "KaonMinus Out Kinetic Energy (MeV)", 40, 0, 2000);
 /////////////////////////////////// Cross-Section //////////////////////////////////////////////////////////////////////
 TH1F *fCrossSection = new TH1F("fCrossSection", "Cross-Section", 40, 0, 2000); 
 
-////////////////////////////////// Pion Track Start and End Positions //////////////////////////////////////////////////
-TH1D *hdataPionTrackEndX = new TH1D("hdataPionTrackEndX", "Pion Track End X Position", 50, 0, 50);
-TH1D *hdataPionTrackEndY = new TH1D("hdataPionTrackEndY", "Pion Track End Y Position", 40, -20, 20);
-TH1D *hdataPionTrackEndZ = new TH1D("hdataPionTrackEndZ", "Pion Track End Z Position", 100, 0, 100);
+////////////////////////////////// KaonMinus Track Start and End Positions //////////////////////////////////////////////////
+TH1D *hdataKaonMinusTrackEndX = new TH1D("hdataKaonMinusTrackEndX", "KaonMinus Track End X Position", 50, 0, 50);
+TH1D *hdataKaonMinusTrackEndY = new TH1D("hdataKaonMinusTrackEndY", "KaonMinus Track End Y Position", 40, -20, 20);
+TH1D *hdataKaonMinusTrackEndZ = new TH1D("hdataKaonMinusTrackEndZ", "KaonMinus Track End Z Position", 100, 0, 100);
 
-TH1D *hdataPionTrackStartX = new TH1D("hdataPionTrackStartX", "Pion Track Start X Position", 50, 0, 50);
-TH1D *hdataPionTrackStartY = new TH1D("hdataPionTrackStartY", "Pion Track Start Y Position", 40, -20, 20);
-TH1D *hdataPionTrackStartZ = new TH1D("hdataPionTrackStartZ", "Pion Track Start Z Position", 100, 0, 100);
+TH1D *hdataKaonMinusTrackStartX = new TH1D("hdataKaonMinusTrackStartX", "KaonMinus Track Start X Position", 50, 0, 50);
+TH1D *hdataKaonMinusTrackStartY = new TH1D("hdataKaonMinusTrackStartY", "KaonMinus Track Start Y Position", 40, -20, 20);
+TH1D *hdataKaonMinusTrackStartZ = new TH1D("hdataKaonMinusTrackStartZ", "KaonMinus Track Start Z Position", 100, 0, 100);
 
 
 /////////////////////////////////// Delta End X Position //////////////////////////////////////////
@@ -206,11 +207,11 @@ THStack *hStackDeltaEndX = new THStack("hStackDeltaEndX", "#Delta X_{f}");
 
 
 
-void Pion::Loop()
+void KaonMinus::Loop()
 {
 //   In a ROOT session, you can do:
-//      Root > .L Pion.C
-//      Root > Pion t
+//      Root > .L KaonMinus.C
+//      Root > KaonMinus t
 //      Root > t.GetEntry(12); // Fill t data members with entry number 12
 //      Root > t.Show();       // Show values of entry 12
 //      Root > t.Show(16);     // Read and show values of entry 16
@@ -243,7 +244,7 @@ void Pion::Loop()
 // ###    which is used when calculating the energy loss before  ###
 // ###                       entering the TPC                    ###
 
-float particle_mass = 139.57; //<---Mass of Pion in MeV
+float particle_mass = 139.57; //<---Mass of KaonMinus in MeV
 
 
 // ### Number of centimeters in Z we require a track ###
@@ -328,7 +329,7 @@ bool UseEventWeight = true;
 // ###############################################
 // ### Creating a file to output my histograms ###
 // ###############################################
-TFile myfile("PionMCXSection_weighted_histos_nonScaleddEdX.root","RECREATE");
+TFile myfile("KaonMinusMCXSection_weighted_histos_nonScaleddEdX.root","RECREATE");
 
 
 
@@ -999,7 +1000,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    // ### The assumed energy loss between the cryostat and the TPC ###
    float entryTPCEnergyLoss = 36; //MeV
 
-   // ### The assumed mass of the incident particle (here we assume a pion) ###
+   // ### The assumed mass of the incident particle (here we assume a KaonMinus) ###
    float mass = 139.57;
    
    // #################################################
@@ -1029,11 +1030,11 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    // ########################################################################
    // ### Variables for the track we are calculating the cross-section for ###
    // ########################################################################
-   double Piondedx[1000]={0.};
-   double Pionresrange[1000]={0.};
-   double Pionpitchhit[1000]={0.};
-   int nPionSpts = 0;
-   double PionSumEnergy = 0;
+   double KaonMinusdedx[1000]={0.};
+   double KaonMinusresrange[1000]={0.};
+   double KaonMinuspitchhit[1000]={0.};
+   int nKaonMinusSpts = 0;
+   double KaonMinusSumEnergy = 0;
    
    // ### Variables for determining the matching of the end point ###
    float TrackEndX = 999, TrackEndY = 999, TrackEndZ = 999;
@@ -1050,15 +1051,15 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
       TrackEndY = trkendy[nTPCtrk];
       TrackEndZ = trkendz[nTPCtrk];
       
-      hdataPionTrackEndX->Fill(TrackEndX);
-      hdataPionTrackEndY->Fill(TrackEndY);
-      hdataPionTrackEndZ->Fill(TrackEndZ);
+      hdataKaonMinusTrackEndX->Fill(TrackEndX);
+      hdataKaonMinusTrackEndY->Fill(TrackEndY);
+      hdataKaonMinusTrackEndZ->Fill(TrackEndZ);
       
       // ### Recording the start-point of this track ###
       
-      hdataPionTrackStartX->Fill(trkvtxx[nTPCtrk]);
-      hdataPionTrackStartY->Fill(trkvtxy[nTPCtrk]);
-      hdataPionTrackStartZ->Fill(trkvtxz[nTPCtrk]);
+      hdataKaonMinusTrackStartX->Fill(trkvtxx[nTPCtrk]);
+      hdataKaonMinusTrackStartY->Fill(trkvtxy[nTPCtrk]);
+      hdataKaonMinusTrackStartZ->Fill(trkvtxz[nTPCtrk]);
       
       RecoLength = trklength[nTPCtrk];
       
@@ -1072,7 +1073,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
          TrackEndY < -19 || TrackEndZ > 89.0)
 	 {ExitingTrack = true;}
       
-      nPionSpts = 0;
+      nKaonMinusSpts = 0;
       // ###################################################
       // ### Looping over the spacepoints for this track ###
       // ###################################################
@@ -1080,36 +1081,36 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
          {
 	 // ###                 Note: Format for this variable is:             ###
 	 // ### [trk number][plane 0 = induction, 1 = collection][spts number] ###
-         Piondedx[nPionSpts]     = trkdedx[nTPCtrk][1][nspts];// * 0.90;//<----Scaling dEdX
+         KaonMinusdedx[nKaonMinusSpts]     = trkdedx[nTPCtrk][1][nspts];// * 0.90;//<----Scaling dEdX
 	 
 	 // ### Putting in a fix in the case that the dE/dX is negative in this step ### 
 	 // ###  then take the point before and the point after and average them
-	 if(Piondedx[nPionSpts] < 0 && nspts < ntrkhits[nTPCtrk] && nspts > 0)
-	    {Piondedx[nPionSpts] = ( (trkdedx[nTPCtrk][1][nspts - 1] + trkdedx[nTPCtrk][1][nspts + 1]) / 2);}
+	 if(KaonMinusdedx[nKaonMinusSpts] < 0 && nspts < ntrkhits[nTPCtrk] && nspts > 0)
+	    {KaonMinusdedx[nKaonMinusSpts] = ( (trkdedx[nTPCtrk][1][nspts - 1] + trkdedx[nTPCtrk][1][nspts + 1]) / 2);}
 	 
 	 // ### If this didn't fix it, then just put in a flat 2.4 MeV / cm fix ###
-	 if(Piondedx[nPionSpts] < 0)
+	 if(KaonMinusdedx[nKaonMinusSpts] < 0)
 	    {
-	    Piondedx[nPionSpts] = 2.4;
+	    KaonMinusdedx[nKaonMinusSpts] = 2.4;
 	    continue;
 	    }
 	 
-         Pionresrange[nPionSpts] = trkrr[nTPCtrk][1][nspts];
-         Pionpitchhit[nPionSpts] = trkpitchhit[nTPCtrk][1][nspts];
+         KaonMinusresrange[nKaonMinusSpts] = trkrr[nTPCtrk][1][nspts];
+         KaonMinuspitchhit[nKaonMinusSpts] = trkpitchhit[nTPCtrk][1][nspts];
          
-	 PionSumEnergy = (Piondedx[nPionSpts] * Pionpitchhit[nPionSpts]) + PionSumEnergy;
+	 KaonMinusSumEnergy = (KaonMinusdedx[nKaonMinusSpts] * KaonMinuspitchhit[nKaonMinusSpts]) + KaonMinusSumEnergy;
 	 
 	 // ### Recording the dE/dX ###
-	 hdataPiondEdX->Fill(Piondedx[nPionSpts], EventWeight);
+	 hdataKaonMinusdEdX->Fill(KaonMinusdedx[nKaonMinusSpts], EventWeight);
 	 // ### Recording the residual range ###
-	 hdataPionRR->Fill(Pionresrange[nPionSpts]);
+	 hdataKaonMinusRR->Fill(KaonMinusresrange[nKaonMinusSpts]);
 	 // ### Recording the Pitch ###
-	 hdataPionTrkPitch->Fill(Pionpitchhit[nPionSpts], EventWeight);
+	 hdataKaonMinusTrkPitch->Fill(KaonMinuspitchhit[nKaonMinusSpts], EventWeight);
 	 
 	 // ### Filling 2d dE/dX vs RR ###
-	 hdataPiondEdXvsRR->Fill(Pionresrange[nPionSpts], Piondedx[nPionSpts]);
+	 hdataKaonMinusdEdXvsRR->Fill(KaonMinusresrange[nKaonMinusSpts], KaonMinusdedx[nKaonMinusSpts]);
 	 
-	 nPionSpts++;
+	 nKaonMinusSpts++;
          }//<---End nspts loop
       
       
@@ -1165,17 +1166,17 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    // ###########################################################
    // ### Looping over the spacepoints to fill the histograms ###
    // ###########################################################
-   for(size_t npoints = 0; npoints < nPionSpts; npoints++)
+   for(size_t npoints = 0; npoints < nKaonMinusSpts; npoints++)
       {
       // ### Filling the incidient histogram ###
-      hdataPionIncidentKE->Fill(kineticEnergy, EventWeight);
+      hdataKaonMinusIncidentKE->Fill(kineticEnergy, EventWeight);
       
       // ### Filling the interaction histogram for the last spt ###
-      if(npoints == nPionSpts -1 && !ExitingTrack)
-         {fPionInteractions->Fill(kineticEnergy, EventWeight);}
+      if(npoints == nKaonMinusSpts -1 && !ExitingTrack)
+         {fKaonMinusInteractions->Fill(kineticEnergy, EventWeight);}
       
-      //float energyLossInStep = Piondedx[npoints] * Pionresrange[npoints] * RecombinationFactor;
-      float energyLossInStep = Piondedx[npoints] * Pionpitchhit[npoints];
+      //float energyLossInStep = KaonMinusdedx[npoints] * KaonMinusresrange[npoints] * RecombinationFactor;
+      float energyLossInStep = KaonMinusdedx[npoints] * KaonMinuspitchhit[npoints];
       
       kineticEnergy -= energyLossInStep;
       
@@ -1361,15 +1362,15 @@ hStackDeltaEndX->Add(hDeltaEndXProtonInelastic);
 // ###################################################################
 // #### Looping over the exiting bins to extract the cross-section ###
 // ###################################################################
-for( int iBin = 1; iBin <= fPionInteractions->GetNbinsX(); ++iBin )
+for( int iBin = 1; iBin <= fKaonMinusInteractions->GetNbinsX(); ++iBin )
    {
    
    std::cout<<std::endl;
    // ### If an incident bin is equal to zero then skip that bin ###
-   if( hdataPionIncidentKE->GetBinContent(iBin) == 0 )continue; //Temporary fix to ensure that no Infinities are propagated to pad
+   if( hdataKaonMinusIncidentKE->GetBinContent(iBin) == 0 )continue; //Temporary fix to ensure that no Infinities are propagated to pad
    
    // ### Cross-section = (Exit Bins / Incident Bins) * (1/Density) * (1/slab width) ###
-   float TempCrossSection = (fPionInteractions->GetBinContent(iBin)/hdataPionIncidentKE->GetBinContent(iBin)) * (1/number_density) * (1/slab_width);
+   float TempCrossSection = (fKaonMinusInteractions->GetBinContent(iBin)/hdataKaonMinusIncidentKE->GetBinContent(iBin)) * (1/number_density) * (1/slab_width);
    
    //std::cout<<"Cross-Section before conversion to barns = "<<TempCrossSection<<std::endl;
    
@@ -1379,16 +1380,16 @@ for( int iBin = 1; iBin <= fPionInteractions->GetNbinsX(); ++iBin )
    
    fCrossSection->SetBinContent(iBin,crossSection);
    
-   float numError = pow(fPionInteractions->GetBinContent(iBin),0.5);
-   float num = fPionInteractions->GetBinContent(iBin);
+   float numError = pow(fKaonMinusInteractions->GetBinContent(iBin),0.5);
+   float num = fKaonMinusInteractions->GetBinContent(iBin);
 
    
    if(num == 0){num = 1;}
    float term1 = numError/num;
    //std::cout<<"term1 = "<<term1<<std::endl;
    
-   float denomError = pow(hdataPionIncidentKE->GetBinContent(iBin),0.5);
-   float denom = hdataPionIncidentKE->GetBinContent(iBin);
+   float denomError = pow(hdataKaonMinusIncidentKE->GetBinContent(iBin),0.5);
+   float denom = hdataKaonMinusIncidentKE->GetBinContent(iBin);
    if(denom == 0){denom = 1;}
    float term2 = denomError/denom;
    //std::cout<<"term2 = "<<term2<<std::endl;
@@ -2471,22 +2472,22 @@ c21->SetTicks();
 c21->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPiondEdX->SetLineColor(kBlack);
-hdataPiondEdX->SetLineStyle(0);
-hdataPiondEdX->SetLineWidth(3);
-hdataPiondEdX->SetMarkerStyle(8);
-hdataPiondEdX->SetMarkerSize(0.9);
+hdataKaonMinusdEdX->SetLineColor(kBlack);
+hdataKaonMinusdEdX->SetLineStyle(0);
+hdataKaonMinusdEdX->SetLineWidth(3);
+hdataKaonMinusdEdX->SetMarkerStyle(8);
+hdataKaonMinusdEdX->SetMarkerSize(0.9);
 
 
 // ### Labeling the axis ###
-hdataPiondEdX->GetXaxis()->SetTitle("dE/dX (MeV/cm)");
-hdataPiondEdX->GetXaxis()->CenterTitle();
+hdataKaonMinusdEdX->GetXaxis()->SetTitle("dE/dX (MeV/cm)");
+hdataKaonMinusdEdX->GetXaxis()->CenterTitle();
 
-hdataPiondEdX->GetYaxis()->SetTitle("");
-hdataPiondEdX->GetYaxis()->CenterTitle();
+hdataKaonMinusdEdX->GetYaxis()->SetTitle("");
+hdataKaonMinusdEdX->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPiondEdX->Draw();
+hdataKaonMinusdEdX->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2525,21 +2526,21 @@ c22->SetTicks();
 c22->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPionRR->SetLineColor(kBlack);
-hdataPionRR->SetLineStyle(0);
-hdataPionRR->SetLineWidth(3);
-hdataPionRR->SetMarkerStyle(8);
-hdataPionRR->SetMarkerSize(0.9);
+hdataKaonMinusRR->SetLineColor(kBlack);
+hdataKaonMinusRR->SetLineStyle(0);
+hdataKaonMinusRR->SetLineWidth(3);
+hdataKaonMinusRR->SetMarkerStyle(8);
+hdataKaonMinusRR->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-hdataPionRR->GetXaxis()->SetTitle("Residual Range (cm)");
-hdataPionRR->GetXaxis()->CenterTitle();
+hdataKaonMinusRR->GetXaxis()->SetTitle("Residual Range (cm)");
+hdataKaonMinusRR->GetXaxis()->CenterTitle();
 
-hdataPionRR->GetYaxis()->SetTitle("Events / 0.5 cm");
-hdataPionRR->GetYaxis()->CenterTitle();
+hdataKaonMinusRR->GetYaxis()->SetTitle("Events / 0.5 cm");
+hdataKaonMinusRR->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPionRR->Draw();
+hdataKaonMinusRR->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2577,21 +2578,21 @@ c23->SetTicks();
 c23->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPionTrkPitch->SetLineColor(kBlack);
-hdataPionTrkPitch->SetLineStyle(0);
-hdataPionTrkPitch->SetLineWidth(3);
-hdataPionTrkPitch->SetMarkerStyle(8);
-hdataPionTrkPitch->SetMarkerSize(0.9);
+hdataKaonMinusTrkPitch->SetLineColor(kBlack);
+hdataKaonMinusTrkPitch->SetLineStyle(0);
+hdataKaonMinusTrkPitch->SetLineWidth(3);
+hdataKaonMinusTrkPitch->SetMarkerStyle(8);
+hdataKaonMinusTrkPitch->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-hdataPionTrkPitch->GetXaxis()->SetTitle("Track Pitch (cm)");
-hdataPionTrkPitch->GetXaxis()->CenterTitle();
+hdataKaonMinusTrkPitch->GetXaxis()->SetTitle("Track Pitch (cm)");
+hdataKaonMinusTrkPitch->GetXaxis()->CenterTitle();
 
-hdataPionTrkPitch->GetYaxis()->SetTitle("Events / 0.005 cm");
-hdataPionTrkPitch->GetYaxis()->CenterTitle();
+hdataKaonMinusTrkPitch->GetYaxis()->SetTitle("Events / 0.005 cm");
+hdataKaonMinusTrkPitch->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPionTrkPitch->Draw();
+hdataKaonMinusTrkPitch->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2629,21 +2630,21 @@ c24->SetTicks();
 c24->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPionIncidentKE->SetLineColor(kBlack);
-hdataPionIncidentKE->SetLineStyle(0);
-hdataPionIncidentKE->SetLineWidth(3);
-hdataPionIncidentKE->SetMarkerStyle(8);
-hdataPionIncidentKE->SetMarkerSize(0.9);
+hdataKaonMinusIncidentKE->SetLineColor(kBlack);
+hdataKaonMinusIncidentKE->SetLineStyle(0);
+hdataKaonMinusIncidentKE->SetLineWidth(3);
+hdataKaonMinusIncidentKE->SetMarkerStyle(8);
+hdataKaonMinusIncidentKE->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-hdataPionIncidentKE->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
-hdataPionIncidentKE->GetXaxis()->CenterTitle();
+hdataKaonMinusIncidentKE->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
+hdataKaonMinusIncidentKE->GetXaxis()->CenterTitle();
 
-hdataPionIncidentKE->GetYaxis()->SetTitle("Events / 50 MeV");
-hdataPionIncidentKE->GetYaxis()->CenterTitle();
+hdataKaonMinusIncidentKE->GetYaxis()->SetTitle("Events / 50 MeV");
+hdataKaonMinusIncidentKE->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPionIncidentKE->Draw();
+hdataKaonMinusIncidentKE->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2681,21 +2682,21 @@ c25->SetTicks();
 c25->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-fPionInteractions->SetLineColor(kBlack);
-fPionInteractions->SetLineStyle(0);
-fPionInteractions->SetLineWidth(3);
-fPionInteractions->SetMarkerStyle(8);
-fPionInteractions->SetMarkerSize(0.9);
+fKaonMinusInteractions->SetLineColor(kBlack);
+fKaonMinusInteractions->SetLineStyle(0);
+fKaonMinusInteractions->SetLineWidth(3);
+fKaonMinusInteractions->SetMarkerStyle(8);
+fKaonMinusInteractions->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-fPionInteractions->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
-fPionInteractions->GetXaxis()->CenterTitle();
+fKaonMinusInteractions->GetXaxis()->SetTitle("Kinetic Energy (MeV)");
+fKaonMinusInteractions->GetXaxis()->CenterTitle();
 
-fPionInteractions->GetYaxis()->SetTitle("Events / 50 MeV");
-fPionInteractions->GetYaxis()->CenterTitle();
+fKaonMinusInteractions->GetYaxis()->SetTitle("Events / 50 MeV");
+fKaonMinusInteractions->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-fPionInteractions->Draw();
+fKaonMinusInteractions->Draw();
 
 // ############################
 // # Setting the Latex Header #
@@ -2786,21 +2787,21 @@ c27->SetTicks();
 c27->SetFillColor(kWhite);
 
 // ### Formatting the histograms ###
-hdataPiondEdXvsRR->SetLineColor(kBlack);
-hdataPiondEdXvsRR->SetLineStyle(0);
-hdataPiondEdXvsRR->SetLineWidth(3);
-hdataPiondEdXvsRR->SetMarkerStyle(8);
-hdataPiondEdXvsRR->SetMarkerSize(0.9);
+hdataKaonMinusdEdXvsRR->SetLineColor(kBlack);
+hdataKaonMinusdEdXvsRR->SetLineStyle(0);
+hdataKaonMinusdEdXvsRR->SetLineWidth(3);
+hdataKaonMinusdEdXvsRR->SetMarkerStyle(8);
+hdataKaonMinusdEdXvsRR->SetMarkerSize(0.9);
 
 // ### Labeling the axis ###
-hdataPiondEdXvsRR->GetXaxis()->SetTitle("Residual Range (cm)");
-hdataPiondEdXvsRR->GetXaxis()->CenterTitle();
+hdataKaonMinusdEdXvsRR->GetXaxis()->SetTitle("Residual Range (cm)");
+hdataKaonMinusdEdXvsRR->GetXaxis()->CenterTitle();
 
-hdataPiondEdXvsRR->GetYaxis()->SetTitle("dE/dX (MeV/cm)");
-hdataPiondEdXvsRR->GetYaxis()->CenterTitle();
+hdataKaonMinusdEdXvsRR->GetYaxis()->SetTitle("dE/dX (MeV/cm)");
+hdataKaonMinusdEdXvsRR->GetYaxis()->CenterTitle();
 
 // ### Drawing the histogram ### 
-hdataPiondEdXvsRR->Draw("colz");
+hdataKaonMinusdEdXvsRR->Draw("colz");
 
 // ############################
 // # Setting the Latex Header #
@@ -3342,13 +3343,13 @@ hDeltaX->Write();
 hDeltaY->Write();
 hDeltaZ->Write();  
 hMCInitalKE->Write(); 
-hdataPiondEdX->Write();
-hdataPionRR->Write();
-hdataPionTrkPitch->Write();
-hdataPionIncidentKE->Write();
-fPionInteractions->Write();
+hdataKaonMinusdEdX->Write();
+hdataKaonMinusRR->Write();
+hdataKaonMinusTrkPitch->Write();
+hdataKaonMinusIncidentKE->Write();
+fKaonMinusInteractions->Write();
 fCrossSection->Write();
-hdataPiondEdXvsRR->Write();
+hdataKaonMinusdEdXvsRR->Write();
 hDeltaEndX->Write();
 hDeltaEndY->Write();
 hDeltaEndZ->Write();
@@ -3395,12 +3396,12 @@ hStackDeltaEndX->Write();
 
 hMCELossUpstream->Write();
 
-hdataPionTrackEndX->Write();
-hdataPionTrackEndY->Write();
-hdataPionTrackEndZ->Write();
-hdataPionTrackStartX->Write();
-hdataPionTrackStartY->Write();
-hdataPionTrackStartZ->Write();
+hdataKaonMinusTrackEndX->Write();
+hdataKaonMinusTrackEndY->Write();
+hdataKaonMinusTrackEndZ->Write();
+hdataKaonMinusTrackStartX->Write();
+hdataKaonMinusTrackStartY->Write();
+hdataKaonMinusTrackStartZ->Write();
 
 }//<---End Loop Function
 
@@ -3414,7 +3415,7 @@ hdataPionTrackStartZ->Write();
 // 				### Function for plotting the Low Z track location ###
 //------------------------------------------------------------------------------------------------------------------
 //------------------------------------------------------------------------------------------------------------------
-void Pion::LowZCut()
+void KaonMinus::LowZCut()
 {
 
 // ################################################################

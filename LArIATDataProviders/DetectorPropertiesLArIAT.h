@@ -12,7 +12,7 @@
 
 // LArSoft libraries
 #include "larcore/Geometry/GeometryCore.h"
-#include "lardata/DetectorInfo/ProviderPack.h"
+#include "larcore/CoreUtils/ProviderPack.h"
 #include "lardata/DetectorInfo/LArProperties.h"
 #include "lardata/DetectorInfo/DetectorClocks.h"
 #include "lardata/DetectorInfo/DetectorProperties.h"
