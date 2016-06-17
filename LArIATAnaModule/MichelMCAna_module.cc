@@ -220,14 +220,16 @@ void MichelMCAna::analyze(art::Event const & e)
   multigraph->GetYaxis()->SetTitle("Y [cm]");
   */
 
-  sprintf(graphName, "r%i_sr%i_e%i", fRun, fSubrun, fEvent);
-  TCanvas* c1 = tfs_subdir.make<TCanvas>(graphName,"c",700,500);
-  c1->cd();
-  TLine *line = new TLine(0,0,3,3);
-  h_NTracks->Draw();
-  line->Draw("same");
-  c1->Write(graphName);
-  
+  if(fDrawGraphs){
+    sprintf(graphName, "r%i_sr%i_e%i", fRun, fSubrun, fEvent);
+    TCanvas* c1 = tfs_subdir.make<TCanvas>(graphName,"c",700,500);
+    c1->cd();
+    TLine *line = new TLine(0,0,3,3);
+    h_NTracks->Draw();
+    line->Draw("same");
+    c1->Write(graphName);
+  }
+
   // Bin 0 = total events
   h_EventCuts->Fill(0);
 
@@ -584,20 +586,20 @@ void MichelMCAna::beginJob()
   h_TrackNode_Y         = tfs->make<TH1D>("TrackNode_Y","Track node;Y [cm];",1000,TPC_Range_Y[0]-5.,TPC_Range_Y[1]+5.);
   h_TrackNode_Z         = tfs->make<TH1D>("TrackNode_Z","Track node;Z [cm];",1000,TPC_Range_Z[0]-5.,TPC_Range_Z[1]+5.);
   h_MuonEnd_truth_ZX     = tfs->make<TH2D>("MuonEnd_truth_ZX","Truth cosmic #mu endpoint (LArIAT MC);Z [cm];X [cm]",
-    180,TPC_Range_Z[0],TPC_Range_Z[1],
-    95,TPC_Range_X[0],TPC_Range_X[1]);
+    90,TPC_Range_Z[0],TPC_Range_Z[1],
+    48,TPC_Range_X[0],TPC_Range_X[1]);
   h_MuonEnd_truth_ZX->SetOption("colz");
   h_MuonEnd_truth_ZY     = tfs->make<TH2D>("MuonEnd_truth_ZY","Truth cosmic #mu endpoint (LArIAT MC);Z [cm];Y [cm]",
-    180,TPC_Range_Z[0],TPC_Range_Z[1],
-    80,TPC_Range_Y[0],TPC_Range_Y[1]);
+    90,TPC_Range_Z[0],TPC_Range_Z[1],
+    40,TPC_Range_Y[0],TPC_Range_Y[1]);
   h_MuonEnd_truth_ZY->SetOption("colz");
   h_MuonEnd_reco_ZX     = tfs->make<TH2D>("MuonEnd_reco_ZX","Reconstructed cosmic #mu endpoint (LArIAT MC);Z [cm];X [cm]",
-    180,TPC_Range_Z[0],TPC_Range_Z[1],
-    95,TPC_Range_X[0],TPC_Range_X[1]);
+    90,TPC_Range_Z[0],TPC_Range_Z[1],
+    48,TPC_Range_X[0],TPC_Range_X[1]);
   h_MuonEnd_reco_ZX->SetOption("colz");
   h_MuonEnd_reco_ZY     = tfs->make<TH2D>("MuonEnd_reco_ZY","Reconstructed cosmic #mu endpoint (LArIAT MC);Z [cm];Y [cm]",
-    180,TPC_Range_Z[0],TPC_Range_Z[1],
-    80,TPC_Range_Y[0],TPC_Range_Y[1]);
+    90,TPC_Range_Z[0],TPC_Range_Z[1],
+    40,TPC_Range_Y[0],TPC_Range_Y[1]);
   h_MuonEnd_reco_ZY->SetOption("colz");
   h_MuonEnd_dX          = tfs->make<TH1D>("MuonEnd_dX","Stopping #mu+ endpoint resolution (LArIAT MC);#DeltaX [cm]",100,-5,5);
   h_MuonEnd_dY          = tfs->make<TH1D>("MuonEnd_dY","Stopping #mu+ endpoint resolution (LArIAT MC);#DeltaY [cm]",100,-5,5);
