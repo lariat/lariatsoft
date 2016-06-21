@@ -72,7 +72,7 @@ physics:
   end_paths: [ stream1 ]  
 }
 
-services.user.SeedService: @local::random_seedservice
+services.user.LArSeedService: @local::random_seedservice
 
 # parameters for EventBuilderAlg
 source.EventBuilderAlg.TPCReadoutBufferLow:  10.0  # microseconds

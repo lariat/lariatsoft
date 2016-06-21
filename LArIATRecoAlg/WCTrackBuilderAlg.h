@@ -58,7 +58,7 @@ class WCTrackBuilderAlg{
 					     std::vector<TH2F*> & Recodiff,
 					     TH1F* & WCdistribution,
 					     float & residual,
-					     std::vector<std::vector<float> > & hit_position_vect);
+					     float (&hit_position_vect)[4][3]);
 		
    bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
    			  int & WCMissed,
@@ -75,7 +75,8 @@ class WCTrackBuilderAlg{
 			      std::vector<double> & x_dist_list,
 			      std::vector<double> & y_dist_list,
 			      std::vector<double> & z_dist_list,
-			      int & WCMissed);
+			      int & WCMissed,
+			      float (&hit_position_vect)[4][3]);
 			      
    void findTheHitPositions(WCHitList & track,
 		            float (&x)[4],
@@ -123,7 +124,8 @@ class WCTrackBuilderAlg{
 			      std::vector<double> & x_dist_list,
 			      std::vector<double> & y_dist_list,
 			      std::vector<double> & z_dist_list,
-			      int & WCMissed);
+			      int & WCMissed,
+			      float (&hit_position_vect)[4][3]);
 			      
    void calculateTheThreePointMomentum(WCHitList & best_track,
 				       float(&x)[4],
@@ -193,7 +195,7 @@ class WCTrackBuilderAlg{
   int NHits;
   int WCMissed;
   float trackres;
-  std::vector<std::vector<float> > hit_position_vect_alg;				 
+  //float hit_position_vect_alg[4][3];				 
   art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
  
  

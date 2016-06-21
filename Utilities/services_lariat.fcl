@@ -14,6 +14,7 @@
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
 #include "channelstatus_lariat.fcl"
+#include "spacecharge.fcl" 
 # #include "pmtconfig_lariat.fcl"
 # #include "opticaldetectorservices_lariat.fcl"
 
@@ -33,9 +34,10 @@ lariat_services:
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
  DetectorClocksService:                  @local::lariat_detectorclocks
  BackTracker:                  @local::standard_backtracker
- SeedService:                  @local::standard_seedservice
+ LArSeedService:                  @local::standard_seedservice
  DetPedestalService:          @local::lariat_detpedestalservice
  ChannelStatusService:        @local::lariat_channel_filter
+ SpaceCharge:  @local::standard_spacecharge 
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
 
@@ -56,8 +58,9 @@ lariat_simulation_services:
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
  DetectorClocksService:                  @local::lariat_detectorclocks
  BackTracker:                  @local::standard_backtracker
- SeedService:                  @local::standard_seedservice
+ LArSeedService:                  @local::standard_seedservice
  ChannelStatusService:        @local::lariat_channel_filter
+ SpaceCharge:  @local::standard_spacecharge 
  #OpDetResponseInterface:      @local::lariat_opdetresponse
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }

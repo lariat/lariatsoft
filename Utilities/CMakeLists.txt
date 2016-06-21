@@ -47,6 +47,14 @@ simple_plugin( DatabaseUtilityT1034  "service"
                BASENAME_ONLY
 )
 
+simple_plugin( DetectorPropertiesServiceLArIAT  "service"
+               LArIATDataProviders
+	       ${lariat_util_lib_list}
+	       ${SQLITE3}
+	       ${ART_PERSISTENCY_ROOTDB}
+               BASENAME_ONLY
+)
+
 file(GLOB pwd_files *passwd)
 install( FILES ${pwd_files} DESTINATION ${product}/${version}/pwd/lardata_Utilities )
 

@@ -114,7 +114,7 @@ initialize $@
 
 exitstatus $?
 
-if [ $(sed -n '1p' testmask.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
+if [ $(sed -n '1p' testmask`uname`.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
     TASKSTRING="larsoft_data_production"
     larsoft_data_production
 
@@ -126,7 +126,7 @@ fi
 
 COMPAREINIT=0
 
-if [ $(sed -n '2p' testmask.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
+if [ $(sed -n '2p' testmask`uname`.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
     TASKSTRING="compare_data_products 0"
     compare_data_products 0 #Check for added/removed data products
 
@@ -136,7 +136,7 @@ else
     echo -e "\nCI MSG BEGIN\n Stage: ${STEPS[STEP]}\n Task: ${TASKSTRING}\n skipped\nCI MSG END\n"
 fi
 
-if [ $(sed -n '3p' testmask.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
+if [ $(sed -n '3p' testmask`uname`.txt | cut -d ' ' -f ${STEP}) -eq 1 ]; then
     TASKSTRING="compare_data_products 1"
     compare_data_products 1 #Check for differences in the size of data products
 
