@@ -44,7 +44,7 @@ namespace geo{
     // Each raw::AuxDetDigit knows the name of the detector it came from and its
     // channel - sometimes channel maps to sensitive volume and some times it doesn't
     fSorter.SortAuxDets(adgeo);    
-    for(auto a : adgeo) a->SortSubVolumes(fSorter);
+    //for(auto a : adgeo) a->SortSubVolumes(fSorter);
 
     // map the AuxDetGeo names to their position in the sorted vector
     // Each TOF  detector has 2   channels, and 1  sensitive volume
