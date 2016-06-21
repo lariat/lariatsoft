@@ -14,7 +14,7 @@
 
 // LArSoft libraries
 #include "test/Geo/geometry_unit_test_lariat.h"
-#include "test/Geometry/boost_unit_test_base.h"
+#include "larcore/TestUtils/boost_unit_test_base.h"
 #include "test/Geometry/GeometryIteratorTestAlg.h"
 #include "Geo/ChannelMapLArIATAlg.h"
 

@@ -68,7 +68,7 @@ outputs:
    fileName:    "text_gen.root" #default file name, can override from command line with -o or --output
  }
 }
-physics.producers.generator.InputFileName:"g4blevents.txt"
+physics.producers.generator.InputFileName:"hepevtTOF.txt"
 services.MagneticField.UseField: 0
 services.MagneticField.ConstantField: [ 0.0, -.175, 0.0]
 services.MagneticField.MagnetizedVolume: "magnet"

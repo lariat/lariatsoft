@@ -12,7 +12,7 @@
 
 // LArSoft includes
 #include "LArIATDataProviders/DetectorPropertiesLArIAT.h"
-#include "lardata/DetectorInfo/ProviderUtil.h" // lar::IgnorableProviderConfigKeys()
+#include "larcore/CoreUtils/ProviderUtil.h" // lar::IgnorableProviderConfigKeys()
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/TPCGeo.h"
