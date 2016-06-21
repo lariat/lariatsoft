@@ -29,7 +29,8 @@
 
 // ROOT includes
 #include <TF1.h>
-#include <TH1F.h>
+#include <TH1.h>
+#include <TH2F.h>
 
 //LAriatSoft Includes
 #include "LArIATRecoAlg/OpHitBuilderAlg.h"
@@ -86,6 +87,8 @@ private:
   short               fBaselineWindowLength;
   short               fT1;
   short               fT2;
+  float               fTimestamp_T1;
+  float               fTimestamp_T2; 
   short               fPostWindow;
   short               fPreWindow;
   float               fMaxWindowFactor;
@@ -93,6 +96,7 @@ private:
   short               fPrePEBaselineWindow;
   short               fThreshPersist;
   short               fDeadTimeMin;
+  short               fNSamples;
 
   short               SER_bins;
   bool                gotPMT;
@@ -110,10 +114,16 @@ private:
   OpHitBuilderAlg     fOpHitBuilderAlg;
   
   // Histograms
+  TH1I* h_TotalEvents;
   TH1F* h_SER[10];
-  TH1F* h_SER0[10];
   TH1F* h_AvePEWfm[10];
   TH1F* h_WfmRMS[10];
+  TH2F* h_GradVsSER[10]; 
+  TH1I* h_PhelTime[10];
+  TH1I* h_LiveTime[10];
+
+  TH1F* h_HitTimes[10];
+  TH1F* h_HitAmplitudes[10];
 
 };
 
@@ -145,6 +155,10 @@ fOpHitBuilderAlg(p.get<fhicl::ParameterSet>("OpHitBuilderAlg"))
 //#######################################################################
 void OpDetSER::analyze(art::Event const & e)
 {
+  int eventnr   = e.id().event();
+  int runnr     = e.run();
+  int subrunnr  = e.subRun();
+  
   // Get the OpDetPulses of the photodetectors
   art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
   e.getByLabel(fDAQModule,fInstanceName,WaveformHandle);
@@ -157,6 +171,9 @@ void OpDetSER::analyze(art::Event const & e)
   // If waveforms found, look for the specified PMTs
   } else {
 
+    h_TotalEvents->Fill(0);
+
+    /*
     // First, look for the "baseline" input if it exists
     WfmBaseline.clear();
     if( fBaselineChannel.size() > 0 ){
@@ -166,14 +183,17 @@ void OpDetSER::analyze(art::Event const & e)
         if(ThePulse.OpChannel() == fBaselineChannel[0]) WfmBaseline = ThePulse.Waveform();
       }
     }
+    */
 
-    // Now do full analysis on each pulse, subtracting the baseline pulse
+    // Now do full analysis on each pulse, subtracting the baseline pulse if specified
     for( size_t ipulse = 0; ipulse < (size_t)WaveformHandle->size(); ipulse++){
 
       art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle,ipulse);
       raw::OpDetPulse ThePulse = *ThePulsePtr;
       
       size_t ch = ThePulse.OpChannel();
+      Timestamp   = (float(ThePulse.PMTFrame())*8.)/1.0e09;
+      if( Timestamp < fTimestamp_T1 || Timestamp > fTimestamp_T2 ) continue;
 
       // Check if this optical channel is among those selected
       // for SER analysis in the fhicl script
@@ -186,24 +206,33 @@ void OpDetSER::analyze(art::Event const & e)
       Wfm       = ThePulse.Waveform();
       NSamples    = Wfm.size();
       //if(fWfmBaselineCorrection && ch != fBaselineChannel[0]){ for(size_t i=0; i<NSamples; i++) Wfm[i] = Wfm[i] - WfmBaseline[i];} // Correct for shared baseline noise
-      Timestamp   = (float(ThePulse.PMTFrame())*8.)/1.0e09;
       TrigSample  = (short)ThePulse.FirstSample(); 
       size_t ich  = iCh[ch];
        
       std::cout << "\n"; 
-      std::cout << "OpDet "<<ch<<", index "<<ich<<": " << NSamples << " samples, T0 "<<TrigSample<<", timestamp "<<Timestamp<<" sec\n";
-      
-      short t1 = std::max(TrigSample + fT1,0);
-      short t2 = std::min(TrigSample + fT2, (int)NSamples);
+      std::cout << runnr<<"/"<<subrunnr<<"/"<<eventnr<<"  OpDet "<<ch<<", index "<<ich<<": " << NSamples << " samples, T0 "<<TrigSample<<", timestamp "<<Timestamp<<" sec\n";
       
       // Find waveform baseline and RMS 
       std::vector<float> tmp = fOpHitBuilderAlg.GetBaselineAndRMS( Wfm, 0, fBaselineWindowLength );
       float baseline  = tmp[0];
       float rms       = tmp[1];
       h_WfmRMS[ich]   ->Fill(rms*fMvPerADC);
-
+     
+      // Run standard hit-finder over the waveform:
+      std::vector<short> hit_times = fOpHitBuilderAlg.GetHits( ThePulse );
+      for(size_t i=0; i<hit_times.size(); i++){
+        h_HitTimes[ich]      ->Fill(hit_times[i]);
+        h_HitAmplitudes[ich] ->Fill((baseline-fOpHitBuilderAlg.GetLocalMinimum(Wfm,hit_times[i]))*fMvPerADC);
+      }
+      
+      short t1 = std::max(TrigSample + fT1,0);
+      short t2 = std::min(TrigSample + fT2, (int)NSamples);
+      
       std::cout << "Waveform raw baseline: " << baseline << " +/- " << rms <<" ADC ("<<baseline*fMvPerADC<<" +/- "<<rms*fMvPerADC<<" mV)\n";
-      if( rms*fMvPerADC >= fWfmAbsRMSCut[ch] ) return;
+      if( rms*fMvPerADC >= fWfmAbsRMSCut[ich] ) {
+        std::cout<<"Baseline too noisy... moving on.\n";
+        continue;
+      }
 
       float   integral = 0;
       bool    flag = false;
@@ -219,6 +248,7 @@ void OpDetSER::analyze(art::Event const & e)
       // Make gradient
       std::vector<float> g = fOpHitBuilderAlg.MakeGradient(Wfm);
       float hit_grad = 0;
+      int hit_time = -1;
 
       // Baseline subtraction and signal inversion
       std::vector<float> wfm_corrected(NSamples);
@@ -236,9 +266,12 @@ void OpDetSER::analyze(art::Event const & e)
        
         float y  = wfm_corrected[i];
         float yy = y*fMvPerADC;
+        bool  IsLive        = (quietTime >= fDeadTimeMin);
         bool  IsOverThresh  = (y  >= fPulseHitRMSThresh[ich]*rms);
         bool  IsOverLimit   = (yy >= fPulseHitThreshHigh[ich]); 
         bool  IsPECandidate = ((IsOverThresh) && (!IsOverLimit) && ( fabs(g[i]) >= fabs(fGradientCut)) );
+        
+        h_LiveTime[ich]->Fill((int)(IsLive || flag));
     
         // If we're already in a PE window, increment the
         // counters and add to integral
@@ -270,6 +303,7 @@ void OpDetSER::analyze(art::Event const & e)
             std::cout << "  abort!\n";
             counter = 0;
             hit_grad = 0;
+            hit_time = -1;
             integral = 0;
             flag = false;
             windowsize = 0;
@@ -285,9 +319,13 @@ void OpDetSER::analyze(art::Event const & e)
             
             std::cout
             << "Finished PE window of size "<<windowsize<<", tmp_wfm_i = "<<tmp_wfm_i << "  "
-            << integral << " ADCs, g = " << hit_grad << "\n";
+            << integral << " ADCs";
             
-            h_SER[ich]   ->Fill(integral);
+            h_SER[ich]        ->Fill(integral);
+            h_GradVsSER[ich]  ->Fill(hit_grad,integral);
+            
+            // If this is > 20 ADC, plot the time:
+            if(integral > 20 ) h_PhelTime[ich]   ->Fill(hit_time);
             
             // Add to average waveform if it looks good
             if( (windowsize == SER_bins) && fabs(integral - fSinglePE[ich])<=fSinglePE_tolerance[ich] ){
@@ -298,6 +336,7 @@ void OpDetSER::analyze(art::Event const & e)
     
             integral = 0;
             hit_grad = 0;
+            hit_time = -1;
             windowsize = 0;
             counter = 0;
             quietTime = 0;
@@ -308,12 +347,16 @@ void OpDetSER::analyze(art::Event const & e)
           }
         
         } // <-- end if(flag)
-    
+   
+        
+        
         if( !IsOverThresh ) quietTime++;
     
+        
+        
         // If we're not yet integrating a PE window, signal is within bounds,
         // and enough dead-time (quietTime) has elapsed, then we're in business
-        if( !flag && IsPECandidate && quietTime >= fDeadTimeMin ){
+        if( !flag && IsPECandidate && IsLive ){
           
           // Find pre-PE baseline
           prePE_baseline = 99;
@@ -332,9 +375,9 @@ void OpDetSER::analyze(art::Event const & e)
           // remains above threshold for some time...
           bool flagger = true;
           if( fThreshPersist > 0 ){
-            std::cout<< "  Peeking at next few samples....\n";
+            //std::cout<< "  Peeking at next few samples....\n";
             for( short j=0; j<fThreshPersist; j++ ){
-              std::cout<<"    "<<j<<"  "<<wfm_corrected[i+j]*fMvPerADC << " mV \n";
+              //std::cout<<"    "<<j<<"  "<<wfm_corrected[i+j]*fMvPerADC << " mV \n";
               if ( wfm_corrected[i+j] < fPulseHitRMSThresh[ich]*rms ) flagger = false;
             }
           }
@@ -343,8 +386,10 @@ void OpDetSER::analyze(art::Event const & e)
             
             // Found a "PE hit", so start integral by
             // adding preceeding prepulse region
-            flag = true;
-            hit_grad = g[i];
+            flag      = true;
+            hit_grad  = g[i];
+            hit_time  = i;
+
     
             // Add up previous "prewindow" samples
             for(short ii=0; ii <= fPreWindow; ii++)
@@ -356,9 +401,9 @@ void OpDetSER::analyze(art::Event const & e)
               counter = 1;
             }
           
-            std::cout << "** Looks good!  Beginning integration...\n"; 
+            std::cout << "** Candidate at "<<hit_time<<", "<<wfm_corrected[i]*fMvPerADC<<" mV, g = "<<hit_grad<<".  Beginning integration...\n"; 
           } else {
-            std::cout << "  Doesn't pass quality cuts, moving on...\n"; 
+            //std::cout << "  Doesn't pass quality cuts, moving on...\n"; 
           }
     
         } // <-- end if(PE cand)
@@ -381,22 +426,18 @@ void OpDetSER::beginJob()
   // Opens up the file service to read information from the ROOT file input
   art::ServiceHandle<art::TFileService> tfs;
  
+  h_TotalEvents   = tfs->make<TH1I>("TotalEvents","Total events",1,0,1);
+  
   // Create histograms
   for(size_t i=0; i<fSelectChannels.size(); i++){
 
     size_t ch   = fSelectChannels[i];
-    size_t ich  = iCh[ch];
+    size_t ich  = iCh[ch]; 
     
     sprintf(histName,"%lu_SER",ch); 
     sprintf(histTitle,"SER for OpDet %lu;Integraded ADC;Counts",ch);
     h_SER[ich]       = tfs->make<TH1F>(histName,histTitle,400,-50.,350.);
    
-    if(fBaselineChannel.size() > 0){ 
-      sprintf(histName,"%lu_SER0",ch); 
-      sprintf(histTitle,"SER from baseline channel (same settings as OpDet%lu);Integraded ADC;Counts",ch);
-      h_SER0[ich]       = tfs->make<TH1F>(histName,histTitle,400,-50.,350.);
-    }
-    
     sprintf(histName,"%lu_AvePEWfm",ch); 
     sprintf(histTitle,"Average PE waveform for OpDet %lu;ns;mV",ch);
     h_AvePEWfm[ich]  = tfs->make<TH1F>(histName,histTitle,SER_bins,0.,(float)SER_bins);
@@ -404,6 +445,28 @@ void OpDetSER::beginJob()
     sprintf(histName,"%lu_RMS",ch); 
     sprintf(histTitle,"RMS for OpDet %lu;Baseline RMS [mV];Counts",ch);
     h_WfmRMS[ich]    = tfs->make<TH1F>(histName,histTitle,100,0.0,0.5);
+    
+    sprintf(histName,"%lu_GradVsSER",ch); 
+    sprintf(histTitle,"Grad vs. SER for OpDet %lu;Gradient;SER [ADC]",ch);
+    h_GradVsSER[ich]    = tfs->make<TH2F>(histName,histTitle,30,-10,5,  100,-50,350);
+    h_GradVsSER[ich]    ->SetOption("colz");
+
+    sprintf(histName,"%lu_PhelTime",ch); 
+    sprintf(histTitle,"PE times for OpDet %lu;Sample [ns];Counts",ch);
+    h_PhelTime[ich]    = tfs->make<TH1I>(histName,histTitle,(int)(fNSamples/100.),0,fNSamples);
+    
+    sprintf(histName,"%lu_LiveTime",ch); 
+    sprintf(histTitle,"SER-finder live-time (1) vs. dead-time (0) for OpDet %lu;;total samples",ch);
+    h_LiveTime[ich]    = tfs->make<TH1I>(histName,histTitle,2,0,2);
+    
+    sprintf(histName,"%lu_HitTimes",ch); 
+    sprintf(histTitle,"Found hit times for OpDet %lu;Samples [ns];Counts",ch);
+    h_HitTimes[ich]    = tfs->make<TH1F>(histName,histTitle,(int)(fNSamples/100.),0,fNSamples);
+    
+    sprintf(histName,"%lu_HitAmplitudes",ch); 
+    sprintf(histTitle,"Found hit amplitudes for OpDet %lu;Amplitude [mV];Counts",ch);
+    h_HitAmplitudes[ich]    = tfs->make<TH1F>(histName,histTitle,100,0,10);
+    
 
   }
 }
@@ -447,6 +510,8 @@ void OpDetSER::reconfigure(fhicl::ParameterSet const & p)
   fWfmBaselineCorrection  = p.get< bool >         ("WfmBaselineCorrection","false");
   fT1                     = p.get< short >       ("T1",3000);
   fT2                     = p.get< short >       ("T2",19000);
+  fTimestamp_T1           = p.get< float >        ("Timestamp_T1",0);
+  fTimestamp_T2           = p.get< float >        ("Timestamp_T2",60);
   fPreWindow              = p.get< short >       ("PreWindow",5);
   fPostWindow             = p.get< short >       ("PostWindow",45);
   fMaxWindowFactor        = p.get< float >        ("MaxWindowFactor",2);
@@ -456,6 +521,7 @@ void OpDetSER::reconfigure(fhicl::ParameterSet const & p)
   fThreshPersist          = p.get< short >        ("ThreshPersist",3);
   fDeadTimeMin            = p.get< short >        ("DeadTimeMin",100);
   fVerbose                = p.get< bool >         ("Verbose",true);
+  fNSamples               = p.get< short >        ("NSamples",28672);
 }
 
 void OpDetSER::beginRun(art::Run const & r){}
@@ -539,7 +605,7 @@ void OpDetSER::endJob()
       SER_fit.SetParameter(4,fMean_set[ich]);
       SER_fit.SetParLimits(4,fMean_lowerLim[ich],fMean_upperLim[ich]);
       SER_fit.SetParameter(5,35);
-      SER_fit.SetParLimits(5,20.,60.);
+      SER_fit.SetParLimits(5,10.,60.);
 
       // 2PE (gaus)
       SER_fit.SetParameter(6,0.1*max);

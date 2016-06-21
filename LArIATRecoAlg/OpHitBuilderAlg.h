@@ -83,7 +83,6 @@ class OpHitBuilderAlg{
   short fPromptWindowLength;
   short fFullWindowLength;
   float fMvPerADC;
-  float fTimestampCut;
   float fPrePulseTau1;
   float fPrePulseTau2;
   int   fHitTimeCutoffLow;

@@ -91,7 +91,6 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fIntegrationWindows   = pset.get< std::vector<short> >("IntegrationWindows",IntegrationWindows);
   fMvPerADC             = pset.get< float >("MvPerADC",0.2);
   fUsePrepulseFit       = pset.get< bool  >("UsePrepulseFit","true");
-  fTimestampCut         = pset.get< float >("TimestampCut",5.25);
   fHitTimeCutoffLow     = pset.get< int   >("HitTimeCutoffLow",-100000);
   fHitTimeCutoffHigh    = pset.get< int   >("HitTimeCutoffHigh",100000);
   fHitFindingMode       = pset.get< std::string >("HitFindingMode","grad");
