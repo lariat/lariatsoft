@@ -6225,7 +6225,7 @@
       <solidref ref="volAuxDetTOFUS0x1"/>
     </volume>
     <volume name="volAuxDetSensitiveWC1">
-      <materialref ref="Vacuum"/>
+      <materialref ref="LUCITE0x1"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
     <volume name="FramS">
@@ -6269,7 +6269,7 @@
       </physvol>
     </volume>
     <volume name="volAuxDetSensitiveWC2">
-      <materialref ref="Vacuum"/>
+      <materialref ref="LUCITE0x1"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
     <volume name="volAuxDetMWPC2">
@@ -6285,7 +6285,7 @@
       </physvol>
     </volume>
     <volume name="volAuxDetSensitiveWC3">
-      <materialref ref="Vacuum"/>
+      <materialref ref="LUCITE0x1"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
     <volume name="volAuxDetMWPC3">
@@ -6301,7 +6301,7 @@
       </physvol>
     </volume>
     <volume name="volAuxDetSensitiveWC4">
-      <materialref ref="Vacuum"/>
+      <materialref ref="LUCITE0x1"/>
       <solidref ref="volAuxDetDet"/>
     </volume>
     <volume name="volAuxDetMWPC4">
