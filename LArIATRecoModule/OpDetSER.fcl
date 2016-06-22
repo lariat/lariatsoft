@@ -9,9 +9,8 @@ services:
   Timing:       {}
   RandomNumberGenerator: {}
   message:      @local::standard_info
-  user:         @local::lariat_services 	     
-  #user:         @local::lariat_simulation_services
-  scheduler:    { }
+  scheduler:    {}
+  @table::lariat_services
 }
 
 source:
@@ -29,7 +28,8 @@ physics:
     OpDetSER:
     {
       module_type:      OpDetSER 
-      OpHitBuilderAlg:  @local::lariat_ophitbuilderalg
+      #OpHitBuilderAlg:  @local::lariat_ophitbuilderalg
+      OpHitBuilderAlg:  { }
     }
   }
   analysis:   [ OpDetSER ]
@@ -39,28 +39,49 @@ physics:
 ################################################################
 # Single photoelectron calibration parameters
 
-physics.analyzers.OpDetSER.OpDetChannel:            1
+physics.analyzers.OpDetSER.SelectChannels:	    [ 0, 1 , 4]
+physics.analyzers.OpDetSER.OpDetChannels:	    [ 0,    1	, 4]
+physics.analyzers.OpDetSER.WfmAbsRMSCut:            [ 0.4,  0.4	, 0.4 ] # mV
+physics.analyzers.OpDetSER.PrePE_RMSFactorCut:      [ 1.0,  1.0	, 1.0 ] # mV
+physics.analyzers.OpDetSER.PulseHitRMSThresh:       [ 4.0,  4.0,  4.0 ] # xRMS
+physics.analyzers.OpDetSER.PulseHitThresh_high:     [ 5,    5	, 5 ] # mV
+physics.analyzers.OpDetSER.PedestalMean_lowerLim:   [ -5,   -5	, -5] # ADC
+physics.analyzers.OpDetSER.PedestalMean_upperLim:   [ 10,   10	, 10] # ADC  
+physics.analyzers.OpDetSER.Mean_set:                [ 60,   60  , 60] # ADC 
+physics.analyzers.OpDetSER.Mean_lowerLim:           [ 30,   30  , 30] # ADC
+physics.analyzers.OpDetSER.Mean_upperLim:           [ 80,   80  , 80] # ADC 
+physics.analyzers.OpDetSER.SinglePE:                [ 44,   42  , 40] # ADC
+physics.analyzers.OpDetSER.SinglePE_tolerance:      [ 5,    5   , 5] # +/- ADC
+physics.analyzers.OpDetSER.BaselineChannel:	    [ 4 ]
+physics.analyzers.OpDetSER.WfmBaselineCorrection:   true
+
+physics.analyzers.OpDetSER.ThreshPersist:           1   # thresh must satisfy this many consecutive samples 
+physics.analyzers.OpDetSER.AttemptFit:              "true"
+
+physics.analyzers.OpDetSER.T1:                      -10000
+physics.analyzers.OpDetSER.T2:                      -100
+physics.analyzers.OpDetSER.Timestamp_T1:            0    # Only analyze events with a timestamp (sec)
+physics.analyzers.OpDetSER.Timestamp_T2:            5    # between these two limits.
+physics.analyzers.OpDetSER.NSamples:                28672 # Samples in V1751 range.
+physics.analyzers.OpDetSER.GradientCut:		    0	  # ADCs/sample.
+physics.analyzers.OpDetSER.Verbose:                 true
+physics.analyzers.OpDetSER.BaselineWindowLength:    500
 physics.analyzers.OpDetSER.UsePrePEBaseline:        1
+physics.analyzers.OpDetSER.DeadTimeMin:             300
+physics.analyzers.OpDetSER.PrePEBaselineWindow:     200
 physics.analyzers.OpDetSER.PreWindow:               5   # samples (ns)
 physics.analyzers.OpDetSER.PostWindow:              35  # samples (ns)
-physics.analyzers.OpDetSER.T1:                      2000
-physics.analyzers.OpDetSER.T2:                      19000
-physics.analyzers.OpDetSER.DeadTimeMin:             100
-physics.analyzers.OpDetSER.WfmAbsRMSCut:            0.4 # mV
-physics.analyzers.OpDetSER.PrePE_RMSCut:            1.5 # mV 
-physics.analyzers.OpDetSER.PulseHitThresh_high:     5  # mV
-physics.analyzers.OpDetSER.PulseHitRMSThresh:       3 # factor (xRMS)
-physics.analyzers.OpDetSER.GradientCut:             -1  # ADC/ns
-physics.analyzers.OpDetSER.ThreshPersist:           2   # thresh must satisfy this many consecutive samples 
-physics.analyzers.OpDetSER.AttemptFit:              "true"
-physics.analyzers.OpDetSER.Mean_set:                100 
-physics.analyzers.OpDetSER.Mean_lowerLim:           60 
-physics.analyzers.OpDetSER.Mean_upperLim:           130 
-physics.analyzers.OpDetSER.SinglePE:                100
-physics.analyzers.OpDetSER.SinglePE_tolerance:      2.5
+physics.analyzers.OpDetSER.MaxWindowFactor:         2
+
+
+physics.analyzers.OpDetSER.OpHitBuilderAlg.HitFindingMode:          "grad"
+physics.analyzers.OpDetSER.OpHitBuilderAlg.GradHitThresh:           -2
+physics.analyzers.OpDetSER.OpHitBuilderAlg.PulseHitThreshLow:       1.5
+physics.analyzers.OpDetSER.OpHitBuilderAlg.PulseHitThreshHigh:      5
+physics.analyzers.OpDetSER.OpHitBuilderAlg.IntegrationWindows:      [40]
+physics.analyzers.OpDetSER.OpHitBuilderAlg.MinHitSeparation:        100
 
 # Irrelevant settings (no need to change these)
-physics.analyzers.OpDetSER.OpHitBuilderAlg.IntegrationWindows:      [100,7000]
 services.message.destinations.infomsg.categories.OpDetSER.limit: 1e6
 
 #################################################################

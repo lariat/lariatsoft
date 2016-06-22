@@ -134,21 +134,6 @@ private:
   float               fMvPerADC;
   float               fHitPromptPEThreshLow;
   float               fLY;
-  bool                fSER_Mode;
-  float               fSER_mean_low;
-  float               fSER_mean_set;
-  float               fSER_mean_up;
-  bool                fSER_Fit;
-  short               fSER_t1;
-  short               fSER_t2;
-  float               fSER_GradHitThresh;
-  float               fSER_GradRMSThresh;
-  float               fSER_PulseHitThreshHigh;
-  float               fSER_PulseHitThreshLow;
-  float               fSER_PulseHitRMSThresh;
-  short               fSER_PostWindow;
-  short               fSER_PreWindow;
-  bool                fSER_Verbosity;
 
   // Alg objects
   OpHitBuilderAlg     fOpHitBuilderAlg; 
@@ -156,7 +141,6 @@ private:
   OpHitBuilderAlg     fOpHitBuilderAlg_aveBG;
   OpHitBuilderAlg     fOpHitBuilderAlg_aveBG_lowPromptPE;
   OpHitBuilderAlg     fOpHitBuilderAlg_aveMIP;
-  OpHitBuilderAlg     fOpHitBuilderAlg_SER;
   TriggerFilterAlg    fTrigFiltAlg;
 
   // Variables/vectors
@@ -175,10 +159,8 @@ private:
   TVector3              MuTrackVertex;
   TVector3              MuTrackEnd;
   int                   HitWaveformBins;
-  int                   SERWaveformBins;
   char                  buffer[200];
   raw::OpDetPulse       ETL_opdetpulse;
-  int                 SER_region_size;
   int                   N_Events;
   int                   N_MichelCandidates;
   int                   N_MichelNonBG;
@@ -190,8 +172,6 @@ private:
   float                 resR_histRange;
 
   // Histograms
-  TH1F* h_SER;
-  TH1F* h_SER_g;
   TH1F* h_EventTypeCount;
   TH1F* h_Michel_IsInSignal;
   TH1F* h_TimeStructure;
@@ -266,7 +246,6 @@ private:
   TH1F* h_AverageWaveform_BG;
   TH1F* h_AverageWaveform_BG_lowPromptPE;
   TH1F* h_AverageWaveformMIP;
-  TH1F* h_AverageWaveformSER;
 
   // TTree
   TTree* MichelDataTree;
@@ -372,7 +351,6 @@ fOpHitBuilderAlg_aveMichel(pset),
 fOpHitBuilderAlg_aveBG(pset),
 fOpHitBuilderAlg_aveBG_lowPromptPE(pset), 
 fOpHitBuilderAlg_aveMIP(pset), 
-fOpHitBuilderAlg_SER(pset),
 fTrigFiltAlg(pset)
 {
 
@@ -425,24 +403,6 @@ fTrigFiltAlg(pset)
   HitWaveformBins = (int)fPrePulseDisplay+(int)fFullWindowLength;
   HitWaveform.reserve(HitWaveformBins);
 
-  SERWaveformBins = (int)fSER_PreWindow + (int)fSER_PostWindow;
-
-  // Configure instance of OpHitBuilder dedicated to 
-  // finding single PEs
-  fOpHitBuilderAlg_SER.fUsePrepulseFit          = false;
-  fOpHitBuilderAlg_SER.fFirstHitSeparation      = 0;
-  fOpHitBuilderAlg_SER.fMinHitSeparation        = 10;
-  fOpHitBuilderAlg_SER.fPrePulseDisplay         = fSER_PreWindow;
-  fOpHitBuilderAlg_SER.fPromptWindowLength      = fSER_PostWindow;
-  fOpHitBuilderAlg_SER.fFullWindowLength        = fSER_PostWindow;
-  fOpHitBuilderAlg_SER.fHitTimeCutoffLow        = fSER_t1;
-  fOpHitBuilderAlg_SER.fHitTimeCutoffHigh       = fSER_t2;
-  fOpHitBuilderAlg_SER.fGradHitThresh           = fSER_GradHitThresh;
-  fOpHitBuilderAlg_SER.fGradRMSThresh           = fSER_GradRMSThresh;
-  fOpHitBuilderAlg_SER.fPulseHitThreshLow       = fSER_PulseHitThreshLow;
-  fOpHitBuilderAlg_SER.fPulseHitThreshHigh      = fSER_PulseHitThreshHigh;
-  fOpHitBuilderAlg_SER.fPulseHitRMSThresh       = fSER_PulseHitRMSThresh;
-  SER_region_size = fOpHitBuilderAlg_SER.fHitTimeCutoffHigh - fOpHitBuilderAlg_SER.fHitTimeCutoffLow;
 }
 
 
@@ -1141,22 +1101,6 @@ void MichelWfmReco::produce(art::Event & e)
   }
   
   
-  //=========================================================
-  // SER-finder
-  if(fSER_Mode){
-    LOG_VERBATIM("MichelWfmReco") << "================== SER MODE =====================";
-    std::vector<std::pair<float,float>> SER_integrals = fOpHitBuilderAlg_SER.GetSinglePEs(ETL_opdetpulse);  
-    LOG_VERBATIM("MichelWfmReco") << "Found " << SER_integrals.size()<<" single PE candidates";
-    for( size_t i = 0; i < SER_integrals.size(); i++){
-      //std::cout<<"  i = "<<SER_integrals[i]<<std::endl; 
-      h_SER->Fill(SER_integrals[i].first);
-      h_SER_g->Fill(SER_integrals[i].second);
-    }
-    N_PEs += SER_integrals.size();
-    T_PEs += SER_region_size;
-  }
-  //=========================================================
-
   // Done with this event so fill the tree
   MichelDataTree->Fill();
   
@@ -1262,15 +1206,6 @@ void MichelWfmReco::beginJob()
     MichelDataTree ->Branch("IsSecondTrackContained",&IsSecondTrackContained,"IsSecondTrackContained/I"); 
   }
   // Histograms 
-  if(fSER_Mode) {
-    h_SER        = tfs->make<TH1F>("SER","SER;Integrated ADC;Counts",500,-50.,450.);
-    h_SER_g        = tfs->make<TH1F>("SER_g","SER_g;Gradient at SER candidate hit;Counts",64,-8,8.);
-    
-    h_AverageWaveformSER      = tfs->make<TH1F>("AverageWaveformSER","Average PE waveform",
-                            SERWaveformBins,0.,(float)SERWaveformBins);
-    h_AverageWaveformSER      ->GetXaxis()->SetTitle("ns");
-    h_AverageWaveformSER      ->GetYaxis()->SetTitle("mV");
-  }
   int tot_pe_max = 800;
   h_EventTypeCount           = tfs->make<TH1F>("BeamEventCount","Beam events (0), MICHEL-like events (1)",2,0,2);
   h_Michel_IsInSignal        = tfs->make<TH1F>("Michel_IsInSignal","Signal events (1), BG events (0) defined by PSD cut",2,0,2);
@@ -1677,91 +1612,6 @@ void MichelWfmReco::endJob()
   std::cout<<"  PE rate          "<<(float)N_PEs/(T_PEs*1e-09)<<" Hz"<<std::endl;
   std::cout<<"================================\n";
 
-
-
-  if(fSER_Mode && fSER_Fit){
-  
-    // SER average waveform
-    N_entries = fOpHitBuilderAlg_SER.SERWaveform_count;
-    float integral = 0;
-    std::cout<<"------------------------------------------------------\n";
-    std::cout<<"PE waveform (sample [ns], ADC):\n";
-    if( N_entries > 0 ){
-      for( int i = 1; i < (int)fOpHitBuilderAlg_SER.SERWaveform.size(); i++) {
-        float w = fOpHitBuilderAlg_SER.SERWaveform.at(i) / float(N_entries); 
-        h_AverageWaveformSER->Fill(i-1,w);
-        integral += w/fMvPerADC;
-        std::cout<<i<<"     "<<w/fMvPerADC<<"\n";
-      }
-    }
-    std::cout<<"-------------------------------------------------------\n";
-    std::cout<<"Ave PE wfm integral: "<<integral<<"  ("<<N_entries<<" waveforms averaged)\n";
-  
-  // ------------------------------------------------
-  // Fit out the SER
-  TF1 f_gaus("f_gaus","[0]*exp(-0.5*pow((x-[1])/[2],2))",-1000,1000);
-  TF1 SER_fit("SER_fit","[0]*exp(-0.5*pow((x-[1])/[2],2)) + [3]*exp(-0.5*pow((x-[4])/[5],2)) + [6]*exp(-0.5*pow((x-2.*[4])/[7],2)) + [8]*exp(-0.5*pow((x-3.*[4])/[9],2))",-50,400);
-  
-  //TF1 SER_fit("SER_fit","f_gaus(x,[0],[1],[2]) + f_gaus(x,[3],[4],[5]) + f_gaus(x,[6],2.*[4],[7])",-20,350);
-  float max = (float)h_SER->GetMaximum();
-  std::cout<<"histogram max: "<<max<<"\n";
-  
-  SER_fit.SetParName(0,"Noise norm");
-  SER_fit.SetParName(1,"Noise mean ADC");
-  SER_fit.SetParName(2,"Noise sigma");
-  SER_fit.SetParName(3,"1PE norm");
-  SER_fit.SetParName(4,"1PE mean ADC");
-  SER_fit.SetParName(5,"1PE sigma");
-  SER_fit.SetParName(6,"2PE norm");
-  SER_fit.SetParName(7,"2PE sigma");
-  SER_fit.SetParName(8,"3PE norm");
-  SER_fit.SetParName(9,"3PE sigma");
-  
-  // "Noise" component (gaus)
-  SER_fit.SetParameter(0,max);
-  SER_fit.SetParLimits(0,0.,1.2*max);
-  SER_fit.SetParameter(1,6.5);
-  SER_fit.SetParLimits(1,-5.,15);
-  SER_fit.SetParameter(2,16.);
-  SER_fit.SetParLimits(2,5.,30.);
-
-  // 1PE (gaus)
-  SER_fit.SetParameter(3,max);
-  SER_fit.SetParLimits(3,0.,1.2*max);
-  SER_fit.SetParameter(4,fSER_mean_set);
-  SER_fit.SetParLimits(4,fSER_mean_low,fSER_mean_up);
-  SER_fit.SetParameter(5,37.4);
-  SER_fit.SetParLimits(5,10.,60.);
-
-  // 2PE (gaus)
-  SER_fit.SetParameter(6,0.1*max);
-  SER_fit.SetParLimits(6,0.,0.3*max);
-  SER_fit.SetParameter(7,58.7);
-  SER_fit.SetParLimits(7,10.,100.);
-
-  // 3PE (gaus)
-  SER_fit.SetParameter(8,1.);
-  SER_fit.SetParLimits(8,0.,0.3*max);
-  SER_fit.SetParameter(9,50);
-  SER_fit.SetParLimits(9,30.,120.);
-  
-
-  h_SER->Fit("SER_fit","R");
-  std::cout<<"SER fit results:\n";
-  std::cout<<"  1PE = "<<SER_fit.GetParameter(4)<<" +/- "<<SER_fit.GetParError(4)<<"\n";
-  std::cout<<"  sigma = "<<SER_fit.GetParameter(5)<<"\n";
-  std::cout<<"  red Chi2 = "<<SER_fit.GetChisquare()/(SER_fit.GetNDF()-1)<<"\n";
-
-  // Draw the components
-  //TF1 f_noise("f_noise","[0]*exp(-0.5*pow((x-[1])/[2],2))",-20,350);
-  //f_noise.SetParameter(0,SER_fit.GetParameter(0));
-  //f_noise.SetParameter(1,SER_fit.GetParameter(1));
-  //f_noise.SetParameter(2,SER_fit.GetParameter(2));
-  //f_noise.SetLineColor(kBlack);
-
-  //std::cout<<"f_noise norm: "<<f_noise.GetParameter(0);
-  
-  }
   
 }
 
@@ -1806,21 +1656,6 @@ void MichelWfmReco::reconfigure(fhicl::ParameterSet const & pset)
   fPrePulseDisplay        = pset.get< short>("PrePulseDisplay",500);
   fPromptLightDtCut       = pset.get< short>("PromptLightDtCut",25);
   fLY                     = pset.get< float>("LightYield",2.3);
-  fSER_Mode               = pset.get< bool>("SER_Mode","false");
-  fSER_mean_low           = pset.get< float>("SER_mean_low",40.);
-  fSER_mean_up            = pset.get< float>("SER_mean_up",150.);
-  fSER_mean_set           = pset.get< float>("SER_mean_set",90.);         
-  fSER_Fit                = pset.get< bool>("SER_Fit","false");
-  fSER_t1                 = pset.get< short>("SER_t1",3000);
-  fSER_t2                 = pset.get< short>("SER_t2",19000);
-  fSER_GradHitThresh      = pset.get< float >("SER_GradHitThresh",-8.);
-  fSER_GradRMSThresh      = pset.get< float> ("SER_GradRMSThresh",3);
-  fSER_PulseHitThreshLow  = pset.get< float >("SER_PulseHitThreshLow",0.);
-  fSER_PulseHitThreshHigh = pset.get< float >("SER_PulseHitThreshHigh",10.);
-  fSER_PulseHitRMSThresh  = pset.get< float >("SER_PulseHitRMSThresh",3.);
-  fSER_PreWindow          = pset.get< short >("SER_PreWindow",10);
-  fSER_PostWindow         = pset.get< short >("SER_PostWindow",30);
-  fSER_Verbosity          = pset.get< bool  >("SER_Verbosity","false");
   fMvPerADC               = pset.get< float >("MvPerADC",0.2);
   fHitPromptPEThreshLow   = pset.get< float >("HitPromptPEThreshLow",0);
   fTriggerTolerancePercent= pset.get< float >("TriggerTolerancePercent",1.5);

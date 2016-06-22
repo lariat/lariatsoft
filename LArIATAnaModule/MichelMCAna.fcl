@@ -80,4 +80,11 @@ outputs:
  }
 }
 
+physics.analyzers.michelmc.DrawGraphs:		false
+physics.analyzers.michelmc.OffsetTolerance:     2.0 #cm
+physics.analyzers.michelmc.FiducialMargin_X:    2.0 #cm
+physics.analyzers.michelmc.FiducialMargin_Z:    2.0 #cm
+physics.analyzers.michelmc.FiducialMargin_Y:    2.0 #cm
+physics.analyzers.michelmc.dEdx_BinSize:        0.5 #cm
+
 services.scheduler.SkipEvent: [ ProductNotFound ]
