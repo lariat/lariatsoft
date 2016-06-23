@@ -13,17 +13,17 @@ product         version
 larsoft		      v06_00_00_rc4
 LariatFilters   v01_02
 lariatfragments v06_00_00_rc4
-artdaq_core     v1_04_32
+artdaq_core     v1_05_01
 LariatBeamFiles v01_00		-	optional
 lariatutil	    v06_00_00_rc4 -	optional
-cetbuildtools   v5_02_02	-	only_for_build
+cetbuildtools   v05_04_01	-	only_for_build
 end_product_list
 
 # e10  - with gcc 4.9.2 and -std=c++11
 qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	    LariatBeamFiles	lariatutil	notes
-e10:debug	e10:debug -nq-		e10:debug	 e10:nu:s33:debug  -nq-		        e10:debug
-e10:opt		e10:opt	  -nq-		e10:opt		 e10:nu:s33:opt	   -nq-		        e10:opt
-e10:prof	e10:prof  -nq-		e10:prof	 e10:nu:s33:prof   -nq-		        e10:prof
+e10:debug	e10:debug -nq-		e10:debug	 e10:nu:s36:debug  -nq-		        e10:debug
+e10:opt		e10:opt	  -nq-		e10:opt		 e10:nu:s36:opt	   -nq-		        e10:opt
+e10:prof	e10:prof  -nq-		e10:prof	 e10:nu:s36:prof   -nq-		        e10:prof
 
 end_qualifier_list
 
