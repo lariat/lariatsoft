@@ -87,6 +87,7 @@ public:
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const & fb) override;
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
+ 
 
 private:
   
@@ -101,7 +102,9 @@ private:
   double 	fDeltaYHigh;		// The upper cut of the Delta Y variable
   double	fMaxZPos;		// Maximum Z position of the TPC track we will consider
   int		fMaxMatchedTracks;	// The maximum number of tracks allowed to be matched per event
-  
+  bool          fIsData;                // True if you're running on data, False if you're running on MC
+  art::ProductID WCProductId;
+
   // --- Histos for checking filter ---
   TH1F*		hDeltaX;
   TH1F*		hDeltaY;
@@ -125,6 +128,7 @@ WC2TPCTrackMatch::WC2TPCTrackMatch(fhicl::ParameterSet const & p)
   // Call appropriate produces<>() functions here.
   this->reconfigure(p);
   produces < art::Assns<ldp::WCTrack,recob::Track> >();
+  produces < std::vector<ldp::WCTrack> >();
 }
 
 
@@ -141,7 +145,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
   // Make a std::unique_ptr<> for the thing you want to put into the event ###
   // because that handles the memory management for you                    ###
   //##########################################################################
-  std::unique_ptr< art::Assns<ldp::WCTrack , recob::Track> > wcTpcTrackAssn(new art::Assns<ldp::WCTrack , recob::Track>);
+  std::unique_ptr< art::Assns<recob::Track,ldp::WCTrack > > wcTpcTrackAssn(new art::Assns<recob::Track,ldp::WCTrack>);
   
     
   // #####################################
@@ -154,117 +158,117 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
   if (!evt.getByLabel(fTrackModuleLabel,trackListHandle)) {evt.put(std::move(wcTpcTrackAssn)); return;}
   art::fill_ptr_vector(tracklist, trackListHandle);
 
-  // ###################################################
-  // ### Getting the Wire Chamber Track  Information ###
-  // ###################################################
-  art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
-  std::vector<art::Ptr<ldp::WCTrack> > wctrack;
-   
-  if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) {evt.put(std::move(wcTpcTrackAssn)); return;}
-  art::fill_ptr_vector(wctrack, wctrackHandle);
-
-
   
   // #########################################################
   // ### Grabbing associations for use later in the Filter ###
   // #########################################################  
   // === Association between SpacePoints and Tracks ===
   art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
-  
-  //std::cout<<"========================================="<<std::endl;
-  std::cout<<"@@@@@@@@@@ Run  = "<<evt.run()<<",   SubRun = "<<evt.subRun()<<", Evt = "<<evt.id().event()<<std::endl;
-  std::cout<<"@@@@@@@@@@ N WC = "<<wctrack.size()<<",   TpcTrk = "<<tracklist.size()<<std::endl;
 
-  //std::cout<<"========================================="<<std::endl;
-  
-  
-  // ---------------------------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------------------------
-  // 				Grabbing the wire chamber tracks
-  // ---------------------------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------------------------
-  float wctrk_XFace[10] = {0.};
-  float wctrk_YFace[10] = {0.};
-  float wctrk_theta[10] = {0.};
-  float wctrk_phi[10] = {0.};
-  int   wcTrackKey[10] = {0};
-  int   nwctrk = 0;
-  
-  // ##################################
-  // ### Looping over the WC Tracks ###
-  // ##################################
-  for(size_t wcCount = 0; wcCount < wctrack.size(); wcCount++)
+
+  if (fIsData) 
     {
-      wctrk_XFace[nwctrk] = wctrack[nwctrk]->XYFace(0) * 0.1;//<---Note: *0.1 to convert to cm
-      wctrk_YFace[nwctrk] = wctrack[nwctrk]->XYFace(1) * 0.1;//<---Note: *0.1 to convert to cm
-      wctrk_theta[nwctrk] = wctrack[nwctrk]->Theta();
-      wctrk_phi[nwctrk]   = wctrack[nwctrk]->Phi();
-      wcTrackKey[nwctrk]  = wctrack[nwctrk].key();
-      nwctrk++;
-    }//<----End wcCount loop
-  
-  // ---------------------------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------------------------
-  // 			   Grabbing the upstream most trajectory points
-  // ---------------------------------------------------------------------------------------------
-  // ---------------------------------------------------------------------------------------------
-  double larStart[3];
-  double larEnd[3];
-  std::vector<double> trackStart;
-  std::vector<double> trackEnd;
-  
-  
-  int ntrks = 0;
-  
-  // ###########################################################
-  // ### Variables for storing the lowest Z trajectory point ###
-  // ###    that is inside the active volume of the TPC      ###
-  // ###########################################################
-  float UpStreamTrjPointZ[100] = {999.};
-  float UpStreamTrjPointY[100] = {999.};
-  float UpStreamTrjPointX[100] = {999.}; //<---Initialized to a stupid high number on purpose
-  
-  
-  float UpStreamTrjPointPHatY[100] = {999.};
-  float UpStreamTrjPointPHatX[100] = {999.}; //<---Initialized to a stupid high number on purpose
-  
-  int tpcTrackKey[100] = {0};
-
-
-  float FirstTrjPtZ = 999;
-  float FirstTrjPtY = 999;
-  float FirstTrjPtX = 999;
-  
-  float pHatX = 999;
-  float pHatY = 999;
-
-  float tpcTheta[100]= {0.};
-  
-  // ### Storing the trajectory points in a similar way to PionXS ###
-  
-  TVector3 z_hat(0,0,1);
-  
-  // #######################################
-  // ### Looping over all the tpcTracks ###
-  // ######################################
-  for(size_t i=0; i<tracklist.size();++i)
-    {
-      // ### Clearing the vectors for each track ###
-      trackStart.clear();
-      trackEnd.clear();
+      // ###################################################
+      // ### Getting the Wire Chamber Track  Information ###
+      // ###################################################
+      art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
+      std::vector<art::Ptr<ldp::WCTrack> > wctrack;
       
-      TVector3 p_hat_0;
+      if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) {evt.put(std::move(wcTpcTrackAssn)); return;}
+      art::fill_ptr_vector(wctrack, wctrackHandle);
+            
+      //std::cout<<"========================================="<<std::endl;
+      std::cout<<"@@@@@@@@@@ Run  = "<<evt.run()<<",   SubRun = "<<evt.subRun()<<", Evt = "<<evt.id().event()<<std::endl;
+      std::cout<<"@@@@@@@@@@ N WC = "<<wctrack.size()<<",   TpcTrk = "<<tracklist.size()<<std::endl;
+      //std::cout<<"========================================="<<std::endl;
+   
+      // ---------------------------------------------------------------------------------------------
+      // ---------------------------------------------------------------------------------------------
+      // 				Grabbing the wire chamber tracks
+      // ---------------------------------------------------------------------------------------------
+      // ---------------------------------------------------------------------------------------------
+      float wctrk_XFace[10] = {0.};
+      float wctrk_YFace[10] = {0.};
+      float wctrk_theta[10] = {0.};
+      float wctrk_phi[10] = {0.};
+      int   wcTrackKey[10] = {0};
+      int   nwctrk = 0;
       
-      // ### Setting the track information into memory ###
-      memset(larStart, 0, 3);
-      memset(larEnd, 0, 3);
-      tracklist[i]->Extent(trackStart,trackEnd); 
-      tracklist[i]->Direction(larStart,larEnd);
+      // ##################################
+      // ### Looping over the WC Tracks ###
+      // ##################################
+      for(size_t wcCount = 0; wcCount < wctrack.size(); wcCount++)
+	{
+	  wctrk_XFace[nwctrk] = wctrack[nwctrk]->XYFace(0) * 0.1;//<---Note: *0.1 to convert to cm
+	  wctrk_YFace[nwctrk] = wctrack[nwctrk]->XYFace(1) * 0.1;//<---Note: *0.1 to convert to cm
+	  wctrk_theta[nwctrk] = wctrack[nwctrk]->Theta();
+	  wctrk_phi[nwctrk]   = wctrack[nwctrk]->Phi();
+	  wcTrackKey[nwctrk]  = wctrack[nwctrk].key();
+	  nwctrk++;
+	}//<----End wcCount loop
       
-      // ### Setting the number of Trajectory points for this track ###
-      //nTrajPoints[i] = tracklist[ntrks]->NumberTrajectoryPoints();
+      // ---------------------------------------------------------------------------------------------
+      // ---------------------------------------------------------------------------------------------
+      // 			   Grabbing the upstream most trajectory points
+      // ---------------------------------------------------------------------------------------------
+      // ---------------------------------------------------------------------------------------------
+      double larStart[3];
+      double larEnd[3];
+      std::vector<double> trackStart;
+      std::vector<double> trackEnd;
       
-      // ### Making temp variables to find the most upstream ###
+      
+      int ntrks = 0;
+      
+      // ###########################################################
+      // ### Variables for storing the lowest Z trajectory point ###
+      // ###    that is inside the active volume of the TPC      ###
+      // ###########################################################
+      float UpStreamTrjPointZ[100] = {999.};
+      float UpStreamTrjPointY[100] = {999.};
+      float UpStreamTrjPointX[100] = {999.}; //<---Initialized to a stupid high number on purpose
+      
+      
+      float UpStreamTrjPointPHatY[100] = {999.};
+      float UpStreamTrjPointPHatX[100] = {999.}; //<---Initialized to a stupid high number on purpose
+      
+      int tpcTrackKey[100] = {0};
+      
+      
+      float FirstTrjPtZ = 999;
+      float FirstTrjPtY = 999;
+      float FirstTrjPtX = 999;
+      
+      float pHatX = 999;
+      float pHatY = 999;
+      
+      float tpcTheta[100]= {0.};
+      
+      // ### Storing the trajectory points in a similar way to PionXS ###
+      
+      TVector3 z_hat(0,0,1);
+      
+      // #######################################
+      // ### Looping over all the tpcTracks ###
+      // ######################################
+      for(size_t i=0; i<tracklist.size();++i)
+	{
+	  // ### Clearing the vectors for each track ###
+	  trackStart.clear();
+	  trackEnd.clear();
+	  
+	  TVector3 p_hat_0;
+	  
+	  // ### Setting the track information into memory ###
+	  memset(larStart, 0, 3);
+	  memset(larEnd, 0, 3);
+	  tracklist[i]->Extent(trackStart,trackEnd); 
+	  tracklist[i]->Direction(larStart,larEnd);
+	  
+	  // ### Setting the number of Trajectory points for this track ###
+	  //nTrajPoints[i] = tracklist[ntrks]->NumberTrajectoryPoints();
+	  
+	  // ### Making temp variables to find the most upstream ###
 	  // ###         of all the trajectory points            ###
 	  FirstTrjPtZ = 999;
 	  FirstTrjPtY = 999;
@@ -272,251 +276,325 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  
 	  pHatX = 999;
 	  pHatY = 999;
-      
-      // ##############################################
-      // ### Looping over all the trajectory points ###
-      // ##############################################
-      for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
-	{
 	  
-	  // ### Recording this point if it is the most upstream point ###
-	  if(tracklist[i]->LocationAtPoint(iTrajPt).Z() < FirstTrjPtZ && 
-	     tracklist[i]->LocationAtPoint(iTrajPt).Z() > 0.0 && tracklist[i]->LocationAtPoint(iTrajPt).Y() > -20.0 &&
-	     tracklist[i]->LocationAtPoint(iTrajPt).Y() < 20.0 && tracklist[i]->LocationAtPoint(iTrajPt).X() > 0.0 &&
-	     tracklist[i]->LocationAtPoint(iTrajPt).X() < 43.5)
+	  // ##############################################
+	  // ### Looping over all the trajectory points ###
+	  // ##############################################
+	  for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
 	    {
 	      
-	      p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
-	      //Strange directionality convention - I'm reversing the direction vector
-	      //if it's pointing in the negative X direction
-	      if( p_hat_0.Z() < 0 )
+	      // ### Recording this point if it is the most upstream point ###
+	      if(tracklist[i]->LocationAtPoint(iTrajPt).Z() < FirstTrjPtZ && 
+		 tracklist[i]->LocationAtPoint(iTrajPt).Z() > 0.0 && tracklist[i]->LocationAtPoint(iTrajPt).Y() > -20.0 &&
+		 tracklist[i]->LocationAtPoint(iTrajPt).Y() < 20.0 && tracklist[i]->LocationAtPoint(iTrajPt).X() > 0.0 &&
+		 tracklist[i]->LocationAtPoint(iTrajPt).X() < 43.5)
 		{
-		  p_hat_0.SetX(p_hat_0.X()*-1);
-		  p_hat_0.SetY(p_hat_0.Y()*-1);
-		  p_hat_0.SetZ(p_hat_0.Z()*-1);
-		}
-	      
-	      // ###    Storing the temp variables of what is now      ###
-	      // ### considered the most upstream point for this track ###
-	      FirstTrjPtZ = tracklist[i]->LocationAtPoint(iTrajPt).Z();
-	      FirstTrjPtY = tracklist[i]->LocationAtPoint(iTrajPt).Y();
-	      FirstTrjPtX = tracklist[i]->LocationAtPoint(iTrajPt).X();
-	      
-	      pHatY = p_hat_0.Y();
-	      pHatX = p_hat_0.X();
-	      
-	    }//<---End only storing points if they are the lowest Z point
+		  
+		  p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
+		  //Strange directionality convention - I'm reversing the direction vector
+		  //if it's pointing in the negative X direction
+		  if( p_hat_0.Z() < 0 )
+		    {
+		      p_hat_0.SetX(p_hat_0.X()*-1);
+		      p_hat_0.SetY(p_hat_0.Y()*-1);
+		      p_hat_0.SetZ(p_hat_0.Z()*-1);
+		    }
+		  
+		  // ###    Storing the temp variables of what is now      ###
+		  // ### considered the most upstream point for this track ###
+		  FirstTrjPtZ = tracklist[i]->LocationAtPoint(iTrajPt).Z();
+		  FirstTrjPtY = tracklist[i]->LocationAtPoint(iTrajPt).Y();
+		  FirstTrjPtX = tracklist[i]->LocationAtPoint(iTrajPt).X();
+		  
+		  pHatY = p_hat_0.Y();
+		  pHatX = p_hat_0.X();
+		}//<---End only storing points if they are the lowest Z point
+	    }//<---End iTrajPt loop
+	  // ### Calculating the Theta for the TPC Track ###
+	  tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());
 	  
-	}//<---End iTrajPt loop
+	  // ###################################################
+	  // ### Saving for looping later the upstream point ###
+	  // ###       for every track in the list           ###
+	  // ###################################################
+	  //if(FirstTrjPtZ < 999)
+	  //{
+	  UpStreamTrjPointZ[i] = FirstTrjPtZ;  
+	  UpStreamTrjPointY[i] = FirstTrjPtY;
+	  UpStreamTrjPointX[i] = FirstTrjPtX;
+	  
+	  UpStreamTrjPointPHatY[i] = pHatY;
+	  UpStreamTrjPointPHatX[i] = pHatX;
+	  
+	  tpcTrackKey[i] = tracklist[i].key();
+	  
+	  ntrks++;
+	  //}// <----End saving FirstPoint   
+	}//<---End i loop
       
-      // ### Calculating the Theta for the TPC Track ###
-      tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());
+      //---------------------------------------------------------------------------------------------------------------------------------
+      // 						DOING THE MATCHING OF THE WCTRACK AND TPC TRACKS
+      //---------------------------------------------------------------------------------------------------------------------------------
+      
+      // ### Initialize the counter for the number of matches ###
+      int nWC_TPC_TrackMatch = 0;
+      std::pair <int,int>  matchCandidate;
+      std::map<float,std::pair <int,int>> mapCandidates; // the map takes the figure of merit as key and the couple as value 
       
       // ###################################################
-      // ### Saving for looping later the upstream point ###
-      // ###       for every track in the list           ###
+      // ### Vectors for angles between TPC and WC Track ###
       // ###################################################
-      //if(FirstTrjPtZ < 999)
-      //{
-      UpStreamTrjPointZ[i] = FirstTrjPtZ;  
-      UpStreamTrjPointY[i] = FirstTrjPtY;
-      UpStreamTrjPointX[i] = FirstTrjPtX;
       
-      UpStreamTrjPointPHatY[i] = pHatY;
-      UpStreamTrjPointPHatX[i] = pHatX;
-
-      tpcTrackKey[i] = tracklist[i].key();
       
-      ntrks++;
-      //}// <----End saving FirstPoint   
-    }//<---End i loop
-  
-  
-  //---------------------------------------------------------------------------------------------------------------------------------
-  // 						DOING THE MATCHING OF THE WCTRACK AND TPC TRACKS
-  //---------------------------------------------------------------------------------------------------------------------------------
-  
-  // ### Initialize the counter for the number of matches ###
-  int nWC_TPC_TrackMatch = 0;
-  std::pair <int,int>  matchCandidate;
-  std::map<float,std::pair <int,int>> mapCandidates; // the map takes the figure of merit as key and the couple as value 
-
-  // ###################################################
-  // ### Vectors for angles between TPC and WC Track ###
-  // ###################################################
-  
-  
-  std::cout<<"@@@@@@@@@@ further in the code N WC = "<<nwctrk<<",   TpcTrk = "<<ntrks<<std::endl;
-
-  // ############################################
-  // ### Loop over all the eligible tpcTracks ###
-  // ############################################
-  for(int aa = 0; aa < ntrks; aa++)
-    {
-      float DeltaX_WC_TPC_Track = 999;
-      float DeltaY_WC_TPC_Track = 999;
-      //p_hat_0 = tracklist[aa]->DirectionAtPoint(aa);
-      float tpc_Theta=tpcTheta[aa];
-      std::cout<<"&&&& TPC Theta "<<tpcTheta[aa]<<" "<<std::endl;
-      // ###########################################
-      // ### Loop over all the eligible WCTracks ###
-      // ###########################################
-      for(int bb = 0; bb < nwctrk; bb++)
+      std::cout<<"@@@@@@@@@@ further in the code N WC = "<<nwctrk<<",   TpcTrk = "<<ntrks<<std::endl;
+      
+      // ############################################
+      // ### Loop over all the eligible tpcTracks ###
+      // ############################################
+      for(int aa = 0; aa < ntrks; aa++)
 	{
-	  // ### Grabbing the WCTrack Theta ###
-	  float wcTheta = wctrk_theta[bb];
-	  
-	  // ### Grabbing the WCTRack Phi ###
-	  float wcPhi = wctrk_phi[bb];
-	  
-	  // ### Using same convention as WCTrack to calculate phi ###
-	  float phi = 0;
-	  //Calculating phi (degeneracy elimination for the atan function)
-	  //----------------------------------------------------------------------------------------------
-	  if( UpStreamTrjPointPHatY[aa] > 0 && UpStreamTrjPointPHatX[aa] > 0 ){ 
-	 
-	    phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa]); 
-	  }
-	  else if( UpStreamTrjPointPHatY[aa] > 0 && UpStreamTrjPointPHatX[aa] < 0 ){ 
-	 
-	    phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+3.141592654; }
-	  else if( UpStreamTrjPointPHatY[aa] < 0 && UpStreamTrjPointPHatX[aa] < 0 ){ 
-	 
-	    phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+3.141592654; }
-	  else if( UpStreamTrjPointPHatY[aa] < 0 && UpStreamTrjPointPHatX[aa] > 0 ){ 
-	 
-	    phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+6.28318; }
-	  else if( UpStreamTrjPointPHatY[aa] == 0 && UpStreamTrjPointPHatX[aa] == 0 ){ 
-	 
-	    phi = 0; }//defined by convention
-	  else if( UpStreamTrjPointPHatY[aa] == 0 )
+	  float DeltaX_WC_TPC_Track = 999;
+	  float DeltaY_WC_TPC_Track = 999;
+	  //p_hat_0 = tracklist[aa]->DirectionAtPoint(aa);
+	  float tpc_Theta=tpcTheta[aa];
+	  std::cout<<"&&&& TPC Theta "<<tpcTheta[aa]<<" "<<std::endl;
+	  // ###########################################
+	  // ### Loop over all the eligible WCTracks ###
+	  // ###########################################
+	  for(int bb = 0; bb < nwctrk; bb++)
 	    {
-	 
-	      if( UpStreamTrjPointPHatX[aa] > 0 ){ 
-	
-		phi = 0; }
+	      // ### Grabbing the WCTrack Theta ###
+	      float wcTheta = wctrk_theta[bb];
 	      
-	      else{
-	
-		phi = 3.141592654;
+	      // ### Grabbing the WCTRack Phi ###
+	      float wcPhi = wctrk_phi[bb];
+	      
+	      // ### Using same convention as WCTrack to calculate phi ###
+	      float phi = 0;
+	      //Calculating phi (degeneracy elimination for the atan function)
+	      //----------------------------------------------------------------------------------------------
+	      if( UpStreamTrjPointPHatY[aa] > 0 && UpStreamTrjPointPHatX[aa] > 0 ){ 
+		
+		phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa]); 
 	      }
+	      else if( UpStreamTrjPointPHatY[aa] > 0 && UpStreamTrjPointPHatX[aa] < 0 ){ 
+		
+		phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+3.141592654; }
+	      else if( UpStreamTrjPointPHatY[aa] < 0 && UpStreamTrjPointPHatX[aa] < 0 ){ 
+		
+		phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+3.141592654; }
+	      else if( UpStreamTrjPointPHatY[aa] < 0 && UpStreamTrjPointPHatX[aa] > 0 ){ 
+		
+		phi = atan(UpStreamTrjPointPHatY[aa]/UpStreamTrjPointPHatX[aa])+6.28318; }
+	      else if( UpStreamTrjPointPHatY[aa] == 0 && UpStreamTrjPointPHatX[aa] == 0 ){ 
+		
+		phi = 0; }//defined by convention
+	      else if( UpStreamTrjPointPHatY[aa] == 0 )
+		{
+		  
+		  if( UpStreamTrjPointPHatX[aa] > 0 ){ 
+		    
+		    phi = 0; }
+		  
+		  else{
+		    
+		    phi = 3.141592654;
+		  }
+		  
+		}
+	      else if( UpStreamTrjPointPHatX[aa] == 0 )
+		{
+		  
+		  if( UpStreamTrjPointPHatY[aa] > 0 ){ phi = 3.141592654/2; }
+		  else{ phi = 3.141592654*3/2; }
+		  
+		}
+	      //----------------------------------------------------------------------------------------------
 	      
-	    }
-	  else if( UpStreamTrjPointPHatX[aa] == 0 )
-	    {
-	
-	      if( UpStreamTrjPointPHatY[aa] > 0 ){ phi = 3.141592654/2; }
-	      else{ phi = 3.141592654*3/2; }
+	      // ### Using TPC Phi ###
+	      float tpcPhi = phi; 
+	  
+	      // #########################################################
+	      // ### Define the unit vectors for the WC and TPC Tracks ###
+	      // #########################################################
+	      TVector3 theUnitVector_WCTrack;
+	      TVector3 theUnitVector_TPCTrack;
 	      
-	    }
-	  //----------------------------------------------------------------------------------------------
-	  
-	  // ### Using TPC Phi ###
-	  float tpcPhi = phi; 
-	  
-	  // #########################################################
-	  // ### Define the unit vectors for the WC and TPC Tracks ###
-	  // #########################################################
-	  TVector3 theUnitVector_WCTrack;
-	  TVector3 theUnitVector_TPCTrack;
-	  
-	  // === WCTrack Unit Vector ===
-	  theUnitVector_WCTrack.SetX(sin(wcTheta)*cos(wcPhi));
-	  theUnitVector_WCTrack.SetY(sin(wcTheta)*sin(wcPhi));
-	  theUnitVector_WCTrack.SetZ(cos(wcTheta));
-	  
-	  // ### TPC Track Unit Vector ===
-	  theUnitVector_TPCTrack.SetX(sin(tpc_Theta)*cos(tpcPhi));
-	  theUnitVector_TPCTrack.SetY(sin(tpc_Theta)*sin(tpcPhi));
-	  theUnitVector_TPCTrack.SetZ(cos(tpc_Theta));
-	  
-	  // ###########################################################
-	  // ### Calculating the angle between WCTrack and TPC Track ###
-	  // ###########################################################
-	  float alpha = ( acos(theUnitVector_WCTrack.Dot(theUnitVector_TPCTrack)) )* (180.0/3.141592654);
-	  
-	  DeltaX_WC_TPC_Track = UpStreamTrjPointX[aa] - (wctrk_XFace[bb]);
-	  DeltaY_WC_TPC_Track = UpStreamTrjPointY[aa] - (wctrk_YFace[bb]);
-	  
-	  hDeltaX->Fill(DeltaX_WC_TPC_Track);
-	  hDeltaY->Fill(DeltaY_WC_TPC_Track);
-	  hAlpha->Fill(alpha);
+	      // === WCTrack Unit Vector ===
+	      theUnitVector_WCTrack.SetX(sin(wcTheta)*cos(wcPhi));
+	      theUnitVector_WCTrack.SetY(sin(wcTheta)*sin(wcPhi));
+	      theUnitVector_WCTrack.SetZ(cos(wcTheta));
+	      
+	      // ### TPC Track Unit Vector ===
+	      theUnitVector_TPCTrack.SetX(sin(tpc_Theta)*cos(tpcPhi));
+	      theUnitVector_TPCTrack.SetY(sin(tpc_Theta)*sin(tpcPhi));
+	      theUnitVector_TPCTrack.SetZ(cos(tpc_Theta));
+	      
+	      // ###########################################################
+	      // ### Calculating the angle between WCTrack and TPC Track ###
+	      // ###########################################################
+	      float alpha = ( acos(theUnitVector_WCTrack.Dot(theUnitVector_TPCTrack)) )* (180.0/3.141592654);
+	      
+	      DeltaX_WC_TPC_Track = UpStreamTrjPointX[aa] - (wctrk_XFace[bb]);
+	      DeltaY_WC_TPC_Track = UpStreamTrjPointY[aa] - (wctrk_YFace[bb]);
+	      
+	      hDeltaX->Fill(DeltaX_WC_TPC_Track);
+	      hDeltaY->Fill(DeltaY_WC_TPC_Track);
+	      hAlpha->Fill(alpha);
+	      
+	      
+	      // ### Only counting the track if it passes the alpha, DeltaX and Delta Y ###
+	      // ###       and is far enough upstream in the TPC in Z position          ###
+	      if(alpha < falpha && 
+		 DeltaX_WC_TPC_Track > fDeltaXLow && 
+		 DeltaY_WC_TPC_Track > fDeltaYLow && 
+		 DeltaX_WC_TPC_Track < fDeltaXHigh &&
+		 DeltaY_WC_TPC_Track < fDeltaYHigh && 
+		 UpStreamTrjPointZ[aa] < fMaxZPos){
+		
+		// ### Filling Histograms ###
+		hDeltaXAfterCut->Fill(DeltaX_WC_TPC_Track);
+		hDeltaYAfterCut->Fill(DeltaY_WC_TPC_Track);
+		hAlphaAfterCut->Fill(alpha);
+		nWC_TPC_TrackMatch++;
+		
+		// We store all possible wc-tpc track combination
+		// With their figure of merith as a key of the map.
+		std::pair <int,int>  matchCandidate (wcTrackKey[bb],tpcTrackKey[aa]);
+		// This figure of merith is a poor choice and needs to be revised
+		// We would do a better job with some MC tuning
+		// ROOT has an instrument that gives you the pdf of multiple cuts... ask Jeremy Hewes
+		float figOfMerit = DeltaX_WC_TPC_Track*2.5 + DeltaY_WC_TPC_Track*2.22 + alpha; 
+		mapCandidates[figOfMerit] = matchCandidate; 
+	      }
+	    }//<---End bb loop
+	}//<---End aa loop
 
-	  
-	  // ### Only counting the track if it passes the alpha, DeltaX and Delta Y ###
-	  // ###       and is far enough upstream in the TPC in Z position          ###
-	  if(alpha < falpha && 
-	     DeltaX_WC_TPC_Track > fDeltaXLow && 
-	     DeltaY_WC_TPC_Track > fDeltaYLow && 
-	     DeltaX_WC_TPC_Track < fDeltaXHigh &&
-             DeltaY_WC_TPC_Track < fDeltaYHigh && 
-             UpStreamTrjPointZ[aa] < fMaxZPos){
-
-	      // ### Filling Histograms ###
-	      hDeltaXAfterCut->Fill(DeltaX_WC_TPC_Track);
-	      hDeltaYAfterCut->Fill(DeltaY_WC_TPC_Track);
-	      hAlphaAfterCut->Fill(alpha);
-	      nWC_TPC_TrackMatch++;
-
-	      // We store all possible wc-tpc track combination
-	      // With their figure of merith as a key of the map.
-	      std::pair <int,int>  matchCandidate (wcTrackKey[bb],tpcTrackKey[aa]);
-	      // This figure of merith is a poor choice and needs to be revised
-	      // We would do a better job with some MC tuning
-	      // ROOT has an instrument that gives you the pdf of multiple cuts... ask Jeremy Hewes
-	      float figOfMerit = DeltaX_WC_TPC_Track*2.5 + DeltaY_WC_TPC_Track*2.22 + alpha; 
-	      mapCandidates[figOfMerit] = matchCandidate; 
-	    }
-	}//<---End bb loop
-    }//<---End aa loop
-
-
-  std::cout<<"@@@@@@@@@@ MapSize = "<<mapCandidates.size()<<std::endl;
-
-  /////////////////////////////////////////////////
-  //  Find the best match with then give metric  //
-  ///////////////////////////////////////////////// 
-  
-  // With these sets we're going to check if we already used the wcTrack and the tpcTrack for the match
-  std::set<int> tpcIndeces; 
-  std::set<int>  wcIndeces;
-  tpcIndeces.clear();
-  wcIndeces.clear();
-
-  // We loop on the keys of the map in reverse order:
-  // from the highest to the lowest key: we select the 
-  // best match first.
-  int matchCounter = 0;
-  for (std::map<float,std::pair<int, int>>::iterator it=mapCandidates.begin(); it!=mapCandidates.end(); ++it)
-    {
-      //Check if we used the wc and tpc indeces already
-      bool wcB  =  wcIndeces.find(it->second.first ) !=  wcIndeces.end();
-      bool tpcB = tpcIndeces.find(it->second.second) != tpcIndeces.end();
-      if ( !wcB && !tpcB)
+      
+      std::cout<<"@@@@@@@@@@ MapSize = "<<mapCandidates.size()<<std::endl;
+      
+      /////////////////////////////////////////////////
+      //  Find the best match with then give metric  //
+      ///////////////////////////////////////////////// 
+      
+      // With these sets we're going to check if we already used the wcTrack and the tpcTrack for the match
+      std::set<int> tpcIndeces; 
+      std::set<int>  wcIndeces;
+      tpcIndeces.clear();
+      wcIndeces.clear();
+      
+      // We loop on the keys of the map in reverse order:
+      // from the highest to the lowest key: we select the 
+      // best match first.
+      int matchCounter = 0;
+      for (std::map<float,std::pair<int, int>>::iterator it=mapCandidates.begin(); it!=mapCandidates.end(); ++it)
 	{
-	  //If we haven't, now we are
-	  wcIndeces.insert(it->second.first) ;
-	  tpcIndeces.insert(it->second.second);
-	  // We create the assn here
-	  util::CreateAssn(*this, evt, tracklist.at(it->second.second),wctrack.at(it->second.first), *wcTpcTrackAssn);
-	  std::cout<<"########### "<< (tracklist.at(it->second.second))->Length()<<" \n"
-		   << (tracklist.at(it->second.second)->Vertex())[0]<<std::endl
-		   << (tracklist.at(it->second.second)->Vertex())[1]<<std::endl
-		   << (tracklist.at(it->second.second)->Vertex())[2]<<std::endl;
-	  // Enable a max number of associations
-	  ++matchCounter;
-	  if(matchCounter >= fMaxMatchedTracks)
+	  //Check if we used the wc and tpc indeces already
+	  bool wcB  =  wcIndeces.find(it->second.first ) !=  wcIndeces.end();
+	  bool tpcB = tpcIndeces.find(it->second.second) != tpcIndeces.end();
+	  if ( !wcB && !tpcB)
 	    {
-	      hnMatchAfterCut->Fill(matchCounter);
-	      break;
-	    }
-	}	
+	      //If we haven't, now we are
+	      wcIndeces.insert(it->second.first) ;
+	      tpcIndeces.insert(it->second.second);
+	      // We create the assn here
+	      //	      util::CreateAssn(*this, evt, tracklist.at(it->second.second),wctrack.at(it->second.first), *wcTpcTrackAssn); //might need swap
+	      wcTpcTrackAssn->addSingle(tracklist.at(it->second.second),wctrack.at(it->second.first));
+
+	      /*	      std::cout<<"########### "<< (tracklist.at(it->second.second))->Length()<<" \n"
+		       << (tracklist.at(it->second.second)->Vertex())[0]<<std::endl
+		       << (tracklist.at(it->second.second)->Vertex())[1]<<std::endl
+		       << (tracklist.at(it->second.second)->Vertex())[2]<<std::endl;
+	      */
+	      // Enable a max number of associations
+	      ++matchCounter;
+	      if(matchCounter >= fMaxMatchedTracks)
+		{
+		  hnMatchAfterCut->Fill(matchCounter);
+		  break;
+		}
+	    }	
+	}
+      
+      hnMatch->Fill(mapCandidates.size());
+    }else
+    {
+      // this is the ID of the tpc track we want to use to do the matching
+      int correctTrackID = 0; 
+
+      // 0.   Loop over all the reco tracks
+       for(size_t i=0; i<tracklist.size();++i)
+	 {
+	   // 0.1  Take the closest MC primary track to the reco
+	   // 0.2  Use that to define the wc obj
+
+	   // if 
+	   correctTrackID = i;
+	 }
+
+      
+      // The following are all the attributes we need to set to create our pseudo WC track
+      float reco_pz = 0;
+      float y_kink  = 0;
+      float x_dist  = 0;
+      float y_dist  = 0;
+      float z_dist  = 0; 
+      float x_face  = 0;
+      float y_face  = 0;
+      float theta   = 0;
+      float phi     = 0;
+      int wcmiss    = 0;
+      std::vector<int>   WC_vect;
+      std::vector<float> hit_wire_vect;
+      float residual = 0;
+
+      for (int i = 0; i < 4; i++)
+	{
+	  WC_vect.emplace_back(0.);
+	  hit_wire_vect.emplace_back(0.);
+	  //hit_time_vect.emplace_back(0.);
+	}	   
+
+      ldp::WCTrack the_track(reco_pz,
+			     y_kink ,
+			     x_dist ,
+			     y_dist ,
+			     z_dist ,
+			     x_face ,
+			     y_face ,
+			     theta  ,
+			     phi    ,
+			     WC_vect,
+			     hit_wire_vect,
+			     wcmiss,
+			     residual);
+
+      // 1. Create the wc obj
+      std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
+      (*WCTrackCol).push_back( the_track );
+
+      //      art::Ptr<ldp::WCTrack> bogusPtrTrack(WCProductId, WCTrackCol->size() -1);
+      // I need to find a way to define the art::Ptr so that it points to the_track
+      //this: *bogusPtrTrack = the_track; doesn't work
+
+      // 2. store the matching
+     
+      util::CreateAssn(*this, 
+		       evt, 
+		       *WCTrackCol,
+		       tracklist[correctTrackID], 
+		       *wcTpcTrackAssn);
+     
+      /*I need a art::Ptr<ldp::WCTrack> here */
+      // wcTpcTrackAssn->addSingle(bogusPtrTrack, tracklist[correctTrackID]);
+
+      // 3. save the wcPseudoTrack
+      evt.put(std::move(WCTrackCol));
     }
   
-  hnMatch->Fill(mapCandidates.size());
-
-  evt.put(std::move(wcTpcTrackAssn));
   
+  evt.put(std::move(wcTpcTrackAssn));
+      
 }//<----End Event Loop
 
 // ---------------------- Begin Job ---------------------------
@@ -573,6 +651,7 @@ void WC2TPCTrackMatch::reconfigure(fhicl::ParameterSet const & p)
   fDeltaYHigh			= p.get< double >("DeltaYHigh", 6.0);
   fMaxZPos			= p.get< double >("MaxZPos", 14.0);
   fMaxMatchedTracks		= p.get<  int   >("MaxMatchedTracks", 1);
+  fIsData                       = p.get<  bool  >("IsData", true);
 }
 
 void WC2TPCTrackMatch::respondToCloseInputFile(art::FileBlock const & fb)

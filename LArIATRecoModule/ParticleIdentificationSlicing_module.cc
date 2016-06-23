@@ -321,11 +321,13 @@ ParticleIdentificationSlicing::ParticleIdentificationSlicing(fhicl::ParameterSet
 
 void ParticleIdentificationSlicing::produce(art::Event & e)
 {
+
   //Caution
   if( fPolaritySetting == 0 ){
     LOG_VERBATIM("ParticleIdentificationSlicing") << "Polarity is zero. Skipping this event.";
     return;
   }
+
 
   //Collection of particle id objects
   std::unique_ptr<std::vector<ldp::AuxDetParticleID> > AuxDetParticleIDCol(new std::vector<ldp::AuxDetParticleID>  );
@@ -370,7 +372,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 			       MuRSColHandle );
 
   
-  
+
   //Tag possible kaon (for by-eye scans - not to be used in module)
   if((WCTrackColHandle->at(0).Momentum() < 950 && WCTrackColHandle->at(0).Momentum() > 500 ) &&
      (TOFColHandle->at(0).SingleTOF(0) < 42 && TOFColHandle->at(0).SingleTOF(0) > 37) ){
@@ -430,6 +432,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
     int thePenetrationDepth = 9989;
     bool goodMuRS = isThereAGoodMuRSTrack( MuRSColHandle, thePenetrationDepth );
     foundGoodMuRSTrack = goodMuRS;
+   
     if( goodMuRS ){
       fGoodMuRSCounter++;
       doTheMuRSPionMuonSeparation( thePenetrationDepth, 
@@ -836,40 +839,64 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 								 float reco_momentum,
 								 float & pion_muon_likelihood_ratio )
 {
+
   if( fVerbose )
     LOG_VERBATIM("ParticleIdentificationSlicing") << "Doing the pion muon separation.";
 
   //Calculate the final likelihood ratio for pions/muons for positive polarity
   if( fPolaritySetting == 1 ){
+    /*    std::cout<<"3\n";
+    std::cout<<"sizes matter: "
+	     <<fCorrectPPiPenetrationDepth.size()<<" "
+	     <<fCorrectPMuPenetrationDepth.size()<<" "
+	     <<fCorrectPKPenetrationDepth.size()<<" "
+	     <<fCorrectPProtPenetrationDepth.size()<<" "<<thePenetrationDepth+2<<"\n";
+    */
+    if (thePenetrationDepth+2 > fCorrectPProtPenetrationDepth.size() ) {pion_muon_likelihood_ratio = -1.; return;}
+    if (thePenetrationDepth+2 > fCorrectPMuPenetrationDepth.size()   ) {pion_muon_likelihood_ratio = -1.; return;}
+    if (thePenetrationDepth+2 > fCorrectPKPenetrationDepth.size() )    {pion_muon_likelihood_ratio = -1.; return;}
+    if (thePenetrationDepth+2 > fCorrectPPiPenetrationDepth.size() )   {pion_muon_likelihood_ratio = -1.; return;}
+
     float P_depth_given_pi = fCorrectPPiPenetrationDepth.at( thePenetrationDepth+2 ); //Always +2 because first 2 entries are header with other info
     float P_depth_given_mu = fCorrectPMuPenetrationDepth.at( thePenetrationDepth+2 );
     float P_depth_given_k = fCorrectPKPenetrationDepth.at( thePenetrationDepth+2 );
     float P_depth_given_prot = fCorrectPProtPenetrationDepth.at( thePenetrationDepth+2 );
-    
+
+
     float P_murs_given_pi = fCorrectPPiPenetrationDepth.at( thePenetrationDepth+1 )/fCorrectPPiPenetrationDepth.at( thePenetrationDepth );
+
+
     float P_murs_given_mu = fCorrectPMuPenetrationDepth.at( thePenetrationDepth+1 )/fCorrectPMuPenetrationDepth.at( thePenetrationDepth );
+
+
     float P_murs_given_k = fCorrectPKPenetrationDepth.at( thePenetrationDepth+1 )/fCorrectPKPenetrationDepth.at( thePenetrationDepth );
+
+
     float P_murs_given_prot = fCorrectPProtPenetrationDepth.at( thePenetrationDepth+1 )/fCorrectPProtPenetrationDepth.at( thePenetrationDepth );
- 
+
     float P_pi_given_murs = (fCorrectPPiMCPrior*P_murs_given_pi)/(fCorrectPPiMCPrior*P_murs_given_pi +
 								    fCorrectPMuMCPrior*P_murs_given_mu +
 								    fCorrectPKMCPrior*P_murs_given_k +
 								    fCorrectPProtMCPrior*P_murs_given_prot );
+
+
     float P_mu_given_murs = (fCorrectPMuMCPrior*P_murs_given_mu)/(fCorrectPPiMCPrior*P_murs_given_pi +
 								    fCorrectPMuMCPrior*P_murs_given_mu +
 								    fCorrectPKMCPrior*P_murs_given_k +
 								    fCorrectPProtMCPrior*P_murs_given_prot );
+
     float P_k_given_murs = (fCorrectPKMCPrior*P_murs_given_k)/(fCorrectPPiMCPrior*P_murs_given_pi +
 								  fCorrectPMuMCPrior*P_murs_given_mu +
 								  fCorrectPKMCPrior*P_murs_given_k +
 								  fCorrectPProtMCPrior*P_murs_given_prot );
+
     float P_prot_given_murs = (fCorrectPProtMCPrior*P_murs_given_prot)/(fCorrectPPiMCPrior*P_murs_given_pi +
 									  fCorrectPMuMCPrior*P_murs_given_mu +
 									  fCorrectPKMCPrior*P_murs_given_k +
 									  fCorrectPProtMCPrior*P_murs_given_prot );
     
 
-    
+
     float P_pi_given_depth = P_depth_given_pi*P_pi_given_murs/(P_depth_given_pi*P_pi_given_murs +
 							       P_depth_given_mu*P_mu_given_murs +
 							       P_depth_given_k*P_k_given_murs +
@@ -888,15 +915,20 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
 								     P_depth_given_k*P_k_given_murs +
 								     P_depth_given_prot*P_prot_given_murs );
 							       */    
-
+  
     if( fVerbose ) LOG_VERBATIM("ParticleIdentificationSlicing") << "Pi/mu ratio: " << pion_muon_likelihood_ratio;
-    
+  
     pion_muon_likelihood_ratio = P_pi_given_depth/P_mu_given_depth;
 
   }
 
   //Calculate the final likelihood ratio for pions/muons for negative polarity
   else if( fPolaritySetting == -1 ){
+
+    if (thePenetrationDepth+2 > fCorrectPProtPenetrationDepth.size() ) {pion_muon_likelihood_ratio = -1.; return;}
+    if (thePenetrationDepth+2 > fCorrectPMuPenetrationDepth.size()   ) {pion_muon_likelihood_ratio = -1.; return;}
+    if (thePenetrationDepth+2 > fCorrectPKPenetrationDepth.size() )    {pion_muon_likelihood_ratio = -1.; return;}
+    if (thePenetrationDepth+2 > fCorrectPPiPenetrationDepth.size() )   {pion_muon_likelihood_ratio = -1.; return;}
     float P_depth_given_pi = fCorrectPPiPenetrationDepth.at( thePenetrationDepth+2 ); //Always +2 because first 2 entries are header with other info
     float P_depth_given_mu = fCorrectPMuPenetrationDepth.at( thePenetrationDepth+2 );
     float P_depth_given_k = fCorrectPKPenetrationDepth.at( thePenetrationDepth+2 );
@@ -950,7 +982,7 @@ void ParticleIdentificationSlicing::doTheMuRSPionMuonSeparation( float thePenetr
   }
 
   else{ LOG_VERBATIM("ParticleIdentificationSlicing") << "Polarity is zero. Aborting."; }
-
+  
   /*
   float P_depth_given_pion = getProbabilityOfDepthGivenPionAtPunchThrough( reco_momentum, thePenetrationDepth );
   float P_pion = getProbabilityOfPionAtPunchThrough( reco_momentum );
@@ -1382,7 +1414,8 @@ void ParticleIdentificationSlicing::reconfigure(fhicl::ParameterSet const & p)
   fMuRSModuleLabel                 =p.get< std::string >("MuRSModuleLabel");
   fVerbose                         =p.get< bool >("Verbose",true);
   fGenerateFitsForMassDistribution = p.get< bool >("GenerateFitsForMassDistribution",false);
-
+  
+  
   //OLD VALUES
   fPiMuMassMean                    =p.get< float >("PiMuMassMean",1.900e+2);
   fPiMuMassSigma                   =p.get< float >("PiMuMassSigma",8.818e+1);
