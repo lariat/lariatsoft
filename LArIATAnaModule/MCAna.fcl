@@ -6,7 +6,7 @@
 ## You will write whatever name you want this process to be called 
 ## It is important to note that the same process name cannot be called
 ## twice on a ROOT file, so you may have to change this 
-process_name: AnaTree
+process_name: TrigFilter
 
 
 services:
@@ -49,7 +49,7 @@ physics:
  ### Here you will define any analyzer modules you want to run ###
  analyzers:
  {
-   anatree: @local::lariat_anatree
+   anatree: @local::lariat_mcanalysis
  
  }
  
@@ -90,7 +90,7 @@ outputs:
  {
    module_type: RootOutput
    #SelectEvents: {SelectEvents:[reco]}
-   fileName:    "BeamOn_NoPileUp_Filter.root"
+   fileName:    "%ifb_%tc_analysis.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1
  }
@@ -106,7 +106,7 @@ outputs:
 #physics.filters.TrigPattern.TriggerFilterAlg.Verbosity: true
 
 
-physics.analyzers.anatree.WCTrackLabel: "wctrack"
+physics.analyzers.anatree.WCTrackLabel: "WCTrackBuilder"
 #physics.producers.pandora.GeantModuleLabel:                     "largeant"
 #physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
 services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
