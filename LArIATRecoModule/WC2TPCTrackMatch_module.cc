@@ -555,6 +555,8 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  //hit_time_vect.emplace_back(0.);
 	}	   
 
+      float hit_position[4][3];
+
       ldp::WCTrack the_track(reco_pz,
 			     y_kink ,
 			     x_dist ,
@@ -566,6 +568,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 			     phi    ,
 			     WC_vect,
 			     hit_wire_vect,
+                             hit_position,
 			     wcmiss,
 			     residual);
 
