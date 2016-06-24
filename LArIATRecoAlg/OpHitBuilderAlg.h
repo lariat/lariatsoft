@@ -40,6 +40,7 @@ class OpHitBuilderAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
 
+  raw::OpDetPulse               GetPulse( const art::Event&, int);
   std::vector<short>            GetHits( raw::OpDetPulse& );
   bool                          IsCleanBeamWaveform( raw::OpDetPulse& );
   
