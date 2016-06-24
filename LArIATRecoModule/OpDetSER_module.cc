@@ -113,6 +113,7 @@ private:
   // Histograms
   TH1I* h_TotalEvents;
   TH1F* h_SER[10];
+  TH1F* h_SERAmp[10];
   TH1F* h_AvePEWfm[10];
   TH1I* h_AvePECount[10];
   TH1F* h_WfmRMS[10];
@@ -299,6 +300,7 @@ void OpDetSER::analyze(art::Event const & e)
       float   prePE_rms = 999;
       float   hit_grad = 0;
       int     hit_time = -1;
+      float   PE_amp  = -1;
   
       // Now begin looking for single PEs
       std::cout << "Beginning search for single PE candidates (RMS thresh x " << fPulseHitRMSThresh[ich] << ", threshPersist " << fThreshPersist <<") \n";
@@ -343,7 +345,13 @@ void OpDetSER::analyze(art::Event const & e)
           counter++;
           windowsize++;
           integral += y;
-          
+         
+          // Scan for amplitude within 5ns of hit
+          if( counter < 5 ){
+            if( y_mV > PE_amp ) PE_amp = y_mV;
+            std::cout<<"Pe amp "<<PE_amp<<"\n";
+          }
+
           // Store signal values
           if(tmp_wfm_i < SER_bins){
             tmp_wfm[tmp_wfm_i] = y;
@@ -368,6 +376,7 @@ void OpDetSER::analyze(art::Event const & e)
             counter = -fPreWindow;
             hit_grad = 0;
             hit_time = -1;
+            PE_amp = -1;
             integral = 0;
             flag = false;
             windowsize = 0;
@@ -385,6 +394,7 @@ void OpDetSER::analyze(art::Event const & e)
             << integral << " ADCs\n\n";
             
             h_SER[ich]        ->Fill(integral);
+            h_SERAmp[ich]     ->Fill(PE_amp);
             
             // If this is > 20 ADC, plot the time:
             if(integral > 20 ) h_PhelTime[ich]   ->Fill(hit_time);
@@ -398,6 +408,7 @@ void OpDetSER::analyze(art::Event const & e)
             integral = 0;
             hit_grad = 0;
             hit_time = -1;
+            PE_amp    = -1;
             windowsize = 0;
             counter = -fPreWindow;
             flag = false;
@@ -504,6 +515,10 @@ void OpDetSER::beginJob()
     sprintf(histName,"%lu_SER",ch); 
     sprintf(histTitle,"SER for OpDet %lu;Integrated ADC;Counts",ch);
     h_SER[ich]       = tfs->make<TH1F>(histName,histTitle,400,-50.,350.);
+    
+    sprintf(histName,"%lu_SERAmp",ch); 
+    sprintf(histTitle,"PE candidate amplitudes for OpDet %lu;mV;Counts",ch);
+    h_SERAmp[ich]       = tfs->make<TH1F>(histName,histTitle,150,0.,3.);
    
     sprintf(histName,"%lu_AvePEWfm",ch); 
     sprintf(histTitle,"Average PE waveform for OpDet %lu;ns;mV",ch);
@@ -631,7 +646,7 @@ void OpDetSER::endJob()
         float w = SERWaveform[ich].at(i) / float(h_AvePECount[ich]->GetEntries()); 
         h_AvePEWfm[ich]->Fill(i,w);
         integral += w/fMvPerADC;
-        std::cout<<"    "<<i<<"     "<<w<<"\n";
+        std::cout<<"    "<<i<<"     "<<w/fMvPerADC<<"\n";
       }
     
       std::cout

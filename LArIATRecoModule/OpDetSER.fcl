@@ -45,19 +45,19 @@ physics.analyzers.OpDetSER.SelectChannels:	    [ 0, 1 ]
 physics.analyzers.OpDetSER.OpDetChannels:	    [ 0,    1	, 4]
 physics.analyzers.OpDetSER.WfmAbsRMSCut:            [ 0.4,  0.4	, 0.4 ] # mV
 physics.analyzers.OpDetSER.PrePE_RMSFactorCut:      [ 1.2,  1.2	, 1.2 ] # xRMS
-physics.analyzers.OpDetSER.PulseHitRMSThresh:       [ 3.0,  3.0,  3.0 ] # xRMS
+physics.analyzers.OpDetSER.PulseHitRMSThresh:       [ 3.,  3.,  3. ] # xRMS
 physics.analyzers.OpDetSER.PulseHitThresh_high:     [ 5,    5,  5 ] # mV
 
 physics.analyzers.OpDetSER.T1:                      -8200   # Samples to scan over.  Referenced with
-physics.analyzers.OpDetSER.T2:                      -200    # with respect to the "t0" trigger position.
-physics.analyzers.OpDetSER.Timestamp_T1:            0       # Only analyze events with a timestamp (sec)
-physics.analyzers.OpDetSER.Timestamp_T2:            5.2     # between these two limits.
+physics.analyzers.OpDetSER.T2:                      -100    # with respect to the "t0" trigger position.
+physics.analyzers.OpDetSER.Timestamp_T1:            1.2     # Only analyze events with a timestamp (sec)
+physics.analyzers.OpDetSER.Timestamp_T2:            5.5     # between these two limits.
 physics.analyzers.OpDetSER.BaselineWindowLength:    1000
 physics.analyzers.OpDetSER.DeadTimeMin:             10
 physics.analyzers.OpDetSER.QuietTimeMin:            200
 physics.analyzers.OpDetSER.PrePEBaselineWindow:     50
 physics.analyzers.OpDetSER.PreWindow:               5   # samples (ns)
-physics.analyzers.OpDetSER.PostWindow:              30  # samples (ns)
+physics.analyzers.OpDetSER.PostWindow:              20  # samples (ns)
 physics.analyzers.OpDetSER.MaxWindowFactor:         2
 
 physics.analyzers.OpDetSER.GradientCut:		    0	  # ADCs/sample.
