@@ -6,6 +6,7 @@ defaultqual	e9
 # need this line for MRB to add the FHiCL directory (fcl by default)
 # to the search path in development environment
 fcldir product_dir
+gdmldir product_dir gdml
 
 # dependencies on external packages
 product         version
