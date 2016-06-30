@@ -3,7 +3,7 @@
 // #######################
 // ### Load Data Plots ###
 // #######################
-TFile *f1 = new TFile("../histo_ROOTFILES/PionXSection_histos_data.root");
+TFile *f1 = new TFile("../histo_ROOTFILES/PionXSection_histos_corrected.root");
 
 //--------------------------------------------------------------------------------------------------------------
 //						Delta X WC-TPC Track
