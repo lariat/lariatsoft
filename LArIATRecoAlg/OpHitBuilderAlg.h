@@ -40,6 +40,7 @@ class OpHitBuilderAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
 
+  raw::OpDetPulse               GetPulse( const art::Event&, int);
   std::vector<short>            GetHits( raw::OpDetPulse& );
   bool                          IsCleanBeamWaveform( raw::OpDetPulse& );
   
@@ -55,13 +56,10 @@ class OpHitBuilderAlg{
   float                         GetLocalMinimum( std::vector<float>, short);
   std::vector<float>           GetPedestalAndRMS( std::vector<float>, short, short);
   std::vector<float>           GetPedestalAndRMS( std::vector<short>, short, short);
-  std::vector<std::pair<float,float>>  GetSinglePEs( raw::OpDetPulse& );
   
   // Average waveform vector
   std::vector<float>    AverageWaveform;
-  std::vector<float>    SERWaveform;
   int                   AverageWaveform_count;
-  int                   SERWaveform_count;
   int                   fAddHitsToAverageWaveform;
   int                   AveWfmBins;
 
@@ -72,9 +70,6 @@ class OpHitBuilderAlg{
   float fit_SlowTau;
   float fit_ReducedChi2;
 
-  float fSER_PrePE_RMS_cut;
-  float fSER_Grad_cut;
-  float fPulseHitRMSThresh; 
   bool  fUsePrepulseFit;
   float fGradHitThresh;
   float fSignalHitThresh;
@@ -89,15 +84,11 @@ class OpHitBuilderAlg{
   short fPromptWindowLength;
   short fFullWindowLength;
   float fMvPerADC;
-  float fTimestampCut;
   float fPrePulseTau1;
   float fPrePulseTau2;
   int   fHitTimeCutoffLow;
   int   fHitTimeCutoffHigh;
-  short fSER_PreWindow;
-  short fSER_PostWindow;
   std::vector<short> fIntegrationWindows;
-  float fSinglePE;
   std::string fHitFindingMode;
   std::string fDAQModule;
   std::string fInstanceName;

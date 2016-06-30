@@ -94,8 +94,9 @@ bool BasicPiMuFilter::filter(art::Event & e)
 art::Handle< std::vector<ldp::TOF> > TOFColHandle;
 std::vector<art::Ptr<ldp::TOF> > tof;
    
-if(e.getByLabel(fTOFModuleLabel,TOFColHandle))
-   {art::fill_ptr_vector(tof, TOFColHandle);}
+ if(!e.getByLabel(fTOFModuleLabel,TOFColHandle)) return false;
+   art::fill_ptr_vector(tof, TOFColHandle);
+
 
 // ### Reject the event if there is no TOF info ###   
 if(tof.size() <  fnTOFObjects){return false;}  
@@ -106,8 +107,8 @@ if(tof.size() <  fnTOFObjects){return false;}
 art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
 std::vector<art::Ptr<ldp::WCTrack> > wctrack;
    
-if(e.getByLabel(fWCTrackModuleLabel, wctrackHandle))
-   {art::fill_ptr_vector(wctrack, wctrackHandle);}
+ if(!e.getByLabel(fWCTrackModuleLabel, wctrackHandle)) return false;
+  art::fill_ptr_vector(wctrack, wctrackHandle);
 
 
 // ### Set a boolian to false for the event ###
@@ -115,8 +116,11 @@ bool GoodTOFValue = false;
 // ################################
 // ### Looping over TOF objects ###
 // ################################
+
+
 for(size_t i = 0; i < tof.size(); i++)
       {
+	if (!tof[i]->NTOF()) continue;
       for (size_t tof_idx = 0; tof_idx < tof[i]->NTOF(); ++tof_idx)
          {
 	 fTOFBeforeCut->Fill( tof[i]->SingleTOF(tof_idx) );
@@ -129,6 +133,7 @@ for(size_t i = 0; i < tof.size(); i++)
       
       }//<---End i loop
       
+
 bool GoodWCValue =false;
 // ###     If the number of WCTracks in the event       ###
 // ### is less than the min number set, skip this event ###
@@ -143,10 +148,14 @@ if(wctrack.size() < fminNumberWCTrack){return false;}
        
     }
 
-fPzVsTOF->Fill(wctrackHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
+
+  //fPzVsTOF->Fill(wctrackHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
       
 if(GoodTOFValue && GoodWCValue){
+
   fPiMuPzVsTOF->Fill(wctrackHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
+
+
   return true;}
 else {return false;}
 }
@@ -168,11 +177,11 @@ void BasicPiMuFilter::reconfigure(fhicl::ParameterSet const & p)
   // Implementation of optional member function here.
   fTOFModuleLabel 		= p.get< std::string >("TOFModuleLabel");
   fnTOFObjects			= p.get< double >("nTOFObjects", 1.0);
-  fTOFLowerBound                = p.get< double >("TOFLowerBound", 10.0);
+  fTOFLowerBound                = p.get< double >("TOFLowerBound", 0.0);
   fTOFUpperBound                = p.get< double >("TOFUpperBound", 25.0);
   fWCTrackModuleLabel           = p.get<  std::string  >("WCTrackModuleLabel");
   fminNumberWCTrack   		= p.get<     double    >("minNumberWCTrack", 1.0);
-  fWCLowerBound                 = p.get< double >("WCLowerBound", 100.0);
+  fWCLowerBound                 = p.get< double >("WCLowerBound", 0.0);
   fWCUpperBound                 = p.get< double >("WCUpperBound", 1500.0);
 
 }
