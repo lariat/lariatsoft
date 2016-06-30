@@ -141,11 +141,15 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
 						<< frag.waveForms.size() << " channels";
       
       // only look at the specific tick of the waveform where the trigger decision is taken
-      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1)
+      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick+1 - 1)
       
       // the trigger waveform goes below the pedestal (low) if the trigger is on
-      if(fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick] > fTrigger1740Threshold)
-      triggerBits.set(chan - minChan);
+      if(     fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick-1] > fTrigger1740Threshold
+          ||  fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick  ] > fTrigger1740Threshold
+          ||  fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick+1] > fTrigger1740Threshold){
+        triggerBits.set(chan - minChan);
+        LOG_VERBATIM("FragmentToDigitAlg")<<"FOUND TRIGGER BIT: "<<chan-minChan;
+      }
 
     } // end loop over channels on the board
   } // end loop over caen fragments
