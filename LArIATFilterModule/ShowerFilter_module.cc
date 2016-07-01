@@ -133,19 +133,19 @@ bool ShowerFilter::filter(art::Event & e)
    
    std::cout << "There are " << shortTrack << " short reco tracks" << std::endl;
    
-   if(shortTrack < fnShortTks) {
-     std::cout << "This is a track-like event " << std::endl;
-     return true;
+   if(shortTrack > fnShortTks) {
+     std::cout << "This can be a shower-like event " << std::endl;
+     return false;
    }
    
    
    else{
-     std::cout << "This can be a shower-like event" << std::endl;
+     std::cout << "This is a track-like event" << std::endl;
      //std::cout << "there are " << longTrack << " longtracks" << std::endl;
     // std::cout << "There are: " << clusterlist.size() << " clusters (blurredClu) produced for this event" << std::endl;
    // ### Saving the number of clusters in this event ###
   
-    return false;
+    return true;
    }
 }
 

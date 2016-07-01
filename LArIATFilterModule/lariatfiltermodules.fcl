@@ -35,11 +35,11 @@ lariat_basic_pimufilter:
  module_type: 			BasicPiMuFilter
  WCTrackModuleLabel: 		"wctrack"
  minNumberWCTrack: 		1 		# number of WCTracks 
- WCLowerBound: 			100.
+ WCLowerBound: 			0.
  WCUpperBound: 			1500.
  TOFModuleLabel: 		"tof"
  nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter
- TOFLowerBound:	10.	# minimum time for the TOF object (ns)
+ TOFLowerBound:	 0.	# minimum time for the TOF object (ns)
  TOFUpperBound:  25.	# maximum time for the TOF object (ns)
 
 
@@ -151,6 +151,18 @@ CalDataModuleLabel:	"caldata"	# caldata module label
 nCalWireObjects: 	480 	# number of CalWire objects in the event to pass the filter
 }
 
+lariat_triggerefficiency:
+{
+module_type:    		BeamlineTrigger
+CalDataModuleLabel:		"caldata"	# caldata module label
+nCalWireObjects:	 	480 	# number of CalWire objects in the event to pass the filter
+TOFModuleLabel:			"tof"	# TOF module label
+nTOFObjects: 			1 	# number of TOF objects in the event to pass the filter
+WCTrackModuleLabel: 		"wctrack"
+minNumberWCTrack: 		1 		# number of WCTracks
+WCLowerBound: 			0.
+WCUpperBound: 			2000.
 
+}
 
 END_PROLOG

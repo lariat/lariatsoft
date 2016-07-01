@@ -242,7 +242,7 @@ void OpDetExample::analyze(art::Event const & e)
         for(size_t i=0; i<hitTimes.size(); i++ ){
           
           // For demonstrative purposes, let's skip any events outside the beam spill. Let's also 
-          // exclude pulses occurring than 500ns prior to the trigger T0.  This is light from activity 
+          // exclude pulses occurring more than 500ns prior to the trigger T0.  This is activity 
           // in the TPC that happens prior to the beam or cosmic event we're actually interested in.  
           // For the triggered Michel events, these pulses are from the initial stopping muon. 
           if( timeStamp > 5.2 || hitTimes[i] < (short)pulse.FirstSample() - 500 ) continue;
@@ -251,7 +251,8 @@ void OpDetExample::analyze(art::Event const & e)
           if(i==0) prev_hit = 0;
           if(i>=1) prev_hit = hitTimes[i-1];
           
-          std::vector<float> hitInfo = fOpHitBuilderAlg.GetHitInfo( wfm, hitTimes[i], prev_hit, intWindows );
+          std::vector<float> hitInfo 
+	    = fOpHitBuilderAlg.GetHitInfo( wfm, hitTimes[i], prev_hit, intWindows );
           float hit_amp             = hitInfo[0];
           float hit_integral_100ns  = hitInfo[1];
           float hit_integral_7us    = hitInfo[2];

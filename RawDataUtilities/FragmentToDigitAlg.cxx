@@ -389,6 +389,22 @@ void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const
   MURSNames.insert("MURS14");
   MURSNames.insert("MURS15");
   MURSNames.insert("MURS16");
+  MURSNames.insert("MURS17");
+  MURSNames.insert("MURS18");
+  MURSNames.insert("MURS19");
+  MURSNames.insert("MURS20");
+  MURSNames.insert("MURS21");
+  MURSNames.insert("MURS22");
+  MURSNames.insert("MURS23");
+  MURSNames.insert("MURS24");
+  MURSNames.insert("MURS25");
+  MURSNames.insert("MURS26");
+  MURSNames.insert("MURS27");
+  MURSNames.insert("MURS28");
+  MURSNames.insert("MURS29");
+  MURSNames.insert("MURS30");
+  MURSNames.insert("MURS31");
+  MURSNames.insert("MURS32");
   std::string board("board_");									//looking for board ID number in string
   std::string channel("_channel_");						//looking for channel ID number in string
   size_t boardLoc;
@@ -502,13 +518,13 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
   // Aerogel inputs are all sent to board 8
   uint32_t boardId = 0;
   uint32_t chanOff = 0;
-  std::set<uint32_t> boardChansUS;
-  std::set<uint32_t> boardChansDS;
+  std::set<uint32_t> boardChansAG1p10;
+  std::set<uint32_t> boardChansAG1p06;
   std::set<std::string> AGNames;
-  AGNames.insert("AGUSE");
-  AGNames.insert("AGUSW");
-  AGNames.insert("AGDSE");
-  AGNames.insert("AGDSW");
+  AGNames.insert("AG1p06_1"); //AGUSE
+  AGNames.insert("AG1p06_2"); //AGUSW
+  AGNames.insert("AG1p10_1"); //AGDSE
+  AGNames.insert("AG1p10_2"); //AGDSW
   std::string board("board_");
   std::string channel("_channel_");
   size_t boardLoc;
@@ -538,20 +554,20 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
         // \todo These values for chanOff may not be correct.  The chanOff value is intended to allow
         // the caenFragmentToAuxDetDigit know how many to subtract from the board channel such that the
         // channels from the auxdet all satisfy the range of 0-N.
-       if     ( hardwareIter.second == "AGUSE" || hardwareIter.second == "AGUSW" ) boardChansUS.insert(chanOff);
-       else if( hardwareIter.second == "AGDSE" || hardwareIter.second == "AGDSW" ) boardChansDS.insert(chanOff);
+       if     ( hardwareIter.second == "AG1p10_1" || hardwareIter.second == "AG1p10_2" ) boardChansAG1p10.insert(chanOff);
+       else if( hardwareIter.second == "AG1p06_1" || hardwareIter.second == "AG1p06_2" ) boardChansAG1p06.insert(chanOff);
      }//end find AGNAMES
   }//end loop over hardwareDatabase
 
   LOG_VERBATIM("FragmentToDigitAlg")
-  << "ChannelOffset: " << *(boardChansUS.begin())
-  << " ChannelOffset: " << *(boardChansDS.begin());
+  << "ChannelOffset: " << *(boardChansAG1p10.begin())
+  << " ChannelOffset: " << *(boardChansAG1p06.begin());
 
-  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChansUS, *(boardChansUS.begin()), "AeroGelUS");
-  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChansDS, *(boardChansUS.begin()), "AeroGelDS");
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChansAG1p10, *(boardChansAG1p10.begin()), "AeroGelAG1p10");
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChansAG1p06, *(boardChansAG1p06.begin()), "AeroGelAG1p06");
   
-  boardChansUS.clear();  
-  boardChansDS.clear();  
+  boardChansAG1p10.clear();  
+  boardChansAG1p06.clear();  
   return;
 }
 

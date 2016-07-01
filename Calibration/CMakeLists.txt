@@ -1,4 +1,6 @@
 
+add_subdirectory(constants)
+
 simple_plugin(CalWireT1034 "module"
 			        lardata_Utilities
               larevt_Filters

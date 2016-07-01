@@ -24,12 +24,15 @@
 #include <fstream>
 
 //ROOT Includes
-#include <TF1.h>
-#include <TH1D.h>
-#include <TH1I.h>
-#include <TH2D.h>
-#include <TH3D.h>
-#include <TTree.h>
+#include "TF1.h"
+#include "TH1D.h"
+#include "TH2D.h"
+#include "TH3D.h"
+#include "TGraph.h"
+#include "TCanvas.h"
+#include "TLine.h"
+#include "TMultiGraph.h"
+#include "TTree.h"
 #include "TVector3.h"
 #include "TLorentzVector.h"
 
@@ -46,6 +49,7 @@
 #include "lardataobj/AnalysisBase/ParticleID.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 
 //LAriatSoft Includes
 //#include "Utilities/DatabaseUtilityT1034.h"
@@ -78,7 +82,8 @@ public:
   void reconfigure(fhicl::ParameterSet const & p) override;
   
   // Custom functions
-  int IsPointInFiducialVolume(TVector3,double,double,double);
+  int   isPointInFiducialVolume(TVector3,double,double,double);
+  bool  isStoppingTrack( art::Ptr<recob::Track> , art::FindManyP<anab::Calorimetry>);
 
 private:
 
@@ -86,11 +91,15 @@ private:
   std::string         fSimProducerLabel;
   std::string         fTrackProducerLabel;
   std::string         fHitProducerLabel;
+  std::string         fClusterProducerLabel;
+  std::string         fSpacePointProducerLabel;
   std::string         fParticleIDModule;
   std::string         fTrackCalModule;
-  double               fFiducialMargin_X;      
-  double               fFiducialMargin_Y;      
-  double               fFiducialMargin_Z;      
+  double              fFiducialMargin_X;      
+  double              fFiducialMargin_Y;      
+  double              fFiducialMargin_Z;     
+  double              fOffsetTolerance; 
+  bool                fDrawGraphs;
 
   // TPC dimensions
   double               TPC_Range_X[2];
@@ -98,46 +107,75 @@ private:
   double               TPC_Range_Z[2];
 
   // Variables
-  int                 NTracks;
+  int                 fEvent;
+  int                 fRun;
+  int                 fSubrun; 
+  size_t              NTracks;
   int                 IsStoppingMuon;
-  int                 NStoppingMuons;
   int                 fPDG;
   int                 fTrackID;
+  int                 fMuonID;
   double              MuonP0_truth;
   double              MuonX0_truth;
   double              MuonY0_truth;
   double              MuonZ0_truth;
-  double              MuonXend_truth;
-  double              MuonYend_truth;
-  double              MuonZend_truth;
+  double              MuonPf_truth;
+  double              MuonXf_truth;
+  double              MuonYf_truth;
+  double              MuonZf_truth;
+  std::vector<TVector3> vTrackVertex;
+  std::vector<TVector3> vTrackEnd;
   std::vector<double> vTrackVertex_X;
   std::vector<double> vTrackVertex_Y;
   std::vector<double> vTrackVertex_Z;
   std::vector<double> vTrackEnd_X;
   std::vector<double> vTrackEnd_Y;
   std::vector<double> vTrackEnd_Z;
-  double              MuonXend_reco;
-  double              MuonYend_reco;
-  double              MuonZend_reco;
+  std::vector<int>    vTrackEndIsInFid;
+  std::vector<int>    vTrackVertexIsInFid;
+  std::vector<int>    vIsTrackStopping;
+  std::vector<int>    vIsTrackContained;
+  std::vector<int>    vIsTrackPassing;
+  size_t              NTracksStopping;
+  size_t              NTracksPassing;
+  size_t              NTracksContained;
+  double              MuonXf_reco;
+  double              MuonYf_reco;
+  double              MuonZf_reco;
+  int                 NdEdxBins;
+  std::vector<double> dEdxBins;
+  double              fBinSize;                      
+  char                graphName[100];
+  recob::Track        TheStoppingTrack;
+  int                 StoppingTrkIndex;
+  int                 StoppingTrkID;
   
-  // Arrays for 4-vectors: (x,y,z,t) and (Px,Py,Pz,E).
-  // Note: old-style C++ arrays are considered obsolete. However,
-  // to create simple n-tuples, we still need to use them. 
-  double fStartXYZT[4];
-  double fEndXYZT[4];
-  double fStartPE[4];
-  double fEndPE[4];
+  // === Storing the tracks Calorimetry Information
+  int    trkhits[2];
+  double trkke[2];
+  double trkdedx[2][1000];
+  double trkrr[2][1000];
+  double trkpitchhit[2][1000];
+
+  // Access ART's TFileService, which will handle creating and writing
+  // histograms and n-tuples for us. 
+  art::ServiceHandle<art::TFileService> tfs;
+  art::TFileDirectory tfs_subdir = tfs->mkdir("subdir");
 
   // Root TTree
-  TTree* SimulationTree;
   TTree* MichelMCTree;
 
-  // Histograms
+  // TObject pointers
+  TH1D* h_EventCuts;
   TH1D* h_PDGCodeHist;
   TH1D* h_NTracks;
   TH1D* h_MichelEnergy_truth;
   TH1D* h_MichelEnergy_reco;
   TH1D* h_MuonP0;
+  TH1D* h_MuonPf;
+  TH1D* h_TrackNode_X;
+  TH1D* h_TrackNode_Y;
+  TH1D* h_TrackNode_Z;
   TH2D* h_MuonEnd_truth_ZX;
   TH2D* h_MuonEnd_truth_ZY;
   TH2D* h_MuonEnd_reco_ZX;
@@ -158,26 +196,74 @@ MichelMCAna::MichelMCAna(fhicl::ParameterSet const & p)
 
   // TPC dimensions in cm
   TPC_Range_X[0]  =  0.00;
-  TPC_Range_X[1]  =  47.5;
+  TPC_Range_X[1]  =  48.0;
   TPC_Range_Y[0]  = -20.0;
   TPC_Range_Y[1]  =  20.0;
   TPC_Range_Z[0]  =  0.00;
   TPC_Range_Z[1]  =  90.0;
+  
 }
 
 void MichelMCAna::analyze(art::Event const & e)
 {
+  // Start by fetching some basic event information for our n-tuple.
+  fEvent  = e.id().event(); 
+  fRun    = e.run();
+  fSubrun = e.subRun();
+  
+  // Create a unique TGraph to save in the TFile that visualizes as much information
+  // as possible from the event we just analyzed (both MC and reco).
+  /*TMultiGraph* multigraph = tfs->make<TMultiGraph>();
+  sprintf(graphName, "r%i_sr%i_e%i", fRun, fSubrun, fEvent);
+  multigraph->SetTitle(graphName);
+  multigraph->GetXaxis()->SetTitle("Z [cm]");
+  multigraph->GetYaxis()->SetTitle("Y [cm]");
+  */
+
+  if(fDrawGraphs){
+    sprintf(graphName, "r%i_sr%i_e%i", fRun, fSubrun, fEvent);
+    TCanvas* c1 = tfs_subdir.make<TCanvas>(graphName,"c",700,500);
+    c1->cd();
+    TLine *line = new TLine(0,0,3,3);
+    h_NTracks->Draw();
+    line->Draw("same");
+    c1->Write(graphName);
+  }
+
+  // Bin 0 = total events
+  h_EventCuts->Fill(0);
+
   // Initialize variables
   NTracks         = -9;
   IsStoppingMuon  =  0;
+  StoppingTrkIndex= -9;
+  StoppingTrkID   = -9;
   MuonP0_truth    = -9;
   MuonX0_truth    = -99;
   MuonY0_truth    = -99;
   MuonZ0_truth    = -99;
-  MuonXend_truth  = -99;
-  MuonYend_truth  = -99;
-  MuonZend_truth  = -99;
+  MuonPf_truth    = -9;
+  MuonXf_truth  = -99;
+  MuonYf_truth  = -99;
+  MuonZf_truth  = -99;
+  vTrackVertex_X.clear();
+  vTrackVertex_Y.clear();
+  vTrackVertex_Z.clear();
+  vTrackEnd_X.clear();
+  vTrackEnd_Y.clear();
+  vTrackEnd_Z.clear();
+  vTrackVertex.clear();
+  vTrackEnd.clear();
+  vIsTrackStopping.clear();
+  NTracksStopping = 0;
+  vIsTrackContained.clear();
+  NTracksContained = 0;
+  vIsTrackPassing.clear();
+  NTracksPassing = 0;
+  vTrackEndIsInFid.clear();
+  vTrackVertexIsInFid.clear();
   bool foundMuon  = false;
+  fMuonID = -9;
   
   // Define a handle to point to a vector of simb::MCParticle objects,
   // and then tell the event to fill the vector with all the objects
@@ -191,6 +277,7 @@ void MichelMCAna::analyze(art::Event const & e)
   // easy. To save both space and time, the map will not contain a
   // copy of the MCParticle, but a pointer to it.
   std::map< int, const simb::MCParticle* > particleMap;
+  std::cout<<"Looping through MC particles...\n";
   for ( auto const& particle : (*particleHandle) )
   {
     fTrackID = particle.TrackId();
@@ -199,45 +286,72 @@ void MichelMCAna::analyze(art::Event const & e)
     // Histogram the PDG code of every particle in the event.
     fPDG = particle.PdgCode();
     h_PDGCodeHist->Fill( fPDG );
+    
+    // A particle has a trajectory, consisting of a set of
+    // 4-positions and 4-mommenta.
+    size_t numberTrajectoryPoints = particle.NumberTrajectoryPoints();
 
-    std::cout<<"Looping through MC particles...\n";
+    // For trajectories, as for vectors and arrays, the
+    // first point is #0, not #1.
+    int last = numberTrajectoryPoints - 1;
+    const TLorentzVector& positionStart = particle.Position(0);
+    const TLorentzVector& positionEnd   = particle.Position(last);
+    const TLorentzVector& momentumStart = particle.Momentum(0);
+    const TLorentzVector& momentumEnd   = particle.Momentum(last);
+    
+    std::cout<<"  "<<fTrackID<<"   PDG: "<<fPDG<<"  mother: "<<particle.Mother()<<"   momentumEnd = "<<momentumEnd.P()<<"\n";
+
+    // Pick out electrons from stopping primary muons
+    if( abs(fPDG) == 11 && particle.Mother() == fMuonID && MuonPf_truth == 0.) {
+      h_MichelEnergy_truth->Fill(momentumStart.P()*1000.);
+
+      /*
+      // -----------------------------------------------------------
+      // Add particle trajectory to graph
+      std::vector<double> Z(numberTrajectoryPoints);
+      std::vector<double> Y(numberTrajectoryPoints);
+      for( size_t ii = 0; ii < numberTrajectoryPoints; ii++ ){
+        Z[ii] = particle.Position(ii).Z();
+        Y[ii] = particle.Position(ii).Y();
+      }
+      TGraph * graph = new TGraph(numberTrajectoryPoints, &(Z[0]), &(Y[0]));
+      graph->SetMarkerColor(kBlue);
+      graph->SetMarkerStyle(20);
+      graph->SetMarkerSize(1.0);
+      multigraph->Add(graph);
+    // -----------------------------------------------------------
+    */
+    }
 
     // Pick out the primary cosmic muons
     if ( !foundMuon && particle.Process() == "primary"  &&  abs(fPDG) == 13 )
     {
-      std::cout<<"Found muon!\n";
+      std::cout<<"  ** Found muon!\n";
+      fMuonID   = fTrackID; 
       foundMuon = true;
-
-      // A particle has a trajectory, consisting of a set of
-      // 4-positions and 4-mommenta.
-      size_t numberTrajectoryPoints = particle.NumberTrajectoryPoints();
-
-
-      // For trajectories, as for vectors and arrays, the
-      // first point is #0, not #1.
-      int last = numberTrajectoryPoints - 1;
-      const TLorentzVector& positionStart = particle.Position(0);
-      const TLorentzVector& positionEnd   = particle.Position(last);
-      const TLorentzVector& momentumStart = particle.Momentum(0);
-      //const TLorentzVector& momentumEnd   = particle.Momentum(last);
       
       MuonP0_truth    = momentumStart.P();
       MuonX0_truth    = positionStart.X();
       MuonY0_truth    = positionStart.Y();
       MuonZ0_truth    = positionStart.Z();
-      MuonXend_truth  = positionEnd.X();
-      MuonYend_truth  = positionEnd.Y();
-      MuonZend_truth  = positionEnd.Z();
+      MuonPf_truth    = momentumEnd.P();
+      MuonXf_truth    = positionEnd.X();
+      MuonYf_truth    = positionEnd.Y();
+      MuonZf_truth    = positionEnd.Z();
+
+      std::cout<<"  XYZ_f = "<<MuonXf_truth<<", "<<MuonYf_truth<<", "<<MuonZf_truth<<"\n";
 
       // Test if stops in volume
-      TVector3 endpoint(MuonXend_truth, MuonYend_truth, MuonZend_truth);
-      IsStoppingMuon = IsPointInFiducialVolume(endpoint, fFiducialMargin_X, fFiducialMargin_Y, fFiducialMargin_Z ); 
+      TVector3 endpoint(MuonXf_truth, MuonYf_truth, MuonZf_truth);
+      IsStoppingMuon = isPointInFiducialVolume(endpoint, fFiducialMargin_X, fFiducialMargin_Y, fFiducialMargin_Z ); 
 
       // Make a histogram of the starting momentum.
       h_MuonP0->Fill( MuonP0_truth );
       if (IsStoppingMuon) {
-        h_MuonEnd_truth_ZX->Fill(MuonZend_truth, MuonXend_truth);
-        h_MuonEnd_truth_ZY->Fill(MuonZend_truth, MuonYend_truth);
+        h_MuonPf->Fill( MuonPf_truth );
+        h_MuonEnd_truth_ZX->Fill(MuonZf_truth, MuonXf_truth);
+        h_MuonEnd_truth_ZY->Fill(MuonZf_truth, MuonYf_truth);
+        h_EventCuts->Fill(1);
       }
 
     } // if primary and PDG selected by user
@@ -245,34 +359,197 @@ void MichelMCAna::analyze(art::Event const & e)
  
   std::cout<<"Done with particle loop.\n"; 
   
-  // Now get the recob::Track and recob::Hit objects
+  // ---------------------------------------------------------
+  // Now read in reconstructed tracks, hits, clusters, and spacepoints
   art::Handle< std::vector< recob::Track >> trackHandle;
   e.getByLabel(fTrackProducerLabel,trackHandle);
-  std::vector< art::Ptr< recob::Track >> trackList; 
+  std::vector< art::Ptr< recob::Track >> trackList;
+  if (e.getByLabel(fTrackProducerLabel,trackHandle)) {
+  art::fill_ptr_vector(trackList, trackHandle);}
+  
   art::Handle< std::vector<recob::Hit> > hitHandle;
   e.getByLabel(fHitProducerLabel, hitHandle);
+  
+  art::Handle< std::vector<recob::Cluster> > clusterHandle;
+  e.getByLabel(fClusterProducerLabel, clusterHandle);
+  
+  art::Handle< std::vector<recob::SpacePoint> > spacePointHandle;
+  e.getByLabel(fSpacePointProducerLabel, spacePointHandle);
+  
+  // Now use the associations to find which hits are associated with
+  // which clusters, tracks, and spacepoints.  By default, it seems Reco.fcl
+  // produces these associations that are relevant to this analysis:
+  //    recob::Track      <-->  anab::ParticleID
+  //    recob::Hit        <-->  recob::Cluster
+  //    recob::Hit        <-->  recob::Shower
+  //    recob::Hit        <-->  recob::Track
+  //    recob::Hit        <-->  recob::SpacePoint
+  //    recob::SpacePoint <-->  recob::Track
+  //    recob::Cluster    <-->  recob::Track
+  //
+  //art::FindManyP<recob::Hit> findManyHits_tracks(trackHandle, e, fHitProducerLabel);
+   
+  // Make associations between Calorimetry objects and Tracks
+  art::FindManyP<anab::Calorimetry> fmcal(trackHandle, e, fTrackCalModule);
+  
+  // Association between PID objects and Tracks
+  //art::FindManyP<anab::ParticleID>  findManyPID_tracks(trackHandle, e, fParticleIDModule);
+ 
   
   // Count number of reconstructed tracks in this event
   NTracks = trackHandle->size();
   h_NTracks->Fill(NTracks);
 
-  LOG_VERBATIM("MichelMCAna") << "Number of tracks: "<<NTracks;
+  std::cout << "Number of tracks: "<<NTracks<<"\n";
 
-  
+
   // Now loop through the reconstructed tracks and look for 
   // those that have an endpoint within the fiducial volume
   // and the opposite endpoint at the margin of the volume.
-  // First step: plot all endpoints of reco tracks and note 
-  // how concentrated at the edges they are.
+  for(size_t track_index = 0; track_index < NTracks; track_index++){
+  
+    // Get the recob::Track object and record its endpoint/vertex
+    art::Ptr< recob::Track > TheTrackPtr(trackHandle,track_index);
+    recob::Track TheTrack = *TheTrackPtr;
+    vTrackVertex    .push_back(TheTrack.Vertex());
+    vTrackEnd       .push_back(TheTrack.End());
+    vTrackVertex_X  .push_back(TheTrack.Vertex().X());
+    vTrackVertex_Y  .push_back(TheTrack.Vertex().Y());
+    vTrackVertex_Z  .push_back(TheTrack.Vertex().Z());
+    vTrackEnd_X     .push_back(TheTrack.End().X()); 
+    vTrackEnd_Y     .push_back(TheTrack.End().Y()); 
+    vTrackEnd_Z     .push_back(TheTrack.End().Z()); 
+  
+    h_TrackNode_X   ->Fill(TheTrack.Vertex().X());
+    h_TrackNode_X   ->Fill(TheTrack.End().X());
+    h_TrackNode_Y   ->Fill(TheTrack.Vertex().Y());
+    h_TrackNode_Y   ->Fill(TheTrack.End().Y());
+    h_TrackNode_Z   ->Fill(TheTrack.Vertex().Z());
+    h_TrackNode_Z   ->Fill(TheTrack.End().Z());
+    int fID         = TheTrack.ID();
+    
+    // Is track stopping, passing, or contained?
+    bool endIsInFid       = isPointInFiducialVolume(TheTrack.End(),fFiducialMargin_X,fFiducialMargin_Y,fFiducialMargin_Z);
+    bool vertexIsInFid    = isPointInFiducialVolume(TheTrack.Vertex(),fFiducialMargin_X,fFiducialMargin_Y,fFiducialMargin_Z);
+    vTrackEndIsInFid      .push_back((int)endIsInFid);
+    vTrackVertexIsInFid   .push_back((int)vertexIsInFid);
+    
+    bool temp_flag1       = ( endIsInFid != vertexIsInFid );
+    bool temp_flag2       = ( endIsInFid && vertexIsInFid );
+    bool temp_flag3       = ( !endIsInFid && !vertexIsInFid );
+    vIsTrackStopping  .push_back((int)temp_flag1);
+    vIsTrackContained .push_back((int)temp_flag2);
+    vIsTrackPassing   .push_back((int)temp_flag3);
+    
+    NTracksStopping   += (int)temp_flag1;
+    NTracksContained  += (int)temp_flag2;
+    NTracksPassing    += (int)temp_flag3;
+    if( temp_flag1 ) {
+      TheStoppingTrack  = TheTrack;
+      StoppingTrkID     = fID;
+      StoppingTrkIndex  = track_index;
+      std::cout<<"Calling isStoppingTrack... "<< TheTrackPtr.key()<<"\n";
+      bool isStopping = isStoppingTrack(TheTrackPtr,fmcal);
+      std::cout<<"isStopping = "<<(int)isStopping<<"\n";
+    }
 
+    printf("  track %lu   start=(%f,%f,%f)--> isInFid? %d     end=(%f,%f,%f)-->   isInFid? %d \n",
+      track_index, 
+      vTrackVertex_X[track_index],
+      vTrackVertex_Y[track_index],
+      vTrackVertex_Z[track_index],
+      (int)vertexIsInFid,
+      vTrackEnd_X[track_index],
+      vTrackEnd_Y[track_index],
+      vTrackEnd_Z[track_index],
+      (int)endIsInFid);
+
+  } // endloop over tracks
+
+
+
+
+  // Keeping our definition simple for now, we will require that the event
+  // contained exactly 1 "stopping" track to be selected.
+  if( NTracksStopping == 1 && vIsTrackStopping[StoppingTrkIndex]){
+   
+    
+    h_EventCuts->Fill(2);
+    TVector3 track_end;
+    bool trackIsFlipped = false;
+    if( vTrackEndIsInFid[StoppingTrkIndex] ) { 
+      track_end = vTrackEnd[StoppingTrkIndex]; 
+    } else { 
+      track_end = vTrackVertex[StoppingTrkIndex]; 
+      trackIsFlipped = true;
+    }
+    
+    std::cout<<"Found 1 stopping track... index = "<<StoppingTrkIndex<<"   ID: "<<StoppingTrkID<<"   trajpoints = "<<TheStoppingTrack.NumberTrajectoryPoints()<<"   flipped "<<trackIsFlipped<<"\n";
+    
+    // Fill histograms
+    h_MuonEnd_reco_ZX->Fill(track_end.Z(), track_end.X());
+    h_MuonEnd_reco_ZY->Fill(track_end.Z(), track_end.Y());
+ 
+    std::cout<<"Filled the histos\n";
+  
+    // Look at the dEdx using association with calorimetry objects
+    // 05/08: This is NOT working for some reason.  calos_stoppingtrk.size() returns 0 event hough eventdump
+    // tells me there are multiple tracks and association objects made for them and cal objects.
+    /*
+    if( fmcal.isValid() ){
+      std::cout<<"calo is valid\n";
+      std::vector<art::Ptr<anab::Calorimetry> > calos_stoppingtrk = fmcal.at(StoppingTrkIndex);
+      std::cout<<"made association... size "<<calos_stoppingtrk.size()<<"\n";
+      size_t  N_dEdx = calos_stoppingtrk[1]->dEdx().size();
+      std::cout<<"Beginning dEdx scan of our stopping track... ("<<N_dEdx<<" pts)\n";
+      for(size_t i=0; i < N_dEdx; i++){
+        printf("  %lu   res range %f     dEdx %f \n",
+          i,
+          calos_stoppingtrk[1]->ResidualRange()[i],
+          calos_stoppingtrk[1]->dEdx()[i]);
+      }
+    }
+    */
+    
+    
+    if( IsStoppingMuon ){
+        
+       h_MuonEnd_dX->Fill( track_end.X() - MuonXf_truth );
+       h_MuonEnd_dY->Fill( track_end.Y() - MuonYf_truth );
+       h_MuonEnd_dZ->Fill( track_end.Z() - MuonZf_truth );
+     
+       TVector3 track_end_truth;
+       track_end_truth[0] = MuonXf_truth;
+       track_end_truth[1] = MuonYf_truth;
+       track_end_truth[2] = MuonZf_truth;
+     
+       if( (track_end-track_end_truth).Mag() <= fOffsetTolerance ) h_EventCuts->Fill(3);
+       if( (track_end-track_end_truth).Mag() >= 1. ) std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+
+    }
+
+  }
 
   MichelMCTree->Fill();
+  
+  //if( fDrawGraphs && IsStoppingMuon ) multigraph->Write(graphName);
+
 
 }
 
 void MichelMCAna::beginJob()
 {
-  art::ServiceHandle<art::TFileService> tfs;
+  // Set up the vector that will be used to accumulate the dE/dx
+  // values into bins. We want the capacity of this vector to be big
+  // enough to hold the bins of the longest possible track.
+  double detWidth   = TPC_Range_X[1]-TPC_Range_X[0];
+  double detHeight  = TPC_Range_Y[1]-TPC_Range_Y[0];
+  double detLength  = TPC_Range_Z[1]-TPC_Range_Z[0];
+  double maxLength = std::sqrt( detLength*detLength 
+      			  + detWidth*detWidth 
+      			  + detHeight*detHeight );
+  int maxBins = int( maxLength / fBinSize ) + 1;
+  dEdxBins.reserve(maxBins);
   
   // TTree 
   MichelMCTree  = tfs->make<TTree>("MichelMCTree","MichelMCTree");
@@ -284,41 +561,49 @@ void MichelMCAna::beginJob()
   MichelMCTree  -> Branch("vTrackEnd_X",&vTrackEnd_X);
   MichelMCTree  -> Branch("vTrackEnd_Y",&vTrackEnd_Y);
   MichelMCTree  -> Branch("vTrackEnd_Z",&vTrackEnd_Z);
+  MichelMCTree  -> Branch("vIsTrackStopping",&vIsTrackStopping);
+  MichelMCTree  -> Branch("vIsTrackContained",&vIsTrackContained);
+  MichelMCTree  -> Branch("vIsTrackPassing",&vIsTrackPassing);
   MichelMCTree  -> Branch("MuonX0_truth",&MuonX0_truth,"MuonX0_truth/D");
   MichelMCTree  -> Branch("MuonY0_truth",&MuonY0_truth,"MuonY0_truth/D");
   MichelMCTree  -> Branch("MuonZ0_truth",&MuonZ0_truth,"MuonZ0_truth/D");
-  MichelMCTree  -> Branch("MuonXend_truth",&MuonXend_truth,"MuonXend_truth/D");
-  MichelMCTree  -> Branch("MuonYend_truth",&MuonYend_truth,"MuonYend_truth/D");
-  MichelMCTree  -> Branch("MuonZend_truth",&MuonZend_truth,"MuonZend_truth/D");
-  MichelMCTree  -> Branch("MuonXend_reco",&MuonXend_reco,"MuonXend_reco/D");
-  MichelMCTree  -> Branch("MuonYend_reco",&MuonYend_reco,"MuonYend_reco/D");
-  MichelMCTree  -> Branch("MuonZend_reco",&MuonZend_reco,"MuonZend_reco/D");
+  MichelMCTree  -> Branch("MuonXf_truth",&MuonXf_truth,"MuonXf_truth/D");
+  MichelMCTree  -> Branch("MuonYf_truth",&MuonYf_truth,"MuonYf_truth/D");
+  MichelMCTree  -> Branch("MuonZf_truth",&MuonZf_truth,"MuonZf_truth/D");
+  MichelMCTree  -> Branch("MuonXf_reco",&MuonXf_reco,"MuonXf_reco/D");
+  MichelMCTree  -> Branch("MuonYf_reco",&MuonYf_reco,"MuonYf_reco/D");
+  MichelMCTree  -> Branch("MuonZf_reco",&MuonZf_reco,"MuonZf_reco/D");
    
   // Histograms
+  h_EventCuts           = tfs->make<TH1D>("EventCuts",";stage;",12,-0.5,3.5);
   h_PDGCodeHist         = tfs->make<TH1D>("pdgcodes",";PDG Code;",                  5000, -2500, 2500);
   h_NTracks             = tfs->make<TH1D>("NTracks","Cosmic #mu MC (LArIAT);Number of reconstructed tracks",10,0,10);
-  h_MichelEnergy_truth  = tfs->make<TH1D>("MichelEnergy_truth","Cosmic #mu MC (LArIAT);True Michel electron energy [MeV]",160,0,80);
-  h_MichelEnergy_reco   = tfs->make<TH1D>("MichelEnergy_reco","Cosmic #mu MC (LArIAT);Reconstructed Michel electron energy [MeV]",160,0,80);
-  h_MuonP0              = tfs->make<TH1D>("MuonP0","Generated muon momentum (GeV)",100,0.,0.600);
+  h_MichelEnergy_truth  = tfs->make<TH1D>("MichelEnergy_truth","Cosmic #mu MC (LArIAT);True Michel electron energy [MeV]",160,0.,80.);
+  h_MichelEnergy_reco   = tfs->make<TH1D>("MichelEnergy_reco","Cosmic #mu MC (LArIAT);Reconstructed Michel electron energy [MeV]",160,0.,80.);
+  h_MuonP0              = tfs->make<TH1D>("MuonP0","Generated muon momentum (GeV)", 1000,0.,0.600);
+  h_MuonPf              = tfs->make<TH1D>("MuonPf","Final muon momentum (GeV)",     1000,0.,0.600);
+  h_TrackNode_X         = tfs->make<TH1D>("TrackNode_X","Track node;X [cm];",1000,TPC_Range_X[0]-5.,TPC_Range_X[1]+5.);
+  h_TrackNode_Y         = tfs->make<TH1D>("TrackNode_Y","Track node;Y [cm];",1000,TPC_Range_Y[0]-5.,TPC_Range_Y[1]+5.);
+  h_TrackNode_Z         = tfs->make<TH1D>("TrackNode_Z","Track node;Z [cm];",1000,TPC_Range_Z[0]-5.,TPC_Range_Z[1]+5.);
   h_MuonEnd_truth_ZX     = tfs->make<TH2D>("MuonEnd_truth_ZX","Truth cosmic #mu endpoint (LArIAT MC);Z [cm];X [cm]",
-    180,TPC_Range_Z[0],TPC_Range_Z[1],
-    95,TPC_Range_X[0],TPC_Range_X[1]);
+    90,TPC_Range_Z[0],TPC_Range_Z[1],
+    48,TPC_Range_X[0],TPC_Range_X[1]);
   h_MuonEnd_truth_ZX->SetOption("colz");
   h_MuonEnd_truth_ZY     = tfs->make<TH2D>("MuonEnd_truth_ZY","Truth cosmic #mu endpoint (LArIAT MC);Z [cm];Y [cm]",
-    180,TPC_Range_Z[0],TPC_Range_Z[1],
-    80,TPC_Range_Y[0],TPC_Range_Y[1]);
+    90,TPC_Range_Z[0],TPC_Range_Z[1],
+    40,TPC_Range_Y[0],TPC_Range_Y[1]);
   h_MuonEnd_truth_ZY->SetOption("colz");
   h_MuonEnd_reco_ZX     = tfs->make<TH2D>("MuonEnd_reco_ZX","Reconstructed cosmic #mu endpoint (LArIAT MC);Z [cm];X [cm]",
-    180,TPC_Range_Z[0],TPC_Range_Z[1],
-    95,TPC_Range_X[0],TPC_Range_X[1]);
+    90,TPC_Range_Z[0],TPC_Range_Z[1],
+    48,TPC_Range_X[0],TPC_Range_X[1]);
   h_MuonEnd_reco_ZX->SetOption("colz");
   h_MuonEnd_reco_ZY     = tfs->make<TH2D>("MuonEnd_reco_ZY","Reconstructed cosmic #mu endpoint (LArIAT MC);Z [cm];Y [cm]",
-    180,TPC_Range_Z[0],TPC_Range_Z[1],
-    80,TPC_Range_Y[0],TPC_Range_Y[1]);
+    90,TPC_Range_Z[0],TPC_Range_Z[1],
+    40,TPC_Range_Y[0],TPC_Range_Y[1]);
   h_MuonEnd_reco_ZY->SetOption("colz");
-  h_MuonEnd_dX          = tfs->make<TH1D>("MuonEnd_dX","Stopping #mu+ endpoint resolution (LArIAT MC);#DeltaX [cm]",100,0,10);
-  h_MuonEnd_dY          = tfs->make<TH1D>("MuonEnd_dY","Stopping #mu+ endpoint resolution (LArIAT MC);#DeltaY [cm]",100,0,10);
-  h_MuonEnd_dZ          = tfs->make<TH1D>("MuonEnd_dZ","Stopping #mu+ endpoint resolution (LArIAT MC);#DeltaZ [cm]",100,0,10);
+  h_MuonEnd_dX          = tfs->make<TH1D>("MuonEnd_dX","Stopping #mu+ endpoint resolution (LArIAT MC);#DeltaX [cm]",100,-5,5);
+  h_MuonEnd_dY          = tfs->make<TH1D>("MuonEnd_dY","Stopping #mu+ endpoint resolution (LArIAT MC);#DeltaY [cm]",100,-5,5);
+  h_MuonEnd_dZ          = tfs->make<TH1D>("MuonEnd_dZ","Stopping #mu+ endpoint resolution (LArIAT MC);#DeltaZ [cm]",100,-5,5);
 }
 
 void MichelMCAna::beginRun(art::Run const & r)
@@ -343,19 +628,24 @@ void MichelMCAna::endSubRun(art::SubRun const & sr)
 
 void MichelMCAna::reconfigure(fhicl::ParameterSet const & p)
 {
-  fTrackProducerLabel     = p.get< std::string >("TrackProducer","pmtrack");
-  fSimProducerLabel       = p.get< std::string >("SimProducer","largeant");
-  fHitProducerLabel       = p.get< std::string >("HitProducer","gaushit");
-  fParticleIDModule       = p.get< std::string >("ParticleIDModule","pid");
-  fTrackCalModule         = p.get< std::string >("TrackCalModule","calo");
-  fFiducialMargin_X       = p.get< double >      ("FiducialMargin_X",0);
-  fFiducialMargin_Y       = p.get< double >      ("FiducialMargin_Y",0);
-  fFiducialMargin_Z       = p.get< double >      ("FiducialMargin_Z",0);
+  fSimProducerLabel       = p.get< std::string >  ("SimProducer","largeant");
+  fTrackProducerLabel     = p.get< std::string >  ("TrackProducer","pmtrack");
+  fHitProducerLabel       = p.get< std::string >  ("HitProducer","gaushit");
+  fClusterProducerLabel   = p.get< std::string >  ("ClusterProducer","linecluster");
+  fSpacePointProducerLabel= p.get< std::string >  ("SpacepointProducer","pmtrack");
+  fParticleIDModule       = p.get< std::string >  ("ParticleIDModule","pid");
+  fTrackCalModule         = p.get< std::string >  ("TrackCalModule","calo");
+  fFiducialMargin_X       = p.get< double >       ("FiducialMargin_X",2);
+  fFiducialMargin_Y       = p.get< double >       ("FiducialMargin_Y",2);
+  fFiducialMargin_Z       = p.get< double >       ("FiducialMargin_Z",2);
+  fOffsetTolerance        = p.get< double >       ("OffsetTolerance",1);
+  fBinSize                = p.get< double >       ("dEdx_BinSize");
+  fDrawGraphs             = p.get< bool   >       ("DrawGraphs",false);
 }
 
 // Function for determining if a point is inside or outside
 // predefined fiducial volume
-int MichelMCAna::IsPointInFiducialVolume(TVector3 p, double fX, double fY, double fZ)
+int MichelMCAna::isPointInFiducialVolume(TVector3 p, double fX, double fY, double fZ)
 {
   if(    (p.X() >= TPC_Range_X[0] + fX) && (p.X() <= TPC_Range_X[1] - fX)
       && (p.Y() >= TPC_Range_Y[0] + fY) && (p.Y() <= TPC_Range_Y[1] - fY)
@@ -365,6 +655,92 @@ int MichelMCAna::IsPointInFiducialVolume(TVector3 p, double fX, double fY, doubl
   } else {
     return 0;
   }
+}
+
+// Function adapted from StoppingTracks_module.cc to evaluate the dEdx of a track
+bool MichelMCAna::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindManyP<anab::Calorimetry> fmcal )
+{
+  std::cout<<"FUNCTION IS STOPPING CALLED\n";
+  /**
+     In this function we decide if the given track is stopping or not
+  */
+  bool StoppingTrack = false;
+  // If the calorimetry is not valid, you consider the particle stopping. 
+  // You want the particle out from the interaction pool
+  if (!fmcal.isValid()) return true; 
+  
+  // ########################################################## 
+  // ### Looping over Calorimetry information for the track ###
+  // ########################################################## 
+  
+  // ### Putting calo information for this track (i) into pointer vector ###
+  std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(aTrack.key());
+ 
+  std::cout<<"Starting loop over calorimetry points\n"; 
+  // ### Looping over each calorimetry point (similar to SpacePoint) ###
+  for (size_t j = 0; j<calos.size(); ++j)
+    {
+
+      std::cout<<" calos["<<j<<"]->PlaneID ().isValid = "<<calos[j]->PlaneID().isValid<<"\n";
+      // ### If we don't have calorimetry information for this plane skip ###
+      if (!calos[j]->PlaneID().isValid) continue;
+      
+      // ### Grabbing this calorimetry points plane number (0 == induction, 1 == collection) ###
+      int pl = calos[j]->PlaneID().Plane;
+      
+      // ### Skipping this point if the plane number doesn't make sense ###
+      if (pl<0||pl>1) continue;
+  
+      // ### Recording the number of calorimetry points for this track in this plane ####
+      //trkhits[pl] = calos[j]->dEdx().size();
+      
+      // #### Recording the kinetic energy for this track in this plane ###
+      //trkke[pl] = calos[j]->KineticEnergy();
+      
+      // ###############################################
+      // ### Looping over all the calorimetry points ###
+      // ###############################################
+      
+      if(pl == 1) std::cout << "Number of calo hits for this track in plane 1 " << calos[j]->dEdx().size() << std::endl;
+      
+      // double lastHitsdEdx[16]={0.};
+      // double lastHitsRR[16]={0.};
+      
+      //double lastHitsdEdx[fMinNofSpacePoints]={0.};
+      //double lastHitsRR[fMinNofSpacePoints]={0.};
+
+      //double ordereddEdx[1000]={0.};
+      //double orderedRR[1000]={0.};
+      
+      for (size_t k = 0; k<calos[j]->dEdx().size(); ++k)
+	{
+	  // ### If we go over 1000 points just skip them ###
+	  if (k>=1000) continue;
+	  
+	  // ### Recording the dE/dX information for this calo point along the track in this plane ###
+	  //trkdedx[pl][k] = calos[j]->dEdx()[k];
+	  
+	  // ### Recording the residual range for this calo point along the track in this plane ###
+	  //trkrr[pl][k] = calos[j]->ResidualRange()[k];
+	  
+	  // ### Recording the pitch of this calo point along the track in this plane ###
+	  //trkpitchhit[pl][k] = calos[j]->TrkPitchVec()[k];
+	  
+	  //### Analyzing caloHits ONLY from collection plane - 1
+	  if(pl == 1) {
+	    //size_t dimCalo = 0;
+	    //dimCalo = calos[j]->dEdx().size();
+	    //Fill histos with calo info from collection plane for each track
+	    //fdEdx->Fill((calos[j]->dEdx()[k]));
+	    //fdEdxRange->Fill(calos[j]->ResidualRange()[k],(calos[j]->dEdx()[k]));
+	   
+	    const TVector3 xyz = calos[j]->XYZ()[k];
+            std::cout<<"   "<<k<<"   resRange: "<<calos[j]->ResidualRange()[k]<<"    dEdx: "<<calos[j]->dEdx()[k]<<"  XYZ: "<<xyz.X()<<", "<<xyz.Y()<<", "<<xyz.Z()<<"\n";
+	  }
+	}
+    }//<---End calo points (k)
+      
+  return StoppingTrack;
 }
 
 DEFINE_ART_MODULE(MichelMCAna)
