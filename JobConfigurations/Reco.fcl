@@ -17,6 +17,7 @@
 #include "lariatanamodules.fcl"
 #include "cluster_lariat.fcl"
 #include "showerfindermodules.fcl"
+#include "pandoramodules.fcl"
  
 process_name: Reco2D
 
@@ -58,8 +59,8 @@ physics:
   caldata:              @local::lariat_calroi
 
   ### hit-finder producers ###
-   gaushit:             @local::gaus_hitfinder
-   cchit:               @local::standard_clustercrawlerhit
+  gaushit:             @local::gaus_hitfinder
+  cchit:               @local::standard_clustercrawlerhit
 
   ### cluster-finder producers
   linecluster:          @local::standard_linecluster
@@ -74,11 +75,15 @@ physics:
   ### Shower-Finder producers
   showerreco:  	 	@local::standard_showerreco3d
   emshower:             @local::standard_emshower
+
   ### pandora
+  pandora:            @local::standard_pandoraneutrino
 
   ### calorimetry and pid
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
+  pandoracalo:          @local::standard_calodata
+  pandorapid:           @local::standard_chi2pid
 
 
  }
@@ -96,10 +101,13 @@ physics:
 	 gaushit,
 	 linecluster,
          trajcluster,
+         pandora,
          showerreco,
          pmtrack,
          calo,
          pid,
+         pandoracalo,
+         pandorapid,
          blurredcluster,
          emshower
          ]
@@ -196,6 +204,7 @@ physics.producers.cctrack.HitModuleLabel:     "linecluster"
 physics.producers.cctrack.ClusterModuleLabel: "linecluster"
 physics.producers.cctrack.VertexModuleLabel:  "linecluster"
 physics.producers.cctrack.MatchAlgs: 1
+physics.producers.pandora.HitFinderModuleLabel:         "linecluster"
 #physics.producers.pandora.GeantModuleLabel:                     "largeant"
 #physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
 #services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
@@ -209,6 +218,12 @@ physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
 physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.pandoracalo.TrackModuleLabel:                   "pandora"
+physics.producers.pandoracalo.SpacePointModuleLabel:              "pandora"
+physics.producers.pandoracalo.CaloAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.pandorapid.CalorimetryModuleLabel:              "pandoracalo"
+physics.producers.pandorapid.TrackModuleLabel:                    "pandora"
+
 physics.producers.showerreco.InputProducer:        "linecluster"
 physics.producers.blurredcluster.HitsModuleLabel:           "linecluster"
 physics.producers.blurredcluster.GlobalTPCRecon:           "false"
