@@ -63,18 +63,23 @@ physics:
 
   ### cluster-finder producers
   linecluster:          @local::standard_linecluster
+  trajcluster:          @local::standard_trajcluster
+  blurredcluster:       @local::standard_blurredcluster
+
+  ### track-finder producers
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
   cctrack:              @local::standard_cctrackmaker
   
   ### Shower-Finder producers
   showerreco:  	 	@local::standard_showerreco3d
+  emshower:             @local::standard_emshower
   ### pandora
+
+  ### calorimetry and pid
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
 
-  blurredcluster:       @local::standard_blurredcluster
-  emshower:             @local::standard_emshower
 
  }
  analyzers:
@@ -90,6 +95,7 @@ physics:
 	 caldata,
 	 gaushit,
 	 linecluster,
+         trajcluster,
          showerreco,
          pmtrack,
          calo,
