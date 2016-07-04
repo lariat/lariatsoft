@@ -15,7 +15,8 @@
 #include "lariatcheckmodules.fcl"
 #include "triggeralgo_service.fcl"
 #include "lariatanamodules.fcl"
-
+#include "cluster_lariat.fcl"
+#include "showerfindermodules.fcl"
  
 process_name: Reco2D
 
@@ -23,8 +24,8 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "anaTree_histo.root" }
-  #Timing:       {}
-  #SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
+  TimeTracker:       {}
+  MemoryTracker:     {}
   RandomNumberGenerator: {} #ART native random number generator
   #message:      @local::lariat_message_services
   @table::lariat_services
@@ -67,12 +68,14 @@ physics:
   cctrack:              @local::standard_cctrackmaker
   
   ### Shower-Finder producers
- showerreco:  	 	@local::standard_showerreco3d
+  showerreco:  	 	@local::standard_showerreco3d
   ### pandora
-
-
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
+
+  blurredcluster:       @local::standard_blurredcluster
+  emshower:             @local::standard_emshower
+
  }
  analyzers:
 {
@@ -90,8 +93,10 @@ physics:
          showerreco,
          pmtrack,
          calo,
-         pid
-          ]
+         pid,
+         blurredcluster,
+         emshower
+         ]
 	  
 	  
 ana: [ anatree ]
@@ -199,8 +204,15 @@ physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
 physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
 physics.producers.showerreco.InputProducer:        "linecluster"
-
+physics.producers.blurredcluster.HitsModuleLabel:           "linecluster"
+physics.producers.blurredcluster.GlobalTPCRecon:           "false"
+#physics.producers.blurredcluster.CreateDebugPDF:           "true"
+physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
+physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
+physics.producers.blurredcluster.BlurredClusterAlg.ClusterTickDistance: 50
 #### Here we try to suppress known and pointless messages
+physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,0.048]
+
 services.message.destinations :
 {
   STDCOUT: 
