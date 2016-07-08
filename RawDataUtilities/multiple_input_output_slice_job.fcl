@@ -73,5 +73,3 @@ outputs:
   streamName:  "all"
  }
 }
-
-source.FragmentToDigitAlg.TriggerDecisionTick: 126

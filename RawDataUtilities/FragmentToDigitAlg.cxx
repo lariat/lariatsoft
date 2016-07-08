@@ -145,7 +145,7 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
       
       // only look at the specific tick of the waveform where the trigger decision is taken
       if(frag.waveForms[chan].data.size() > fTriggerDecisionTick+3 - 1) {
-      
+     
         // the trigger waveform goes below the pedestal (low) if the trigger is on
         // (check 3 samples before and after TriggerDecisionTick just to be sure)
         if(     fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick-3] > fTrigger1740Threshold
@@ -158,9 +158,9 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
           triggerBits.set(chan - minChan);
           LOG_VERBATIM("FragmentToDigitAlg")<<"***** FOUND TRIGGER BIT: "<<chan-minChan;
           
-          // If Run >= 6155, BEAMON was not being fed into any V1740 boards.  But it's input #16 on the 
+          // For Run 2 (Run > 8013), BEAMON was not being fed into any V1740 boards.  But it's input #16 on the 
           // V1495 so we'll just hack it by checking if any WC or TOF trigger bits were fired.
-          if( (fRunNumber >= 6155) && ( (chan-minChan)==3 || (chan-minChan)==5 || (chan-minChan)==6 )) isBeamon = true;
+          if( (fRunNumber >= 8013) && ( (chan-minChan)==3 || (chan-minChan)==5 || (chan-minChan)==6 )) isBeamon = true;
         }
       
       } // endif waveform is big enough
@@ -682,7 +682,6 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
   trigNames.insert("MURS");
   for( auto hardwareIter : fHardwareConnections) 
   {
-    std::cout<<"hardwareIter.second: "<<hardwareIter.second<<"\n";
     if( trigNames.count(hardwareIter.second) > 0)
     {
       boardLoc   = hardwareIter.first.find(board) + board.size();
@@ -963,6 +962,11 @@ void FragmentToDigitAlg::InitializeRun(art::RunNumber_t runNumber, uint64_t time
   fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
   fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
   fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
+
+  // TriggerDecisionTick is 140 for Run 1 (run# < 8013) and 126 for Run 2 (run# > 8013)
+  if(fRunNumber < 8013) {fTriggerDecisionTick = 140;}
+  else                  {fTriggerDecisionTick = 126;}
+
 }
 //-------------------jess lines
 //=====================================================================

@@ -31,7 +31,8 @@
 TriggerFilterAlg::TriggerFilterAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
-  fNumTrigInputs = 16;
+  //fNumTrigInputs = 16;
+  fNumTrigInputs = 17;
   
 }
 
@@ -278,7 +279,7 @@ void TriggerFilterAlg::loadXMLDatabaseTable( int run )
     std::cout << "**************************************************" << std::endl;
   }
   
-
+  
 
   //Specifying the trigger input config labels
   for( size_t iConfig = 0; iConfig < fNumTrigInputs; ++iConfig ){
