@@ -61,7 +61,7 @@ void FragmentToDigitAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
   fRawFragmentLabel       = pset.get< std::string >("RawFragmentLabel",       "daq"  );
   fRawFragmentInstance    = pset.get< std::string >("RawFragmentInstance",    "SPILL");
-  fTriggerDecisionTick    = pset.get< unsigned int>("TriggerDecisionTick",    126    ); 
+  fTriggerDecisionTick    = pset.get< unsigned int>("TriggerDecisionTick",    135    ); 
   fTrigger1740Pedestal    = pset.get< float       >("Trigger1740Pedestal",    2000.  );
   fTrigger1740Threshold   = pset.get< float       >("Trigger1740Threshold",   0.     );
 }
@@ -142,34 +142,36 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
       throw cet::exception("FragmentToDigitAlg") << "attempting to access channel "
 						<< chan << " from 1740 fragment with only "
 						<< frag.waveForms.size() << " channels";
-      
-      // only look at the specific tick of the waveform where the trigger decision is taken
-      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick+3 - 1) {
+       
+      // require that waveform is large enough such that we don't encounter error
+      // when trying to access time ticks around the fTriggerDecisionTick
+      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick+15 - 1) {
      
-        // the trigger waveform goes below the pedestal (low) if the trigger is on
-        // (check 3 samples before and after TriggerDecisionTick just to be sure)
-        if(     fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick-3] > fTrigger1740Threshold
-            ||  fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick-2] > fTrigger1740Threshold
-            ||  fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick-1] > fTrigger1740Threshold
-            ||  fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick  ] > fTrigger1740Threshold
-            ||  fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick+1] > fTrigger1740Threshold
-            ||  fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick+2] > fTrigger1740Threshold
-            ||  fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick+3] > fTrigger1740Threshold){
-          triggerBits.set(chan - minChan);
-          LOG_VERBATIM("FragmentToDigitAlg")<<"***** FOUND TRIGGER BIT: "<<chan-minChan;
-          
-          // For Run 2 (Run > 8013), BEAMON was not being fed into any V1740 boards.  But it's input #16 on the 
-          // V1495 so we'll just hack it by checking if any WC or TOF trigger bits were fired.
-          if( (fRunNumber >= 8013) && ( (chan-minChan)==3 || (chan-minChan)==5 || (chan-minChan)==6 )) isBeamon = true;
-        }
+        // The trigger decision tick seems to jump around a bit over time, ranging between 125-145.  So,
+        // let's check +/-15 samples around set fTriggerDecisionTick to be sure we don't miss it. (Considering 
+        // the full drift is ~4000 ticks, any triggers occurring this close in time might as well be associated 
+        // with the event anyway.)
+        for(int i=-15; i<15; ++i){
+          if( fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick+i] > fTrigger1740Threshold ){
+            
+            triggerBits.set(chan - minChan);
+            LOG_VERBATIM("FragmentToDigitAlg")<<"*** FOUND TRIGGER BIT: "<<chan-minChan;
+            
+            // For Run 2 (Run > 8013), BEAMON was not being fed into any V1740 boards.  But it's input #16 on the 
+            // V1495 so we'll just hack it by checking if any WC or TOF trigger bits were fired.
+            if( (fRunNumber >= 8013) && ( (chan-minChan)==3 || (chan-minChan)==5 || (chan-minChan)==6 ) && !isBeamon) {
+              triggerBits.set(16);
+              LOG_VERBATIM("FragmentToDigitAlg")<<"*** FOUND TRIGGER BIT: 16";
+              isBeamon = true;
+            }
+            
+            break;   
+          } // endIf over threshold
+        } // end scan around neighborhood of fTriggerDecisionTick
       
       } // endif waveform is big enough
+    
     } // end loop over channels on the board
-
-    if( isBeamon ){
-      triggerBits.set(16);
-      LOG_VERBATIM("FragmentToDigitAlg")<<"***** FOUND TRIGGER BIT: 16\n";
-    }
     
   } // end loop over caen fragments
 
@@ -962,10 +964,6 @@ void FragmentToDigitAlg::InitializeRun(art::RunNumber_t runNumber, uint64_t time
   fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
   fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
   fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
-
-  // TriggerDecisionTick is 140 for Run 1 (run# < 8013) and 126 for Run 2 (run# > 8013)
-  if(fRunNumber < 8013) {fTriggerDecisionTick = 140;}
-  else                  {fTriggerDecisionTick = 126;}
 
 }
 //-------------------jess lines
