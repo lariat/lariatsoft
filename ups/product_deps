@@ -21,10 +21,10 @@ cetbuildtools   v4_19_04	-	only_for_build
 end_product_list
 
 # e9  - with gcc 4.9.2 and -std=c++11
-qualifier    	       larsoft	  LariatFilters	lariatfragments	  artdaq_core	    LariatBeamFiles	lariatutil	notes
-e9:debug	       e9:debug	  -nq-		e9:debug	  e9:nu:s30:debug   -nq-		e9:debug
-e9:opt		       e9:opt	  -nq-		e9:opt		  e9:nu:s30:opt	    -nq-		e9:opt
-e9:prof		       e9:prof	  -nq-		e9:prof		  e9:nu:s30:prof    -nq-		e9:prof
+qualifier larsoft	  LariatFilters	lariatfragments	  artdaq_core	      LariatBeamFiles	lariatutil	notes
+e9:debug	e9:debug	-nq-	       	e9:debug	        e9:nu:s30:debug   -nq-		        e9:debug
+e9:opt		e9:opt	  -nq-		      e9:opt		        e9:nu:s30:opt	    -nq-		        e9:opt
+e9:prof		e9:prof	  -nq-		      e9:prof		        e9:nu:s30:prof    -nq-		        e9:prof
 
 end_qualifier_list
 
