@@ -163,9 +163,11 @@ private:
   double trkpida[kMaxTrack][2];
   double trkke[kMaxTrack][2];
   double trkdedx[kMaxTrack][2][1000];
+  double trkdqdx[kMaxTrack][2][1000];
   double trkrr[kMaxTrack][2][1000];
   double trkpitchhit[kMaxTrack][2][1000]; 
-   
+  double trkxyz[kMaxTrack][2][1000][3];
+
   // === Storing trajectory information for the track ===
   int nTrajPoint[kMaxTrack];			//<---Storing the number of trajectory points
   double pHat0_X[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the x-dir
@@ -1244,12 +1246,16 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  
 		  // ### Recording the dE/dX information for this calo point along the track in this plane ###
 		  trkdedx[i][pl][k] = calos[j]->dEdx()[k];
+		  trkdqdx[i][pl][k] = calos[j]->dQdx()[k];
 	  
 		  // ### Recording the residual range for this calo point along the track in this plane ###
 		  trkrr[i][pl][k] = calos[j]->ResidualRange()[k];
 	  
 		  // ### Recording the pitch of this calo point along the track in this plane ###
 		  trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
+                  trkxyz[i][pl][k][0] = calos[j]->XYZ()[k].X();
+                  trkxyz[i][pl][k][1] = calos[j]->XYZ()[k].Y();
+                  trkxyz[i][pl][k][2] = calos[j]->XYZ()[k].Z();
 		}//<---End calo points (k)
 	  
 	    }//<---End looping over calo points (j)
@@ -1520,8 +1526,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/D");
   fTree->Branch("trkhits",trkhits,"trkhits[ntracks_reco][2]/I");
   fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkdqdx",trkdqdx,"trkdqdx[ntracks_reco][2][1000]/D");
   fTree->Branch("trkrr",trkrr,"trkrr[ntracks_reco][2][1000]/D");
   fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][1000][3]/D");
   fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
   
@@ -1746,8 +1754,12 @@ void lariat::AnaTreeT1034::ResetVars()
       trkpida[i][j] = -99999;
       for (int k = 0; k<1000; ++k){
 			trkdedx[i][j][k] = -99999;
+			trkdqdx[i][j][k] = -99999;
 			trkrr[i][j][k] = -99999;
 			trkpitchhit[i][j][k] = -99999;
+			trkxyz[i][j][k][0] = -99999;
+			trkxyz[i][j][k][1] = -99999;
+			trkxyz[i][j][k][2] = -99999;
       }
     }
     trkg4id[i] = -9999;

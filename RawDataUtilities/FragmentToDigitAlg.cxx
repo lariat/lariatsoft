@@ -61,7 +61,7 @@ void FragmentToDigitAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
   fRawFragmentLabel       = pset.get< std::string >("RawFragmentLabel",       "daq"  );
   fRawFragmentInstance    = pset.get< std::string >("RawFragmentInstance",    "SPILL");
-  fTriggerDecisionTick    = pset.get< unsigned int>("TriggerDecisionTick",    100    ); 
+  fTriggerDecisionTick    = pset.get< unsigned int>("TriggerDecisionTick",    135    ); 
   fTrigger1740Pedestal    = pset.get< float       >("Trigger1740Pedestal",    2000.  );
   fTrigger1740Threshold   = pset.get< float       >("Trigger1740Threshold",   0.     );
 }
@@ -122,32 +122,57 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
   // Need database eventually to set this correctly for different data-taking periods.
   // would set the fTriggerDecisionTick, fTrigger1740Pedestal, fTrigger1740Threshold values
   // in the beginRun method
-
-  std::bitset<16> triggerBits;
+  
+  //std::bitset<16> triggerBits;
+  std::bitset<32> triggerBits;
 
   size_t minChan  = 48;
   size_t maxChan  = 64;
+  bool isBeamon = false;
 
   for(auto const& frag : caenFrags){
 
     // \todo Need to get this board ID information and run number from the database
-    if     (frag.header.boardId != 7  && fRunNumber < 6155) continue;
-    else if(frag.header.boardId != 24 && fRunNumber > 6154) continue;
+    if     (frag.header.boardId != 7  && fRunNumber <  6155) continue;
+    else if(frag.header.boardId != 24 && fRunNumber >= 6155) continue;
 
     for(size_t chan = minChan; chan < maxChan; ++chan){ 
+      
       if(chan > frag.waveForms.size() )
       throw cet::exception("FragmentToDigitAlg") << "attempting to access channel "
 						<< chan << " from 1740 fragment with only "
 						<< frag.waveForms.size() << " channels";
+       
+      // require that waveform is large enough such that we don't encounter error
+      // when trying to access time ticks around the fTriggerDecisionTick
+      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick+15 - 1) {
+     
+        // The trigger decision tick seems to jump around a bit over time, ranging between 125-145.  So,
+        // let's check +/-15 samples around set fTriggerDecisionTick to be sure we don't miss it. (Considering 
+        // the full drift is ~4000 ticks, any triggers occurring this close in time might as well be associated 
+        // with the event anyway.)
+        for(int i=-15; i<15; ++i){
+          if( fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick+i] > fTrigger1740Threshold ){
+            
+            triggerBits.set(chan - minChan);
+            LOG_VERBATIM("FragmentToDigitAlg")<<"*** FOUND TRIGGER BIT: "<<chan-minChan;
+            
+            // For Run 2 (Run > 8013), BEAMON was not being fed into any V1740 boards.  But it's input #16 on the 
+            // V1495 so we'll just hack it by checking if any WC or TOF trigger bits were fired.
+            if( (fRunNumber >= 8013) && ( (chan-minChan)==3 || (chan-minChan)==5 || (chan-minChan)==6 ) && !isBeamon) {
+              triggerBits.set(16);
+              LOG_VERBATIM("FragmentToDigitAlg")<<"*** FOUND TRIGGER BIT: 16";
+              isBeamon = true;
+            }
+            
+            break;   
+          } // endIf over threshold
+        } // end scan around neighborhood of fTriggerDecisionTick
       
-      // only look at the specific tick of the waveform where the trigger decision is taken
-      if(frag.waveForms[chan].data.size() > fTriggerDecisionTick - 1)
-      
-      // the trigger waveform goes below the pedestal (low) if the trigger is on
-      if(fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick] > fTrigger1740Threshold)
-      triggerBits.set(chan - minChan);
-
+      } // endif waveform is big enough
+    
     } // end loop over channels on the board
+    
   } // end loop over caen fragments
 
   return triggerBits.to_ulong();
@@ -290,7 +315,7 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
           firstSample = (int)((100.-fV1751PostPercent) * 0.01 * waveForm.size());
         
           LOG_VERBATIM("FragmentToDigitAlg")
-          << " Found CRYO"
+          << " Found cryoPMT"
           << "\n Writing opdetpulses "
           << " boardID : " << boardId
           << " channel " << chanOff
@@ -629,7 +654,8 @@ void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& cae
 void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& caenFrags,
                                            std::vector<raw::AuxDetDigit>      & trAuxDigits)
 {
-  // The trigger waveforms all come on board 7, channels 48-63
+  // For runs <  6155: trigger waveforms all come on board 7, channels 48-63.
+  // For runs >= 6155: trigger waveforms come on board 24, channels 48-63 and ...(0-15?)
   uint32_t boardId=0;
   uint32_t chanOff=0;
   std::set<uint32_t> boardChans;
@@ -643,6 +669,7 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
   trigNames.insert("WC3");      
   trigNames.insert("WC4");    
   trigNames.insert("BEAMON"); 
+  trigNames.insert("COSMICAGCOIN");
   trigNames.insert("USTOF");  
   trigNames.insert("DSTOF");    
   trigNames.insert("PUNCH");  
@@ -650,6 +677,7 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
   trigNames.insert("PULSER"); 
   trigNames.insert("COSMICON"); 
   trigNames.insert("COSMIC"); 
+  trigNames.insert("LARRY");
   trigNames.insert("PILEUP"); 
   trigNames.insert("MICHEL"); 
   trigNames.insert("LARSCINT"); 
@@ -936,6 +964,7 @@ void FragmentToDigitAlg::InitializeRun(art::RunNumber_t runNumber, uint64_t time
   fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
   fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
   fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
+
 }
 //-------------------jess lines
 //=====================================================================
