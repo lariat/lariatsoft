@@ -26,18 +26,18 @@ lariat_services:
  Geometry:                     @local::lariat_geo 	        
  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
  AuxDetGeometry:               @local::lariat_auxdetgeo            
- DetectorPropertiesService:           @local::lariat_detproperties
- LArPropertiesService:                @local::lariat_properties
+ DetectorPropertiesService:    @local::lariat_detproperties
+ LArPropertiesService:         @local::lariat_properties
  LArFFT:                       @local::lariat_larfft
  DatabaseUtil:	               @local::lariat_database
  DatabaseUtilityT1034:         @local::lariat_databaseutility
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
- DetectorClocksService:                  @local::lariat_detectorclocks
+ DetectorClocksService:        @local::lariat_detectorclocks
  BackTracker:                  @local::standard_backtracker
- LArSeedService:                  @local::standard_seedservice
- DetPedestalService:          @local::lariat_detpedestalservice
- ChannelStatusService:        @local::lariat_channel_filter
- SpaceCharge:  @local::standard_spacecharge 
+ LArSeedService:               @local::standard_seedservice
+ DetPedestalService:           @local::lariat_detpedestalservice
+ ChannelStatusService:         @local::lariat_channel_filter
+ SpaceCharge:                  @local::standard_spacecharge
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
 
@@ -50,17 +50,17 @@ lariat_simulation_services:
  Geometry:                     @local::lariat_geo
  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
  AuxDetGeometry:               @local::lariat_auxdetgeo            
- DetectorPropertiesService:           @local::lariat_detproperties
- LArPropertiesService:                @local::lariat_properties
+ DetectorPropertiesService:    @local::lariat_detproperties
+ LArPropertiesService:         @local::lariat_properties
  LArFFT:                       @local::lariat_larfft
  DatabaseUtil:	               @local::lariat_database
  DatabaseUtilityT1034:         @local::lariat_databaseutility
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
- DetectorClocksService:                  @local::lariat_detectorclocks
+ DetectorClocksService:        @local::lariat_detectorclocks
  BackTracker:                  @local::standard_backtracker
- LArSeedService:                  @local::standard_seedservice
- ChannelStatusService:        @local::lariat_channel_filter
- SpaceCharge:  @local::standard_spacecharge 
+ LArSeedService:               @local::standard_seedservice
+ ChannelStatusService:         @local::lariat_channel_filter
+ SpaceCharge:                  @local::standard_spacecharge
  #OpDetResponseInterface:      @local::lariat_opdetresponse
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
