@@ -21,20 +21,20 @@ namespace ldp {
   struct AGCHits {
     long unsigned int 	TriggerTimeStamp;
     
-    long unsigned int 	HitTimeStampUSE;
-    long unsigned int 	HitTimeStampUSW;
-    long unsigned int 	HitTimeStampDS1;
-    long unsigned int 	HitTimeStampDS2;
+    long unsigned int 	HitTimeStamp1p10_1;
+    long unsigned int 	HitTimeStamp1p10_2;
+    long unsigned int 	HitTimeStamp1p06_1;
+    long unsigned int 	HitTimeStamp1p06_2;
     
-    float			HitPulseAreaUSE;
-    float			HitPulseAreaUSW;
-    float			HitPulseAreaDS1;
-    float			HitPulseAreaDS2;
+    float			HitPulseArea1p10_1;
+    float			HitPulseArea1p10_2;
+    float			HitPulseArea1p06_1;
+    float			HitPulseArea1p06_2;
     
-    bool 			HitExistUSE;
-    bool 			HitExistUSW;
-    bool 			HitExistDS1;
-    bool 			HitExistDS2;
+    bool 			HitExist1p10_1;
+    bool 			HitExist1p10_2;
+    bool 			HitExist1p06_1;
+    bool 			HitExist1p06_2;
   };
 
   class AGCounter {
@@ -49,20 +49,20 @@ namespace ldp {
     
     long int		GetTriggerTimeStamp(int);
     
-    long unsigned int 	GetHitTimeStampUSE(size_t) const;
-    long unsigned int 	GetHitTimeStampUSW(size_t) const;
-    long unsigned int 	GetHitTimeStampDS1(size_t) const;
-    long unsigned int 	GetHitTimeStampDS2(size_t) const;
+    long unsigned int 	GetHitTimeStamp1p10_1(size_t) const;
+    long unsigned int 	GetHitTimeStamp1p10_2(size_t) const;
+    long unsigned int 	GetHitTimeStamp1p06_1(size_t) const;
+    long unsigned int 	GetHitTimeStamp1p06_2(size_t) const;
     
-    float			GetHitPulseAreaUSE(size_t) const;
-    float			GetHitPulseAreaUSW(size_t) const;
-    float			GetHitPulseAreaDS1(size_t) const;
-    float			GetHitPulseAreaDS2(size_t) const;
+    float			GetHitPulseArea1p10_1(size_t) const;
+    float			GetHitPulseArea1p10_2(size_t) const;
+    float			GetHitPulseArea1p06_1(size_t) const;
+    float			GetHitPulseArea1p06_2(size_t) const;
     
-    bool 			GetHitExistUSE(size_t) const;
-    bool 			GetHitExistUSW(size_t) const;
-    bool 			GetHitExistDS1(size_t) const;
-    bool 			GetHitExistDS2(size_t) const;
+    bool 			GetHitExist1p10_1(size_t) const;
+    bool 			GetHitExist1p10_2(size_t) const;
+    bool 			GetHitExist1p06_1(size_t) const;
+    bool 			GetHitExist1p06_2(size_t) const;
 #endif
     
   private:
@@ -73,20 +73,20 @@ namespace ldp {
 #ifndef __GCCXML__
 
 inline size_t	            ldp::AGCounter::GetNHits()                      const { return fAGCHits.size(); }
-inline long unsigned int 	ldp::AGCounter::GetHitTimeStampUSE(size_t iHit) const { return fAGCHits[iHit].HitTimeStampUSE; }
-inline long unsigned int 	ldp::AGCounter::GetHitTimeStampUSW(size_t iHit) const { return fAGCHits[iHit].HitTimeStampUSW; }
-inline long unsigned int 	ldp::AGCounter::GetHitTimeStampDS1(size_t iHit) const { return fAGCHits[iHit].HitTimeStampDS1; }
-inline long unsigned int 	ldp::AGCounter::GetHitTimeStampDS2(size_t iHit) const { return fAGCHits[iHit].HitTimeStampDS2; }
+inline long unsigned int 	ldp::AGCounter::GetHitTimeStamp1p10_1(size_t iHit) const { return fAGCHits[iHit].HitTimeStamp1p10_1; }
+inline long unsigned int 	ldp::AGCounter::GetHitTimeStamp1p10_2(size_t iHit) const { return fAGCHits[iHit].HitTimeStamp1p10_2; }
+inline long unsigned int 	ldp::AGCounter::GetHitTimeStamp1p06_1(size_t iHit) const { return fAGCHits[iHit].HitTimeStamp1p06_1; }
+inline long unsigned int 	ldp::AGCounter::GetHitTimeStamp1p06_2(size_t iHit) const { return fAGCHits[iHit].HitTimeStamp1p06_2; }
 
-inline float			        ldp::AGCounter::GetHitPulseAreaUSE(size_t iHit) const { return fAGCHits[iHit].HitPulseAreaUSE;}
-inline float			        ldp::AGCounter::GetHitPulseAreaUSW(size_t iHit) const { return fAGCHits[iHit].HitPulseAreaUSW;}
-inline float			        ldp::AGCounter::GetHitPulseAreaDS1(size_t iHit) const { return fAGCHits[iHit].HitPulseAreaDS1;}
-inline float			        ldp::AGCounter::GetHitPulseAreaDS2(size_t iHit) const { return fAGCHits[iHit].HitPulseAreaDS2;}
+inline float			        ldp::AGCounter::GetHitPulseArea1p10_1(size_t iHit) const { return fAGCHits[iHit].HitPulseArea1p10_1;}
+inline float			        ldp::AGCounter::GetHitPulseArea1p10_2(size_t iHit) const { return fAGCHits[iHit].HitPulseArea1p10_2;}
+inline float			        ldp::AGCounter::GetHitPulseArea1p06_1(size_t iHit) const { return fAGCHits[iHit].HitPulseArea1p06_1;}
+inline float			        ldp::AGCounter::GetHitPulseArea1p06_2(size_t iHit) const { return fAGCHits[iHit].HitPulseArea1p06_2;}
 
-inline bool 			        ldp::AGCounter::GetHitExistUSE(size_t iHit)     const { return fAGCHits[iHit].HitExistUSE; }
-inline bool 			        ldp::AGCounter::GetHitExistUSW(size_t iHit)     const { return fAGCHits[iHit].HitExistUSW; }
-inline bool 			        ldp::AGCounter::GetHitExistDS1(size_t iHit)     const { return fAGCHits[iHit].HitExistDS1; }
-inline bool 			        ldp::AGCounter::GetHitExistDS2(size_t iHit)     const { return fAGCHits[iHit].HitExistDS2; }
+inline bool 			        ldp::AGCounter::GetHitExist1p10_1(size_t iHit)     const { return fAGCHits[iHit].HitExist1p10_1; }
+inline bool 			        ldp::AGCounter::GetHitExist1p10_2(size_t iHit)     const { return fAGCHits[iHit].HitExist1p10_2; }
+inline bool 			        ldp::AGCounter::GetHitExist1p06_1(size_t iHit)     const { return fAGCHits[iHit].HitExist1p06_1; }
+inline bool 			        ldp::AGCounter::GetHitExist1p06_2(size_t iHit)     const { return fAGCHits[iHit].HitExist1p06_2; }
 
 #endif // __GCCXML__
 

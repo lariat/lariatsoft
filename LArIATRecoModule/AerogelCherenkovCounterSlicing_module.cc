@@ -97,30 +97,32 @@ void lrm::AerogelCherenkovCounterSlicing::produce(art::Event & e)
   // Event Handling
   art::Handle< std::vector<raw::AuxDetDigit> > AuxDetDigitHandle;
   e.getByLabel(fSourceModuleLabel, AuxDetDigitHandle);
-  
+
   // Grab Aerogel Counter Digits
-  std::vector<raw::AuxDetDigit> AGCUSEDigits; // Channel 4 - Board 8 - CALLID_0
-  std::vector<raw::AuxDetDigit> AGCUSWDigits; // Channel 5 - Board 8 - CALLID_1
-  std::vector<raw::AuxDetDigit> AGCDS1Digits; // Channel 6 - Board 8 - CALLID_0 - Photonis Square 3in
-  std::vector<raw::AuxDetDigit> AGCDS2Digits; // Channel 7 - Board 8 - CALLID_1 - Hamamatsu Round 2in
+  std::vector<raw::AuxDetDigit> AG1p10_1Digits; 
+  std::vector<raw::AuxDetDigit> AG1p10_2Digits; 
+  std::vector<raw::AuxDetDigit> AG1p06_1Digits; 
+  std::vector<raw::AuxDetDigit> AG1p06_2Digits; 
+
   for(size_t iDig = 0; iDig < AuxDetDigitHandle->size(); ++iDig){
-    if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelUS")&&(AuxDetDigitHandle->at(iDig).Channel() == 0)) AGCUSEDigits.push_back(AuxDetDigitHandle->at(iDig));
-    if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelUS")&&(AuxDetDigitHandle->at(iDig).Channel() == 1)) AGCUSWDigits.push_back(AuxDetDigitHandle->at(iDig));
-    if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelDS")&&(AuxDetDigitHandle->at(iDig).Channel() == 2)) AGCDS1Digits.push_back(AuxDetDigitHandle->at(iDig));
-    if((AuxDetDigitHandle->at(iDig).AuxDetName() == "AeroGelDS")&&(AuxDetDigitHandle->at(iDig).Channel() == 3)) AGCDS2Digits.push_back(AuxDetDigitHandle->at(iDig));
+    if(AuxDetDigitHandle->at(iDig).AuxDetName() == "AG1p10_1") { AG1p10_1Digits.push_back(AuxDetDigitHandle->at(iDig)); }
+    if(AuxDetDigitHandle->at(iDig).AuxDetName() == "AG1p10_2") { AG1p10_2Digits.push_back(AuxDetDigitHandle->at(iDig)); }
+    if(AuxDetDigitHandle->at(iDig).AuxDetName() == "AG1p06_1") { AG1p06_1Digits.push_back(AuxDetDigitHandle->at(iDig)); }
+    if(AuxDetDigitHandle->at(iDig).AuxDetName() == "AG1p06_2") { AG1p06_2Digits.push_back(AuxDetDigitHandle->at(iDig)); }
   }
-  
-  fAGCounterAlg.ImportWaveform("USE", AGCUSEDigits);
-  fAGCounterAlg.ImportWaveform("USW", AGCUSWDigits);
-  fAGCounterAlg.ImportWaveform("DS1", AGCDS1Digits);
-  fAGCounterAlg.ImportWaveform("DS2", AGCDS2Digits);
+
+  fAGCounterAlg.ImportWaveform("AG1p10_1", AG1p10_1Digits); 
+  fAGCounterAlg.ImportWaveform("AG1p10_2", AG1p10_2Digits); 
+  fAGCounterAlg.ImportWaveform("AG1p06_1", AG1p06_1Digits); 
+  fAGCounterAlg.ImportWaveform("AG1p06_2", AG1p06_2Digits);  
   
   std::vector<std::vector<ldp::AGCHits> > AllAGCHits = fAGCounterAlg.AGCHitsWrapper();
+
   // Linearization
   std::vector<ldp::AGCHits> AllAGCHitsLinearized;
   AllAGCHitsLinearized.clear();
   for (size_t i = 0; i < AllAGCHits.size(); i++) {
-	AllAGCHitsLinearized.insert(AllAGCHitsLinearized.end(), AllAGCHits.at(i).begin(), AllAGCHits.at(i).end());
+    AllAGCHitsLinearized.insert(AllAGCHitsLinearized.end(), AllAGCHits.at(i).begin(), AllAGCHits.at(i).end());
   }
   
   // Wrap-Up

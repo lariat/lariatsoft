@@ -33,7 +33,8 @@
  <class name="art::Wrapper<ldp::AGCounter>"/>
  <class name="art::Wrapper<std::vector<ldp::AGCounter> >"/>
 
- <class name="ldp::AGCHits" ClassVersion="11">
+ <class name="ldp::AGCHits" ClassVersion="12">
+  <version ClassVersion="12" checksum="3312839912"/>
   <version ClassVersion="11" checksum="3334039317"/>
   <version ClassVersion="10" checksum="3982642565"/>
  </class>

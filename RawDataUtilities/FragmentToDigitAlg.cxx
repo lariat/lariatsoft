@@ -540,11 +540,20 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
 void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& caenFrags,
                                            std::vector<raw::AuxDetDigit>      & agAuxDigits)
 {
-  // Aerogel inputs are all sent to board 8
+
+  uint32_t boardId1p06_1 = 0;
+  uint32_t boardId1p06_2 = 0;
+  uint32_t boardId1p10_1 = 0;
+  uint32_t boardId1p10_2 = 0;
+
   uint32_t boardId = 0;
   uint32_t chanOff = 0;
-  std::set<uint32_t> boardChansAG1p10;
-  std::set<uint32_t> boardChansAG1p06;
+
+  std::set<uint32_t> chanAG1p10_1;
+  std::set<uint32_t> chanAG1p10_2;
+  std::set<uint32_t> chanAG1p06_1;
+  std::set<uint32_t> chanAG1p06_2;
+
   std::set<std::string> AGNames;
   AGNames.insert("AG1p06_1"); //AGUSE
   AGNames.insert("AG1p06_2"); //AGUSW
@@ -566,9 +575,18 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
        {
          std::string strboardId (hardwareIter.first, boardLoc, channelLoc - channel.size());
          std::string strchannelId (hardwareIter.first, channelLoc, hardwareIter.first.size());
-         
-         boardId = std::stoi(strboardId);								//convert string boardID to uint32
-         chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
+	 boardId = std::stoi(strboardId);
+
+	 // Have to create a unique variable for each board
+	 // because it doesn't stay consistent over time
+	 // and the two Aerogel counters aren't always on the same boards
+	 if     (hardwareIter.second == "AG1p10_1") boardId1p10_1 = boardId;
+	 else if(hardwareIter.second == "AG1p10_2") boardId1p10_2 = boardId;
+	 else if(hardwareIter.second == "AG1p06_1") boardId1p06_1 = boardId;
+	 else if(hardwareIter.second == "AG1p06_2") boardId1p06_2 = boardId;
+
+         chanOff = std::stoi(strchannelId);
+
          LOG_VERBATIM("FragmentToDigitAlg")<< " Found AeroGel"
          << " Column: "  << hardwareIter.first
          << " Value: "   << hardwareIter.second
@@ -579,20 +597,32 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
         // \todo These values for chanOff may not be correct.  The chanOff value is intended to allow
         // the caenFragmentToAuxDetDigit know how many to subtract from the board channel such that the
         // channels from the auxdet all satisfy the range of 0-N.
-       if     ( hardwareIter.second == "AG1p10_1" || hardwareIter.second == "AG1p10_2" ) boardChansAG1p10.insert(chanOff);
-       else if( hardwareIter.second == "AG1p06_1" || hardwareIter.second == "AG1p06_2" ) boardChansAG1p06.insert(chanOff);
+       if     (hardwareIter.second == "AG1p10_1") chanAG1p10_1.insert(chanOff);
+       else if(hardwareIter.second == "AG1p10_2") chanAG1p10_2.insert(chanOff);
+       else if(hardwareIter.second == "AG1p06_1") chanAG1p06_1.insert(chanOff);
+       else if(hardwareIter.second == "AG1p06_2") chanAG1p06_2.insert(chanOff);
+
      }//end find AGNAMES
   }//end loop over hardwareDatabase
 
   LOG_VERBATIM("FragmentToDigitAlg")
-  << "ChannelOffset: " << *(boardChansAG1p10.begin())
-  << " ChannelOffset: " << *(boardChansAG1p06.begin());
+  << "ChannelOffset: " <<  *(chanAG1p10_1.begin())
+  << " ChannelOffset: " <<  *(chanAG1p10_2.begin())
+  << " ChannelOffset: " <<  *(chanAG1p06_1.begin())
+  << " ChannelOffset: " <<  *(chanAG1p06_2.begin());
 
-  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChansAG1p10, *(boardChansAG1p10.begin()), "AeroGelAG1p10");
-  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId, boardChansAG1p06, *(boardChansAG1p06.begin()), "AeroGelAG1p06");
+
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId1p10_1, chanAG1p10_1, *(chanAG1p10_1.begin()), "AG1p10_1");
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId1p10_2, chanAG1p10_2, *(chanAG1p10_2.begin()), "AG1p10_2");
+
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId1p06_1, chanAG1p06_1, *(chanAG1p06_1.begin()), "AG1p06_1");
+  this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId1p06_2, chanAG1p06_2, *(chanAG1p06_2.begin()), "AG1p06_2");
   
-  boardChansAG1p10.clear();  
-  boardChansAG1p06.clear();  
+  chanAG1p10_1.clear();
+  chanAG1p10_2.clear();
+  chanAG1p06_1.clear();
+  chanAG1p06_2.clear();
+
   return;
 }
 
