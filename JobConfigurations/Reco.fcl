@@ -70,6 +70,7 @@ physics:
   ### track-finder producers
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
+  pmtracktc:            @local::standard_pmalgtrackmaker
   cctrack:              @local::standard_cctrackmaker
   
   ### Shower-Finder producers
@@ -104,6 +105,7 @@ physics:
          pandora,
          showerreco,
          pmtrack,
+#         pmtracktc,
          calo,
          pid,
          pandoracalo,
@@ -192,6 +194,12 @@ physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: -1
 physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  0
 physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
+
+physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipNoSignal: 2
+physics.producers.trajcluster.TrajClusterAlg.HitErrFac: 0.4
+physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.6
+physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:   ["ChainMerge", "MaskHits", "RevProp"]
+
 physics.producers.costrk.ClusterModuleLabel:  "linecluster"
 physics.producers.costrk.VertexModuleLabel:   "linecluster"
 physics.producers.costrk.ClusterMatch.KSCut:  0.5
@@ -200,6 +208,13 @@ physics.producers.pmtrack.HitModuleLabel:     "linecluster"
 physics.producers.pmtrack.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.FlipToBeam: true
 physics.producers.pmtrack.RunVertexing: true
+
+physics.producers.pmtracktc.ClusterModuleLabel: "trajcluster"
+physics.producers.pmtracktc.HitModuleLabel:     "gaushit"
+physics.producers.pmtracktc.MinSeedSize2ndPass: 3
+physics.producers.pmtracktc.FlipToBeam: true
+physics.producers.pmtracktc.RunVertexing: true
+
 physics.producers.cctrack.HitModuleLabel:     "linecluster"
 physics.producers.cctrack.ClusterModuleLabel: "linecluster"
 physics.producers.cctrack.VertexModuleLabel:  "linecluster"
