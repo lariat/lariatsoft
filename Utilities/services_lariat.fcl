@@ -45,7 +45,7 @@ lariat_simulation_services:
 {
  LArG4Parameters:              @local::lariat_largeantparameters
  LArVoxelCalculator:           @local::lariat_larvoxelcalculator
- MagneticField:                @local::no_mag
+ MagneticField:                @local::no_mag_larsoft
  ExptGeoHelperInterface:       @local::lariat_geometry_helper
  Geometry:                     @local::lariat_geo
  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
