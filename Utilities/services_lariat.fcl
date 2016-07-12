@@ -4,7 +4,7 @@
 #include "larfft_lariat.fcl"
 #include "messageservice.fcl"
 #include "simulationservices_lariat.fcl"
-#include "magfield.fcl"
+#include "magfield_larsoft.fcl"
 #include "databaseutil_lariat.fcl"
 #include "databaseutility_lariat.fcl"
 #include "database_lariat.fcl"
