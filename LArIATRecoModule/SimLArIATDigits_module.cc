@@ -31,8 +31,10 @@ extern "C" {
 
 #include "lardata/Utilities/LArFFT.h"
 #include "lardata/RawData/RawDigit.h"
+#include "lardata/RawData/AuxDetDigit.h"
 #include "lardata/RawData/raw.h"
 #include "lardata/RawData/TriggerData.h"
+#include "RawDataUtilities/FragmentToDigitAlg.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksServiceStandard.h" // special (see below)
@@ -118,6 +120,7 @@ private:
   double Energy[kMaxDet][kMaxIDE]; 
   int numG4;
   double G4TrackID[kMaxPart];
+  double ExitTime[kMaxDet][kMaxIDE];
   //double enterx;
   //double entery;
   //double enterz;
@@ -157,7 +160,8 @@ void SimLArIATDigits::produce(art::Event & e)
      std::cout<<"For iter: "<<iter<<" AuxDetID: "<<ID<<" The center is: ["<<centerarray[0]<<", "<<centerarray[1]<<", "<<centerarray[2]<<"]"<<std::endl;
      iterarray[iter]=iter;
      std::vector<sim::AuxDetIDE> SimIDE=aux.AuxDetIDEs();
-     numIDEs[iter]=SimIDE.size();  
+     numIDEs[iter]=SimIDE.size(); 
+     std::cout<<"Floor check: "<<floor(2.6)<<" "<<floor(-1.8)<<std::endl; 
     // std::cout<<"For Sim Channel: "<<iter<<", there are "<<SimIDE.size()<<" IDEs. AuxDetID: "<<aux.AuxDetID()<<std::endl;
      for(size_t nIDE=0; nIDE<SimIDE.size(); ++nIDE){
        sim::AuxDetIDE TheIDE=SimIDE[nIDE];
@@ -172,6 +176,7 @@ void SimLArIATDigits::produce(art::Event & e)
        exitmomy[iter][nIDE]=TheIDE.exitMomentumY;
        exitmomz[iter][nIDE]=TheIDE.exitMomentumZ;
        Energy[iter][nIDE]=TheIDE.energyDeposited;
+       ExitTime[iter][nIDE]=TheIDE.exitT;
        if(iter==0){
          TOFangle[nIDE]=180/(3.141593)*tan(TheIDE.exitMomentumX/TheIDE.exitMomentumZ);
        } 
@@ -217,9 +222,7 @@ void SimLArIATDigits::beginJob()
   fTree->Branch("exitmomz",exitmomz,"exitmomz[numSimChannels][1000]/D");
   fTree->Branch("TrackID",TrackID,"TrackID[numSimChannels][1000]/D");
   fTree->Branch("Energy",Energy,"Energy[numSimChannels][1000]/D");
-  //fTree->Branch("enterx",enterx,"enterx/D");
-  //fTree->Branch("entery",entery,"entery/D");
-  //fTree->Branch("enterz",enterz,"enterz/D");
+  fTree->Branch("ExitTime",ExitTime,"Time[numSimChannels][1000]/D");
   fTree->Branch("AuxDetID",AuxDetID,"AuxDetID[numSimChannels]/D");
   fTree->Branch("iterarray",iterarray,"iter[numSimChannels]/I");
   fTree->Branch("TOFangle",TOFangle,"TOFangle[numIDEs]/D");
@@ -250,6 +253,7 @@ void SimLArIATDigits::ResetVars()
       TrackID[i][j]=-9999;
       TOFangle[j]=-9999;
       Energy[i][j]=-9999;
+      ExitTime[i][j]=-9999;
     }
   }
   for(int i=0; i<kMaxPart; ++i){

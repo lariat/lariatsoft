@@ -69,9 +69,9 @@ outputs:
  }
 }
 physics.producers.generator.InputFileName:"hepevtTOF.txt"
-services.MagneticField.UseField: 0
-services.MagneticField.ConstantField: [ 0.0, -.175, 0.0]
-services.MagneticField.MagnetizedVolume: "magnet"
+services.MagneticField.UseField: 1
+services.MagneticField.ConstantField: [ 0.0, .35, 0.0]
+services.MagneticField.MagnetizedVolume: "NDBmagnet1"
 services.message.destinations.debugmsg: {
    type:      "cout"      #tells the message service to output this destination to cout
    threshold: "DEBUG"      #tells the message service that this destination applies to INFO and higher level messages
