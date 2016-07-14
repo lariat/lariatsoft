@@ -451,7 +451,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
     nLowZTrkEvents++;
     
     
-    //=======================================================================================================================
+   //=======================================================================================================================
    //						Uniquely matching one WC Track to TPC Track
    //=======================================================================================================================
    
@@ -541,17 +541,8 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
       
       }//<---End nTPCtrk loop
     
-    // ### Filling the number of matched WC and TPC Tracks ###
-    hdataNMatchTPCWCTrk->Fill(nMatchedTracks); 
     
-    // ### Skipping this event if no WC track is matched ###
-    // ###    OR if more than one WC track is matched    ###
-    if(nMatchedTracks < 1 || nMatchedTracks > 1){continue;}
-    
-    // ### Counting the number of events with ONE WC track matched ###
-    nEvtsWCTrackMatch++;
-    
-   //=======================================================================================================================
+       //=======================================================================================================================
    //				Calculating and cutting on the angle between the WC and TPC Track (alpha)
    //=======================================================================================================================
    
@@ -666,9 +657,25 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    //std::cout<<"alpha = "<<alpha<<std::endl;
    hdataAlpha->Fill(alpha);
    
-   if(alpha > alphaCut){continue;}
-   // ### Counting if we have a well matched stopping track ###
-   nEventsPassingAlpha++;
+   
+    
+    // ### Filling the number of matched WC and TPC Tracks ###
+    hdataNMatchTPCWCTrk->Fill(nMatchedTracks); 
+    
+    // ### Skipping this event if no WC track is matched ###
+    // ###    OR if more than one WC track is matched    ###
+    if( (nMatchedTracks < 1 || nMatchedTracks > 1) && alpha > alphaCut){continue;}
+    
+    //if(alpha > alphaCut){continue;}
+   
+    
+    // ### Counting the number of events with ONE WC track matched ###
+    nEvtsWCTrackMatch++;
+    
+    // ### Counting if we have a well matched stopping track ###
+    nEventsPassingAlpha++;
+    
+
    
 
    // ===========================================================================================================================================

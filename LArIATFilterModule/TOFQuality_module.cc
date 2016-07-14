@@ -6,9 +6,9 @@
 // Generated at 17 Feb 2016 by Irene Nutini using artmod
 // from cetpkgsupport v1_08_06.
 //
-// This is a QualityCheck on Time Of Flight from the beamline
 // This module filters on the number of TOF objects (by default requiring
-// at least 1) with a TOF (ns) value that has to be non-zero
+// at least 1) with a TOF (ns) value less than some cut 
+//(by default set to seperate pi/mu from protons
 ////////////////////////////////////////////////////////////////////////
 
 // ##########################
@@ -98,39 +98,40 @@ void TOFQuality::beginJob()
 // ---------------------- Event Loop ---------------------------
 bool TOFQuality::filter(art::Event & evt)
 {
-// ####################################################
-// ### Getting the Time of Flight (TOF) Information ###
-// ####################################################
-art::Handle< std::vector<ldp::TOF> > TOFColHandle;
-std::vector<art::Ptr<ldp::TOF> > tof;
-   
-if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
-   {art::fill_ptr_vector(tof, TOFColHandle);}
-
-// ### Reject the event if there is no TOF info ###   
-if(tof.size() <  fnTOFObjects){return false;}  
-
-else {
+  std::cout<<"PUPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPAAAAAAAAAAAAAAAAAAAAAAA \n";
+  // ####################################################
+  // ### Getting the Time of Flight (TOF) Information ###
+  // ####################################################
+  art::Handle< std::vector<ldp::TOF> > TOFColHandle;
+  std::vector<art::Ptr<ldp::TOF> > tof;
+  
+  std::cout<<"Puppa1\n";
+  if(evt.getByLabel(fTOFModuleLabel,TOFColHandle)) art::fill_ptr_vector(tof, TOFColHandle);
+  
+  std::cout<<"Puppa2\n";
+  // ### Reject the event if there is no TOF info ###   
+  if(tof.size() <  fnTOFObjects)  return false;  
+ 
+  std::cout<<"Puppa4\n";
   //Remove the event is the TOFObject is created but it gives out a zero value/empty value for the Tof itself
-   if( TOFColHandle->at(0).NTOF() != 1 ) {return false;} 
-   
-  else {
-     // ################################
-// ### Looping over TOF objects to store Tof values in an histogram ###
-// ################################
-      for(size_t i = 0; i < tof.size(); i++)
-	{
-	  for (size_t tof_idx = 0; tof_idx < tof[i]->NTOF(); ++tof_idx)
-	    {
-	    //std::cout << tof[i]->SingleTOF(tof_idx) << std::endl;
-	    fTOFvalues->Fill( tof[i]->SingleTOF(tof_idx) );
-	      }//<---End tof_idx loop
-	  }//<---End i loop
-    return true;
-  }
+  
+  //if( TOFColHandle->at(0).NTOF() < 1 ) return false;
+  return true;
+    
 }
 
-}
+
+/*
+bool tofGood = true;
+if(ntof < 1){continue;}
+for(int mmtof = 0; mmtof < ntof; mmtof++)
+  {
+    if(tofObject[mmtof] < 0 && tofObject[mmtof] > 30)
+      {tofGood = false;}
+
+  }//<---End mmtof                                                                                                                                                                                  
+
+*/
 
 
 

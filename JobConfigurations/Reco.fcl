@@ -2,7 +2,6 @@
 #include "services_lariat.fcl"
 #include "RawDataUtilities_algs.fcl"
 #include "caldata_lariat.fcl"
-##include "triggeralgo_service.fcl"
 #include "hitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
@@ -10,16 +9,24 @@
 #include "particleid.fcl"
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
-
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "services_lariat.fcl"
+#include "lariatcheckmodules.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatanamodules.fcl"
+#include "cluster_lariat.fcl"
+#include "showerfindermodules.fcl"
+#include "pandoramodules.fcl"
  
 process_name: Reco2D
 
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "reco2D_calwire_hist.root" }
-  #Timing:       {}
-  #SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
+  TFileService: { fileName: "anaTree_histo.root" }
+  TimeTracker:       {}
+  MemoryTracker:     {}
   RandomNumberGenerator: {} #ART native random number generator
   #message:      @local::lariat_message_services
   @table::lariat_services
@@ -34,6 +41,23 @@ source:
   maxEvents:  -1        # Number of events to create
 }
 
+
+wcreco: [ wctrack, tof]
+tpcreco: [ caldata,
+           gaushit,
+           linecluster,
+           trajcluster,
+           pandora,
+           showerreco,
+           pmtrack,
+#         pmtracktc,
+           calo,
+           pid,
+           pandoracalo,
+           pandorapid,
+           blurredcluster,
+           emshower
+           ]
 # Define and configure some modules to do work on each event.
 # First modules are defined; they are scheduled later.
 # Modules are grouped by type.
@@ -43,66 +67,55 @@ physics:
  producers:
  {
 
-  ### random number saver
-  #rns:                 { module_type: RandomNumberSaver }
-
-  ### flash finders ###
-  #opflash:             @local::lariat_opflash
+  ### beamline elements ###
+  
+  wctrack:     @local::lariat_wctrackbuilder
+  tof:         @local::lariat_tof
   
   ### calwire producers ###
   caldata:              @local::lariat_calroi
 
   ### hit-finder producers ###
-   gaushit:             @local::gaus_hitfinder
-   cchit:               @local::standard_clustercrawlerhit
-#  rffhit:              @local::lariat_rffhitfinder   
+  gaushit:             @local::gaus_hitfinder
+  cchit:               @local::standard_clustercrawlerhit
 
   ### cluster-finder producers
-  #cccluster:		@local::standard_clustercrawler
   linecluster:          @local::standard_linecluster
+  trajcluster:          @local::standard_trajcluster
+  blurredcluster:       @local::standard_blurredcluster
+
+  ### track-finder producers
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
+  pmtracktc:            @local::standard_pmalgtrackmaker
   cctrack:              @local::standard_cctrackmaker
-  #dbcluster:            @local::lariat_dbcluster
-  #hough:                @local::lariat_houghlinefinder
-
+  
   ### Shower-Finder producers
- showerreco:  	 	@local::standard_showerreco3d
-  ### pandora
-#  pandora:             @local::standard_pandora
+  showerreco:  	 	@local::standard_showerreco3d
+  emshower:             @local::standard_emshower
 
+  ### pandora
+  pandora:            @local::standard_pandoraneutrino
+
+  ### calorimetry and pid
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
- }
-# analyzers:
-#{
+  pandoracalo:          @local::standard_calodata
+  pandorapid:           @local::standard_chi2pid
 
- #showerquality: 	@local::standard_showerquality
-#}
+
+ }
+ analyzers:
+{
+ anatree: @local::lariat_anatree
+
+}
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- reco: [ #rns,
-#         opflash,
-         #FragmentToDigit,
-         caldata,
-#         cchit,
-	 gaushit,
-        # cccluster,
-	 linecluster,
-         showerreco,
-         #costrk,
-         pmtrack,
-         #cctrack
-         calo,
-         pid
-         #gaushit
-         #corner,
-         #dbcluster,
-	 #hough 
- #        pandora
-          ]
-#ana: [ showerquality ]
+ reco: [ @sequence::wcreco, @sequence::tpcreco ]
+	  
+ ana: [ anatree ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -113,7 +126,7 @@ physics:
 
  #end_paths is a keyword and contains the paths that do not modify the art::Event, 
  #ie analyzers and output streams.  these all run simultaneously
- end_paths:     [stream1]  
+ end_paths:     [ana,stream1]  
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
@@ -125,7 +138,7 @@ outputs:
  {
    module_type: RootOutput
    #fileName:    "%ifb_%tc_reco2D.root"
-   fileName:    "Reco2d.root"
+   fileName:    "%ifb_Reco2d.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1
  }
@@ -134,36 +147,13 @@ outputs:
 
 ### Here, we overwrite ALL module labels with the ones defined above.
 
-#physics.producers.opflash.InputModule:                          "optreadout"
-#physics.producers.opflash.GenModule:                            "generator"
-
-#physics.producers.FragmentToDigit.pmt_channel_ids:[[9,0,1]]
-#physics.producers.FragmentToDigit.pmt_test:true
+physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: 	false
 physics.producers.caldata.DigitModuleLabel:                     "daq"
+physics.producers.caldata.DodQdxCalib:                          true
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 physics.producers.gaushit.Chi2NDFRetry:                          1000.
-#physics.producers.gaushit.MinSig:                               [8, 10]
-#physics.producers.rffhit.CalDataModuleLabel:                    "caldata"
 
-#physics.producers.corner.CornerAlgParamSet.RawDataModuleLabel:  "daq"
-#physics.producers.corner.CornerAlgParamSet.CalDataModuleLabel:  "caldata"
-
-#physics.producers.fuzzycluster.HitsModuleLabel:                 "gaushit"
-#physics.producers.fuzzycluster.CalDataModuleLabel:              "caldata"
-
-#physics.producers.cchit.CCHitFinderAlg.MinPeak:    [4, 4] # min peak signal in each plane
-#physics.producers.cchit.CCHitFinderAlg.MinRMS:     [8, 10] # min signal RMS in each plane
-#physics.producers.cchit.CCHitFinderAlg.ChiNorms:   [1.1, 0.5]
-#physics.producers.cchit.CCHitFinderAlg.MaxBumps:    5    # make a crude hit if > MaxBumps are found in the RAT
-#physics.producers.cchit.CCHitFinderAlg.MaxXtraHits:   1
-#physics.producers.cchit.CCHitFinderAlg.ChiSplit:   20.   # Max chi/DOF for splitting hits for signal rms error = 1
-#physics.producers.cchit.CCHitFinderAlg.ChiNorms: [ 1.0, 1.0 ]  # chi/DOF normalization for each plane
-#physics.producers.cchit.CCHitFinderAlg.StudyHits: false
-#physics.producers.cchit.CCHitFinderAlg.UWireRange: [70, 100]
-#physics.producers.cchit.CCHitFinderAlg.UTickRange: [1560, 1660]
-#physics.producers.cchit.CCHitFinderAlg.VWireRange: [45, 85]
-#physics.producers.cchit.CCHitFinderAlg.VTickRange: [1500, 1800]
 
 physics.producers.linecluster.HitFinderModuleLabel: "gaushit"
 physics.producers.linecluster.ClusterCrawlerAlg.NumPass: 3      # Number of passes through the hit collection
@@ -204,6 +194,12 @@ physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: -1
 physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  0
 physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
+
+physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipNoSignal: 2
+physics.producers.trajcluster.TrajClusterAlg.HitErrFac: 0.4
+physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.6
+physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:   ["ChainMerge", "MaskHits", "RevProp"]
+
 physics.producers.costrk.ClusterModuleLabel:  "linecluster"
 physics.producers.costrk.VertexModuleLabel:   "linecluster"
 physics.producers.costrk.ClusterMatch.KSCut:  0.5
@@ -212,10 +208,18 @@ physics.producers.pmtrack.HitModuleLabel:     "linecluster"
 physics.producers.pmtrack.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.FlipToBeam: true
 physics.producers.pmtrack.RunVertexing: true
+
+physics.producers.pmtracktc.ClusterModuleLabel: "trajcluster"
+physics.producers.pmtracktc.HitModuleLabel:     "gaushit"
+physics.producers.pmtracktc.MinSeedSize2ndPass: 3
+physics.producers.pmtracktc.FlipToBeam: true
+physics.producers.pmtracktc.RunVertexing: true
+
 physics.producers.cctrack.HitModuleLabel:     "linecluster"
 physics.producers.cctrack.ClusterModuleLabel: "linecluster"
 physics.producers.cctrack.VertexModuleLabel:  "linecluster"
 physics.producers.cctrack.MatchAlgs: 1
+physics.producers.pandora.HitFinderModuleLabel:         "linecluster"
 #physics.producers.pandora.GeantModuleLabel:                     "largeant"
 #physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
 #services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
@@ -229,9 +233,22 @@ physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
 physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
-physics.producers.showerreco.InputProducer:        "linecluster"
+physics.producers.pandoracalo.TrackModuleLabel:                   "pandora"
+physics.producers.pandoracalo.SpacePointModuleLabel:              "pandora"
+physics.producers.pandoracalo.CaloAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.pandorapid.CalorimetryModuleLabel:              "pandoracalo"
+physics.producers.pandorapid.TrackModuleLabel:                    "pandora"
 
+physics.producers.showerreco.InputProducer:        "linecluster"
+physics.producers.blurredcluster.HitsModuleLabel:           "linecluster"
+physics.producers.blurredcluster.GlobalTPCRecon:           "false"
+#physics.producers.blurredcluster.CreateDebugPDF:           "true"
+physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
+physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
+physics.producers.blurredcluster.BlurredClusterAlg.ClusterTickDistance: 50
 #### Here we try to suppress known and pointless messages
+physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,0.048]
+
 services.message.destinations :
 {
   STDCOUT: 

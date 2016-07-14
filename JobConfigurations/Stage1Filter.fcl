@@ -1,0 +1,122 @@
+#include "FragmentToDigit_config.fcl"
+#include "services_lariat.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatfiltermodules.fcl"
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "FragmentToDigit_config.fcl"
+#include "RawDataUtilities_algs.fcl"
+#include "caldata_lariat.fcl"	
+#include "lariatanamodules.fcl"
+
+## You will write whatever name you want this process to be called 
+## It is important to note that the same process name cannot be called
+## twice on a ROOT file, so you may have to change this 
+
+### 	THE STAGE1 FILTER IS RELATED TO THE BEAMLINE PID SELECTION
+###     THE PARTICLE SELECTION FROM THE BEAMLINE IS MADE 
+###	FROM THE PID OBJECT (produced in beamline Reco from ToF and Momentum)
+### 	We use it here to select Pi/Mu (PDG 21113) 
+###	but it can be used for selecting protons and kaons as well
+process_name: Stage1Filter
+
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "Stage1_SimplePID_hist.root" }
+  #Timing:       {}
+  #SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
+  RandomNumberGenerator: {} #ART native random number generator
+  #message:      @local::lariat_message_services
+  @table::lariat_services
+  #user:         @local::lariat_simulation_services
+}
+#services.user.DatabaseUtil.ShouldConnect: false
+
+
+#This defines the input to your fcl file
+#You can start by reading in a ROOT file
+#Setting maxEvents = -1 will loop over all events in the file
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+ 
+ ### Here you will define any producer modules you want to run ###
+ producers:
+ {
+  ### random number saver
+  #rns:                 { module_type: RandomNumberSaver }
+
+ }
+ 
+ ### Here you will define any analyzer modules you want to run ###
+ analyzers:
+ {
+
+ anatree: @local::lariat_anatree
+ }
+ 
+ ### Here you will define any filter modules you want to run ###
+ filters:
+ {
+ particlefilter: @local::lariat_basic_pimufilter
+ 
+ }
+
+ #define the producer and filter modules for this path, order matters, 
+ #filters reject all following items.  see lines starting physics.producers below
+ 
+ reco: [  ]
+ 
+ ana:[anatree ]
+ 
+ filt:[particlefilter]
+
+ #define the output stream, there could be more than one if using filters 
+ stream1:  [ out1 ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event, 
+ #ie filters and producers
+ trigger_paths: [filt,reco] 
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+ #ie analyzers and output streams.  these all run simultaneously
+ end_paths:     [ana, stream1]  
+}
+
+#block to define where the output goes.  if you defined a filter in the physics
+#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   SelectEvents: {SelectEvents:[filt]}
+   fileName:    "Stage1_SimplePID_Filter.root"
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
+ }
+}
+
+#User selectable parameters for the ParticleFilter from beamline informations
+#
+#You can select different particles by setting different values of "ParticlePDG"
+#ParticlePDG = 2212 Protons
+#ParticlePDG = 211 Pions (only)
+#ParticlePDG = 13 Muons (only)
+#PartclePDG = 21113 PionsMuons
+#physics.filters.particlefilter.ParticlePDG: 21113
+#Since we can't yet discriminate between pions and muons from the reconstructed beamline informations, we go for PiMu for now
+
+#physics.filters.particlefilter.ParticleProbabilityThreshold: 0.5
+#physics.filters.particlefilter.ParticleIDModuleLabel:       "BeamPid"

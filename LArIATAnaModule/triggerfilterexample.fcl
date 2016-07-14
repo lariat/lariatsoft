@@ -1,0 +1,44 @@
+#include "services_lariat.fcl"
+#include "lariatanamodules.fcl"
+
+process_name: TriggerFilterExample
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "TriggerFilterExample_histo.root" }
+  Timing:       {}
+  RandomNumberGenerator: {} #ART native random number generator
+  message:      @local::standard_info
+  scheduler:    { } 	     
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+physics:
+{
+
+ analyzers:
+ {  
+   trigfilt:
+   {
+     module_type: TriggerFilterExample
+     TriggerFilterAlg: 
+     { 
+       Verbosity: false
+     }
+   }
+ }
+
+ ana:           [ trigfilt ]
+ end_paths:     [  ana ]  
+}
+
+# Set to "true" to have trigger filter alg print out what it's
+# doing (useful for debugging of general understanding)
+physics.analyzers.trigfilt.TriggerFilterAlg.Verbosity: false
