@@ -45,32 +45,32 @@ cet_report_compiler_flags()
 # these are minimum required versions, not the actual product versions
 
 # these are the larsoft products 
-find_ups_product( larsoft         v03_04_05 )
+find_ups_product( larsoft )
 find_ups_product( larcoreobj )
-find_ups_product( larcore         v03_03_01 )
+find_ups_product( larcore )
 find_ups_product( lardataobj )
-find_ups_product( lardata         v03_03_01 )
-find_ups_product( larevt          v03_02_04 )
+find_ups_product( lardata )
+find_ups_product( larevt )
 find_ups_product( larsimobj )
-find_ups_product( larsim          v03_02_04 )
-find_ups_product( larreco         v03_03_01 )
-find_ups_product( larana          v03_03_01 )
-find_ups_product( larpandora      v03_03_03 )
-find_ups_product( lareventdisplay v03_02_04 )
+find_ups_product( larsim )
+find_ups_product( larreco )
+find_ups_product( larana )
+find_ups_product( larpandora )
+find_ups_product( lareventdisplay )
 find_ups_product( cetbuildtools )
 
 # art related products
-find_ups_product( art             v1_12_02 )
-find_ups_product( artdaq_core     v1_04_06 )
+find_ups_product( art )
+find_ups_product( artdaq_core )
 
 # products that LArIAT needs for input data
-find_ups_product( LariatFilters   v01_00    )
-find_ups_product( lariatfragments v01_00_00 )
+find_ups_product( LariatFilters )
+find_ups_product( lariatfragments )
 
 # non-art library dependences
-find_ups_product( postgresql v9_1_5 )
-find_ups_product( nutools v1_00_00 )
-find_ups_root( root v5_34_18 )
+find_ups_product( postgresql )
+find_ups_product( nutools )
+find_ups_root( root )
 
 # macros for artdaq_dictionary and simple_plugin
 include(ArtDictionary)
