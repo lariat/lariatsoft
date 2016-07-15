@@ -58,7 +58,7 @@ enum {
   V1740B_N_BOARDS = 1,
   V1740B_N_CHANNELS = 64,
   V1740B_N_SAMPLES = 192 * 16,
-  V1751_N_BOARDS = 2,
+  V1751_N_BOARDS = 3,
   V1751_N_CHANNELS = 8,
   V1751_N_SAMPLES = 1792 * 16,
   WUT_MAX_HITS = 128,
@@ -244,6 +244,7 @@ namespace DataQuality {
     int                 fNumberCAENBoard7Blocks;
     int                 fNumberCAENBoard8Blocks;
     int                 fNumberCAENBoard9Blocks;
+    int                 fNumberCAENBoard10Blocks;
     int                 fNumberCAENBoard24Blocks;
     int                 fNumberTDCBlocks;
     double              fTPCIntervalsDeltaT;
@@ -258,6 +259,7 @@ namespace DataQuality {
     std::vector<double> fCAENBoard7TimeStamps;
     std::vector<double> fCAENBoard8TimeStamps;
     std::vector<double> fCAENBoard9TimeStamps;
+    std::vector<double> fCAENBoard10TimeStamps;
     std::vector<double> fCAENBoard24TimeStamps;
     std::vector<double> fTDCTimeStamps;
 
@@ -519,6 +521,7 @@ namespace DataQuality {
     fEventBuilderTree->Branch("NumberCAENBoard7Blocks",      &fNumberCAENBoard7Blocks,      "NumberCAENBoard7Blocks/I");
     fEventBuilderTree->Branch("NumberCAENBoard8Blocks",      &fNumberCAENBoard8Blocks,      "NumberCAENBoard8Blocks/I");
     fEventBuilderTree->Branch("NumberCAENBoard9Blocks",      &fNumberCAENBoard9Blocks,      "NumberCAENBoard9Blocks/I");
+    fEventBuilderTree->Branch("NumberCAENBoard10Blocks",      &fNumberCAENBoard10Blocks,      "NumberCAENBoard10Blocks/I");
     fEventBuilderTree->Branch("NumberCAENBoard24Blocks",     &fNumberCAENBoard24Blocks,     "NumberCAENBoard24Blocks/I");
     fEventBuilderTree->Branch("V1740PreAcquisitionWindow",   &fV1740PreAcquisitionWindow,   "V1740PreAcquisitionWindow/D");
     fEventBuilderTree->Branch("V1740PostAcquisitionWindow",  &fV1740PostAcquisitionWindow,  "V1740PostAcquisitionWindow/D");
@@ -543,6 +546,7 @@ namespace DataQuality {
     fEventBuilderTree->Branch("CAENBoard7TimeStamps",        &fCAENBoard7TimeStamps);
     fEventBuilderTree->Branch("CAENBoard8TimeStamps",        &fCAENBoard8TimeStamps);
     fEventBuilderTree->Branch("CAENBoard9TimeStamps",        &fCAENBoard9TimeStamps);
+    fEventBuilderTree->Branch("CAENBoard10TimeStamps",        &fCAENBoard10TimeStamps);
     fEventBuilderTree->Branch("CAENBoard24TimeStamps",       &fCAENBoard24TimeStamps);
     fEventBuilderTree->Branch("TDCTimeStamps",               &fTDCTimeStamps);
 
@@ -834,6 +838,7 @@ namespace DataQuality {
       fNumberCAENBoard7Blocks  = 0;
       fNumberCAENBoard8Blocks  = 0;
       fNumberCAENBoard9Blocks  = 0;
+      fNumberCAENBoard10Blocks = 0;
       fNumberCAENBoard24Blocks = 0;
 
       int NumberCAENBlocksArray[32] = {};
@@ -849,6 +854,7 @@ namespace DataQuality {
       fCAENBoard7TimeStamps.clear();
       fCAENBoard8TimeStamps.clear();
       fCAENBoard9TimeStamps.clear();
+      fCAENBoard10TimeStamps.clear();
       fCAENBoard24TimeStamps.clear();
       fTDCTimeStamps.clear();
 
@@ -977,7 +983,7 @@ namespace DataQuality {
           //}
         }
 
-        else if (boardId == 8 or boardId == 9) {
+        else if (boardId == 8 or boardId == 9 or boardId == 10) {
 
           for (size_t k = 0; k < V1751_N_CHANNELS; ++k) {
             fCaenV1751Waveform[k].clear();
@@ -1016,6 +1022,7 @@ namespace DataQuality {
       fNumberCAENBoard7Blocks  = NumberCAENBlocksArray[7];
       fNumberCAENBoard8Blocks  = NumberCAENBlocksArray[8];
       fNumberCAENBoard9Blocks  = NumberCAENBlocksArray[9];
+      fNumberCAENBoard10Blocks = NumberCAENBlocksArray[10];
       fNumberCAENBoard24Blocks = NumberCAENBlocksArray[24];
 
       fCAENBoard0TimeStamps  = CAENTimeStamps[0];
@@ -1028,6 +1035,7 @@ namespace DataQuality {
       fCAENBoard7TimeStamps  = CAENTimeStamps[7];
       fCAENBoard8TimeStamps  = CAENTimeStamps[8];
       fCAENBoard9TimeStamps  = CAENTimeStamps[9];
+      fCAENBoard10TimeStamps = CAENTimeStamps[10];
       fCAENBoard24TimeStamps = CAENTimeStamps[24];
 
       for (size_t j = 0; j < numberTdcBlocks; ++j) {

@@ -31,7 +31,8 @@
 TriggerFilterAlg::TriggerFilterAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
-  fNumTrigInputs = 16;
+  //fNumTrigInputs = 16;
+  fNumTrigInputs = 17;
   
 }
 
@@ -120,10 +121,10 @@ void TriggerFilterAlg::parseANDPatterns( std::string filterPattern,
     if( insideAND ) theNextANDGroup.push_back(filterPattern.at(iChar));
     if( filterPattern.at(iChar) == '<' ) insideAND = true;
   }
-  std::cout << "AND patterns parsed!" << std::endl;
   
   //Sanity check
   if( fVerbose ){
+    std::cout << "AND patterns parsed!" << std::endl;
     for( size_t iGroup = 0; iGroup < ANDGroups.size(); ++iGroup ){
       std::cout << "Group Found: " << ANDGroups.at(iGroup) << std::endl;
     }
@@ -227,31 +228,6 @@ void TriggerFilterAlg::initializeBitsToStrings( std::map<std::string,bool> & wha
     std::string xmlTriggerInput = fTriggerInputConfigValues.at(fTriggerInputConfigParams.at(iConfig));
     whatIsTriggered.emplace(xmlTriggerInput,theTrigger.Triggered(iConfig));
   }
-  /*
-  whatIsTriggered.emplace("WC1",theTrigger.Triggered(0));
-  whatIsTriggered.emplace("WC2",theTrigger.Triggered(1));
-  whatIsTriggered.emplace("WC3",theTrigger.Triggered(2));
-  whatIsTriggered.emplace("WC4",theTrigger.Triggered(3));
-  whatIsTriggered.emplace("BEAMON",theTrigger.Triggered(4));
-  whatIsTriggered.emplace("USTOF",theTrigger.Triggered(5));
-  whatIsTriggered.emplace("DSTOF",theTrigger.Triggered(6));
-  whatIsTriggered.emplace("PUNCH",theTrigger.Triggered(7));
-  whatIsTriggered.emplace("HALO",theTrigger.Triggered(8));
-  whatIsTriggered.emplace("PULSER",theTrigger.Triggered(9));
-  whatIsTriggered.emplace("COSMICON",theTrigger.Triggered(10));
-  whatIsTriggered.emplace("COSMIC",theTrigger.Triggered(11));
-  whatIsTriggered.emplace("SC1 CFD",theTrigger.Triggered(12));
-  whatIsTriggered.emplace("SC2 CFD",theTrigger.Triggered(13));
-  whatIsTriggered.emplace("SC3 CFD",theTrigger.Triggered(14));
-  whatIsTriggered.emplace("MuRS",theTrigger.Triggered(15));
-  */
-  
-  if( fVerbose ){
-    std::cout << "---------> TRIGGER INPUT CONFIG" << std::endl;
-    for( size_t iTrig = 0; iTrig < fNumTrigInputs; ++iTrig ){
-      std::cout << "Bit: " << iTrig << ", Device: " << fTriggerInputConfigValues.at(fTriggerInputConfigParams.at(iTrig)) << std::endl;
-    }
-  }
 
   if( fVerbose ){
     //Temporary testing
@@ -278,7 +254,7 @@ void TriggerFilterAlg::loadXMLDatabaseTable( int run )
     std::cout << "**************************************************" << std::endl;
   }
   
-
+  
 
   //Specifying the trigger input config labels
   for( size_t iConfig = 0; iConfig < fNumTrigInputs; ++iConfig ){

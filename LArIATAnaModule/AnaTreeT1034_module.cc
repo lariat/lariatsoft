@@ -163,9 +163,11 @@ private:
   double trkpida[kMaxTrack][2];
   double trkke[kMaxTrack][2];
   double trkdedx[kMaxTrack][2][1000];
+  double trkdqdx[kMaxTrack][2][1000];
   double trkrr[kMaxTrack][2][1000];
   double trkpitchhit[kMaxTrack][2][1000]; 
-   
+  double trkxyz[kMaxTrack][2][1000][3];
+
   // === Storing trajectory information for the track ===
   int nTrajPoint[kMaxTrack];			//<---Storing the number of trajectory points
   double pHat0_X[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the x-dir
@@ -237,20 +239,20 @@ private:
   // === Storing Aerogel Counter Information ===
 
   int               nAG;
-  long unsigned int HitTimeStampUSE[kMaxAG]; //<---Pulse time stamp relative to (?) in units of (?)
-  long unsigned int HitTimeStampUSW[kMaxAG];
-  long unsigned int HitTimeStampDS1[kMaxAG];
-  long unsigned int HitTimeStampDS2[kMaxAG];
+  long unsigned int HitTimeStamp1p10_1[kMaxAG]; //<---Pulse time stamp relative to (?) in units of (?)
+  long unsigned int HitTimeStamp1p10_2[kMaxAG];
+  long unsigned int HitTimeStamp1p06_1[kMaxAG];
+  long unsigned int HitTimeStamp1p06_2[kMaxAG];
 
-  float             HitPulseAreaUSE[kMaxAG]; //<---Pulse area in uits of ns*mV(?) for given PMT
-  float             HitPulseAreaUSW[kMaxAG];
-  float             HitPulseAreaDS1[kMaxAG];
-  float             HitPulseAreaDS2[kMaxAG];
+  float             HitPulseArea1p10_1[kMaxAG]; //<---Pulse area in uits of ns*mV(?) for given PMT
+  float             HitPulseArea1p10_2[kMaxAG];
+  float             HitPulseArea1p06_1[kMaxAG];
+  float             HitPulseArea1p06_2[kMaxAG];
 
-  bool              HitExistUSE[kMaxAG];     //<---Boolean of whether or not a pulse has been found for the given PMT
-  bool              HitExistUSW[kMaxAG];
-  bool              HitExistDS1[kMaxAG];
-  bool              HitExistDS2[kMaxAG];
+  bool              HitExist1p10_1[kMaxAG];     //<---Boolean of whether or not a pulse has been found for the given PMT
+  bool              HitExist1p10_2[kMaxAG];
+  bool              HitExist1p06_1[kMaxAG];
+  bool              HitExist1p06_2[kMaxAG];
    
   // === Storing Geant4 MC Truth Information ===
   int no_primaries;				//<---Number of primary Geant4 particles in the event
@@ -990,20 +992,21 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
       for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
 	//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
-	HitTimeStampUSE[agc_counter]=agc[i]->GetHitTimeStampUSE(agc_idx);
-	HitTimeStampUSW[agc_counter]=agc[i]->GetHitTimeStampUSW(agc_idx);
-	HitTimeStampDS1[agc_counter]=agc[i]->GetHitTimeStampDS1(agc_idx);
-	HitTimeStampDS2[agc_counter]=agc[i]->GetHitTimeStampDS2(agc_idx);
+	HitTimeStamp1p10_1[agc_counter]=agc[i]->GetHitTimeStamp1p10_1(agc_idx);
+	HitTimeStamp1p10_2[agc_counter]=agc[i]->GetHitTimeStamp1p10_2(agc_idx);
+	HitTimeStamp1p06_1[agc_counter]=agc[i]->GetHitTimeStamp1p06_1(agc_idx);
+	HitTimeStamp1p06_2[agc_counter]=agc[i]->GetHitTimeStamp1p06_2(agc_idx);
 
-	HitPulseAreaUSE[agc_counter]=agc[i]->GetHitPulseAreaUSE(agc_idx);
-	HitPulseAreaUSW[agc_counter]=agc[i]->GetHitPulseAreaUSW(agc_idx);
-	HitPulseAreaDS1[agc_counter]=agc[i]->GetHitPulseAreaDS1(agc_idx);
-	HitPulseAreaDS2[agc_counter]=agc[i]->GetHitPulseAreaDS2(agc_idx);
+	HitPulseArea1p10_1[agc_counter]=agc[i]->GetHitPulseArea1p10_1(agc_idx);
+	HitPulseArea1p10_2[agc_counter]=agc[i]->GetHitPulseArea1p10_2(agc_idx);
+	HitPulseArea1p06_1[agc_counter]=agc[i]->GetHitPulseArea1p06_1(agc_idx);
+	HitPulseArea1p06_2[agc_counter]=agc[i]->GetHitPulseArea1p06_2(agc_idx);
 
-	HitExistUSE[agc_counter]=agc[i]->GetHitExistUSE(agc_idx);
-	HitExistUSW[agc_counter]=agc[i]->GetHitExistUSW(agc_idx);
-	HitExistDS1[agc_counter]=agc[i]->GetHitExistDS1(agc_idx);
-	HitExistDS2[agc_counter]=agc[i]->GetHitExistDS2(agc_idx);
+	HitExist1p10_1[agc_counter]=agc[i]->GetHitExist1p10_1(agc_idx);
+	HitExist1p10_2[agc_counter]=agc[i]->GetHitExist1p10_2(agc_idx);
+	HitExist1p06_1[agc_counter]=agc[i]->GetHitExist1p06_1(agc_idx);
+	HitExist1p06_2[agc_counter]=agc[i]->GetHitExist1p06_2(agc_idx);
+
 	++agc_counter;
       } // loop over aerogel pulses
 
@@ -1244,12 +1247,16 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  
 		  // ### Recording the dE/dX information for this calo point along the track in this plane ###
 		  trkdedx[i][pl][k] = calos[j]->dEdx()[k];
+		  trkdqdx[i][pl][k] = calos[j]->dQdx()[k];
 	  
 		  // ### Recording the residual range for this calo point along the track in this plane ###
 		  trkrr[i][pl][k] = calos[j]->ResidualRange()[k];
 	  
 		  // ### Recording the pitch of this calo point along the track in this plane ###
 		  trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
+                  trkxyz[i][pl][k][0] = calos[j]->XYZ()[k].X();
+                  trkxyz[i][pl][k][1] = calos[j]->XYZ()[k].Y();
+                  trkxyz[i][pl][k][2] = calos[j]->XYZ()[k].Z();
 		}//<---End calo points (k)
 	  
 	    }//<---End looping over calo points (j)
@@ -1520,8 +1527,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/D");
   fTree->Branch("trkhits",trkhits,"trkhits[ntracks_reco][2]/I");
   fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkdqdx",trkdqdx,"trkdqdx[ntracks_reco][2][1000]/D");
   fTree->Branch("trkrr",trkrr,"trkrr[ntracks_reco][2][1000]/D");
   fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][1000][3]/D");
   fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
   
@@ -1581,18 +1590,18 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
 
   fTree->Branch("nAG", &nAG, "nAG/I");
-  fTree->Branch("HitTimeStampUSE", HitTimeStampUSE, "HitTimeStampUSE[nAG]/D");
-  fTree->Branch("HitTimeStampUSW", HitTimeStampUSW, "HitTimeStampUSW[nAG]/D");
-  fTree->Branch("HitTimeStampDS1", HitTimeStampDS1, "HitTimeStampDS1[nAG]/D");
-  fTree->Branch("HitTimeStampDS2", HitTimeStampDS2, "HitTimeStampDS2[nAG]/D");
-  fTree->Branch("HitPulseAreaUSE", HitPulseAreaUSE, "HitPulseAreaUSE[nAG]/F");
-  fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/F");
-  fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/F");
-  fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/F");
-  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/O");
-  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/O");
-  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/O");
-  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/O");
+  fTree->Branch("HitTimeStamp1p10_1", HitTimeStamp1p10_1, "HitTimeStamp1p10_1[nAG]/D");
+  fTree->Branch("HitTimeStamp1p10_2", HitTimeStamp1p10_2, "HitTimeStamp1p10_2[nAG]/D");
+  fTree->Branch("HitTimeStamp1p06_1", HitTimeStamp1p06_1, "HitTimeStamp1p06_1[nAG]/D");
+  fTree->Branch("HitTimeStamp1p06_2", HitTimeStamp1p06_2, "HitTimeStamp1p06_2[nAG]/D");
+  fTree->Branch("HitPulseArea1p10_1", HitPulseArea1p10_1, "HitPulseArea1p10_1[nAG]/F");
+  fTree->Branch("HitPulseArea1p10_2", HitPulseArea1p10_2, "HitPulseArea1p10_2[nAG]/F");
+  fTree->Branch("HitPulseArea1p06_1", HitPulseArea1p06_1, "HitPulseArea1p06_1[nAG]/F");
+  fTree->Branch("HitPulseArea1p06_2", HitPulseArea1p06_2, "HitPulseArea1p06_2[nAG]/F");
+  fTree->Branch("HitExist1p10_1", HitExist1p10_1, "HitExist1p10_1[nAG]/O");
+  fTree->Branch("HitExist1p10_2", HitExist1p10_2, "HitExist1p10_2[nAG]/O");
+  fTree->Branch("HitExist1p06_1", HitExist1p06_1, "HitExist1p06_1[nAG]/O");
+  fTree->Branch("HitExist1p06_2", HitExist1p06_2, "HitExist1p06_2[nAG]/O");
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
@@ -1746,8 +1755,12 @@ void lariat::AnaTreeT1034::ResetVars()
       trkpida[i][j] = -99999;
       for (int k = 0; k<1000; ++k){
 			trkdedx[i][j][k] = -99999;
+			trkdqdx[i][j][k] = -99999;
 			trkrr[i][j][k] = -99999;
 			trkpitchhit[i][j][k] = -99999;
+			trkxyz[i][j][k][0] = -99999;
+			trkxyz[i][j][k][1] = -99999;
+			trkxyz[i][j][k][2] = -99999;
       }
     }
     trkg4id[i] = -9999;
@@ -1817,20 +1830,20 @@ void lariat::AnaTreeT1034::ResetVars()
   nAG = -99999;
   for (int i = 0; i < kMaxAG; i++)
     {
-      HitTimeStampUSE[i] = -99999;
-      HitTimeStampUSW[i] = -99999;
-      HitTimeStampDS1[i] = -99999;
-      HitTimeStampDS2[i] = -99999;
+      HitTimeStamp1p10_1[i] = -99999;
+      HitTimeStamp1p10_2[i] = -99999;
+      HitTimeStamp1p06_1[i] = -99999;
+      HitTimeStamp1p06_2[i] = -99999;
 
-      HitPulseAreaUSE[i] = -99999;
-      HitPulseAreaUSW[i] = -99999;
-      HitPulseAreaDS1[i] = -99999;
-      HitPulseAreaDS2[i] = -99999;
+      HitPulseArea1p10_1[i] = -99999;
+      HitPulseArea1p10_2[i] = -99999;
+      HitPulseArea1p06_1[i] = -99999;
+      HitPulseArea1p06_2[i] = -99999;
 
-      HitExistUSE[i] = -99999;
-      HitExistUSW[i] = -99999;
-      HitExistDS1[i] = -99999;
-      HitExistDS2[i] = -99999;
+      HitExist1p10_1[i] = -99999;
+      HitExist1p10_2[i] = -99999;
+      HitExist1p06_1[i] = -99999;
+      HitExist1p06_2[i] = -99999;
 
     }//<---End i loop
 

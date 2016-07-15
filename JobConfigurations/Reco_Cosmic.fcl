@@ -15,18 +15,17 @@
 #include "lariatcheckmodules.fcl"
 #include "triggeralgo_service.fcl"
 #include "lariatanamodules.fcl"
-#include "cluster_lariat.fcl"
-#include "showerfindermodules.fcl"
-#include "pandoramodules.fcl"
+#include "lariatfiltermodules.fcl"
+
  
 process_name: Reco2D
 
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "anaTree_histo.root" }
-  TimeTracker:       {}
-  MemoryTracker:     {}
+  TFileService: { fileName: "AnaTree_Cosmic_histo.root" }
+  #Timing:       {}
+  #SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
   #message:      @local::lariat_message_services
   @table::lariat_services
@@ -41,23 +40,6 @@ source:
   maxEvents:  -1        # Number of events to create
 }
 
-
-wcreco: [ wctrack, tof]
-tpcreco: [ caldata,
-           gaushit,
-           linecluster,
-           trajcluster,
-           pandora,
-           showerreco,
-           pmtrack,
-#         pmtracktc,
-           calo,
-           pid,
-           pandoracalo,
-           pandorapid,
-           blurredcluster,
-           emshower
-           ]
 # Define and configure some modules to do work on each event.
 # First modules are defined; they are scheduled later.
 # Modules are grouped by type.
@@ -76,46 +58,48 @@ physics:
   caldata:              @local::lariat_calroi
 
   ### hit-finder producers ###
-  gaushit:             @local::gaus_hitfinder
-  cchit:               @local::standard_clustercrawlerhit
+   gaushit:             @local::gaus_hitfinder
+   cchit:               @local::standard_clustercrawlerhit
 
   ### cluster-finder producers
   linecluster:          @local::standard_linecluster
-  trajcluster:          @local::standard_trajcluster
-  blurredcluster:       @local::standard_blurredcluster
-
-  ### track-finder producers
   costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
-  pmtracktc:            @local::standard_pmalgtrackmaker
   cctrack:              @local::standard_cctrackmaker
   
   ### Shower-Finder producers
-  showerreco:  	 	@local::standard_showerreco3d
-  emshower:             @local::standard_emshower
-
+ showerreco:  	 	@local::standard_showerreco3d
   ### pandora
-  pandora:            @local::standard_pandoraneutrino
 
-  ### calorimetry and pid
+
   calo:                 @local::standard_calodata
   pid:                  @local::standard_chi2pid
-  pandoracalo:          @local::standard_calodata
-  pandorapid:           @local::standard_chi2pid
-
-
  }
+
  analyzers:
 {
  anatree: @local::lariat_anatree
+}
 
+ filters:
+{
+ TrigPattern:		@local::lariat_triggerpattern 
 }
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- reco: [ @sequence::wcreco, @sequence::tpcreco ]
+ reco: [ TrigPattern, 
+	 caldata,
+	 gaushit,
+	 linecluster,
+         showerreco,
+         pmtrack,
+         calo,
+         pid
+          ]
 	  
- ana: [ anatree ]
+	  
+ana: [ anatree ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -138,16 +122,21 @@ outputs:
  {
    module_type: RootOutput
    #fileName:    "%ifb_%tc_reco2D.root"
-   fileName:    "%ifb_Reco2d.root"
+   fileName:    "%ifb_CosmicReco.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1
  }
 }
 
-
 ### Here, we overwrite ALL module labels with the ones defined above.
+###########################################################
+# See RawDataUtilities/TriggerDigitUtility Lines 86 - 111 #
+#              for definition of triggers                 #
+###########################################################
+physics.filters.TrigPattern.TriggerPattern: "<+COSMIC><+COSMICON>"
 
-physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: 	false
+
+#####physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: 	false
 physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.caldata.DodQdxCalib:                          true
 
@@ -194,12 +183,6 @@ physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: -1
 physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  0
 physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
-
-physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipNoSignal: 2
-physics.producers.trajcluster.TrajClusterAlg.HitErrFac: 0.4
-physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.6
-physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:   ["ChainMerge", "MaskHits", "RevProp"]
-
 physics.producers.costrk.ClusterModuleLabel:  "linecluster"
 physics.producers.costrk.VertexModuleLabel:   "linecluster"
 physics.producers.costrk.ClusterMatch.KSCut:  0.5
@@ -208,18 +191,10 @@ physics.producers.pmtrack.HitModuleLabel:     "linecluster"
 physics.producers.pmtrack.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.FlipToBeam: true
 physics.producers.pmtrack.RunVertexing: true
-
-physics.producers.pmtracktc.ClusterModuleLabel: "trajcluster"
-physics.producers.pmtracktc.HitModuleLabel:     "gaushit"
-physics.producers.pmtracktc.MinSeedSize2ndPass: 3
-physics.producers.pmtracktc.FlipToBeam: true
-physics.producers.pmtracktc.RunVertexing: true
-
 physics.producers.cctrack.HitModuleLabel:     "linecluster"
 physics.producers.cctrack.ClusterModuleLabel: "linecluster"
 physics.producers.cctrack.VertexModuleLabel:  "linecluster"
 physics.producers.cctrack.MatchAlgs: 1
-physics.producers.pandora.HitFinderModuleLabel:         "linecluster"
 #physics.producers.pandora.GeantModuleLabel:                     "largeant"
 #physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
 #services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
@@ -233,22 +208,9 @@ physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
 physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
-physics.producers.pandoracalo.TrackModuleLabel:                   "pandora"
-physics.producers.pandoracalo.SpacePointModuleLabel:              "pandora"
-physics.producers.pandoracalo.CaloAlg.CalAreaConstants: [0.0247,0.048]
-physics.producers.pandorapid.CalorimetryModuleLabel:              "pandoracalo"
-physics.producers.pandorapid.TrackModuleLabel:                    "pandora"
-
 physics.producers.showerreco.InputProducer:        "linecluster"
-physics.producers.blurredcluster.HitsModuleLabel:           "linecluster"
-physics.producers.blurredcluster.GlobalTPCRecon:           "false"
-#physics.producers.blurredcluster.CreateDebugPDF:           "true"
-physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
-physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
-physics.producers.blurredcluster.BlurredClusterAlg.ClusterTickDistance: 50
-#### Here we try to suppress known and pointless messages
-physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,0.048]
 
+#### Here we try to suppress known and pointless messages
 services.message.destinations :
 {
   STDCOUT: 

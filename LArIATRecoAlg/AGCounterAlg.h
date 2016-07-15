@@ -50,7 +50,18 @@ public:
   void clear_aerogel();
 
 private:
-  std::vector<int> HitsFinder(raw::AuxDetDigit);
+
+  TH1F* fDer1p06_1;
+  TH1F* fDer1p06_2;
+  TH1F* fDer1p10_1;
+  TH1F* fDer1p10_2;
+
+  TH1F* fPed1p06_1;
+  TH1F* fPed1p06_2;
+  TH1F* fPed1p10_1;
+  TH1F* fPed1p10_2;
+
+  std::vector<int> HitsFinder(std::string const& AuxDetName, raw::AuxDetDigit);
   std::vector<std::vector<int> > HitsTimeMatching(std::vector<int> const&,
                                                   std::vector<int> const&,
                                                   std::vector<int> const&,
@@ -59,10 +70,10 @@ private:
                         long unsigned int const&);
   bool	CheckMatched(std::vector<int> const&);
 
-  std::vector<raw::AuxDetDigit> 		fUSEDigits;
-  std::vector<raw::AuxDetDigit> 		fUSWDigits;
-  std::vector<raw::AuxDetDigit>		 	fDS1Digits;
-  std::vector<raw::AuxDetDigit> 		fDS2Digits;
+  std::vector<raw::AuxDetDigit> AG1p10_1Digits;
+  std::vector<raw::AuxDetDigit> AG1p10_2Digits; 
+  std::vector<raw::AuxDetDigit> AG1p06_1Digits; 
+  std::vector<raw::AuxDetDigit> AG1p06_2Digits; 
   
   std::vector<std::vector<ldp::AGCHits> > fAllHitsInEvent;
   
