@@ -68,6 +68,6 @@ outputs:
  }
 }
 physics.producers.generator.InputFileName:"hepevtTOF.txt"
-services.MagneticField.FieldDescriptions: [{UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet1"} 
+services.MagneticField.FieldDescriptions: [{UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet1"}, 
                                            {UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet2"}]
  
