@@ -6,7 +6,7 @@
 #include "lariatclustermodules.fcl"
 #include "lariattrackfindermodules.fcl"
 #include "clusteralgorithms.fcl"
-# #include "HoughLineFinderT1034.fcl"
+#include "HoughLineFinderT1034.fcl"
 
 # TPC event reconstruction chain
 # GausHit for hit finding, DBCluster for clustering and SpacePoints for 3D tracks
@@ -20,7 +20,7 @@ services:
   Timing:       {}
   SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   RandomNumberGenerator: {} #ART native random number generator
-  @table::lariat_services
+  user:         @local::lariat_services
 }
 
 

@@ -34,14 +34,18 @@ extern "C" {
 #include "lardata/RawData/AuxDetDigit.h"
 #include "lardata/RawData/raw.h"
 #include "lardata/RawData/TriggerData.h"
+#include "RawDataUtilities/FragmentToDigitAlg.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksServiceStandard.h" // special (see below)
 #include "Utilities/SignalShapingServiceT1034.h"
 #include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/AuxDetGeo.h"
+#include "larcore/Geometry/AuxDetGeometry.h"
 #include "larsim/Simulation/sim.h"
 #include "larsim/Simulation/SimChannel.h"
 #include "larsim/Simulation/AuxDetSimChannel.h"
+#include "SimulationBase/MCParticle.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "TMath.h"
@@ -57,6 +61,7 @@ extern "C" {
 
 const int kMaxDet=50;
 const int kMaxIDE=1000;
+const int kMaxPart=1000;
 
 class SimLArIATDigits;
 
@@ -114,6 +119,9 @@ private:
   double TOFangle[kMaxIDE];
   double TrackID[kMaxDet][kMaxIDE]; 
   double Energy[kMaxDet][kMaxIDE]; 
+  int numG4;
+  double G4TrackID[kMaxPart];
+  double ExitTime[kMaxDet][kMaxIDE];
   //double enterx;
   //double entery;
   //double enterz;
@@ -146,10 +154,16 @@ void SimLArIATDigits::produce(art::Event & e)
      const sim::AuxDetSimChannel & aux = *auxiter;
      AuxDetID[iter]=aux.AuxDetID();
      ID=aux.AuxDetID();
+     art::ServiceHandle<geo::Geometry> adGeoServ;
+     geo::AuxDetGeo const& adg=adGeoServ->AuxDet(ID);
+     double centerarray[3]={0.0,0.0,0.0};
+     adg.GetCenter(centerarray,0);
+     std::cout<<"For iter: "<<iter<<" AuxDetID: "<<ID<<" The center is: ["<<centerarray[0]<<", "<<centerarray[1]<<", "<<centerarray[2]<<"]"<<std::endl;
      iterarray[iter]=iter;
      std::vector<sim::AuxDetIDE> SimIDE=aux.AuxDetIDEs();
-     numIDEs[iter]=SimIDE.size();  
-     std::cout<<"For Sim Channel: "<<iter<<", there are "<<SimIDE.size()<<" IDEs. AuxDetID: "<<aux.AuxDetID()<<std::endl;
+     numIDEs[iter]=SimIDE.size(); 
+     std::cout<<"Floor check: "<<floor(2.6)<<" "<<floor(-1.8)<<std::endl; 
+    // std::cout<<"For Sim Channel: "<<iter<<", there are "<<SimIDE.size()<<" IDEs. AuxDetID: "<<aux.AuxDetID()<<std::endl;
      for(size_t nIDE=0; nIDE<SimIDE.size(); ++nIDE){
        sim::AuxDetIDE TheIDE=SimIDE[nIDE];
        entryx[iter][nIDE]=TheIDE.entryX;
@@ -163,6 +177,7 @@ void SimLArIATDigits::produce(art::Event & e)
        exitmomy[iter][nIDE]=TheIDE.exitMomentumY;
        exitmomz[iter][nIDE]=TheIDE.exitMomentumZ;
        Energy[iter][nIDE]=TheIDE.energyDeposited;
+       ExitTime[iter][nIDE]=TheIDE.exitT;
        if(iter==0){
          TOFangle[nIDE]=180/(3.141593)*tan(TheIDE.exitMomentumX/TheIDE.exitMomentumZ);
        } 
@@ -176,6 +191,19 @@ void SimLArIATDigits::produce(art::Event & e)
      }
      ++iter;
    }
+//Get the G4 information
+ art::Handle<std::vector<simb::MCParticle> > g4_part;
+ e.getByLabel(fG4ModuleLabel, g4_part);
+ numG4=(int)g4_part->size();
+ std::cout<<"number of particle :"<<numG4<<std::endl;
+ for(int i =0; i< numG4; ++i)
+ {
+   if(i==1){std::cout<<"I'm looping over the IDs"<<std::endl;}
+   std::cout<<"For entry: "<<i<<" The TrackID is :"<<g4_part->at(i).TrackId()<<"."<<std::endl;
+   G4TrackID[i]=(double)g4_part->at(i).TrackId();
+ }
+ 
+   
 fTree->Fill();  
 }
 
@@ -197,12 +225,12 @@ void SimLArIATDigits::beginJob()
   fTree->Branch("exitmomz",exitmomz,"exitmomz[numSimChannels][1000]/D");
   fTree->Branch("TrackID",TrackID,"TrackID[numSimChannels][1000]/D");
   fTree->Branch("Energy",Energy,"Energy[numSimChannels][1000]/D");
-  //fTree->Branch("enterx",enterx,"enterx/D");
-  //fTree->Branch("entery",entery,"entery/D");
-  //fTree->Branch("enterz",enterz,"enterz/D");
+  fTree->Branch("ExitTime",ExitTime,"Time[numSimChannels][1000]/D");
   fTree->Branch("AuxDetID",AuxDetID,"AuxDetID[numSimChannels]/D");
   fTree->Branch("iterarray",iterarray,"iter[numSimChannels]/I");
   fTree->Branch("TOFangle",TOFangle,"TOFangle[numIDEs]/D");
+  fTree->Branch("numG4",&numG4,"numG4/I");
+  fTree->Branch("G4TrackID",G4TrackID,"G4TrackID[numG4]/D");
   XZHit = tfs->make<TH2D>("XZHit", "XZHit", 1500,-1000,500,1500,-150,150);  
   
   
@@ -210,6 +238,7 @@ void SimLArIATDigits::beginJob()
 void SimLArIATDigits::ResetVars()
 {
   numSimChannels=-9999;
+  numG4=-9999;
   for(int i=0; i<kMaxDet; ++i){
     AuxDetID[i]=-9999;
     iterarray[i]=-9999;
@@ -227,9 +256,14 @@ void SimLArIATDigits::ResetVars()
       TrackID[i][j]=-9999;
       TOFangle[j]=-9999;
       Energy[i][j]=-9999;
+      ExitTime[i][j]=-9999;
     }
   }
+  for(int i=0; i<kMaxPart; ++i){
+    G4TrackID[i]=-9999;
+  }
 }
+
 void SimLArIATDigits::beginRun(art::Run & r)
 {
   // Implementation of optional member function here.

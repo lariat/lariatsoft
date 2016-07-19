@@ -507,8 +507,8 @@ void MichelWfmReco::produce(art::Event & e)
   RunNumber     = (int)e.run();
   SubRunNumber  = (int)e.subRun();
   EventNumber   = (int)e.event();
-  
-  
+ 
+
   // Filter for the MICHEL trigger pattern (note that for some runs, particularly for 
   // those with the optimized Michel trigger setup, unfortunately the trigger inputs 
   // were not being saved and thus the filter won't work).
