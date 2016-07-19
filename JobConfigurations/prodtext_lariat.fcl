@@ -2,7 +2,6 @@
 #include "textfilegen.fcl"
 #include "largeantmodules_lariat.fcl"
 #include "detsimmodules_lariat.fcl"
-#include "magfield.fcl"
 
 process_name: TextGen
 
@@ -69,16 +68,6 @@ outputs:
  }
 }
 physics.producers.generator.InputFileName:"hepevtTOF.txt"
-services.MagneticField.UseField: 1
-services.MagneticField.ConstantField: [ 0.0, .35, 0.0]
-services.MagneticField.MagnetizedVolume: "NDBmagnet1"
-services.message.destinations.debugmsg: {
-   type:      "cout"      #tells the message service to output this destination to cout
-   threshold: "DEBUG"      #tells the message service that this destination applies to INFO and higher level messages
-  append:    true        #says to append all messages to the output
-  categories:{
-    default:        {limit: 5}  #don't print anything at the infomsg level except the explicitly named categories
-     AuxDetReadoutGeometry: {limit: 100 timespan: 60 }
-  }
-}
-
+services.MagneticField.FieldDescriptions: [{UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet1"}, 
+                                           {UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet2"}]
+ 

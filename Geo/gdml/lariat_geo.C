@@ -8,7 +8,7 @@ void lariat_geo(TString volName="volCryostat"){
 gSystem->Load("libGeom");
 gSystem->Load("libGdml");
 
-TGeoManager::Import("lariat_withMagnets.gdml");
+TGeoManager::Import("lariat.gdml");
 
 drawopt optArgoNeuT[] = {
 //   {"volWorld",                 0},

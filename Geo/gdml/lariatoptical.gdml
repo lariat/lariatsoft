@@ -19,6 +19,13 @@
     <position name="volInnerSteelTube_736involCryostatpos" x="0" y="0" z="0" unit="cm"/>
     <position name="volArgonTubeMinusTPC_737involCryostatpos" x="0" y="0" z="0" unit="cm"/>
     <position name="volTPCActive_719involTPCpos" x="-0.035" y="0" z="0" unit="cm"/>
+        <!-- tpb thickness 2013 JINST 8 C10002 - surface density, and wikipedia.org - density f, and refs therein -->
+    <position name="center" unit="cm" x="0.0" y="0.0" z="0.0"/>
+    <position name="voltpb1involTPCActivepos" unit="cm" x="0.0" y="-19.98565" z="-2.88"/>
+    <position name="voltpb2involTPCActivepos" unit="cm" x="0.0" y="19.98565" z="-2.88"/>
+    <position name="volcathinvolTPCActivepos" unit="cm" x="22.98565" y="0.0" z="0.0"/>
+    <position name="voltpb5involTPCActivepos" unit="cm" x="0.0" y="0.0" z="-44.98565"/>
+    <position name="voltpb6involTPCActivepos" unit="cm" x="0.0" y="0.0" z="44.98565"/>
     <position name="volTPCWidthFace_720involTPCpos" x="-0.035" y="20.635" z="0" unit="cm"/>
     <position name="volTPCWidthFace_721involTPCpos" x="-0.035" y="-20.635" z="0" unit="cm"/>
     <position name="volTPCLengthFace_722involTPCpos" x="-0.035" y="0" z="45.635" unit="cm"/>
@@ -1361,6 +1368,7 @@
     <element name="aluminum_elm" formula="Al" Z="13">
       <atom unit="g/mole" value="26.9815"/>
     </element>
+    <element name="cuprum_elm" formula="Cu" Z="29"> <atom value="63.54"/> </element>
     <material name="ALUMINUM_Al">
       <D unit="g/cm3" value="2.699"/>
       <fraction n="1" ref="aluminum_elm"/>
@@ -1551,6 +1559,17 @@
       <fraction n="0.52999997139" ref="oxygen_elm"/>
       <fraction n="0.335000008345" ref="silicon_elm"/>
       <fraction n="0.0149999996647" ref="sodium_elm"/>
+    </material>
+    <material name="vm2000" formula="vm2000">
+
+     <D unit="g/cm3" value="1.2"/>
+     <fraction n="0.857" ref="carbon_elm"/>
+     <fraction n="0.143" ref="hydrogen_elm"/>
+    </material>
+
+    <material name="Copper" formula="Cu">
+     <D unit="g/cm3" value="8.92"/>
+     <fraction n="1" ref="cuprum_elm"/>
     </material>
     <material name="Water">
       <D unit="g/cm3" value="1"/>
@@ -1782,6 +1801,22 @@
       <position name="OuterSteelTubeOuter_flangepos" x="-51.34" y="0" z="0" unit="cm"/>
       <rotation name="OuterSteelTubeOuter_flangerot" x="-0" y="-90" z="0" unit="deg"/>
     </union>
+    
+    <!-- addapted "fake shifter" approach proposed by F. di Pompeo in his PhD Thesis "Optical characterization and GEANT4 simulation of the light collection system for the WArP 100 liters detector: analysis of the event reconstruction capability" -->
+   <box name="refl1"     x="43.18"  y="0.025" z="84.24"  lunit="cm"/>
+   <box name="refl2"     x="43.18"  y="0.025" z="84.24"  lunit="cm"/>
+   <box name="refl3"     x="0.025"  y="40.0" z="45.0"  lunit="cm"/>
+   <box name="refl4"     x="0.025"  y="40.0" z="45.0"  lunit="cm"/>
+   <box name="refl5"     x="43.18"  y="40.0" z="0.025"  lunit="cm"/>
+   <box name="refl6"     x="43.18"  y="40.0" z="0.025"  lunit="cm"/>
+
+   <box name="tpb1"     x="43.18"  y="0.02870" z="84.24"  lunit="cm"/>
+   <box name="tpb2"     x="43.18"  y="0.02870" z="84.24"  lunit="cm"/>
+   <box name="tpb3"     x="0.02870"  y="40.0" z="45.0"  lunit="cm"/>
+   <box name="tpb4"     x="0.02870"  y="40.0" z="45.0"  lunit="cm"/>
+   <box name="tpb5"     x="43.18"  y="40.0" z="0.02870"  lunit="cm"/>
+   <box name="tpb6"     x="43.18"  y="40.0" z="0.02870"  lunit="cm"/>
+    
     <box name="HolderCut" x="15" y="15" z="2" lunit="cm"/>
     <subtraction name="PMTHolder_bottom_ph1">
       <first ref="NozzlePlate"/>
@@ -2186,11 +2221,7 @@
     </xtru>
     <tube name="HaloHole" rmin="0" rmax="6.5" z="1.5" startphi="0" deltaphi="360" aunit="deg" lunit="cm"/>
     <box name="volAuxDetTOFUS0x1" x="15" y="15" z="5.08" lunit="cm"/>
-    <box name="MWPC1" x="300" y="300" z="20" lunit="cm"/>
-    <box name="volAuxDetDet" x="12.8" y="12.5" z="2.5" lunit="cm"/>
-    <box name="MWPC2" x="300" y="300" z="20" lunit="cm"/>
-    <box name="MWPC3" x="300" y="300" z="20" lunit="cm"/>
-    <box name="MWPC4" x="300" y="300" z="20" lunit="cm"/>
+    <box name="volAuxDetDet" x="12.8" y="12.8" z="2.5" lunit="cm"/>
     <box name="volAuxDetHalo0" x="39" y="38" z="1" lunit="cm"/>
     <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="5.08" lunit="cm"/>
     <box name="PunchPaddles" x="31" y="101" z="5" lunit="cm"/>
@@ -2229,6 +2260,94 @@
       <materialref ref="bialkali"/>
       <solidref ref="PMTEtlWindow_e"/>
     </volume>
+    
+    
+    <!--TPB sheets!!!!-->
+
+<volume name="volrefl1">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl1"/>
+ </volume>
+
+
+<volume name="volrefl2">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl2"/>
+ </volume>
+     
+<volume name="volrefl3">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl3"/>
+ </volume>
+    
+<volume name="volrefl4">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl4"/>
+ </volume>
+     
+<volume name="volrefl5">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl5"/>
+ </volume>
+
+<volume name="volrefl6">
+  <materialref ref="vm2000"/>
+  <solidref ref="refl6"/>
+ </volume>
+     
+<volume name="voltpb1">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb1"/>
+<physvol>
+<volumeref ref="volrefl1"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="voltpb2">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb2"/>
+<physvol>
+<volumeref ref="volrefl2"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="voltpb3">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb3"/>
+<physvol>
+<volumeref ref="volrefl3"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="volcath">
+  <materialref ref="Copper"/>
+  <solidref ref="tpb4"/>
+ </volume>
+
+
+<volume name="voltpb5">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb5"/>
+<physvol>
+<volumeref ref="volrefl5"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+<volume name="voltpb6">
+  <materialref ref="TPB"/>
+  <solidref ref="tpb6"/>
+<physvol>
+<volumeref ref="volrefl6"/>
+   <positionref  ref="center" />
+ </physvol>
+ </volume>
+
+    
+    
     <volume name="volPMTHolder">
       <materialref ref="G10"/>
       <solidref ref="PMTHolder"/>
@@ -2260,6 +2379,34 @@
     <volume name="volTPCActive">
       <materialref ref="LAr"/>
       <solidref ref="TPCActive"/>
+     <!-- bottom sheet -->
+		<physvol>
+			<volumeref ref="voltpb1"/>
+			<positionref  ref="voltpb1involTPCActivepos" />
+		</physvol>
+     <!-- top sheet -->
+		<physvol>
+			<volumeref ref="voltpb2"/>
+			<positionref  ref="voltpb2involTPCActivepos" />
+		</physvol>
+
+
+    <!--cathode copper sheet -->
+		<physvol>
+			<volumeref ref="volcath"/>
+			<positionref  ref="volcathinvolTPCActivepos" />
+		</physvol>
+		<physvol>
+			<volumeref ref="voltpb5"/>
+			<positionref  ref="voltpb5involTPCActivepos" />
+		</physvol>
+
+		<physvol>
+			<volumeref ref="voltpb6"/>
+			<positionref  ref="voltpb6involTPCActivepos" />
+		</physvol>
+  
+      
     </volume>
     <volume name="volTPCWidthFace">
       <materialref ref="G10"/>
