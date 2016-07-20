@@ -177,6 +177,10 @@ private:
   double trjPt_Y[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Y
   double trjPt_Z[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Z
 
+
+  std::vector<int>    InteractionPoint;         //<---Geant 4 Primary Trj Point Corresponding to the Interaction
+  std::vector<int>    InteractionPointType;     //<---Geant 4 Primary Interaction Type
+
   // === Geant information for reconstruction track
   int trkg4id[kMaxHits];         //<---geant track id for the track
 
@@ -618,7 +622,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // #######################################################
       if (mcshowerh.isValid())
 	{
-	 
 	  //std::cout<<mcshowerh->size()<<std::endl;
 	  no_mcshowers = mcshowerh->size();
 	  size_t shwr = 0;
@@ -631,8 +634,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	      const sim::MCShower& mcshwr = *imcshwr;
 	    
 	      mcshwr_origin[shwr]          = mcshwr.Origin();
-	      mcshwr_pdg[shwr]              = mcshwr.PdgCode();
-	      mcshwr_TrackId[shwr]              = mcshwr.TrackID();
+	      mcshwr_pdg[shwr]             = mcshwr.PdgCode();
+	      mcshwr_TrackId[shwr]         = mcshwr.TrackID();
 	      mcshwr_startX[shwr]          = mcshwr.Start().X();
 	      mcshwr_startY[shwr]          = mcshwr.Start().Y();
 	      mcshwr_startZ[shwr]          = mcshwr.Start().Z();
@@ -772,7 +775,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       geant_list_size=geant_particle;
        
       // ### Looping over all the Geant4 particles ###
-		int iPrim = 0;
+      int iPrim = 0;
       for( unsigned int i = 0; i < geant_part.size(); ++i )
          {
    
@@ -887,6 +890,109 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    MidPz[iPrim][iPrimPt] = truetraj.Pz(iPrimPt);
 	    iPrimPt++;
 	    }//<--End loop on true trajectory points
+	 
+
+	 	   // Yet an other scheme for interaction type
+	             
+	   // ### Recording the process as a integer ###
+	   // 0 = NoInteractionNodaughters, thought going
+	   // 1 = PionMinusInelastic
+	   // 2 = NeutronInelastic
+	   // 3 = hadElastic
+	   // 4 = nCapture
+	   // 5 = CHIPSNuclearCaptureAtRest
+	   // 6 = Decay
+	   // 7 = KaonZeroLInelastic
+	   // 8 = CoulombScat
+	   // 9 = muMinusCaptureAtRest
+	   //10 = ProtonInelastic
+	   //11 = Kaon+Inelastic
+	   //12 = Kaon-Inelastic 
+	   //13 = protonInelastic
+	   //14 = Pi+Inelastic 
+
+
+	   auto thisTracjectoryProcessMap =  truetraj.TrajectoryProcesses();
+	   
+	   // Ok, if the size of the map is 0, all the action might happen at the end of the track
+	   // So we check the daugthers:
+	   //    - Case 1. There are daugthers:
+	   //               * The interesting point is the last one
+	   //               * The interaction type is the one that created the first daugther (this might be improved)
+	   //    - Case 2. There are NO daugthers:
+	   //              * We assign the interaction type to be 0: nothing happens, thought going particle
+	   //              * The interesting point is the last one (might not be in the TPC)
+	   if (!thisTracjectoryProcessMap.size())
+	     {
+	       int interestingPoint = (int) (NTrTrajPts[i] - 1);
+	       InteractionPoint.push_back(interestingPoint);
+
+	       if (NumberDaughters[i])
+		 {		 
+		   auto thePrimaryDaughterID = geant_part[i]-> Daughter(0); 
+		   for( unsigned int iD = 0; iD < geant_part.size(); ++iD )
+		     {
+		       if (geant_part[iD]->TrackId() == thePrimaryDaughterID) 
+			 {		      
+			   if(geant_part[iD]->Process() == PionMinusInelastic)
+			     {InteractionPointType.push_back(1);}
+			   
+			   if(geant_part[iD]->Process() == NeutronInelastic)
+			     {InteractionPointType.push_back(2);}
+			   
+			   if(geant_part[iD]->Process() == hadElastic)
+			     {InteractionPointType.push_back(3);}
+			   
+			   if(geant_part[iD]->Process() == nCapture)
+			     {InteractionPointType.push_back(4);}
+			   
+			   if(geant_part[iD]->Process() == CHIPSNuclearCaptureAtRest)
+			     {InteractionPointType.push_back(5);}
+			   
+			   if(geant_part[iD]->Process() == Decay)
+			     {InteractionPointType.push_back(6);}
+			   
+			   if(geant_part[iD]->Process() == KaonZeroLInelastic)
+			     {InteractionPointType.push_back(7);}
+			   
+			   if(geant_part[iD]->Process() == CoulombScat)
+			     {InteractionPointType.push_back(8);}
+			   
+			   if(geant_part[iD]->Process() == muMinusCaptureAtRest)
+			     {InteractionPointType.push_back(9);}
+			   
+			   if(geant_part[iD]->Process() == ProtonInelastic)
+			     {InteractionPointType.push_back(10);}
+			   
+			   if(geant_part[iD]->Process() == KaonPlusInelastic)
+			     {InteractionPointType.push_back(11);}
+			   
+			   if(geant_part[iD]->Process() == hBertiniCaptureAtRest)
+			     {InteractionPointType.push_back(12);}
+			 }
+		     }
+		 }else
+		 {
+		   InteractionPointType.push_back(0);              
+		 }
+	     }else
+	     {
+	       // The map is not zero: somthing interesting might happen in the middle of the track!!
+	       for(auto const& couple: thisTracjectoryProcessMap) 
+		 {
+		   int interestingPoint = (int) couple.first;
+		   InteractionPoint.push_back(interestingPoint);         	   
+		   if ((truetraj.KeyToProcess(couple.second)).find("hadElastic")!= std::string::npos) InteractionPointType.push_back(3);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("pi-Inelastic")    != std::string::npos) InteractionPointType.push_back(1);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("pi+Inelastic")    != std::string::npos) InteractionPointType.push_back(14);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("kaon-Inelastic")  != std::string::npos) InteractionPointType.push_back(12);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("kaon+Inelastic")  != std::string::npos) InteractionPointType.push_back(11);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("protonInelastic") != std::string::npos) InteractionPointType.push_back(13);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("neutronInelastic")!= std::string::npos) InteractionPointType.push_back(2);           
+
+		 }
+	     }	
+   
 	 iPrim++;
 	}//<--End if primary
      }//<--End loop on geant particles
@@ -1635,6 +1741,9 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][5000]/D");
   fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][5000]/D");
   fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][5000]/D");
+  fTree->Branch("InteractionPoint"         ,&InteractionPoint         );
+  fTree->Branch("InteractionPointType"     ,&InteractionPointType     );
+
 
   fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
   fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
@@ -1697,6 +1806,9 @@ void lariat::AnaTreeT1034::ResetVars()
 {
   G4Process.clear();
   G4FinalProcess.clear();
+
+  InteractionPoint.clear();
+  InteractionPointType.clear();
 
   run = -99999;
   subrun = -99999;

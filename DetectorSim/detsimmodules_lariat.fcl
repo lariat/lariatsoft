@@ -30,6 +30,12 @@ lariat_simwireana:
 
 }
 
+lariat_SimDigit:
+{
+  module_type:       "SimLArIATDigits"
+  G4ModuleLabel:     "largeant"
+}
+  
 lariat_wienerfilterana: @local::standard_wienerfilterana
 
 END_PROLOG

@@ -18,7 +18,7 @@ art_make(BASENAME_ONLY
 			  lardata_RecoBase
 			  lardata_RecoBaseArt
 			  lardata_Utilities
-			  
+			  larcore_Geometry_AuxDetGeometry_service
                           
 			  larsim_RandomUtils_LArSeedService_service
 			  ${SIMULATIONBASE}
