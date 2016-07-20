@@ -25,7 +25,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
@@ -36,7 +36,7 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
 //LArSoft includes
-#include "lardata/RawData/TriggerData.h"
+#include "lardataobj/RawData/TriggerData.h"
 
 //LArIATSoft includes
 #include "Utilities/DatabaseUtilityT1034.h"

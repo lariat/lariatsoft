@@ -22,10 +22,10 @@
 #include "cetlib/exception.h"
 
 // LArSoft includes
-#include "lardata/RawData/AuxDetDigit.h"
-#include "lardata/RawData/OpDetPulse.h"
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RawData/TriggerData.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
+#include "lardataobj/RawData/OpDetPulse.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/TriggerData.h"
 
 // LArIATSoft includes
 #include "LArIATRecoAlg/TOFBuilderAlg.h"

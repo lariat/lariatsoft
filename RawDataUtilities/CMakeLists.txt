@@ -10,14 +10,14 @@ include_directories( $ENV{POSTGRESQL_INC}                      )
 
 art_make(BASENAME_ONLY
          LIBRARY_NAME     RawDataUtilities
-         LIB_LIBRARIES    lardata_RawData
+         LIB_LIBRARIES    lardataobj_RawData
                           LariatFragments
                           DatabaseUtilityT1034_service
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}
-                          ${ART_PERSISTENCY_COMMON}
-                          ${ART_PERSISTENCY_PROVENANCE}
-                          ${ART_UTILITIES}
+                          art_Persistency_Common canvas_Persistency_Common
+                          art_Persistency_Provenance canvas_Persistency_Provenance
+                          art_Utilities canvas_Utilities
                           ${MF_MESSAGELOGGER}
                           ${MF_UTILITIES}
                           ${CETLIB}
@@ -29,13 +29,13 @@ art_make(BASENAME_ONLY
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
                           ${FHICLCPP}
-         DICT_LIBRARIES   lardata_RawData
-                          larcore_SummaryData
-         SOURCE_LIBRARIES lardata_RawData
+         DICT_LIBRARIES   lardataobj_RawData
+                          larcoreobj_SummaryData
+         SOURCE_LIBRARIES lardataobj_RawData
                           lardata_Utilities
                           LariatFragments
                           LArIATDataProducts
-                          larcore_SummaryData
+                          larcoreobj_SummaryData
                           RawDataUtilities
                           DatabaseUtilityT1034_service
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -45,8 +45,8 @@ art_make(BASENAME_ONLY
                           ${ART_FRAMEWORK_IO_ROOT}
                           ${MF_MESSAGELOGGER}
                           ${ROOT_BASIC_LIB_LIST}
-         MODULE_LIBRARIES lardata_RawData
-                          larcore_SummaryData
+         MODULE_LIBRARIES lardataobj_RawData
+                          larcoreobj_SummaryData
                           larcore_Geometry_Geometry_service
                           LariatFragments
                           RawDataUtilities
@@ -55,9 +55,9 @@ art_make(BASENAME_ONLY
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                          ${ART_PERSISTENCY_COMMON}
-                          ${ART_PERSISTENCY_PROVENANCE}
-                          ${ART_UTILITIES}
+                          art_Persistency_Common canvas_Persistency_Common
+                          art_Persistency_Provenance canvas_Persistency_Provenance
+                          art_Utilities canvas_Utilities
                           ${MF_MESSAGELOGGER}
                           ${MF_UTILITIES}
                           ${FHICLCPP}

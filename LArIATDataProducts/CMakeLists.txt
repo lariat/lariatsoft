@@ -6,17 +6,17 @@ include_directories( $ENV{LARCORE_INC}          	       )
 
 art_make(BASENAME_ONLY
          LIBRARY_NAME     LArIATDataProducts
-	 LIB_LIBRARIES    lardata_RawData
+	 LIB_LIBRARIES    lardataobj_RawData
 			  ${ART_FRAMEWORK_CORE}
 			  ${ART_FRAMEWORK_PRINCIPAL}
-			  ${ART_PERSISTENCY_COMMON}
-			  ${ART_PERSISTENCY_PROVENANCE}
-			  ${ART_UTILITIES}
+			  art_Persistency_Common canvas_Persistency_Common
+			  art_Persistency_Provenance canvas_Persistency_Provenance
+			  art_Utilities canvas_Utilities
 			  ${MF_MESSAGELOGGER}
 			  ${MF_UTILITIES}
 			  ${CETLIB}
 			  ${ROOT_BASIC_LIB_LIST}
-         DICT_LIBRARIES   lardata_RawData
+         DICT_LIBRARIES   lardataobj_RawData
 )
 
 

@@ -4,7 +4,7 @@ art_make( NO_PLUGINS
           LIBRARY_NAME  LArIATDataProviders
           LIB_LIBRARIES
   	                wda
-	                IFDatabase
+	                nutools_IFDatabase
                         larcore_Geometry
                         ${MF_MESSAGELOGGER}
                         ${MF_UTILITIES}
