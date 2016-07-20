@@ -17,9 +17,9 @@
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/TPCGeo.h"
 #include "larcore/Geometry/PlaneGeo.h"
-#include "larcore/SimpleTypesAndConstants/PhysicalConstants.h"
+#include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 
-#include "IFDatabase/Table.h"
+#include "nutools/IFDatabase/Table.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Art includes

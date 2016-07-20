@@ -26,7 +26,7 @@
 
 // LAR/LARIAT-SOFT
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/RawData/AuxDetDigit.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
 
 #include "LArIATDataProducts/AGCounter.h"
 

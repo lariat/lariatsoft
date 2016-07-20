@@ -7,7 +7,7 @@
 
 // LArSoft includes
 #include "Utilities/DetectorPropertiesServiceLArIAT.h"
-#include "lardata/DetectorInfo/LArProperties.h"
+#include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/TPCGeo.h"

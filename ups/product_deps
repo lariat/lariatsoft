@@ -1,7 +1,7 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v05_15_01
-defaultqual	e9
+parent	lariatsoft v06_00_00
+defaultqual	e10
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
 # to the search path in development environment
@@ -11,21 +11,20 @@ gdmldir product_dir gdml
 # dependencies on external packages
 product         version
 
-larsoft		      v05_15_01
+larsoft		v06_00_00
 LariatFilters   v01_02
-lariatfragments v01_07_04
-artdaq_core     v1_04_28
+lariatfragments v06_00_00
+artdaq_core     v1_05_01
 LariatBeamFiles v01_00		-	optional
-lariatutil	    v01_26_17 -	optional
-cetbuildtools   v4_19_04	-	only_for_build
+lariatutil	v06_00_00 	-	optional
+cetbuildtools   v5_02_02	-	only_for_build
 end_product_list
 
-# e9  - with gcc 4.9.2 and -std=c++11
-qualifier larsoft	  LariatFilters	lariatfragments	  artdaq_core	      LariatBeamFiles	lariatutil	notes
-e9:debug	e9:debug	-nq-	       	e9:debug	        e9:nu:s30:debug   -nq-		        e9:debug
-e9:opt		e9:opt	  -nq-		      e9:opt		        e9:nu:s30:opt	    -nq-		        e9:opt
-e9:prof		e9:prof	  -nq-		      e9:prof		        e9:nu:s30:prof    -nq-		        e9:prof
-
+# e10  with gcc 4.9.2 and -std=c++11
+qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	    LariatBeamFiles	lariatutil	notes
+e10:debug	e10:debug -nq-		e10:debug	 e10:nu:s36:debug  -nq-		        e10:debug
+e10:opt		e10:opt	  -nq-		e10:opt		 e10:nu:s36:opt	   -nq-		        e10:opt
+e10:prof	e10:prof  -nq-		e10:prof	 e10:nu:s36:prof   -nq-		        e10:prof
 end_qualifier_list
 
 # table file fragment to set FW_DATA
@@ -35,7 +34,7 @@ table_fragment_begin
     pathPrepend(FHICL_FILE_PATH,      .)
     envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
     envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
-    envSet(ART_WORKBOOK_QUAL,         "s30:e9")
+    envSet(ART_WORKBOOK_QUAL,         "s36:e10")
     envSet(LARIATDBNAME,              lariat_prd)
     envSet(LARIATDBPORT,              5443)
     envSet(LARIATDBHOST,              ifdbprod2.fnal.gov)

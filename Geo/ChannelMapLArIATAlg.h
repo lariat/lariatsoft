@@ -11,8 +11,8 @@
 #include <vector>
 #include <set>
 
-#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
-#include "larcore/SimpleTypesAndConstants/geo_types.h"
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "larcore/Geometry/ChannelMapAlg.h"
 #include "Geo/GeoObjectSorterLArIAT.h"
 #include "fhiclcpp/ParameterSet.h"

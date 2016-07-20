@@ -23,12 +23,12 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // nutools includes
-#include "SimulationBase/MCTruth.h"
-#include "SimulationBase/MCParticle.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
+#include "nusimdata/SimulationBase/MCParticle.h"
 
 // lar includes
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/SummaryData/RunData.h"
+#include "larcoreobj/SummaryData/RunData.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "TVector3.h"
@@ -199,7 +199,7 @@ void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
     bool fUseTrigger; 
   
     
-    ifstream *fMuonFile;
+    std::ifstream *fMuonFile;
     TFile *fMuonFileR;
     TTree *TNtuple;
     TTree *TNtupleSmall;
