@@ -44,7 +44,7 @@ extern "C" {
 #include "larsimobj/Simulation/sim.h"
 #include "larsimobj/Simulation/SimChannel.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "larsim/Simulation/AuxDetSimChannel.h"
+#include "larsimobj/Simulation/AuxDetSimChannel.h"
 #include "TMath.h"
 #include "TComplex.h"
 #include "TString.h"
