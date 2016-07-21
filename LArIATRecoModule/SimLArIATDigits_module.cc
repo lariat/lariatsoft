@@ -181,7 +181,15 @@ void SimLArIATDigits::produce(art::Event & e)
        if(iter==0){
          TOFangle[nIDE]=180/(3.141593)*tan(TheIDE.exitMomentumX/TheIDE.exitMomentumZ);
        } 
-        if(ID == 0 || ID == 6){std::cout<<"Let's take a look on this TOF Detector! Energy Depoisted:"<< Energy[iter][nIDE] <<std::endl;}
+        if(ID == 0 || ID == 6)
+        {std::cout<<"Let's take a look on this TOF Detector! Energy Depoisted:"<< Energy[iter][nIDE]<<std::endl;
+	 switch(ID){
+
+   
+	  
+   	 }
+
+        }
        //std::cout<<"ID: "<<ID<<" nIDE: "<<nIDE<<" Total IDEs: "<<SimIDE.size()<<std::endl;
 
        //enterx=TheIDE.entryX;

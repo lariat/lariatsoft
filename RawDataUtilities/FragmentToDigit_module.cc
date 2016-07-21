@@ -1454,6 +1454,8 @@ void FragmentToDigit::caenFragmentToAuxDetDigits(std::vector<CAENFragment>     c
 						<< " is beyond the scope of the waveform vector";
       
       std::vector<short> waveForm(frag.waveForms[ch].data.begin(), frag.waveForms[ch].data.end());
+
+      //if(detName == "USTOF" || detName == "DSTOF"){std::cout<<detName<<" Channel "<<ch<<" Ch Offset "<<chanOffset<<std::endl;}
 	
       // place the AuxDetDigit in the vector
       auxDetDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short> (ch - chanOffset),

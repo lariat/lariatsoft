@@ -36,7 +36,8 @@ physics:
  {
    generator: @local::standard_textfilegen
    largeant:  @local::lariat_largeant	  
-   daq:       @local::lariat_simwire  	  
+   #daq:       @local::lariat_simwire
+   daq:    @local::lariat_tofsim  	  
    rns:       { module_type: "RandomNumberSaver" }
  }
 
@@ -67,7 +68,7 @@ outputs:
    fileName:    "text_gen.root" #default file name, can override from command line with -o or --output
  }
 }
-physics.producers.generator.InputFileName:"hepevtTOF.txt"
+physics.producers.generator.InputFileName:"/pnfs/lariat/scratch/users/lmendes/MCdata/hepevtTOF.txt"
 services.MagneticField.FieldDescriptions: [{UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet1"}, 
                                            {UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet2"}]
  

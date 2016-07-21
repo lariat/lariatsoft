@@ -169,7 +169,7 @@ for systname,syst in detsysts.iteritems():
 if keepitlocal:
     outfile = ROOT.TFile("MergedAt"+starterTree+infilename,"RECREATE")
 else:
-    outfile = ROOT.TFile("/lariat/data/users/MYUSERNAME/MergedAt"+starterTree+infilename,"RECREATE")
+    outfile = ROOT.TFile("/lariat/data/users/lmendes/MergedAt"+starterTree+infilename,"RECREATE")
 
 newTree = ROOT.TTree("EventTree","EventTree")
 ## Two important branches to include:
@@ -249,6 +249,6 @@ outfile.Close()
 #-------------- /Final Beam --------------------#
 
 infile.Close()
-if not keepitlocal: commands.getoutput("ln -s /lariat/data/users/MYUSERNAME/MergedAt"+starterTree+infilename+" MergedAt"+starterTree+infilename)
+if not keepitlocal: commands.getoutput("ln -s /lariat/data/users/lmendes/MergedAt"+starterTree+infilename+" MergedAt"+starterTree+infilename)
 print "Here ya go: ",
 commands.getoutput("ls -ltra MergedAt"+starterTree+infilename)
