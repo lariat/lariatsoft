@@ -20,7 +20,7 @@
 
 //Framework includes
 #include "fhiclcpp/ParameterSet.h"
-#include "art/Persistency/Provenance/EventID.h"
+#include "canvas/Persistency/Provenance/EventID.h"
 #include "art/Framework/Principal/RunPrincipal.h"
 #include "art/Framework/Principal/Run.h"
 

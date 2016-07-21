@@ -16,14 +16,14 @@
 #include "LArIATFragments/WUTFragment.h"
 #include "LArIATFragments/CAENFragment.h"
 #include "LArIATFragments/V1495Fragment.h"
-#include "larcore/SimpleTypesAndConstants/RawTypes.h"
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h"
 #include "Utilities/DatabaseUtilityT1034.h"
 
 // LArSoft
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RawData/AuxDetDigit.h"
-#include "lardata/RawData/OpDetPulse.h"
-#include "lardata/RawData/TriggerData.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
+#include "lardataobj/RawData/OpDetPulse.h"
+#include "lardataobj/RawData/TriggerData.h"
 
 #include "RawDataUtilities/FragmentToDigitAlg.h"
 

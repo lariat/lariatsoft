@@ -23,8 +23,8 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/RawData/AuxDetDigit.h"
-#include "lardata/RawData/OpDetPulse.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
+#include "lardataobj/RawData/OpDetPulse.h"
 
 //ROOT
 #include <TH1F.h>

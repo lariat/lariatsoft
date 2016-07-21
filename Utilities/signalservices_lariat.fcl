@@ -46,7 +46,7 @@ lariat_signalshapingservice:
   IndFilter: "(x>0.)*[0]*(1-1/(1+exp(-(x-[1])/[2])))*(1/(1+exp(-(x-[3])/[4])))"
   IndFilterParams: [2, 0.25, 0.02, 0.025, 0.005]
   
-  #IndFilter:       "(x>0.0)*gaus*exp(-0.5*pow(x/[3],[4]))"
+  #IndFilter:       "(x>0.0)*gaus(0)*exp(-0.5*pow(x/[3],[4]))"
   #IndFilterParams: [ 1.74, 1.46, 1., 0.23, 4.89 ]
   
   # IndVFilterParams: [ .454, 0.0, 0.1875, 0.25, 8.0 ]

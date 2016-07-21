@@ -11,7 +11,7 @@
 
 // ART Framework Includes
 #include "art/Framework/Principal/Handle.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
 
