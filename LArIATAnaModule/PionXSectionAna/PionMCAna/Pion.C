@@ -908,10 +908,7 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
 	 }//<---End matching
       
       }//<---End bb loop
-   
-   if(!MC_TPCMatch || nDeltaMatch < 1 || nDeltaMatch > 1){continue;}
-   nEvtsMCTrackMatch++;
-   
+      
    // =============================================================================================================
    // 				Cutting on the Alpha Angle between MC and Reco Track
    // =============================================================================================================
@@ -959,8 +956,14 @@ for (Long64_t jentry=0; jentry<nentries;jentry++)
    // #############################################################
    // ### Skipping the event if there is no good match in alpha ###
    // #############################################################
-   if(!AlphaMatch){continue;}
+   //if(!AlphaMatch){continue;}
+   
+   
+   if( (!MC_TPCMatch || nDeltaMatch < 1 || nDeltaMatch > 1) && !AlphaMatch){continue;}
+   nEvtsMCTrackMatch++;
    nEventsPassingAlpha++;
+   
+   
    
    
    

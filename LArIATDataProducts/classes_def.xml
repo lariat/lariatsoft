@@ -33,7 +33,8 @@
  <class name="art::Wrapper<ldp::AGCounter>"/>
  <class name="art::Wrapper<std::vector<ldp::AGCounter> >"/>
 
- <class name="ldp::AGCHits" ClassVersion="11">
+ <class name="ldp::AGCHits" ClassVersion="12">
+  <version ClassVersion="12" checksum="3312839912"/>
   <version ClassVersion="11" checksum="3334039317"/>
   <version ClassVersion="10" checksum="3982642565"/>
  </class>
@@ -56,8 +57,9 @@
  <class name="art::Wrapper<art::Assns<raw::Trigger,     ldp::TOF,         void> >"/>
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,         void> >"/>
 
- <class name="ldp::WCTrack" ClassVersion="15">
-  <version ClassVersion="15" checksum="1204438332"/>
+ <class name="ldp::WCTrack" ClassVersion="16">
+  <version ClassVersion="16" checksum="1204438332"/>
+  <version ClassVersion="15" checksum="368485909"/>
   <version ClassVersion="14" checksum="2941599526"/>
   <version ClassVersion="13" checksum="368485909"/>
   <version ClassVersion="12" checksum="4258999282"/>
@@ -94,7 +96,8 @@
  <class name="art::Wrapper<ldp::ConditionsSummary>"/>
  
 
-  <class name="ldp::Edge" ClassVersion="12">
+  <class name="ldp::Edge" ClassVersion="13">
+   <version ClassVersion="13" checksum="1733205241"/>
   <version ClassVersion="12" checksum="1464557753"/>
   <version ClassVersion="11" checksum="167827337"/>
   <version ClassVersion="10" checksum="4212739596"/>

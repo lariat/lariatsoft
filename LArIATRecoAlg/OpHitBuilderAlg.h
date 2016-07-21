@@ -23,8 +23,8 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "lardata/RawData/AuxDetDigit.h"
-#include "lardata/RawData/OpDetPulse.h"
+#include "lardataobj/RawData/AuxDetDigit.h"
+#include "lardataobj/RawData/OpDetPulse.h"
 
 //ROOT
 #include <TH1F.h>
@@ -40,6 +40,7 @@ class OpHitBuilderAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
 
+  raw::OpDetPulse               GetPulse( const art::Event&, int);
   std::vector<short>            GetHits( raw::OpDetPulse& );
   bool                          IsCleanBeamWaveform( raw::OpDetPulse& );
   

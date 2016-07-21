@@ -17,56 +17,56 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Principal/Handle.h" 
-#include "art/Persistency/Common/Ptr.h" 
-#include "art/Persistency/Common/PtrVector.h" 
+#include "canvas/Persistency/Common/Ptr.h" 
+#include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
 #include "art/Framework/Services/Optional/TFileService.h" 
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Core/FindOneP.h" 
-#include "art/Framework/Core/FindManyP.h"
+#include "canvas/Persistency/Common/FindOneP.h" 
+#include "canvas/Persistency/Common/FindManyP.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 //#include "cetlib/maybe_ref.h"
 
 // ########################
 // ### LArSoft includes ###
 // ########################
-#include "larcore/SimpleTypesAndConstants/geo_types.h"
-#include "larcore/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
+#include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
+#include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/TPCGeo.h"
 #include "larcore/Geometry/PlaneGeo.h"
 #include "larcore/Geometry/WireGeo.h"
-#include "lardata/RecoBase/Wire.h"
-#include "lardata/RecoBase/Hit.h"
-#include "lardata/RecoBase/Cluster.h"
-#include "lardata/RecoBase/Track.h"
-#include "lardata/RecoBase/TrackHitMeta.h"
-#include "lardata/RecoBase/Vertex.h"
-#include "lardata/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/Wire.h"
+#include "lardataobj/RecoBase/Hit.h"
+#include "lardataobj/RecoBase/Cluster.h"
+#include "lardataobj/RecoBase/Track.h"
+#include "lardataobj/RecoBase/TrackHitMeta.h"
+#include "lardataobj/RecoBase/Vertex.h"
+#include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardata/RecoBaseArt/TrackUtils.h" // lar::utils::TrackPitchInView()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
 //#include "RawData/ExternalTrigger.h"
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RawData/raw.h"
+#include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h"
 #include "larsim/MCCheater/BackTracker.h"
-#include "larsim/Simulation/SimChannel.h"
-#include "SimulationBase/MCTruth.h"
+#include "larsimobj/Simulation/SimChannel.h"
+#include "nusimdata/SimulationBase/MCTruth.h"
 #include "larevt/Filters/ChannelFilter.h"
-#include "lardata/AnalysisBase/Calorimetry.h"
-#include "lardata/AnalysisBase/ParticleID.h"
+#include "lardataobj/AnalysisBase/Calorimetry.h"
+#include "lardataobj/AnalysisBase/ParticleID.h"
 #include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AGCounter.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
-#include "lardata/RecoBase/Shower.h"
-#include "lardata/RecoBase/EndPoint2D.h"
-#include "lardata/MCBase/MCShower.h"
-#include "lardata/MCBase/MCStep.h"
+#include "lardataobj/RecoBase/Shower.h"
+#include "lardataobj/RecoBase/EndPoint2D.h"
+#include "lardataobj/MCBase/MCShower.h"
+#include "lardataobj/MCBase/MCStep.h"
 #include "lardata/AnalysisAlg/CalorimetryAlg.h"
 
 // #####################
@@ -163,9 +163,11 @@ private:
   double trkpida[kMaxTrack][2];
   double trkke[kMaxTrack][2];
   double trkdedx[kMaxTrack][2][1000];
+  double trkdqdx[kMaxTrack][2][1000];
   double trkrr[kMaxTrack][2][1000];
   double trkpitchhit[kMaxTrack][2][1000]; 
-   
+  double trkxyz[kMaxTrack][2][1000][3];
+
   // === Storing trajectory information for the track ===
   int nTrajPoint[kMaxTrack];			//<---Storing the number of trajectory points
   double pHat0_X[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the x-dir
@@ -174,6 +176,10 @@ private:
   double trjPt_X[kMaxTrack][kMaxTrajHits];     //<---Storing the trajector point location in X
   double trjPt_Y[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Y
   double trjPt_Z[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Z
+
+
+  std::vector<int>    InteractionPoint;         //<---Geant 4 Primary Trj Point Corresponding to the Interaction
+  std::vector<int>    InteractionPointType;     //<---Geant 4 Primary Interaction Type
 
   // === Geant information for reconstruction track
   int trkg4id[kMaxHits];         //<---geant track id for the track
@@ -237,20 +243,20 @@ private:
   // === Storing Aerogel Counter Information ===
 
   int               nAG;
-  long unsigned int HitTimeStampUSE[kMaxAG]; //<---Pulse time stamp relative to (?) in units of (?)
-  long unsigned int HitTimeStampUSW[kMaxAG];
-  long unsigned int HitTimeStampDS1[kMaxAG];
-  long unsigned int HitTimeStampDS2[kMaxAG];
+  long unsigned int HitTimeStamp1p10_1[kMaxAG]; //<---Pulse time stamp relative to (?) in units of (?)
+  long unsigned int HitTimeStamp1p10_2[kMaxAG];
+  long unsigned int HitTimeStamp1p06_1[kMaxAG];
+  long unsigned int HitTimeStamp1p06_2[kMaxAG];
 
-  float             HitPulseAreaUSE[kMaxAG]; //<---Pulse area in uits of ns*mV(?) for given PMT
-  float             HitPulseAreaUSW[kMaxAG];
-  float             HitPulseAreaDS1[kMaxAG];
-  float             HitPulseAreaDS2[kMaxAG];
+  float             HitPulseArea1p10_1[kMaxAG]; //<---Pulse area in uits of ns*mV(?) for given PMT
+  float             HitPulseArea1p10_2[kMaxAG];
+  float             HitPulseArea1p06_1[kMaxAG];
+  float             HitPulseArea1p06_2[kMaxAG];
 
-  bool              HitExistUSE[kMaxAG];     //<---Boolean of whether or not a pulse has been found for the given PMT
-  bool              HitExistUSW[kMaxAG];
-  bool              HitExistDS1[kMaxAG];
-  bool              HitExistDS2[kMaxAG];
+  bool              HitExist1p10_1[kMaxAG];     //<---Boolean of whether or not a pulse has been found for the given PMT
+  bool              HitExist1p10_2[kMaxAG];
+  bool              HitExist1p06_1[kMaxAG];
+  bool              HitExist1p06_2[kMaxAG];
    
   // === Storing Geant4 MC Truth Information ===
   int no_primaries;				//<---Number of primary Geant4 particles in the event
@@ -616,7 +622,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // #######################################################
       if (mcshowerh.isValid())
 	{
-	 
 	  //std::cout<<mcshowerh->size()<<std::endl;
 	  no_mcshowers = mcshowerh->size();
 	  size_t shwr = 0;
@@ -629,8 +634,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	      const sim::MCShower& mcshwr = *imcshwr;
 	    
 	      mcshwr_origin[shwr]          = mcshwr.Origin();
-	      mcshwr_pdg[shwr]              = mcshwr.PdgCode();
-	      mcshwr_TrackId[shwr]              = mcshwr.TrackID();
+	      mcshwr_pdg[shwr]             = mcshwr.PdgCode();
+	      mcshwr_TrackId[shwr]         = mcshwr.TrackID();
 	      mcshwr_startX[shwr]          = mcshwr.Start().X();
 	      mcshwr_startY[shwr]          = mcshwr.Start().Y();
 	      mcshwr_startZ[shwr]          = mcshwr.Start().Z();
@@ -770,7 +775,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       geant_list_size=geant_particle;
        
       // ### Looping over all the Geant4 particles ###
-		int iPrim = 0;
+      int iPrim = 0;
       for( unsigned int i = 0; i < geant_part.size(); ++i )
          {
    
@@ -885,6 +890,109 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    MidPz[iPrim][iPrimPt] = truetraj.Pz(iPrimPt);
 	    iPrimPt++;
 	    }//<--End loop on true trajectory points
+	 
+
+	 	   // Yet an other scheme for interaction type
+	             
+	   // ### Recording the process as a integer ###
+	   // 0 = NoInteractionNodaughters, thought going
+	   // 1 = PionMinusInelastic
+	   // 2 = NeutronInelastic
+	   // 3 = hadElastic
+	   // 4 = nCapture
+	   // 5 = CHIPSNuclearCaptureAtRest
+	   // 6 = Decay
+	   // 7 = KaonZeroLInelastic
+	   // 8 = CoulombScat
+	   // 9 = muMinusCaptureAtRest
+	   //10 = ProtonInelastic
+	   //11 = Kaon+Inelastic
+	   //12 = Kaon-Inelastic 
+	   //13 = protonInelastic
+	   //14 = Pi+Inelastic 
+
+
+	   auto thisTracjectoryProcessMap =  truetraj.TrajectoryProcesses();
+	   
+	   // Ok, if the size of the map is 0, all the action might happen at the end of the track
+	   // So we check the daugthers:
+	   //    - Case 1. There are daugthers:
+	   //               * The interesting point is the last one
+	   //               * The interaction type is the one that created the first daugther (this might be improved)
+	   //    - Case 2. There are NO daugthers:
+	   //              * We assign the interaction type to be 0: nothing happens, thought going particle
+	   //              * The interesting point is the last one (might not be in the TPC)
+	   if (!thisTracjectoryProcessMap.size())
+	     {
+	       int interestingPoint = (int) (NTrTrajPts[i] - 1);
+	       InteractionPoint.push_back(interestingPoint);
+
+	       if (NumberDaughters[i])
+		 {		 
+		   auto thePrimaryDaughterID = geant_part[i]-> Daughter(0); 
+		   for( unsigned int iD = 0; iD < geant_part.size(); ++iD )
+		     {
+		       if (geant_part[iD]->TrackId() == thePrimaryDaughterID) 
+			 {		      
+			   if(geant_part[iD]->Process() == PionMinusInelastic)
+			     {InteractionPointType.push_back(1);}
+			   
+			   if(geant_part[iD]->Process() == NeutronInelastic)
+			     {InteractionPointType.push_back(2);}
+			   
+			   if(geant_part[iD]->Process() == hadElastic)
+			     {InteractionPointType.push_back(3);}
+			   
+			   if(geant_part[iD]->Process() == nCapture)
+			     {InteractionPointType.push_back(4);}
+			   
+			   if(geant_part[iD]->Process() == CHIPSNuclearCaptureAtRest)
+			     {InteractionPointType.push_back(5);}
+			   
+			   if(geant_part[iD]->Process() == Decay)
+			     {InteractionPointType.push_back(6);}
+			   
+			   if(geant_part[iD]->Process() == KaonZeroLInelastic)
+			     {InteractionPointType.push_back(7);}
+			   
+			   if(geant_part[iD]->Process() == CoulombScat)
+			     {InteractionPointType.push_back(8);}
+			   
+			   if(geant_part[iD]->Process() == muMinusCaptureAtRest)
+			     {InteractionPointType.push_back(9);}
+			   
+			   if(geant_part[iD]->Process() == ProtonInelastic)
+			     {InteractionPointType.push_back(10);}
+			   
+			   if(geant_part[iD]->Process() == KaonPlusInelastic)
+			     {InteractionPointType.push_back(11);}
+			   
+			   if(geant_part[iD]->Process() == hBertiniCaptureAtRest)
+			     {InteractionPointType.push_back(12);}
+			 }
+		     }
+		 }else
+		 {
+		   InteractionPointType.push_back(0);              
+		 }
+	     }else
+	     {
+	       // The map is not zero: somthing interesting might happen in the middle of the track!!
+	       for(auto const& couple: thisTracjectoryProcessMap) 
+		 {
+		   int interestingPoint = (int) couple.first;
+		   InteractionPoint.push_back(interestingPoint);         	   
+		   if ((truetraj.KeyToProcess(couple.second)).find("hadElastic")!= std::string::npos) InteractionPointType.push_back(3);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("pi-Inelastic")    != std::string::npos) InteractionPointType.push_back(1);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("pi+Inelastic")    != std::string::npos) InteractionPointType.push_back(14);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("kaon-Inelastic")  != std::string::npos) InteractionPointType.push_back(12);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("kaon+Inelastic")  != std::string::npos) InteractionPointType.push_back(11);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("protonInelastic") != std::string::npos) InteractionPointType.push_back(13);           
+		   if ((truetraj.KeyToProcess(couple.second)).find("neutronInelastic")!= std::string::npos) InteractionPointType.push_back(2);           
+
+		 }
+	     }	
+   
 	 iPrim++;
 	}//<--End if primary
      }//<--End loop on geant particles
@@ -990,20 +1098,21 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
       for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
 	//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
-	HitTimeStampUSE[agc_counter]=agc[i]->GetHitTimeStampUSE(agc_idx);
-	HitTimeStampUSW[agc_counter]=agc[i]->GetHitTimeStampUSW(agc_idx);
-	HitTimeStampDS1[agc_counter]=agc[i]->GetHitTimeStampDS1(agc_idx);
-	HitTimeStampDS2[agc_counter]=agc[i]->GetHitTimeStampDS2(agc_idx);
+	HitTimeStamp1p10_1[agc_counter]=agc[i]->GetHitTimeStamp1p10_1(agc_idx);
+	HitTimeStamp1p10_2[agc_counter]=agc[i]->GetHitTimeStamp1p10_2(agc_idx);
+	HitTimeStamp1p06_1[agc_counter]=agc[i]->GetHitTimeStamp1p06_1(agc_idx);
+	HitTimeStamp1p06_2[agc_counter]=agc[i]->GetHitTimeStamp1p06_2(agc_idx);
 
-	HitPulseAreaUSE[agc_counter]=agc[i]->GetHitPulseAreaUSE(agc_idx);
-	HitPulseAreaUSW[agc_counter]=agc[i]->GetHitPulseAreaUSW(agc_idx);
-	HitPulseAreaDS1[agc_counter]=agc[i]->GetHitPulseAreaDS1(agc_idx);
-	HitPulseAreaDS2[agc_counter]=agc[i]->GetHitPulseAreaDS2(agc_idx);
+	HitPulseArea1p10_1[agc_counter]=agc[i]->GetHitPulseArea1p10_1(agc_idx);
+	HitPulseArea1p10_2[agc_counter]=agc[i]->GetHitPulseArea1p10_2(agc_idx);
+	HitPulseArea1p06_1[agc_counter]=agc[i]->GetHitPulseArea1p06_1(agc_idx);
+	HitPulseArea1p06_2[agc_counter]=agc[i]->GetHitPulseArea1p06_2(agc_idx);
 
-	HitExistUSE[agc_counter]=agc[i]->GetHitExistUSE(agc_idx);
-	HitExistUSW[agc_counter]=agc[i]->GetHitExistUSW(agc_idx);
-	HitExistDS1[agc_counter]=agc[i]->GetHitExistDS1(agc_idx);
-	HitExistDS2[agc_counter]=agc[i]->GetHitExistDS2(agc_idx);
+	HitExist1p10_1[agc_counter]=agc[i]->GetHitExist1p10_1(agc_idx);
+	HitExist1p10_2[agc_counter]=agc[i]->GetHitExist1p10_2(agc_idx);
+	HitExist1p06_1[agc_counter]=agc[i]->GetHitExist1p06_1(agc_idx);
+	HitExist1p06_2[agc_counter]=agc[i]->GetHitExist1p06_2(agc_idx);
+
 	++agc_counter;
       } // loop over aerogel pulses
 
@@ -1244,12 +1353,16 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  
 		  // ### Recording the dE/dX information for this calo point along the track in this plane ###
 		  trkdedx[i][pl][k] = calos[j]->dEdx()[k];
+		  trkdqdx[i][pl][k] = calos[j]->dQdx()[k];
 	  
 		  // ### Recording the residual range for this calo point along the track in this plane ###
 		  trkrr[i][pl][k] = calos[j]->ResidualRange()[k];
 	  
 		  // ### Recording the pitch of this calo point along the track in this plane ###
 		  trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
+                  trkxyz[i][pl][k][0] = calos[j]->XYZ()[k].X();
+                  trkxyz[i][pl][k][1] = calos[j]->XYZ()[k].Y();
+                  trkxyz[i][pl][k][2] = calos[j]->XYZ()[k].Z();
 		}//<---End calo points (k)
 	  
 	    }//<---End looping over calo points (j)
@@ -1520,8 +1633,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/D");
   fTree->Branch("trkhits",trkhits,"trkhits[ntracks_reco][2]/I");
   fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkdqdx",trkdqdx,"trkdqdx[ntracks_reco][2][1000]/D");
   fTree->Branch("trkrr",trkrr,"trkrr[ntracks_reco][2][1000]/D");
   fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
+  fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][1000][3]/D");
   fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
   
@@ -1581,18 +1696,18 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
 
   fTree->Branch("nAG", &nAG, "nAG/I");
-  fTree->Branch("HitTimeStampUSE", HitTimeStampUSE, "HitTimeStampUSE[nAG]/D");
-  fTree->Branch("HitTimeStampUSW", HitTimeStampUSW, "HitTimeStampUSW[nAG]/D");
-  fTree->Branch("HitTimeStampDS1", HitTimeStampDS1, "HitTimeStampDS1[nAG]/D");
-  fTree->Branch("HitTimeStampDS2", HitTimeStampDS2, "HitTimeStampDS2[nAG]/D");
-  fTree->Branch("HitPulseAreaUSE", HitPulseAreaUSE, "HitPulseAreaUSE[nAG]/F");
-  fTree->Branch("HitPulseAreaUSW", HitPulseAreaUSW, "HitPulseAreaUSW[nAG]/F");
-  fTree->Branch("HitPulseAreaDS1", HitPulseAreaDS1, "HitPulseAreaDS1[nAG]/F");
-  fTree->Branch("HitPulseAreaDS2", HitPulseAreaDS2, "HitPulseAreaDS2[nAG]/F");
-  fTree->Branch("HitExistUSE", HitExistUSE, "HitExistUSE[nAG]/O");
-  fTree->Branch("HitExistUSW", HitExistUSW, "HitExistUSW[nAG]/O");
-  fTree->Branch("HitExistDS1", HitExistDS1, "HitExistDS1[nAG]/O");
-  fTree->Branch("HitExistDS2", HitExistDS2, "HitExistDS2[nAG]/O");
+  fTree->Branch("HitTimeStamp1p10_1", HitTimeStamp1p10_1, "HitTimeStamp1p10_1[nAG]/D");
+  fTree->Branch("HitTimeStamp1p10_2", HitTimeStamp1p10_2, "HitTimeStamp1p10_2[nAG]/D");
+  fTree->Branch("HitTimeStamp1p06_1", HitTimeStamp1p06_1, "HitTimeStamp1p06_1[nAG]/D");
+  fTree->Branch("HitTimeStamp1p06_2", HitTimeStamp1p06_2, "HitTimeStamp1p06_2[nAG]/D");
+  fTree->Branch("HitPulseArea1p10_1", HitPulseArea1p10_1, "HitPulseArea1p10_1[nAG]/F");
+  fTree->Branch("HitPulseArea1p10_2", HitPulseArea1p10_2, "HitPulseArea1p10_2[nAG]/F");
+  fTree->Branch("HitPulseArea1p06_1", HitPulseArea1p06_1, "HitPulseArea1p06_1[nAG]/F");
+  fTree->Branch("HitPulseArea1p06_2", HitPulseArea1p06_2, "HitPulseArea1p06_2[nAG]/F");
+  fTree->Branch("HitExist1p10_1", HitExist1p10_1, "HitExist1p10_1[nAG]/O");
+  fTree->Branch("HitExist1p10_2", HitExist1p10_2, "HitExist1p10_2[nAG]/O");
+  fTree->Branch("HitExist1p06_1", HitExist1p06_1, "HitExist1p06_1[nAG]/O");
+  fTree->Branch("HitExist1p06_2", HitExist1p06_2, "HitExist1p06_2[nAG]/O");
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
@@ -1626,6 +1741,9 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][5000]/D");
   fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][5000]/D");
   fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][5000]/D");
+  fTree->Branch("InteractionPoint"         ,&InteractionPoint         );
+  fTree->Branch("InteractionPointType"     ,&InteractionPointType     );
+
 
   fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
   fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
@@ -1689,6 +1807,9 @@ void lariat::AnaTreeT1034::ResetVars()
   G4Process.clear();
   G4FinalProcess.clear();
 
+  InteractionPoint.clear();
+  InteractionPointType.clear();
+
   run = -99999;
   subrun = -99999;
   event = -99999;
@@ -1746,8 +1867,12 @@ void lariat::AnaTreeT1034::ResetVars()
       trkpida[i][j] = -99999;
       for (int k = 0; k<1000; ++k){
 			trkdedx[i][j][k] = -99999;
+			trkdqdx[i][j][k] = -99999;
 			trkrr[i][j][k] = -99999;
 			trkpitchhit[i][j][k] = -99999;
+			trkxyz[i][j][k][0] = -99999;
+			trkxyz[i][j][k][1] = -99999;
+			trkxyz[i][j][k][2] = -99999;
       }
     }
     trkg4id[i] = -9999;
@@ -1817,20 +1942,20 @@ void lariat::AnaTreeT1034::ResetVars()
   nAG = -99999;
   for (int i = 0; i < kMaxAG; i++)
     {
-      HitTimeStampUSE[i] = -99999;
-      HitTimeStampUSW[i] = -99999;
-      HitTimeStampDS1[i] = -99999;
-      HitTimeStampDS2[i] = -99999;
+      HitTimeStamp1p10_1[i] = -99999;
+      HitTimeStamp1p10_2[i] = -99999;
+      HitTimeStamp1p06_1[i] = -99999;
+      HitTimeStamp1p06_2[i] = -99999;
 
-      HitPulseAreaUSE[i] = -99999;
-      HitPulseAreaUSW[i] = -99999;
-      HitPulseAreaDS1[i] = -99999;
-      HitPulseAreaDS2[i] = -99999;
+      HitPulseArea1p10_1[i] = -99999;
+      HitPulseArea1p10_2[i] = -99999;
+      HitPulseArea1p06_1[i] = -99999;
+      HitPulseArea1p06_2[i] = -99999;
 
-      HitExistUSE[i] = -99999;
-      HitExistUSW[i] = -99999;
-      HitExistDS1[i] = -99999;
-      HitExistDS2[i] = -99999;
+      HitExist1p10_1[i] = -99999;
+      HitExist1p10_2[i] = -99999;
+      HitExist1p06_1[i] = -99999;
+      HitExist1p06_2[i] = -99999;
 
     }//<---End i loop
 

@@ -21,7 +21,7 @@
 
 // LArSoft Includes
 #include "lardata/Utilities/AssociationUtil.h"
-#include "lardata/RawData/TriggerData.h"
+#include "lardataobj/RawData/TriggerData.h"
 
 //LAriatSoft Includes
 #include "LArIATRecoAlg/OpHitBuilderAlg.h"
@@ -90,13 +90,34 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fFullWindowLength     = pset.get< short >("FullWindowLength",7000);
   fIntegrationWindows   = pset.get< std::vector<short> >("IntegrationWindows",IntegrationWindows);
   fMvPerADC             = pset.get< float >("MvPerADC",0.2);
-  fUsePrepulseFit       = pset.get< bool  >("UsePrepulseFit","true");
+  fUsePrepulseFit       = pset.get< bool  >("UsePrepulseFit","false");
   fHitTimeCutoffLow     = pset.get< int   >("HitTimeCutoffLow",-100000);
   fHitTimeCutoffHigh    = pset.get< int   >("HitTimeCutoffHigh",100000);
   fHitFindingMode       = pset.get< std::string >("HitFindingMode","grad");
   fAddHitsToAverageWaveform = pset.get< bool >("AddHitsToAverageWaveform",false);
 }
 
+//-------------------------------------------------------------------------
+// Return specific OpDetPulse object from event
+raw::OpDetPulse OpHitBuilderAlg::GetPulse( const art::Event& e, int opchannel){
+  
+  raw::OpDetPulse out;
+
+  // Get the OpDetPulses of the photodetectors
+  art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
+  e.getByLabel(fDAQModule,fInstanceName,WaveformHandle);
+  
+  for( size_t i = 0; i < WaveformHandle->size(); i++){
+    art::Ptr< raw::OpDetPulse > ThePulsePtr(WaveformHandle,i);
+    raw::OpDetPulse ThePulse = *ThePulsePtr;
+    if( ThePulse.OpChannel() == opchannel ) {
+      out = ThePulse;
+      break;
+    }
+  }
+ 
+ return out; 
+}
 
 //--------------------------------------------------------------------------
 //GetHits:  The 'meat & potatoes' of OpHitFinding!  This function takes a whole
@@ -346,7 +367,6 @@ std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( std::vector<float> wfm, s
 }
 
 
-
 // -------------------------------------------------------------
 // Returns a vector<float> containing (1) the hit's amplitude, and 
 // all the specified integrals
@@ -363,7 +383,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   
   // If the hit is too early to reliably calculate a baseline, OR if the 
   // previous hit is too close, stop now and return defaults
-  if( (hit < 100)||(hit-prev_hit < 200 ) ) {
+  if( (hit < 100)||(hit-prev_hit < 100 ) ) {
     LOG_VERBATIM("OpHitBuilder") << "!!! Hit is too early or close to prev hit -- abort.";
     return hit_info;
   }
@@ -414,7 +434,8 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   
   // Define exponential function and initialize parameters
   TF1 prepulse_exp_fit("prepulse_exp_fit","[0] + [1]*exp(-(x-[2])/[3])",0.,30000.);
-  prepulse_exp_fit.FixParameter(0,baseline);
+  if(prepulse_rms <= rms*1.5) { prepulse_exp_fit.FixParameter(0,prepulse_baseline);
+  } else {                      prepulse_exp_fit.FixParameter(0,baseline);}
   prepulse_exp_fit.FixParameter(2,x1+nn/2); 
   prepulse_exp_fit.SetParameter(1,norm_set);
   prepulse_exp_fit.SetParLimits(1,-500.,0.);
@@ -468,7 +489,8 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   for( int i = 0; i < total_bins; i++){
    
     short xx    = x1 + short(i);
-    float yy   = prepulse_exp_fit.Eval(xx) - (float)wfm[xx];  
+    //float yy   = prepulse_exp_fit.Eval(xx) - (float)wfm[xx];  
+    float yy   = baseline - (float)wfm[xx];  
     
     // Once past x2, start integration
     if( xx >= x2 ) integral += yy;
@@ -485,7 +507,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
     }
 
     // Scan for amplitude when near the hit
-    if ( (abs(hit-xx) < 30) && (yy > amplitude) ) amplitude = yy;
+    if ( ((hit-xx > -5)||(hit-xx < 50)) && (yy > amplitude) ) amplitude = yy;
 
     // Add to average waveform if specified
     if( (flag_ave) && ( xx >= x1b)) AverageWaveform.at(xx-x1b) += yy*fMvPerADC;
@@ -516,9 +538,9 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
 float OpHitBuilderAlg::GetLocalMinimum(std::vector<float> v, short hit)
 {
   size_t r1 = 5;
-  size_t rmin = 5;
-  size_t r2 = 25; 
-  float  low                 = 9999;
+  size_t rmin = 10;
+  size_t r2 = 45; 
+  float  low  = 9999;
   size_t x1 = hit-r1;
   size_t x2 = hit+r2;
   
@@ -529,7 +551,7 @@ float OpHitBuilderAlg::GetLocalMinimum(std::vector<float> v, short hit)
   // consecutive samples following the first 5 samples, or if
   // we've reached r2, end the scan.
   for( size_t j = x1; j<x2; j++){
-    if( v[j] < low ) {
+    if( v[j] <= low ) {
       low = v[j];
       counter=0;
     }
@@ -613,38 +635,31 @@ std::vector<float> OpHitBuilderAlg::GetPedestalAndRMS( std::vector<float> wfm, s
   std::vector<float> tmp(2); 
   tmp = GetBaselineAndRMS( wfm, x1, x2);
   float baseline  = tmp[0];
-  float rms1      = tmp[1]; 
+  float rms      = tmp[1]; 
   
-  TH1F h("h","h",100,baseline-3.*rms1,baseline+3.*rms1);
+  TH1F h("h","h",100,baseline-5.*rms,baseline+5.*rms);
   for(int i=x1; i<x2; i++) h.Fill(wfm[i]); 
 
-  TF1 f("f","gaus",baseline-3.*rms1,baseline+3.*rms1);
-  f.SetParameter(0,1.);
+  TF1 f("f","gaus");
+  f.SetParameter(0,h.GetMaximum());
   f.SetParameter(1,baseline);
-  f.SetParameter(2,rms1);
+  f.SetParameter(2,rms);
   
   h.Fit("f","QN0");
-  float ped = f.GetParameter(1);
-  float rms2 = f.GetParameter(2);
-  float rchi2 = f.GetChisquare()/(float)(f.GetNDF()-1);
-
-  LOG_VERBATIM("OpHitBuilder")
+  float ped   = f.GetParameter(1);
+  float sigma = f.GetParameter(2);
+  //float rchi2 = f.GetChisquare()/(float)(f.GetNDF()-1);
+  
+  /*
+  std::cout
   << "Calculating pedestal        ... " << ped << " (traditional BS " << baseline << ")\n"
-  << "Calculating gaussian spread ... " << rms2 << "(traditional RMS " << rms1 << ")\n"
-  << "Reduced Chi2 of fit         ... " << rchi2;
+  << "Calculating gaussian spread ... " << sigma << "(traditional RMS " << rms << ")\n"
+  //<< "Reduced Chi2 of fit         ... " << rchi2
+  << "\n";
+  */
 
-
-  // If resulting pedestal (from fit) is trustworthy,
-  // then return it; otherwise, return traditional baseline/rms
-  //if( fabs(ped-baseline) <= 1.*rms1){
-  if( rchi2 <= 1.2 ){
-    out[0] = ped;
-    out[1] = rms2;
-  } else {
-    out[0] = baseline;
-    out[1] = rms1;
-  }
-
+  out[0] = ped;
+  out[1] = sigma;
   return out;
 }
 

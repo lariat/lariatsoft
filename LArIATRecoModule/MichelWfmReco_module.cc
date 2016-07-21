@@ -24,7 +24,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Utilities/InputTag.h"
+#include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Optional/TFileService.h"
@@ -47,14 +47,14 @@
 #include <TTree.h>
 
 // LArSoft Includes
-#include "lardata/RawData/TriggerData.h"
-#include "lardata/RecoBase/Track.h"
-#include "lardata/AnalysisBase/Calorimetry.h"
-#include "lardata/AnalysisBase/ParticleID.h"
+#include "lardataobj/RawData/TriggerData.h"
+#include "lardataobj/RecoBase/Track.h"
+#include "lardataobj/AnalysisBase/Calorimetry.h"
+#include "lardataobj/AnalysisBase/ParticleID.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "lardata/RawData/TriggerData.h"
-#include "lardata/RecoBase/Track.h"
-#include "lardata/AnalysisBase/Calorimetry.h"
+#include "lardataobj/RawData/TriggerData.h"
+#include "lardataobj/RecoBase/Track.h"
+#include "lardataobj/AnalysisBase/Calorimetry.h"
 
 //LAriatSoft Includes
 #include "RawDataUtilities/TriggerDigitUtility.h"
@@ -507,8 +507,8 @@ void MichelWfmReco::produce(art::Event & e)
   RunNumber     = (int)e.run();
   SubRunNumber  = (int)e.subRun();
   EventNumber   = (int)e.event();
-  
-  
+ 
+
   // Filter for the MICHEL trigger pattern (note that for some runs, particularly for 
   // those with the optimized Michel trigger setup, unfortunately the trigger inputs 
   // were not being saved and thus the filter won't work).
