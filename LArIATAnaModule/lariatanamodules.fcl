@@ -16,8 +16,9 @@ lariat_anatree:
     AGModuleLabel:            "agcounter"
     G4ModuleLabel:            "largeant"
     ShowerModuleLabel:        "showerreco"
+    SimChanModuleLabel:       "largeant"
     MCShowerModuleLabel:      "mcreco"
-    CalorimetryAlg:          @local::standard_calorimetryalgmc
+    CalorimetryAlg:           @local::standard_calorimetryalgmc
     WC2TPCModuleLabel:	      "WC2TPCtrk"
 }
 

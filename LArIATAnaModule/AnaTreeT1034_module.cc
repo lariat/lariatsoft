@@ -92,6 +92,7 @@ const int kMaxPrimaries  = 20000;    //maximum number of true particles tracked
 const int kMaxShower     = 100;      //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000;     //maximum number of MCShower Object
 const int kMaxTruePrimaryPts = 5000; //maximum number of points in the true primary trajectory 
+const int kMaxIDE = 5000; //maximum number of points in the true primary trajectory 
 
 namespace lariat 
 {
@@ -258,6 +259,11 @@ private:
   bool              HitExist1p06_1[kMaxAG];
   bool              HitExist1p06_2[kMaxAG];
    
+  // === Storing SimChannel Stuff ===
+  int maxTrackIDE;
+  double IDEEnergy[kMaxIDE]; 
+  double IDEPos[kMaxIDE][3];
+
   // === Storing Geant4 MC Truth Information ===
   int no_primaries;				//<---Number of primary Geant4 particles in the event
   int geant_list_size;				//<---Number of Geant4 particles tracked
@@ -394,6 +400,7 @@ private:
   std::string fG4ModuleLabel;
   std::string fShowerModuleLabel;       // Producer that makes showers from clustering
   std::string fMCShowerModuleLabel;	// Producer name that makes MCShower Object
+  std::string fSimChanModuleLabel; // Producer that makes SimIDE information
   std::string fWC2TPCModuleLabel;	// Producer which creates an association between WC and TPC Track
 
   calo::CalorimetryAlg fCalorimetryAlg;
@@ -426,6 +433,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
   fAGModuleLabel               	= pset.get< std::string >("AGModuleLabel");
   fG4ModuleLabel               	= pset.get< std::string >("G4ModuleLabel");
   fShowerModuleLabel           	= pset.get< std::string >("ShowerModuleLabel");
+  fSimChanModuleLabel	        = pset.get< std::string >("SimChanModuleLabel");
   fMCShowerModuleLabel		= pset.get< std::string >("MCShowerModuleLabel");
   fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
   return;
@@ -605,6 +613,54 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	
   else isdata = false;
    
+  // ----------------------------------------------------------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------------------------------------------
+  //							FILLING THE Sim Channel INFORMATION
+  // ----------------------------------------------------------------------------------------------------------------------------
+  // ----------------------------------------------------------------------------------------------------------------------------
+
+  if(!isdata) {
+
+    art::Handle< std::vector<sim::SimChannel> > SimListHandle; 
+    std::vector<art::Ptr<sim::SimChannel> > Simlist;    
+    if(evt.getByLabel(fSimChanModuleLabel, SimListHandle))
+      { art::fill_ptr_vector(Simlist, SimListHandle); }
+  
+    maxTrackIDE = 0;
+
+    // Loop over the channels, the wires
+    for(size_t nChan = 0; nChan < Simlist.size(); nChan++) {
+
+      // Only getting one plane
+      if(Simlist.at(nChan)->Channel() > 240) { break; }
+      
+      // Get the information of each wire
+      std::map<unsigned short, std::vector< sim::IDE > > wire = Simlist.at(nChan)->TDCIDEMap();
+
+      // Looping over the IDEs in a wire, or looping over time
+      typedef std::map<unsigned short, std::vector< sim::IDE > >::iterator it_type;
+      for(it_type it = wire.begin(); it != wire.end(); it++) {
+
+	// Looping over the IDEs in a given time tick
+	for(size_t i = 0; i < it->second.size(); i++) {
+
+	  // Only non-showering (nonnegative) primary track IDEs
+	  if(it->second.at(i).trackID != 1) { continue; } 
+ 
+	  IDEEnergy[maxTrackIDE] = it->second.at(i).energy; 
+	    
+	  IDEPos[maxTrackIDE][0] = it->second.at(i).x; 
+	  IDEPos[maxTrackIDE][1] = it->second.at(i).y;
+	  IDEPos[maxTrackIDE][2] = it->second.at(i).z;
+
+	  maxTrackIDE += 1;
+	  
+	} // Loop over IDE
+      } // Loop over Time
+    } // Loop over Wire
+  } // End of isdata
+
+
    
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
@@ -1709,6 +1765,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("HitExist1p06_1", HitExist1p06_1, "HitExist1p06_1[nAG]/O");
   fTree->Branch("HitExist1p06_2", HitExist1p06_2, "HitExist1p06_2[nAG]/O");
 
+  fTree->Branch("maxTrackIDE", &maxTrackIDE, "maxTrackIDE/I");
+  fTree->Branch("IDEEnergy", IDEEnergy, "IDEEnergy[maxTrackIDE]/D");
+  fTree->Branch("IDEPos", IDEPos, "IDEPos[maxTrackIDE][3]/D");
+
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
   
@@ -1958,6 +2018,17 @@ void lariat::AnaTreeT1034::ResetVars()
       HitExist1p06_2[i] = -99999;
 
     }//<---End i loop
+
+  maxTrackIDE = -999;
+  
+  for(size_t i = 0; i < kMaxIDE; ++i) {
+    IDEEnergy[i] = -999;
+
+    IDEPos[i][0] = -999.9;
+    IDEPos[i][1] = -999.9;
+    IDEPos[i][2] = -999.9;
+
+  } // End of maxTrackID loop
 
   no_primaries = -99999;
   geant_list_size=-999;
