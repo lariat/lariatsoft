@@ -30,18 +30,11 @@ extern "C" {
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 #include "lardata/Utilities/LArFFT.h"
-<<<<<<< HEAD
-#include "lardata/RawData/RawDigit.h"
-#include "lardata/RawData/AuxDetDigit.h"
-#include "lardata/RawData/raw.h"
-#include "lardata/RawData/TriggerData.h"
-=======
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RawData/AuxDetDigit.h"
 #include "lardataobj/RawData/raw.h"
 #include "lardataobj/RawData/TriggerData.h"
 #include "RawDataUtilities/FragmentToDigitAlg.h"
->>>>>>> 501bff409c6cf976f92f71fb7e22bc97d61a4a5c
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksServiceStandard.h" // special (see below)

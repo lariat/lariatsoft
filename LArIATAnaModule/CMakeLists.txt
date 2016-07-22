@@ -2,8 +2,11 @@ art_make(BASENAME_ONLY
          LIB_LIBRARIES larcore_Geometry
          larreco_RecoAlg_ClusterRecoUtil
          lardataobj_RecoBase
+         ${ROOT_BASIC_LIB_LIST}
+         ${ROOT_SPECTRUM}
          MODULE_LIBRARIES LArIATRecoAlg
          LArIATDataProducts
+	 LArIATAnaModule
          larevt_Filters
          larreco_ClusterFinder
          larreco_RecoAlg_ClusterRecoUtil
@@ -41,6 +44,7 @@ art_make(BASENAME_ONLY
          ${CETLIB}
          ${CLHEP}
          ${ROOT_BASIC_LIB_LIST}
+	
 )
 
 install_headers()
