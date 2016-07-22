@@ -410,6 +410,11 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   //parametrized threshold. If it is, run pi/mu separation on it.
   bool foundGoodMuRSTrack = false;
   ldp::MuonRangeStackHits theMuRS = MuRSColHandle->at(0);
+  std::cout<<"Like outside fucntion "
+	   <<proton_kaon_pimu_likelihood_ratios.at(0)<<" "
+	   <<proton_kaon_pimu_likelihood_ratios.at(1)<<" "
+	   <<proton_kaon_pimu_likelihood_ratios.at(2)<<"\n";
+
   if( fVerbose ) LOG_VERBATIM("ParticleIdentificationSlicing") << "PiMu likelihood: " << proton_kaon_pimu_likelihood_ratios.at(2);
   if( proton_kaon_pimu_likelihood_ratios.at(2) > fPiMuLRThreshold && theMuRS.WasItInitializedEmpty() == false ){
     
@@ -459,6 +464,15 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   fPiMuProb->Fill(proton_kaon_pimu_likelihood_ratios.at(2));
   fKaonProb->Fill(proton_kaon_pimu_likelihood_ratios.at(1));
   fProtonProb->Fill(proton_kaon_pimu_likelihood_ratios.at(0));
+
+  std::cout<<" Still bug chasing "
+	   << proton_kaon_pimu_likelihood_ratios.at(0)<<" "
+	   << proton_kaon_pimu_likelihood_ratios.at(1) <<" "
+	   << proton_kaon_pimu_likelihood_ratios.at(2)<<" "
+	   << proton_kaon_pimu_likelihood_ratios.at(2)*pion_prob<<" "
+	   << proton_kaon_pimu_likelihood_ratios.at(2)*muon_prob<<" "
+	   << finalPDGCode<<std::endl;
+
 
   //Now fill in the AuxDetParticle with the likelihoods  
   ldp::AuxDetParticleID thePID( proton_kaon_pimu_likelihood_ratios.at(0),
@@ -769,19 +783,31 @@ void ParticleIdentificationSlicing::doThePiMu_Proton_KaonSeparation( float reco_
     << "Integrated Mu Prior: " << fAllPMuMCPrior;
   }
     
+
+  std::cout<<"Is one of these 0? "
+	   << fAllPProtMCPrior<<" "<<(1/pow(2*3.1415926,0.5)/fProtonMassSigma)<<" "<<exp(-0.5*pow((mass-fProtonMassMean)/fProtonMassSigma,2))<<"\n"
+	   << fAllPKMCPrior   <<" "<<(1/pow(2*3.1415926,0.5)/fKaonMassSigma)  <<" "<<exp(-0.5*pow((mass-fKaonMassMean)/fKaonMassSigma,2))<<"\n"
+	   << fAllPMuMCPrior<<" "<< fAllPPiMCPrior<<" "<<(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)<<" "<<exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2))<<std::endl;
   
   //Finding values of pdf for mass given proton, kaon, pi/mu distributions
   float proton_prob = fAllPProtMCPrior*(1/pow(2*3.1415926,0.5)/fProtonMassSigma)*exp(-0.5*pow((mass-fProtonMassMean)/fProtonMassSigma,2));
   float kaon_prob = fAllPKMCPrior*(1/pow(2*3.1415926,0.5)/fKaonMassSigma)*exp(-0.5*pow((mass-fKaonMassMean)/fKaonMassSigma,2));
   float pimu_prob = (fAllPMuMCPrior+fAllPPiMCPrior)*(1/pow(2*3.1415926,0.5)/fPiMuMassSigma)*exp(-0.5*pow((mass-fPiMuMassMean)/fPiMuMassSigma,2));
   
+  std::cout<<"I hate nans, p, k, pimu... prob : "<< proton_prob<<" , "<<kaon_prob<<" , "<<pimu_prob<<std::endl;
+
+
+
   //These ^ are likelihoods, so find the likelihood ratio of each to the total
   float proton_likelihood = proton_prob/(proton_prob+kaon_prob+pimu_prob);
   float kaon_likelihood = kaon_prob/(proton_prob+kaon_prob+pimu_prob);
   float pimu_likelihood = pimu_prob/(proton_prob+kaon_prob+pimu_prob);
 
+  std::cout<<"I hate nans, p, k, pimu, likelihood : "<< proton_likelihood<<" , "<<kaon_likelihood<<" , "<<pimu_likelihood<<std::endl;
+
   //Account for resolution of TOF system: make these cases default to pimu
   if(pow((fSpeedOfLight*(reco_TOF)*1e-9/fDistanceTraveled)*reco_momentum,2)-pow(reco_momentum,2) < 0 ){
+    std::cout<<"In default case 1 \n";
     pimu_likelihood = 1.0;
     proton_likelihood = 0;
     kaon_likelihood = 0;
@@ -789,15 +815,19 @@ void ParticleIdentificationSlicing::doThePiMu_Proton_KaonSeparation( float reco_
 
   //Account for terrible kaon peak fitting (initial stages only)
   if( mass > fProtonMassMean && kaon_likelihood > proton_likelihood && kaon_likelihood > pimu_likelihood ){
+    std::cout<<"In default case 2 \n";
     pimu_likelihood = 0;
     proton_likelihood = 0;
-    kaon_likelihood = 0;
+    kaon_likelihood = 0; // Is this a case that makes sense?
   }
   
   proton_kaon_pimu_likelihood_ratios.push_back(proton_likelihood);
   proton_kaon_pimu_likelihood_ratios.push_back(kaon_likelihood);
   proton_kaon_pimu_likelihood_ratios.push_back(pimu_likelihood);
- 
+  std::cout<<"Like inside fucntion "
+           <<proton_kaon_pimu_likelihood_ratios.at(0)<<" "
+           <<proton_kaon_pimu_likelihood_ratios.at(1)<<" "
+           <<proton_kaon_pimu_likelihood_ratios.at(2)<<"\n";
  
 }
 
