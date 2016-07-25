@@ -1,6 +1,4 @@
-#include "FragmentToDigit_config.fcl"
 #include "services_lariat.fcl"
-#include "RawDataUtilities_algs.fcl"
 #include "caldata_lariat.fcl"
 ##include "triggeralgo_service.fcl"
 #include "hitfindermodules.fcl"
@@ -101,7 +99,6 @@ physics:
  #filters reject all following items.  see lines starting physics.producers below
  reco: [ #rns,
 #         opflash,
-         #FragmentToDigit,
 	 wctrack, 
 	 tof, 
 	 murs,
@@ -164,8 +161,6 @@ physics.producers.BeamPid.MaxMomentumForPID: 	1500.
 ### Optical elements ###
 #physics.producers.opflash.InputModule:                          "optreadout"
 #physics.producers.opflash.GenModule:                            "generator"
-#physics.producers.FragmentToDigit.pmt_channel_ids:[[9,0,1]]
-#physics.producers.FragmentToDigit.pmt_test:true
 
 ### TPC elements ###
 physics.producers.caldata.DigitModuleLabel:                     "daq"

@@ -1,6 +1,5 @@
 #include "services_lariat.fcl"
 #include "filters.fcl"
-#include "FragmentToDigit_config.fcl"
 #include "caldata_lariat.fcl"
 #include "lariathitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
