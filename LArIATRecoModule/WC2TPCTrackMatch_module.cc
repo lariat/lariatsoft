@@ -534,6 +534,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 
       
       // The following are all the attributes we need to set to create our pseudo WC track
+<<<<<<< HEAD
       float reco_pz = 0;
       float y_kink  = 0;
       float x_dist  = 0;
@@ -547,16 +548,36 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       std::vector<int>   WC_vect;
       std::vector<float> hit_wire_vect;
       float residual = 0;
+=======
+      double reco_pz = 0;
+      double y_kink  = 0;
+      double x_dist  = 0;
+      double y_dist  = 0;
+      double z_dist  = 0; 
+      double x_face  = 0;
+      double y_face  = 0;
+      double theta   = 0;
+      double phi     = 0;
+      std::vector<int>   WC_vect;
+      std::vector<float> hit_wire_vect;
+      std::vector<float> hit_time_vect;
+>>>>>>> fc6c8f7b9b77a5742e1e4d53d3a2622200cbb890
 
       for (int i = 0; i < 4; i++)
 	{
 	  WC_vect.emplace_back(0.);
 	  hit_wire_vect.emplace_back(0.);
+<<<<<<< HEAD
 	  //hit_time_vect.emplace_back(0.);
 	}	   
 
       float hit_position[4][3];
 
+=======
+	  hit_time_vect.emplace_back(0.);
+	}	   
+
+>>>>>>> fc6c8f7b9b77a5742e1e4d53d3a2622200cbb890
       ldp::WCTrack the_track(reco_pz,
 			     y_kink ,
 			     x_dist ,
@@ -568,9 +589,13 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 			     phi    ,
 			     WC_vect,
 			     hit_wire_vect,
+<<<<<<< HEAD
                              hit_position,
 			     wcmiss,
 			     residual);
+=======
+			     hit_time_vect);
+>>>>>>> fc6c8f7b9b77a5742e1e4d53d3a2622200cbb890
 
       // 1. Create the wc obj
       std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
