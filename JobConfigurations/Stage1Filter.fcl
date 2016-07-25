@@ -1,11 +1,8 @@
-#include "FragmentToDigit_config.fcl"
 #include "services_lariat.fcl"
 #include "triggeralgo_service.fcl"
 #include "lariatfiltermodules.fcl"
 #include "lariat_reco_algs.fcl"
 #include "lariatbeamlinereco.fcl"
-#include "FragmentToDigit_config.fcl"
-#include "RawDataUtilities_algs.fcl"
 #include "caldata_lariat.fcl"	
 #include "lariatanamodules.fcl"
 
