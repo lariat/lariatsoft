@@ -1,4 +1,3 @@
-#include "FragmentToDigit_config.fcl"
 #include "services_lariat.fcl"
 #include "triggeralgo_service.fcl"
 #include "lariatanamodules.fcl"
