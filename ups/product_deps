@@ -11,12 +11,12 @@ gdmldir product_dir gdml
 # dependencies on external packages
 product         version
 
-larsoft		v06_00_01
+larsoft		      v06_00_01
 LariatFilters   v01_02
 lariatfragments v06_00_01
 artdaq_core     v1_05_01
 LariatBeamFiles v01_00		-	optional
-lariatutil	v06_00_01 	-	optional
+lariatutil	    v06_00_01 -	optional
 cetbuildtools   v5_02_02	-	only_for_build
 end_product_list
 
