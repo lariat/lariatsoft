@@ -409,10 +409,11 @@ namespace util {
     // datetime column
     ColumnNames.push_back("date_time");
 
-    // fill column names for CAEN boards 8 and 9; 8 channels each
+    // fill column names for CAEN boards 8, 9, and 10; 8 channels each
     for (size_t channel = 0; channel < 8; ++channel) {
       ColumnNames.push_back("caen_board_8_channel_" + std::to_string(channel));
       ColumnNames.push_back("caen_board_9_channel_" + std::to_string(channel));
+      ColumnNames.push_back("caen_board_10_channel_" + std::to_string(channel));
     }
 
     // fill column names for CAEN board 24; 64 channels
