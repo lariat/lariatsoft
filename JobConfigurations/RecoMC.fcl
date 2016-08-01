@@ -7,7 +7,7 @@ physics.reco: [ @sequence::tpcreco ]
 services.DetectorPropertiesService.TimeOffsetV: 0.0
 services.DetectorPropertiesService.Electronlifetime: 1600
 physics.producers.caldata.DodQdxCalib:           false
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.031,0.076]
+physics.producers.calo.CaloAlg.CalAreaConstants: [0.037,0.091]
 physics.producers.linecluster.ClusterCrawlerAlg.HitErrFac: 0.22  # Fraction of hit RMS to calculate cluster fit chisq, MC hits are narrower than data hits. 
 
 
