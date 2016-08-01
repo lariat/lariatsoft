@@ -1,6 +1,4 @@
-#include "FragmentToDigit_config.fcl"
 #include "services_lariat.fcl"
-#include "RawDataUtilities_algs.fcl"
 #include "caldata_lariat.fcl"
 ##include "triggeralgo_service.fcl"
 #include "hitfindermodules.fcl"
