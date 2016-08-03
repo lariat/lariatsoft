@@ -635,11 +635,11 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       if(Simlist.at(nChan)->Channel() > 240) { break; }
       
       // Get the information of each wire
-      std::map<unsigned short, std::vector< sim::IDE > > wire = Simlist.at(nChan)->TDCIDEMap();
+     const auto & wire = Simlist.at(nChan)->TDCIDEMap();
 
       // Looping over the IDEs in a wire, or looping over time
-      typedef std::map<unsigned short, std::vector< sim::IDE > >::iterator it_type;
-      for(it_type it = wire.begin(); it != wire.end(); it++) {
+      //typedef std::map<unsigned short, std::vector< sim::IDE > >::iterator it_type;
+      for(auto it = wire.begin(); it != wire.end(); it++) {
 
 	// Looping over the IDEs in a given time tick
 	for(size_t i = 0; i < it->second.size(); i++) {
@@ -1621,11 +1621,11 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) chan = fSimChannels[sc];
 	  }
 	  if (chan){
-	    const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = chan->TDCIDEMap();
+	    const auto & tdcidemap = chan->TDCIDEMap();
 	    for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
 	      // loop over the vector of IDE objects.
 	      
-	      const std::vector<sim::IDE> idevec = (*mapitr).second;
+	      const std::vector<sim::IDE> & idevec = (*mapitr).second;
 	      
 	      for(size_t iv = 0; iv < idevec.size(); ++iv){ 
 

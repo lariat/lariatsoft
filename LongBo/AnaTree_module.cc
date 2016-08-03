@@ -394,7 +394,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
 	    if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) chan = fSimChannels[sc];
 	  }
 	  if (chan){
-	    const std::map<unsigned short, std::vector<sim::IDE> >& tdcidemap = chan->TDCIDEMap();
+	    const auto & tdcidemap = chan->TDCIDEMap();
 	    for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
 	      // loop over the vector of IDE objects.
 	      
