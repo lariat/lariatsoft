@@ -15,7 +15,7 @@ namespace ldp{
   //----------------------------------------------------------------------
   TOF::TOF() {
 
-    std::vector<short> blank0;
+    std::vector<float> blank0;
     std::vector<long> blank1;
     fTOF = blank0;
     fTimeStamp = blank1;
@@ -23,7 +23,7 @@ namespace ldp{
 
  
   //--------------------------------------------------
-  short TOF::SingleTOF(size_t iHit) const
+  float TOF::SingleTOF(size_t iHit) const
   {
     if( iHit >= fTOF.size() ){
       throw cet::exception("TOF") << "illegal index requested for TOF vector: "

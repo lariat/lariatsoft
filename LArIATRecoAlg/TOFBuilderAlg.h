@@ -42,12 +42,12 @@ class TOFBuilderAlg{
 
   void reconfigure( fhicl::ParameterSet const& pset );
   
-  std::vector<short> find_hits(std::vector<short> wv);
-  std::vector<short> match_hits(std::vector<short> hits1, std::vector<short> hits2);
+  std::vector<float> find_hits(std::vector<float> wv);
+  std::vector<float> match_hits(std::vector<float> hits1, std::vector<float> hits2);
 
-  std::pair <std::vector<short>, std::vector<long> > get_TOF_and_TimeStamp (std::vector<const raw::AuxDetDigit*> ust_wv,
+  std::pair <std::vector<float>, std::vector<long> > get_TOF_and_TimeStamp (std::vector<const raw::AuxDetDigit*> ust_wv,
 									    std::vector<const raw::AuxDetDigit*> dst_wv);
-  std::vector<short> get_tof(std::vector<const raw::AuxDetDigit*> ust_wv,
+  std::vector<float> get_tof(std::vector<const raw::AuxDetDigit*> ust_wv,
 			     std::vector<const raw::AuxDetDigit*> dst_wv);
 
   std::vector<long> get_timeStampDst(std::vector<const raw::AuxDetDigit*> ust_wv,
@@ -63,7 +63,16 @@ class TOFBuilderAlg{
   double fHitWait;
   double fHitMatchThreshold;   
 
-  std::vector<short> TOF;	  
+  TH1F*  fdeltaHit;
+  TH1F*  fderHit;
+  TH1F*  fLenHit;
+
+  TH1F*         fDerUSA;
+  TH1F*         fDerUSB;
+  TH1F*         fDerDSA;
+  TH1F*         fDerDSB;
+
+  std::vector<float> TOF;	  
   std::vector<long> Dst_Timestamp;
   
 };
