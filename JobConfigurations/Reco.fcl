@@ -48,7 +48,7 @@ tpcreco: [ caldata,
            pandora,
            showerreco,
            pmtrack,
-#         pmtracktc,
+           pmtracktc,
            calo,
            pid,
            pandoracalo,
@@ -203,15 +203,15 @@ physics.producers.costrk.VertexModuleLabel:   "linecluster"
 physics.producers.costrk.ClusterMatch.KSCut:  0.5
 physics.producers.pmtrack.ClusterModuleLabel: "linecluster"
 physics.producers.pmtrack.HitModuleLabel:     "linecluster"
-physics.producers.pmtrack.MinSeedSize2ndPass: 3
-physics.producers.pmtrack.FlipToBeam: true
-physics.producers.pmtrack.RunVertexing: true
+physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
+physics.producers.pmtrack.PMAlgTracking.RunVertexing: true
 
 physics.producers.pmtracktc.ClusterModuleLabel: "trajcluster"
 physics.producers.pmtracktc.HitModuleLabel:     "gaushit"
-physics.producers.pmtracktc.MinSeedSize2ndPass: 3
-physics.producers.pmtracktc.FlipToBeam: true
-physics.producers.pmtracktc.RunVertexing: true
+physics.producers.pmtracktc.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtracktc.PMAlgTracking.FlipToBeam: true
+physics.producers.pmtracktc.PMAlgTracking.RunVertexing: true
 
 physics.producers.cctrack.HitModuleLabel:     "linecluster"
 physics.producers.cctrack.ClusterModuleLabel: "linecluster"
