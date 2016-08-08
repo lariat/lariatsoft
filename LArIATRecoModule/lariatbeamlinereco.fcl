@@ -35,6 +35,13 @@ lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini
   module_type:        TimeOfFlightSlicing
   TOFBuilderAlg:      @local::lariat_tofbuilderalg
   SourceLabel:        "daq"		
+
+  Linear: -10
+  Multiple: 1.0
+  HitMatchThreshold: 2.0
+  HitThreshold: -40.
+  HitWait: 10.
+
 }
 
 lariat_murs:            #Taken from MuonRangeStackHitsSlicing.fcl by Greg Pulliam
