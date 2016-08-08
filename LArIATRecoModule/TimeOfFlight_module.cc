@@ -131,7 +131,7 @@ void lrm::TimeOfFlight::produce(art::Event & e)
       // Creates the object, pushes it, and Associates it to the trigger.
       // Variables of our object
       
-      std::pair<std::vector<short>, std::vector<long> > pair;
+      std::pair<std::vector<float>, std::vector<long> > pair;
       pair = fTOFAlg.get_TOF_and_TimeStamp(ust_wv,dst_wv);
 
       ldp::TOF TOFObject(pair.first, pair.second);
