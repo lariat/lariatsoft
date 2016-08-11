@@ -16,6 +16,8 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
+#include "art/Framework/Services/Optional/TFileService.h" 
+#include "art/Framework/Services/Optional/TFileDirectory.h"
 
 //LArSoft libraries
 
@@ -39,7 +41,7 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 #include "TF1.h"
-
+#include "TTree.h"
 
 #include <memory>
 
@@ -57,12 +59,18 @@ public:
   TOFSimDigits & operator = (TOFSimDigits const &) = delete;
   TOFSimDigits & operator = (TOFSimDigits &&) = delete;
   void  reconfigure(fhicl::ParameterSet const & p) override;
-
+  void beginJob() override;
   // Required functions.
   void produce(art::Event & e) override;
   std::string fG4ModuleLabel;
 
 private:
+ 
+  TTree *fTree;
+  int toft0, toftf;
+
+  double usentryT, usexitT;
+  double dsentryT, dsexitT;
 
   // Declare member data here.
 
@@ -73,6 +81,19 @@ void TOFSimDigits::reconfigure(fhicl::ParameterSet const & p)
   // Implementation of optional member function here.
   
   fG4ModuleLabel = p.get<std::string>("G4ModuleLabel");
+  
+}
+
+void TOFSimDigits::beginJob()
+{
+  art::ServiceHandle<art::TFileService> tfs;
+  fTree = tfs->make<TTree>("tofana","Sim TOF");
+  fTree->Branch("usentryT", &usentryT,"usentryT/D");
+  fTree->Branch("usexitT", &usexitT,"usexitT/D");
+  fTree->Branch("dsentryT", &usentryT,"usentryT/D");
+  fTree->Branch("dseexitT", &usexitT,"usexitT/D");
+  fTree->Branch("simt0", &toft0, "simt0/I");
+  fTree->Branch("simtf", &toftf, "simtf/I");
 }
 
 
@@ -95,55 +116,115 @@ void TOFSimDigits::produce(art::Event & e)
   std::unique_ptr< std::vector<raw::AuxDetDigit>> tofdigits(new std::vector<raw::AuxDetDigit>);
   int numSimChannels=AuxDetHandle->size();
   std::cout<<"numSimChannel: "<<numSimChannels<<std::endl;
- // int iter=0;
+  //int iter=0;
   int ID;
 
-//  double energy;
-  std::string detName;
-  short channel;
+  //double energy;
+  //std::string detName;
+  //short channel;
 
   //Generating a example waveform
   std::vector <short> fadc;
   TF1 *wvsim = new TF1("wvsim", "[0] -[1]*TMath::Landau(x,[2],[3])",0,28672);
-  double param[4] = {560.413, 2824.51, 8461.98,2.1};
-  wvsim->SetParameters(param);
-
+  
   std::vector <short> fadc2;
   TF1 *wvsim2 = new TF1("wvsim2", "[0] -[1]*TMath::Landau(x,[2],[3])",0,28672);
-  double param2[4] = {558.763, 897.573, 8502.03, 2.50247};
-  wvsim2->SetParameters(param2);
 
-  for(int i = 0; i < 28672; i++){fadc.push_back((short)wvsim->Eval(i)); fadc2.push_back((short)wvsim2->Eval(i));}
+  std::vector <short> fadc3;
+  std::vector <short> fadc4;
 
-  // for(size_t i=0; i<numSimChannels; ++i){
+  double t0;
+  double tf;
+
+
+
+   if(AuxDetHandle->size() > 0){
+   std::cout<<AuxDetHandle->size()<<std::endl;   
    for(std::vector<sim::AuxDetSimChannel>::const_iterator auxiter = AuxDetHandle->begin(); auxiter!=AuxDetHandle->end(); ++auxiter){
      const sim::AuxDetSimChannel & aux = *auxiter;
-     
+    
      ID=aux.AuxDetID();
-     art::ServiceHandle<geo::Geometry> adGeoServ;
+     //art::ServiceHandle<geo::Geometry> adGeoServ;
+     
      std::vector<sim::AuxDetIDE> SimIDE=aux.AuxDetIDEs();
-     if(ID == 0 || ID == 6){std::cout<<" Found a TOF!! "<<std::endl;
+     if(ID == 0 || ID == 6){
      switch(ID)
      {
        case 0:
-	detName = "USTOF";
-	channel = 5;
-	std::cout<<"USTOF"<<std::endl;
-        tofdigits->push_back(raw::AuxDetDigit(channel, fadc, detName,0));
-	tofdigits->push_back(raw::AuxDetDigit(channel, fadc, detName,0));		
-        break;
-       case 6:
-	detName = "DSTOF";
-	std::cout<<"DSTOF"<<std::endl;
-	channel = 6;
-        tofdigits->push_back(raw::AuxDetDigit(channel, fadc2, detName,0));
-	tofdigits->push_back(raw::AuxDetDigit(channel, fadc2, detName,0));				
-        break;
-     }
+	//detName = "TOFUS";
+	//channel = 5;
+	
+	if(SimIDE.size()>0){ 
+  	usentryT = (double)SimIDE.at(0).entryT;
+       	usexitT = (double)SimIDE.at(0).exitT;   
+ 	t0 = (usentryT + usexitT)/2;
 
-     }
-   }  
-   e.put(std::move(tofdigits));  
+        toft0 = (int)t0;
+	std::cout<<usentryT<<" "<<usexitT<<" TOFUS time: "<<t0<<std::endl;
+        wvsim->SetParameters(929.25, 1323.58, t0 + 8800, 2.10069);
+        wvsim2->SetParameters(924.43, 996.51, t0 + 8800, 2.11423);
+       
+        for(int i = 0; i < 28672; i++){fadc.push_back((short)wvsim->Eval(i));  fadc2.push_back((short)wvsim2->Eval(i));}    		
+        tofdigits->push_back(raw::AuxDetDigit(5, fadc,  "TOFUS",0));
+        tofdigits->push_back(raw::AuxDetDigit(5, fadc2, "TOFUS",0));
+
+        }
+	else toft0 = 0;
+        
+        
+        break;
+   
+      case 6:
+      	if(SimIDE.size() > 0){
+        dsentryT = (double)SimIDE.at(0).entryT;
+       	dsexitT = (double)SimIDE.at(0).exitT;
+	tf = (dsexitT + dsentryT)/2;
+	std::cout<<dsentryT<<" "<<dsexitT<<" TOFDS time: "<<tf<<std::endl;
+        wvsim->SetParameters(919.446, 2502.53, tf + 8800, 2.54303);
+        wvsim2->SetParameters(920.706, 2264.09, tf + 8800, 2.22591);
+        for(int i = 0; i < 28672; i++){fadc3.push_back((short)wvsim->Eval(i));
+        fadc4.push_back((short)wvsim2->Eval(i));}
+        tofdigits->push_back(raw::AuxDetDigit(6, fadc3, "TOFDS",0));
+        tofdigits->push_back(raw::AuxDetDigit(6, fadc4, "TOFDS",0));}
+        else{ tf = 0.;}
+        std::cout<<tf<<" "<<t0<<std::endl;
+
+        break;
+
+    
+    }//switch
+   }//if ID
+   
+   }//for
+   }//if AuxDetDigit->size()
+  if(tofdigits->size()>3){
+
+     if(toftf - toft0 > 0){
+     
+     //
+     short fHitThreshold;
+     int j = 0;
+	    while(j < (int)fadc3.size())
+	    {
+		fHitThreshold = fadc3[j+1] - fadc3[j];
+		if(fHitThreshold < -40){ toftf = j; break;}	
+		else j++;
+	    }
+     j = 0;
+	   while(j < (int)fadc.size())
+	    {
+		fHitThreshold = fadc[j+1] - fadc[j];
+		if(fHitThreshold < -40){ toft0 = j; break;}	
+		else j++;
+	    }
+
+      fTree->Fill();
+  }  
+
+
+
+  }
+  e.put(std::move(tofdigits));
 }
 
 DEFINE_ART_MODULE(TOFSimDigits)

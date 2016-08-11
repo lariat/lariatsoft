@@ -27,7 +27,7 @@ lariat_simwire:
 lariat_tofsim:
 {
    module_type: "TOFSimDigits"
-   DigitModuleLabel: "daq"
+   DigitModuleLabel: "tofsim"
    G4ModuleLabel: "largeant"
 }
 

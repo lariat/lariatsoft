@@ -53,6 +53,8 @@ physics:
 
               DAQ:         "daq"
               TOF:         "tof"
+	      WC:     "wctrack"
+              G4ModuleLabel: "largeant"
        }
 
  }

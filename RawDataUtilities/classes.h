@@ -27,10 +27,6 @@
 #include "larcoreobj/SummaryData/RunData.h"
 
 #include "LArIATDataProducts/WCTrack.h"
-<<<<<<< HEAD
-=======
-
-
 
 /* template class std::vector<V1495Fragment>; */
 /* template class std::vector<V1495ChannelData>; */
@@ -95,4 +91,4 @@ template class art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >;
 template class art::Wrapper<art::Assns<recob::Track, ldp::WCTrack,      void> >;
 
 template class art::Wrapper<art::PtrVector<recob::Track> >;
->>>>>>> fc6c8f7b9b77a5742e1e4d53d3a2622200cbb890
+

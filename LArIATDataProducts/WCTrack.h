@@ -41,7 +41,7 @@ namespace ldp {
     std::vector<int> fWC;               //Defined from 1 to 4, like the Wire Chambers
     std::vector<float> fHitWire;  
     float fHitPosition[4][3];   //WC is first index, dimension (x,y,z) as the second index. A [4][3] object.  
-//    std::vector<float> fHitTime;
+    std::vector<float> fHitTime;
     
 #ifndef __GCCXML__
 
@@ -58,10 +58,7 @@ namespace ldp {
 	     float phi,
 	     std::vector<int> wcVect,
 	     std::vector<float> hitWireVect,
-	     float hitPositionVect[4][3],
-	     int WCMissed,
-	     float residual);
-	     //std::vector<float> hitTimeVect );
+	     std::vector<float> hitTimeVect );
 	     
     // Get Methods
 
@@ -73,11 +70,8 @@ namespace ldp {
     float               Phi()                           const;
     int                 WC(size_t iHit)                 const;
     float               HitWire(size_t iHit)            const;
-    float		HitPosition(int iWC, int iAx )        const;
-    //float               HitTime(size_t iHit)            const;
+    float               HitTime(size_t iHit)            const;
     size_t              NHits()                         const;
-    int                 WCMissed()                      const;
-    float               Residual()			const;
 
 #endif
   };
@@ -89,9 +83,8 @@ inline float  ldp::WCTrack::Momentum() const { return fMomentum;      }
 inline float  ldp::WCTrack::YKink()    const { return fYKink;         }
 inline float  ldp::WCTrack::Theta()    const { return fTheta;         }
 inline float  ldp::WCTrack::Phi()      const { return fPhi;           }
-inline int    ldp::WCTrack::WCMissed() const { return fWCMissed;     }
 inline size_t ldp::WCTrack::NHits()    const {return  fWC.size();     }
-inline float  ldp::WCTrack::Residual() const {return fResidual;      }
+
 
 #endif
 

@@ -38,22 +38,26 @@ wv_clean = new TH1D("wv_clean","",(int)spectrum.size(),0,(double)spectrum.size()
 wv_clean->Add(hb,wv,-1);
 /*for(int i = 0; i < hb->GetNbinsX(); i++){std::cout<<1./hb->GetBinContent(i)<<" "<<1./wv_clean->GetBinContent(i)<<std::endl;}*/
 double sum_b;
-int bsize;
+double bsize;
 
-bsize = hb->GetNbinsX();
+bsize = (double)hb->GetNbinsX();
 sum_b = 0;
 
-for (int i = 0; i < bsize; i++) {sum_b += hb->GetBinContent(i);}
+for (int i = 1; i < bsize; i++) {sum_b += 1./hb->GetBinContent(i);}
+
 
 baseline = sum_b/bsize;
-baseline = 1./baseline;
+
+
 
 sum_b = 0;
-for (int i = 0; i < bsize; i++) sum_b += (hb->GetBinContent(i) - 1./baseline)*(hb->GetBinContent(i) - 1./baseline);
+for (int i = 1; i < bsize; i++) sum_b += (1./hb->GetBinContent(i) - baseline)*(1./hb->GetBinContent(i) - baseline);
 rms_baseline = sqrt(sum_b/bsize);
-rms_baseline = 1./rms_baseline;
+rms_baseline = rms_baseline;
 nfound = s.Search(wv_clean,6,"",0.1);
 xpeaks = s.GetPositionX();
+
+//std::cout<<"Baseline: "<<baseline<<" "<<rms_baseline<<std::endl;
 
 int xp;
 int bin;
@@ -70,7 +74,7 @@ for(int i = 0; i < nfound; i++)
    peak =  wv->GetBinContent(bin);
    
    if( polarity== "" || polarity == "negative"){
-   //std::cout<<abs(baseline - 1./peak)<<" "<<threshold<<std::endl; 
+  // std::cout<<abs(baseline - 1./peak)<<" "<<threshold<<std::endl; 
    if(abs(baseline - 1./peak) > threshold)
    {
      peak = 1./peak;  
@@ -108,23 +112,27 @@ double WaveformAnalysis::GetPulseArea(std::vector<short> fadc, double peak_time)
   peak_position = int(peak_time/1e-9);
   int j;
   j = peak_position;
+//  std::cout<<peak_position<<std::endl;
   short sum_rt;
   sum_rt = 0;
   short sum_dt;
   sum_dt = 0;
-  while(fadc[j+1] < baseline)
+//  std::cout<<"Let's go back to baseline (RISE)"<<fadc[j+1]<<" "<<sum_rt<<" "<<baseline - 10*rms_baseline<<std::endl;
+  while(fadc[j+1] < baseline - 10*rms_baseline)
   {
-
+  //   std::cout<<"Let's go back to baseline (RISE)"<<fadc[j+1]<<" "<<sum_rt<<" "<<baseline - 10*rms_baseline<<std::endl;
      sum_rt = sum_rt+fadc[j];
      j++;
   }
   peak_rise_time = short(j - peak_position);
   j = peak_position;
-  while(fadc[j-1] < baseline)
+  while(fadc[j-1] < baseline - 10*rms_baseline)
   {
+  //   std::cout<<"Let's go back to baseline (DECAY)"<<fadc[j+1]<<" "<<sum_rt<<" "<< baseline - 10*rms_baseline <<std::endl; 
      sum_dt = sum_dt+fadc[j];
      j--;
   }
+    peak_area = sum_dt + sum_rt;
     peak_decay_time = short(peak_position-j);
  return peak_area;
 

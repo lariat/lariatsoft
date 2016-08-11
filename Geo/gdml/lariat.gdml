@@ -2196,8 +2196,8 @@
     <box name="volAuxDetMuonScint" x="66.04" y="15.24" z="1.27" lunit="cm"/>
     <box name="MuRSLong" x="66.04" y="64.77" z="13.97" lunit="cm"/>
     <box name="MuRSMed" x="66.04" y="64.77" z="7.9375" lunit="cm"/>
-    <box name="volMagnet1" x="31.75" y="14.22" z="46.67" lunit="cm"/>
-    <box name="volMagnet2" x="31.75" y="14.22" z="46.67" lunit="cm"/>
+    <box name="volMagnet1" x="31.75" y="14.22" z="59.10" lunit="cm"/>
+    <box name="volMagnet2" x="31.75" y="14.22" z="59.10" lunit="cm"/>
     <trap name="volAuxDetCosmic30x1" z="3.02" theta="0" phi="0" x1="27" x2="33.2" x3="27" x4="33.2" y1="70.8" y2="70.8" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
     <trap name="volAuxDetCosmic10x1" z="3.02" theta="0" phi="0" x1="26.7" x2="32.2" x3="26.7" x4="32.2" y1="61" y2="61" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
     <trap name="volAuxDetCosmic40x1" z="3.02" theta="0" phi="0" x1="27" x2="33.2" x3="27" x4="33.2" y1="70.8" y2="70.8" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>

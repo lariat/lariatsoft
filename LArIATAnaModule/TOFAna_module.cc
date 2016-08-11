@@ -24,8 +24,14 @@
 // LArSoft Libraries
 #include "lardataobj/RawData/AuxDetDigit.h"
 #include "LArIATDataProducts/TOF.h"
+#include "LArIATDataProducts/WCTrack.h"
 #include "LArIATAnaModule/WaveformAnalysis.h"
-
+#include "larcore/Geometry/Geometry.h"
+#include "larcore/Geometry/AuxDetGeo.h"
+#include "larcore/Geometry/AuxDetGeometry.h"
+#include "larsimobj/Simulation/sim.h"
+#include "larsimobj/Simulation/SimChannel.h"
+#include "larsimobj/Simulation/AuxDetSimChannel.h"
 
 //ROOT Library
 
@@ -53,8 +59,10 @@ public:
   void  beginJob();
   double* FittingWaveform(std::vector <short> wvform); 
   std::string fTOFModuleLabel;
+  std::string fWCModuleLabel;
   std::string fAuxDetModule;
-  
+  std::string fG4ModuleLabel;
+
 private:
 
   // Declare member data here.
@@ -73,8 +81,19 @@ private:
   double pareau1;
   double paread0;
   double paread1;
+
+  short delta_t;
+  double toft0, toftf;
+
+  double simt0, simtf;
   
   TTree *fTree;
+
+  double peak_height;
+
+  double peak_area;
+
+  double wc_momentum;
 
 };
 
@@ -93,7 +112,9 @@ TOFAna::TOFAna(fhicl::ParameterSet const & p)
 void TOFAna::reconfigure(fhicl::ParameterSet const & p)
 {
   fTOFModuleLabel = p.get<std::string>("TOF", "tof");
+  fWCModuleLabel =  p.get<std::string>("WC", "wctrack");
   fAuxDetModule = p.get<std::string>("DAQ", "daq");
+  fG4ModuleLabel = p.get<std::string>("G4ModuleLabel");
 }
 
 void  TOFAna::beginJob()
@@ -109,8 +130,12 @@ void  TOFAna::beginJob()
   fTree->Branch("chi2normd0", &chi2normd0,"chi2normd0/D");
   fTree->Branch("wvparamd1", &paramd1, "wvparamd1[4]/D");
   fTree->Branch("chi2normd1", &chi2normd1,"chi2normd1/D");
-   
-  
+  fTree->Branch("tof", &delta_t,"tof/S");
+  fTree->Branch("recot0", &toft0, "recot0/D");
+  fTree->Branch("recotf", &toftf, "recotf/D");
+  fTree->Branch("simt0", &simt0, "simt0/D");
+  fTree->Branch("simtf", &simtf, "simtf/D");
+  fTree->Branch("wcmomentum", &wc_momentum, "wcmomentum/D");
 
 }
 
@@ -119,14 +144,17 @@ void TOFAna::analyze(art::Event const & e)
 {
   // Implementation of required member function here.
 
-  
+  //art::Handle< std::vector<sim::AuxDetSimChannel> > AuxDetHandle;
+  //e.getByLabel(fG4ModuleLabel, AuxDetHandle);
+
   art::Handle< std::vector<raw::AuxDetDigit> > AuxDetDigitHandle;	
   e.getByLabel(fAuxDetModule,AuxDetDigitHandle);
 
   art::Handle< std::vector<ldp::TOF> > tofHandle;	
   e.getByLabel(fTOFModuleLabel,tofHandle);
 
-
+  art::Handle< std::vector<ldp::WCTrack> > wcHandle;	
+  e.getByLabel(fWCModuleLabel,wcHandle);
 
   std::vector<const raw::AuxDetDigit*> USTOF;
   std::vector<const raw::AuxDetDigit*> DSTOF;
@@ -137,9 +165,47 @@ void TOFAna::analyze(art::Event const & e)
   std::vector<short> dsdet1;
 
   double* fitting;
+
+//  int t0, tf;
+
+//  short fHitThreshold;
+
+
  
-if(tofHandle->size() > 0 && tofHandle->at(0).NTOF() > 0){
+if(tofHandle->size() > 0 && tofHandle->at(0).NTOF() > 0 && wcHandle->size() > 0){
+
+
+     wc_momentum = wcHandle->at(0).Momentum();
+
+     /*int ID;
+
+     for(std::vector<sim::AuxDetSimChannel>::const_iterator auxiter = AuxDetHandle->begin(); auxiter!=AuxDetHandle->end(); ++auxiter){
+     const sim::AuxDetSimChannel & aux = *auxiter;
+    
+     ID=aux.AuxDetID();
+     art::ServiceHandle<geo::Geometry> adGeoServ;
+     std::vector<sim::AuxDetIDE> SimIDE=aux.AuxDetIDEs();
+     if(ID == 0 || ID == 6){
+     double entryT, exitT;
+     switch(ID)
+     {
+       case 0:
+       entryT = (double)SimIDE.at(0).entryT;
+       exitT = (double)SimIDE.at(0).exitT;   
+       simt0 = (entryT + exitT)/2;
+       break;
    
+       case 6:
+       entryT = (double)SimIDE.at(0).entryT;
+       exitT = (double)SimIDE.at(0).exitT;   
+       simtf = (entryT + exitT)/2;
+       break;
+      
+     }
+
+     }
+
+     }*/   
        for( size_t iDig = 0; iDig < AuxDetDigitHandle->size() ; ++iDig ){
 
          if( AuxDetDigitHandle->at(iDig).AuxDetName() == "TOFUS" ) USTOF.push_back(&(AuxDetDigitHandle->at(iDig)));
@@ -151,18 +217,18 @@ if(tofHandle->size() > 0 && tofHandle->at(0).NTOF() > 0){
               usdet0.push_back(USTOF.at(0)->ADC(iADC));
            }
 
-           std::cout<<*std::min_element(usdet0.begin(),usdet0.end())<<std::endl;
            fitting = FittingWaveform(usdet0);
+
  	   if(fitting){
-           for(int i =0; i < 3; i++)
+           for(int i =0; i < 4; i++)
 	   {
 		paramu0[i] = *(fitting+i);
 
            }
-
            chi2normu0 = *(fitting+4);}
-           
-           
+           std::cout<<paramu0[0]<<" "<<paramu0[1]<<" "<<paramu0[2]<<" "<<paramu0[3]<<std::endl;
+
+	             
            for(size_t iADC = 0; iADC < USTOF.at(1)->NADC(); ++iADC)
   	   {
               usdet1.push_back(USTOF.at(1)->ADC(iADC));
@@ -171,13 +237,38 @@ if(tofHandle->size() > 0 && tofHandle->at(0).NTOF() > 0){
            fitting = FittingWaveform(usdet1);
 
            if(fitting){
-           for(int i =0; i < 3; i++)
+           for(int i =0; i < 4; i++)
 	   {
 		paramu1[i] = *(fitting+i);
 
            }
-
+	   std::cout<<paramu1[0]<<" "<<paramu1[1]<<" "<<paramu1[2]<<" "<<paramu1[3]<<std::endl;
            chi2normu1 = *(fitting+4);}
+
+           if(paramu1[2] < paramu0[2])
+           { //t0 = std::find(usdet1.begin(),usdet1.end(),*std::min_element(usdet1.begin(),usdet1.end())) - usdet1.begin();
+/*	    int j = 0;
+	    while(j < (int)usdet1.size())
+	    {
+		fHitThreshold = usdet1[j+1] - usdet1[j];
+		if(fHitThreshold < -40){ t0 = j; break;}	
+		else j++;
+	    }
+*/
+	   toft0 = paramu1[2];
+
+           }
+           else{ //t0 = std::find(usdet0.begin(),usdet0.end(),*std::min_element(usdet0.begin(),usdet0.end())) - usdet0.begin();
+/*	    int j = 0;	
+            while(j < (int)usdet0.size())
+	    {
+		fHitThreshold = usdet0[j+1] - usdet0[j];
+		if(fHitThreshold < -40){ t0 = j; break;}	
+		else j++;
+	    }
+*/
+	   toft0 = paramu0[2];
+	   }
 
            for(size_t iADC = 0; iADC < DSTOF.at(0)->NADC(); ++iADC)
   	   {
@@ -185,18 +276,17 @@ if(tofHandle->size() > 0 && tofHandle->at(0).NTOF() > 0){
            }
 
            fitting = FittingWaveform(dsdet0);
-
+            
 
            if(fitting){
-           for(int i =0; i < 3; i++)
+           for(int i =0; i < 4; i++)
 	   {
 		paramd0[i] = *(fitting+i);
-
            }
-
+	   
+//           std::cout<<paramd0[0]<<" "<<paramd0[1]<<" "<<paramd0[2]<<" "<<paramd0[3]<<std::endl;
+//         std::cout<<" This is the fitting variable: "<<*(fitting + 3)<<std::endl;       
            chi2normd0 = *(fitting+4);}
-
-
            
            for(size_t iADC = 0; iADC < DSTOF.at(1)->NADC(); ++iADC)
   	   {
@@ -206,14 +296,48 @@ if(tofHandle->size() > 0 && tofHandle->at(0).NTOF() > 0){
            fitting = FittingWaveform(dsdet1);
 
            if(fitting){
-           for(int i =0; i < 3; i++)
+           for(int i =0; i < 4; i++)
 	   {
 		paramd1[i] = *(fitting+i);
 
            }
-
+           std::cout<<paramd1[0]<<" "<<paramd1[1]<<" "<<paramd1[2]<<" "<<paramd1[3]<<std::endl;
            chi2normd1 = *(fitting+4);
            }
+
+           if(paramd1[2] < paramd0[2]){// tf = std::find(dsdet1.begin(),dsdet1.end(),*std::min_element(dsdet1.begin(),dsdet1.end())) - dsdet1.begin();
+
+	   toftf = paramd1[2];
+           /*int j = 0;
+	    while(j < (int)dsdet1.size())
+	    {
+		fHitThreshold = dsdet0[j+1] - dsdet0[j];
+		if(fHitThreshold < -40){ tf = j; break;}	
+		else j++;
+	    }*/
+
+           }
+           else{ //tf = std::find(dsdet0.begin(),dsdet0.end(),*std::min_element(dsdet0.begin(),dsdet0.end())) - dsdet0.begin();
+/*
+            int j = 0;
+	    while(j < (int)dsdet0.size())
+	    {
+		fHitThreshold = dsdet1[j+1] - dsdet1[j];
+		if(fHitThreshold < -40){ tf = j; break;}	
+		else j++;
+	    }
+
+*/
+           }
+
+
+
+	   toftf = paramd0[2];
+	   //toftf = (double)tf;
+	   //toft0 = (double)t0;
+//           delta_t = tofHandle->at(0).SingleTOF(0);
+	     delta_t = toftf - toft0;
+ 	   std::cout<<"Time of Flight: "<<delta_t<<std::endl;
 
            fTree->Fill();
 	
@@ -282,12 +406,14 @@ if(found){
  		chi = fit->GetChisquare();
 		ndf = fit->GetNDF();
 	        param[5] = chi/(double)ndf;
+//		std::cout<<"This is the param fitting: "<<param[3]<<std::endl;
 		
 		gr->Clear();
                 gr->Delete();
 		wv_sample.clear();	        		
 	
 		fparam = param;
+                
 
                 
 }

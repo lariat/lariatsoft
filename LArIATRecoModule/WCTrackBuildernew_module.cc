@@ -85,7 +85,8 @@ public:
 
   void createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
 					    std::vector<int> & WC_vect,
-					    std::vector<float> & hit_wire_vect);
+					    std::vector<float> & hit_wire_vect,
+					    std::vector<float> & hit_time_vect);
 					    
 					    
   void plotTheTrackInformation( std::vector<double> reco_pz_list,
@@ -290,7 +291,7 @@ void WCTrackBuildernew::produce(art::Event & e)
     for( int iNewTrack = 0; iNewTrack<tracknumber; ++iNewTrack ){
       std::vector<int> WC_vect;
       std::vector<float> hit_wire_vect;
-      //std::vector<float> hit_time_vect;
+      std::vector<float> hit_time_vect;
       
       WCHitList final_track = final_tracks[iNewTrack];
       
@@ -298,7 +299,7 @@ void WCTrackBuildernew::produce(art::Event & e)
       //Filling as done above, but formats the WC and hit wire vectors in the WCAuxDetDigit style
       createAuxDetStyleVectorsFromHitLists(final_track,
 					   WC_vect,
-					   hit_wire_vect);
+					   hit_wire_vect, hit_time_vect);
       
       //WCTrack object creation and association with trigger created
       ldp::WCTrack the_track(reco_pz_list[iNewTrack],
@@ -312,9 +313,7 @@ void WCTrackBuildernew::produce(art::Event & e)
 			     phi_list[iNewTrack],
 			     WC_vect,
 			     hit_wire_vect,
-			     hit_position_vect,
-			     WCMissed,
-			     residual);
+			     hit_time_vect);
       (*WCTrackCol).push_back( the_track );
     }
 
@@ -337,14 +336,16 @@ void WCTrackBuildernew::produce(art::Event & e)
   //==================================================================================================
   void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
 								   std::vector<int> & WC_vect,
-								   std::vector<float> & hit_wire_vect)
+								   std::vector<float> & hit_wire_vect,
+								   std::vector<float> & hit_time_vect)
   {
     for( size_t iHit = 0; iHit < final_track.hits.size() ; ++iHit ){
       WC_vect.push_back(int(iHit/2)+1);          //Look at how hits are pushed into the tracks in buildTracksFromHits (alg)
 
       float the_wire = (final_track.hits.at(iHit).wire*-1)+64+(128*(iHit%2));
       if (fVerbose) { std::cout << "Old WCAxis/Wire: " << iHit << "/" << final_track.hits.at(iHit).wire << ", New WC/Wire: " << int(iHit/2)+1 << "/" << the_wire << std::endl; }
-      hit_wire_vect.push_back(the_wire);    
+      hit_wire_vect.push_back(the_wire);
+      hit_time_vect.push_back(0.);    
     }
   }
 //   //=======================================================================================

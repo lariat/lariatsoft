@@ -121,7 +121,7 @@ bool TOFQuality::filter(art::Event & evt)
 }
 
 
-<<<<<<< HEAD
+
 /*
 bool tofGood = true;
 if(ntof < 1){continue;}
@@ -135,9 +135,9 @@ else {
    if( TOFColHandle->at(0).NTOF() != 1 ) {return false;} 
    
   else return true;}
->>>>>>> fc6c8f7b9b77a5742e1e4d53d3a2622200cbb890
 
-  }//<---End mmtof                                                                                                                                                                                  
+
+  }//<-End                                                                                                                                                                                   
 
 */
 
