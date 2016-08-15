@@ -30,6 +30,9 @@ parser.add_option ('-T', dest='starterTree', type='string',
 parser.add_option ('--spillsize', dest='spillsize', type='int',
                    default = 300000,
                    help="The number of G4BL events (particles launched at the target) per spill.")
+parser.add_option ('--spillinterval', dest='spillinterval', type='float',
+                   default = 60.0,
+                   help="The duration of a sub-run. (seconds)")
 parser.add_option ('-l', dest='keepitlocal', action="store_true", default=False,
                    help="Keep the output file in the same directory as the input file.")
 
@@ -39,6 +42,7 @@ outfile = options.outfile
 debug = False
 starterTree = options.starterTree
 spillsize = options.spillsize
+spillinterval = options.spillinterval
 keepitlocal   = options.keepitlocal
 infile = args[0]
 
@@ -265,7 +269,8 @@ for ds_track in INtuples[starterTree]:
                             if debug: print "Filling ",vardet," in ",systname
                             if var == 't':  # Convert times to seconds & add an offset mimicking spill time profile
                                 random.seed(event) #Same random offset for each event.
-                                pointers[vardet][0] = getattr(structs[systname],vardet)*1e-9 + RandomOffsetSeconds()
+                                spilltimeoffset = spillinterval * float (SpillID_p[0])
+                                pointers[vardet][0] = getattr(structs[systname],vardet)*1e-9 + RandomOffsetSeconds() + spilltimeoffset
                             else:
                                 pointers[vardet][0] = getattr(structs[systname],vardet)
                                 break #tuplename will only be in one syst, not more. q
