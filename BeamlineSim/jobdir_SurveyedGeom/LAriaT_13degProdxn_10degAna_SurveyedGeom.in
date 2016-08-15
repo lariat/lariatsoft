@@ -43,7 +43,7 @@ g4ui when=4 “/vis/scene/add/axes 1 2 3 500 mm”
  beam gaussian particle=pi+ firstEvent=$first lastEvent=$last sigmaX=2.0 sigmaY=2.0 beamZ=-500.0 \
    meanMomentum=8000.0
 	
- trackcuts  keep=pi+,pi-,pi0,kaon+,kaon-,mu+,mu-,e+,e-,proton,anti_proton
+ trackcuts  keep=pi+,pi-,pi0,kaon+,kaon-,mu+,mu-,e+,e-,gamma,proton,anti_proton
 
 #  Cu int. length.  135 g/Cm^2;  density = 9; so int length = 3.9 cm ( 39mm )
 # Target is a right parallelogramatic prism 1.25" = 31.75 mm high and wide, measured transverse to incoming beam.
@@ -107,6 +107,12 @@ group ChFram
   place FramT z=0.0 y=+95.5
  endgroup
 #---------------------------------------------------------------------- 
+#--------------------StartLine Fake Detector ------------------
+ virtualdetector StartLine width=150 height=150 length=1 material=Air color=0.9,0.9,0.7
+  place StartLine rotation=z45,y-13 z=1400.0-26.4 x=-335.0+5.7
+
+
+
 
 #     Time of Flight (TOF) counter
   param TOFusThick=50.8   ### 2 inches thick?
