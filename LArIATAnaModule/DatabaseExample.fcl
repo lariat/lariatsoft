@@ -5,10 +5,9 @@ process_name: DatabaseExample
 services:
 {
   #TFileService: { fileName: "DatabaseExample.root" }
-  Timing:       {}
   RandomNumberGenerator: {} 
   message:      @local::standard_info
-  user:         @local::lariat_services
+  @table::lariat_services
 }
 
 source:
