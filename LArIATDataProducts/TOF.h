@@ -22,7 +22,7 @@ namespace ldp {
     ~TOF(){}; // Default destructor
     
   private:
-    std::vector<short> fTOF;
+    std::vector<float> fTOF;
     std::vector<long>  fTimeStamp;
     
 #ifndef __GCCXML__
@@ -32,16 +32,16 @@ namespace ldp {
     //  TOF( std::vector<short> TOF, std::vector<long> TimeStamp ):
     //fTOF(TOF), fTimeStamp(TimeStamp) {}
     
-    TOF( std::vector<short> TOF, std::vector<long> TimeStamp ) { 
+    TOF( std::vector<float> TOF, std::vector<long> TimeStamp ) { 
       fTOF = TOF;
       fTimeStamp = TimeStamp;
     }
 
     // Get Methods
-    short  SingleTOF(size_t iHit) const;
+    float  SingleTOF(size_t iHit) const;
     long   TimeStamp(size_t iHit) const;
     // Set Methods
-    void   SetSingleTOF(std::vector<short> value) {fTOF       = value;};
+    void   SetSingleTOF(std::vector<float> value) {fTOF       = value;};
     void   SetTimeStamp(std::vector<long>  value) {fTimeStamp = value;};
     
     size_t NTOF() const;

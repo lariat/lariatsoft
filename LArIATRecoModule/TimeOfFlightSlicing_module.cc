@@ -133,7 +133,7 @@ void lrm::TimeOfFlightSlicing::produce(art::Event & e)
     // Creates the object, pushes it, and Associates it to the trigger.
     // Variables of our object
     
-    std::pair<std::vector<short>, std::vector<long> > pair;
+    std::pair<std::vector<float>, std::vector<long> > pair;
     pair = fTOFAlg.get_TOF_and_TimeStamp(USTOF, DSTOF);
 
     ldp::TOF TOFObject(pair.first, pair.second);
@@ -162,7 +162,7 @@ void lrm::TimeOfFlightSlicing::beginJob()
   art::ServiceHandle<art::TFileService> tfs;
 
   if( fMakeHistograms ){
-    fTOFHisto = tfs->make<TH1F>("TOF","All TOF possibilities",100,0.0,100.0);
+    fTOFHisto = tfs->make<TH1F>("TOF","All TOF possibilities",500,0.0,100.0);
     fTOFHisto->SetTitle("All TOF Possibilites");
     fTOFHisto->GetXaxis()->SetTitle("TOF (ns)");
     fTOFHisto->GetYaxis()->SetTitle("TOF hits per 1 ns");

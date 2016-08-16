@@ -1235,10 +1235,10 @@ namespace DataQuality {
       if (ustofDigits.size() == 2 and dstofDigits.size() == 2) {
 
         // vector for TOF waveforms
-        std::vector<short> ustofWaveformA;
-        std::vector<short> ustofWaveformB;
-        std::vector<short> dstofWaveformA;
-        std::vector<short> dstofWaveformB;
+        std::vector<float> ustofWaveformA;
+        std::vector<float> ustofWaveformB;
+        std::vector<float> dstofWaveformA;
+        std::vector<float> dstofWaveformB;
 
         // fill vectors with TOF waveforms
         for (size_t j = 0; j < ustofDigits[0]->NADC(); ++j) {
@@ -1255,15 +1255,15 @@ namespace DataQuality {
         }
 
         // find hits from TOF waveforms
-        std::vector<short> ustofAHits = fTOFBuilderAlg.find_hits(ustofWaveformA);
-        std::vector<short> ustofBHits = fTOFBuilderAlg.find_hits(ustofWaveformB);
-        std::vector<short> dstofAHits = fTOFBuilderAlg.find_hits(dstofWaveformA);
-        std::vector<short> dstofBHits = fTOFBuilderAlg.find_hits(dstofWaveformB);
+        std::vector<float> ustofAHits = fTOFBuilderAlg.find_hits(ustofWaveformA);
+        std::vector<float> ustofBHits = fTOFBuilderAlg.find_hits(ustofWaveformB);
+        std::vector<float> dstofAHits = fTOFBuilderAlg.find_hits(dstofWaveformA);
+        std::vector<float> dstofBHits = fTOFBuilderAlg.find_hits(dstofWaveformB);
 
         // match hits between TOF counters;
         // USTOF1 matched with USTOF2, DSTOF1 matched with DSTOF2
-        std::vector<short> ustofHits = fTOFBuilderAlg.match_hits(ustofAHits, ustofBHits);
-        std::vector<short> dstofHits = fTOFBuilderAlg.match_hits(dstofAHits, dstofBHits);
+        std::vector<float> ustofHits = fTOFBuilderAlg.match_hits(ustofAHits, ustofBHits);
+        std::vector<float> dstofHits = fTOFBuilderAlg.match_hits(dstofAHits, dstofBHits);
 
         //std::cout << "ustofHits.size(): " << ustofHits.size() << std::endl;
         //std::cout << "dstofHits.size(): " << dstofHits.size() << std::endl;
@@ -1276,7 +1276,7 @@ namespace DataQuality {
           fDSTOFHitsHistogram->Fill(dstofHits[j]);
         }
 
-        std::pair< std::vector<short>, std::vector<long> > tofAndTimeStamp;
+        std::pair< std::vector<float>, std::vector<long> > tofAndTimeStamp;
         tofAndTimeStamp = fTOFBuilderAlg.get_TOF_and_TimeStamp(ustofDigits, dstofDigits);
 
         //std::cout << "tofAndTimeStamp.first.size(): " << tofAndTimeStamp.first.size() << std::endl;
