@@ -1,13 +1,13 @@
 #include "services_lariat.fcl"
 #include "clockcorrectionalg.fcl"
-#include "resourcetracking_services.fcl"
+##include "resourcetracking_services.fcl"
 
 process_name: ClockCorrectionCheck
 
 services:
 {
   TFileService: { fileName: "ClockCorrectionCheck.root" }
-  @table::standard_resourcetrackers
+ #@table::standard_resourcetrackers
   RandomNumberGenerator: {}
   message:      @local::standard_info
   @table::lariat_services

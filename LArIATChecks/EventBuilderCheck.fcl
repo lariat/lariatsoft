@@ -1,14 +1,14 @@
 #include "services_lariat.fcl"
 #include "clockcorrectionalg.fcl"
 #include "eventbuilderalg.fcl"
-#include "resourcetracking_services.fcl"
+##include "resourcetracking_services.fcl"
 
 process_name: EventBuilderCheck
 
 services:
 {
   TFileService: { fileName: "EventBuilderCheck.root" }
-  @table::standard_resourcetrackers
+ #@table::standard_resourcetrackers
   RandomNumberGenerator: {}
   message:      @local::standard_info
   @table::lariat_services

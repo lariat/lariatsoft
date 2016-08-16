@@ -2,14 +2,14 @@
 #include "clockcorrectionalg.fcl"
 #include "eventbuilderalg.fcl"
 #include "RawDataUtilities_algs.fcl"
-#include "resourcetracking_services.fcl"
+##include "resourcetracking_services.fcl"
 
 process_name: DataQuality
 
 services:
 {
   TFileService: { fileName: "data_quality.root" }
-  @table::standard_resourcetrackers
+ #@table::standard_resourcetrackers
   RandomNumberGenerator: {}
   message:      @local::standard_info
   @table::lariat_services
