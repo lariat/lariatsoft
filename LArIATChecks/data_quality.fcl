@@ -2,16 +2,17 @@
 #include "clockcorrectionalg.fcl"
 #include "eventbuilderalg.fcl"
 #include "RawDataUtilities_algs.fcl"
+#include "resourcetracking_services.fcl"
 
 process_name: DataQuality
 
 services:
 {
   TFileService: { fileName: "data_quality.root" }
-  Timing:       {}
-  RandomNumberGenerator: {} 
+  @table::standard_resourcetrackers
+  RandomNumberGenerator: {}
   message:      @local::standard_info
-  user:         @local::lariat_services
+  @table::lariat_services
 }
 
 source:
@@ -73,7 +74,7 @@ physics:
   end_paths: [ analysis ]  
 }
 
-services.user.LArSeedService: @local::random_seedservice
+services.LArSeedService: @local::random_seedservice
 #physics.analyzers.DataQuality.EventBuilderAlg.ClockCorrectionAlg.MinSamples:                   2
 #physics.analyzers.DataQuality.EventBuilderAlg.ClockCorrectionAlg.ResidualThreshold:            1
 #physics.analyzers.DataQuality.EventBuilderAlg.ClockCorrectionAlg.MaxTrials:                    10000

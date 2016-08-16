@@ -1,15 +1,16 @@
 #include "services_lariat.fcl"
 #include "eventbuilderalg.fcl"
 #include "RawDataUtilities_algs.fcl"
+#include "resourcetracking_services.fcl"
 
 process_name: EventBuilder
 
 services:
 {
-  Timing:       {}
-  RandomNumberGenerator: {} 
+  @table::standard_resourcetrackers
+  RandomNumberGenerator: {}
   message:      @local::standard_info
-  user:         @local::lariat_services
+  @table::lariat_services
 }
 
 source:
@@ -72,7 +73,7 @@ physics:
   end_paths: [ stream1 ]  
 }
 
-services.user.LArSeedService: @local::random_seedservice
+services.LArSeedService: @local::random_seedservice
 
 # parameters for EventBuilderAlg
 source.EventBuilderAlg.TPCReadoutBufferLow:  10.0  # microseconds
