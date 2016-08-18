@@ -44,7 +44,7 @@
 #include "lardataobj/RecoBase/TrackHitMeta.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
-#include "lardata/RecoBaseArt/TrackUtils.h" // lar::utils::TrackPitchInView()
+#include "lardata/RecoBaseArt/TrackUtils.h" // lar::util::TrackPitchInView()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -1379,10 +1379,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    {
 	      // ### If we are in the induction plane calculate the tracks pitch in that view ###
 	      if (j==0)
-		trkpitch[i][j] = lar::utils::TrackPitchInView(*tracklist[i], geo::kU);
+		trkpitch[i][j] = lar::util::TrackPitchInView(*tracklist[i], geo::kU);
 	      // ### If we are in the collection plane calculate the tracks pitch in that view ###
 	      else if (j==1)
-		trkpitch[i][j] = lar::utils::TrackPitchInView(*(tracklist[i]), geo::kV);
+		trkpitch[i][j] = lar::util::TrackPitchInView(*(tracklist[i]), geo::kV);
 	    }//<---End Try statement
 	  catch( cet::exception &e)
 	    {mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
