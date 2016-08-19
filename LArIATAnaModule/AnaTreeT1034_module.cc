@@ -44,7 +44,7 @@
 #include "lardataobj/RecoBase/TrackHitMeta.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
-#include "lardata/RecoBaseArt/TrackUtils.h" // lar::utils::TrackPitchInView()
+#include "lardata/RecoBaseArt/TrackUtils.h" // lar::util::TrackPitchInView()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -234,7 +234,18 @@ private:
   double XAxisHist[kMaxWCTracks][1000];		//<---coord in terms of units.
   double YAxisHist[kMaxWCTracks][1000];		//<---coord in terms of units.
   double Y_Kink[kMaxWCTracks];     		//<---angle in Y between upstream and downstream tracks.
-   
+  float  WC1xPos[kMaxWCTracks];
+  float  WC1yPos[kMaxWCTracks];
+  float  WC1zPos[kMaxWCTracks];
+  float  WC2xPos[kMaxWCTracks];
+  float  WC2yPos[kMaxWCTracks];
+  float  WC2zPos[kMaxWCTracks];                 //<---The WC positions are relative to the lower front corner of the TPC
+  float  WC3xPos[kMaxWCTracks];
+  float  WC3yPos[kMaxWCTracks];
+  float  WC3zPos[kMaxWCTracks];
+  float  WC4xPos[kMaxWCTracks];
+  float  WC4yPos[kMaxWCTracks];
+  float  WC4zPos[kMaxWCTracks];
    
   // === Storing Time of Flight information ===
   int ntof;
@@ -1090,6 +1101,19 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       wctrk_YDist[wct_count] = wctrack[wct_count]->DeltaDist(1);
       wctrk_ZDist[wct_count] = wctrack[wct_count]->DeltaDist(2);
       Y_Kink[wct_count] = wctrack[wct_count]->YKink();
+      WC1xPos[wct_count] = wctrack[wct_count]->HitPosition(0,0);
+      WC1yPos[wct_count] = wctrack[wct_count]->HitPosition(0,1);
+      WC1zPos[wct_count] = wctrack[wct_count]->HitPosition(0,2);
+      WC2xPos[wct_count] = wctrack[wct_count]->HitPosition(1,0);
+      WC2yPos[wct_count] = wctrack[wct_count]->HitPosition(1,1);
+      WC2zPos[wct_count] = wctrack[wct_count]->HitPosition(1,2);
+      WC3xPos[wct_count] = wctrack[wct_count]->HitPosition(2,0);
+      WC3yPos[wct_count] = wctrack[wct_count]->HitPosition(2,1);
+      WC3zPos[wct_count] = wctrack[wct_count]->HitPosition(2,2);
+      WC4xPos[wct_count] = wctrack[wct_count]->HitPosition(3,0);
+      WC4yPos[wct_count] = wctrack[wct_count]->HitPosition(3,1);
+      WC4zPos[wct_count] = wctrack[wct_count]->HitPosition(3,2);
+//      std::cout<<"The WC4 x-position is: "<<wctrack[wct_count]->HitPosition(3,0)<<std::endl;
       
       // === Getting individual channel information ===
       for(size_t chIt = 0; 2*chIt+1 < wctrack[wct_count]->NHits(); ++chIt)
@@ -1355,10 +1379,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    {
 	      // ### If we are in the induction plane calculate the tracks pitch in that view ###
 	      if (j==0)
-		trkpitch[i][j] = lar::utils::TrackPitchInView(*tracklist[i], geo::kU);
+		trkpitch[i][j] = lar::util::TrackPitchInView(*tracklist[i], geo::kU);
 	      // ### If we are in the collection plane calculate the tracks pitch in that view ###
 	      else if (j==1)
-		trkpitch[i][j] = lar::utils::TrackPitchInView(*(tracklist[i]), geo::kV);
+		trkpitch[i][j] = lar::util::TrackPitchInView(*(tracklist[i]), geo::kV);
 	    }//<---End Try statement
 	  catch( cet::exception &e)
 	    {mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
@@ -1746,6 +1770,18 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("XAxisHist",XAxisHist,"XAxisHist[nwctrks][1000]/D");
   fTree->Branch("YAxisHist",YAxisHist,"YAxisHist[nwctrks][1000]/D");
   fTree->Branch("Y_Kink",Y_Kink,"Y_Kink[nwctrks]/D");
+  fTree->Branch("WC1xPos",WC1xPos,"WC1xPos[nwctrks]/F");
+  fTree->Branch("WC1yPos",WC1yPos,"WC1yPos[nwctrks]/F");
+  fTree->Branch("WC1zPos",WC1zPos,"WC1zPos[nwctrks]/F");
+  fTree->Branch("WC2xPos",WC2xPos,"WC2xPos[nwctrks]/F");
+  fTree->Branch("WC2yPos",WC2yPos,"WC2yPos[nwctrks]/F");
+  fTree->Branch("WC2zPos",WC2zPos,"WC2zPos[nwctrks]/F");
+  fTree->Branch("WC3xPos",WC3xPos,"WC3xPos[nwctrks]/F");
+  fTree->Branch("WC3yPos",WC3yPos,"WC3yPos[nwctrks]/F");
+  fTree->Branch("WC3zPos",WC3zPos,"WC3zPos[nwctrks]/F");
+  fTree->Branch("WC4xPos",WC4xPos,"WC4xPos[nwctrks]/F");
+  fTree->Branch("WC4yPos",WC4yPos,"WC4yPos[nwctrks]/F");
+  fTree->Branch("WC4zPos",WC4zPos,"WC4zPos[nwctrks]/F");
   
   fTree->Branch("ntof", &ntof, "ntof/I");
   fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
@@ -1987,6 +2023,18 @@ void lariat::AnaTreeT1034::ResetVars()
 	  YAxisHist[i][j] = -99999;		//<---coord in terms of units.
 	}//<---End j loop
       Y_Kink[i] = -99999;
+      WC1xPos[i] = -99999;
+      WC1yPos[i] = -99999;
+      WC1zPos[i] = -99999;
+      WC2xPos[i] = -99999;
+      WC2yPos[i] = -99999;
+      WC2zPos[i] = -99999;
+      WC3xPos[i] = -99999;
+      WC3yPos[i] = -99999;
+      WC3zPos[i] = -99999;
+      WC4xPos[i] = -99999;
+      WC4yPos[i] = -99999;
+      WC4zPos[i] = -99999;
    
     }//<---End I loop
   

@@ -171,6 +171,8 @@ namespace util {
       }
 
       // wait before reconnecting
+      mf::LogError("DatabaseUtilityT1034")
+          << "Let's wait this thing out... fDBReconnectWaitTime = "<<fDBReconnectWaitTime;
       sleep(fDBReconnectWaitTime);
 
       mf::LogVerbatim("DatabaseUtilityT1034")
