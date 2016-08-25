@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 # Author: Jason St. John
-# A very brief skeleton of a script to read in a file of TTrees, all assumed to be part of
-# the same simulated particle interactions, and save them in a single new tree, indexed by
-# the unique combinations of their Track and Event numbers. 
+# A very brief skeleton of a script to read in a file of TTrees representing particle interactions in G4BL, all assumed to be part of
+# the same simulated particle interactions such that EventID and TrackID combinations are unique, and save them in new trees, one for
+# each <spillsize> range of EventID values.  Time values (t) will be offset by <spillinterval> * SpillID, plus a random offset chosen 
+# from a distribution which mimics the Fermilab Test Beam Facility's 4.2 seconds of 53 MHz beam.
 #
 # Usage:
 # ./MergeTrees.py <options> results.root 
@@ -27,6 +28,9 @@ parser.add_option ('--o', dest='outfile', type='string',
 parser.add_option ('-T', dest='starterTree', type='string',
                    default = 'BigDisk',
                    help="The one TTree whose tracks will be iterated over. Effectively requires tracks present here.")
+parser.add_option ('--maxspill', dest='maxspill', type='int',
+                   default = -1,
+                   help="Abbreviate processing to this many spills.")
 parser.add_option ('--spillsize', dest='spillsize', type='int',
                    default = 300000,
                    help="The number of G4BL events (particles launched at the target) per spill.")
@@ -35,12 +39,15 @@ parser.add_option ('--spillinterval', dest='spillinterval', type='float',
                    help="The duration of a sub-run. (seconds)")
 parser.add_option ('-l', dest='keepitlocal', action="store_true", default=False,
                    help="Keep the output file in the same directory as the input file.")
+parser.add_option ('-v', dest='debug', action="store_true", default=False,
+                   help="Turn on verbose debugging.")
 
 
 options, args = parser.parse_args()
 outfile = options.outfile
-debug = False
+debug = options.debug
 starterTree = options.starterTree
+maxspill = options.maxspill
 spillsize = options.spillsize
 spillinterval = options.spillinterval
 keepitlocal   = options.keepitlocal
@@ -99,30 +106,27 @@ infile = ROOT.TFile(infile)
 #  Do ROOT initialization stuff here so that
 #  my --help gets reported instead of ROOT --help.
 
-ROOT.gROOT.SetBatch(0)
+ROOT.gROOT.SetBatch(0)  # Don't draw things. Slows us down.
 #ROOT.gStyle.SetOptStat(0)
 #ROOT.gStyle.SetPalette(1)
 #ROOT.gStyle.SetNdivisions(405,"x")
 
-#####################################
-# Declare & fill dictionaries
-#####################################
-INtuples = {}
 
 #########################################
 # Get into the file and see what's there
 #########################################
+
+INtuples = {}
 infile.cd()
 ROOT.gDirectory.cd()
 abspath = base+".root:/VirtualDetector/"
-print "|",abspath,"|"
+if debug: print "|",abspath,"|"
 ROOT.gDirectory.cd(abspath)
-ROOT.gDirectory.ls()
+if debug: ROOT.gDirectory.ls()
 
 dumtuple = ROOT.TNtuple() # Just need an instance of this class, it seems.
 
-if debug: print "Looping over input file contents, getting trees."
-
+print "Looping over input file contents, getting trees."
 # Read in all the single-detector TTree objects in the input file.
 for key in ROOT.gDirectory.GetListOfKeys():
     if dumtuple.Class() == key.ReadObj().Class():
@@ -133,9 +137,9 @@ for key in ROOT.gDirectory.GetListOfKeys():
 # To speed up finding tracks by EventID and TrackID, 
 # build an index with these as the major and minor indices.
 for name, tuple in INtuples.iteritems():
-    if debug: print "Building an index for ",name,"...",
+    print "Building an index for ",name,"...",
     tuple.BuildIndex("EventID","TrackID")
-    if debug: print "Done."
+    print "Done."
 
 # Lists of variable names and TTree names to use in loops.
 vars = ('x','y','z','t','Px','Py','Pz','PDGid','ParentID','EventID','TrackID')
@@ -144,8 +148,9 @@ WCs = ('Det1', 'Det2', 'Det3', 'Det4')
 Scints = ('TOFus', 'Halo', 'HaloHole', 'TOFdsHorz', 'TiWindow','BigDisk')
 Punch  =  ('PunchUL', 'PunchLL', 'PunchUR', 'PunchLR')
 
-### One dictionary to rule them all. ##
-## Unfortunately, ROOT won't process a single line defining a single struct for all these; too long.  We integrate the by parts.
+## One dictionary to rule them all. ##
+## Unfortunately, ROOT won't process a single line defining a single struct for all these; too long.  
+## So here we integrate them by parts.
 detsysts = {} 
 detsysts['StartLine'] = StartLine
 detsysts['WCs'] = WCs
@@ -155,6 +160,7 @@ detsysts['Punch'] = Punch
 # Invent some types of struct for holding stuff from the tree,
 # one for each "system", 
 # and tell ROOT about them.
+print "Making structs for ROOT...",
 for systname,syst in detsysts.iteritems():
     linetoprocess = "struct "+systname+"stuff { Int_t EventID; Int_t TrackID; "
     ## Be sure to do the ints before the floats ##
@@ -173,6 +179,7 @@ for systname,syst in detsysts.iteritems():
 structs = {}
 for systname in detsysts.keys():
     structs[systname] = eval("ROOT."+systname+"stuff()")
+print "Done.",
 
 #Hook the variables to their branches, so they take on the right values when an entry is fetched.
 for systname,syst in detsysts.iteritems():
@@ -183,6 +190,7 @@ for systname,syst in detsysts.iteritems():
             if debug: print "       det:",det
             tuple = INtuples[det]
             tuple.SetBranchAddress(var, ROOT.AddressOf(structs[systname],var+det))
+print " Also hooked structs to input TTree branches. It's like a pointer jungle in here."
 
 #### The Output: A file with a tree in it. ####
 infilepath = os.path.abspath(infilename)
@@ -194,95 +202,123 @@ else:
     outfilename = "MergedAt"+starterTree+infilename
 outfile = ROOT.TFile(outfilename,"RECREATE")
 
-newTree = ROOT.TTree("EventTree","EventTree")
-## Two important branches to include:
-SpillID_p = array( 'i', [ 0 ] )
-EventID_p = array( 'i', [ 0 ] )
-TrackID_p = array( 'i', [ 0 ] )
-newTree.Branch("SpillID",SpillID_p,"SpillID/I")
-newTree.Branch("EventID",EventID_p,"EventID/I")
-newTree.Branch("TrackID",TrackID_p,"TrackID/I")
-## ...and all the others we want:
-pointers = {}
-if debug: print "                 Filling Pointers:"
-for syst in detsysts.values():
-    for det in syst:
-        name = 'TrackPresent'+det
-        if debug: print "                              ",name
-        pointers[name] = array( 'B', [ 0 ] )
-        newTree.Branch(name,pointers[name],name+"/O")
-for var in vars:
-    if var == "EventID" or var == "TrackID" or var == "SpillID": continue  # Only one unique combo of these, already done above.
-    # Loop over every system, every detector in that system, for this variable
+newTrees = {} # dictionary of new TTrees to save to outfile
+pointers = {} # dictionary of pointers, to please ROOT, which loves pointers for its TTrees
+
+#
+# AddTree: A worker function to instantiate a new TTree for a Spill
+# and supply it and its variable pointers to the  relevant dictionaries. 
+# Also hooks the branches to their pointers.
+#
+def AddTree(treedict, spillnum, pointers):
+    if debug: print "Adding tree for spill ",spillnum
+    treename = "EventTree_Spill"+str(spillnum)
+    # Make the new TTree ans store it in the TTree dictionary
+    treedict[spillnum] = ROOT.TTree(treename,treename)
+    # Make ROOT happy with some pointers
+    pointers[spillnum, "SpillID"] = array( 'i', [ 0 ] )
+    pointers[spillnum, "EventID"] = array( 'i', [ 0 ] )
+    pointers[spillnum, "TrackID"] = array( 'i', [ 0 ] )
+    #...and hook the pointers to the branches.
+    treedict[spillnum].Branch("SpillID",pointers[spillnum, "SpillID"],"SpillID/I")
+    treedict[spillnum].Branch("EventID",pointers[spillnum, "EventID"],"EventID/I")
+    treedict[spillnum].Branch("TrackID",pointers[spillnum, "TrackID"],"TrackID/I")
+    # Same thing with the booleans:
     for syst in detsysts.values():
         for det in syst:
-            name = var+det
+            name = 'TrackPresent'+det
             if debug: print "                              ",name
-            pointers[name] = array( 'd', [ 0 ] )
-            newTree.Branch(name,pointers[name],name+"/d")
+            pointers[spillnum, name] = array( 'B', [ 0 ] ) ## Boolean (unsigned char actually), initialized to 0
+            treedict[spillnum].Branch(name,pointers[spillnum, name],name+"/O")
+            # and while we're at it, the physical variables, too
+            for var in vars:
+                if var == "EventID" or var == "TrackID" or var == "SpillID": continue  # Only one unique combo of these, already done above.
+                name = var+det
+                if debug: print "                              ",name
+                pointers[spillnum, name] = array( 'd', [ 0 ] ) ## Double, initialized to 0
+                treedict[spillnum].Branch(name,pointers[spillnum, name],name+"/d")
+#End of AddTree definition
 
+# Be sure we're working in the correct output file.
 outfile.cd()
 
-## How to remove the trigger-like requirement?
-## Maybe we loop over everything which encountered the Halo paddle (including the HaloHole volume),
-## and also add whatever additional entries can be found in the first WireChamber.
-
+# Initialize some counters
 trackcount = 0
 lastspill = 0
+spillcount = 0
+
+if maxspill <= 0: print ("Making as many spills of %s events each as %s contains." % (spillsize,infilename))
+else: print ("Processing %s into %s spills of %s events each." % (infilename, maxspill, spillsize ))
+
+# Loop over input TTree
 for ds_track in INtuples[starterTree]:
     trackcount += 1
     ## Unique identifiers for this track:
     (event, track) = (int(ds_track.EventID), int(ds_track.TrackID))
+    spill = 1 + (event/spillsize) # Arbitrarily group tracks by EventID into spills. 
+    
+    # New spill?  Needs a new TTree
+    if spill not in newTrees.keys(): 
+        AddTree(newTrees, spill, pointers)
+        spillcount += 1
+        if maxspill > 0 and spillcount > maxspill: break
     # Development purposes: (Abbreviated run)
     #if trackcount > 1000: break
 
     ## What I hate about this is that the newTree looks completely uninvolved.
-    ## Of course, it's tied in above, at newTree.Branch(name,pointers[name],name+"/f")
-    SpillID_p[0] = 1 + (event/spillsize) # Arbitrarily group tracks by EventID into spills.
-    EventID_p[0] = event
-    TrackID_p[0] = track
+    ## Of course, it's tied in above, at newTree.Branch(name,pointers[spillnum, name],name+"/f")
+    pointers[spill, "SpillID"][0] = spill 
+    pointers[spill, "EventID"][0] = event
+    pointers[spill, "TrackID"][0] = track
 
-    if SpillID_p[0] != lastspill: 
-        if debug: print lastspill,"==> ",SpillID_p[0],"  (EventID:", EventID_p[0],")"
-        lastspill += 1
-
-    #Momentum cut? if ds_track.Pz < 1000. : continue
+    # Loop over each input TTree, one for each detector in the simulation.
     for tuplename,tuple in INtuples.iteritems():
         for syst in detsysts.values():
             if tuplename not in syst: continue
+            # Look for an entry from this event & track
             EntryNum = tuple.GetEntryWithIndex(event,track)
-
+    
             if EntryNum == -1: #Track Not Found
-                pointers['TrackPresent'+tuplename][0] = False
+                pointers[spill, 'TrackPresent'+tuplename][0] = False
             else:
-                pointers['TrackPresent'+tuplename][0] = True
+                pointers[spill, 'TrackPresent'+tuplename][0] = True
             for var in vars:
                 if var == 'EventID' or var == 'TrackID': continue
                 ## Pointers are named like 'PzWC4' etc..
                 vardet = var + tuplename
                 if EntryNum == -1: #Track Not Found
-                    pointers[vardet][0] = -123456789  ##Dummy Value
-                    if debug: print "(",event,",",track,"): ",vardet,"       =-1"
+                    pointers[spill, vardet][0] = -123456789  ##Dummy Value
                 else: # Track found.
                     for systname,syst in detsysts.iteritems():
                         if tuplename in syst:
                             if debug: print "Filling ",vardet," in ",systname
                             if var == 't':  # Convert times to seconds & add an offset mimicking spill time profile
                                 random.seed(event) #Same random offset for each event.
-                                spilltimeoffset = spillinterval * float (SpillID_p[0])
-                                pointers[vardet][0] = getattr(structs[systname],vardet)*1e-9 + RandomOffsetSeconds() + spilltimeoffset
+                                spilltimeoffset = spillinterval * float (spill)
+                                pointers[spill, vardet][0] = getattr(structs[systname],vardet)*1e-9 + RandomOffsetSeconds() + spilltimeoffset
                             else:
-                                pointers[vardet][0] = getattr(structs[systname],vardet)
-                                break #tuplename will only be in one syst, not more. q
-    newTree.Fill()
+                                pointers[spill, vardet][0] = getattr(structs[systname],vardet)
+                            #-close else from var == 't'
+                        #-close if tuplename in syst
+                    #-close for systname,syst in detsysts.iteritems()
+                #-close else from if EntryNum == -1
+            #-close for var in vars
+        #-Closes for syst in detsysts.values()
+    #-Closes for tuplename,tuple in INtuples.iteritems()
+
+    # Push the values to the TTree
+    newTrees[spill].Fill()
+
+#-Closes for ds_track in INtuples[starterTree]
+
 print trackcount, "  total tracks in ",starterTree
-print lastspill, " total spills (sub-runs)"
+print spillcount-1, " total spills (sub-runs)"
 outfile.cd()
-newTree.Write()
+
+for newTree in newTrees.values(): newTree.Write()
 outfile.Close()
 #-------------- /Final Beam --------------------#
 
 infile.Close()
-if not keepitlocal: commands.getoutput("ln -s /lariat/data/users/MYUSERNAME/MergedAt"+starterTree+infilename+" MergedAt"+starterTree+infilename)
 print "Here ya go: ",
 commands.getoutput("ls -ltra")
