@@ -8,7 +8,7 @@ services:
 {
   TFileService: { fileName: "WCTrackBuilder_histo.root" }
   message:      @local::standard_info
-  user:         @local::lariat_services
+  @table::lariat_services
 }
 
 source:

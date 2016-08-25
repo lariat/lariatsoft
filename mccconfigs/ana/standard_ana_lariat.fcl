@@ -7,11 +7,9 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "ana_hist.root" }
-  Timing:       {}
-  SimpleMemoryCheck:     { ignoreTotal: 1 } # default is one
   message:      @local::lariat_message_services_prod_debug
   FileCatalogMetadata:  @local::art_file_catalog_mc
-  user:         @local::lariat_simulation_services
+  @table::lariat_simulation_services
 }
 
 #source is now a root file

@@ -1,6 +1,7 @@
 #include "services_lariat.fcl"
 #include "trackfinderservices.fcl"
 #include "trackfindermodules.fcl"
+##include "resourcetracking_services.fcl"
 
 process_name: SpacePointAna
 
@@ -9,23 +10,22 @@ services:
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "spacepoint_lariat.root" }
   scheduler:    { wantTracer: true wantSummary: true }
-  Timing:       {}
   message:   @local::standard_debug
   RandomNumberGenerator: {} #ART native random number generator
-  user: { }
+ #@table::standard_resourcetrackers
 }
 
 
 # services from LArSoft - see definitions for configurations in 
 # geometry_lariat.fcl
 # services_lariat.fcl
-services.user.ExptGeoHelperInterface: @local::lariat_geometry_helper
-services.user.Geometry:           @local::lariat_geo 
-services.user.DetectorPropertiesService: @local::lariat_detproperties
-services.user.LArPropertiesService:      @local::lariat_properties
-services.user.LArFFT:             @local::lariat_larfft  
-services.user.DatabaseUtil:       @local::lariat_database
-services.user.BackTracker:        @local::lariat_backtracker
+services.ExptGeoHelperInterface:    @local::lariat_geometry_helper
+services.Geometry:                  @local::lariat_geo
+services.DetectorPropertiesService: @local::lariat_detproperties
+services.LArPropertiesService:      @local::lariat_properties
+services.LArFFT:                    @local::lariat_larfft
+services.DatabaseUtil:              @local::lariat_database
+services.BackTracker:               @local::lariat_backtracker
 
 services.message.destinations.debugmsg.type: "cout"
 services.message.destinations.debugmsg.categories.default.limit: 1000000

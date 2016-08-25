@@ -409,9 +409,9 @@ void lariat::PurityOnlineT1034::analyze(art::Event const & evt)
 	 try
 	 {
 	    // ### If we are in the induction plane calculate the tracks pitch in that view ###
-	    if (j==0) trkpitch[i][j] = lar::utils::TrackPitchInView(*tracklist[i], geo::kU);
+	    if (j==0) trkpitch[i][j] = lar::util::TrackPitchInView(*tracklist[i], geo::kU);
 	    // ### If we are in the collection plane calculate the tracks pitch in that view ###
-	    else if (j==1) trkpitch[i][j] = lar::utils::TrackPitchInView(*(tracklist[i]), geo::kV);
+	    else if (j==1) trkpitch[i][j] = lar::util::TrackPitchInView(*(tracklist[i]), geo::kV);
 	 }//<---End Try statement
 	 catch( cet::exception &e)
 	 {
