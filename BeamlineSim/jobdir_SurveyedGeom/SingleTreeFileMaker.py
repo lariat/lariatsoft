@@ -1,9 +1,6 @@
 #!/usr/bin/env python
 # Author: Jason St. John
-# A very brief skeleton of a script to read in a file of TTrees representing particle interactions in G4BL, all assumed to be part of
-# the same simulated particle interactions such that EventID and TrackID combinations are unique, and save them in new trees, one for
-# each <spillsize> range of EventID values.  Time values (t) will be offset by <spillinterval> * SpillID, plus a random offset chosen 
-# from a distribution which mimics the Fermilab Test Beam Facility's 4.2 seconds of 53 MHz beam.
+# A very brief skeleton of a script to read in a file of TTrees and save certain ones to their own new files.
 #
 # Usage:
 # python SingleTreeFileMaker.py <options> FileOfManySpillTrees.root 
@@ -115,9 +112,6 @@ for key in ROOT.gDirectory.GetListOfKeys():
 infilepath = os.path.abspath(infilename)
 infilename = os.path.basename(infilename)
 
-outfilename = infilename.replace('.root','_OnlySpilltrees.root')
-outfile = ROOT.TFile(outfilename, 'RECREATE')
-
 # Initialize a handy list
 spillnums = []
 
@@ -134,16 +128,13 @@ for spill, intree in InputSpillTrees.iteritems():
     n_entries = intree.GetEntriesFast()
     if debug: print "Starting ",intree.GetName()," with ",n_entries," entries."
     spillnums.append(spill)
+    outfilename = infilename.replace('.root','_OnlySpilltree'+str(spill)+'.root')
+    outfile = ROOT.TFile(outfilename, 'RECREATE')
 
     outtree = intree.Clone()
     outfile.cd()
     outtree.Write()
+    outfile.Close()
 
-outfile.Close()
-lo_spill = sorted(spillnums)[0]
-hi_spill = sorted(spillnums)[len(spillnums)-1]
-spillrange_str = 'Spill_'+str(lo_spill)+'thru'+str(hi_spill)
-os.rename(outfilename,outfilename.replace('.root',spillrange_str+'.root'))
-print 'Wrote ',outfilename.replace('.root',spillrange_str+'.root')
 infile.Close()
 
