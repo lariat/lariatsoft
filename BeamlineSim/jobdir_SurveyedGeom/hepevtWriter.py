@@ -36,6 +36,8 @@ parser.add_option ('--driftinterval', dest='driftinterval', type='float',
                    help="The duration of a TPC drift. (seconds)")
 parser.add_option ('-v', dest='debug', action="store_true", default=False,
                    help="Turn on verbose debugging.")
+parser.add_option ('--test', dest='test', action="store_true", default=False,
+                   help="Abbreviate to first spill, first 0.2 seconds")
 
 
 options, args = parser.parse_args()
@@ -44,7 +46,10 @@ maxspill = options.maxspill
 spillinterval = options.spillinterval
 driftinterval = options.driftinterval
 debug = options.debug
+test = options.test
 infile = args[0]
+
+## Constants and such.
 OneDrift = 0.0003932160 # 128 ns * 3072 samples
 neutrals = (22, 311, 130, 310, 2112)
 coordshift = {} # mm.  Add to target coords to get to TPC coords.
@@ -239,7 +244,7 @@ for intree in InputSpillTrees.values():
                 triggerentrynums.append(n) 
                 LastTriggerTime = time
                 print "Triggering: ",n,":",time
-                if time - firsttime > 0.2: 
+                if test and time - firsttime > 0.2: 
                     die = True
                     break
 
