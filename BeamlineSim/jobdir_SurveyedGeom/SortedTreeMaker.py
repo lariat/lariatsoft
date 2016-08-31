@@ -127,11 +127,9 @@ ROOT.gDirectory.cd(abspath)
 if debug: ROOT.gDirectory.ls()
 
 dumtuple = ROOT.TTree() # Just need an instance of this class, it seems.
-p_coll = []
 
 print "Looping over input file contents, getting spill trees."
 # Read in all the single-detector TTree objects in the input file.
-#ROOT.TTree.SetMaxTreeSize(21474836470)
 treenames = []
 for key in ROOT.gDirectory.GetListOfKeys():
     if dumtuple.Class() == key.ReadObj().Class():
@@ -140,8 +138,8 @@ for key in ROOT.gDirectory.GetListOfKeys():
         if debug: print key.ReadObj().ClassName()
         # Important to access only the most recent name cycle. (DAMNIT, ROOT!)
         if name in treenames: continue
-        treenames.append(name)
-        InputSpillTrees[name] =  key.ReadObj()
+        treenames.append(name) # Remember this one for later
+        InputSpillTrees[name] =  key.ReadObj() # Store pointer to this TTree in the dictionary
 
 # To speed up finding tracks by EventID and TrackID, 
 # build an index with these as the major and minor indices.
@@ -149,49 +147,6 @@ for name, tuple in InputSpillTrees.iteritems():
     print "Building an index for ",name,"...",
     tuple.BuildIndex("tStartLine")
     print "Done."
-
-# Lists of variable names and TTree names to use in loops.
-vars = ('x','y','z','t','Px','Py','Pz','PDGid','ParentID','EventID','TrackID','SpillID')
-StartLine = ('StartLine',)
-WCs = ('Det1', 'Det2', 'Det3', 'Det4')
-Scints = ('TOFus', 'Halo', 'HaloHole', 'TOFdsHorz', 'TiWindow','BigDisk')
-Punch  =  ('PunchUL', 'PunchLL', 'PunchUR', 'PunchLR')
-
-IDs = ('EventID','TrackID','SpillID') # Useful to refer to these as a group.
-## One dictionary to rule them all. ##
-## Unfortunately, ROOT won't process a single line defining a single struct for all these; too long.  
-## So here we integrate them by parts.
-detsysts = {} 
-detsysts['StartLine'] = StartLine
-detsysts['WCs'] = WCs
-detsysts['Scints'] = Scints
-detsysts['Punch'] = Punch
-
-# Invent some types of struct for holding stuff from the tree,
-# one for each "system", 
-# and tell ROOT about them.
-print "Making structs for ROOT...",
-for systname,syst in detsysts.iteritems():
-    linetoprocess = "struct "+systname+"stuff { Int_t EventID; Int_t TrackID; Int_t SpillID; "
-    ## Be sure to do the ints before the floats ##
-    for var in ('EventID', 'TrackID', 'SpillID'):
-        for det in syst:
-            linetoprocess += "Int_t " + var + det + "; "
-    for var in vars:
-        if var in IDs: continue  #Don't re-do these ints!
-        roottype = 'Float_t '
-        if var.count('TrackPresent') > 0: roottype = 'Bool_t '
-        for det in syst:
-            linetoprocess += roottype + var + det + "; "
-    linetoprocess += "};"
-    if debug: print linetoprocess,"\n\n"
-    ROOT.gROOT.ProcessLine(linetoprocess)
-
-#Make one of each struct to use
-structs = {}
-for systname in detsysts.keys():
-    structs[systname] = eval("ROOT."+systname+"stuff()")
-print "Done."
 
 #### The Output: A file with a tree in it. ####
 infilepath = os.path.abspath(infilename)
