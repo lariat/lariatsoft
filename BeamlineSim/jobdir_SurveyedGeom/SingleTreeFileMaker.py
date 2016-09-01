@@ -128,12 +128,17 @@ for spill, intree in InputSpillTrees.iteritems():
     n_entries = intree.GetEntriesFast()
     if debug: print "Starting ",intree.GetName()," with ",n_entries," entries."
     spillnums.append(spill)
+    # Make a new file 
     outfilename = infilename.replace('.root','_OnlySpilltree'+str(spill)+'.root')
     outfile = ROOT.TFile(outfilename, 'RECREATE')
-
-    outtree = intree.Clone()
     outfile.cd()
+
+    # Make a copy of this TTree in the new file
+    outtree = ROOT.TTree(intree.GetName(), intree.GetName())
+    outtree = intree.CloneTree()
     outtree.Write()
+    
+    # Clean up your toys when you're done playing
     outfile.Close()
 
 infile.Close()
