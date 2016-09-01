@@ -21,13 +21,18 @@ import math
 from ctypes import *
 import random
 import ctypes
+import copy
+
 parser = optparse.OptionParser("usage: %prog [options]<input file.ROOT> \n")
-parser.add_option ('-o', dest='outfile', type='string',
-                   default = 'SortedTrees.root',
-                   help="Output filename (ends .root).  This option is ignored.")
 parser.add_option ('--maxspill', dest='maxspill', type='int',
                    default = -1,
                    help="Abbreviate processing to this many spill trees.")
+parser.add_option ('--firstspill', dest='firstspill', type='int',
+                   default = -1,
+                   help="Spill number to start processing.")
+parser.add_option ('--lastspill', dest='lastspill', type='int',
+                   default = -1,
+                   help="Spill number to start processing.")
 parser.add_option ('--spillinterval', dest='spillinterval', type='float',
                    default = 60.0,
                    help="The duration of a sub-run. (seconds)")
@@ -41,8 +46,9 @@ parser.add_option ('--test', dest='test', action="store_true", default=False,
 
 
 options, args = parser.parse_args()
-outfile = options.outfile
 maxspill = options.maxspill
+firstspill = options.firstspill
+lastspill = options.lastspill
 spillinterval = options.spillinterval
 driftinterval = options.driftinterval
 debug = options.debug
@@ -88,7 +94,7 @@ def gimmestr(pile, tzero):
     y = ( pile.yStartLine.GetValue()+coordshift['y'] )/10.0   #7
     z = ( pile.zStartLine.GetValue()+coordshift['z'] )/10.0   #8
     t = ( pile.tStartLine.GetValue() - tzero )* 1.0e9        #9 NTS: Shift zero to trigger time. Pre-extract?
-    hepstr = '1 {0:d} 0 0 0 0 {1} {2} {3} {4} {5} {6} {7} {8} {9}'.format(pdg, Px, Py, Pz, E, m, x, y, z, t)
+    hepstr = '1 {0:d} 0 0 0 0 {1} {2} {3} {4} {5} {6} {7} {8} {9}\n'.format(pdg, Px, Py, Pz, E, m, x, y, z, t)
     return hepstr
 
 ####################################################
@@ -136,15 +142,19 @@ dumtuple = ROOT.TTree() # Just need an instance of this class, it seems.
 print "Looping over input file contents, getting spill trees."
 # Read in all the single-detector TTree objects in the input file.
 treenames = []
+spillcount = 0
 for key in ROOT.gDirectory.GetListOfKeys():
     if dumtuple.Class() == key.ReadObj().Class():
         name = key.GetName()
         if debug: print name,
         if debug: print key.ReadObj().ClassName()
         # Important to access only the most recent name cycle. (DAMNIT, ROOT!)
-        if name in treenames: continue
+        if name in treenames: continue        
         treenames.append(name) # Remember this one for later
-        InputSpillTrees[name] =  key.ReadObj() # Store pointer to this TTree in the dictionary
+        spill = int(name.split("_Spill")[1])
+        InputSpillTrees[spill] =  key.ReadObj() # Store pointer to this TTree in the dictionary
+        spillcount += 1
+        if maxspill > 0 and spillcount > maxspill: break
 
 # To speed up finding tracks by EventID and TrackID, 
 # build an index with these as the major and minor indices.
@@ -157,21 +167,21 @@ for name, tuple in InputSpillTrees.iteritems():
 infilepath = os.path.abspath(infilename)
 infilename = os.path.basename(infilename)
 
-outfilename = "SortedEvents"+infilename+".txt"
+outfilename = "hepevt_"+infilename.replace('.root','.txt')
 outfile = open(outfilename,'w')
 
-# Initialize some counters
-trackcount = 0
-lastspill = 0
-spillcount = 0
+# Initialize a handy list of spill numbers visited
+spillnums = []
 die = False
 # Loop over input TTree objects
-for intree in InputSpillTrees.values():
+for spill, intree in InputSpillTrees.iteritems():
+    # Extract the spill number from the TTree's name. Comes after the _Spill
+    if firstspill > 0 and spill < firstspill: continue
+    if lastspill > 0 and spill > lastspill: continue
+
     n_entries = intree.GetEntriesFast()
     print "Starting ",intree.GetName()," with ",n_entries," entries."
-    spillcount += 1
-    # Extract the spill number from the TTree's name. Comes after the _Spill
-    spill = int(intree.GetName().split("_Spill")[1])
+    spillnums.append(spill)
 
     # Gonna need a handy little class hooked to this tree:
     # Define dynamically a python class containing root Leaves objects
@@ -215,10 +225,13 @@ for intree in InputSpillTrees.values():
 
     # Second Loop over the tree:
     # Visit entries in order by their times, and check for triggering particles.
+    # Must be separate from above because triggers must be known to be >2 driftintervals after foregoing triggers.
     LastTriggerTime = float(-1)
     firsttime = 0.0
     for time in sorted(allentriesbytime.keys()):
-        if die: break
+        if die: 
+            die = False
+            break
         if LastTriggerTime == -1.: firsttime = time
         #Get the delta_t and update LastTriggerTime
         delta_t = time-LastTriggerTime
@@ -250,7 +263,10 @@ for intree in InputSpillTrees.values():
 
     # Third and final loop: 
     #Collect the hepevt fields for all particles which might give signals in the triggered events.
+    eventnum = 0 # Unique within the spill (only).
     for time in triggertimes:
+        particlelines = {} # A dictionary where we can keep the lines for this hepevt
+        particlecount = 0
         delta_t = 0.
         offset = 0
         print "\n Collecting tracks around trigger at ",time
@@ -263,12 +279,6 @@ for intree in InputSpillTrees.values():
 
         # Print the hepevt lines: (GeV, ns, cm)
         # 1 [pdg] 0 0 0 0 px py pz E m x y z t
-        # First at the time of the triggering particle:
-        for n in allentriesbytime[time]:
-            ret = intree.GetEntry(n)
-            if ret == -1: exit ('No entry #'+str(n))
-            txtstr = gimmestr(pyl, time)
-            print txtstr
 
         # At which times were there particles BEFORE this trigger, close enough to put energy in the TPC?
         while (True):
@@ -291,7 +301,18 @@ for intree in InputSpillTrees.values():
                 ret = intree.GetEntry(n) # Set pyl's pointers to this entry's leaf values
                 if ret == -1: exit ('No entry #'+str(n))
                 txtstr = gimmestr(pyl, time)
+                particlelines[-1 * particlecount] = copy.copy(txtstr)
+                particlecount += 1
                 print txtstr
+
+        # Precisely at the time of the triggering particle:
+        for n in allentriesbytime[time]:
+            ret = intree.GetEntry(n)
+            if ret == -1: exit ('No entry #'+str(n))
+            txtstr = gimmestr(pyl, time)
+            particlelines[particlecount] = copy.copy(txtstr)
+            particlecount += 1
+            print txtstr
 
         # At which times were there particles AFTER this trigger, close enough to put energy in the TPC?
         delta_t = 0.
@@ -316,8 +337,24 @@ for intree in InputSpillTrees.values():
                 ret = intree.GetEntry(n) # Set pyl's pointers to this entry's leaf values
                 if ret == -1: exit ('No entry #'+str(n))
                 txtstr = gimmestr(pyl, time)
+                particlelines[particlecount] = copy.copy(txtstr)
+                particlecount += 1
                 print txtstr
 
-outfile.Close()
+        if debug: print "\nPrint to file:"
+        line = str(eventnum)+' '+str(particlecount)+'\n'
+        outfile.write(line)
+        eventnum += 1
+        if debug: print line
+        for num in sorted(particlelines.keys()):
+            line = particlelines[num]
+            outfile.write(line)
+            if debug: print line
+
+outfile.close()
+lo_spill = sorted(spillnums)[0]
+hi_spill = sorted(spillnums)[len(spillnums)-1]
+spillrange_str = 'Spill_'+str(lo_spill)+'thru'+str(lo_spill)
+os.rename(outfilename,outfilename.replace('.txt',spillrange_str+'.txt'))
 infile.Close()
 
