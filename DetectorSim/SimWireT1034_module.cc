@@ -41,10 +41,10 @@ extern "C" {
 #include "lardata/DetectorInfoServices/DetectorClocksServiceStandard.h" // special (see below)
 #include "Utilities/SignalShapingServiceT1034.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larsimobj/Simulation/sim.h"
-#include "larsimobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/sim.h"
+#include "lardataobj/Simulation/SimChannel.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-#include "larsimobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "TMath.h"
 #include "TComplex.h"
 #include "TString.h"

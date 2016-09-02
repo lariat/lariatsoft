@@ -2,7 +2,7 @@
 include_directories( $ENV{NUTOOLS_INC} )
 
 art_make( BASENAME_ONLY
-          MODULE_LIBRARIES larsim_Simulation larsimobj_Simulation
+          MODULE_LIBRARIES larsim_Simulation lardataobj_Simulation
                         larcoreobj_SummaryData
                         larcore_Geometry
                         larcore_Geometry_Geometry_service
