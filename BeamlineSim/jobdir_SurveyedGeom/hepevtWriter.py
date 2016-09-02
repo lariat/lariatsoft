@@ -93,9 +93,20 @@ def gimmestr(pile, tzero):
     x = ( pile.xStartLine.GetValue()+coordshift['x'] )/10.0   #6
     y = ( pile.yStartLine.GetValue()+coordshift['y'] )/10.0   #7
     z = ( pile.zStartLine.GetValue()+coordshift['z'] )/10.0   #8
-    t = ( pile.tStartLine.GetValue() - tzero )* 1.0e9        #9 NTS: Shift zero to trigger time. Pre-extract?
+    t = ( pile.tStartLine.GetValue() - tzero )* 1.0e9        #9 NTS: Shift zero to trigger time.
     hepstr = '1 {0:d} 0 0 0 0 {1} {2} {3} {4} {5} {6} {7} {8} {9}\n'.format(pdg, Px, Py, Pz, E, m, x, y, z, t)
     return hepstr
+
+# Given a pointer to an entry in the SpillTree, return 
+# a boolean as to whether the trigger condition was met.
+def triggercondition(pile):
+    # Wire Chambers
+    return (pile.TrackPresentDet1.GetValue() and 
+            (pile.TrackPresentDet2.GetValue() or pile.TrackPresentDet3.GetValue()) and
+            pile.TrackPresentDet4.GetValue() and 
+            # Time of Flight, too
+            pile.TrackPresentTOFus.GetValue() and pile.TrackPresentTOFdsHorz.GetValue())
+
 
 ####################################################
 # Check files exist, get some strings, make a TFile
@@ -245,13 +256,8 @@ for spill, intree in InputSpillTrees.iteritems():
             pdg = pyl.PDGidStartLine.GetValue()
             if pdg in neutrals: continue # Photons? Don't care.
             if (LastTriggerTime == -1 or (LastTriggerTime > -1 and delta_t > 2.0*driftinterval) and
-                # Wire Chambers
-                pyl.TrackPresentDet1.GetValue() and 
-                (pyl.TrackPresentDet2.GetValue() or pyl.TrackPresentDet3.GetValue()) and
-                pyl.TrackPresentDet4.GetValue() and 
-                # Time of Flight, too
-                pyl.TrackPresentTOFus.GetValue() and pyl.TrackPresentTOFdsHorz.GetValue()):
-                
+                triggercondition(pyl)):
+
                 #..if so, add it to the list
                 triggertimes.append(time) 
                 triggerentrynums.append(n) 
@@ -277,6 +283,24 @@ for spill, intree in InputSpillTrees.iteritems():
         delta_t = abs(time - entry_t)
         if debug: print "offset: ",offset,"entry_t:",entry_t,"    delta_t:",delta_t
 
+        # To mimic trigger decision latency, grab the tBigDisk of the triggering particle
+        # This will be subtracted off the tStartLine of all particles in the event window.
+        tTriggers = []
+        for n in allentriesbytime[time]: # In case of multiple trigger-time particles
+            ret = intree.GetEntry(n)
+            if ret == -1: exit ('No entry #'+str(n))
+            # Only interested in particles which might have triggered
+            # (and not merely coincident with the triggering particle)
+            if triggercondition(pyl): 
+                tTriggers.append(pyl.tBigDisk.GetValue())
+
+        # Take the average tBigDisk of any trigger particle candidates at the trigger time.
+        # (Nearly always there is one and only one candidate triggering particle. Paranoia.)
+        tTrigger = 0.0
+        for t_cand in tBigDisks:
+            tTrigger += t_cand
+        tTrigger = tTrigger/(float(len(tBigDisks))
+
         # Print the hepevt lines: (GeV, ns, cm)
         # 1 [pdg] 0 0 0 0 px py pz E m x y z t
 
@@ -300,7 +324,7 @@ for spill, intree in InputSpillTrees.iteritems():
                 if debug: print "Getting n:",n
                 ret = intree.GetEntry(n) # Set pyl's pointers to this entry's leaf values
                 if ret == -1: exit ('No entry #'+str(n))
-                txtstr = gimmestr(pyl, time)
+                txtstr = gimmestr(pyl, tTrigger)
                 particlelines[-1 * particlecount] = copy.copy(txtstr)
                 particlecount += 1
                 print txtstr
@@ -309,7 +333,7 @@ for spill, intree in InputSpillTrees.iteritems():
         for n in allentriesbytime[time]:
             ret = intree.GetEntry(n)
             if ret == -1: exit ('No entry #'+str(n))
-            txtstr = gimmestr(pyl, time)
+            txtstr = gimmestr(pyl, tTrigger)
             particlelines[particlecount] = copy.copy(txtstr)
             particlecount += 1
             print txtstr
@@ -336,7 +360,7 @@ for spill, intree in InputSpillTrees.iteritems():
                 if debug: print "Getting n:",n
                 ret = intree.GetEntry(n) # Set pyl's pointers to this entry's leaf values
                 if ret == -1: exit ('No entry #'+str(n))
-                txtstr = gimmestr(pyl, time)
+                txtstr = gimmestr(pyl, tTrigger)
                 particlelines[particlecount] = copy.copy(txtstr)
                 particlecount += 1
                 print txtstr
