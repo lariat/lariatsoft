@@ -294,12 +294,9 @@ for spill, intree in InputSpillTrees.iteritems():
             if triggercondition(pyl): 
                 tTriggers.append(pyl.tBigDisk.GetValue())
 
-        # Take the average tBigDisk of any trigger particle candidates at the trigger time.
+        # Take the earliest tBigDisk of any trigger particle candidates at the trigger time.
         # (Nearly always there is one and only one candidate triggering particle. Paranoia.)
-        tTrigger = 0.0
-        for t_cand in tBigDisks:
-            tTrigger += t_cand
-        tTrigger = tTrigger/(float(len(tBigDisks))
+        tTrigger = sorted(tTriggers)[0]
 
         # Print the hepevt lines: (GeV, ns, cm)
         # 1 [pdg] 0 0 0 0 px py pz E m x y z t
