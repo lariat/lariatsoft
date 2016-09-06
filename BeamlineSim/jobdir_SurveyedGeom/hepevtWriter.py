@@ -100,13 +100,20 @@ def gimmestr(pile, tzero):
 # Given a pointer to an entry in the SpillTree, return 
 # a boolean as to whether the trigger condition was met.
 def triggercondition(pile):
+    if debug:
+        if pile.TrackPresentDet1.GetValue(): print 'Det1'
+        if pile.TrackPresentDet2.GetValue(): print 'Det2'
+        if pile.TrackPresentDet3.GetValue(): print 'Det3'
+        if pile.TrackPresentDet4.GetValue(): print 'Det4'
+        if pile.TrackPresentTOFus.GetValue(): print 'TOFus'
+        if pile.TrackPresentTOFdsHorz.GetValue(): print 'TOFds'
+        
     # Wire Chambers
     return (pile.TrackPresentDet1.GetValue() and 
             (pile.TrackPresentDet2.GetValue() or pile.TrackPresentDet3.GetValue()) and
             pile.TrackPresentDet4.GetValue() and 
             # Time of Flight, too
-            pile.TrackPresentTOFus.GetValue() and pile.TrackPresentTOFdsHorz.GetValue())
-
+            pile.TrackPresentTOFus.GetValue() and pile.TrackPresentTOFdsHorz.GetValue() )
 
 ####################################################
 # Check files exist, get some strings, make a TFile
@@ -215,16 +222,22 @@ for spill, intree in InputSpillTrees.iteritems():
     triggerentrynums = []
     
     # First Loop over this tree: Get the entry numbers and tStartLine (if defined)
+    if debug: print "    Beginning 1st loop."
     for n in xrange(0, n_entries):
         intree.GetEntry(n) # Fill pyl with values from the entry at index n
+
+        # Has to occur in StartLine
         timeExists = pyl.TrackPresentStartLine.GetValue()
-        time = float(pyl.tStartLine.GetValue())
         if not timeExists: continue
+
+        time = float(pyl.tStartLine.GetValue())
         if debug: print n,":",time
-        entrytimes.append(time)
+        entrytimes.append(time) # All tStartLine values. Values can be non-unique.
 
         # Make sure there's a list of entry numbers in the dictionary for this time
         if time not in allentriesbytime.keys(): allentriesbytime[time] = []
+
+        # For each unique tStartLine, make a list of the entry numbers.
         allentriesbytime[time].append(n)
 
     # What did we get?  Any non-unique index values?
@@ -235,39 +248,45 @@ for spill, intree in InputSpillTrees.iteritems():
     if debug: print "total time count: ",len(entrytimes)," (unique:",len(set(entrytimes)),", non-unique:",100.*(float(timecount)-float(uniqcount))/float(timecount),"%)"
 
     # Second Loop over the tree:
+    if debug: print "    Beginning 2nd loop."
     # Visit entries in order by their times, and check for triggering particles.
     # Must be separate from above because triggers must be known to be >2 driftintervals after foregoing triggers.
     LastTriggerTime = float(-1)
-    firsttime = 0.0
+    firsttime = sorted(allentriesbytime.keys())[0] # Keep for reference.
+
+    # Loop over all the tStartLine values IN INCREASING ORDER.
     for time in sorted(allentriesbytime.keys()):
-        if die: 
-            die = False
-            break
-        if LastTriggerTime == -1.: firsttime = time
+
         #Get the delta_t and update LastTriggerTime
         delta_t = time-LastTriggerTime
 
         # For this time value, visit one or more entries n:
         for n in allentriesbytime[time]:
-            if die: break
             ret = intree.GetEntry(n)
             if debug: print "time: ",time,"   delta_t:",delta_t,"   n:",n            
+            if ret == -1: die('No entry number '+str(n))
+
             # Was this a triggering particle?
             pdg = pyl.PDGidStartLine.GetValue()
             if pdg in neutrals: continue # Photons? Don't care.
-            if (LastTriggerTime == -1 or (LastTriggerTime > -1 and delta_t > 2.0*driftinterval) and
-                triggercondition(pyl)):
+
+            # For the first trigger time, or of it's a later trigger and it has been long enough to trigger again:
+            timeok = (LastTriggerTime == -1 or (LastTriggerTime > -1 and delta_t > 2.0*driftinterval))
+            if timeok and triggercondition(pyl): # Check the physical trigger condition
 
                 #..if so, add it to the list
                 triggertimes.append(time) 
                 triggerentrynums.append(n) 
                 LastTriggerTime = time
-                print "Triggering: ",n,":",time
-                if test and time - firsttime > 0.2: 
-                    die = True
-                    break
+                print "Triggering: ",n,":",time,"PDG:  ",pdg
+
+        # Testing mode. Had enough? Break the loop.
+        if test and time - firsttime > 0.1: 
+            die = True
+            break
 
     # Third and final loop: 
+    if debug: print "    Beginning 3rd loop."
     #Collect the hepevt fields for all particles which might give signals in the triggered events.
     eventnum = 0 # Unique within the spill (only).
     for time in triggertimes:
@@ -281,22 +300,30 @@ for spill, intree in InputSpillTrees.iteritems():
         checkindex = triggerTimeIndex - offset
         entry_t = sorted(allentriesbytime.keys())[checkindex]
         delta_t = abs(time - entry_t)
-        if debug: print "offset: ",offset,"entry_t:",entry_t,"    delta_t:",delta_t
+        if debug: print "time:",time,"  offset: ",offset,"entry_t:",entry_t,"    delta_t:",delta_t
 
         # To mimic trigger decision latency, grab the tBigDisk of the triggering particle
         # This will be subtracted off the tStartLine of all particles in the event window.
         tTriggers = []
+        if debug: print 'Grabbing TOFdsHorz values among',len(allentriesbytime[time]),'values:',
         for n in allentriesbytime[time]: # In case of multiple trigger-time particles
+	    if debug: print "Entry",n,
             ret = intree.GetEntry(n)
             if ret == -1: exit ('No entry #'+str(n))
             # Only interested in particles which might have triggered
             # (and not merely coincident with the triggering particle)
             if triggercondition(pyl): 
-                tTriggers.append(pyl.tBigDisk.GetValue())
+                # Trigger t_zero chosen at DS TOF paddle:
+                tTriggers.append(pyl.tTOFdsHorz.GetValue()) 
+            print "\n"
 
         # Take the earliest tBigDisk of any trigger particle candidates at the trigger time.
         # (Nearly always there is one and only one candidate triggering particle. Paranoia.)
+	if not len(tTriggers)>0: 
+            print "tTriggers zero length" 
+            continue # Maybe the next trigger will be okay
         tTrigger = sorted(tTriggers)[0]
+        if debug: print "    Using tTrigger:",tTrigger
 
         # Print the hepevt lines: (GeV, ns, cm)
         # 1 [pdg] 0 0 0 0 px py pz E m x y z t
@@ -324,7 +351,7 @@ for spill, intree in InputSpillTrees.iteritems():
                 txtstr = gimmestr(pyl, tTrigger)
                 particlelines[-1 * particlecount] = copy.copy(txtstr)
                 particlecount += 1
-                print txtstr
+                print txtstr,
 
         # Precisely at the time of the triggering particle:
         for n in allentriesbytime[time]:
@@ -333,7 +360,7 @@ for spill, intree in InputSpillTrees.iteritems():
             txtstr = gimmestr(pyl, tTrigger)
             particlelines[particlecount] = copy.copy(txtstr)
             particlecount += 1
-            print txtstr
+            print txtstr,
 
         # At which times were there particles AFTER this trigger, close enough to put energy in the TPC?
         delta_t = 0.
@@ -360,7 +387,7 @@ for spill, intree in InputSpillTrees.iteritems():
                 txtstr = gimmestr(pyl, tTrigger)
                 particlelines[particlecount] = copy.copy(txtstr)
                 particlecount += 1
-                print txtstr
+                print txtstr,
 
         if debug: print "\nPrint to file:"
         line = str(eventnum)+' '+str(particlecount)+'\n'
