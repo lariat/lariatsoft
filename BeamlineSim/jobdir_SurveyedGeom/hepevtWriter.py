@@ -106,7 +106,7 @@ def triggercondition(pile):
         if pile.TrackPresentDet3.GetValue(): print 'Det3'
         if pile.TrackPresentDet4.GetValue(): print 'Det4'
         if pile.TrackPresentTOFus.GetValue(): print 'TOFus'
-        if pile.TrackPresentTOFds.GetValue(): print 'TOFds'
+        if pile.TrackPresentTOFds.GetValue(): print 'TOFds' #Horz removed
         
     # Wire Chambers
     return (pile.TrackPresentDet1.GetValue() and 
