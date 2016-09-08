@@ -18,14 +18,11 @@ import commands
 import optparse
 import re
 
-# Constants
-nonsense = 123456789
-
 ## Get the command line options ##
 parser = optparse.OptionParser("usage: %prog [options] olddir [stringtoreplace] newstring\n")
 parser.add_option("-v", action="store_true", dest="verbose", default=False,
                   help="Print debugging output.")
-parser.add_option ('-A', dest='MagCurr', default=nonsense, type="float",
+parser.add_option ('-A', dest='MagCurr', default=100.0, type="float",
                    help="{+/-}100.0 magnet current setting to simulate, in amps.")
 parser.add_option ('-E', dest='beamNrg', default="", type="string",
                    help="2-digit beam energy in GeV")
@@ -72,14 +69,12 @@ namemod = namemod+"_"+str(jobcount)+"jobsof"+shortnum
 if beamNrg != "":
     str_nrg = beamNrg+"GeV"
     namemod = namemod +"_"+ str_nrg
-magsign = ""
-if MagCurr != nonsense:
-    if MagCurr >= 0: magsign = "pos"
-    else: magsign = "neg"
-    #unsignedMagField = signedMagField.replace("+","").replace("-","")
-    MagCurrAmplitude = '{:.0f}'.format(abs(MagCurr))
-    str_mag = magsign+MagCurrAmplitude+'Amps'
-    namemod = namemod +"_"+ str_mag
+
+if MagCurr >= 0: magsign = "pos"
+else: magsign = "neg"
+MagCurrAmplitude = '{:.0f}'.format(abs(MagCurr))
+str_mag = magsign+MagCurrAmplitude+'Amps'
+namemod = namemod +"_"+ str_mag
 
 print "                  namemod will be ",namemod
 
@@ -118,7 +113,7 @@ sedlar = "sed 's/\.root/"+namemod+"\.root/g"
 if beamNrg != "":
     momMeV = str(float(beamNrg)*1000.0)
     sedlar = sedlar + ";s/meanMomentum=8000.0/meanMomentum="+momMeV+"/g"
-if signedMagField != "":
+if MagCurr != 100.0:
     Bfrac = str(MagCurr/100.0)
     sedlar = sedlar + ";s/Bscale=1.0/Bscale="+Bfrac+"/g;"
 
