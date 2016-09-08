@@ -18,25 +18,31 @@ import commands
 import optparse
 import re
 
+# Constants
+nonsense = 123456789
+
 ## Get the command line options ##
 parser = optparse.OptionParser("usage: %prog [options] olddir [stringtoreplace] newstring\n")
 parser.add_option("-v", action="store_true", dest="verbose", default=False,
                   help="Print debugging output.")
-parser.add_option ('-B', dest='signedMagField', default="", type="string",
-                   help="{+/-}0.00 format Bfield in Tesla.")
+parser.add_option ('-A', dest='MagCurr', default=nonsense, type="float",
+                   help="{+/-}100.0 magnet current setting to simulate, in amps.")
 parser.add_option ('-E', dest='beamNrg', default="", type="string",
                    help="2-digit beam energy in GeV")
 parser.add_option ('--jobcount', dest='jobcount', default=10, type="int",
                    help="Count of jobs to run")
 parser.add_option ('--jobsize', dest='jobsize', default=30, type="int",
                    help="Beam events per job")
+parser.add_option ('--spillsize', dest='spillsize', default=300, type="int",
+                   help="Beam events per SpillTree")
 
 options, args  = parser.parse_args()
 verbose        = options.verbose
-signedMagField = options.signedMagField
+MagCurr        = options.MagCurr
 beamNrg        = options.beamNrg
 jobcount     = options.jobcount
 jobsize      = options.jobsize
+spillsize    = options.spillsize
 olddir = args[0]
 
 ##__Use the number of arguments to decide if a replacement string has been given.__##
@@ -67,11 +73,12 @@ if beamNrg != "":
     str_nrg = beamNrg+"GeV"
     namemod = namemod +"_"+ str_nrg
 magsign = ""
-if signedMagField != "":
-    if float(signedMagField) >= 0: magsign = "pos"
+if MagCurr != nonsense:
+    if MagCurr >= 0: magsign = "pos"
     else: magsign = "neg"
-    unsignedMagField = signedMagField.replace("+","").replace("-","")
-    str_mag = magsign+unsignedMagField+"Tesla"
+    #unsignedMagField = signedMagField.replace("+","").replace("-","")
+    MagCurrAmplitude = '{:.0f}'.format(abs(MagCurr))
+    str_mag = magsign+MagCurrAmplitude+'Amps'
     namemod = namemod +"_"+ str_mag
 
 print "                  namemod will be ",namemod
@@ -87,8 +94,11 @@ if verbose: print "mkdir "+newdirname
 commands.getoutput('cp '+olddir+'/MergeTrees.py '+newdirname+'/.')
 ##new scripts added to new directory
 commands.getoutput('cp '+olddir+'/Script.sh '+newdirname+'/.')
+## Edit the new Script.sh in place, to set the options for job size and spill size 
 sedsize = "sed -i 's/jobsize=Size/jobsize="+str(jobsize)+"/' "+newdirname+"/Script.sh "
 commands.getoutput(sedsize)
+sedspill = "sed -i 's/Spillsize/"+str(spillsize)+"/' "+newdirname+"/Script.sh "
+commands.getoutput(sedspill)
 #commands.getoutput('sed -i '+ ";s/jobsize=Size/jobsize="+str(jobsize)+"/g " +newdirname+"/Script.sh ")
 commands.getoutput('cp '+olddir+'/MergeFiles.sh '+newdirname+'/.')
 commands.getoutput('cp '+olddir+'/Jobsubmit.sh '+newdirname+'/.')
@@ -109,7 +119,7 @@ if beamNrg != "":
     momMeV = str(float(beamNrg)*1000.0)
     sedlar = sedlar + ";s/meanMomentum=8000.0/meanMomentum="+momMeV+"/g"
 if signedMagField != "":
-    Bfrac = str(float(signedMagField)/0.35)
+    Bfrac = str(MagCurr/100.0)
     sedlar = sedlar + ";s/Bscale=1.0/Bscale="+Bfrac+"/g;"
 
 sedlar +="' "+olddir+"/"+oldlar+" > "+newdirname+"/"+newlar
