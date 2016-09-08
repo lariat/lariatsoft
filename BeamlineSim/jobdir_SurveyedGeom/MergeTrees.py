@@ -26,7 +26,7 @@ parser.add_option ('--o', dest='outfile', type='string',
                    default = 'MergedTree_test.root',
                    help="Output filename (ends .root).  This option is ignored.")
 parser.add_option ('-T', dest='starterTree', type='string',
-                   default = 'BigDisk',
+                   default = 'StartLine',
                    help="The one TTree whose tracks will be iterated over. Effectively requires tracks present here.")
 parser.add_option ('--maxspill', dest='maxspill', type='int',
                    default = -1,
