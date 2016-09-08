@@ -145,7 +145,7 @@ for name, tuple in INtuples.iteritems():
 vars = ('x','y','z','t','Px','Py','Pz','PDGid','ParentID','EventID','TrackID')
 StartLine = ('StartLine',)
 WCs = ('Det1', 'Det2', 'Det3', 'Det4')
-Scints = ('TOFus', 'Halo', 'HaloHole', 'TOFdsHorz', 'TiWindow','BigDisk')
+Scints = ('TOFus', 'Halo', 'HaloHole', 'TOFds', 'TiWindow','BigDisk')
 Punch  =  ('PunchUL', 'PunchLL', 'PunchUR', 'PunchLR')
 
 ## One dictionary to rule them all. ##
@@ -211,7 +211,7 @@ pointers = {} # dictionary of pointers, to please ROOT, which loves pointers for
 # Also hooks the branches to their pointers.
 #
 def AddTree(treedict, spillnum, pointers):
-    if debug: print "Adding tree for spill ",spillnum
+    print "Adding tree for spill ",spillnum
     treename = "EventTree_Spill"+str(spillnum)
     # Make the new TTree ans store it in the TTree dictionary
     treedict[spillnum] = ROOT.TTree(treename,treename)

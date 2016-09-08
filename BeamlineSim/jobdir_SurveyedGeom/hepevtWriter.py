@@ -106,14 +106,14 @@ def triggercondition(pile):
         if pile.TrackPresentDet3.GetValue(): print 'Det3'
         if pile.TrackPresentDet4.GetValue(): print 'Det4'
         if pile.TrackPresentTOFus.GetValue(): print 'TOFus'
-        if pile.TrackPresentTOFdsHorz.GetValue(): print 'TOFds'
+        if pile.TrackPresentTOFds.GetValue(): print 'TOFds'
         
     # Wire Chambers
     return (pile.TrackPresentDet1.GetValue() and 
             (pile.TrackPresentDet2.GetValue() or pile.TrackPresentDet3.GetValue()) and
             pile.TrackPresentDet4.GetValue() and 
             # Time of Flight, too
-            pile.TrackPresentTOFus.GetValue() and pile.TrackPresentTOFdsHorz.GetValue() )
+            pile.TrackPresentTOFus.GetValue() and pile.TrackPresentTOFds.GetValue() )
 
 ####################################################
 # Check files exist, get some strings, make a TFile
@@ -305,7 +305,7 @@ for spill, intree in InputSpillTrees.iteritems():
         # To mimic trigger decision latency, grab the tBigDisk of the triggering particle
         # This will be subtracted off the tStartLine of all particles in the event window.
         tTriggers = []
-        if debug: print 'Grabbing TOFdsHorz values among',len(allentriesbytime[time]),'values:',
+        if debug: print 'Grabbing TOFds values among',len(allentriesbytime[time]),'values:',
         for n in allentriesbytime[time]: # In case of multiple trigger-time particles
 	    if debug: print "Entry",n,
             ret = intree.GetEntry(n)
@@ -314,7 +314,7 @@ for spill, intree in InputSpillTrees.iteritems():
             # (and not merely coincident with the triggering particle)
             if triggercondition(pyl): 
                 # Trigger t_zero chosen at DS TOF paddle:
-                tTriggers.append(pyl.tTOFdsHorz.GetValue()) 
+                tTriggers.append(pyl.tTOFds.GetValue()) 
             print "\n"
 
         # Take the earliest tBigDisk of any trigger particle candidates at the trigger time.
