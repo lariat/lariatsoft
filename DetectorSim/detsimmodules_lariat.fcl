@@ -23,6 +23,14 @@ lariat_simwire:
 
 }
 #lariat_simwireana: @local::standard_simwireana
+
+lariat_tofsim:
+{
+   module_type: "TOFSimDigits"
+   DigitModuleLabel: "tofsim"
+   G4ModuleLabel: "largeant"
+}
+
 lariat_simwireana:
 {
     module_type: "SimWiret1034Ana"

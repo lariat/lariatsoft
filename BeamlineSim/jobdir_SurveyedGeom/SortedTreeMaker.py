@@ -232,7 +232,7 @@ for intree in InputSpillTrees.values():
                 (pyl.TrackPresentDet2.GetValue() or pyl.TrackPresentDet3.GetValue()) and
                 pyl.TrackPresentDet4.GetValue() and 
                 # Time of Flight, too
-                pyl.TrackPresentTOFus.GetValue() and pyl.TrackPresentTOFdsHorz.GetValue()):
+                pyl.TrackPresentTOFus.GetValue() and pyl.TrackPresentTOFds.GetValue()):  
                 
                 #..if so, add it to the list
                 triggertimes.append(time) 
