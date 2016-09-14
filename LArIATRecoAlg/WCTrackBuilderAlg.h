@@ -183,10 +183,10 @@ class WCTrackBuilderAlg{
 				  float (&y)[4],
 			          float (&z)[4],
 				  float & reco_pz);
-				  
- // void MakeATree(					    
-					    
-		
+				  					    
+ 					    
+  float fMCMagneticField;
+  float fB_field_tesla;	
   private:
   
   bool   fPickyTracks;
@@ -219,7 +219,6 @@ class WCTrackBuilderAlg{
   
   				 
   //Misc				 
-  float fB_field_tesla;
   bool fVerbose;
   int fRun;
   int fSubRun;
