@@ -22,19 +22,22 @@ if not len(args) >= 1: exit('Please supply a filename.')
 infilename = args[0]
 outdir = '/pnfs/lariat/scratch/fts/dropbox/'
 
-## create_date
-## data_tier generated-beam-only
-## file_format: 'root'
-## file_name [[Must be unique ==> include datetime]]
-## secondary.intensity 300,000
-## secondary.momentum
-## tertiary.magnet_current 100
-## tertiary.magnet_polarity Negative
+##    "create_date": "2016-09-14T17:30:11+00:00", 
+##    "data_tier": "generated-beam-only", 
+##    "file_format": "root", 
+##    "file_name": "MergedAtStartLinesim_LAriaT_13degProdxn_10degAna_SurveyedGeom_5000jobsof60k_64GeV_neg100Amps__20160914T173011.root", 
+##    "file_type": "mc",
+##    "secondary.intensity": 300000, 
+##    "secondary.momentum": 64, 
+##    "tertiary.magnet_current": 100, 
+##    "tertiary.magnet_polarity": "Negative"
 
 metadump = {} # Dictionary to hold all the values before we write JSON
+
 # Hard-coded for merged trees
 metadump['data_tier'] = 'generated-beam-only'
 metadump['file_format'] = 'root'
+metadump['file_type'] = 'mc'
 
 # Time we run this script. Needed for create_date and filename
 ## e.g. 2016-06-04T20:21:27+00:00. 
