@@ -33,7 +33,7 @@
 WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
-
+  fB_field_tesla=fMCMagneticField;
   //Testing the AuxDetGeo capabilitites
   std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
   double centerOfDet[3] = {0,0,0};
@@ -83,6 +83,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
 
   fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
+  fMCMagneticField      = pset.get<float >("MCMagneticFieldTesla", 0.0);
 
 
   //fCentralYKink         = pset.get<float >("CentralYKink",        -0.01    ); //These four are parameters from histos I produced from picky-good tracks
@@ -519,6 +520,7 @@ void WCTrackBuilderAlg::calculateTheMomentum(WCHitList & best_track,
   //float theta_y_us= atan(dy_us/dz_us);
   //float theta_y_ds= atan(dy_ds/dz_ds);
   reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (3.3*(sin(theta_x_ds) - sin(theta_x_us)))/cos(atan(BestTrackStats[0]));
+  std::cout<<"B: "<<fB_field_tesla<<" momentum: "<<reco_pz<<std::endl;
   
 }
 //==================================================================================

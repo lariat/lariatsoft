@@ -994,9 +994,10 @@ void WCTrackBuildernew::beginRun(art::Run & r)
 
 void WCTrackBuildernew::beginSubRun(art::SubRun & sr)
 {
-  // Implementation of optional member function here.
-      // Implementation of optional member function here.
-    fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );
+   std::cout<<"Module B: "<<fWCTrackBuilderAlg.fMCMagneticField<<std::endl;
+    // If the field override is not set, get the actual magnetic field value for the alg
+    if( fWCTrackBuilderAlg.fMCMagneticField == 0 ){ 
+    	fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );}
 }
 
 void WCTrackBuildernew::endJob()
@@ -1017,7 +1018,7 @@ void WCTrackBuildernew::endJob()
 void WCTrackBuildernew::reconfigure(fhicl::ParameterSet const & p)
 {
   // Implementation of optional member function here.
-      fNumber_wire_chambers = p.get<int>("NWC"); //4;  
+    fNumber_wire_chambers = p.get<int>("NWC"); //4;  
     fNumber_wires_per_tdc = p.get<int>("NWperTDC"); //64;
     fVerbose = p.get<bool>("Verbose", false);
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
