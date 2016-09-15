@@ -9,14 +9,13 @@
 <!ENTITY name "LArG4">
 <!ENTITY tag "LArG4">
 <!ENTITY fclDir "/lariat/app/users/gpulliam/test/v06_06_00/srcs/lariatsoft/JobConfigurations/">
-<!ENTITY jobnumber "0"> 
+<!ENTITY jobnumber "20">
 ]>
 
 <project name="&name;">
 
   <!-- Project size -->
-  <numevents>-1</numevents> 
-
+  <numevents>12</numevents>
   <!-- Operating System -->
   <os>SL6</os>
 
@@ -38,7 +37,7 @@
     <outdir>/pnfs/lariat/scratch/users/gpulliam/&release;/LArG4/&jobnumber;/</outdir>
     <workdir>/lariat/app/users/gpulliam/&release;/LArG4/&jobnumber;/</workdir>
     <inputmode> textfile </inputmode>
-    <inputfile>  </inputfile>
+    <inputfile>/pnfs/lariat/scratch/users/gpulliam/LArG4Files/hepevt_MergedAtBigDisksim_mergedfile64gev_neg100A_1000_20spillsof300k_OnlySpilltree201Spill_201thru201.txt</inputfile>
     <numjobs>1</numjobs>
   </stage>
 </project>
