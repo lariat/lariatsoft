@@ -23,7 +23,7 @@ infilename = args[0]
 outdir = '/pnfs/lariat/scratch/fts/dropbox/'
 
 ## create_date
-## data_tier
+## data_tier generated-beam-only
 ## file_format: 'root'
 ## file_name [[Must be unique ==> include datetime]]
 ## secondary.intensity 300,000
@@ -33,7 +33,7 @@ outdir = '/pnfs/lariat/scratch/fts/dropbox/'
 
 metadump = {} # Dictionary to hold all the values before we write JSON
 # Hard-coded for merged trees
-metadump['data_tier'] = 'sim_spilltrees'
+metadump['data_tier'] = 'generated-beam-only'
 metadump['file_format'] = 'root'
 
 # Time we run this script. Needed for create_date and filename
