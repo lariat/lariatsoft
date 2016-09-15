@@ -50,7 +50,7 @@ metadump['file_name'] = newfilename
 intensity = raw_input('Pions on target per spill? (Default: 300e3)')
 if intensity == '': intensity = int(300e3)
 else: intensity = int(float(intensity))
-metadump['intensity'] = intensity
+metadump['secondary.intensity'] = intensity
 
 # Extract the bit about the secondary beam momentum on the target
 parts = infilename.split('_')
