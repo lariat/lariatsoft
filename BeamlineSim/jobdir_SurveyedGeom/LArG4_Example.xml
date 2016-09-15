@@ -1,0 +1,57 @@
+<?xml version="1.0"?>
+
+<!-- Production Project -->
+
+<!DOCTYPE project [
+<!ENTITY release "v06_05_00">
+<!ENTITY file_type "digit">
+<!ENTITY run_type "physics"> 
+<!ENTITY name "LArG4">
+<!ENTITY tag "LArG4">
+<!ENTITY fclDir "/lariat/app/users/gpulliam/v06_05_00/srcs/lariatsoft/JobConfigurations/">
+
+]>
+
+<project name="&name;">
+
+  <!-- Project size -->
+  <numevents>-1</numevents> 
+
+  <!-- Operating System -->
+  <os>SL6</os>
+
+  <!-- Batch resources -->
+  <resource>DEDICATED,OPPORTUNISTIC</resource>
+  <memory>8000</memory>
+  <disk>70GB</disk>
+
+  <!-- Larsoft information -->
+  <larsoft>
+    <tag>&release;</tag>
+    <qual>e10:debug</qual>
+    <local>/lariat/app/users/gpulliam/&release;/local.tar</local>
+  </larsoft>
+
+  <stage name="LArG4">
+    <fcldir>&fclDir;</fcldir>
+    <fcl>prodtext_lariat.fcl</fcl>
+    <outdir>/pnfs/lariat/scratch/users/gpulliam/&release;/&tag;/LArG4</outdir>
+    <workdir>/lariat/app/users/gpulliam/&release;/LArG4</workdir>
+    <inputlist>/pnfs/lariat/scratch/users/gpulliam/LArG4Files/LArG4FileList.txt</inputlist>
+    <inputmode>textfile</inputmode>
+    <numjobs>21</numjobs>
+  </stage>
+
+  <stage name="Slicebefore">
+    <fcldir>&fclDir;</fcldir>
+    <fcl>multiple_input_output_slice_job.fcl</fcl>
+    <outdir>/pnfs/lariat/scratch/users/gpulliam/&release;/&tag;/WCNotPicky</outdir>
+    <workdir>/lariat/app/users/gpulliam/lariatslicers/v05_01_01/workdirbefore</workdir>
+  <!--  <logdir>/lariat/app/users/elenag/PionHelpLariatSoft/reconstruction/&release;/xml/&tag;_filter_logdir</logdir>-->
+    <inputdef>WC3Realignmentcheck_before</inputdef> 
+    <numjobs>1000</numjobs>
+    <!--        <defname>&name;_&tag;_sliced</defname> --> 
+  </stage>
+
+
+</project>

@@ -110,3 +110,4 @@ outputs:
 ### for the modules defined above with whatever new values you have ###
 #######################################################################
 #physics.filters.hitfilter.fminNumberHits: 100
+physics.producers.SimDigit.MCBField: .35
