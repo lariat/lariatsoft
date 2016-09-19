@@ -1,0 +1,7 @@
+#include "Reco.fcl"
+ 
+process_name: Reco2D
+
+physics.producers.caldata.dQdxCalibFileName: "LArIATChargeCorrectionFactors_Run2.txt"
+
+
