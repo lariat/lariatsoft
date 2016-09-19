@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+
+<!-- Production Project -->
+
+<!DOCTYPE project [
+<!ENTITY release "v06_06_00">
+<!ENTITY file_type "digit">
+<!ENTITY run_type "physics"> 
+<!ENTITY name "LArG4">
+<!ENTITY tag "LArG4">
+<!ENTITY fclDir "/lariat/app/users/gpulliam/test/v06_06_00/srcs/lariatsoft/JobConfigurations/">
+<!ENTITY jobnumber "0"> 
+]>
+
+<project name="&name;">
+
+  <!-- Project size -->
+  <numevents>-1</numevents> 
+
+  <!-- Operating System -->
+  <os>SL6</os>
+
+  <!-- Batch resources -->
+  <resource>DEDICATED,OPPORTUNISTIC</resource>
+  <memory>8000</memory>
+  <disk>70GB</disk>
+
+  <!-- Larsoft information -->
+  <larsoft>
+    <tag>&release;</tag>
+    <qual>e10:debug</qual>
+    <local>/lariat/app/users/gpulliam/test/v06_06_00/local.tar</local>
+  </larsoft>
+
+  <stage name="LArG4">
+    <fcldir>&fclDir;</fcldir>
+    <fcl>prodtext_lariat_edit.fcl</fcl>
+    <outdir>/pnfs/lariat/scratch/users/gpulliam/&release;/LArG4/&jobnumber;/</outdir>
+    <workdir>/lariat/app/users/gpulliam/&release;/LArG4/&jobnumber;/</workdir>
+    <inputmode> textfile </inputmode>
+    <inputfile>  </inputfile>
+    <numjobs>1</numjobs>
+  </stage>
+</project>

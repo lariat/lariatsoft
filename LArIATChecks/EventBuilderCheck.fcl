@@ -1,16 +1,17 @@
 #include "services_lariat.fcl"
 #include "clockcorrectionalg.fcl"
 #include "eventbuilderalg.fcl"
+##include "resourcetracking_services.fcl"
 
 process_name: EventBuilderCheck
 
 services:
 {
   TFileService: { fileName: "EventBuilderCheck.root" }
-  Timing:       {}
-  RandomNumberGenerator: {} 
+ #@table::standard_resourcetrackers
+  RandomNumberGenerator: {}
   message:      @local::standard_info
-  user:         @local::lariat_services
+  @table::lariat_services
 }
 
 source:
@@ -70,7 +71,7 @@ physics:
   end_paths: [ analysis ]  
 }
 
-services.user.LArSeedService: @local::random_seedservice
+services.LArSeedService: @local::random_seedservice
 #physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.MinSamples:                   2
 #physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.ResidualThreshold:            1
 #physics.analyzers.EventBuilderCheck.EventBuilderAlg.ClockCorrectionAlg.MaxTrials:                    10000

@@ -8,7 +8,7 @@ services:
 {
   TFileService: { fileName: "MichelWfmReco_histo.root" }
   #message:      @local::standard_info
-  user:         @local::lariat_simulation_services
+  @table::lariat_simulation_services
   scheduler:    { }
 }
 

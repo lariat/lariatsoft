@@ -8,7 +8,7 @@ services:
 {
   TFileService: { fileName: "WCTrackBuilder_histo.root" }
   message:      @local::standard_info
-  user:         @local::lariat_services
+  @table::lariat_services
 }
 
 source:
@@ -37,15 +37,21 @@ physics:
     WCTrackBuilder:
     {
       module_type:         WCTrackBuildernew
-      SourceLabel:         "daq"
+      SourceLabel:         "SimDigit"
       WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
       WCHitFinderAlg:      @local::lariat_wchitfinderalg  
       TriggerUtility: "FragmentToDigit"
       NWC: 4
       NWperTDC: 64
+	
+      WCTrackBuilderAlg:
+	{
+	MCMagneticFieldTesla:  .175
+	}
+        
       Verbose: false
-      PickyTracks: false  #True: Only use events with EXACTLY 1 XY Hit in each WC
-      HighYield: true   #True: allows 3 or 4 point tracks to be made, as long as missing WC is 2 or 3. False: Only allow 4 point tracks
+      PickyTracks: true  #True: Only use events with EXACTLY 1 XY Hit in each WC
+      HighYield: false  #True: allows 3 or 4 point tracks to be made, as long as missing WC is 2 or 3. False: Only allow 4 point tracks
       CheckTracks: false  #SET TO FALSE IF YOU ARE DOING PHYSICS RUNS. THIS IS ONLY USED FOR DEBUGGING WHEN YOU ONLY WANT HISTOGRAMS		
     }
   }
@@ -57,3 +63,5 @@ physics:
 }
 
 physics.producers.WCTrackBuilder.TriggerUtility: "FragmentToDigit"
+
+

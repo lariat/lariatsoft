@@ -14,7 +14,7 @@ art_make(BASENAME_ONLY
          larreco_RecoAlg
 	 lardata_AnalysisAlg
          lardataobj_RawData
-         larsim_Simulation larsimobj_Simulation
+         larsim_Simulation lardataobj_Simulation
          larcoreobj_SummaryData
          larcore_Geometry
          larcore_Geometry_Geometry_service

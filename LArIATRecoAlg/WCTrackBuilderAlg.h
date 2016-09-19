@@ -98,10 +98,106 @@ class WCTrackBuilderAlg_new{
  			     std::vector<TH1F*> & RegressionPlots1D,*/
  			     std::vector<TH2F*> & Recoplots);
 			     
+<<<<<<< HEAD
   std::vector<float> Regression(float (&y)[4],
                             float (&z)[4],/*
  			    TH1F* & ResSquare */
 			    int skippedWC);
+=======
+   void calculateTheMomentumGiven(WCHitList & best_track,
+		             float (&x)[4],
+			     float (&y)[4],
+			     float (&z)[4],
+			     float & reco_pz,
+			     std::vector<float> & BestTrackStats);				 
+				 
+   void projectToTPC(WCHitList & best_track,
+		    float (&x)[4],
+		    float (&y)[4],
+		    float (&z)[4],
+		    std::vector<float> & bestRegressionStats,
+		    std::vector<double> & x_face_list,
+		    std::vector<double> & y_face_list,
+		    std::vector<double> & incoming_theta_list,
+		    std::vector<double> & incoming_phi_list);
+		    
+		    				 
+   float buildThreePointTracks(std::vector<std::vector<WCHitList> > & good_hits,
+	                      std::vector<double> & reco_pz_list,
+			      std::vector<double> & x_face_list,
+		              std::vector<double> & y_face_list,
+			      std::vector<double> & incoming_theta_list,
+			      std::vector<double> & incoming_phi_list,
+			      std::vector<WCHitList> & event_final_tracks,
+			      std::vector<double> & y_kink_list,
+			      std::vector<double> & x_dist_list,
+			      std::vector<double> & y_dist_list,
+			      std::vector<double> & z_dist_list,
+			      int & WCMissed,
+			      float (&hit_position_vect)[4][3]);
+			      
+   void calculateTheThreePointMomentum(WCHitList & best_track,
+				       float(&x)[4],
+				       float(&y)[4],
+				       float(&z)[4],
+				       float & reco_pz,
+				       std::vector<float> & BestTrackStats,
+				       int & WCMissed);
+				       				 
+				 
+  void extrapolateTheMissedPoint(WCHitList & best_track,
+			         float(&x)[4],
+			         float(&y)[4],
+			         float(&z)[4],
+				 float & reco_pz,
+				 std::vector<float> & BestTrackStats,
+				 std::vector<float> & missed_wires,
+				 int & WCMissed);
+				 
+  void calculateTrackKink_Dists(float (&x)[4],
+  				float (&y)[4],
+				float (&z)[4],
+				std::vector<float> & track_stats,
+				std::vector<double> & y_kink_list,
+				std::vector<double> & x_dist_list,
+				std::vector<double> & y_dist_list,
+				std::vector<double> & z_dist_list);
+
+  void MakeDiagnosticPlots(std::vector<std::vector<WCHitList> > & good_hits,
+					    std::vector<TH2F*> & RecoDiff,	                      
+					    std::vector<double> & reco_pz_list,
+			      		    std::vector<double> & x_face_list,
+		              		    std::vector<double> & y_face_list,
+			      		    std::vector<double> & incoming_theta_list,
+			      		    std::vector<double> & incoming_phi_list,
+			      		    std::vector<double> & y_kink_list,
+			      		    std::vector<double> & x_dist_list,
+			      	            std::vector<double> & y_dist_list,
+			      	            std::vector<double> & z_dist_list,
+			      	            int & WCMissed);
+					    
+					    
+  TVector3 PlotTheMidplane(float (&x)[4],
+        	       float (&y)[4],
+		       float (&z)[4],
+		       float dist);
+		       
+		       
+  float PlotTheMidplane(float (&x)[4],
+        	       float (&y)[4],
+		       float (&z)[4]);
+		       
+		       
+  float CalculateTheMomentumError(float (&x)[4],
+				  float (&y)[4],
+			          float (&z)[4],
+				  float & reco_pz);
+				  					    
+ 					    
+  float fMCMagneticField;
+  float fB_field_tesla;	
+  private:
+>>>>>>> 20b1f23531c64d01377757a3d6a20a8f83387e56
   
   bool buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 			   std::vector<double> & reco_pz_list,
@@ -237,10 +333,16 @@ class WCTrackBuilderAlg_new{
   double fCenter_of_tpc[3];  //<------------------- CENTER OF TPC HERE !!!!!!!!
   float fHalf_z_length_of_tpc;
   float fHalf_x_length_of_tpc;
+<<<<<<< HEAD
 
 
   //Misc
   float fB_field_tesla;
+=======
+  
+  				 
+  //Misc				 
+>>>>>>> 20b1f23531c64d01377757a3d6a20a8f83387e56
   bool fVerbose;
   int fRun;
   int fSubRun;
