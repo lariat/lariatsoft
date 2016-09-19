@@ -32,11 +32,15 @@ parser.add_option ('--lastspill', dest='lastspill', type='int',
                    help="Spill number to process last.")
 parser.add_option ('-v', dest='debug', action="store_true", default=False,
                    help="Turn on verbose debugging.")
+parser.add_option ('--outdir', dest='outdir', type='string',
+                   default = '',
+                   help="Location to produce output. Default: same as input.")
 
 options, args = parser.parse_args()
 maxspill = options.maxspill
 firstspill = options.firstspill
 lastspill = options.lastspill
+outdir = options.outdir
 debug = options.debug
 infile = args[0]
 
@@ -109,8 +113,9 @@ for key in ROOT.gDirectory.GetListOfKeys():
         if maxspill > 0 and spillcount > maxspill: break
 
 #### The Output: A file with a tree in it. ####
-infilepath = os.path.abspath(infilename)
+infilepath = os.path.dirname(os.path.abspath(infilename))+'/'
 infilename = os.path.basename(infilename)
+outdir = infilepath
 
 # Initialize a handy list
 spillnums = []
@@ -129,8 +134,10 @@ for spill, intree in InputSpillTrees.iteritems():
     if debug: print "Starting ",intree.GetName()," with ",n_entries," entries."
     spillnums.append(spill)
     # Make a new file 
-    outfilename = infilename.replace('.root','_OnlySpilltree'+str(spill)+'.root')
-    outfile = ROOT.TFile(outfilename, 'RECREATE')
+    outfilename = infilename.replace('.root','_OnlySpillTree'+str(spill)+'.root')
+    print "++ outdir: ",outdir
+    print "++ outfilename:",outfilename
+    outfile = ROOT.TFile(outdir+outfilename, 'RECREATE')
     outfile.cd()
 
     # Make a copy of this TTree in the new file
