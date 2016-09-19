@@ -81,7 +81,6 @@ infile.cd()
 ROOT.gDirectory.cd()
 abspath = base+":/"
 if debug: print "|",abspath,"|"
-ROOT.gDirectory.cd(abspath)
 if debug: ROOT.gDirectory.ls()
 
 dumtuple = ROOT.TTree() # Just need an instance of this class, it seems.
