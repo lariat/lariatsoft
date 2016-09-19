@@ -29,9 +29,9 @@
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/AuxDetGeo.h"
 #include "larcore/Geometry/AuxDetGeometry.h"
-#include "larsimobj/Simulation/sim.h"
-#include "larsimobj/Simulation/SimChannel.h"
-#include "larsimobj/Simulation/AuxDetSimChannel.h"
+#include "lardataobj/Simulation/sim.h"
+#include "lardataobj/Simulation/SimChannel.h"
+#include "lardataobj/Simulation/AuxDetSimChannel.h"
 
 //ROOT Library
 
