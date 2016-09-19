@@ -199,12 +199,9 @@ infilename = os.path.basename(infilename)
 if keepitlocal:
     outfilename = infilepath+"MergedAt"+starterTree+infilename
 else:
-<<<<<<< HEAD
-    outfile = ROOT.TFile("/lariat/data/users/lmendes/MergedAt"+starterTree+infilename,"RECREATE")
-=======
     outfilename = "MergedAt"+starterTree+infilename
 outfile = ROOT.TFile(outfilename,"RECREATE")
->>>>>>> cc06185ea9da97835a2f04889b12981f8c3ae761
+
 
 newTrees = {} # dictionary of new TTrees to save to outfile
 pointers = {} # dictionary of pointers, to please ROOT, which loves pointers for its TTrees
@@ -324,9 +321,6 @@ outfile.Close()
 #-------------- /Final Beam --------------------#
 
 infile.Close()
-<<<<<<< HEAD
-if not keepitlocal: commands.getoutput("ln -s /lariat/data/users/lmendes/MergedAt"+starterTree+infilename+" MergedAt"+starterTree+infilename)
-=======
->>>>>>> 20b1f23531c64d01377757a3d6a20a8f83387e56
+
 print "Here ya go: ",
 commands.getoutput("ls -ltra")

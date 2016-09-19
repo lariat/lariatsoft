@@ -98,12 +98,6 @@ class WCTrackBuilderAlg_new{
  			     std::vector<TH1F*> & RegressionPlots1D,*/
  			     std::vector<TH2F*> & Recoplots);
 			     
-<<<<<<< HEAD
-  std::vector<float> Regression(float (&y)[4],
-                            float (&z)[4],/*
- 			    TH1F* & ResSquare */
-			    int skippedWC);
-=======
    void calculateTheMomentumGiven(WCHitList & best_track,
 		             float (&x)[4],
 			     float (&y)[4],
@@ -197,7 +191,7 @@ class WCTrackBuilderAlg_new{
   float fMCMagneticField;
   float fB_field_tesla;	
   private:
->>>>>>> 20b1f23531c64d01377757a3d6a20a8f83387e56
+
   
   bool buildTracksFromHits(std::vector<std::vector<WCHitList> > & good_hits,
 			   std::vector<double> & reco_pz_list,
@@ -333,16 +327,10 @@ class WCTrackBuilderAlg_new{
   double fCenter_of_tpc[3];  //<------------------- CENTER OF TPC HERE !!!!!!!!
   float fHalf_z_length_of_tpc;
   float fHalf_x_length_of_tpc;
-<<<<<<< HEAD
-
-
-  //Misc
-  float fB_field_tesla;
-=======
   
   				 
   //Misc				 
->>>>>>> 20b1f23531c64d01377757a3d6a20a8f83387e56
+
   bool fVerbose;
   int fRun;
   int fSubRun;
