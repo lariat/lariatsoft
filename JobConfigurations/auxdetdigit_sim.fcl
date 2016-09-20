@@ -2,7 +2,7 @@
 #include "largeantmodules_lariat.fcl"
 #include "detsimmodules_lariat.fcl"
 
-process_name: TOFAuxDet
+process_name: SimAuxDetDigits
 
 services:
 {
@@ -31,13 +31,14 @@ physics:
 
  producers:
  {
-   
-   daq:    @local::lariat_tofsim  	  
+   SimWCDigit: @local::lariat_wcsim
+   SimTOFDigit: @local::lariat_tofsim
+     	  
  }
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
- reco: [ daq ] 
+ reco: [ SimWCDigit, SimTOFDigit ] 
  
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -65,5 +66,6 @@ outputs:
  }
 }
 
+physics.producers.SimWCDigit.MCBField: .35
 
 
