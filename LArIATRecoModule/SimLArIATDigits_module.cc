@@ -109,7 +109,6 @@ public:
 private:
  // Declare member data here.
   //std::vector<raw::AuxDetDigit> const& MakeWCDigits(art::Event & evt);  
-  std::vector<raw::AuxDetDigit> const& MakeAuxDetDigits(art::Event &evt);
   std::string fG4ModuleLabel; 
   void ResetVars(); //Function to reset all values for next run
   int numSimChannels;  //Number of Aux Dets 
@@ -208,7 +207,6 @@ void SimLArIATDigits::produce(art::Event & e)
        exitmomz[iter][nIDE]=TheIDE.exitMomentumZ;
        Energy[iter][nIDE]=TheIDE.energyDeposited;
        ExitTime[iter][nIDE]=TheIDE.exitT;
-
        XZHit->Fill(TheIDE.entryZ,TheIDE.entryX); 
      } //nIDE
 //All the hits are saved. in the tree. However, if you want to make digits for a particular detector system we define functions here.

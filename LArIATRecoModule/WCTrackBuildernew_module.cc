@@ -85,8 +85,7 @@ public:
 
   void createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
 					    std::vector<int> & WC_vect,
-					    std::vector<float> & hit_wire_vect,
-					    std::vector<float> & hit_time_vect);
+					    std::vector<float> & hit_wire_vect);
 					    
 					    
   void plotTheTrackInformation( std::vector<double> reco_pz_list,
@@ -104,6 +103,10 @@ public:
 private:
 
   // Declare member data here.
+
+    //Offset ont he B field
+    float offset;
+
 
     //Algorithm object for track building
     WCTrackBuilderAlg fWCTrackBuilderAlg;
@@ -220,6 +223,7 @@ void WCTrackBuildernew::produce(art::Event & e)
 			      
    		    		    
     std::vector<double> reco_pz_list;                  //Final reco pz result for full_track_info = true, not indexed by trigger
+    std::vector<double> reco_pz2M_list;
     std::vector<double> x_face_list;
     std::vector<double> y_face_list;
     std::vector<double> theta_list;
@@ -258,9 +262,10 @@ void WCTrackBuildernew::produce(art::Event & e)
    // MakeSomePlotsFromHits(good_hits);		
     
     	       
-    fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
+  fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 //std::cout<<"Hit Finding done, going to Track Building"<<std::endl;
   fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
+                                         reco_pz2M_list,
 					 x_face_list,
 					 y_face_list,
 					 theta_list,
@@ -278,7 +283,10 @@ void WCTrackBuildernew::produce(art::Event & e)
 					 fRecodiff,
 					 fWCDist,
 					 residual,
-					 hit_position_vect);			       
+					 hit_position_vect,
+                                         offset);			       
+  std::cout<<" reco_pz: "<<reco_pz_list.size()<<std::endl;
+  if(reco_pz2M_list.size())  std::cout<<"Checking the filling up of reco_pz2m: "<<reco_pz2M_list.size()<<" "<<reco_pz2M_list[0]<<" "<<reco_pz_list[0]<<std::endl;
 //tree->Branch("reco_pz",&reco_pz_list[0],"reco_pz/D");
 //tree->Fill();
 //fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
@@ -291,7 +299,7 @@ void WCTrackBuildernew::produce(art::Event & e)
     for( int iNewTrack = 0; iNewTrack<tracknumber; ++iNewTrack ){
       std::vector<int> WC_vect;
       std::vector<float> hit_wire_vect;
-      std::vector<float> hit_time_vect;
+      //std::vector<float> hit_time_vect;
       
       WCHitList final_track = final_tracks[iNewTrack];
       
@@ -299,10 +307,11 @@ void WCTrackBuildernew::produce(art::Event & e)
       //Filling as done above, but formats the WC and hit wire vectors in the WCAuxDetDigit style
       createAuxDetStyleVectorsFromHitLists(final_track,
 					   WC_vect,
-					   hit_wire_vect, hit_time_vect);
+					   hit_wire_vect);
       
       //WCTrack object creation and association with trigger created
-      ldp::WCTrack the_track(reco_pz_list[iNewTrack],
+if(reco_pz2M_list.size() > 0){      ldp::WCTrack the_track(reco_pz_list[iNewTrack],
+	                     reco_pz2M_list[iNewTrack],
                              y_kink_list[iNewTrack],
 			     x_dist_list[iNewTrack],
 			     y_dist_list[iNewTrack],
@@ -313,8 +322,28 @@ void WCTrackBuildernew::produce(art::Event & e)
 			     phi_list[iNewTrack],
 			     WC_vect,
 			     hit_wire_vect,
-			     hit_time_vect);
+			     hit_position_vect,
+			     WCMissed,
+			     residual);
+      (*WCTrackCol).push_back( the_track );}
+else{
+ldp::WCTrack the_track(reco_pz_list[iNewTrack],
+                             y_kink_list[iNewTrack],
+			     x_dist_list[iNewTrack],
+			     y_dist_list[iNewTrack],
+			     z_dist_list[iNewTrack],
+			     x_face_list[iNewTrack],
+			     y_face_list[iNewTrack],
+			     theta_list[iNewTrack],
+			     phi_list[iNewTrack],
+			     WC_vect,
+			     hit_wire_vect,
+			     hit_position_vect,
+			     WCMissed,
+			     residual);
       (*WCTrackCol).push_back( the_track );
+
+}
     }
 
     //Plot the reconstructed momentum, y_kink, and delta X, Y, Z in histos
@@ -336,16 +365,14 @@ void WCTrackBuildernew::produce(art::Event & e)
   //==================================================================================================
   void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
 								   std::vector<int> & WC_vect,
-								   std::vector<float> & hit_wire_vect,
-								   std::vector<float> & hit_time_vect)
+								   std::vector<float> & hit_wire_vect)
   {
     for( size_t iHit = 0; iHit < final_track.hits.size() ; ++iHit ){
       WC_vect.push_back(int(iHit/2)+1);          //Look at how hits are pushed into the tracks in buildTracksFromHits (alg)
 
       float the_wire = (final_track.hits.at(iHit).wire*-1)+64+(128*(iHit%2));
       if (fVerbose) { std::cout << "Old WCAxis/Wire: " << iHit << "/" << final_track.hits.at(iHit).wire << ", New WC/Wire: " << int(iHit/2)+1 << "/" << the_wire << std::endl; }
-      hit_wire_vect.push_back(the_wire);
-      hit_time_vect.push_back(0.);    
+      hit_wire_vect.push_back(the_wire);    
     }
   }
 //   //=======================================================================================
@@ -690,6 +717,7 @@ fRecodiff[95]=tfs->make<TH2F>("Momminusplus","Fractional Change with WC 2 -3mm a
 fRecodiff[96]=tfs->make<TH2F>("Momminusminus","Fractional Change with WC 2 -3mm amd WC 3 - 3mm",1800,0,1800,1000,-.1,.1);
 fRecodiff[97]=tfs->make<TH2F>("XZMidplane", "XZ point halfway between line of closest approach", 1000,-5000,-4000,1000,0,1000);
 fRecodiff[98]=tfs->make<TH2F>("dist","Distance of Closest Approach", 100,0,100,100,0,100);
+
 }
 fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 
@@ -1026,6 +1054,9 @@ void WCTrackBuildernew::reconfigure(fhicl::ParameterSet const & p)
     fPickyTracks=p.get<bool>("PickyTracks");
     fHighYield=p.get<bool>("HighYield");
     fCheckTracks=p.get<bool>("CheckTracks");
+    offset = p.get<float>("BFieldOffset");
+
+
 }
 // 
 // void WCTrackBuildernew::respondToCloseInputFile(art::FileBlock const & fb)
