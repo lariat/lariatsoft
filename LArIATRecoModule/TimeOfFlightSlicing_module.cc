@@ -200,7 +200,8 @@ void lrm::TimeOfFlightSlicing::endSubRun(art::SubRun & sr)
 void lrm::TimeOfFlightSlicing::reconfigure(fhicl::ParameterSet const & p)
 {   
    fMakeHistograms     = p.get< bool >("MakeHistograms", true);
-   fSlicerSourceLabel  = p.get< std::string >("SourceLabel", "daq");
+   fSlicerSourceLabel  = p.get< std::string >("SourceLabel");
+   std::cout<<"TOF Label: "<<fSlicerSourceLabel<<std::endl;
 }
 
 void lrm::TimeOfFlightSlicing::respondToCloseInputFile(art::FileBlock const & fb)

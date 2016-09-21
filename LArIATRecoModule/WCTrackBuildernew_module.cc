@@ -1051,6 +1051,7 @@ void WCTrackBuildernew::reconfigure(fhicl::ParameterSet const & p)
     fNumber_wires_per_tdc = p.get<int>("NWperTDC"); //64;
     fVerbose = p.get<bool>("Verbose", false);
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
+    std::cout<<"Label WC: "<<fSlicerSourceLabel<<std::endl;
     fPickyTracks=p.get<bool>("PickyTracks");
     fHighYield=p.get<bool>("HighYield");
     fCheckTracks=p.get<bool>("CheckTracks");

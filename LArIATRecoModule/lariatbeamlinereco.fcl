@@ -40,7 +40,7 @@ lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini
   Linear: -10
   Multiple: 1.0
   HitMatchThreshold: 2.0
-  HitThreshold: -2.
+  HitThreshold: -40.
   HitWait: 10.
   
 

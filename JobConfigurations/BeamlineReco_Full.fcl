@@ -88,19 +88,20 @@ physics:
 
  analyzers:
 {
-  anatree: @local::lariat_anatree
+ #anatree: @local::lariat_anatree
  #showerquality: 	@local::standard_showerquality
 }
+
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
  reco: [ #rns,
 #         opflash,
-	 wctrack, 
-	 tof, 
-	 murs,
-	 agcounter,
-	 BeamPid
+	 wctrack,
+	 tof 
+#	 murs,
+#	 agcounter,
+#	 BeamPid
         # caldata,
 #         cchit,
 	# gaushit,
@@ -118,7 +119,7 @@ physics:
 	 #hough 
  #        pandora
           ]
-ana: [ anatree ]
+ana: [ ]
 
  #define the output stream, there could be more than one if using filters 
  stream1:  [ out1 ]
@@ -131,6 +132,10 @@ ana: [ anatree ]
  #ie analyzers and output streams.  these all run simultaneously
  end_paths:     [ana,stream1]  
 }
+
+### Beamline Sim Reco ###
+physics.producers.wctrack.SourceLabel: "SimWCDigit"
+physics.producers.tof.SourceLabel: "SimTOFDigit"
 
 #block to define where the output goes.  if you defined a filter in the physics
 #block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
