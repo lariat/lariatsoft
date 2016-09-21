@@ -228,7 +228,7 @@ TrackConditions->Fill(0);
    }
    for(size_t i=0; i<TheWCDigits.size(); ++i){
      for(size_t j=0; j<TheWCDigits[i].NADC(); ++j){
-       std::cout<<"Digit size"<<TheWCDigits.size()<<"Channel :"<<TheWCDigits[i].Channel()<<" TimeBin :"<<TheWCDigits[i].ADC(j)<<"AuxDetName :"<<TheWCDigits[i].AuxDetName()<<" Time stamp: "<<TheWCDigits[i].TimeStamp()<<std::endl;
+       //std::cout<<"Digit size"<<TheWCDigits.size()<<"Channel :"<<TheWCDigits[i].Channel()<<" TimeBin :"<<TheWCDigits[i].ADC(j)<<"AuxDetName :"<<TheWCDigits[i].AuxDetName()<<" Time stamp: "<<TheWCDigits[i].TimeStamp()<<std::endl;
      }
    }
    
@@ -284,7 +284,7 @@ std::vector<raw::AuxDetDigit> WCSimDigits::MakeWCDigits(std::vector<sim::AuxDetS
       //float theta_ds=atan(dx_ds/dz_ds);
       //reco_pz=(double)fMCMagneticField*1204/(3.3*(sin(theta_ds)-sin(theta_us)));
       std::vector<sim::AuxDetIDE> IDElist=aux.AuxDetIDEs();
-      std::cout<<"Aux IDEs made"<<std::endl;
+      //std::cout<<"Aux IDEs made"<<std::endl;
       for(size_t nIDE=0; nIDE<IDElist.size(); ++nIDE){  
         sim::AuxDetIDE anIDE=IDElist[nIDE];
  //For each IDE hit, do some translation to find where the hit is in the coordinate system where the top left corner of the WC is the origin. This is where Xwire=Ywire=0 in digits.    
@@ -319,8 +319,8 @@ std::vector<raw::AuxDetDigit> WCSimDigits::MakeWCDigits(std::vector<sim::AuxDetS
         HitTimes[(aux.AuxDetID()-1)*256+128+y_wire].push_back(timebin);
 	std::vector<short> one_timebin_vector;
 	one_timebin_vector.push_back(timebin);
-        std::cout<<"AuxDetID :"<<aux.AuxDetID()<< "x wire: "<<x_wire<<"x position: "<<xy_wc[0]<<" y wire: "<<y_wire<<"y position: "<<xy_wc[1]<< "time bin :"<<timebin<<std::endl;
-        std::cout<<"trackID: "<<anIDE.trackID<<std::endl;
+        //std::cout<<"AuxDetID :"<<aux.AuxDetID()<< "x wire: "<<x_wire<<"x position: "<<xy_wc[0]<<" y wire: "<<y_wire<<"y position: "<<xy_wc[1]<< "time bin :"<<timebin<<std::endl;
+        //std::cout<<"trackID: "<<anIDE.trackID<<std::endl;
 	unsigned long long TheTrackID=anIDE.trackID;
 	WCTrackID=(float)TheTrackID;
 	MWPCDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short> (x_wire),
