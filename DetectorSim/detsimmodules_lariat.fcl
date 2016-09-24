@@ -38,9 +38,9 @@ lariat_simwireana:
 
 }
 
-lariat_SimDigit:
+lariat_wcsim:
 {
-  module_type:       "SimLArIATDigits"
+  module_type:       "WCSimDigits"
   G4ModuleLabel:     "largeant"
 }
   

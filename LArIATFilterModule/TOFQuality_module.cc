@@ -121,6 +121,7 @@ bool TOFQuality::filter(art::Event & evt)
 }
 
 
+
 /*
 bool tofGood = true;
 if(ntof < 1){continue;}
@@ -128,8 +129,15 @@ for(int mmtof = 0; mmtof < ntof; mmtof++)
   {
     if(tofObject[mmtof] < 0 && tofObject[mmtof] > 30)
       {tofGood = false;}
+=======
+else {
+  //Remove the event is the TOFObject is created but it gives out a zero value/empty value for the Tof itself
+   if( TOFColHandle->at(0).NTOF() != 1 ) {return false;} 
+   
+  else return true;}
 
-  }//<---End mmtof                                                                                                                                                                                  
+
+  }//<-End                                                                                                                                                                                   
 
 */
 

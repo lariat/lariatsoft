@@ -34,7 +34,8 @@ physics:
  {
    generator: @local::standard_textfilegen
    largeant:  @local::lariat_largeant	  
-   daq:       @local::lariat_simwire  	  
+   daq:       @local::lariat_simwire
+   #tofsim:    @local::lariat_tofsim  	  
    rns:       { module_type: "RandomNumberSaver" }
  }
 
@@ -66,6 +67,7 @@ outputs:
  }
 }
 physics.producers.generator.InputFileName:"hepevtTOF.txt"
+
 services.MagneticField.FieldDescriptions: [{UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet1"}, 
                                            {UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet2"}]
  

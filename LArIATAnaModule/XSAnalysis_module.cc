@@ -9,13 +9,13 @@
 // Cleaned up by Elena Gramellini:
 // To Do:
 // [ x ] Take external cut configuration
-// [   ] Avoid if repetition
+// [ x ] Avoid if repetition
 // [   ] Code clean up
 // [ x ] From Producer (WHY?!?!) to Analyzer
 // [   ] Decent comments
 // [   ] Modify to include MC switch
 //       [   ] Exclude WC information
-// [   ] Read Associations
+// [ x ] Read Associations
 // [   ] Write an Exception class like SelectionTool/ERTool/Base/ERException.cxx 
 ////////////////////////////////////////////////////////////////////////
 
@@ -129,18 +129,8 @@ public:
   void calcXS (float wcTrackMomentum,
 	       std::vector<art::Ptr<anab::Calorimetry> > caloTPCTrack);
   
-
-  bool findTheTPCTrack (int                                  &tpcTrackID,
-			art::Ptr<ldp::WCTrack>               wctrack    ,
-			std::vector<art::Ptr<recob::Track>>  tracklist  ,
-			  art::FindManyP<anab::Calorimetry>  fmcal      ,
-			  art::FindManyP<recob::SpacePoint>  fmsp       );
 			
   
-  bool isStoppingTrack( recob::Track aTrack,
-			art::FindManyP<anab::Calorimetry> fmcal );
-			
-
 /*
   PSEUDO CODE
   findTheTPCTrack gives back the id of TPC track  
@@ -162,7 +152,8 @@ private:
 
   double fupstreamZPosition;
   // The parameters we'll read from the .fcl file.
-  bool  fAmIData;                /// amIData True if real Data, False if MC
+  //  bool  fAmIData;                /// amIData True if real Data, False if MC
+  bool  fUseNonStoppingOnly;
 
   /////////////
   //Parameters
@@ -243,8 +234,6 @@ XSAnalysis::XSAnalysis(fhicl::ParameterSet const & p)
 
 void XSAnalysis::analyze(art::Event const & e)
 {
-  std::cout<<"Puppa -1.0 \n";
-
   /**
      This functions expects events 
      with 1 wcTrack
@@ -261,55 +250,85 @@ void XSAnalysis::analyze(art::Event const & e)
   run = e.run();          /// Run     Number
   subrun = e.subRun();    /// Sub-Run Number
   event = e.id().event(); /// Event   Number
+  float wcTrackMomentum;
+  
   
   ///Retrieving the WCtracks from the sliced event
-  //&&& This part needs changing fo MC
-  // if (fAmIData)
-
+  
   art::Handle< std::vector<ldp::WCTrack> > wcTrackHandle;        
   std::vector<art::Ptr<ldp::WCTrack> >     wctrack;                /// Define wctrack as a pointer to ldp::WCTrack
   if(!e.getByLabel(fWCTrackBuilderLabel, wcTrackHandle)) return;   /// If there are no wire chamber tracks for the right label, return 
+  
   art::fill_ptr_vector(wctrack, wcTrackHandle);			   /// Filling the wctrack from the wcTrackHandle 	       
   nwctrks = wctrack.size();	
   if ( nwctrks !=1 ) return;                                       /// If there are more than 1 wire chamber tracks, return 
-
+  
   // Take the wcTrack momentum
-  float wcTrackMomentum = wctrack[0]->Momentum();
-
+  wcTrackMomentum = wctrack[0]->Momentum();
+  
+  
+  
   ///Retrieving the TPC tracks from the sliced event
-  auto tpcTrackHandle = e.getValidHandle<art::PtrVector<recob::Track> >(fNonStoppingTPCTrackBuildLabel);
-  if( !tpcTrackHandle.isValid() ) return;
- 
-  auto tracklist =  *tpcTrackHandle;   
-  ntracks_reco = tracklist.max_size();                                    /// Store the number of tracks per event                   
+  if(fUseNonStoppingOnly) {
+    auto tpcTrackHandle = e.getValidHandle<art::PtrVector<recob::Track> >(fNonStoppingTPCTrackBuildLabel);
+    if( !tpcTrackHandle.isValid() ) return;
+    
+    auto tracklist =  *tpcTrackHandle;   
+    ntracks_reco = tracklist.max_size();                                    /// Store the number of tracks per event   
+    if ( !ntracks_reco ){ return; }       /// If there are no TPC tracks in general, return
+    ///Fill hist info with total number of TPC and WC tracks per event
+    fTPCTrackEventNumbers->SetBinContent(fEventCounter,ntracks_reco);
+    fWCTrackEventNumbers->SetBinContent(fEventCounter,nwctrks);
+    
+    
+    // Get the rigth calorimtry: the calorimetry is associated with the TPC tracks
+    // not with the Stopping Tracks. We'll use the key of the non stopping track to
+    // understand which calo obj we need and a mock tpc handle to retreive the right calo handler.
+    art::Handle< std::vector<recob::Track> > mocktpcTrackHandle;
+    if(!e.getByLabel(fTPCTrackHandleLabel, mocktpcTrackHandle)) return;  
+    ///Association between Calorimetry objects and Tracks
+    art::FindManyP<anab::Calorimetry> fmcal(mocktpcTrackHandle, e, fCalorimetryModuleLabel);
+    
+    for ( auto const& thisTrack : tracklist )
+      {
+	unsigned int indexTPCTrack = thisTrack.key();
+	// Get the calorimetry associated with the right tpcTrack
+	std::vector<art::Ptr<anab::Calorimetry> > caloTPCTrack = fmcal.at(indexTPCTrack);//here the track index is needed
+	//// Calculate the XS
+	calcXS(wcTrackMomentum, caloTPCTrack); 
+      }
+    
+                  
 
-      
-  if ( !ntracks_reco ){ return; }       /// If there are no TPC tracks in general, return
-  ///Fill hist info with total number of TPC and WC tracks per event
-  fTPCTrackEventNumbers->SetBinContent(fEventCounter,ntracks_reco);
-  fWCTrackEventNumbers->SetBinContent(fEventCounter,wcTrackHandle->size());
+  }else{
+    art::Handle< std::vector<recob::Track> > tpcTrackHandle;        
+    std::vector<art::Ptr<recob::Track> >     tracklist;                /// Define tracklist as a pointer to recob::Track
+    if(!e.getByLabel(fTPCTrackHandleLabel, tpcTrackHandle)) return;   /// If there are no tpc chamber tracks for the right label, return 
+    
+    art::fill_ptr_vector(tracklist, tpcTrackHandle);			   /// Filling the wctrack from the tpcTrackHandle 	      
+    
+    ntracks_reco = tracklist.size();                                    /// Store the number of tracks per event   
+    if ( !ntracks_reco ){ return; }       /// If there are no TPC tracks in general, return
+    ///Fill hist info with total number of TPC and WC tracks per event
+    fTPCTrackEventNumbers->SetBinContent(fEventCounter,ntracks_reco);
+    
+    fWCTrackEventNumbers->SetBinContent(fEventCounter,nwctrks);
+    
+    art::FindManyP<anab::Calorimetry> fmcal(tpcTrackHandle, e, fCalorimetryModuleLabel);
+    
+    for ( auto const& thisTrack : tracklist )
+      {
+	unsigned int indexTPCTrack = thisTrack.key();
+	// Get the calorimetry associated with the right tpcTrack
+	std::vector<art::Ptr<anab::Calorimetry> > caloTPCTrack = fmcal.at(indexTPCTrack);//here the track index is needed
+	//// Calculate the XS
+	calcXS(wcTrackMomentum, caloTPCTrack); 
+      }
+  }
   
-  // Get the rigth calorimtry: the calorimetry is associated with the TPC tracks
-  // not with the Stopping Tracks. We'll use the key of the non stopping track to
-  // understand which calo obj we need and a mock tpc handle to retreive the right calo handler.
-  art::Handle< std::vector<recob::Track> > mocktpcTrackHandle;
-  if(!e.getByLabel(fTPCTrackHandleLabel, mocktpcTrackHandle)) return;  
-  ///Association between Calorimetry objects and Tracks
-  art::FindManyP<anab::Calorimetry> fmcal(mocktpcTrackHandle, e, fCalorimetryModuleLabel);
   
-  for ( auto const& thisTrack : tracklist )
-    {
-      unsigned int indexTPCTrack = thisTrack.key();
-      // Get the calorimetry associated with the right tpcTrack
-      std::vector<art::Ptr<anab::Calorimetry> > caloTPCTrack = fmcal.at(indexTPCTrack);//here the track index is needed
-      //// Calculate the XS
-      calcXS(wcTrackMomentum, caloTPCTrack); 
-    }
-  
-
   fEventCounter++;
-  
-
+    
   // If you feel like talking, tell me all the info you've got
   if(fVerbose)
     {
@@ -320,7 +339,8 @@ void XSAnalysis::analyze(art::Event const & e)
       std::cout<<"Number of TPC tracks " << ntracks_reco <<std::endl;
       std::cout<<"========================================="<<std::endl;
       std::cout<<std::endl;
-    }
+    } 
+  
 }
 
 //===========================================================================================
@@ -416,9 +436,10 @@ void XSAnalysis::reconfigure(fhicl::ParameterSet const & p)
   fMass                    = p.get< float >("Mass"             ,493.677);
   fInitialLostEn           = p.get< float >("InitialLostEn"    ,  8.6  );
   fSlabThick  		   = p.get< float >("ThinSlabThickness");//in cm
-  fAmIData                 = p.get< bool  >("AmIData"          , true );
-  fVerbose                 = p.get< bool  >("Verbose"          , false);
-  fXSVerbose               = p.get< bool  >("XSVerbose"        , true );
+  //fAmIData                 = p.get< bool  >("AmIData"            , true );
+  fUseNonStoppingOnly      = p.get< bool  >("UseNonStoppingOnly" , false );
+  fVerbose                 = p.get< bool  >("Verbose"            , false);
+  fXSVerbose               = p.get< bool  >("XSVerbose"          , true );
 }
 
 void XSAnalysis::calcXS (float momentum,

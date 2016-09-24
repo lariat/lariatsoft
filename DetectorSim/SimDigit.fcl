@@ -1,4 +1,4 @@
-#include "FragmentToDigit_config.fcl"
+#include "lariatbeamlinereco.fcl"
 #include "services_lariat.fcl"
 #include "detsimmodules_lariat.fcl"
 
@@ -43,8 +43,11 @@ physics:
  #################################################################
  producers:
  {
-   SimDigit: @local::lariat_SimDigit
-
+   SimWCDigit: @local::lariat_wcsim
+   SimTOFDigit: @local::lariat_tofsim
+   SimWCReco: @local::lariat_wctrackbuilder
+   SimTOFReco: @local::lariat_tof
+   
  }
  
  #################################################################
@@ -68,7 +71,7 @@ physics:
  # Define the producer and filter modules for this path, order matters, 
  # filters reject all following items.  see lines starting physics.producers below
  
- reco: [ SimDigit ]
+ reco: [SimWCDigit, SimTOFDigit, SimWCReco, SimTOFReco ]
  
  ana:[ ]
  
@@ -110,4 +113,7 @@ outputs:
 ### for the modules defined above with whatever new values you have ###
 #######################################################################
 #physics.filters.hitfilter.fminNumberHits: 100
-physics.producers.SimDigit.MCBField: .35
+physics.producers.SimWCReco.WCTrackBuilderAlg.MCMagneticFieldTesla:  .175
+physics.producers.SimWCDigit.MCBField: .175
+physics.producers.SimWCReco.SourceLabel: "SimWCDigit"
+physics.producers.SimTOFReco.SourceLabel: "SimTOFDigit"

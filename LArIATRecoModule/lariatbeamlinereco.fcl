@@ -28,6 +28,12 @@ lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Greg Pulliam
       PickyTracks: false  #True: Only use events with EXACTLY 1 XY Hit in each WC
       HighYield: true    #True: allows 3 or 4 point tracks to be made, as long as missing WC is 2 or 3. False: Only allow 4 point tracks
       CheckTracks: false  #SET TO FALSE IF YOU ARE DOING PHYSICS RUNS. THIS IS ONLY USED FOR DEBUGGING WHEN YOU ONLY WANT HISTOGRAMS
+      BFieldOffset: 0.0025
+      WCTrackBuilderAlg:
+      {
+	MCMagneticFieldTesla:  0
+      }
+      
 }
 
 lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini
@@ -41,6 +47,7 @@ lariat_tof:              #Taken form TimeOfFlight.fcl by Elena Gramellini
   HitMatchThreshold: 2.0
   HitThreshold: -40.
   HitWait: 10.
+  
 
 }
 

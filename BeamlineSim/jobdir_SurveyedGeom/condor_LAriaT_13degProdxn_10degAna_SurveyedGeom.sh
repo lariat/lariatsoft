@@ -11,7 +11,7 @@
 # Outputs:
 #  - All output files are created in the grid scratch space.  At the end of the job
 #    all files in this directory will be copied to:
-#      /lariat/data/users/MYUSERNAME/outstage/
+#      /lariat/data/users/lmendes/outstage/
 #     USED TO BE /grid/data/lariat/outstage/$user/${cluster}_${process}
 #    This includes a copy of the input files.
 #
@@ -65,7 +65,7 @@ ls -ltra $ORIGDIR/*
 ifdh cp -r $ORIGDIR/* .
 
 # Directory in which to put the output files.
-outstage=/lariat/data/users/MYUSERNAME/outstage/
+outstage=/lariat/data/users/lmendes/outstage/
 
 # run jobs
 cd $TMP
@@ -88,7 +88,7 @@ ls -ltra
 test -e $outstage || ifdh mkdir $outstage
 if [ ! -d $outstage ];then
    echo "${outstage} is not a directory."
-   outstage=/lariat/data/users/MYUSERNAME/condor-tmp/
+   outstage=/lariat/data/users/lmendes/condor-tmp/
    echo "Changing outstage directory to: " $outstage 
    exit
 fi

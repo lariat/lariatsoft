@@ -202,6 +202,7 @@ else:
     outfilename = "MergedAt"+starterTree+infilename
 outfile = ROOT.TFile(outfilename,"RECREATE")
 
+
 newTrees = {} # dictionary of new TTrees to save to outfile
 pointers = {} # dictionary of pointers, to please ROOT, which loves pointers for its TTrees
 
@@ -320,5 +321,6 @@ outfile.Close()
 #-------------- /Final Beam --------------------#
 
 infile.Close()
+
 print "Here ya go: ",
 commands.getoutput("ls -ltra")

@@ -40,7 +40,8 @@ class WCTrackBuilderAlg{
    
    void loadXMLDatabaseTableForBField( int run, int subrun );
    
-   void reconstructTracks(std::vector<double> & reco_pz_list,               
+   void reconstructTracks(std::vector<double> & reco_pz_list,
+					     std::vector<double> & reco_pz2M_list,               
 					     std::vector<double> & x_face_list,
 					     std::vector<double> & y_face_list,
 					     std::vector<double> & incoming_theta_list,
@@ -58,7 +59,8 @@ class WCTrackBuilderAlg{
 					     std::vector<TH2F*> & Recodiff,
 					     TH1F* & WCdistribution,
 					     float & residual,
-					     float (&hit_position_vect)[4][3]);
+			                     float (&hit_position_vect)[4][3],
+                                             float offset);
 		
    bool shouldSkipTrigger(std::vector<std::vector<WCHitList> > & good_hits,
    			  int & WCMissed,
@@ -66,6 +68,7 @@ class WCTrackBuilderAlg{
    
    float buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
 	                      std::vector<double> & reco_pz_list,
+			      std::vector<double> & reco_pz2M_list,
 			      std::vector<double> & x_face_list,
 		              std::vector<double> & y_face_list,
 			      std::vector<double> & incoming_theta_list,
@@ -76,7 +79,8 @@ class WCTrackBuilderAlg{
 			      std::vector<double> & y_dist_list,
 			      std::vector<double> & z_dist_list,
 			      int & WCMissed,
-			      float (&hit_position_vect)[4][3]);
+			      float (&hit_position_vect)[4][3],
+                              float offset);
 			      
    void findTheHitPositions(WCHitList & track,
 		            float (&x)[4],
@@ -93,7 +97,9 @@ class WCTrackBuilderAlg{
 			     float (&y)[4],
 			     float (&z)[4],
 			     float & reco_pz,
-			     std::vector<float> & BestTrackStats);
+			     float & reco_pz2M,
+			     std::vector<float> & BestTrackStats,
+			     float offset);
 			     
    void calculateTheMomentumGiven(WCHitList & best_track,
 		             float (&x)[4],
@@ -125,7 +131,8 @@ class WCTrackBuilderAlg{
 			      std::vector<double> & y_dist_list,
 			      std::vector<double> & z_dist_list,
 			      int & WCMissed,
-			      float (&hit_position_vect)[4][3]);
+			      float (&hit_position_vect)[4][3],
+			      float offset);
 			      
    void calculateTheThreePointMomentum(WCHitList & best_track,
 				       float(&x)[4],

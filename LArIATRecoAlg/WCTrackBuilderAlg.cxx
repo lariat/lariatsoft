@@ -29,6 +29,7 @@
 #include <string>
 #include <TH2F.h>
 #include <TVector3.h>
+#include <TMath.h>
 
 WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
 {
@@ -107,6 +108,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fMP_M                 = pset.get<float> ("MidplaneSlopeFactor", 1);
   fMidplane_intercept   = pset.get<float> ("MidplaneIntercept", 31067.4); 
   fMidplane_slope       = pset.get<float> ("MidplaneSlope", 8.0);
+
 // Where the midplane was before allowing 3 point tracks.  For 3 pt tracks, the intercept and slope will be multiplied by a factor, depending on current setting and WC missed. 
 // Don't change these values unless you plan to recalibrate for all current (A) runs. -G Pulliam.
   
@@ -130,7 +132,8 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
 }
 //--------------------------------------------------------------
 //Main function called for each trigger
-void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,               
+void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
+                                             std::vector<double> & reco_pz2M_list,               
 					     std::vector<double> & x_face_list,
 					     std::vector<double> & y_face_list,
 					     std::vector<double> & incoming_theta_list,
@@ -148,7 +151,8 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 					     std::vector<TH2F*>  & Recodiff,
 					     TH1F* & WCdistribution,
 					     float & residual,
-					     float (&hit_position_vect)[4][3])
+					     float (&hit_position_vect)[4][3],
+                                             float offset)
 {					   
   fPickyTracks = pickytracks;
   fHighYield = highyield;
@@ -181,6 +185,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
   //this will give many combinations.
      trackres=buildFourPointTracks(good_hits,
 	                 reco_pz_list,
+	                 reco_pz2M_list,
 			 x_face_list,
 		         y_face_list,
 			 incoming_theta_list,
@@ -191,7 +196,8 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 			 y_dist_list,
 			 z_dist_list,
 			 WCMissed,
-			 hit_position_vect);
+			 hit_position_vect,
+                         offset);
 					   
    //std::cout<<"Built four point track"<<std::endl;					     
   //Need to use the cut information to whittle down track candidates
@@ -225,7 +231,8 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 			  y_dist_list,
 			  z_dist_list,
 			  WCMissed,
-			  hit_position_vect);		
+			  hit_position_vect,
+			  offset);		
   //std::cout<<"Build three point track"<<std::endl;
   }
   residual=trackres;
@@ -323,6 +330,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
 //===================================================================================
 float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
 	                      std::vector<double> & reco_pz_list,
+			      std::vector<double> & reco_pz2M_list,
 			      std::vector<double> & x_face_list,
 		              std::vector<double> & y_face_list,
 			      std::vector<double> & incoming_theta_list,
@@ -333,12 +341,14 @@ float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList>
 			      std::vector<double> & y_dist_list,
 			      std::vector<double> & z_dist_list,
 			      int & WCMissed,
-			      float (&hit_position_vect)[4][3])
+			      float (&hit_position_vect)[4][3],
+                              float offset)
 {
   float x[4]{0,0,0,0};
   float y[4]{0,0,0,0};
   float z[4]{0,0,0,0};
   float reco_pz=0;
+  float reco_pz2M = 0;
   WCHitList best_track;
   std::vector<float> track_stats;
   std::vector<float> bestRegressionStats;
@@ -389,7 +399,7 @@ float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList>
   //std::cout<<bestResSq<<std::endl;
   if(bestResSq<12){
 //Now we should have the straightest track in Y, which will be the track that goes to the event.  Now we get the momentum and projections onto the TPC  
-  calculateTheMomentum(best_track,x,y,z,reco_pz,bestRegressionStats);
+    calculateTheMomentum(best_track,x,y,z,reco_pz, reco_pz2M, bestRegressionStats, offset);
   //std::cout<<"Setting 4 point position arrays"<<std::endl;
   for(size_t i=0; i<4; ++i){
     hit_position_vect[i][0]=x[i];
@@ -400,6 +410,8 @@ float WCTrackBuilderAlg::buildFourPointTracks(std::vector<std::vector<WCHitList>
   //float mom_error= CalculateTheMomentumError(x,y,z);
   //std::cout<<"Momentum Calculated"<<std::endl;
   reco_pz_list.push_back(reco_pz);
+  reco_pz2M_list.push_back(reco_pz2M);
+
 //We should also have the x,y,z points of the best_track, so now find where it hits the TPC
   projectToTPC(best_track,x,y,z,bestRegressionStats,x_face_list,y_face_list,incoming_theta_list,incoming_phi_list);
   //std::cout<<"TPC Projected"<<std::endl;
@@ -503,10 +515,13 @@ void WCTrackBuilderAlg::calculateTheMomentum(WCHitList & best_track,
 					     float (&y)[4],
 					     float (&z)[4],
 					     float & reco_pz,
-					     std::vector<float> & BestTrackStats)
+					     float & reco_pz2M,
+					     std::vector<float> & BestTrackStats,
+                                             float offset)
 {
 //We need the x,y,z again, which would be for the last track combination tried. So we need to find the positions again
   findTheHitPositions(best_track,x,y,z,WCMissed);
+
   //std::cout<<"Best track hit position found"<<std::endl;
 //Calculate the angle of the track, in the x,z and y,z planes, in upstream(us) and downstream(ds) ends of the WC
   float dx_us=x[1]-x[0];
@@ -521,6 +536,21 @@ void WCTrackBuilderAlg::calculateTheMomentum(WCHitList & best_track,
   //float theta_y_ds= atan(dy_ds/dz_ds);
   reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (3.3*(sin(theta_x_ds) - sin(theta_x_us)))/cos(atan(BestTrackStats[0]));
   std::cout<<"B: "<<fB_field_tesla<<" momentum: "<<reco_pz<<std::endl;
+  
+  //Calculating the event using the 2 magnets aproximation
+  float theta_central = (theta_x_us*(1+offset)+theta_x_ds*(1-offset))/2.;
+  std::cout<<" Theta Central: "<<theta_central<<std::endl;
+  float thetaM1_1 = theta_x_us + 13*TMath::Pi()/180;
+  std::cout<<" Theta M1_1: "<<thetaM1_1<<std::endl;
+  float thetaM1_2 = theta_central + 13*TMath::Pi()/180;   
+  std::cout<<" Theta M1_2: "<<thetaM1_2<<std::endl;
+  double pM1 = double(fabs(fB_field_tesla*(1+offset)) * fL_eff/2. * fmm_to_m * fGeV_to_MeV ) / double(3.3*(sin(thetaM1_2) - sin(thetaM1_1)))/cos(atan(BestTrackStats[0]));
+  float thetaM2_1 = theta_central + 3*TMath::Pi()/180;
+  float thetaM2_2 = theta_x_ds + 3*TMath::Pi()/180;   
+  double pM2 = double(fabs(fB_field_tesla*(1-offset)) * fL_eff/2. * fmm_to_m * fGeV_to_MeV ) / double (3.3*(sin(thetaM2_2) - sin(thetaM2_1)))/cos(atan(BestTrackStats[0]));
+  reco_pz2M = double(pM2+pM1)/2.;
+  std::cout<<"Reco pz 1 magnet "<<reco_pz<<" Reco Pz 2 magnets "<<reco_pz2M<<std::endl;
+  std::cout<<"Dispersion of the momentum: "<<fabs(reco_pz - reco_pz2M)/reco_pz<<std::endl;
   
 }
 //==================================================================================
@@ -609,7 +639,8 @@ float WCTrackBuilderAlg::buildThreePointTracks(std::vector<std::vector<WCHitList
 					      std::vector<double> & y_dist_list,
 					      std::vector<double> & z_dist_list,
 					      int & WCMissed,
-					      float (&hit_position_vect)[4][3])
+					       float (&hit_position_vect)[4][3],
+					       float offset)
 {
 //Code here is similar to the buildFourPointTrack version, but we have to allow for missed WC, and require some additional geometry to find the momentum
   float x[4]{0,0,0,0};
@@ -855,6 +886,9 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
     reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (float (3.3*(sin(theta_x_ds) - sin(theta_x_us))*cos(atan(BestTrackStats[0]))));
     //std::cout<<"momentum set"<<std::endl;
     reco_pz=(reco_pz+13)/1.15;
+
+
+    
     //std::cout<<"momentum scaled"<<std::endl;
   }
   //WC 3 missed calibration
@@ -1008,7 +1042,7 @@ void WCTrackBuilderAlg::extrapolateTheMissedPoint(WCHitList & best_track,
 void WCTrackBuilderAlg::MakeDiagnosticPlots(std::vector<std::vector<WCHitList> > & good_hits,
 					    std::vector<TH2F*> & Recodiff,	                      
 					    std::vector<double> & reco_pz_list,
-			      		    std::vector<double> & x_face_list,
+			     		    std::vector<double> & x_face_list,
 		              		    std::vector<double> & y_face_list,
 			      		    std::vector<double> & incoming_theta_list,
 			      		    std::vector<double> & incoming_phi_list,
@@ -1023,6 +1057,7 @@ void WCTrackBuilderAlg::MakeDiagnosticPlots(std::vector<std::vector<WCHitList> >
   float y[4]{0,0,0,0};
   float z[4]{0,0,0,0};
   float reco_pz=0;
+  float reco_pz2M = 0;
   WCHitList best_track;
   std::vector<float> bestRegressionStats;
   std::vector<float> missed_wire_hits;
@@ -1081,8 +1116,10 @@ void WCTrackBuilderAlg::MakeDiagnosticPlots(std::vector<std::vector<WCHitList> >
   Recodiff[58]->Fill(bestResSq,bestResSq);
   float fourres=bestResSq;
 //Now we should have the straightest track in Y, which will be the track that goes to the event.  Now we get the momentum and projections onto the TPC  
-  calculateTheMomentum(best_track,x,y,z,reco_pz,bestRegressionStats);
+  float offset = 0.;
+  calculateTheMomentum(best_track,x,y,z,reco_pz, reco_pz2M, bestRegressionStats, offset);
   float fourmom=reco_pz;
+  std::cout<<"Reco 2M: "<<reco_pz2M<<std::endl;
   float fourx[4]={x[0],x[1],x[2],x[3]};
   float foury[4]={y[0],y[1],y[2],y[3]};
   float fourz[4]={z[0],z[1],z[2],z[3]};
@@ -1121,7 +1158,8 @@ void WCTrackBuilderAlg::MakeDiagnosticPlots(std::vector<std::vector<WCHitList> >
     float xminusminus[4]= {x[0],x[1]-3,x[2]-3,x[3]};
   calculateTheMomentumGiven(best_track,xminusminus,y,z,reco_pz,bestRegressionStats);
   float momminusminus=reco_pz;
-  calculateTheMomentum(best_track,x,y,z,reco_pz,bestRegressionStats);
+  
+  calculateTheMomentum(best_track,x,y,z,reco_pz, reco_pz2M, bestRegressionStats, offset);
   Recodiff[89]->Fill(fourmom,-(fourmom-mom2minus)/fourmom);
   Recodiff[90]->Fill(fourmom,-(fourmom-mom2plus)/fourmom);
   Recodiff[91]->Fill(fourmom,-(fourmom-mom3minus)/fourmom);

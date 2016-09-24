@@ -27,6 +27,7 @@ namespace ldp {
   private:
     
     float fMomentum;                    //Reconstructed momentum in the XZ plane (coord system origin is at secondary target)
+    float fMomentum2M;
     float fYKink;                       //Angle difference between upstream and downstream tracks
     float fDeltaDist[3];                //Distance between upstream and downstream track ends
     float fXYFace[2];                   //X and Y position of the track on the upstream face of the TPC
@@ -62,10 +63,28 @@ namespace ldp {
 	     int WCMissed,
 	     float residual);
 	     //std::vector<float> hitTimeVect );
+
+        WCTrack( float momentum,
+             float momentum2m,
+	     float yKink,
+	     float xDist,
+	     float yDist,
+	     float zDist,
+	     float xFace,
+	     float yFace,
+	     float theta,
+	     float phi,
+	     std::vector<int> wcVect,
+	     std::vector<float> hitWireVect,
+	     float hitPositionVect[4][3],
+	     int WCMissed,
+	     float residual);
+	     //std::vector<float> hitTimeVect );
 	     
     // Get Methods
 
     float               Momentum()                      const;
+    float               Momentum2M()                      const;
     float               YKink()                         const;
     float               DeltaDist(size_t i)             const;
     float               XYFace(size_t i)                const;
@@ -86,6 +105,7 @@ namespace ldp {
 #ifndef __GCCXML__
 
 inline float  ldp::WCTrack::Momentum() const { return fMomentum;      }
+inline float  ldp::WCTrack::Momentum2M() const { return fMomentum2M;      }
 inline float  ldp::WCTrack::YKink()    const { return fYKink;         }
 inline float  ldp::WCTrack::Theta()    const { return fTheta;         }
 inline float  ldp::WCTrack::Phi()      const { return fPhi;           }
