@@ -1,9 +1,13 @@
 #!/usr/bin/env python
 # Author: Jason St. John
-# A very brief skeleton of a script to read in a file of TTrees representing particle interactions in G4BL, all assumed to be part of
-# the same simulated particle interactions such that EventID and TrackID combinations are unique, and save them in new trees, one for
-# each <spillsize> range of EventID values.  Time values (t) will be offset by <spillinterval> * SpillID, plus a random offset chosen 
-# from a distribution which mimics the Fermilab Test Beam Facility's 4.2 seconds of 53 MHz beam.
+#
+# Read in a file of one or more single-spill TTrees representing particle interactions in G4BL, all assumed to be part of
+# the same simulated particle interactions such that EventID and TrackID combinations are unique, and that times have been set
+# to reflect beam time structure. 
+# 
+# First Loop:  Fill a dictionary of lists of single-particle entries, keyed by their tStartLine.
+# Second Loop: Find the triggering particles, simulating trigger system deadtime.
+# Third Loop:  Print each triggering particle to the hepevt file, along with all particles in a time window around it. 
 #
 # Usage:
 # python hepevtWriter.py <options> FileOfManySpillTrees.root 
@@ -77,7 +81,8 @@ massesbyPDG[321]  = 0.493667
 
 # gimmestr()
 # 
-# Return the hepevt line: (GeV, ns, cm)
+# Given a pile of leaves and the chosen t_0, 
+# return the hepevt line: (GeV, ns, cm)
 # 1 [pdg] 0 0 0 0 px py pz E m x y z t
 def gimmestr(pile, tzero):
     pdg = int(pile.PDGidStartLine.GetValue())                 #0
@@ -202,6 +207,7 @@ for spill, intree in InputSpillTrees.iteritems():
     spillnums.append(spill)
 
     # Gonna need a handy little class hooked to this tree:
+    # __Pile (pyl) of leaves representing a single particle__
     # Define dynamically a python class containing root Leaves objects
     # get all leaves 
     leaves = intree.GetListOfLeaves()
@@ -222,7 +228,7 @@ for spill, intree in InputSpillTrees.iteritems():
     triggerentrynums = []
     
     # First Loop over this tree: Get the entry numbers and tStartLine (if defined)
-    if debug: print "    Beginning 1st loop."
+    if debug: print '    Beginning 1st loop over {%d} entries'.format(n_entries)
     for n in xrange(0, n_entries):
         intree.GetEntry(n) # Fill pyl with values from the entry at index n
 
@@ -248,7 +254,7 @@ for spill, intree in InputSpillTrees.iteritems():
     if debug: print "total time count: ",len(entrytimes)," (unique:",len(set(entrytimes)),", non-unique:",100.*(float(timecount)-float(uniqcount))/float(timecount),"%)"
 
     # Second Loop over the tree:
-    if debug: print "    Beginning 2nd loop."
+    if debug: print '    Beginning 2nd loop over all {%d} distinct particle times.'.format(len(allentriesbytime.keys()))
     # Visit entries in order by their times, and check for triggering particles.
     # Must be separate from above because triggers must be known to be >2 driftintervals after foregoing triggers.
     LastTriggerTime = float(-1)
@@ -286,13 +292,13 @@ for spill, intree in InputSpillTrees.iteritems():
             break
 
     # Third and final loop: 
-    if debug: print "    Beginning 3rd loop."
+    if debug: print "    Beginning 3rd loop. {%d} triggers".format(len(triggertimes))
     #Collect the hepevt fields for all particles which might give signals in the triggered events.
     eventnum = 0 # Unique within the spill (only).
     for time in triggertimes:
         particlelines = {} # A dictionary where we can keep the lines for this hepevt
         particlecount = 0
-        delta_t = 0.
+        delta_t = 0.       # 
         offset = 0
         print "\n Collecting tracks around trigger at ",time
         # OK, where are we in the sorted list of particle times?
@@ -302,7 +308,7 @@ for spill, intree in InputSpillTrees.iteritems():
         delta_t = abs(time - entry_t)
         if debug: print "time:",time,"  offset: ",offset,"entry_t:",entry_t,"    delta_t:",delta_t
 
-        # To mimic trigger decision latency, grab the tBigDisk of the triggering particle
+        # To mimic trigger decision latency, grab the tTOFds of the triggering particle
         # This will be subtracted off the tStartLine of all particles in the event window.
         tTriggers = []
         if debug: print 'Grabbing TOFds values among',len(allentriesbytime[time]),'values:',
@@ -317,7 +323,7 @@ for spill, intree in InputSpillTrees.iteritems():
                 tTriggers.append(pyl.tTOFds.GetValue()) 
             print "\n"
 
-        # Take the earliest tBigDisk of any trigger particle candidates at the trigger time.
+        # Take the earliest tTOFds of any trigger particle candidates at the trigger time.
         # (Nearly always there is one and only one candidate triggering particle. Paranoia.)
 	if not len(tTriggers)>0: 
             print "tTriggers zero length" 
@@ -339,7 +345,7 @@ for spill, intree in InputSpillTrees.iteritems():
 
             # How far away in time from our triggering particle? 
             delta_t = abs(time - entry_t)
-            if delta_t > driftinterval: break # Don't go more than one driftinterval.
+            if delta_t > driftinterval: break # Don't go more than one driftinterval before the triggering particle.
 
             if debug: print "offset: -",offset,"entry_t:",entry_t,"    delta_t:",delta_t
 
@@ -349,7 +355,8 @@ for spill, intree in InputSpillTrees.iteritems():
                 ret = intree.GetEntry(n) # Set pyl's pointers to this entry's leaf values
                 if ret == -1: exit ('No entry #'+str(n))
                 txtstr = gimmestr(pyl, tTrigger)
-                particlelines[-1 * particlecount] = copy.copy(txtstr)
+                # Copy the values, so that txtstr can change later without affecting this entry in particlelines
+                particlelines[-1 * particlecount] = copy.copy(txtstr) 
                 particlecount += 1
                 print txtstr,
 
@@ -358,6 +365,7 @@ for spill, intree in InputSpillTrees.iteritems():
             ret = intree.GetEntry(n)
             if ret == -1: exit ('No entry #'+str(n))
             txtstr = gimmestr(pyl, tTrigger)
+            # Copy the values, so that txtstr can change later without affecting this entry in particlelines
             particlelines[particlecount] = copy.copy(txtstr)
             particlecount += 1
             print txtstr,
@@ -375,7 +383,7 @@ for spill, intree in InputSpillTrees.iteritems():
 
             # How far away in time from our triggering particle? 
             delta_t = abs(time - entry_t)
-            if delta_t > driftinterval: break # Don't go more than one driftinterval.
+            if delta_t > driftinterval: break # Don't go more than one driftinterval after the triggering particle.
 
             if debug: print "offset: +",offset,"entry_t:",entry_t,"    delta_t:",delta_t
 
@@ -385,17 +393,21 @@ for spill, intree in InputSpillTrees.iteritems():
                 ret = intree.GetEntry(n) # Set pyl's pointers to this entry's leaf values
                 if ret == -1: exit ('No entry #'+str(n))
                 txtstr = gimmestr(pyl, tTrigger)
+                # Copy the values, so that txtstr can change later without affecting this entry in particlelines
                 particlelines[particlecount] = copy.copy(txtstr)
                 particlecount += 1
                 print txtstr,
 
         if debug: print "\nPrint to file:"
+        # Print event header, which must list the particle count.
         line = str(eventnum)+' '+str(particlecount)+'\n'
-        outfile.write(line)
+        outfile.write(line) 
         eventnum += 1
         if debug: print line
+        # For each line we want to print in this event,
         for num in sorted(particlelines.keys()):
             line = particlelines[num]
+            # print the line for this particle
             outfile.write(line)
             if debug: print line
 
@@ -403,6 +415,7 @@ outfile.close()
 lo_spill = sorted(spillnums)[0]
 hi_spill = sorted(spillnums)[len(spillnums)-1]
 spillrange_str = 'Spill_'+str(lo_spill)+'thru'+str(lo_spill)
-os.rename(outfilename,outfilename.replace('.txt',spillrange_str+'.txt'))
+if not (hi_spill-lo_spill == 1):
+    os.rename(outfilename,outfilename.replace('.txt',spillrange_str+'.txt'))
 infile.Close()
 
