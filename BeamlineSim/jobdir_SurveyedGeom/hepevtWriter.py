@@ -228,7 +228,7 @@ for spill, intree in InputSpillTrees.iteritems():
     triggerentrynums = []
     
     # First Loop over this tree: Get the entry numbers and tStartLine (if defined)
-    if debug: print '    Beginning 1st loop over {%d} entries'.format(n_entries)
+    if debug: print '    Beginning 1st loop over', n_entries," entries."
     for n in xrange(0, n_entries):
         intree.GetEntry(n) # Fill pyl with values from the entry at index n
 
@@ -254,7 +254,7 @@ for spill, intree in InputSpillTrees.iteritems():
     if debug: print "total time count: ",len(entrytimes)," (unique:",len(set(entrytimes)),", non-unique:",100.*(float(timecount)-float(uniqcount))/float(timecount),"%)"
 
     # Second Loop over the tree:
-    if debug: print '    Beginning 2nd loop over all {%d} distinct particle times.'.format(len(allentriesbytime.keys()))
+    if debug: print '    Beginning 2nd loop over all', len(allentriesbytime.keys()),"distinct particle times."
     # Visit entries in order by their times, and check for triggering particles.
     # Must be separate from above because triggers must be known to be >2 driftintervals after foregoing triggers.
     LastTriggerTime = float(-1)
@@ -292,7 +292,7 @@ for spill, intree in InputSpillTrees.iteritems():
             break
 
     # Third and final loop: 
-    if debug: print "    Beginning 3rd loop. {%d} triggers".format(len(triggertimes))
+    if debug: print "    Beginning 3rd loop over", len(triggertimes), "triggers."
     #Collect the hepevt fields for all particles which might give signals in the triggered events.
     eventnum = 0 # Unique within the spill (only).
     for time in triggertimes:
