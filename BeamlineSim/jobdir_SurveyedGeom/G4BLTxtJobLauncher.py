@@ -15,21 +15,20 @@ import optparse
 parser = optparse.OptionParser("usage: %prog [options] /directoryinput/ \n")  
 options, args = parser.parse_args()
 inpath = args[0]
-
 # Use arguments to find files for parsing
 print inpath
 filestoparse=[]
 filenames=os.listdir(inpath)
 for file in filenames:
 # Is the file one we want to run over? Don't run over an already created text file. 
-  if file.count('OnlySpilltree')>0 and file.count('hepevt')==0:
+  if file.count('OnlySpillTree')>0 and file.count('hepevt')==0  and len(filenames)<100:
     filestoparse.append(file)
     
 # Get spill numbers    
 spillnumbers=[]
 for file in filestoparse:
   #Split the file name to just get the spill number. Remove everything before (and including) "OnlySpilltree", and ".root"
-  spillnum=file.split("OnlySpilltree",1)[1].split(".root",1)[0]
+  spillnum=file.split("OnlySpillTree",1)[1].split(".root",1)[0]
   spillnumbers.append(spillnum)
     
 #Create a template for the name of the file before the spill number, and then append with .root after    
@@ -38,12 +37,15 @@ templateafter=".root"
 for num in spillnumbers:
   # using the template, loop over all the spill numbers you will see and make strings for file names and file paths.
   filetorun=templatebefore+num+templateafter
-  commandstring="jobsub_submit.py -G lariat --OS=SL5,SL6 --resource-provides=usage_model=DEDICATED,OPPORTUNISTIC file://$PWD/Treescript.sh"
+  commandstring="jobsub_submit.py -G lariat --OS=SL5,SL6 --resource-provides=usage_model=DEDICATED,OPPORTUNISTIC --expected-lifetime=60h file://$PWD/Treescript.sh"
   print "Going to run jobsubmit to process: "+inpath+filetorun
-  fullinpath=inpath
+  fullinpath=inpath.rstrip("/")
   fullinpath=fullinpath.replace("/","\/")
-  textfilename="hepevt_"+templatebefore+num+"Spill_"+num+"thru"+num+".txt"
-
+  textfilename="hepevt_"+templatebefore+num+"Spill_"+num+"thru"+num+".txt" 
+  
+  print "inputfilepath: "+fullinpath
+  print "input file: "+filetorun
+  print "textfile: "+textfilename 
 ##Make Treescript.sh edits to have the root file and output text file formatted. 
   os.system("sed -i 's/INPUTFILEPATH/"+fullinpath+"/g' Treescript.sh") 
   os.system("sed -i 's/INPUTFILE/"+filetorun+"/g' Treescript.sh")
