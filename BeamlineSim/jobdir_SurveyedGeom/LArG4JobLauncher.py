@@ -5,18 +5,29 @@
 ## For each text file in that directory this script does the following:
 ##
 ## 1. Edit LArG4_Example.xml, changing the number of events to match the number of events in the txt file
+##
 ## 2. Edit LArG4_Example.xml, changing the work and output directories to be different so the grid will work
+##
 ## 3. Edit LArG4_Example.xml, changing the inputfile to be the text file to process
+##
 ## 4. Edit prodtext_lariat.fcl, changing the SubRun number for every job to avoid a degeneracy run/subrub/event numbers in the output from multiple jobs
+##
+##
 ## 5. With the edited .xml and .fcl, submit a job to the grid to process the text file
+##
 ## 6. ????????????
+##
 ## 7. PROFIT!
 ##
 ##
-## NOTE:  IT IS UP TO THE USER TO DO SOME PRE-EDITS TO THE XML FILE.
+## NOTE:  IT IS UP TO THE USER TO DO SOME PRE-EDITS TO THE XML/FCL FILE.
 ##
 ## 1. You must edit the "FclDir" in the XML "entity" section to point to your "JobConfigurations" directory in lariatsoft.  IF NOT: You are going to edit MY version of prodtext_lariat.fcl in my JobConfigurations
+##
 ## 2. Change the base paths for the output and work directories for the job. This script only makes new directories at the end.  IF NOT: You are going to send files to my pnfs area.      
+##
+## 3  Edit prodtext_lariat.fcl, changing the Magnetic Field Descriptions at the bottom to have a B field consistent with the G4BL run. 
+##    Somewhere in the text file name should be the current setting. For now, 100A=.35T, and positive polarity corresponds to a negative B_y (check yourself, with F=q(vxB))
 ##
 ## usage: python LArG4JobLauncher.py /folder/where/you/have/saved/text/files/
 ##
@@ -41,7 +52,7 @@ filenames=os.listdir(inpath)
 
 # The txt files should have hepevt and be a .txt file.  Also, as not to pick up a concatenated text file (output from hepevtConcatenator.py), required "Merged" as well
 for file in filenames:
-  if file.count('hepevt')>0 and file.count('.txt')>0 and file.count('Merged')>0:
+  if file.count('hepevt')>0 and file.count('.txt')>0 and file.count('MergedAtStartLine')>0:
     filestorun.append(file)
 
 #Find how many events are in each file so we know what number to pass to the grid in the .xml file  

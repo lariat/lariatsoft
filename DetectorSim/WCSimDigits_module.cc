@@ -3,43 +3,21 @@
 // Module Type: producer
 // File:        WCSimDigits_module.cc
 //
-// Generated at Tue May 31 13:53:13 2016 by Greg Pulliam using artmod
-// from cetpkgsupport v1_08_06.
+// Generated at Wed Sep 28 11:16:11 2016 by Greg Pulliam using artmod
+// from cetpkgsupport v1_10_02.
 ////////////////////////////////////////////////////////////////////////
-#include <vector>
-#include <string>
-#include <algorithm>
-#include <sstream>
-#include <fstream>
-#include <bitset>
-#include <iostream>
-#include <math.h>
-#include <map>
-extern "C" {
-#include <sys/types.h>
-#include <sys/stat.h>
-}
 
-#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Core/EDProducer.h"
+#include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Principal/Run.h"
+#include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-
-#include "lardata/Utilities/LArFFT.h"
-#include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RawData/AuxDetDigit.h"
-#include "lardataobj/RawData/raw.h"
-#include "lardataobj/RawData/TriggerData.h"
-#include "RawDataUtilities/FragmentToDigitAlg.h"
-#include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "lardata/DetectorInfoServices/DetectorClocksService.h"
-#include "lardata/DetectorInfoServices/DetectorClocksServiceStandard.h" // special (see below)
-#include "Utilities/SignalShapingServiceT1034.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcore/Geometry/AuxDetGeo.h"
 #include "larcore/Geometry/AuxDetGeometry.h"
@@ -47,8 +25,7 @@ extern "C" {
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
-
+#include <memory>
 #include "TMath.h"
 #include "TComplex.h"
 #include "TString.h"
@@ -57,12 +34,6 @@ extern "C" {
 #include "TFile.h"
 #include "TRandom.h"
 #include "TTree.h"
-#include "CLHEP/Random/RandFlat.h"
-#include "CLHEP/Random/RandGaussQ.h"
-
-const int kMaxDet=50;
-const int kMaxIDE=1000;
-const int kMaxPart=1000;
 
 class WCSimDigits;
 
@@ -93,62 +64,17 @@ public:
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const & fb) override;
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
-  std::vector<raw::AuxDetDigit> MakeWCDigits(std::vector<sim::AuxDetSimChannel> &ADSC, double & reco_pz, float (&mom)[4]);
-  
-  bool pickycounter;
-  bool highyieldcounter;
-  bool notrackcounter;
-  int WC1size;
-  int WC2size;
-  int WC3size;
-  int WC4size;
-  float WCTrackID;
-  float InitialE;
-  float FinalE;
-  
+  std::vector<raw::AuxDetDigit> MakeWCDigits(sim::AuxDetIDE & TheIDE, int  AuxDetID);
+  void ResetVars();
+  int neutrals[8]={22,14,2112,310,130,311,12,16}; //Neutrally charged particles that shouldn't make digits
+  bool IsNeutral;
+  TTree* fTree;
+  int WCx1, WCx2, WCx3, WCx4, WCy1, WCy2, WCy3, WCy4;
+
 private:
- // Declare member data here.
-  //std::vector<raw::AuxDetDigit> const& MakeWCDigits(art::Event & evt);  
-  std::string fG4ModuleLabel; 
-  void ResetVars(); //Function to reset all values for next run
-  int numSimChannels;  //Number of Aux Dets 
-  int numIDEs[kMaxDet];  //Number of IDEs per Aux Det
- //The ID number for a particular Aux Det
-  //Storing positon and momentum of Geant particle//
-  
-  
-  double entryx[kMaxDet][kMaxIDE];
-  double entryy[kMaxDet][kMaxIDE];
-  double entryz[kMaxDet][kMaxIDE];
-  double exitx[kMaxDet][kMaxIDE];
-  double exity[kMaxDet][kMaxIDE];
-  double exitz[kMaxDet][kMaxIDE];
-  double exitmomx[kMaxDet][kMaxIDE];
-  double exitmomy[kMaxDet][kMaxIDE];
-  double exitmomz[kMaxDet][kMaxIDE];
-  double AuxDetID[kMaxDet];
-  int iterarray[kMaxDet];
-  double TOFangle[kMaxIDE];
-  double TrackID[kMaxDet][kMaxIDE]; 
-  double Energy[kMaxDet][kMaxIDE]; 
-  int numG4;
-  double G4TrackID[kMaxPart];
-  double ExitTime[kMaxDet][kMaxIDE];
-  double reco_pz;
-  float simmomentum[4];
-  float simmom1;
-  float simmom2;
-  float simmom3;
-  float simmom4;
-  //double enterx;
-  //double entery;
-  //double enterz;
-  int ID; //The AuxDetID() for an AuxDetSimChannel
-  TTree* fTree; 
-  TH2D* XZHit;
-  TH1F* TrackConditions;
-  float fMCMagneticField;
-  
+
+ std::string fG4ModuleLabel; 
+
 };
 
 
@@ -156,281 +82,212 @@ WCSimDigits::WCSimDigits(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
 {
-  // Call appropriate produces<>() functions here.
   this->reconfigure(p);
   produces<std::vector<raw::AuxDetDigit> >();
 }
 
 void WCSimDigits::produce(art::Event & e)
 {
-  ResetVars();
   std::unique_ptr<std::vector<raw::AuxDetDigit> > MWPCDigits(new std::vector<raw::AuxDetDigit> );
+  
+  
+    //Get the ADSCs
   art::Handle< std::vector<sim::AuxDetSimChannel> > AuxDetHandle;
   std::vector<sim::AuxDetSimChannel> AuxDetColl;
+  
+  //Get MCParticle info
+  art::Handle<std::vector<simb::MCParticle> > g4_part;
+  e.getByLabel(fG4ModuleLabel, g4_part);
+  int numG4=(int)g4_part->size();
+   
+  //if(!e.getByLabel(fG4ModuleLabel,AuxDetHandle)){e.put(std::move(DigitIDEAssn)); return;} //If no sim information found, put an empty assn and return.
   e.getByLabel(fG4ModuleLabel, AuxDetHandle);
-  numSimChannels=AuxDetHandle->size();
-  int iter=0;
-  // for(size_t i=0; i<numSimChannels; ++i){
-   for(std::vector<sim::AuxDetSimChannel>::const_iterator auxiter = AuxDetHandle->begin(); auxiter!=AuxDetHandle->end(); ++auxiter){
-     const sim::AuxDetSimChannel & aux = *auxiter;
-     AuxDetColl.push_back(aux);
-     AuxDetID[iter]=aux.AuxDetID();
-     ID=aux.AuxDetID();
-     art::ServiceHandle<geo::Geometry> adGeoServ;
-     geo::AuxDetGeo const& adg=adGeoServ->AuxDet(ID);
-     double centerarray[3]={0.0,0.0,0.0};
-     adg.GetCenter(centerarray,0);
-     iterarray[iter]=iter;
-     std::vector<sim::AuxDetIDE> SimIDE=aux.AuxDetIDEs();
-     numIDEs[iter]=SimIDE.size(); 
-     for(size_t nIDE=0; nIDE<SimIDE.size(); ++nIDE){
-       sim::AuxDetIDE TheIDE=SimIDE[nIDE];
-       entryx[iter][nIDE]=TheIDE.entryX;
-       entryy[iter][nIDE]=TheIDE.entryY;
-       entryz[iter][nIDE]=TheIDE.entryZ;
-       exitx[iter][nIDE]=TheIDE.exitX;
-       exity[iter][nIDE]=TheIDE.exitY;
-       exitz[iter][nIDE]=TheIDE.exitZ;
-       TrackID[iter][nIDE]=TheIDE.trackID;
-       if(TheIDE.trackID==1 && aux.AuxDetID()==0 && InitialE==-9999){
-         float initialmomsq=pow(10*TheIDE.exitMomentumX,2)+pow(10*TheIDE.exitMomentumY,2)+pow(10*TheIDE.exitMomentumZ,2);
-	 float pionmasssq=.139*.139;
-	 InitialE=pow(initialmomsq+pionmasssq,.5);
-       }
-       if(TheIDE.trackID==1 && aux.AuxDetID()==4  && FinalE==-9999  && InitialE!=-9999){
-         float finalmomsq=pow(10*TheIDE.exitMomentumX,2)+pow(10*TheIDE.exitMomentumY,2)+pow(10*TheIDE.exitMomentumZ,2);
-	 float pionmasssq=.139*.139;
-	 FinalE=pow(finalmomsq+pionmasssq,.5);
-       }        
-       exitmomx[iter][nIDE]=TheIDE.exitMomentumX;
-       exitmomy[iter][nIDE]=TheIDE.exitMomentumY;
-       exitmomz[iter][nIDE]=TheIDE.exitMomentumZ;
-       Energy[iter][nIDE]=TheIDE.energyDeposited;
-       ExitTime[iter][nIDE]=TheIDE.exitT;
-       XZHit->Fill(TheIDE.entryZ,TheIDE.entryX); 
-     } //nIDE
-//All the hits are saved. in the tree. However, if you want to make digits for a particular detector system we define functions here.
-     ++iter; 
-   } // ADSC loop
-   
-   
-std::vector<raw::AuxDetDigit> TheWCDigits=MakeWCDigits(AuxDetColl,reco_pz,simmomentum);
-simmom1=simmomentum[0];
-simmom2=simmomentum[1];
-simmom3=simmomentum[2];
-simmom4=simmomentum[3];
-if(pickycounter){TrackConditions->Fill(2);}
-if(highyieldcounter){TrackConditions->Fill(3);}
-if(notrackcounter){TrackConditions->Fill(1);}
-TrackConditions->Fill(0);
-   for(size_t i=0; i<TheWCDigits.size(); ++i){
-   (*MWPCDigits).push_back(TheWCDigits[i]);
-   }
-   for(size_t i=0; i<TheWCDigits.size(); ++i){
-     for(size_t j=0; j<TheWCDigits[i].NADC(); ++j){
-       //std::cout<<"Digit size"<<TheWCDigits.size()<<"Channel :"<<TheWCDigits[i].Channel()<<" TimeBin :"<<TheWCDigits[i].ADC(j)<<"AuxDetName :"<<TheWCDigits[i].AuxDetName()<<" Time stamp: "<<TheWCDigits[i].TimeStamp()<<std::endl;
-     }
-   }
-   
-   e.put(std::move(MWPCDigits));
-   TheWCDigits.clear();
-   
-//Get the G4 information
- art::Handle<std::vector<simb::MCParticle> > g4_part;
- e.getByLabel(fG4ModuleLabel, g4_part);
- numG4=(int)g4_part->size();
- for(int i =0; i< numG4; ++i)
- {
-   G4TrackID[i]=(double)g4_part->at(i).TrackId();
- }
- 
-   
-fTree->Fill();  
-}
-std::vector<raw::AuxDetDigit> WCSimDigits::MakeWCDigits(std::vector<sim::AuxDetSimChannel> & ADSC, double & reco_pz, float (&mom)[4])
+  
+  //Loop over the ADSC
+  for(std::vector<sim::AuxDetSimChannel>::const_iterator auxiter = AuxDetHandle->begin(); auxiter!=AuxDetHandle->end(); ++auxiter){
+    const sim::AuxDetSimChannel & aux = *auxiter;
+    
+     
+    //Only want WCs, which have AuxDet of 1-4
+    if(aux.AuxDetID()>0 && aux.AuxDetID()<5){
+      std::vector<sim::AuxDetIDE> SimIDE=aux.AuxDetIDEs();
+      
+     
+    
+      //Loop over IDEs, which are individual particles passsing through the AuxDet
+      for(size_t nIDE=0; nIDE<SimIDE.size(); ++nIDE){
+        sim::AuxDetIDE TheIDE=SimIDE[nIDE];
+	int IDETrackID=TheIDE.trackID;
+	IsNeutral=false;
+	
+	
+	//Loop over the MCParticles for this event, and try to match an IDE TrackID to an MCParticle
+	for(int i=0; i<numG4; ++i){
+	  if((double)g4_part->at(i).TrackId()==IDETrackID){
+	    int G4PDG=g4_part->at(i).PdgCode();
+	    
+	    
+	    //Now loop through neutrals and skip this IDE if it was made by a neutral.
+	    for(int nNeu=0; nNeu<8; ++nNeu){
+	      if(fabs(G4PDG)==neutrals[nNeu]){std::cout<<"NEUTRAL SKIP!"<<std::endl; IsNeutral=true; break;}
+	    }//Neutral loop
+	    
+	    //If we dont have a neutral, make a WCDigit
+	    if(!IsNeutral){
+	       std::cout<<"Making Digit with PDG: "<<G4PDG<<std::endl;
+	       int AuxDetId=aux.AuxDetID();
+	       std::vector<raw::AuxDetDigit> SimWCDigits=MakeWCDigits(TheIDE, AuxDetId);
+	       for(size_t Digititer=0; Digititer<SimWCDigits.size(); ++Digititer){
+	         (*MWPCDigits).push_back(SimWCDigits[Digititer]);
+	       }//Digititer
+	    }//IsNeutral
+	  }//If matched particle	  
+	}// numG4 loop
+      } //nIDE loop
+    }  //If ADSC is a WC
+  }//ADSC loop
+  std::cout<<"Putting "<<(*MWPCDigits).size()<<" digits on the event"<<std::endl;
+  //Put the Digits on the event.
+  e.put(std::move(MWPCDigits));
+}//produce
+
+
+std::vector<raw::AuxDetDigit> WCSimDigits::MakeWCDigits(sim::AuxDetIDE & TheIDE, int AuxDetID)
 {
+
+  ResetVars(); //Reset tree variables
+  
   std::vector<raw::AuxDetDigit> MWPCDigits;
-  std::vector<std::vector<short> > HitTimes(128*2*4);
+  //Use AuxDetGeo to get the center of the WC, given the AuxDetID
   art::ServiceHandle<geo::Geometry> adGeoServ;
+  geo::AuxDetGeo const& adg=adGeoServ->AuxDet(AuxDetID);
+  double centerarray[3]={0.0,0.0,0.0};
+  adg.GetCenter(centerarray,0);
+  
+  //Each Digit needs a string for the WC the digit is for. Make a vector of the strings, and we can get them when we need them.
   std::vector<std::string> WCnames;
   WCnames.resize(4);
   WCnames[0]="MWPC1";
   WCnames[1]="MWPC2";
   WCnames[2]="MWPC3";
   WCnames[3]="MWPC4";
-//Get the AuxDetIDEs for the WCs
-  for(size_t auxiter=0; auxiter<ADSC.size(); ++auxiter){
-    const sim::AuxDetSimChannel & aux =ADSC[auxiter];
-    WC1size=ADSC[1].AuxDetIDEs().size();
-    WC2size=ADSC[2].AuxDetIDEs().size();
-    WC3size=ADSC[3].AuxDetIDEs().size();
-    WC4size=ADSC[4].AuxDetIDEs().size();
-    if(WC1size==1 && WC2size==1 && WC3size==1 && WC4size==1){pickycounter=true;}
-    if(WC1size>0 && (WC2size>0 || WC3size>0) && WC4size>0){highyieldcounter=true;}
-    if(WC1size==0 || WC4size==0 || (WC2size==0 && WC3size==0)){notrackcounter=true;}
-    if(aux.AuxDetID()>0 && aux.AuxDetID()<5){      
-      double rotarray[4]={tan(13*3.14159265359/180),tan(13*3.14159265359/180),tan(3*3.14159265359/180),tan(3*3.14159265359/180)};//the rotations of each wc
-      geo::AuxDetGeo const& adg=adGeoServ->AuxDet(aux.AuxDetID());
-      double centerarray[3]={0.0,0.0,0.0};
-      adg.GetCenter(centerarray,0);
-      //float x[4]={ADSC[1].AuxDetIDEs()[0].exitX,ADSC[2].AuxDetIDEs()[0].exitX,ADSC[3].AuxDetIDEs()[0].exitX,ADSC[4].AuxDetIDEs()[0].exitX};
-      //float y[4]={ADSC[1].AuxDetIDEs()[0].exitY,ADSC[2].AuxDetIDEs()[0].exitY,ADSC[3].AuxDetIDEs()[0].exitY,ADSC[4].AuxDetIDEs()[0].exitY};
-      //float z[4]={ADSC[1].AuxDetIDEs()[0].exitZ,ADSC[2].AuxDetIDEs()[0].exitZ,ADSC[3].AuxDetIDEs()[0].exitZ,ADSC[4].AuxDetIDEs()[0].exitZ};
-      //float dx_us=(x[1]-x[0])*10;
-      //float dx_ds=(x[3]-x[2])*10;
-      //float dz_us=(z[1]-z[0])*10;
-      //float dz_ds=(z[3]-z[2])*10;
-      //float theta_us=atan(dx_us/dz_us);
-      //float theta_ds=atan(dx_ds/dz_ds);
-      //reco_pz=(double)fMCMagneticField*1204/(3.3*(sin(theta_ds)-sin(theta_us)));
-      std::vector<sim::AuxDetIDE> IDElist=aux.AuxDetIDEs();
-      //std::cout<<"Aux IDEs made"<<std::endl;
-      for(size_t nIDE=0; nIDE<IDElist.size(); ++nIDE){  
-        sim::AuxDetIDE anIDE=IDElist[nIDE];
- //For each IDE hit, do some translation to find where the hit is in the coordinate system where the top left corner of the WC is the origin. This is where Xwire=Ywire=0 in digits.    
-        double xy_tpc[2]={.5*(anIDE.exitX+anIDE.entryX),.5*(anIDE.exitY+anIDE.entryY)};
-//Code to calculate the momentum as it would be done in WCTrackBuilding.  
-        double xy_wcCent[2]={xy_tpc[0]-centerarray[0],xy_tpc[1]-centerarray[1]}; //Moves origin to the center of the WC
-	//mom[aux.AuxDetID()-1]=anIDE.exitMomentumZ; 
-//We simplify the WC such that the hit must lie on a line z=tan(theta)*x, where theta is the rotation of the WC.
-        double xy_wc[2]={0.0,0.0};
-        double tempx_dist=pow(pow(xy_wcCent[0],2)+pow(rotarray[aux.AuxDetID()-1]*xy_wcCent[0],2),.5); 
-        if(xy_wcCent[0]<0){tempx_dist=tempx_dist+6.4;} // The would be on the right side of the WC, so add on half the size of the WC to make up for the fact that the origin is halfway along the x axis
-        if(xy_wcCent[0]>0){tempx_dist=6.4-tempx_dist;} //Left side of the WC, so subtract off half length.  Makes the extreme edge of the WC x=0
-        if(tempx_dist<0 || tempx_dist>12.8){continue;}//If the hit is somehow outside the x axis of the WC, skip this IDE hit.
-        double tempy_dist=6.4-xy_wcCent[1];
-        if(tempy_dist<0||tempy_dist>12.8){continue;}//If hit is outside y axis of WC, skip the hit.
-        xy_wc[0]=tempx_dist*10;
-        xy_wc[1]=tempy_dist*10; //The position of the hit in the plane of the wc, with the origin at the top left corner (looking down the beam), and converted to mm.
-	
-//We now want the x and y wire closest to this hit. Luckily, the wires are 1mm apart, so rounding the distance along each axis will give the closest wire. However, I will assume there is a .5mm gap from the edge to the first
-//and the last wire. For hits in that gap, we force the hit onto the first or last wire. Else, we round, after subtracting off half a wire distance.
-        int x_wire;
-        int y_wire;
-        double timebin;
-        if(xy_wc[0]<=.5){x_wire=0;}
-        if(xy_wc[0]>=127.5){x_wire=127;}
-        else{x_wire=round(xy_wc[0]-.5);}
-        if(xy_wc[1]<=.5){y_wire=0;}
-        if(xy_wc[1]>=127.5){y_wire=127;}
-        else{y_wire=round(xy_wc[1]-.5);}
-        timebin=ceil(anIDE.exitT/1.177);
-        HitTimes[(aux.AuxDetID()-1)*256+x_wire].push_back(timebin);
-        HitTimes[(aux.AuxDetID()-1)*256+128+y_wire].push_back(timebin);
-	std::vector<short> one_timebin_vector;
-	one_timebin_vector.push_back(timebin);
-        //std::cout<<"AuxDetID :"<<aux.AuxDetID()<< "x wire: "<<x_wire<<"x position: "<<xy_wc[0]<<" y wire: "<<y_wire<<"y position: "<<xy_wc[1]<< "time bin :"<<timebin<<std::endl;
-        //std::cout<<"trackID: "<<anIDE.trackID<<std::endl;
-	unsigned long long TheTrackID=anIDE.trackID;
-	WCTrackID=(float)TheTrackID;
-	MWPCDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short> (x_wire),
-	 				     one_timebin_vector,
-					     WCnames[aux.AuxDetID()-1],
-					     static_cast <unsigned long long> (TheTrackID)));
-	MWPCDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short>(y_wire+128),
-	 				     one_timebin_vector,
-					     WCnames[aux.AuxDetID()-1],
-					     static_cast <unsigned long long> (TheTrackID)));
-					     
-      }
-    }
-  }
-//Now that we have the Hit times set, we create the digits using those times and the index in the vector for the wire
-  for(size_t wireiter=0; wireiter<HitTimes.size(); ++wireiter){
-    if(HitTimes[wireiter].size()>0){
-   
-      //MWPCDigits.push_back(raw::AuxDetDigit(static_cast <unsigned short> (wireiter % 256),
-	                                        // HitTimes[wireiter],
-						 //WCnames[(wireiter-(wireiter%256))/256],
-						 //static_cast <unsigned long long> (HitTrackID[wireiter])));
+  
+  //Start with the XY position of the hit in TPC coordinate frame
+  double xy_tpc[2]={.5*(TheIDE.exitX+TheIDE.entryX),.5*(TheIDE.exitY+TheIDE.entryY)}; 
+  
+  //Move the origin to the center of the WC
+  double xy_wcCent[2]={xy_tpc[0]-centerarray[0],xy_tpc[1]-centerarray[1]}; 
+  
+  //The WCs are rotated at 3 and 13 degrees. Therefore, the z position of the hit is tan(theta)*x. Make tan(theta) array 
+  double rotarray[4]={tan(13*3.14159265359/180),tan(13*3.14159265359/180),tan(3*3.14159265359/180),tan(3*3.14159265359/180)};
+  
+  //Using the distance formula d^2=x^2+z^2, we can find how far along the WC the hit is.
+  double tempx_dist=pow(pow(xy_wcCent[0],2)+pow(rotarray[AuxDetID-1]*xy_wcCent[0],2),.5); 
+  
+  //There is an ambiguity whether tempx_dist is +ive or -ive. Using the hit in the WC frame we can determine that and add/subtract half a WC length
+  
+  if(xy_wcCent[0]<0){tempx_dist=tempx_dist+6.4;} // The hit would be on the right side of the WC, so add on half the size of the WC to make up for the fact that the origin is halfway along the x axis
+  if(xy_wcCent[0]>0){tempx_dist=6.4-tempx_dist;} //Left side of the WC, so subtract off half length.  Makes the extreme edge of the WC x=0
+  
+  
+  double tempy_dist=6.4-xy_wcCent[1]; //No distance formula necessary, just moving the origin in y.
+  
+  //The WC are 12.8cm by 12.8cm. If the hit is not inside the wc, don't make digits.
+  
+  if(tempx_dist>0 && tempx_dist<12.8 && tempy_dist>0 && tempy_dist<12.8){
+  //Now we have the hit in the WC frame, with the center at the top left corner (From beam perspective).  Also, convert from mm to cm.  Wires are 1mm apart, so working in mm makes sense.
+    double xy_wc[2]={tempx_dist*10, tempy_dist*10};
+  
+  //Initialize the x wire and y wire for each particle, and the timebin of the hit.
+    int xwire, ywire;
+    double timebin;
+    
+  //The WC have 1mm spaced wires, and I assume the first wire is .5mm from the edge of the frame. The wires that gets hit will be the closest wires. Hits in the edge .5mm gaps get associated to the first or last wire
+    if(xy_wc[0]<=.5) {xwire=0;}
+    else if(xy_wc[0]>=127.5) {xwire=127;}
+    else {xwire=round(xy_wc[0]-.5);}
+  
+    if(xy_wc[1]<=.5){ywire=0;}
+    else if(xy_wc[1]>=127.5){ywire=127;}
+    else {ywire=round(xy_wc[1]-.5);}
+  
+    timebin=TheIDE.exitT/1.177; //WCs readout in 1.117 ns bins
+  
+  //We have all the information necessary for a digit. Now we create the 4 variables that go into a digit. 
+  //To know the digit is made from simulation, I'm going to store the TrackID as the timestamp.  
+  
+    unsigned long long TimestampfromTrackID=TheIDE.trackID;
+    std::vector<short> timebinvector;
+    timebinvector.push_back(timebin);
+  
+  //Each IDE makes 2 digits, one each for the x and y wire
 
-      continue; 
-    }
-  } 
+  
+    MWPCDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short> (xwire),
+	 				     timebinvector,
+					     WCnames[AuxDetID-1],
+					     static_cast <unsigned long long> (TimestampfromTrackID)));
+  
+    MWPCDigits.push_back(raw::AuxDetDigit(static_cast<unsigned short> (ywire+128),
+	 				     timebinvector,
+					     WCnames[AuxDetID-1],
+					     static_cast <unsigned long long> (TimestampfromTrackID)));
+  if(AuxDetID==1)
+  {
+    WCx1=xwire;
+    WCy1=ywire;
+  }
+    if(AuxDetID==2)
+  {
+    WCx2=xwire;
+    WCy2=ywire;
+  }
+    if(AuxDetID==3)
+  {
+    WCx3=xwire;
+    WCy3=ywire;
+  }
+    if(AuxDetID==4)
+  {
+    WCx4=xwire;
+    WCy4=ywire;
+  }
+  fTree->Fill();
+  }
+  //Fill the Tree with the wire hits for this IDE
+  					     
   return MWPCDigits;
-}      						 
+					     
+}
 void WCSimDigits::beginJob()
 {
-  // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
-  fTree=tfs->make<TTree>("GeantTree","Geant Tree");
-  fTree->Branch("numSimChannels",&numSimChannels,"numSimChannels/I");
-  fTree->Branch("numIDEs",numIDEs,"numIDEs[numSimChannels]/I");
-  fTree->Branch("entryx",entryx,"entryx[numSimChannels][1000]/D");
-  fTree->Branch("entryy",entryy,"entryy[numSimChannels][1000]/D");
-  fTree->Branch("entryz",entryz,"entryz[numSimChannels][1000]/D");
-  fTree->Branch("exitx",exitx,"exitx[numSimChannels][1000]/D");
-  fTree->Branch("exity",exity,"exity[numSimChannels][1000]/D");
-  fTree->Branch("exitz",exitz,"exitz[numSimChannels][1000]/D");
-  fTree->Branch("exitmomx",exitmomx,"exitmomx[numSimChannels][1000]/D");
-  fTree->Branch("exitmomy",exitmomy,"exitmomy[numSimChannels][1000]/D");
-  fTree->Branch("exitmomz",exitmomz,"exitmomz[numSimChannels][1000]/D");
-  fTree->Branch("TrackID",TrackID,"TrackID[numSimChannels][1000]/D");
-  fTree->Branch("Energy",Energy,"Energy[numSimChannels][1000]/D");
-  fTree->Branch("ExitTime",ExitTime,"Time[numSimChannels][1000]/D");
-  fTree->Branch("AuxDetID",AuxDetID,"AuxDetID[numSimChannels]/D");
-  fTree->Branch("iterarray",iterarray,"iter[numSimChannels]/I");
-  fTree->Branch("TOFangle",TOFangle,"TOFangle[numIDEs]/D");
-  fTree->Branch("numG4",&numG4,"numG4/I");
-  fTree->Branch("G4TrackID",G4TrackID,"G4TrackID[numG4]/D");
-  fTree->Branch("reco_pz",&reco_pz,"reco_pz/D");
-  fTree->Branch("simmom1",&simmom1,"simmom1/F");
-  fTree->Branch("simmom2",&simmom2,"simmom2/F");
-  fTree->Branch("simmom3",&simmom3,"simmom3/F");
-  fTree->Branch("simmom4",&simmom4,"simmom4/F");
-  fTree->Branch("WC1size",&WC1size,"WC1size/I");
-  fTree->Branch("WC2size",&WC2size,"WC2size/I");
-  fTree->Branch("WC3size",&WC3size,"WC3size/I");
-  fTree->Branch("WC4size",&WC4size,"WC4size/I");
-  fTree->Branch("pickycounter",&pickycounter,"pickycounter/O");
-  fTree->Branch("highyieldcounter",&highyieldcounter,"highyieldcounter/O");
-  fTree->Branch("notrackcounter",&notrackcounter,"notrackcounter/O");
-  fTree->Branch("WCTrackID",&WCTrackID,"WCTrackID/F");
-  fTree->Branch("InitialE",&InitialE,"InitialE/F");
-  fTree->Branch("FinalE",&FinalE,"FinalE/F");
-  XZHit = tfs->make<TH2D>("XZHit", "XZHit", 1500,-1000,500,1500,-150,150);
-  TrackConditions=tfs->make<TH1F>("TrackConditions","TrackConditions",4,0,4);
-  
-  
+  fTree=tfs->make<TTree>("WCDigitTree", "WCDigitTree");
+  fTree->Branch("WCx1",&WCx1,"WCx1/I");
+  fTree->Branch("WCx2",&WCx2,"WCx2/I");
+  fTree->Branch("WCx3",&WCx3,"WCx3/I");
+  fTree->Branch("WCx4",&WCx4,"WCx4/I");
+  fTree->Branch("WCy1",&WCy1,"WCy1/I");
+  fTree->Branch("WCy2",&WCy2,"WCy2/I");
+  fTree->Branch("WCy3",&WCy3,"WCy3/I");
+  fTree->Branch("WCy4",&WCy4,"WCy4/I");
+
 }
 void WCSimDigits::ResetVars()
 {
-  numSimChannels=-9999;
-  numG4=-9999;
-  for(int i=0; i<kMaxDet; ++i){
-    AuxDetID[i]=-9999;
-    iterarray[i]=-9999;
-    numIDEs[i]=-9999;
-    for(int j=0; j<kMaxIDE; ++j){
-      entryx[i][j]=-9999;
-      entryy[i][j]=-9999;
-      entryz[i][j]=-9999;
-      exitx[i][j]=-9999;
-      exity[i][j]=-9999;
-      exitz[i][j]=-9999;
-      exitmomx[i][j]=-9999;
-      exitmomy[i][j]=-9999;
-      exitmomz[i][j]=-9999;
-      TrackID[i][j]=-9999;
-      TOFangle[j]=-9999;
-      Energy[i][j]=-9999;
-      ExitTime[i][j]=-9999;
-    }
-  }
-  for(int i=0; i<kMaxPart; ++i){
-    G4TrackID[i]=-9999;
-  }
-  reco_pz=-9999;
-  InitialE=-9999;
-  FinalE=-9999;
-  pickycounter=false;
-  highyieldcounter=false;
-  notrackcounter=false;
+  WCx1=-99999;
+  WCx2=-99999;
+  WCx3=-99999;
+  WCx4=-99999;
+  WCy1=-99999;
+  WCy2=-99999;
+  WCy3=-99999;
+  WCy4=-99999;
+  
 }
-
 void WCSimDigits::beginRun(art::Run & r)
 {
-  // Implementation of optional member function here.
+  
 }
 
 void WCSimDigits::beginSubRun(art::SubRun & sr)
@@ -455,9 +312,7 @@ void WCSimDigits::endSubRun(art::SubRun & sr)
 
 void WCSimDigits::reconfigure(fhicl::ParameterSet const & p)
 {
-  // Implementation of optional member function here.
   fG4ModuleLabel = p.get<std::string>("G4ModuleLabel");
-  fMCMagneticField=p.get<float>("MCBField");
 }
 
 void WCSimDigits::respondToCloseInputFile(art::FileBlock const & fb)

@@ -3,19 +3,19 @@
 <!-- Production Project -->
 
 <!DOCTYPE project [
-<!ENTITY release "v06_06_00">
+<!ENTITY release "v06_07_00">
 <!ENTITY file_type "digit">
 <!ENTITY run_type "physics"> 
 <!ENTITY name "LArG4">
 <!ENTITY tag "LArG4">
 <!ENTITY fclDir "/lariat/app/users/gpulliam/test/v06_06_00/srcs/lariatsoft/JobConfigurations/">
-<!ENTITY jobnumber "20">
+<!ENTITY jobnumber "99">
 ]>
 
 <project name="&name;">
 
   <!-- Project size -->
-  <numevents>12</numevents>
+  <numevents>121</numevents>
   <!-- Operating System -->
   <os>SL6</os>
 
@@ -37,7 +37,7 @@
     <outdir>/pnfs/lariat/scratch/users/gpulliam/&release;/LArG4/&jobnumber;/</outdir>
     <workdir>/lariat/app/users/gpulliam/&release;/LArG4/&jobnumber;/</workdir>
     <inputmode> textfile </inputmode>
-    <inputfile>/pnfs/lariat/scratch/users/gpulliam/LArG4Files/hepevt_MergedAtBigDisksim_mergedfile64gev_neg100A_1000_20spillsof300k_OnlySpilltree201Spill_201thru201.txt</inputfile>
+    <inputfile>/pnfs/lariat/scratch/users/gpulliam/LArG4Files/100testspills/hepevt_MergedAtStartLinesim_LAriaT_13degProdxn_10degAna_SurveyedGeom_5000jobsof60k_64GeV_pos100Amps__20160915T183938_OnlySpillTree001Spill_1thru1.txt</inputfile>
     <numjobs>1</numjobs>
   </stage>
 </project>

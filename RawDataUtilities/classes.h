@@ -17,6 +17,7 @@
 #include "lardataobj/RecoBase/EndPoint2D.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
 #include "lardataobj/RecoBase/Track.h"
+#include "lardataobj/Simulation/AuxDetSimChannel.h"
 
 
 #include "lardataobj/RawData/RawDigit.h"
@@ -47,7 +48,8 @@ template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit>  >;
 template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>   >;
 template class std::pair<art::Ptr<ldp::WCTrack>, art::Ptr<recob::Track>      >;
 template class std::pair<art::Ptr<recob::Track>, art::Ptr<ldp::WCTrack>      >;
-
+/* template class std::pair<art::Ptr<raw::AuxDetDigit>, art::Ptr<sim::AuxDetIDE> >; */ /*ADD to ADI*/
+/*template class std::pair<art::Ptr<ldp::WCTrack>, art::Ptr<raw::AuxDetDigit>  >;  WCT to ADD*/
 
 template class std::pair<art::Ptr<raw::RawDigit>,     art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<recob::Wire>,       art::Ptr<raw::Trigger> >;
@@ -59,9 +61,10 @@ template class std::pair<art::Ptr<recob::Track>,      art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<recob::Vertex>,     art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<raw::AuxDetDigit>,  art::Ptr<raw::Trigger> >;
 template class std::pair<art::Ptr<raw::OpDetPulse>,   art::Ptr<raw::Trigger> >;
+/* template class std::pair<art::Ptr<sim::AuxDetIDE>, art::Ptr<raw::AuxDetDigit> >; */ /*ADI to ADD*/
+/*template class std::pair<art::Ptr<raw::AuxDetDigit>,   art::Ptr<ldp::WCTrack> >; ADD to WCT*/
 //template class std::pair<art::Ptr<recob::Track>,      art::Ptr<ldp::WCTrack> >;
 //template class std::pair<art::Ptr<ldp::WCTrack>,      art::Ptr<recob::Track> >;
-
 
 template class art::Assns<raw::Trigger, raw::RawDigit,     void>;
 template class art::Assns<raw::Trigger, recob::Wire,       void>;
@@ -75,7 +78,8 @@ template class art::Assns<raw::Trigger, raw::AuxDetDigit,  void>;
 template class art::Assns<raw::Trigger, raw::OpDetPulse,   void>;
 template class art::Assns<ldp::WCTrack, recob::Track,      void>;
 template class art::Assns<recob::Track, ldp::WCTrack,      void>;
-
+/* template class art::Assns<raw::AuxDetDigit, sim::AuxDetIDE, void>; */
+/*template class art::Assns<ldp::WCTrack, raw::AuxDetDigit,   void>;*/
 
 template class art::Wrapper<art::Assns<raw::Trigger, raw::RawDigit,     void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, recob::Wire,       void> >;
@@ -89,6 +93,7 @@ template class art::Wrapper<art::Assns<raw::Trigger, raw::AuxDetDigit,  void> >;
 template class art::Wrapper<art::Assns<raw::Trigger, raw::OpDetPulse,   void> >;
 template class art::Wrapper<art::Assns<ldp::WCTrack, recob::Track,      void> >;
 template class art::Wrapper<art::Assns<recob::Track, ldp::WCTrack,      void> >;
-
+/* template class art::Wrapper<art::Assns<raw::AuxDetDigit, sim::AuxDetIDE, void>  >;*/
+/*template class art::Wrapper<art::Assns<raw::AuxDetDigit,  ldp::WCTrack, void> >;*/
 template class art::Wrapper<art::PtrVector<recob::Track> >;
 
