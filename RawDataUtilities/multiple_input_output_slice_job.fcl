@@ -7,10 +7,6 @@ process_name: EventBuilderNoMerge
 
 services:
 {
- scheduler:
- {
-  fileMode: NOMERGE
- }
  ExptGeoHelperInterface: @local::lariat_geometry_helper
  Geometry:               @local::lariat_geo
  DatabaseUtilityT1034:   @local::lariat_databaseutility
@@ -68,8 +64,15 @@ outputs:
  out1:
  {
   module_type: "RootOutput"
-  fileName:    "lariat_digit_r%06r_sr%04s_%tc.root"
+  fileName:    "lariat_digit_r%06r_sr%04s_%tc_%#.root"
   dataTier:    "digits"
   streamName:  "all"
+  fileProperties:
+  {
+   #granularity:  "InputFile"
+   #maxInputFiles: 1
+   maxSubRuns:  1
+   granularity: SubRun
+  }
  }
 }
