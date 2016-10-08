@@ -21,9 +21,8 @@ filestoparse=[]
 filenames=os.listdir(inpath)
 for file in filenames:
 # Is the file one we want to run over? Don't run over an already created text file. 
-  if file.count('OnlySpillTree')>0 and file.count('hepevt')==0  and len(filenames)<100:
+  if file.count('OnlySpillTree')>0 and file.count('hepevt')==0  and len(filestoparse)<100:
     filestoparse.append(file)
-    
 # Get spill numbers    
 spillnumbers=[]
 for file in filestoparse:

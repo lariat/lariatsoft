@@ -113,7 +113,9 @@ outputs:
 ### for the modules defined above with whatever new values you have ###
 #######################################################################
 #physics.filters.hitfilter.fminNumberHits: 100
-physics.producers.SimWCReco.WCTrackBuilderAlg.MCMagneticFieldTesla:  .175
-physics.producers.SimWCDigit.MCBField: .175
+physics.producers.SimWCReco.WCTrackBuilderAlg.MCMagneticFieldTesla:  .35
+physics.producers.SimWCDigit.MCBField: .35
 physics.producers.SimWCReco.SourceLabel: "SimWCDigit"
+#physics.producers.SimWCReco.CheckTracks: "true"
 physics.producers.SimTOFReco.SourceLabel: "SimTOFDigit"
+#physics.producers.SimWCReco.Verbose: "true"

@@ -3,7 +3,7 @@
 <!-- Production Project -->
 
 <!DOCTYPE project [
-<!ENTITY release "v06_06_00">
+<!ENTITY release "v06_07_00">
 <!ENTITY file_type "digit">
 <!ENTITY run_type "physics"> 
 <!ENTITY name "LArG4">
