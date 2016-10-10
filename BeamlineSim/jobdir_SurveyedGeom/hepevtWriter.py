@@ -100,6 +100,7 @@ def gimmestr(pile, tzero):
     z = ( pile.zStartLine.GetValue()+coordshift['z'] )/10.0   #8
     t = ( pile.tStartLine.GetValue() - tzero )* 1.0e9        #9 NTS: Shift zero to trigger time.
     hepstr = '1 {0:d} 0 0 0 0 {1} {2} {3} {4} {5} {6} {7} {8} {9}\n'.format(pdg, Px, Py, Pz, E, m, x, y, z, t)
+    
     return hepstr
 
 # Given a pointer to an entry in the SpillTree, return 
@@ -415,7 +416,7 @@ outfile.close()
 lo_spill = sorted(spillnums)[0]
 hi_spill = sorted(spillnums)[len(spillnums)-1]
 spillrange_str = 'Spill_'+str(lo_spill)+'thru'+str(lo_spill)
-if not (hi_spill-lo_spill == 1):
-    os.rename(outfilename,outfilename.replace('.txt',spillrange_str+'.txt'))
+if not (hi_spill-lo_spill == 0): 
+    os.rename(outfilename,outfilename.replace('.txt',spillrange_str+'.txt')) # List both spill numbers if the difference is not 0.
 infile.Close()
 
