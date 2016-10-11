@@ -47,7 +47,9 @@ parser.add_option ('-v', dest='debug', action="store_true", default=False,
                    help="Turn on verbose debugging.")
 parser.add_option ('--test', dest='test', action="store_true", default=False,
                    help="Abbreviate to first spill, first 0.2 seconds")
-
+parser.add_option ('--photoncutoff', dest='photoncutoff', type='float',
+                   default =0.001,
+                   help="Minimum photon inclusion energy for textfile (GeV)")
 
 options, args = parser.parse_args()
 maxspill = options.maxspill
@@ -57,6 +59,7 @@ spillinterval = options.spillinterval
 driftinterval = options.driftinterval
 debug = options.debug
 test = options.test
+photoncutoff=options.photoncutoff
 infile = args[0]
 
 ## Constants and such.
@@ -100,7 +103,7 @@ def gimmestr(pile, tzero):
     z = ( pile.zStartLine.GetValue()+coordshift['z'] )/10.0   #8
     t = ( pile.tStartLine.GetValue() - tzero )* 1.0e9        #9 NTS: Shift zero to trigger time.
     hepstr = '1 {0:d} 0 0 0 0 {1} {2} {3} {4} {5} {6} {7} {8} {9}\n'.format(pdg, Px, Py, Pz, E, m, x, y, z, t)
-    
+    if E<photoncutoff and pdg==22: return "no"
     return hepstr
 
 # Given a pointer to an entry in the SpillTree, return 
@@ -356,6 +359,7 @@ for spill, intree in InputSpillTrees.iteritems():
                 ret = intree.GetEntry(n) # Set pyl's pointers to this entry's leaf values
                 if ret == -1: exit ('No entry #'+str(n))
                 txtstr = gimmestr(pyl, tTrigger)
+		if txtstr=="no": continue
                 # Copy the values, so that txtstr can change later without affecting this entry in particlelines
                 particlelines[-1 * particlecount] = copy.copy(txtstr) 
                 particlecount += 1
@@ -366,6 +370,7 @@ for spill, intree in InputSpillTrees.iteritems():
             ret = intree.GetEntry(n)
             if ret == -1: exit ('No entry #'+str(n))
             txtstr = gimmestr(pyl, tTrigger)
+	    if txtstr=="no": continue
             # Copy the values, so that txtstr can change later without affecting this entry in particlelines
             particlelines[particlecount] = copy.copy(txtstr)
             particlecount += 1
@@ -394,6 +399,7 @@ for spill, intree in InputSpillTrees.iteritems():
                 ret = intree.GetEntry(n) # Set pyl's pointers to this entry's leaf values
                 if ret == -1: exit ('No entry #'+str(n))
                 txtstr = gimmestr(pyl, tTrigger)
+		if txtstr=="no": continue
                 # Copy the values, so that txtstr can change later without affecting this entry in particlelines
                 particlelines[particlecount] = copy.copy(txtstr)
                 particlecount += 1
