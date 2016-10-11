@@ -17,11 +17,11 @@ setup lariatsoft v06_07_00 -q e10:prof
 #echo "last = $last"
 
 
-ifdh cp INPUTFILEPATH/hepevtWriter.py hepfile.py
-ifdh cp INPUTFILEPATH/INPUTFILE INPUTFILE  #the / between path and file is included in the inputfilepath string
+ifdh cp HEPPATH/hepevtWriter.py hepfile.py
+ifdh cp ROOTPATH/ROOTFILE ROOTFILE  #the / between path and file is included in the inputfilepath string
 echo ifdh is done: here are the contents of the directory:
 ls -lrth
-python hepfile.py INPUTFILE
+python hepfile.py ROOTFILE
 echo python done: here are the new contents of the directory:
 ls -lrth
 chmod 777 hepevt*.txt
@@ -31,7 +31,7 @@ REALUSER=`basename ${X509_USER_PROXY} .proxy | grep -o -P '(?<=_).*(?=_)'`
 echo '$USER: ' $USER
 echo '$REALUSER: ' $REALUSER
 
-ifdh cp -D hepevt*.txt /pnfs/lariat/scratch/users/$REALUSER/LArG4Files/
+ifdh cp -D hepevt*.txt /pnfs/lariat/scratch/users/$REALUSER/LArG4Files/redo64GeVPos100A
 ls -lrth
 echo $CONDOR_DIR_INPUT
 

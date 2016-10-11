@@ -3,12 +3,12 @@
 <!-- Production Project -->
 
 <!DOCTYPE project [
-<!ENTITY release "v06_07_00">
+<!ENTITY release "v06_08_00">
 <!ENTITY file_type "digit">
 <!ENTITY run_type "physics"> 
 <!ENTITY name "LArG4">
 <!ENTITY tag "LArG4">
-<!ENTITY fclDir "/lariat/app/users/gpulliam/test/v06_06_00/srcs/lariatsoft/JobConfigurations/">
+<!ENTITY fclDir "/lariat/app/users/gpulliam/develop/srcs/lariatsoft/JobConfigurations/">
 <!ENTITY jobnumber "99">
 ]>
 
@@ -28,14 +28,14 @@
   <larsoft>
     <tag>&release;</tag>
     <qual>e10:debug</qual>
-    <local>/lariat/app/users/gpulliam/test/v06_06_00/local.tar</local>
+    <local>/lariat/app/users/gpulliam/develop/local.tar</local>
   </larsoft>
 
   <stage name="LArG4">
     <fcldir>&fclDir;</fcldir>
     <fcl>prodtext_lariat_edit.fcl</fcl>
-    <outdir>/pnfs/lariat/scratch/users/gpulliam/&release;/LArG4/&jobnumber;/</outdir>
-    <workdir>/lariat/app/users/gpulliam/&release;/LArG4/&jobnumber;/</workdir>
+    <outdir>/pnfs/lariat/scratch/users/gpulliam/100LArG4spills/&jobnumber;/</outdir>
+    <workdir>/lariat/app/users/gpulliam/develop/LArG4/&jobnumber;/</workdir>
     <inputmode> textfile </inputmode>
     <inputfile>/pnfs/lariat/scratch/users/gpulliam/LArG4Files/100testspills/hepevt_MergedAtStartLinesim_LAriaT_13degProdxn_10degAna_SurveyedGeom_5000jobsof60k_64GeV_pos100Amps__20160915T183938_OnlySpillTree001Spill_1thru1.txt</inputfile>
     <numjobs>1</numjobs>
