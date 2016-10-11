@@ -94,7 +94,6 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 
  // fPrintDisambiguation = false;
   fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
-  fHighYield            = pset.get<bool  >("HighYield",           false     );
   fDiagnostics          = pset.get<bool  >("Diagnostics",         false     );
   
   //Survey constants
@@ -141,7 +140,6 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 					     std::vector<WCHitList> & event_final_tracks,
 					     std::vector<std::vector<WCHitList> > & good_hits,
 					     bool pickytracks,
-					     bool highyield,
 					     bool diagnostics, 
 					     std::vector<double> & y_kink_list,
 					     std::vector<double> & x_dist_list,
@@ -155,7 +153,6 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
                                              float offset)
 {					   
   fPickyTracks = pickytracks;
-  fHighYield = highyield;
   fDiagnostics= diagnostics;
 //  for(int i=0; i<4; ++i){
 //    for(int j=0; j<3; ++j){
@@ -264,7 +261,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
     if(good_hits[iWC][0].hits.size()>0 && good_hits[iWC][1].hits.size()>0){++NHits;}
     else{WCMissed=iWC+1;}
   }
-  if(fDiagnostics){
+  
   WCDist->Fill(0);
   if(NHits>2){WCDist->Fill(1);}
   if(NHits>2 && (WCMissed==1)){WCDist->Fill(2);}
@@ -272,42 +269,26 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   if(NHits>2 && (WCMissed==3)){WCDist->Fill(4);}
   if(NHits>2 && (WCMissed==4)){WCDist->Fill(5);}
   if(NHits==4){WCDist->Fill(6);}
-  }
+  
   //If we don't have 3 or 4 hits, skip.
   if(NHits<3){
     skip = true;
   } 
-  if(fPickyTracks && fHighYield){
+  if(fPickyTracks){
     for(size_t iWC=0; iWC<4; ++iWC){
       for(size_t iAX=0; iAX<2; ++iAX){
-        if(good_hits[iWC][iAX].hits.size() > 1 || WCMissed==1 || WCMissed==4){  
-	//skip events that have more than 1 hit in an axis, or the missed WC is the first or last WC
+        if(good_hits[iWC][iAX].hits.size() != 1){  
+	//Only allow events with 1 and only 1 hit on each axis
           skip = true;
 	  break;
 	}
       }
     }   
   }
-  if(!fPickyTracks && fHighYield){
+  if(!fPickyTracks){
     if(WCMissed==1 || WCMissed==4){ //skip events with less than 3 X/Y hits or is missing the first or last WC
       skip = true;
     }  
-  }
-  for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
-    for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
-      if( fPickyTracks  && !fHighYield){
-	if( good_hits.at(iWC).at(iAx).hits.size() != 1 ){ //require 1, unabigious 4 (x,y) track
-	  skip = true;
-	  break;
-	}
-      }
-      if( !fPickyTracks && !fHighYield ){
-	if( good_hits.at(iWC).at(iAx).hits.size() < 1 ){ //allow many 4 (x,y) point tracks and cut down later
-	  skip = true;
-	  break;
-	}
-      }
-    }
   }
   //if(WCMissed !=2 && WCMissed !=3){
     //skip=true;

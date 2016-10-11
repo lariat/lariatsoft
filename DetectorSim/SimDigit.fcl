@@ -119,3 +119,5 @@ physics.producers.SimWCReco.SourceLabel: "SimWCDigit"
 #physics.producers.SimWCReco.CheckTracks: "true"
 physics.producers.SimTOFReco.SourceLabel: "SimTOFDigit"
 #physics.producers.SimWCReco.Verbose: "true"
+physics.producers.SimWCReco.PickyTracks: "true"
+

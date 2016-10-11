@@ -166,7 +166,6 @@ private:
     //Misc
     bool fVerbose;
     bool fPickyTracks;
-    bool fHighYield;
     bool fCheckTracks;
     //TTree *tree = new TTree("WCVars", "WCVars");
     
@@ -273,7 +272,6 @@ void WCTrackBuildernew::produce(art::Event & e)
 					 final_tracks,
 					 good_hits,
 					 fPickyTracks,
-					 fHighYield,
 					 fCheckTracks,
 					 y_kink_list,
 					 x_dist_list,
@@ -375,186 +373,6 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
       hit_wire_vect.push_back(the_wire);    
     }
   }
-//   //=======================================================================================
-// /*   void WCTrackBuildernew::MakeSomePlotsFromHits(std::vector<std::vector<WCHitList> > good_hits)
-//   {
-//   //bool timematch; //Bool needed for Orphan Hits
-// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// int error;
-// //WC1 Stuff!
-//     int iWC=0;
-//     int xSize=good_hits.at(iWC).at(0).hits.size();
-//     int ySize=good_hits.at(iWC).at(1).hits.size();
-//     //std::cout<<"For the first WC the X,Y sizes are "<<xSize<<", "<<ySize<<std::endl;
-//     if(xSize !=0 && ySize !=0) {fHitHeatMapWC1->Fill(xSize, ySize); // 2D plot of #of hits
-//     error =good_hits.at(iWC).at(0).hits.size()-good_hits.at(iWC).at(1).hits.size(); //Does one axis have more hits?
-//     fHitErrorWC1->Fill(error);
-//     
-//     
-//     for(int xIter=0; xIter<xSize; ++xIter){fXWireWC1->Fill(good_hits.at(iWC).at(0).hits.at(xIter).wire);}
-//     for(int yIter=0; yIter<ySize; ++yIter){fYWireWC1->Fill(good_hits.at(iWC).at(1).hits.at(yIter).wire);}   
-// //If the Y axis has more hits, loop over all the hit times, find a time that isn't matched in the X hit times
-//    /*  if(error<0) 
-//     { 
-//       for(size_t yIter=0; yIter<good_hits.at(iWC).at(1).hits.size(); ++yIter){
-//         timematch=false;
-//         int yTime=good_hits.at(iWC).at(1).hits.at(yIter).time;
-// 	for(size_t xIter=0; xIter<good_hits.at(iWC).at(0).hits.size(); ++xIter){
-//           if(fabs(good_hits.at(iWC).at(0).hits.at(xIter).time-yTime)<2){timematch=true;}
-// 	  }
-// // When the Orphaned Time is found, fill a hist of the Y wire that was orphaned.  For real hits, this should be flat.  For noisy wires that get through DBscan clustering, those wires will peak here.	  
-// 	if(timematch==false){fOrphanHitsYWC1->Fill(good_hits.at(iWC).at(1).hits.at(yIter).wire);}
-//       }
-//     }
-// // Do the same method, this time if X is the busier axis, filling the Oprhaned X hit      
-//     if(error>0)
-//     {
-//       for(size_t xIter=0; xIter<good_hits.at(iWC).at(0).hits.size(); ++xIter){
-//         timematch=false;
-// 	int xTime=good_hits.at(iWC).at(0).hits.at(xIter).time;
-// 	for(size_t yIter=0; yIter<good_hits.at(iWC).at(1).hits.size(); ++yIter){
-// 	  if(fabs(good_hits.at(iWC).at(1).hits.at(yIter).time-xTime)<2){timematch=true;}
-// 	}
-// 	if(timematch==false){fOrphanHitsXWC1->Fill(good_hits.at(iWC).at(0).hits.at(xIter).wire);}
-//       } */
-//       
-//      }
-// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////  
-// 
-// 
-// 
-//   
-// //WC2 Hists    
-//     iWC=1;
-//      xSize=good_hits.at(iWC).at(0).hits.size();
-//      ySize=good_hits.at(iWC).at(1).hits.size();
-//     if(xSize !=0 && ySize !=0) {fHitHeatMapWC2->Fill(xSize, ySize); // 2D plot of #of hits
-//     error =good_hits.at(iWC).at(0).hits.size()-good_hits.at(iWC).at(1).hits.size(); //Does one axis have more hits?
-//     fHitErrorWC2->Fill(error);
-//     
-//     for(int xIter=0; xIter<xSize; ++xIter){fXWireWC2->Fill(good_hits.at(iWC).at(0).hits.at(xIter).wire);}
-//     for(int yIter=0; yIter<ySize; ++yIter){fYWireWC2->Fill(good_hits.at(iWC).at(1).hits.at(yIter).wire);}   
-// //WC2: If the Y axis has more hits, loop over all the hit times, find a time that isn't matched in the X hit times
-//    /*  if(error<0) 
-//     { 
-//       for(size_t yIter=0; yIter<good_hits.at(iWC).at(1).hits.size(); ++yIter){
-//         timematch=false;
-//         int yTime=good_hits.at(iWC).at(1).hits.at(yIter).time;
-// 	for(size_t xIter=0; xIter<good_hits.at(iWC).at(0).hits.size(); ++xIter){
-//           if(fabs(good_hits.at(iWC).at(0).hits.at(xIter).time-yTime)<2){timematch=true;}
-// 	  }
-// //When the Orphaned Time is found, fill a hist of the Y wire that was orphaned.  For real hits, this should be flat.  For noisy wires that get through DBscan clustering, those wires will peak here.	  
-// 	if(timematch==false){fOrphanHitsYWC2->Fill(good_hits.at(iWC).at(1).hits.at(yIter).wire);}
-//       }
-//     }
-// //Do the same method, this time if X is the busier axis, filling the Oprhaned X hit      
-//     if(error>0)
-//     {
-//       for(size_t xIter=0; xIter<good_hits.at(iWC).at(0).hits.size(); ++xIter){
-//         timematch=false;
-//         int xTime=good_hits.at(iWC).at(0).hits.at(xIter).time;
-// 	for(size_t yIter=0; yIter<good_hits.at(iWC).at(1).hits.size(); ++yIter){
-// 	  if(fabs(good_hits.at(iWC).at(1).hits.at(yIter).time-xTime)<2){timematch=true;}
-// 	}
-// 	if(timematch==false){fOrphanHitsXWC2->Fill(good_hits.at(iWC).at(0).hits.at(xIter).wire);}
-//       } */
-//     
-//     }
-// //////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// 
-// 
-//     
-// //WC3        
-//     iWC=2;
-//     xSize=good_hits.at(iWC).at(0).hits.size();
-//     ySize=good_hits.at(iWC).at(1).hits.size();
-//     if(xSize !=0 && ySize !=0) {fHitHeatMapWC3->Fill(xSize, ySize); // 2D plot of #of hits, only if it's not empty
-//     error =good_hits.at(iWC).at(0).hits.size()-good_hits.at(iWC).at(1).hits.size(); //Does one axis have more hits?
-//     fHitErrorWC3->Fill(error);
-//     
-//     for(int xIter=0; xIter<xSize; ++xIter){fXWireWC3->Fill(good_hits.at(iWC).at(0).hits.at(xIter).wire);}
-//     for(int yIter=0; yIter<ySize; ++yIter){fYWireWC3->Fill(good_hits.at(iWC).at(1).hits.at(yIter).wire);}     
-// //If the Y axis has more hits, loop over all the hit times, find a time that isn't matched in the X hit times
-// /*     if(error<0) 
-//     { 
-//       for(size_t yIter=0; yIter<good_hits.at(iWC).at(1).hits.size(); ++yIter){
-//         timematch=false;
-//         int yTime=good_hits.at(iWC).at(1).hits.at(yIter).time;
-// 	for(size_t xIter=0; xIter<good_hits.at(iWC).at(0).hits.size(); ++xIter){
-//           if(fabs(good_hits.at(iWC).at(0).hits.at(xIter).time-yTime)<2){timematch=true;}
-// 	  }
-// //When the Orphaned Time is found, fill a hist of the Y wire that was orphaned.  For real hits, this should be flat.  For noisy wires that get through DBscan clustering, those wires will peak here.	  
-// 	if(timematch==false){fOrphanHitsYWC3->Fill(good_hits.at(iWC).at(1).hits.at(yIter).wire);}
-//       }
-//     }
-// //Do the same method, this time if X is the busier axis, filling the Oprhaned X hit      
-//     if(error>0)
-//     {
-//       for(size_t xIter=0; xIter<good_hits.at(iWC).at(0).hits.size(); ++xIter){
-//         timematch=false;
-// 	int xTime=good_hits.at(iWC).at(0).hits.at(xIter).time;
-// 	for(size_t yIter=0; yIter<good_hits.at(iWC).at(1).hits.size(); ++yIter){
-// 	  if(fabs(good_hits.at(iWC).at(1).hits.at(yIter).time-xTime)<2){timematch=true;}
-// 	}
-// 	if(timematch==false){fOrphanHitsXWC3->Fill(good_hits.at(iWC).at(0).hits.at(xIter).wire);}
-//       }
-//     } */
-//     }
-// ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////    
-// //WC4
-//     iWC=3;
-//     xSize=good_hits.at(iWC).at(0).hits.size();
-//     ySize=good_hits.at(iWC).at(1).hits.size();
-//    if(xSize !=0 && ySize !=0) {fHitHeatMapWC4->Fill(xSize, ySize); // 2D plot of #of hits
-//     error =good_hits.at(iWC).at(0).hits.size()-good_hits.at(iWC).at(1).hits.size(); //Does one axis have more hits?
-//     fHitErrorWC4->Fill(error);
-//     for(int xIter=0; xIter<xSize; ++xIter){fXWireWC4->Fill(good_hits.at(iWC).at(0).hits.at(xIter).wire);}
-//     for(int yIter=0; yIter<ySize; ++yIter){fYWireWC4->Fill(good_hits.at(iWC).at(1).hits.at(yIter).wire);}     
-// /* //If the Y axis has more hits, loop over all the hit times, find a time that isn't matched in the X hit times
-//     if(error<0) 
-//     { 
-//       for(size_t yIter=0; yIter<good_hits.at(iWC).at(1).hits.size(); ++yIter){
-//         timematch=false;
-//         int yTime=good_hits.at(iWC).at(1).hits.at(yIter).time;
-// 	for(size_t xIter=0; xIter<good_hits.at(iWC).at(0).hits.size(); ++xIter){
-//           if(fabs(good_hits.at(iWC).at(0).hits.at(xIter).time-yTime)<2){timematch=true;}
-// 	  }
-// //When the Orphaned Time is found, fill a hist of the Y wire that was orphaned.  For real hits, this should be flat.  For noisy wires that get through DBscan clustering, those wires will peak here.	  
-// 	if(timematch==false){fOrphanHitsYWC4->Fill(good_hits.at(iWC).at(1).hits.at(yIter).wire);}
-//       }
-//     }
-// //Do the same method, this time if X is the busier axis, filling the Oprhaned X hit      
-//     if(error>0)
-//     {
-//       for(size_t xIter=0; xIter<good_hits.at(iWC).at(0).hits.size(); ++xIter){
-//         timematch=false;
-// 	int xTime=good_hits.at(iWC).at(0).hits.at(xIter).time;
-// 	for(size_t yIter=0; yIter<good_hits.at(iWC).at(1).hits.size(); ++yIter){
-// 	  if(fabs(good_hits.at(iWC).at(1).hits.at(yIter).time-xTime)<2){timematch=true;}
-// 	}
-// 	if(timematch==false){fOrphanHitsXWC4->Fill(good_hits.at(iWC).at(0).hits.at(xIter).wire);}
-//       }
-//     } */
-//     					 
-//     }
-// //To see what things we can calculate in track building, Fill a histogram showing how many times there were 3 or 4 WC with X wires vs 3 or 4 WC Y wires.  This will
-// //let us know what we can do with 6 or 7 point tracks later on
-//     int xPoints=0;
-//     int yPoints=0;
-//     int XYMatch=0;
-//     for(iWC=0;iWC<4;++iWC)
-//     {
-//       if(good_hits[iWC][0].hits.size() >= 1){++xPoints;}
-//       if(good_hits[iWC][1].hits.size() >= 1){++yPoints;}
-//       if(good_hits[iWC][0].hits.size() >= 1 && good_hits[iWC][1].hits.size() >=1){++XYMatch;}
-//     }
-//     
-//     fHitsAvailable->Fill(xPoints,yPoints);
-//     fMatchedHits->Fill(XYMatch);
-//     if(xPoints < 0 || yPoints < 0){std::cout<<"You have negative points available!!!!!!"<<std::endl;}
-//     if(xPoints > 4 || yPoints > 4){std::cout<<"There are more than 4 WCs available!!!!!!!!"<<std::endl;}
-//   } */
   //===================================================================================
   void WCTrackBuildernew::plotTheTrackInformation( std::vector<double> reco_pz_list,
 							 std::vector<double> x_face_list,
@@ -589,7 +407,7 @@ void WCTrackBuildernew::beginJob()//fhicl::ParameterSet const & p)
   // Implementation of optional member function here.
       // Implementation of optional member function here.
     art::ServiceHandle<art::TFileService> tfs;
-    
+fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);    
 //reconfigure(p);
 //Hists that should be used for diagnostics and deleted before production
 if(fCheckTracks){
@@ -719,195 +537,7 @@ fRecodiff[97]=tfs->make<TH2F>("XZMidplane", "XZ point halfway between line of cl
 fRecodiff[98]=tfs->make<TH2F>("dist","Distance of Closest Approach", 100,0,100,100,0,100);
 
 }
-fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
 
-
-//fRecodiff[0] = tfs->make<TH2F>("Recofourvsthree","Reco4vs3", 100,0,1000,100,0,1000);
-   //fEventPicky=tfs->make<TH1F>("event with picky", "event with picky", 25000,0,25000);
-//     fResSquare = tfs->make<TH1F>("Sum of Square of Residuals from Y points to Linear Regression","Sum of Square of Residuals from Y points to Linear Regression", 150,0,150);
-//     fReco4pt = tfs->make<TH1F>("Doug's 4 point reco", "Doug's 4 point reco", 200,0,2000);
-//     fReco4ptdiff = tfs->make<TH2F>("Doug's 4 point reco difference", "Doug's 4 point reco difference", 800,-4000,4000, 400,-2000,2000);
-//     fHitsAvailable = tfs->make<TH2F>("WCs Available per axis for a track", "WCs available per axis for a track", 5,0,5,5,0,5);
-//     fHitsAvailable->GetXaxis()->SetTitle("Number of WCX axes available");
-//     fHitsAvailable->GetYaxis()->SetTitle("Number of WCY axes available");
-//     fMatchedHits = tfs->make<TH1F>("Total Pairs Available", "Total Pairs Available", 5,0,5);
-//     fHitHeatMapWC1 = tfs->make<TH2F>("WC1 Hit Map","Number of Hits on each Axis in WC1", 10,0,10,10,0,10);
-//     fHitHeatMapWC2 = tfs->make<TH2F>("WC2 Hit Map","Number of Hits on each Axis in WC2", 10,0,10,10,0,10);
-//     fHitHeatMapWC3 = tfs->make<TH2F>("WC3 Hit Map","Number of Hits on each Axis in WC3", 10,0,10,10,0,10);
-//     fHitHeatMapWC4 = tfs->make<TH2F>("WC4 Hit Map","Number of Hits on each Axis in WC4", 10,0,10,10,0,10);
-//     fHitHeatMapWC1->GetXaxis()->SetTitle("Number of Hits on X Axis");
-//     fHitHeatMapWC2->GetXaxis()->SetTitle("Number of Hits on X Axis");
-//     fHitHeatMapWC3->GetXaxis()->SetTitle("Number of Hits on X Axis");
-//     fHitHeatMapWC4->GetXaxis()->SetTitle("Number of Hits on X Axis");
-//     fHitHeatMapWC1->GetYaxis()->SetTitle("Number of Hits on Y Axis");
-//     fHitHeatMapWC2->GetYaxis()->SetTitle("Number of Hits on Y Axis");
-//     fHitHeatMapWC3->GetYaxis()->SetTitle("Number of Hits on Y Axis");
-//     fHitHeatMapWC4->GetYaxis()->SetTitle("Number of Hits on Y Axis");
-//     fHitErrorWC1 = tfs->make<TH1F>("WC1 Orphan Hits", "Hits in X axis - Hits in Y axis in WC1", 14,-7.5,6.5);
-//     fHitErrorWC2 = tfs->make<TH1F>("WC2 Orphan Hits", "Hits in X axis - Hits in Y axis in WC2", 14,-7.5,6.5);
-//     fHitErrorWC3 = tfs->make<TH1F>("WC3 Orphan Hits", "Hits in X axis - Hits in Y axis in WC3", 14,-7.5,6.5);
-//     fHitErrorWC4 = tfs->make<TH1F>("WC4 Orphan Hits", "Hits in X axis - Hits in Y axis in WC4", 14,-7.5,6.5);
-//     fHitErrorWC1->GetXaxis()->SetTitle("Hit difference");
-//     fHitErrorWC2->GetXaxis()->SetTitle("Hit difference");
-//     fHitErrorWC3->GetXaxis()->SetTitle("Hit difference");
-//     fHitErrorWC4->GetXaxis()->SetTitle("Hit difference");
-//     fXWireWC1 = tfs->make<TH1F>("WC1 XWire Hits", "WC1 X Wire for Good Hits", 128,-64,64);
-//     fXWireWC2 = tfs->make<TH1F>("WC2 XWire Hits", "WC2 X Wire for Good Hits", 128,-64,64); 
-//     fXWireWC3 = tfs->make<TH1F>("WC3 XWire Hits", "WC3 X Wire for Good Hits", 128,-64,64); 
-//     fXWireWC4 = tfs->make<TH1F>("WC4 XWire Hits", "WC4 X Wire for Good Hits", 128,-64,64); 
-//     fYWireWC1 = tfs->make<TH1F>("WC1 YWire Hits", "WC1 Y Wire for Good Hits", 128,-64,64); 
-//     fYWireWC2 = tfs->make<TH1F>("WC2 YWire Hits", "WC2 Y Wire for Good Hits", 128,-64,64); 
-//     fYWireWC3 = tfs->make<TH1F>("WC3 YWire Hits", "WC3 Y Wire for Good Hits", 128,-64,64); 
-//     fYWireWC4 = tfs->make<TH1F>("WC4 YWire Hits", "WC4 Y Wire for Good Hits", 128,-64,64);
-//     fXWireWC1->GetXaxis()->SetTitle("wire #");
-//     fXWireWC2->GetXaxis()->SetTitle("wire #");
-//     fXWireWC3->GetXaxis()->SetTitle("wire #");
-//     fXWireWC4->GetXaxis()->SetTitle("wire #");
-//     fYWireWC1->GetXaxis()->SetTitle("wire #");
-//     fYWireWC2->GetXaxis()->SetTitle("wire #");
-//     fYWireWC3->GetXaxis()->SetTitle("wire #");
-//     fYWireWC4->GetXaxis()->SetTitle("wire #");
-//     fBfield = tfs->make<TH1F>("B Field", "B Field", 40,0,.40);
-//     fTargetXY=tfs->make<TH2F>("XY Projection of Target from US WC","XY Projection of Target from US WC", 10000,-5000,5000,400,-200,200);
-//     fPickyTracksTargetXY=tfs->make<TH2F>("XY Projection of Target from US WC for Picky Tracks","XY Projection of Target from US WC for Picky Tracks", 500,800,1300,200,-100,100);
-//     
-//     for(size_t iter=0; iter<8; ++iter){
-//     fWireHitsGoodTracks.push_back(tfs->make<TH1F>());
-//     fWCMult.push_back(tfs->make<TH2F>());
-//     fWireHitsTheTrack.push_back(tfs->make<TH1F>());
-//     fBadTrackHits.push_back(tfs->make<TH1F>());
-//     }
-//     
-//     for(size_t iter=0; iter<4; ++iter){
-//     fTimingXY.push_back(tfs->make<TH2F>());
-//     }
-//     fTimingXY[0] = tfs->make<TH2F>("WC 1 Picky tracks timing","WC1 Picky Tracks Timing", 1000,0,1000,1000,0,1000);
-//     fTimingXY[1] = tfs->make<TH2F>("WC 2 Picky tracks timing","WC2 Picky Tracks Timing", 1000,0,1000,1000,0,1000);
-//     fTimingXY[2] = tfs->make<TH2F>("WC 3 Picky tracks timing","WC3 Picky Tracks Timing", 1000,0,1000,1000,0,1000);
-//     fTimingXY[3] = tfs->make<TH2F>("WC 4 Picky tracks timing","WC4 Picky Tracks Timing", 1000,0,1000,1000,0,1000);
-//     
-//     for(size_t iter=0; iter<3; ++iter){
-//     fRegressionPlots.push_back(tfs->make<TH2F>());
-//     fRegressionPlots1D.push_back(tfs->make<TH1F>());
-//     }
-//     for(size_t iter=0; iter<12; ++iter){    
-//     fRecoplots.push_back(tfs->make<TH2F>());
-//     }
-//     fRecoplots[0] = tfs->make<TH2F>("ALL (4ptmom-skip second)/skip second vs skip second","ALL (4ptmom-skip second)/skip second versus skip second",200,0,2000,400,-2,2);
-//     fRecoplots[1] = tfs->make<TH2F>("ALL (4ptmom-skip third)/skip third vs skip third","(4ptmom-skip third)/skip third versus skip third",200,0,2000,400,-2,2);
-//     fRecoplots[2] = tfs->make<TH2F>("60 A (4ptmom-skip second)/skip second vs skip second","(4ptmom-skip second)/skip second versus skip second",200,0,2000,400,-2,2);
-//     fRecoplots[3] = tfs->make<TH2F>("60 A (4ptmom-skip third)/skip third vs skip third","(4ptmom-skip third)/skip third versus skip third",200,0,2000,400,-2,2);
-//     fRecoplots[4] = tfs->make<TH2F>("100 A (4ptmom-skip second)/skip second vs skip second","ALL (4ptmom-skip second)/skip second versus skip second",200,0,2000,400,-2,2);
-//     fRecoplots[5] = tfs->make<TH2F>("100 A (4ptmom-skip third)/skip third vs skip third","(4ptmom-skip third)/skip third versus skip third",200,0,2000,400,-2,2);
-//     fRecoplots[6] = tfs->make<TH2F>("ALL  4pt mom vs S2 momentum", "ALL  4pt mom vs S2 momentum", 2000,0,2000,2000,0,2000);
-//     fRecoplots[7] = tfs->make<TH2F>("ALL  4pt mom vs S3 momentum", "ALL  4pt mom vs S3 momentum", 2000,0,2000,2000,0,2000);
-  //   fRecoplots[8] = tfs->make<TH2F>("60 A  4pt mom vs S2 momentum", "ALL  4pt mom vs S2 momentum", 2000,0,2000,2000,0,2000);
-    // fRecoplots[9] = tfs->make<TH2F>("60 A  4pt mom vs S3 momentum", "ALL  4pt mom vs S3 momentum", 2000,0,2000,2000,0,2000);
- //    fRecoplots[10] = tfs->make<TH2F>("100 A  4pt mom vs S2 momentum", "ALL  4pt mom vs S2 momentum", 2000,0,2000,2000,0,2000);
- //    fRecoplots[11] = tfs->make<TH2F>("100A  4pt mom vs S3 momentum", "ALL  4pt mom vs S3 momentum", 2000,0,2000,2000,0,2000);            
-//     fRecoplots[0]->GetXaxis()->SetTitle("Skipping Second momentum (MeV)");
-//     fRecoplots[1]->GetXaxis()->SetTitle("Skipping Third momentum (MeV)");    
-//     fRecoplots[2]->GetXaxis()->SetTitle("Skipping Second momentum (MeV)");
-//     fRecoplots[3]->GetXaxis()->SetTitle("Skipping Third momentum (MeV)");    
-//     fRecoplots[4]->GetXaxis()->SetTitle("Skipping Second momentum (MeV)");
-//     fRecoplots[5]->GetXaxis()->SetTitle("Skipping Third momentum (MeV)"); 
-//     fRecoplots[6]->GetXaxis()->SetTitle("4 point momentum (MeV)");   
-//     fRecoplots[7]->GetXaxis()->SetTitle("4 point momentum (MeV)");  
- //    fRecoplots[8]->GetXaxis()->SetTitle("4 point momentum (MeV)");  
-//     fRecoplots[9]->GetXaxis()->SetTitle("4 point momentum (MeV)");  
-//     fRecoplots[10]->GetXaxis()->SetTitle("4 point momentum (MeV)");  
-//     fRecoplots[11]->GetXaxis()->SetTitle("4 point momentum (MeV)"); 
-//                            
-//     fRecoplots[0]->GetYaxis()->SetTitle("(4pt-S2)/S2");
-//     fRecoplots[1]->GetYaxis()->SetTitle("(4pt-S3)/S3");  
-//     fRecoplots[2]->GetYaxis()->SetTitle("(4pt-S2)/S2");  
-//     fRecoplots[3]->GetYaxis()->SetTitle("(4pt-S3)/S3");  
-//     fRecoplots[4]->GetYaxis()->SetTitle("(4pt-S2)/S2");  
-//     fRecoplots[5]->GetYaxis()->SetTitle("(4pt-S3)/S3");   
-//     fRecoplots[6]->GetYaxis()->SetTitle("Skipping Second momentum (MeV)");
-//     fRecoplots[7]->GetYaxis()->SetTitle("Skipping Third momentum (MeV)");    
-//     fRecoplots[8]->GetYaxis()->SetTitle("Skipping Second momentum (MeV)");
-//     fRecoplots[9]->GetYaxis()->SetTitle("Skipping Third momentum (MeV)");    
-//     fRecoplots[10]->GetYaxis()->SetTitle("Skipping Second momentum (MeV)");
-//     fRecoplots[11]->GetYaxis()->SetTitle("Skipping Third momentum (MeV)");      
-//     fRegressionPlots[0]= tfs->make<TH2F>("Regression no 2", "4 point regression vs 3 point, skipping WC2", 150,0,150,150,0,150);
-//     fRegressionPlots[1]= tfs->make<TH2F>("Regression no 3", "4 point regression vs 3 point, skipping WC3", 150,0,150,150,0,150);
-//     fRegressionPlots[2]= tfs->make<TH2F>("Regression no 3 vs no 2", "Three Point No WC3 vs Three Point No WC2", 150,0,150,150,0,150);
-//     fRegressionPlots1D[0] = tfs->make<TH1F>("4Pt-S2", "4Pt-S2", 300,-150,150);
-//     fRegressionPlots1D[1] = tfs->make<TH1F>("4Pt-S3", "4Pt-S3", 300,-150,150);
-//     fRegressionPlots1D[2] = tfs->make<TH1F>("S3-S2", "S3-S2", 300,-150,150);
-//     fWireHitsGoodTracks[0] = tfs->make<TH1F>("WC1 X Wire Hits for Good Tracks", "WC1 X Wire Hits for Good Tracks", 128,-64,64);
-//     fWireHitsGoodTracks[1] = tfs->make<TH1F>("WC1 Y Wire Hits for Good Tracks", "WC1 Y Wire Hits for Good Tracks", 128,-64,64);
-//     fWireHitsGoodTracks[2] = tfs->make<TH1F>("WC2 X Wire Hits for Good Tracks", "WC2 X Wire Hits for Good Tracks", 128,-64,64);
-//     fWireHitsGoodTracks[3] = tfs->make<TH1F>("WC2 Y Wire Hits for Good Tracks", "WC2 Y Wire Hits for Good Tracks", 128,-64,64);
-//     fWireHitsGoodTracks[4] = tfs->make<TH1F>("WC3 X Wire Hits for Good Tracks", "WC3 X Wire Hits for Good Tracks", 128,-64,64);
-//     fWireHitsGoodTracks[5] = tfs->make<TH1F>("WC3 Y Wire Hits for Good Tracks", "WC3 Y Wire Hits for Good Tracks", 128,-64,64);
-//     fWireHitsGoodTracks[6] = tfs->make<TH1F>("WC4 X Wire Hits for Good Tracks", "WC4 X Wire Hits for Good Tracks", 128,-64,64);
-//     fWireHitsGoodTracks[7] = tfs->make<TH1F>("WC4 Y Wire Hits for Good Tracks", "WC4 Y Wire Hits for Good Tracks", 128,-64,64);
-//     fWireHitsGoodTracks[0]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsGoodTracks[1]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsGoodTracks[2]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsGoodTracks[3]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsGoodTracks[4]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsGoodTracks[5]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsGoodTracks[6]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsGoodTracks[7]->GetXaxis()->SetTitle("wire #");
-//     fBadTrackHits[0]=tfs->make<TH1F>("WC1X Bad Track Hits","WC1X Wire Hits for Tracks Not Used", 128,-64,64);
-//     fBadTrackHits[1]=tfs->make<TH1F>("WC1Y Bad Track Hits","WC1Y Wire Hits for Tracks Not Used", 128,-64,64);
-//     fBadTrackHits[2]=tfs->make<TH1F>("WC2X Bad Track Hits","WC2X Wire Hits for Tracks Not Used", 128,-64,64);
-//     fBadTrackHits[3]=tfs->make<TH1F>("WC2Y Bad Track Hits","WC2Y Wire Hits for Tracks Not Used", 128,-64,64);
-//     fBadTrackHits[4]=tfs->make<TH1F>("WC3X Bad Track Hits","WC3X Wire Hits for Tracks Not Used", 128,-64,64);
-//     fBadTrackHits[5]=tfs->make<TH1F>("WC3Y Bad Track Hits","WC3Y Wire Hits for Tracks Not Used", 128,-64,64);
-//     fBadTrackHits[6]=tfs->make<TH1F>("WC4X Bad Track Hits","WC4X Wire Hits for Tracks Not Used", 128,-64,64);
-//     fBadTrackHits[7]=tfs->make<TH1F>("WC4Y Bad Track Hits","WC4Y Wire Hits for Tracks Not Used", 128,-64,64);
-//     fBadTrackHits[0]->GetXaxis()->SetTitle("wire #");
-//     fBadTrackHits[1]->GetXaxis()->SetTitle("wire #");
-//     fBadTrackHits[2]->GetXaxis()->SetTitle("wire #");
-//     fBadTrackHits[3]->GetXaxis()->SetTitle("wire #");
-//     fBadTrackHits[4]->GetXaxis()->SetTitle("wire #");
-//     fBadTrackHits[5]->GetXaxis()->SetTitle("wire #");
-//     fBadTrackHits[6]->GetXaxis()->SetTitle("wire #");
-//     fBadTrackHits[7]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[0]= tfs->make<TH2F>("Wire Multiplicity for WC1X used in tracks", "Wire Multiplicity for WC1X used in tracks", 128,-64,64,50,0,50);
-//     fWCMult[1]= tfs->make<TH2F>("Wire Multiplicity for WC1Y used in tracks", "Wire Multiplicity for WC1Y used in tracks", 128,-64,64,50,0,50);
-//     fWCMult[2]= tfs->make<TH2F>("Wire Multiplicity for WC2X used in tracks", "Wire Multiplicity for WC2X used in tracks", 128,-64,64,50,0,50);
-//     fWCMult[3]= tfs->make<TH2F>("Wire Multiplicity for WC2Y used in tracks", "Wire Multiplicity for WC2Y used in tracks", 128,-64,64,50,0,50);
-//     fWCMult[4]= tfs->make<TH2F>("Wire Multiplicity for WC3X used in tracks", "Wire Multiplicity for WC3X used in tracks", 128,-64,64,50,0,50);
-//     fWCMult[5]= tfs->make<TH2F>("Wire Multiplicity for WC3Y used in tracks", "Wire Multiplicity for WC3Y used in tracks", 128,-64,64,50,0,50);
-//     fWCMult[6]= tfs->make<TH2F>("Wire Multiplicity for WC4X used in tracks", "Wire Multiplicity for WC4X used in tracks", 128,-64,64,50,0,50);
-//     fWCMult[7]= tfs->make<TH2F>("Wire Multiplicity for WC4Y used in tracks", "Wire Multiplicity for WC4Y used in tracks", 128,-64,64,50,0,50);
-//     fWCMult[0]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[1]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[2]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[3]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[4]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[5]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[6]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[7]->GetXaxis()->SetTitle("wire #");
-//     fWCMult[0]->GetYaxis()->SetTitle("Times Wire was used to make a Track");
-//     fWCMult[1]->GetYaxis()->SetTitle("Times Wire was used to make a Track");
-//     fWCMult[2]->GetYaxis()->SetTitle("Times Wire was used to make a Track");
-//     fWCMult[3]->GetYaxis()->SetTitle("Times Wire was used to make a Track");
-//     fWCMult[4]->GetYaxis()->SetTitle("Times Wire was used to make a Track");
-//     fWCMult[5]->GetYaxis()->SetTitle("Times Wire was used to make a Track");
-//     fWCMult[6]->GetYaxis()->SetTitle("Times Wire was used to make a Track");
-//     fWCMult[7]->GetYaxis()->SetTitle("Times Wire was used to make a Track");
-//     fWireHitsTheTrack[0] = tfs->make<TH1F>("WC1 X Wire Hits for Final Tracks", "WC1 X Wire Hits for Final Tracks", 128,-64,64);
-//     fWireHitsTheTrack[1] = tfs->make<TH1F>("WC1 Y Wire Hits for Final Tracks", "WC1 Y Wire Hits for Final Tracks", 128,-64,64);
-//     fWireHitsTheTrack[2] = tfs->make<TH1F>("WC2 X Wire Hits for Final Tracks", "WC2 X Wire Hits for Final Tracks", 128,-64,64);
-//     fWireHitsTheTrack[3] = tfs->make<TH1F>("WC2 Y Wire Hits for Final Tracks", "WC2 Y Wire Hits for Final Tracks", 128,-64,64);
-//     fWireHitsTheTrack[4] = tfs->make<TH1F>("WC3 X Wire Hits for Final Tracks", "WC3 X Wire Hits for Final Tracks", 128,-64,64);
-//     fWireHitsTheTrack[5] = tfs->make<TH1F>("WC3 Y Wire Hits for Final Tracks", "WC3 Y Wire Hits for Final Tracks", 128,-64,64);
-//     fWireHitsTheTrack[6] = tfs->make<TH1F>("WC4 X Wire Hits for Final Tracks", "WC4 X Wire Hits for Final Tracks", 128,-64,64);
-//     fWireHitsTheTrack[7] = tfs->make<TH1F>("WC4 Y Wire Hits for Final Tracks", "WC4 Y Wire Hits for Final Tracks", 128,-64,64);
-//     fWireHitsTheTrack[0]->GetXaxis()->SetTitle("wire #"); 
-//     fWireHitsTheTrack[1]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsTheTrack[2]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsTheTrack[3]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsTheTrack[4]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsTheTrack[5]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsTheTrack[6]->GetXaxis()->SetTitle("wire #");
-//     fWireHitsTheTrack[7]->GetXaxis()->SetTitle("wire #");  
 //Hists that should probably stay for the production run.    
     fReco_Pz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum in XZ plane", 180, 0, 1800);
     fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",200,-10*3.1415926/180,10*3.141592654/180);
@@ -1053,7 +683,6 @@ void WCTrackBuildernew::reconfigure(fhicl::ParameterSet const & p)
     fSlicerSourceLabel = p.get<std::string>("SourceLabel");
     std::cout<<"Label WC: "<<fSlicerSourceLabel<<std::endl;
     fPickyTracks=p.get<bool>("PickyTracks");
-    fHighYield=p.get<bool>("HighYield");
     fCheckTracks=p.get<bool>("CheckTracks");
     offset = p.get<float>("BFieldOffset");
 
