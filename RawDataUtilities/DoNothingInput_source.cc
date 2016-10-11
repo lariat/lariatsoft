@@ -126,8 +126,7 @@ namespace rdu
 
   //-----------------------------------------------------------------------
   void DoNothingInput::closeCurrentFile()
-  {
-  }
+  {}
 
   DEFINE_ART_INPUT_SOURCE(art::Source<rdu::DoNothingInput>)
 
