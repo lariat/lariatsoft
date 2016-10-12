@@ -76,14 +76,13 @@ namespace rdu
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
 
-    mf::LogVerbatim("DoNothingInput")
-      << "You have specified the following " << fFileNames.size()
-      << " file(s):";
+    std::string fileList;
+    for (auto const& fileName : fFileNames) fileList += "\n" + fileName;
 
-    for (auto const& fileName : fFileNames)
-    {
-      mf::LogVerbatim("DoNothingInput") << "  " << fileName << std::endl;
-    }
+    mf::LogInfo("DoNothingInput") << "You have specified the following "
+                                  << fFileNames.size()
+                                  << " input file(s):"
+                                  << fileList;
   }
 
   //-----------------------------------------------------------------------
