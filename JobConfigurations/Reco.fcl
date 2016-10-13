@@ -39,7 +39,7 @@ source:
 }
 
 
-wcreco: [ wctrack, tof]
+wcreco: [ wctrack, tof agcounter ]
 tpcreco: [ caldata,
            gaushit,
            linecluster,
@@ -68,7 +68,8 @@ physics:
   
   wctrack:     @local::lariat_wctrackbuilder
   tof:         @local::lariat_tof
-  
+  agcounter:   @local::lariat_aerogel
+
   ### calwire producers ###
   caldata:              @local::lariat_calroi
 
