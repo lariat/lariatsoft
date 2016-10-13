@@ -39,7 +39,7 @@ source:
 }
 
 
-wcreco: [ wctrack, tof agcounter ]
+wcreco: [ wctrack, tof, agcounter ]
 tpcreco: [ caldata,
            gaushit,
            linecluster,
