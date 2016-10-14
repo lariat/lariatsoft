@@ -49,7 +49,6 @@ class WCTrackBuilderAlg{
 					     std::vector<WCHitList> & event_final_tracks,
 					     std::vector<std::vector<WCHitList> > & good_hits,
 					     bool pickytracks,
-					     bool highyield,
 					     bool diagnostics,
 					     std::vector<double> & y_kink_list,
 					     std::vector<double> & x_dist_list,
@@ -197,7 +196,6 @@ class WCTrackBuilderAlg{
   private:
   
   bool   fPickyTracks;
-  bool   fHighYield;
   bool   fDiagnostics;
   int NHits;
   int WCMissed;

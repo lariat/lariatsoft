@@ -71,12 +71,14 @@ std::vector<int> AGCounterAlg::HitsFinder(std::string const& AuxDetName, raw::Au
   // This threshold was determined from the gradient histograms
   //   created by this same function call
   float Threshold = -8.25;
-  
   std::vector<int> Hits;
   Hits.clear();
   
   bool RisingEdge = false;
   int wait = 0;
+  
+  std::cout << "Hit Threshold = " << Threshold << std::endl;
+
 
   // Requires the waveform is sufficiently long to prevent segfaults
   if(WaveformDigit.NADC() < 200) {
@@ -156,47 +158,23 @@ std::vector<std::vector<int> > AGCounterAlg::HitsTimeMatching(std::vector<int> c
   // AG1p10 hit pairing
   for (size_t i = 0; i < AG1p10_1Hits.size(); i++) {
     for (size_t j = 0; j < AG1p10_2Hits.size(); j++) {
-
-      HitTimePairing.push_back(AG1p10_1Hits.at(i));
-      HitTimePairing.push_back(AG1p10_2Hits.at(j));
-
-      // To stand in for the 1p06 pairings
-      // that is now done seperately
-      // HitsWrapper should be updated 
-      // so this isn't required
-      HitTimePairing.push_back(0);
-      HitTimePairing.push_back(0);
-
-      if(std::abs(AG1p10_1Hits.at(i) - AG1p10_2Hits.at(j)) < 15.) { 
-	AllHitTimePairing.push_back(HitTimePairing);
+      for (size_t k = 0; k < AG1p06_1Hits.size(); k++) {
+        for (size_t l = 0; l < AG1p06_2Hits.size(); l++) {		
+          HitTimePairing.push_back(AG1p10_1Hits.at(i));
+          HitTimePairing.push_back(AG1p10_2Hits.at(j));
+          HitTimePairing.push_back(AG1p06_1Hits.at(k));
+	  HitTimePairing.push_back(AG1p06_2Hits.at(l));
+          //HitTimePairing.push_back(0);
+          //HitTimePairing.push_back(0);
+	  if(CheckMatched(HitTimePairing)){
+	    AllHitTimePairing.push_back(HitTimePairing);
+	  }
+          HitTimePairing.clear();
+        }
       }
-	  
-      HitTimePairing.clear();
     }
   }
-
-  // AG1p06 hit pairing
-  for (size_t i = 0; i < AG1p06_1Hits.size(); i++) {
-    for (size_t j = 0; j < AG1p06_2Hits.size(); j++) {
-
-      // To stand in for the 1p10 pairings
-      // that is now done seperately
-      // HitsWrapper should be updated 
-      // so this isn't required
-      HitTimePairing.push_back(0);
-      HitTimePairing.push_back(0);
-
-      HitTimePairing.push_back(AG1p06_1Hits.at(i));
-      HitTimePairing.push_back(AG1p06_2Hits.at(j));
 	  
-      if(std::abs(AG1p06_1Hits.at(i) - AG1p06_2Hits.at(j)) < 15.) { 
-	AllHitTimePairing.push_back(HitTimePairing);
-      }
-
-      HitTimePairing.clear();
-    }
-  }
-  
   return AllHitTimePairing;
 
 }

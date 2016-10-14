@@ -12,16 +12,16 @@ art_make(BASENAME_ONLY
          larreco_RecoAlg_ClusterRecoUtil
          DatabaseUtilityT1034_service
          larreco_RecoAlg
-	 lardata_AnalysisAlg
+	 larreco_Calorimetry
          lardataobj_RawData
-         larsim_Simulation lardataobj_Simulation
+         larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
          larcoreobj_SummaryData
          larcore_Geometry
          larcore_Geometry_Geometry_service
          RawDataUtilities
          lardataobj_RecoBase
          lardata_RecoBaseArt
-         lardata_RecoObjects
+         lardata_RecoObjects larreco_Deprecated
          lardata_Utilities
          
          

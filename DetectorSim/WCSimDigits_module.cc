@@ -69,8 +69,9 @@ public:
   int neutrals[8]={22,14,2112,310,130,311,12,16}; //Neutrally charged particles that shouldn't make digits
   bool IsNeutral;
   TTree* fTree;
-  int WCx1, WCx2, WCx3, WCx4, WCy1, WCy2, WCy3, WCy4;
-
+  int WCx1[100], WCx2[100], WCx3[100], WCx4[100], WCy1[100], WCy2[100], WCy3[100], WCy4[100]; //Array with wire hit for each Digit. Hopefully no WC is hit by >100 particles.
+  int WC1Count, WC2Count,WC3Count,WC4Count; //A counter for how often a WC is hit.
+  bool pickytrack, highyield, WC1Hit, WC2Hit, WC3Hit, WC4Hit; //Some bools if WCs have any hits, and if the digits made allow for a picky track or a high yield track.
 private:
 
  std::string fG4ModuleLabel; 
@@ -90,7 +91,8 @@ void WCSimDigits::produce(art::Event & e)
 {
   std::unique_ptr<std::vector<raw::AuxDetDigit> > MWPCDigits(new std::vector<raw::AuxDetDigit> );
   
-  
+   ResetVars(); //Reset tree variables  
+   
     //Get the ADSCs
   art::Handle< std::vector<sim::AuxDetSimChannel> > AuxDetHandle;
   std::vector<sim::AuxDetSimChannel> AuxDetColl;
@@ -129,13 +131,18 @@ void WCSimDigits::produce(art::Event & e)
 	    
 	    //Now loop through neutrals and skip this IDE if it was made by a neutral.
 	    for(int nNeu=0; nNeu<8; ++nNeu){
-	      if(fabs(G4PDG)==neutrals[nNeu]){std::cout<<"NEUTRAL SKIP!"<<std::endl; IsNeutral=true; break;}
+	      if(fabs(G4PDG)==neutrals[nNeu]){IsNeutral=true; break;}
 	    }//Neutral loop
 	    
 	    //If we dont have a neutral, make a WCDigit
 	    if(!IsNeutral){
 	       std::cout<<"Making Digit with PDG: "<<G4PDG<<std::endl;
 	       int AuxDetId=aux.AuxDetID();
+	       std::cout<<"Using "<<AuxDetId<<std::endl;
+	       if(AuxDetId==1){WC1Hit=true;}
+	       if(AuxDetId==2){WC2Hit=true;}
+	       if(AuxDetId==3){WC3Hit=true;}
+	       if(AuxDetId==4){WC4Hit=true;}
 	       std::vector<raw::AuxDetDigit> SimWCDigits=MakeWCDigits(TheIDE, AuxDetId);
 	       for(size_t Digititer=0; Digititer<SimWCDigits.size(); ++Digititer){
 	         (*MWPCDigits).push_back(SimWCDigits[Digititer]);
@@ -146,16 +153,19 @@ void WCSimDigits::produce(art::Event & e)
       } //nIDE loop
     }  //If ADSC is a WC
   }//ADSC loop
+  if(WC1Hit && WC4Hit && (WC2Hit || WC3Hit)){highyield=true;}
+  if(WC1Hit && WC2Hit && WC3Hit && WC4Hit && (*MWPCDigits).size()==8){pickytrack=true;}
   std::cout<<"Putting "<<(*MWPCDigits).size()<<" digits on the event"<<std::endl;
   //Put the Digits on the event.
   e.put(std::move(MWPCDigits));
+  fTree->Fill();
 }//produce
 
 
 std::vector<raw::AuxDetDigit> WCSimDigits::MakeWCDigits(sim::AuxDetIDE & TheIDE, int AuxDetID)
 {
 
-  ResetVars(); //Reset tree variables
+
   
   std::vector<raw::AuxDetDigit> MWPCDigits;
   //Use AuxDetGeo to get the center of the WC, given the AuxDetID
@@ -212,7 +222,7 @@ std::vector<raw::AuxDetDigit> WCSimDigits::MakeWCDigits(sim::AuxDetIDE & TheIDE,
     else {ywire=round(xy_wc[1]-.5);}
   
     timebin=TheIDE.exitT/1.177; //WCs readout in 1.117 ns bins
-  
+    if(timebin<0){std::cout<<"Time check "<<TheIDE.exitT<<std::endl;}
   //We have all the information necessary for a digit. Now we create the 4 variables that go into a digit. 
   //To know the digit is made from simulation, I'm going to store the TrackID as the timestamp.  
   
@@ -234,25 +244,29 @@ std::vector<raw::AuxDetDigit> WCSimDigits::MakeWCDigits(sim::AuxDetIDE & TheIDE,
 					     static_cast <unsigned long long> (TimestampfromTrackID)));
   if(AuxDetID==1)
   {
-    WCx1=xwire;
-    WCy1=ywire;
+    WCx1[WC1Count]=xwire;
+    WCy1[WC1Count]=ywire;
+    ++WC1Count;
   }
     if(AuxDetID==2)
   {
-    WCx2=xwire;
-    WCy2=ywire;
+    WCx2[WC2Count]=xwire;
+    WCy2[WC2Count]=ywire;
+    ++WC2Count;
   }
     if(AuxDetID==3)
   {
-    WCx3=xwire;
-    WCy3=ywire;
+    WCx3[WC3Count]=xwire;
+    WCy3[WC3Count]=ywire;
+    ++WC3Count;
   }
     if(AuxDetID==4)
   {
-    WCx4=xwire;
-    WCy4=ywire;
+    WCx4[WC4Count]=xwire;
+    WCy4[WC4Count]=ywire;
+    ++WC4Count;
   }
-  fTree->Fill();
+
   }
   //Fill the Tree with the wire hits for this IDE
   					     
@@ -263,26 +277,46 @@ void WCSimDigits::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
   fTree=tfs->make<TTree>("WCDigitTree", "WCDigitTree");
-  fTree->Branch("WCx1",&WCx1,"WCx1/I");
-  fTree->Branch("WCx2",&WCx2,"WCx2/I");
-  fTree->Branch("WCx3",&WCx3,"WCx3/I");
-  fTree->Branch("WCx4",&WCx4,"WCx4/I");
-  fTree->Branch("WCy1",&WCy1,"WCy1/I");
-  fTree->Branch("WCy2",&WCy2,"WCy2/I");
-  fTree->Branch("WCy3",&WCy3,"WCy3/I");
-  fTree->Branch("WCy4",&WCy4,"WCy4/I");
-
+  fTree->Branch("WCx1",&WCx1,"WCx1[100]/I");
+  fTree->Branch("WCx2",&WCx2,"WCx2[100]/I");
+  fTree->Branch("WCx3",&WCx3,"WCx3[100]/I");
+  fTree->Branch("WCx4",&WCx4,"WCx4[100]/I");
+  fTree->Branch("WCy1",&WCy1,"WCy1[100]/I");
+  fTree->Branch("WCy2",&WCy2,"WCy2[100]/I");
+  fTree->Branch("WCy3",&WCy3,"WCy3[100]/I");
+  fTree->Branch("WCy4",&WCy4,"WCy4[100]/I");
+  fTree->Branch("pickytrack", &pickytrack, "pickytrack/O"); 
+  fTree->Branch("highyield", &highyield, "highyield/O");
+  fTree->Branch("WC1Hit", &WC1Hit,"WC1Hit/O");
+  fTree->Branch("WC2Hit", &WC2Hit,"WC2Hit/O");
+  fTree->Branch("WC3Hit", &WC3Hit,"WC3Hit/O");
+  fTree->Branch("WC4Hit", &WC4Hit,"WC4Hit/O");
 }
 void WCSimDigits::ResetVars()
 {
-  WCx1=-99999;
-  WCx2=-99999;
-  WCx3=-99999;
-  WCx4=-99999;
-  WCy1=-99999;
-  WCy2=-99999;
-  WCy3=-99999;
-  WCy4=-99999;
+  for(int i=0; i<100; ++i)
+  {
+    WCx1[i]=-99999;
+    WCx2[i]=-99999;
+    WCx3[i]=-99999;
+    WCx4[i]=-99999;
+    WCy1[i]=-99999;
+    WCy2[i]=-99999;
+    WCy3[i]=-99999;
+    WCy4[i]=-99999;
+  }
+  highyield=false;
+  pickytrack=false;
+  WC1Hit=false;
+  WC2Hit=false;
+  WC3Hit=false;
+  WC4Hit=false;
+  WC1Count=0;
+  WC2Count=0;
+  WC3Count=0;
+  WC4Count=0;
+
+ 
   
 }
 void WCSimDigits::beginRun(art::Run & r)
