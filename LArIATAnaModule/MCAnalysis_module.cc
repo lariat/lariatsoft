@@ -66,7 +66,7 @@
 #include "lardataobj/RecoBase/EndPoint2D.h"
 #include "lardataobj/MCBase/MCShower.h"
 #include "lardataobj/MCBase/MCStep.h"
-#include "lardata/AnalysisAlg/CalorimetryAlg.h"
+#include "larreco/Calorimetry/CalorimetryAlg.h"
 
 // #####################
 // ### ROOT includes ###
