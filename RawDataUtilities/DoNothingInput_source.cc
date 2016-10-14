@@ -94,7 +94,6 @@ namespace rdu
   void DoNothingInput::reconfigure(fhicl::ParameterSet const& pset)
   {
     fFileNames = pset.get< std::vector< std::string > >("fileNames", {});
-    return;
   }
 
   //-----------------------------------------------------------------------
