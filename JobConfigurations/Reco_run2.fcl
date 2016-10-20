@@ -3,5 +3,5 @@
 process_name: Reco2D
 
 physics.producers.caldata.dQdxCalibFileName: "LArIATChargeCorrectionFactors_Run2.txt"
-
+physics.producers.tof.HitThreshold: -2.5
 
