@@ -54,3 +54,22 @@ cet_test(geometry_iterator_loop_lariat_test
             ${FHICLCPP}
             ${CETLIB}
 )
+
+
+# test for channel mapping (BOOST unit test)
+cet_test(geometry_lariatchannelmapping_test
+  SOURCES geometry_lariatchannelmapping_test.cxx
+  LIBRARIES larcore_Geometry
+            GeometryTestLib
+            Geo # this is LArIAT's geometry
+            ${MF_MESSAGELOGGER}
+            ${MF_UTILITIES}
+            ${FHICLCPP}
+            ${CETLIB}
+  USE_BOOST_UNIT
+  DATAFILES test_geometry_lariat.fcl
+  TEST_ARGS ./test_geometry_lariat.fcl
+)
+
+
+
