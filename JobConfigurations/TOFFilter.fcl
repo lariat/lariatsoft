@@ -16,7 +16,7 @@ services:
   #message:      @local::lariat_message_services
   @table::lariat_services
 }
-#services.user.DatabaseUtil.ShouldConnect: false
+#services.DatabaseUtil.ShouldConnect: false
 
 
 #This defines the input to your fcl file
