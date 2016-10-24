@@ -6,7 +6,7 @@ process_name: OpDetSER
 services:
 {
   TFileService: { fileName: "SER.root" }
-  Timing:       {}
+  TimeTracker:  {}
   RandomNumberGenerator: {}
   message:      @local::standard_info
   scheduler:    {}
