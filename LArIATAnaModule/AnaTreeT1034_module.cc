@@ -148,7 +148,7 @@ private:
   double trkmomrange[kMaxTrack];	//<---Calculated track momentum from its length assuming a PID of 13
   double trkmommschi2[kMaxTrack];	//<---Calculated track momentum from multiple scattering using Chi2
   double trkmommsllhd[kMaxTrack];	//<---Calculated track momentum from multiple scattering
-  int    trkWCtoTPCMath;		//<---Using an association to see if there was a match between WC and TPC
+  int    trkWCtoTPCMatch[kMaxTrack];	//<---Using an association to see if there was a match between WC and TPC
   					//    0 = match, 1 = no match
    
    
@@ -1271,33 +1271,52 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   std::vector<double> trackEnd;
   
   // === Association between WC Tracks and TPC Tracks ===
-  int TempTrackMatchedID = -1;                                                                                                                               
-  /*art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
+  //int TempTrackMatchedID = -1;                                                                                                                               
+  /*
+  // ### Storing an integer for the match of a WC to TPC track ###
+  int trackMatch = -1;
+  if(TempTrackMatchedID == tracklist[i]->ID() )
+    {
+      trackMatch = 0;
+    }//<---End match
   
-  if (fWC2TPC.isValid())
-     {
-     std::cout<<"Valid WC2TPC Track"<<std::endl;
-     
-     std::cout<<"fWC2TPC.size() = "<<fWC2TPC.size()<<std::endl;
-     // === Loop on all the Assn WC-TPC tracks ===                                                          
-     for (unsigned int indexAssn = 0; indexAssn < fWC2TPC.size(); ++indexAssn )
-         {
-	 std::cout<<"indexAssn = "<<indexAssn<<std::endl;
-	 // =========================
-	 // === Get the TPC track ===
-	 // =========================
-	 auto fake = *fWC2TPC.at(indexAssn);
-	 std::cout<<fake.ID()<<std::endl;
-	 cet::maybe_ref<recob::Track const> trackWC2TPC(*fWC2TPC.at(indexAssn));
-	 
-	 recob::Track const& aTrack(trackWC2TPC.ref());
-	 TempTrackMatchedID = aTrack.ID();
-	 std::cout<<"TempTrackMatchedID = "<<TempTrackMatchedID<<std::endl;
-	 
-	 }//<----End indexAssn loop
-     
-     
-     }//<---End checking that the WC2TPC is valid*/
+  // ### Setting the WC to TPC match ###
+  trkWCtoTPCMatch = trackMatch;
+*/
+
+
+
+  // === Association between WC Tracks and TPC Tracks ===
+
+  int TempTrackMatchedID = -1; 
+
+  if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
+    {
+      art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
+      std::cout<<"%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%"<<std::endl;
+      if (fWC2TPC.isValid())
+	{
+	  std::cout<<"Valid WC2TPC Track"<<std::endl;
+	  std::cout<<"fWC2TPC.size() = "<<fWC2TPC.size()<<std::endl;
+	  // === Loop on all the Assn WC-TPC tracks === 
+	  for (unsigned int indexAssn = 0; indexAssn < fWC2TPC.size(); ++indexAssn ) 
+	    {
+	      // =========================                                                                                       
+	      // === Get the TPC track ===
+	      // =========================                                                                      
+	      std::cout<<"***************************"<<std::endl;
+	      cet::maybe_ref<recob::Track const> trackWC2TPC(*fWC2TPC.at(indexAssn));
+	      std::cout<<"###########################"<<std::endl;
+	      if (!trackWC2TPC) continue;
+	      recob::Track const& aTrack(trackWC2TPC.ref()); 
+	      TempTrackMatchedID = aTrack.ID();
+	      std::cout<<"aTrackID() "<< aTrack.ID() <<" TempTrackMatchedID "<<TempTrackMatchedID<<std::endl;
+	      // std::cout<<"aTrackID() "<< aTrack->key() <<std::endl;
+	    }//<----End indexAssn loop                                                                                                                       
+	}//<---End checking that the WC2TPC   
+      
+    }
+
   
   // ### Looping over tracks ###
   double maxtrackenergy = -1;
@@ -1313,15 +1332,21 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       tracklist[i]->Extent(trackStart,trackEnd); 
       tracklist[i]->Direction(larStart,larEnd);
       
-      // ### Stroing an integer for the match of a WC to TPC track ###
-      int trackMatch = 1;
+      // ### Storing an integer for the match of a WC to TPC track ###
+      int trackMatch = 0;
+      std::cout<<"TempTrackMatchedID  "<<TempTrackMatchedID<<" tracklist[i]->ID() "<< tracklist[i]->ID() <<std::endl;
       if(TempTrackMatchedID == tracklist[i]->ID() )
-         {
-	 trackMatch = 0;
-	 }//<---End match
-	 
+	{
+	  std::cout<<"In match "<<std::endl;
+	  trackMatch = 1;
+	
+	}//<---End match
+      
+      trkWCtoTPCMatch[i] = trackMatch;
       // ### Setting the WC to TPC match ###
-      trkWCtoTPCMath = trackMatch;
+      
+      std::cout<<"After match "<<trkWCtoTPCMatch<<std::endl;
+      
       
       // ### Recording the track vertex x, y, z location ###
       trkvtxx[i]        = trackStart[0];
@@ -1701,7 +1726,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkenddcosx",trkenddcosx,"trkenddcosx[ntracks_reco]/D");
   fTree->Branch("trkenddcosy",trkenddcosy,"trkenddcosy[ntracks_reco]/D");
   fTree->Branch("trkenddcosz",trkenddcosz,"trkenddcosz[ntracks_reco]/D");
-  fTree->Branch("trkWCtoTPCMath",trkWCtoTPCMath,"trkWCtoTPCMath/I");
+  fTree->Branch("trkWCtoTPCMatch",trkWCtoTPCMatch,"trkWCtoTPCMatch[ntracks_reco]/I");
   fTree->Branch("trklength",trklength,"trklength[ntracks_reco]/D");
   fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/D");
   fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/D");
@@ -1933,7 +1958,7 @@ void lariat::AnaTreeT1034::ResetVars()
     trkendx[i] = -99999;
     trkendy[i] = -99999;
     trkendz[i] = -99999;
-    trkWCtoTPCMath = -99999;
+    trkWCtoTPCMatch[i] = -99999;
     trkstartdcosx[i] = -99999;
     trkstartdcosy[i] = -99999;
     trkstartdcosz[i] = -99999;
