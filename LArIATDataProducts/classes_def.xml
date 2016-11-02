@@ -59,7 +59,7 @@
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::TOF,         void> >"/>
 
  <class name="ldp::WCTrack" ClassVersion="17">
-  <version ClassVersion="17" checksum="3482738451"/>
+   <version ClassVersion="17" checksum="3482738451"/>
   <version ClassVersion="16" checksum="1204438332"/>
   <version ClassVersion="15" checksum="368485909"/>
   <version ClassVersion="14" checksum="2941599526"/>
@@ -87,7 +87,9 @@
  <class name="art::Wrapper<art::Assns<ldp::WCTrack,     raw::AuxDetDigit, void> >"/>
  <class name="art::Wrapper<art::Assns<raw::Trigger,     ldp::WCTrack,     void> >"/>
  <class name="art::Wrapper<art::Assns<raw::AuxDetDigit, ldp::WCTrack,     void> >"/>
-
+ <class name="art::Assns<recob::Track,ldp::WCTrack,void>"/>
+ <class name="art::Wrapper<art::Assns<recob::Track,ldp::WCTrack,void> >"/>
+ <class name="art::Wrapper<art::Assns<ldp::WCTrack,recob::Track,void> >"/>
 
  <class name="ldp::ConditionsSummary" ClassVersion="13">
   <version ClassVersion="13" checksum="596198872"/>

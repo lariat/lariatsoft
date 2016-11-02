@@ -128,13 +128,14 @@ WC2TPCTrackMatch::WC2TPCTrackMatch(fhicl::ParameterSet const & p)
   // Call appropriate produces<>() functions here.
   this->reconfigure(p);
   produces < art::Assns<ldp::WCTrack,recob::Track> >();
-  produces < std::vector<ldp::WCTrack> >();
+  //produces < std::vector<ldp::WCTrack> >();
 }
 
 
 // ---------------------- Event Loop ---------------------------
 void WC2TPCTrackMatch::produce(art::Event & evt)
 {
+
   // #######################################
   // ### Get potentially useful services ###
   // #######################################
@@ -178,8 +179,8 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       art::fill_ptr_vector(wctrack, wctrackHandle);
             
       //std::cout<<"========================================="<<std::endl;
-      std::cout<<"@@@@@@@@@@ Run  = "<<evt.run()<<",   SubRun = "<<evt.subRun()<<", Evt = "<<evt.id().event()<<std::endl;
-      std::cout<<"@@@@@@@@@@ N WC = "<<wctrack.size()<<",   TpcTrk = "<<tracklist.size()<<std::endl;
+      //std::cout<<"@@@@@@@@@@ Run  = "<<evt.run()<<",   SubRun = "<<evt.subRun()<<", Evt = "<<evt.id().event()<<std::endl;
+      //std::cout<<"@@@@@@@@@@ N WC = "<<wctrack.size()<<",   TpcTrk = "<<tracklist.size()<<std::endl;
       //std::cout<<"========================================="<<std::endl;
    
       // ---------------------------------------------------------------------------------------------
@@ -346,7 +347,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       // ###################################################
       
       
-      std::cout<<"@@@@@@@@@@ further in the code N WC = "<<nwctrk<<",   TpcTrk = "<<ntrks<<std::endl;
+      //std::cout<<"@@@@@@@@@@ further in the code N WC = "<<nwctrk<<",   TpcTrk = "<<ntrks<<std::endl;
       
       // ############################################
       // ### Loop over all the eligible tpcTracks ###
@@ -357,7 +358,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  float DeltaY_WC_TPC_Track = 999;
 	  //p_hat_0 = tracklist[aa]->DirectionAtPoint(aa);
 	  float tpc_Theta=tpcTheta[aa];
-	  std::cout<<"&&&& TPC Theta "<<tpcTheta[aa]<<" "<<std::endl;
+	  //std::cout<<"&&&& TPC Theta "<<tpcTheta[aa]<<" "<<std::endl;
 	  // ###########################################
 	  // ### Loop over all the eligible WCTracks ###
 	  // ###########################################
@@ -471,7 +472,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	}//<---End aa loop
 
       
-      std::cout<<"@@@@@@@@@@ MapSize = "<<mapCandidates.size()<<std::endl;
+      //std::cout<<"@@@@@@@@@@ MapSize = "<<mapCandidates.size()<<std::endl;
       
       /////////////////////////////////////////////////
       //  Find the best match with then give metric  //
@@ -592,7 +593,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       // wcTpcTrackAssn->addSingle(bogusPtrTrack, tracklist[correctTrackID]);
 
       // 3. save the wcPseudoTrack
-      evt.put(std::move(WCTrackCol));
+      //evt.put(std::move(WCTrackCol));
     }
   
   
