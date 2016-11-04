@@ -54,8 +54,8 @@ tpcreco: [ caldata,
 #           pandoracalo,
 #           pandorapid,
            blurredcluster,
-           emshower,
-           wc2TPCtrk
+           emshower
+#           wc2TPCtrk
            ]
 # Define and configure some modules to do work on each event.
 # First modules are defined; they are scheduled later.
