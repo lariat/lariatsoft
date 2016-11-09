@@ -555,7 +555,7 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
 	  double w1=0;
                
 	  //the 3.95 and 1.84 below are the ArgoNeuT TPC offsets for the induction and collection plane, respectively and are in units of wire pitch.
-	  if(geom->Cryostat(hit1WireID.Cryostat).TPC(hit1WireID.TPC).Plane(hit1WireID.Plane).SignalType() == geo::kInduction)
+	  if(geom->SignalType(hit1WireID) == geo::kInduction)
 	   // w1 = (double)((hit1WireID.Wire+3.95) * wire_pitch); 
 	  w1 = (double)((hit1WireID.Wire) * wire_pitch) ;        
 	  else
@@ -563,16 +563,16 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
           w1 = (double)((hit1WireID.Wire) * wire_pitch);
 
 	  double temptime1 = minhits[imin]->PeakTime()-presamplings;
-	  if(geom->Cryostat(hit1WireID.Cryostat).TPC(hit1WireID.TPC).Plane(hit1WireID.Plane).SignalType() == geo::kCollection) temptime1 -= tIC;
+	  if(geom->SignalType(hit1WireID) == geo::kCollection) temptime1 -= tIC;
 	  double t1;// = plane1==1?(double)((minhits[imin]->PeakTime()-presamplings-tIC)*timepitch):(double)((minhits[imin]->PeakTime()-presamplings)*timepitch); //in cm
 	  if(temptime1>tSI) t1 = (double)( (temptime1-tSI)*timepitch + tSI*driftvelocity_SI*timetick);
 	  else t1 = temptime1*driftvelocity_SI*timetick;
 
 	  //get the track origin co-ordinates in the two views
 	  TVector2 minVtx2D;
-	  (geom->Plane(hit1WireID.Plane,hit1WireID.TPC).SignalType() == geo::kCollection) ? minVtx2D.Set(collVtx.X(),collVtx.Y()): minVtx2D.Set(indVtx.X(),indVtx.Y());
+	  (geom->SignalType(hit1WireID) == geo::kCollection) ? minVtx2D.Set(collVtx.X(),collVtx.Y()): minVtx2D.Set(indVtx.X(),indVtx.Y());
 	  TVector2 maxVtx2D;
-	  (geom->Plane(hit1WireID.Plane,hit1WireID.TPC).SignalType() == geo::kCollection) ? maxVtx2D.Set(indVtx.X(),indVtx.Y()): maxVtx2D.Set(collVtx.X(),collVtx.Y());
+	  (geom->SignalType(hit1WireID) == geo::kCollection) ? maxVtx2D.Set(indVtx.X(),indVtx.Y()): maxVtx2D.Set(collVtx.X(),collVtx.Y());
                
 	  double ratio = (collLength>indLength) ? collLength/indLength : indLength/collLength;	  
 
@@ -588,14 +588,14 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
 	      //get wire - time coordinate of the hit
 	      geo::WireID hit2WireID = maxhits[imax]->WireID();
 	      double w2=0.;
-	      if(geom->Cryostat(hit2WireID.Cryostat).TPC(hit2WireID.TPC).Plane(hit2WireID.Plane).SignalType() == geo::kInduction)
+	      if(geom->SignalType(hit2WireID) == geo::kInduction)
 		//w2 = (double)((hit2WireID.Wire+3.95) * wire_pitch);       
               w2 = (double)((hit2WireID.Wire) * wire_pitch);     
 	      else
 		//w2 = (double)((hit2WireID.Wire+1.84) * wire_pitch);
               w2 = (double)((hit2WireID.Wire) * wire_pitch);       
 	      double temptime2 = maxhits[imax]->PeakTime()-presamplings;
-	      if(geom->Cryostat(hit2WireID.Cryostat).TPC(hit2WireID.TPC).Plane(hit2WireID.Plane).SignalType() == geo::kCollection) temptime2 -= tIC;
+	      if(geom->SignalType(hit2WireID) == geo::kCollection) temptime2 -= tIC;
 	      double t2;
 	      if(temptime2>tSI) t2 = (double)( (temptime2-tSI)*timepitch + tSI*driftvelocity_SI*timetick);
 	      else t2 = temptime2*driftvelocity_SI*timetick;
@@ -623,7 +623,7 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
 				
 	  //double w1_match = (double)((wire+1)*wire_pitch);  
 	  double w1_match=0.;
-	  if(geom->Cryostat(hit2WireID.Cryostat).TPC(hit2WireID.TPC).Plane(hit2WireID.Plane).SignalType() == geo::kInduction)
+	  if(geom->SignalType(hit2WireID) == geo::kInduction)
 	    //w1_match = (double)((hit2WireID.Wire+3.95) * wire_pitch);   
           w1_match = (double)((hit2WireID.Wire) * wire_pitch);       
 	  else
@@ -631,15 +631,16 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
           w1_match = (double)((hit2WireID.Wire) * wire_pitch);    
 
 	  double temptime3 = maxhits[imaximum]->PeakTime()-presamplings;
-	  if(geom->Cryostat(hit2WireID.Cryostat).TPC(hit2WireID.TPC).Plane(hit2WireID.Plane).SignalType() == geo::kCollection) temptime3 -= tIC;
+	  if(geom->SignalType(hit2WireID) == geo::kCollection) temptime3 -= tIC;
 	  double t1_match;
 	  if(temptime3>tSI) t1_match = (double)( (temptime3-tSI)*timepitch + tSI*driftvelocity_SI*timetick);
 	  else t1_match = temptime3*driftvelocity_SI*timetick;
              
-	  // create the 3D hit, compute its co-ordinates and add it to the 3D hits list	  
-	  double Ct = geom->Cryostat(hit1WireID.Cryostat).TPC(hit1WireID.TPC).Plane(hit1WireID.Plane).SignalType()==geo::kCollection?t1:t1_match;
-	  double Cw = geom->Cryostat(hit1WireID.Cryostat).TPC(hit1WireID.TPC).Plane(hit1WireID.Plane).SignalType()==geo::kCollection?w1:w1_match;
-	  double Iw = geom->Cryostat(hit1WireID.Cryostat).TPC(hit1WireID.TPC).Plane(hit1WireID.Plane).SignalType()==geo::kCollection?w1_match:w1;
+	  // create the 3D hit, compute its co-ordinates and add it to the 3D hits list
+	  const bool isCollectionWire1 = (geom->SignalType(hit1WireID) == geo::kCollection);
+	  double Ct = isCollectionWire1? t1: t1_match;
+	  double Cw = isCollectionWire1? w1: w1_match;
+	  double Iw = isCollectionWire1? w1_match: w1;
 
 	  const TVector3 hit3d(Ct,(Cw-Iw)/(2.*TMath::Sin(Angle)),(Cw+Iw)/(2.*TMath::Cos(Angle))-YC/2.*TMath::Tan(Angle)); 
                
