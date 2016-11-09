@@ -28,7 +28,7 @@ param killshld=0
  param Bscale=1.0
  
 #g4ui when=4 “/vis/scene/add/axes 1 2 3 500 mm” 
-#g4ui when=4 “/vis/viewer/set/background 1 1 1” 
+g4ui when=4 “/vis/viewer/set/background 1 1 1” 
 
 
 #    Beam used to check central momentum of spectrometer ( no target )
@@ -98,9 +98,9 @@ group ChFram
 #---------------------------------------------------------------------- 
 
 
-#--------------------StartLine Fake Detector ------------------
- virtualdetector StartLine width=150 height=150 length=1 material=Air color=0.9,0.9,0.7
-  place StartLine rotation=z45,y-13 z=1400.0-26.4 x=-335.0+5.7
+#--------------------StartLine: Fake Detector ------------------
+ virtualdetector StartLine radius=1750.0 length=1 material=Air color=0.9,0.9,0.7
+  place StartLine rotation=y-13 z=1400.0-26.4 x=-335.0+5.7
 
 #--------------------/StartLine Fake Detector ------------------
 
@@ -174,8 +174,8 @@ param ctrsep=1*$inch
 
 #   Downstream TOF Counter  
 param TOFdsThick=50.8   ### 2 inches thick?
-param TOFdsHeight=609.6 ### 2 feet long?
-virtualdetector TOFds width=118 height=$TOFdsHeight length=$TOFdsThick material=LUCITE color=0.05,0.05,0.93
+param TOFdsHeight=130.0 ### 13 cm 
+virtualdetector TOFds width=$TOFdsHeight height=$TOFdsHeight length=$TOFdsThick material=LUCITE color=0.05,0.05,0.93
   place TOFds rename=TOFds z=8005.9022  x=-1186.1546 rotation=z90,y-3  
 
 #virtualdetector TiWindow radius=114.5 length=1.0 material=Air color=1,0,0 
