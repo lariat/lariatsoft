@@ -174,8 +174,8 @@ param ctrsep=1*$inch
 
 #   Downstream TOF Counter  
 param TOFdsThick=50.8   ### 2 inches thick?
-param TOFdsHeight=609.6 ### 2 feet long?
-virtualdetector TOFds width=118 height=$TOFdsHeight length=$TOFdsThick material=LUCITE color=0.05,0.05,0.93
+param TOFdsHeight=130.0 ### 13 cm 
+virtualdetector TOFds width=$TOFdsHeight height=$TOFdsHeight length=$TOFdsThick material=LUCITE color=0.05,0.05,0.93
   place TOFds rename=TOFds z=8005.9022  x=-1186.1546 rotation=z90,y-3  
 
 #virtualdetector TiWindow radius=114.5 length=1.0 material=Air color=1,0,0 
