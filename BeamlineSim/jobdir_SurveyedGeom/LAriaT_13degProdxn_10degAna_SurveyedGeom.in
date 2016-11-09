@@ -182,8 +182,8 @@ virtualdetector TiWindow radius=114.5 length=1.0 material=Air color=1,0,0
   place TiWindow z=$B2z+2600.0 x=-1124.3  rotation=y-3
 
 ##Back this fake detector up, 2mm in z and 2mm*tan(3 deg)= 0.105mm in x
-virtualdetector BigDisk radius=875 length=1.0 material=Air color=0.9,0.9,0.7 
-  place BigDisk z=$B2z+2600.0+10 x=-1124.3-0.524  rotation=y-3
+#virtualdetector BigDisk radius=875 length=1.0 material=Air color=0.9,0.9,0.7 
+#  place BigDisk z=$B2z+2600.0+10 x=-1124.3-0.524  rotation=y-3
 
 #   dimensions from Lariat paper  Note - not rotated with respect to secondary beam/building
  box LarDet color=.5,.5,1 height=400.0 width=470.0 length=900.0
