@@ -178,32 +178,32 @@ param TOFdsHeight=609.6 ### 2 feet long?
 virtualdetector TOFds width=118 height=$TOFdsHeight length=$TOFdsThick material=LUCITE color=0.05,0.05,0.93
   place TOFds rename=TOFds z=8005.9022  x=-1186.1546 rotation=z90,y-3  
 
-virtualdetector TiWindow radius=114.5 length=1.0 material=Air color=1,0,0 
-  place TiWindow z=$B2z+2600.0 x=-1124.3  rotation=y-3
+#virtualdetector TiWindow radius=114.5 length=1.0 material=Air color=1,0,0 
+#  place TiWindow z=$B2z+2600.0 x=-1124.3  rotation=y-3
 
 ##Back this fake detector up, 2mm in z and 2mm*tan(3 deg)= 0.105mm in x
 #virtualdetector BigDisk radius=875 length=1.0 material=Air color=0.9,0.9,0.7 
 #  place BigDisk z=$B2z+2600.0+10 x=-1124.3-0.524  rotation=y-3
 
 #   dimensions from Lariat paper  Note - not rotated with respect to secondary beam/building
- box LarDet color=.5,.5,1 height=400.0 width=470.0 length=900.0
- place LarDet z=$B2z+2600.0+1400.0 x=-1150
-
- 
-##  material LAr A=40 Z=18 density=1.40 state=l
-##  box TPC height=400 width=460 length=900 material=LAr color=0.9,0.9,0.9
-##  place TPC z=$B2z+$B2ztoTPCcenter rotation=y3 x=28.8
-
-group PunchPaddles
-virtualdetector Punch height=1010.0 width=310.0 length=10.0 material=POLYSTYRENE color=0.3,0.01,0.85
-param offset=(310.0/2)-10.0 ## Centers of these paddles go off the beam center a little, but overlap each other.
-param root2=0.707106781
-
-  place Punch rename=PunchUL z=+5.0  x=+$offset
-  place Punch rename=PunchLR z=-5.0  x=-$offset
-  place Punch rename=PunchUR z=+15  y=+$offset rotation=z+90
-  place Punch rename=PunchLL z=+20  y=-$offset rotation=z+90
-
-endgroup
-
-place PunchPaddles z=$B2z+2600.0+($cosDS*2100) x=-1124.0-($sinDS*2100) rotation=z+45,y-3
+# box LarDet color=.5,.5,1 height=400.0 width=470.0 length=900.0
+# place LarDet z=$B2z+2600.0+1400.0 x=-1150
+#
+# 
+###  material LAr A=40 Z=18 density=1.40 state=l
+###  box TPC height=400 width=460 length=900 material=LAr color=0.9,0.9,0.9
+###  place TPC z=$B2z+$B2ztoTPCcenter rotation=y3 x=28.8
+#
+#group PunchPaddles
+#virtualdetector Punch height=1010.0 width=310.0 length=10.0 material=POLYSTYRENE color=0.3,0.01,0.85
+#param offset=(310.0/2)-10.0 ## Centers of these paddles go off the beam center a little, but overlap each other.
+#param root2=0.707106781
+#
+#  place Punch rename=PunchUL z=+5.0  x=+$offset
+#  place Punch rename=PunchLR z=-5.0  x=-$offset
+#  place Punch rename=PunchUR z=+15  y=+$offset rotation=z+90
+#  place Punch rename=PunchLL z=+20  y=-$offset rotation=z+90
+#
+#endgroup
+#
+#place PunchPaddles z=$B2z+2600.0+($cosDS*2100) x=-1124.0-($sinDS*2100) rotation=z+45,y-3
