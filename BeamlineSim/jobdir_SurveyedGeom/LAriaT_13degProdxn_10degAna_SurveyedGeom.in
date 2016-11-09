@@ -107,7 +107,7 @@ group ChFram
 #     Time of Flight (TOF) counter
   param TOFusThick=50.8   ### 2 inches thick?
   virtualdetector TOFus width=150 height=150 length=$TOFusThick material=LUCITE color=0.05,0.05,0.93	
-   place TOFus rotation=z45,y-13 z=1400.0 x=-335.0
+   place TOFus rotation=z45,y-13 z=1423.0 x=-346.54341
 
 #  Wire chambers are Fenker chambers, 128 mm sq. instrumented, Det1, 2,3,4
 #  Fermilab TM-1179      2557.000     Feb 1983
