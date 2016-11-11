@@ -13,8 +13,8 @@ param inch=25.4
 param histoFile=sim_LAriaT_13degProdxn_10degAna_SurveyedGeom.root
 ## Maybe we should just let the output get dumped to the stdout.
 ## output $histoFile.out
-param first=0
-param last=100
+#param first=0
+#param last=100
 
 param sinUS=0.224951054 #sin (13 deg)
 param cosUS=0.974370065 #cos (13 deg)
