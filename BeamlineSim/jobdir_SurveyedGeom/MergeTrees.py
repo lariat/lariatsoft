@@ -145,8 +145,7 @@ for name, tuple in INtuples.iteritems():
 vars = ('x','y','z','t','Px','Py','Pz','PDGid','ParentID','EventID','TrackID')
 StartLine = ('StartLine',)
 WCs = ('Det1', 'Det2', 'Det3', 'Det4')
-Scints = ('TOFus', 'Halo', 'HaloHole', 'TOFds', 'TiWindow','BigDisk') # Horz removed
-Punch  =  ('PunchUL', 'PunchLL', 'PunchUR', 'PunchLR')
+Scints = ('TOFus', 'Halo', 'HaloHole', 'TOFds') # Horz removed
 
 ## One dictionary to rule them all. ##
 ## Unfortunately, ROOT won't process a single line defining a single struct for all these; too long.  
@@ -155,7 +154,6 @@ detsysts = {}
 detsysts['StartLine'] = StartLine
 detsysts['WCs'] = WCs
 detsysts['Scints'] = Scints
-detsysts['Punch'] = Punch
 
 # Invent some types of struct for holding stuff from the tree,
 # one for each "system", 
