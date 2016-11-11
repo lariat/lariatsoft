@@ -145,7 +145,7 @@ for name, tuple in INtuples.iteritems():
 vars = ('x','y','z','t','Px','Py','Pz','PDGid','ParentID','EventID','TrackID')
 StartLine = ('StartLine',)
 WCs = ('Det1', 'Det2', 'Det3', 'Det4')
-Scints = ('TOFus', 'Halo', 'HaloHole', 'TOFds', 'TiWindow','BigDisk') # Horz removed
+Scints = ('TOFus', 'Halo', 'HaloHole', 'TOFds','BigDisk') # Horz removed
 Punch  =  ('PunchUL', 'PunchLL', 'PunchUR', 'PunchLR')
 
 ## One dictionary to rule them all. ##
