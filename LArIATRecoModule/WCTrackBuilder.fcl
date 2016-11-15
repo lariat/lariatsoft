@@ -46,7 +46,7 @@ physics:
       BFieldOffset: 0.0025	
       WCTrackBuilderAlg:
 	{
-	MCMagneticFieldTesla:  .175
+	MCMagneticFieldTesla:  0
 	}
         
       Verbose: false
