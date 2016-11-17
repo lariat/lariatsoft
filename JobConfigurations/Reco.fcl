@@ -145,13 +145,18 @@ outputs:
 
 ### Here, we overwrite ALL module labels with the ones defined above.
 
-physics.producers.wctrack.WCTrackBuilderAlg.PickyTracks: 	false
+physics.producers.wctrack.PickyTracks: 	                        false
+
+physics.producers.tof.HitThreshold:                             -10. # (use ~ -3 for Run 2)
+physics.producers.tof.HitDiffMeanUS:                            0.7  # 0.7 for Run 1, ~ 0.4 for Run 2
+physics.producers.tof.HitDiffMeanDS:                            1.5  # 1.5 Run 1, ~0.7 for Run 2
+physics.producers.tof.HitMatchThreshold:                        3.0  
+
 physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.caldata.DodQdxCalib:                          true
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 physics.producers.gaushit.Chi2NDFRetry:                          1000.
-
 
 physics.producers.linecluster.HitFinderModuleLabel: "gaushit"
 physics.producers.linecluster.ClusterCrawlerAlg.NumPass: 3      # Number of passes through the hit collection

@@ -47,6 +47,7 @@ filestorun=[]
 namesoffiles=[]
 numberofeventsinfile=[]
 numberoflinesoutfile=[]
+fileiter=0
 filenames=os.listdir(inpath)
 
 
@@ -57,23 +58,25 @@ for file in filenames:
 print str(len(filestorun))+ "files in this folder."
 
 # Some text files may be bad for some reason (Grid failures, perhaps?)  Loop over lines in the files, and remove files that have commonly found errors
-for file in filestorun:
-  fields=[]
-  with open(inpath+file,"r") as infile:
-    for line in infile:
-      fields=line.split(" ")
-      #Line is either an event line (2 entries) or a particle in an event (15 entries)
-      if len(fields) != 15 and len(fields) !=2:
-        print file+" didn't have the correct number of line entries. Removing."
-        filestorun.remove(file)
-	continue
+#for file in filestorun:
+#  fileiter+=1
+#  if fileiter%10==0: print str(fileiter)+" files checked for errors."
+#  fields=[]
+#  with open(inpath+file,"r") as infile:
+#    for line in infile:
+#      fields=line.split(" ")
+#      #Line is either an event line (2 entries) or a particle in an event (15 entries)
+#      if len(fields) != 15 and len(fields) !=2:
+#        print file+" didn't have the correct number of line entries. Removing."
+#        filestorun.remove(file)
+#	continue
       #Line was describing a particle, but didn't have precision down to the .1 ns level. 
       #Example: if t= 100.15, but line got cut off at 2 digits (t=10), that's a 90ns error. 
       #This will cut particles that happened to occur at an integer time, but that's incredibly unlikely with the precision available
-      if len(fields)==15 and line.count(".")!=9:
-        print file+" had an unfinished line: \n"+line+"\n Removing."
-	filestorun.remove(file)
-	continue
+#      if len(fields)==15 and line.count(".")!=9:
+#        print file+" had an unfinished line: \n"+line+"\n Removing."
+#	filestorun.remove(file)
+#	continue
 #Find how many events are in each file so we know what number to pass to the grid in the .xml file  
 print "Found "+str(len(filestorun))+" files to process"
 
@@ -128,6 +131,6 @@ for iter in range(0, len(filestorun)):
           outfcl.write(line)
 
 # Now we have everything edited and ready to go, submit a grid job for each text file
-  os.system("project.py --xml LArG4.xml --stage LArG4 --clean")
+  #os.system("project.py --xml LArG4.xml --stage LArG4 --clean")
   os.system("project.py --xml LArG4.xml --stage LArG4 --submit")
 
