@@ -516,22 +516,22 @@ void WCTrackBuilderAlg::calculateTheMomentum(WCHitList & best_track,
   //float theta_y_us= atan(dy_us/dz_us);
   //float theta_y_ds= atan(dy_ds/dz_ds);
   reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (3.3*(sin(theta_x_ds) - sin(theta_x_us)))/cos(atan(BestTrackStats[0]));
-  std::cout<<"B: "<<fB_field_tesla<<" momentum: "<<reco_pz<<std::endl;
+  //std::cout<<"B: "<<fB_field_tesla<<" momentum: "<<reco_pz<<std::endl;
   
   //Calculating the event using the 2 magnets aproximation
   float theta_central = (theta_x_us*(1+offset)+theta_x_ds*(1-offset))/2.;
-  std::cout<<" Theta Central: "<<theta_central<<std::endl;
+  //std::cout<<" Theta Central: "<<theta_central<<std::endl;
   float thetaM1_1 = theta_x_us + 13*TMath::Pi()/180;
-  std::cout<<" Theta M1_1: "<<thetaM1_1<<std::endl;
+  //std::cout<<" Theta M1_1: "<<thetaM1_1<<std::endl;
   float thetaM1_2 = theta_central + 13*TMath::Pi()/180;   
-  std::cout<<" Theta M1_2: "<<thetaM1_2<<std::endl;
+  //std::cout<<" Theta M1_2: "<<thetaM1_2<<std::endl;
   double pM1 = double(fabs(fB_field_tesla*(1+offset)) * fL_eff/2. * fmm_to_m * fGeV_to_MeV ) / double(3.3*(sin(thetaM1_2) - sin(thetaM1_1)))/cos(atan(BestTrackStats[0]));
   float thetaM2_1 = theta_central + 3*TMath::Pi()/180;
   float thetaM2_2 = theta_x_ds + 3*TMath::Pi()/180;   
   double pM2 = double(fabs(fB_field_tesla*(1-offset)) * fL_eff/2. * fmm_to_m * fGeV_to_MeV ) / double (3.3*(sin(thetaM2_2) - sin(thetaM2_1)))/cos(atan(BestTrackStats[0]));
   reco_pz2M = double(pM2+pM1)/2.;
-  std::cout<<"Reco pz 1 magnet "<<reco_pz<<" Reco Pz 2 magnets "<<reco_pz2M<<std::endl;
-  std::cout<<"Dispersion of the momentum: "<<fabs(reco_pz - reco_pz2M)/reco_pz<<std::endl;
+  //std::cout<<"Reco pz 1 magnet "<<reco_pz<<" Reco Pz 2 magnets "<<reco_pz2M<<std::endl;
+  //std::cout<<"Dispersion of the momentum: "<<fabs(reco_pz - reco_pz2M)/reco_pz<<std::endl;
   
 }
 //==================================================================================

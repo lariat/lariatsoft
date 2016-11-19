@@ -97,6 +97,7 @@ public:
 				std::vector<double> x_dist_list,
 				std::vector<double> y_dist_list,
 				std::vector<double> z_dist_list);
+  void ResetTree();
 				
 				
   void MakeSomePlotsFromHits(std::vector<std::vector<WCHitList> > good_hits);
@@ -131,43 +132,12 @@ private:
     TH1F* fTrack_Type;
     std::vector<TH2F*> fRecodiff;
     TH1F* fWCDist;
-/*    TH1F* fHitErrorWC1;
-    TH1F* fHitErrorWC2;    
-    TH1F* fHitErrorWC3;
-    TH1F* fHitErrorWC4;
-    TH1F* fXWireWC1;
-    TH1F* fYWireWC1;    
-    TH1F* fXWireWC2;
-    TH1F* fYWireWC2; 
-    TH1F* fXWireWC3;
-    TH1F* fYWireWC3; 
-    TH1F* fXWireWC4;
-    TH1F* fYWireWC4; 
-    TH2F* fHitHeatMapWC1;
-    TH2F* fHitHeatMapWC2;
-    TH2F* fHitHeatMapWC3;
-    TH2F* fHitHeatMapWC4;
-    TH2F* fHitsAvailable;
- std::vector<TH1F*> fWireHitsGoodTracks;
- std::vector<TH2F*> fWCMult;
- std::vector<TH1F*> fWireHitsTheTrack;
- std::vector<TH1F*> fBadTrackHits;
- TH2F* fTargetXY;
- TH2F* fPickyTracksTargetXY;
- TH1F* fResSquare;
- TH1F* fReco4pt;
- TH2F* fReco4ptdiff;
- std::vector<TH2F*> fTimingXY;
- std::vector<TH2F*> fRegressionPlots;
- TH1F* fMatchedHits;
- std::vector<TH1F*> fRegressionPlots1D;
- std::vector<TH2F*> fRecoplots;
- TH1F* fBfield;   */         
+    TTree* fTree;      
     //Misc
     bool fVerbose;
     bool fPickyTracks;
     bool fCheckTracks;
-    //TTree *tree = new TTree("WCVars", "WCVars");
+    int WCx1[100],WCx2[100],WCx3[100],WCx4[100],WCy1[100],WCy2[100],WCy3[100],WCy4[100]; //Arrays for the wires hit in each WC
     
 };
 
@@ -185,8 +155,7 @@ WCTrackBuildernew::WCTrackBuildernew(fhicl::ParameterSet const & p)
 
 void WCTrackBuildernew::produce(art::Event & e)
 {
-  //evtcounter++; //counting events
-  // Implementation of required member function here.
+    ResetTree();
     //Creating the WCTrack Collection
     std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
 
@@ -258,7 +227,7 @@ void WCTrackBuildernew::produce(art::Event & e)
 			       hit_time_bin_vect,
 			       good_hits,
 			       fVerbose);
-   // MakeSomePlotsFromHits(good_hits);		
+    MakeSomePlotsFromHits(good_hits);		
     
     	       
   fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
@@ -285,19 +254,12 @@ void WCTrackBuildernew::produce(art::Event & e)
                                          offset);			       
   std::cout<<" reco_pz: "<<reco_pz_list.size()<<std::endl;
   if(reco_pz2M_list.size())  std::cout<<"Checking the filling up of reco_pz2m: "<<reco_pz2M_list.size()<<" "<<reco_pz2M_list[0]<<" "<<reco_pz_list[0]<<std::endl;
-//tree->Branch("reco_pz",&reco_pz_list[0],"reco_pz/D");
-//tree->Fill();
-//fTrack_Type->Fill(fWCHitFinderAlg.getTrackType());    // WCHitFinderAlg::getTrackType() does not exist
-//fTrack_Type->Fill(fWCTrackBuildernewAlg.getTrackType()); // neither does WCTrackBuildernewAlg_new::getTrackType()
-                                                        // but WCTrackBuildernewAlg::getTrackType() exists!
-//std::cout<<"Tracks before: "<<track_count_pre<<"Tracks after "<<track_count<<std::endl;
      //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
     int tracknumber=final_tracks.size();
     for( int iNewTrack = 0; iNewTrack<tracknumber; ++iNewTrack ){
       std::vector<int> WC_vect;
       std::vector<float> hit_wire_vect;
-      //std::vector<float> hit_time_vect;
       
       WCHitList final_track = final_tracks[iNewTrack];
       
@@ -360,8 +322,59 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
     e.put(std::move(WCTrackCol)); 
     //hit_position_vect.clear();//clear the position vector for the next event.				
 }
-  //==================================================================================================
-  void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
+//==================================================================================================
+void WCTrackBuildernew::ResetTree()
+{
+  for(int i=0; i<100; ++i)
+  {
+    WCx1[i]=-99999;
+    WCx2[i]=-99999;
+    WCx3[i]=-99999;
+    WCx4[i]=-99999;
+    WCy1[i]=-99999;
+    WCy2[i]=-99999;
+    WCy3[i]=-99999;
+    WCy4[i]=-99999;
+  }
+}
+//==================================================================================================
+void WCTrackBuildernew::MakeSomePlotsFromHits(std::vector<std::vector<WCHitList> > good_hits)
+{  
+  for(size_t iHit=0; iHit<good_hits[0][0].hits.size(); ++iHit)
+  {
+    WCx1[iHit]=good_hits[0][0].hits[iHit].wire;
+  }
+    for(size_t iHit=0; iHit<good_hits[1][0].hits.size(); ++iHit)
+  {
+    WCx2[iHit]=good_hits[1][0].hits[iHit].wire;
+  }
+    for(size_t iHit=0; iHit<good_hits[2][0].hits.size(); ++iHit)
+  {
+    WCx3[iHit]=good_hits[2][0].hits[iHit].wire;
+  }
+    for(size_t iHit=0; iHit<good_hits[3][0].hits.size(); ++iHit)
+  {
+    WCx4[iHit]=good_hits[3][0].hits[iHit].wire;
+  }
+    for(size_t iHit=0; iHit<good_hits[0][1].hits.size(); ++iHit)
+  {
+    WCy1[iHit]=good_hits[0][1].hits[iHit].wire;
+  }
+    for(size_t iHit=0; iHit<good_hits[1][1].hits.size(); ++iHit)
+  {
+    WCy2[iHit]=good_hits[1][1].hits[iHit].wire;
+  }
+    for(size_t iHit=0; iHit<good_hits[2][1].hits.size(); ++iHit)
+  {
+    WCy3[iHit]=good_hits[2][1].hits[iHit].wire;
+  }
+    for(size_t iHit=0; iHit<good_hits[3][1].hits.size(); ++iHit)
+  {
+    WCy4[iHit]=good_hits[3][1].hits[iHit].wire;
+  }
+}
+//==================================================================================================
+void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
 								   std::vector<int> & WC_vect,
 								   std::vector<float> & hit_wire_vect)
   {
@@ -406,9 +419,17 @@ void WCTrackBuildernew::beginJob()//fhicl::ParameterSet const & p)
 
   // Implementation of optional member function here.
       // Implementation of optional member function here.
-    art::ServiceHandle<art::TFileService> tfs;
-fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);    
-//reconfigure(p);
+art::ServiceHandle<art::TFileService> tfs;
+fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7); 
+fTree=tfs->make<TTree>("WCTree","WCTree");
+fTree->Branch("WCx1",&WCx1,"WCx1[100]/I");
+fTree->Branch("WCx2",&WCx2,"WCx2[100]/I");
+fTree->Branch("WCx3",&WCx3,"WCx3[100]/I");
+fTree->Branch("WCx4",&WCx4,"WCx4[100]/I");
+fTree->Branch("WCy1",&WCy1,"WCy1[100]/I");
+fTree->Branch("WCy2",&WCy2,"WCy2[100]/I");
+fTree->Branch("WCy3",&WCy3,"WCy3[100]/I");
+fTree->Branch("WCy4",&WCy4,"WCy4[100]/I");
 //Hists that should be used for diagnostics and deleted before production
 if(fCheckTracks){
   for(int i=0; i<99; ++i){

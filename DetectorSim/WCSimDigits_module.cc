@@ -66,15 +66,19 @@ public:
   void respondToOpenOutputFiles(art::FileBlock const & fb) override;
   std::vector<raw::AuxDetDigit> MakeWCDigits(sim::AuxDetIDE & TheIDE, int  AuxDetID);
   void ResetVars();
-  int neutrals[8]={22,14,2112,310,130,311,12,16}; //Neutrally charged particles that shouldn't make digits
+  int neutrals[9]={22,14,2112,310,130,311,12,16,111}; //Neutrally charged particles that shouldn't make digits
   bool IsNeutral;
   TTree* fTree;
   int WCx1[100], WCx2[100], WCx3[100], WCx4[100], WCy1[100], WCy2[100], WCy3[100], WCy4[100]; //Array with wire hit for each Digit. Hopefully no WC is hit by >100 particles.
-  int WC1Count, WC2Count,WC3Count,WC4Count; //A counter for how often a WC is hit.
+  float wc1pz[100],wc2pz[100],wc3pz[100],wc4pz[100],wc1theta[100],wc2theta[100],wc3theta[100],wc4theta[100]; //Arrays for P_z and Theta_xz for each digit.
+  int WC1PDG[100], WC2PDG[100], WC3PDG[100], WC4PDG[100]; // PDG of particle passing through WC
+  float wc1t[100],wc2t[100],wc3t[100],wc4t[100]; //time of digit made in WC
+  int WC1Count, WC2Count,WC3Count,WC4Count, WC1PDGCount, WC2PDGCount, WC3PDGCount, WC4PDGCount; //A counter for how often a WC is hit.
   bool pickytrack, highyield, WC1Hit, WC2Hit, WC3Hit, WC4Hit; //Some bools if WCs have any hits, and if the digits made allow for a picky track or a high yield track.
 private:
 
  std::string fG4ModuleLabel; 
+ std::string fPickyTracks;
 
 };
 
@@ -119,6 +123,9 @@ void WCSimDigits::produce(art::Event & e)
       //Loop over IDEs, which are individual particles passsing through the AuxDet
       for(size_t nIDE=0; nIDE<SimIDE.size(); ++nIDE){
         sim::AuxDetIDE TheIDE=SimIDE[nIDE];
+	// Assuming trigger happens around t=0, as it would be if the event occured exactly as in G4BL. WC timing only reads out for ~300 bins before to ~724 bins after the trigger. 
+	// Only attempt to make digits if the time would be in that window.
+	if(TheIDE.exitT<-300*1.177 || TheIDE.exitT>724*1.177) continue; 
 	int IDETrackID=TheIDE.trackID;
 	IsNeutral=false;
 	
@@ -139,10 +146,38 @@ void WCSimDigits::produce(art::Event & e)
 	       std::cout<<"Making Digit with PDG: "<<G4PDG<<std::endl;
 	       int AuxDetId=aux.AuxDetID();
 	       std::cout<<"Using "<<AuxDetId<<std::endl;
-	       if(AuxDetId==1){WC1Hit=true;}
-	       if(AuxDetId==2){WC2Hit=true;}
-	       if(AuxDetId==3){WC3Hit=true;}
-	       if(AuxDetId==4){WC4Hit=true;}
+	       if(AuxDetId==1){
+	         WC1Hit=true;
+		 WC1PDG[WC1PDGCount]=G4PDG;
+		 wc1pz[WC1PDGCount]=TheIDE.exitMomentumZ;
+		 wc1theta[WC1PDGCount]=atan(TheIDE.exitMomentumX/TheIDE.exitMomentumZ);
+		 wc1t[WC1PDGCount]=TheIDE.exitT;
+		 ++WC1PDGCount;
+	       }
+	       if(AuxDetId==2){
+	         WC2Hit=true;
+		 WC2PDG[WC2PDGCount]=G4PDG;
+		 wc2pz[WC2PDGCount]=TheIDE.exitMomentumZ;
+		 wc2theta[WC2PDGCount]=atan(TheIDE.exitMomentumX/TheIDE.exitMomentumZ);
+		 wc2t[WC2PDGCount]=TheIDE.exitT;		 
+		 ++WC2PDGCount;		 
+	       }
+	       if(AuxDetId==3){
+	         WC3Hit=true;
+		 WC3PDG[WC3PDGCount]=G4PDG;
+		 wc3pz[WC3PDGCount]=TheIDE.exitMomentumZ;
+		 wc3theta[WC3PDGCount]=atan(TheIDE.exitMomentumX/TheIDE.exitMomentumZ);
+		 wc3t[WC3PDGCount]=TheIDE.exitT;		 		 
+		 ++WC3PDGCount;		 
+	       }
+	       if(AuxDetId==4){
+	         WC4Hit=true;
+		 WC4PDG[WC4PDGCount]=G4PDG;
+		 wc4pz[WC4PDGCount]=TheIDE.exitMomentumZ;
+		 wc4theta[WC4PDGCount]=atan(TheIDE.exitMomentumX/TheIDE.exitMomentumZ);	
+		 wc4t[WC4PDGCount]=TheIDE.exitT;	 
+		 ++WC4PDGCount;		 
+	       }
 	       std::vector<raw::AuxDetDigit> SimWCDigits=MakeWCDigits(TheIDE, AuxDetId);
 	       for(size_t Digititer=0; Digititer<SimWCDigits.size(); ++Digititer){
 	         (*MWPCDigits).push_back(SimWCDigits[Digititer]);
@@ -291,6 +326,22 @@ void WCSimDigits::beginJob()
   fTree->Branch("WC2Hit", &WC2Hit,"WC2Hit/O");
   fTree->Branch("WC3Hit", &WC3Hit,"WC3Hit/O");
   fTree->Branch("WC4Hit", &WC4Hit,"WC4Hit/O");
+  fTree->Branch("WC1PDG", &WC1PDG,"WC1PDG[100]/I");
+  fTree->Branch("WC2PDG", &WC2PDG,"WC2PDG[100]/I");
+  fTree->Branch("WC3PDG", &WC3PDG,"WC3PDG[100]/I");
+  fTree->Branch("WC4PDG", &WC4PDG,"WC4PDG[100]/I");
+  fTree->Branch("wc1pz", &wc1pz, "wc1pz[100]/F");
+  fTree->Branch("wc1theta", &wc1theta, "wc1theta[100]/F");
+  fTree->Branch("wc2pz", &wc2pz, "wc2pz[100]/F");
+  fTree->Branch("wc2theta", &wc2theta, "wc2theta[100]/F");
+  fTree->Branch("wc3pz", &wc3pz, "wc3pz[100]/F");
+  fTree->Branch("wc3theta", &wc3theta, "wc3theta[100]/F");
+  fTree->Branch("wc4pz", &wc4pz, "wc4pz[100]/F");
+  fTree->Branch("wc4theta", &wc4theta, "wc4theta[100]/F"); 
+  fTree->Branch("wc1t", &wc1t, "wc1t[100]/F");
+  fTree->Branch("wc2t", &wc2t, "wc2t[100]/F");     
+  fTree->Branch("wc3t", &wc3t, "wc3t[100]/F");     
+  fTree->Branch("wc4t", &wc4t, "wc4t[100]/F");          
 }
 void WCSimDigits::ResetVars()
 {
@@ -304,6 +355,22 @@ void WCSimDigits::ResetVars()
     WCy2[i]=-99999;
     WCy3[i]=-99999;
     WCy4[i]=-99999;
+    WC1PDG[i]=-99999;
+    WC2PDG[i]=-99999;
+    WC3PDG[i]=-99999;
+    WC4PDG[i]=-99999;
+    wc1pz[i]=-99999;
+    wc1theta[i]=-99999;
+    wc2pz[i]=-99999;
+    wc2theta[i]=-99999;
+    wc3pz[i]=-99999;
+    wc3theta[i]=-99999;
+    wc4pz[i]=-99999;
+    wc4theta[i]=-99999; 
+    wc1t[i]=-99999;
+    wc2t[i]=-99999; 
+    wc3t[i]=-99999; 
+    wc4t[i]=-99999;            
   }
   highyield=false;
   pickytrack=false;
@@ -315,7 +382,10 @@ void WCSimDigits::ResetVars()
   WC2Count=0;
   WC3Count=0;
   WC4Count=0;
-
+  WC1PDGCount=0;
+  WC2PDGCount=0;
+  WC3PDGCount=0;
+  WC4PDGCount=0;
  
   
 }
@@ -347,6 +417,8 @@ void WCSimDigits::endSubRun(art::SubRun & sr)
 void WCSimDigits::reconfigure(fhicl::ParameterSet const & p)
 {
   fG4ModuleLabel = p.get<std::string>("G4ModuleLabel");
+  fPickyTracks= p.get<std::string>("PickyTracks");
+  std::cout<<"Picky Tracks is "<<fPickyTracks<<std::endl;
 }
 
 void WCSimDigits::respondToCloseInputFile(art::FileBlock const & fb)

@@ -164,13 +164,6 @@ place DScoll z=6188.0 x=-1077 rotation=y-3.0
   place Det rename=Det4 z=7606.4872 x=-1195.0827 y=-20.4724 rotation=y-3
   place ChFram          z=7606.4872 x=-1195.0827 y=-20.4724 rotation=y-3
   
-virtualdetector Halo height=380.0 width=390.0 length=10.0 material=POLYSTYRENE color=0.8,0.01,0.85
-virtualdetector HaloHole radius=70.0 length=10.2 color=0,0,0 material=Vacuum
-param ctrsep=1*$inch
-   # Place the Halo Hole just 1 mm ahead of the Halo paddle, 
-   # so it gets first dibs on the throughgoing particles we care about. ##
-   place HaloHole x=-1123.24-((1+$ctrsep)*$sinDS) z=7046.51+((1+$ctrsep)*$cosDS) rotation=y-3
-   place Halo     x=-1123.24-($ctrsep*$sinDS)     z=7046.51+($ctrsep*$cosDS) rotation=y-3
 
 #   Downstream TOF Counter  
 param TOFdsThick=50.8   ### 2 inches thick?

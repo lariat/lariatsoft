@@ -29,6 +29,7 @@
 
 //ROOT
 #include <TH1F.h>
+#include <TH2F.h>
 
 
 
@@ -43,7 +44,9 @@ class TOFBuilderAlg{
   void reconfigure( fhicl::ParameterSet const& pset );
   
   std::vector<float> find_hits(std::vector<float> wv);
+  std::vector<float> find_hits(std::vector<float> wv, std::string tag);
   std::vector<float> match_hits(std::vector<float> hits1, std::vector<float> hits2);
+  std::vector<float> match_hits(std::vector<float> hits1, std::vector<float> hits2, std::string tag);
 
   std::pair <std::vector<float>, std::vector<long> > get_TOF_and_TimeStamp (std::vector<const raw::AuxDetDigit*> ust_wv,
 									    std::vector<const raw::AuxDetDigit*> dst_wv);
@@ -61,19 +64,33 @@ class TOFBuilderAlg{
   float  fMultiple;
   double fHitThreshold;
   double fHitWait;
+  double fHitDiffMeanUS;
+  double fHitDiffMeanDS;
   double fHitMatchThreshold;   
 
   TH1F*  fdeltaHit;
+  TH1F*  fdeltaHitUS;
+  TH1F*  fdeltaHitDS;
+  TH1F*  fhitAsymmetryUS;
+  TH1F*  fhitAsymmetryDS;
+  TH2F*  fdeltaHitVsAsymmetryUS;
+  TH2F*  fdeltaHitVsAsymmetryDS;
+
   TH1F*  fderHit;
   TH1F*  fLenHit;
 
-  TH1F*         fDerUSA;
-  TH1F*         fDerUSB;
-  TH1F*         fDerDSA;
-  TH1F*         fDerDSB;
+  TH1F*  fDerUSA;
+  TH1F*  fDerUSB;
+  TH1F*  fDerDSA;
+  TH1F*  fDerDSB;
+  TH1F*  fampHitUSA;
+  TH1F*  fampHitUSB;
+  TH1F*  fampHitDSA;
+  TH1F*  fampHitDSB;
 
   std::vector<float> TOF;	  
   std::vector<long> Dst_Timestamp;
+  std::vector<float> hitAmps[4];
   
 };
 
