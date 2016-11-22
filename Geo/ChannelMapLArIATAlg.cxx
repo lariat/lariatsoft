@@ -33,22 +33,17 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  void ChannelMapLArIATAlg::Initialize( GeometryData_t& geodata )
+  void ChannelMapLArIATAlg::Initialize( GeometryData_t const& geodata )
   {
     // start over:
     Uninitialize();
     
-    std::vector<geo::CryostatGeo*>& cgeo = geodata.cryostats;
+    std::vector<geo::CryostatGeo*> const& cgeo = geodata.cryostats;
     
     fNcryostat = cgeo.size();
     
     mf::LogInfo("ChannelMapLArIATAlg") << "Initializing LArIAT ChannelMap...";
 
-    // First sort the LArTPC related geometry objects and get their channel mapping
-    fSorter.SortCryostats(cgeo);
-    for(size_t c = 0; c < cgeo.size(); ++c) 
-      cgeo[c]->SortSubVolumes(fSorter);
-    
     fNTPC.resize(fNcryostat);
     fWireCounts             .resize(fNcryostat);
     fNPlanes                .resize(fNcryostat);

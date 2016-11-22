@@ -27,7 +27,7 @@ namespace geo{
 
     ChannelMapLArIATAlg(fhicl::ParameterSet const& p);
     
-    virtual void                Initialize( GeometryData_t& geodata ) override;
+    virtual void                Initialize( GeometryData_t const& geodata ) override;
     virtual void                Uninitialize() override;
     virtual std::vector<WireID> ChannelToWire(raw::ChannelID_t channel) const override;
     virtual unsigned int        Nchannels() const override;
@@ -206,6 +206,10 @@ namespace geo{
     /// Returns the ID of the ROP the channel belongs to (invalid if none)
     virtual readout::ROPID ChannelToROP
       (raw::ChannelID_t channel) const override;
+    
+    /// Returns the object to sort geometry with
+    virtual geo::GeoObjectSorter const& Sorter() const override
+      { return fSorter; }
     
     /**
      * @brief Returns the ID of the first channel in the specified readout plane
