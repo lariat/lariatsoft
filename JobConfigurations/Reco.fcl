@@ -213,7 +213,7 @@ physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.3 # was 0.2
 physics.producers.trajcluster.TrajClusterAlg.MaxChi: 3
 physics.producers.trajcluster.TrajClusterAlg.MuonTag: [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
 physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [50, 5, 1]    # max MCSMom for a shower tag, max separation, min #traj < separation
-physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr]
+physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5, 100] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr, min MCSMom]
 physics.producers.trajcluster.TrajClusterAlg.MaxVertexTrajSep: [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
 physics.producers.trajcluster.TrajClusterAlg.FillTruth: 0
 physics.producers.trajcluster.TrajClusterAlg.StudyMode: false
