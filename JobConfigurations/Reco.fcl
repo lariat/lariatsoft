@@ -44,16 +44,16 @@ tpcreco: [ caldata,
            gaushit,
            linecluster,
            trajcluster,
-           pandora,
+#           pandora,
            showerreco,
            pmtrack,
            pmtracktc,
            calo,
-           pid,
-           pandoracalo,
-           pandorapid,
-           blurredcluster,
-           emshower
+           pid
+#           pandoracalo,
+#           pandorapid,
+           #blurredcluster
+           #emshower
            ]
 # Define and configure some modules to do work on each event.
 # First modules are defined; they are scheduled later.
