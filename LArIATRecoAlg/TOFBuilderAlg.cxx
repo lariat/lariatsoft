@@ -38,8 +38,6 @@ TOFBuilderAlg::TOFBuilderAlg( fhicl::ParameterSet const& pset )
   fdeltaHitDS = tfs->make<TH1F>("fdeltaHitDS","fdeltaHitDS",80,-8.,8.);
   fhitAsymmetryUS = tfs->make<TH1F>("fhitAsymmetryUS","fhitAsymmetryUS",120,-1.1,1.1);
   fhitAsymmetryDS = tfs->make<TH1F>("fhitAsymmetryDS","fhitAsymmetryDS",120,-1.1,1.1);
-  fdeltaHitVsAsymmetryUS = tfs->make<TH2F>("fdeltaHitVsAsymmetryUS","deltaHit vs. asymmetry ratio (US)",80,-8.,8.,100,-1.,1.);
-  fdeltaHitVsAsymmetryDS = tfs->make<TH2F>("fdeltaHitVsAsymmetryDS","deltaHit vs. asymmetry ratio (DS)",80,-8.,8.,100,-1.,1.);
   
   fLenHit = tfs->make<TH1F>("fLenHit","fLenHit",100,0.,100.);
 
@@ -70,11 +68,12 @@ void TOFBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fMultiple = pset.get<float>("Multiple",1.0);  
 
   // Hit finding/matching parameters
-  fHitThreshold         = pset.get<double>("HitThreshold", -2.5); // -2.5 for run II and -9.0 for run I
-  fHitDiffMeanUS        = pset.get<double>("HitDiffMeanUS",0.8); // 0.8ns for Run I
-  fHitDiffMeanDS        = pset.get<double>("HitDiffMeanDS",2.6); // 2.6ns for Run I
-  fHitMatchThreshold    = pset.get<double>("HitMatchThreshold", 3.0); // ns
-  fHitWait              = pset.get<double>("HitWait", 10);
+  fHitThreshold         = pset.get<double>("HitThreshold", -3.0); // -10.0 for Run I, -3.0 for Run II
+  fHitDiffMeanUS        = pset.get<double>("HitDiffMeanUS",0.5); // 0.6 for Run I, 0.5 for Run II
+  fHitDiffMeanDS        = pset.get<double>("HitDiffMeanDS",0.4); // 1.0 for Run I, 0.4 for Run II
+  fHitMatchThresholdUS  = pset.get<double>("HitMatchThresholdUS", 3.0); // default 3ns (+/- 1.5ns around mean)
+  fHitMatchThresholdDS  = pset.get<double>("HitMatchThresholdDS", 6.0); // default 6ns (+/- 3.0ns around mean)
+  fHitWait              = pset.get<double>("HitWait", 20);
 
   // vector to hold hit amplituds
   hitAmps[0].reserve(100);
@@ -119,7 +118,6 @@ std::pair <std::vector<float>, std::vector<long> > TOFBuilderAlg::get_TOF_and_Ti
       fDerDSB->Fill(float(-dst_v1[i+2]+8.*dst_v1[i+1]-8*dst_v1[i-1]+dst_v1[i-2])/12.);
     }
     
-  
     // Calls the hit finders for each waveform
     hitAmps[0].clear();
     hitAmps[1].clear();
@@ -209,10 +207,11 @@ std::vector<float> TOFBuilderAlg::match_hits(std::vector<float> hits1, std::vect
     */
 
     double hitDiffMean = 0.;
-    if( tag == "us" ) hitDiffMean = fHitDiffMeanUS;
-    if( tag == "ds" ) hitDiffMean = fHitDiffMeanDS;
-    double hitDiff_lowerLim = hitDiffMean - fHitMatchThreshold/2.;
-    double hitDiff_upperLim = hitDiffMean + fHitMatchThreshold/2.;
+    double hitMatch = 3.;
+    if( tag == "us" ) { hitDiffMean = fHitDiffMeanUS; hitMatch = fHitMatchThresholdUS; }
+    if( tag == "ds" ) { hitDiffMean = fHitDiffMeanDS; hitMatch = fHitMatchThresholdDS; }
+    double hitDiff_lowerLim = hitDiffMean - hitMatch/2.;
+    double hitDiff_upperLim = hitDiffMean + hitMatch/2.;
 
     // Saves the hit as matched if it is in the time_threshold
     for(size_t col = 0; col < diff_array.at(row).size(); col++) {
@@ -221,12 +220,10 @@ std::vector<float> TOFBuilderAlg::match_hits(std::vector<float> hits1, std::vect
 	if(tag == "us") { 
           fdeltaHitUS->Fill(hits1.at(row)-hits2.at(col));
           fhitAsymmetryUS->Fill( (hitAmps[0][row]-hitAmps[1][col])/(hitAmps[0][row]+hitAmps[1][col]) );
-          fdeltaHitVsAsymmetryUS->Fill(hits1.at(row)-hits2.at(col),(hitAmps[0][row]-hitAmps[1][col])/(hitAmps[0][row]+hitAmps[1][col]));
         }
         if(tag == "ds") {
           fdeltaHitDS->Fill(hits1.at(row)-hits2.at(col));
           fhitAsymmetryDS->Fill( (hitAmps[2][row]-hitAmps[3][col])/(hitAmps[2][row]+hitAmps[3][col]) );
-          fdeltaHitVsAsymmetryDS->Fill(hits1.at(row)-hits2.at(col),(hitAmps[2][row]-hitAmps[3][col])/(hitAmps[2][row]+hitAmps[3][col]));
         }
 	if(diff_array.at(row).at(col) < hitDiff_upperLim  && diff_array.at(row).at(col) > hitDiff_lowerLim) { 
 	  matched_hits.push_back((hits1.at(row)+hits2.at(col))/2.);
