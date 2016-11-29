@@ -36,6 +36,11 @@ TOFBuilderAlg::TOFBuilderAlg( fhicl::ParameterSet const& pset )
   fdeltaHit = tfs->make<TH1F>("fdeltaHit","fdeltaHit",80,-8.,8.);
   fdeltaHitUS = tfs->make<TH1F>("fdeltaHitUS","fdeltaHitUS",80,-8.,8.);
   fdeltaHitDS = tfs->make<TH1F>("fdeltaHitDS","fdeltaHitDS",80,-8.,8.);
+  fhitAsymmetryUS = tfs->make<TH1F>("fhitAsymmetryUS","fhitAsymmetryUS",120,-1.1,1.1);
+  fhitAsymmetryDS = tfs->make<TH1F>("fhitAsymmetryDS","fhitAsymmetryDS",120,-1.1,1.1);
+  fdeltaHitVsAsymmetryUS = tfs->make<TH2F>("fdeltaHitVsAsymmetryUS","deltaHit vs. asymmetry ratio (US)",80,-8.,8.,100,-1.,1.);
+  fdeltaHitVsAsymmetryDS = tfs->make<TH2F>("fdeltaHitVsAsymmetryDS","deltaHit vs. asymmetry ratio (DS)",80,-8.,8.,100,-1.,1.);
+  
   fLenHit = tfs->make<TH1F>("fLenHit","fLenHit",100,0.,100.);
 
   fDerUSA = tfs->make<TH1F>("fDerUSA","fDerUSA",300, -30.0,30.0);
@@ -47,7 +52,6 @@ TOFBuilderAlg::TOFBuilderAlg( fhicl::ParameterSet const& pset )
   fampHitUSB = tfs->make<TH1F>("fampHitUSB","fampHitUSB;ADC",600,-1000,200);
   fampHitDSA = tfs->make<TH1F>("fampHitDSA","fampHitDSA;ADC",600,-1000,200);
   fampHitDSB = tfs->make<TH1F>("fampHitDSB","fampHitDSB;ADC",600,-1000,200);
-
 
 }
 
@@ -71,6 +75,12 @@ void TOFBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fHitDiffMeanDS        = pset.get<double>("HitDiffMeanDS",2.6); // 2.6ns for Run I
   fHitMatchThreshold    = pset.get<double>("HitMatchThreshold", 3.0); // ns
   fHitWait              = pset.get<double>("HitWait", 10);
+
+  // vector to hold hit amplituds
+  hitAmps[0].reserve(100);
+  hitAmps[1].reserve(100);
+  hitAmps[2].reserve(100);
+  hitAmps[3].reserve(100);
 
 }
 
@@ -111,6 +121,10 @@ std::pair <std::vector<float>, std::vector<long> > TOFBuilderAlg::get_TOF_and_Ti
     
   
     // Calls the hit finders for each waveform
+    hitAmps[0].clear();
+    hitAmps[1].clear();
+    hitAmps[2].clear();
+    hitAmps[3].clear();
     std::vector<float> ustof_hits0 = find_hits(ust_v0,"usa");
     std::vector<float> ustof_hits1 = find_hits(ust_v1,"usb");
     std::vector<float> dstof_hits0 = find_hits(dst_v0,"dsa");
@@ -204,8 +218,16 @@ std::vector<float> TOFBuilderAlg::match_hits(std::vector<float> hits1, std::vect
     for(size_t col = 0; col < diff_array.at(row).size(); col++) {
       if(hits1.at(row) != 0 && hits2.at(col) != 0) {
 	fdeltaHit->Fill(hits1.at(row)-hits2.at(col));
-	if(tag == "us") fdeltaHitUS->Fill(hits1.at(row)-hits2.at(col));
-        if(tag == "ds") fdeltaHitDS->Fill(hits1.at(row)-hits2.at(col));
+	if(tag == "us") { 
+          fdeltaHitUS->Fill(hits1.at(row)-hits2.at(col));
+          fhitAsymmetryUS->Fill( (hitAmps[0][row]-hitAmps[1][col])/(hitAmps[0][row]+hitAmps[1][col]) );
+          fdeltaHitVsAsymmetryUS->Fill(hits1.at(row)-hits2.at(col),(hitAmps[0][row]-hitAmps[1][col])/(hitAmps[0][row]+hitAmps[1][col]));
+        }
+        if(tag == "ds") {
+          fdeltaHitDS->Fill(hits1.at(row)-hits2.at(col));
+          fhitAsymmetryDS->Fill( (hitAmps[2][row]-hitAmps[3][col])/(hitAmps[2][row]+hitAmps[3][col]) );
+          fdeltaHitVsAsymmetryDS->Fill(hits1.at(row)-hits2.at(col),(hitAmps[2][row]-hitAmps[3][col])/(hitAmps[2][row]+hitAmps[3][col]));
+        }
 	if(diff_array.at(row).at(col) < hitDiff_upperLim  && diff_array.at(row).at(col) > hitDiff_lowerLim) { 
 	  matched_hits.push_back((hits1.at(row)+hits2.at(col))/2.);
 	}
@@ -248,10 +270,16 @@ std::vector<float> TOFBuilderAlg::find_hits(std::vector<float> wv, std::string t
     if(gradient < fHitThreshold and rising_edge == false and start_clock == false) {
 
       // loop forward some number of samples and find
-      // this hit's maximum amplitude in ADCs
+      // this hit's maximum amplitude in ADCs.  if the max
+      // isn't updated for 10 consecutive samples, then
+      // stop iterating.
       float amp_max = 0.;
-      for(size_t j=0; j<50; j++){
-        if( wv[i+j] - baseline < amp_max ) amp_max = wv[i+j]-baseline;
+      size_t counter = 0;
+      for(size_t j=0; j<100; j++){
+        float a = wv[i+j]-baseline;
+        if( a < amp_max ) { amp_max = a; counter=0;};
+        if( a >= amp_max) counter++;
+        if( counter >= 10 ) break;
       }
       if( tag=="usa" ) fampHitUSA->Fill(amp_max);
       if( tag=="usb" ) fampHitUSB->Fill(amp_max);
@@ -277,6 +305,10 @@ std::vector<float> TOFBuilderAlg::find_hits(std::vector<float> wv, std::string t
 
       rising_edge = true;
       hits.push_back(new_time);
+      if(tag == "usa") hitAmps[0].push_back(fabs(amp_max));
+      if(tag == "usb") hitAmps[1].push_back(fabs(amp_max));
+      if(tag == "dsa") hitAmps[2].push_back(fabs(amp_max));
+      if(tag == "dsb") hitAmps[3].push_back(fabs(amp_max));
     }
 
     if(rising_edge == true) {

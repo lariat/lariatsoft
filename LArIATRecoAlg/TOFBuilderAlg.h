@@ -29,6 +29,7 @@
 
 //ROOT
 #include <TH1F.h>
+#include <TH2F.h>
 
 
 
@@ -70,6 +71,11 @@ class TOFBuilderAlg{
   TH1F*  fdeltaHit;
   TH1F*  fdeltaHitUS;
   TH1F*  fdeltaHitDS;
+  TH1F*  fhitAsymmetryUS;
+  TH1F*  fhitAsymmetryDS;
+  TH2F*  fdeltaHitVsAsymmetryUS;
+  TH2F*  fdeltaHitVsAsymmetryDS;
+
   TH1F*  fderHit;
   TH1F*  fLenHit;
 
@@ -84,6 +90,7 @@ class TOFBuilderAlg{
 
   std::vector<float> TOF;	  
   std::vector<long> Dst_Timestamp;
+  std::vector<float> hitAmps[4];
   
 };
 
