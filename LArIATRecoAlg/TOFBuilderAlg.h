@@ -66,15 +66,14 @@ class TOFBuilderAlg{
   double fHitWait;
   double fHitDiffMeanUS;
   double fHitDiffMeanDS;
-  double fHitMatchThreshold;   
+  double fHitMatchThresholdUS;
+  double fHitMatchThresholdDS;   
 
   TH1F*  fdeltaHit;
   TH1F*  fdeltaHitUS;
   TH1F*  fdeltaHitDS;
   TH1F*  fhitAsymmetryUS;
   TH1F*  fhitAsymmetryDS;
-  TH2F*  fdeltaHitVsAsymmetryUS;
-  TH2F*  fdeltaHitVsAsymmetryDS;
 
   TH1F*  fderHit;
   TH1F*  fLenHit;

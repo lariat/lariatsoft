@@ -44,16 +44,16 @@ tpcreco: [ caldata,
            gaushit,
            linecluster,
            trajcluster,
-           pandora,
+#           pandora,
            showerreco,
            pmtrack,
            pmtracktc,
            calo,
-           pid,
-           pandoracalo,
-           pandorapid,
-           blurredcluster,
-           emshower
+           pid
+#           pandoracalo,
+#           pandorapid,
+           #blurredcluster
+           #emshower
            ]
 # Define and configure some modules to do work on each event.
 # First modules are defined; they are scheduled later.
@@ -147,10 +147,12 @@ outputs:
 
 physics.producers.wctrack.PickyTracks: 	                        false
 
-physics.producers.tof.HitThreshold:                             -10. # (use ~ -3 for Run 2)
-physics.producers.tof.HitDiffMeanUS:                            0.7  # 0.7 for Run 1, ~ 0.4 for Run 2
-physics.producers.tof.HitDiffMeanDS:                            1.5  # 1.5 Run 1, ~0.7 for Run 2
-physics.producers.tof.HitMatchThreshold:                        3.0  
+physics.producers.tof.HitThreshold:                             -10. # -10.0 for Run I, -3.0 for Run II
+physics.producers.tof.HitDiffMeanUS:                            0.4  # 0.6 for Run I, 0.5 for Run II
+physics.producers.tof.HitDiffMeanDS:                            1.0  # 1.0 for Run I, 0.4 for Run II
+physics.producers.tof.HitMatchThresholdUS:                      3.0  
+physics.producers.tof.HitMatchThresholdDS:                      6.0  
+physics.producers.tof.HitWait:                                  20.
 
 physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.caldata.DodQdxCalib:                          true
@@ -213,7 +215,7 @@ physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.3 # was 0.2
 physics.producers.trajcluster.TrajClusterAlg.MaxChi: 3
 physics.producers.trajcluster.TrajClusterAlg.MuonTag: [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
 physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [50, 5, 1]    # max MCSMom for a shower tag, max separation, min #traj < separation
-physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr]
+physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5, 100] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr, min MCSMom]
 physics.producers.trajcluster.TrajClusterAlg.MaxVertexTrajSep: [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
 physics.producers.trajcluster.TrajClusterAlg.FillTruth: 0
 physics.producers.trajcluster.TrajClusterAlg.StudyMode: false

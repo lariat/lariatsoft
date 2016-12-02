@@ -246,6 +246,8 @@ private:
   float  WC4xPos[kMaxWCTracks];
   float  WC4yPos[kMaxWCTracks];
   float  WC4zPos[kMaxWCTracks];
+  float  WCTrackResidual[kMaxWCTracks]; //How far off a straight line in YZ plane was the the WCTrack?
+  float  WCTrackWCMissed[kMaxWCTracks]; //If this was made with 3 points, was it WC2 or WC3 missed?
    
   // === Storing Time of Flight information ===
   int ntof;
@@ -1112,17 +1114,20 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       WC4xPos[wct_count] = wctrack[wct_count]->HitPosition(3,0);
       WC4yPos[wct_count] = wctrack[wct_count]->HitPosition(3,1);
       WC4zPos[wct_count] = wctrack[wct_count]->HitPosition(3,2);
+      WCTrackResidual[wct_count]= wctrack[wct_count]->Residual();
+      WCTrackWCMissed[wct_count]= wctrack[wct_count]->WCMissed();
 
       
       // === Getting individual channel information ===
       for(size_t chIt = 0; 2*chIt+1 < wctrack[wct_count]->NHits(); ++chIt)
 	{
-	  XWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt);
-	  YWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt+1);
+	  if(float(chIt)!=wctrack[wct_count]->WCMissed()){
+	    XWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt);
+	    YWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt+1);
 	 
-	  XAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt);
-	  YAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt+1);
-      
+	    XAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt);
+	    YAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt+1);
+          }//<-- end if chIt != WCMissed
 	}//<---End chIt loop
       
     }//<---end wctrack auto loop
@@ -1791,6 +1796,8 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("WC4xPos",WC4xPos,"WC4xPos[nwctrks]/F");
   fTree->Branch("WC4yPos",WC4yPos,"WC4yPos[nwctrks]/F");
   fTree->Branch("WC4zPos",WC4zPos,"WC4zPos[nwctrks]/F");
+  fTree->Branch("WCTrackResidual", WCTrackResidual,"WCTrackResidual[nwctrks]/F");
+  fTree->Branch("WCTrackWCMissed", WCTrackWCMissed,"WCTrackWCMissed[nwctrks]/I");
   
   fTree->Branch("ntof", &ntof, "ntof/I");
   fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
@@ -2044,6 +2051,8 @@ void lariat::AnaTreeT1034::ResetVars()
       WC4xPos[i] = -99999;
       WC4yPos[i] = -99999;
       WC4zPos[i] = -99999;
+      WCTrackResidual[i] = -99999;
+      WCTrackWCMissed[i] = -99999;
    
     }//<---End I loop
   

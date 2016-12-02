@@ -2,10 +2,9 @@
  
 process_name: Reco2D
 
-physics.producers.tof.HitThreshold:                             -3.0 
-physics.producers.tof.HitDiffMeanUS:                            0.4 # approximate -- more detailed study needed 
-physics.producers.tof.HitDiffMeanDS:                            0.7 # approximate -- more detailed study needed
-physics.producers.tof.HitMatchThreshold:                        3.0  
+physics.producers.tof.HitThreshold:                             -3.0. # -10.0 for Run I, -3.0 for Run II
+physics.producers.tof.HitDiffMeanUS:                            0.5  # 0.6 for Run I, 0.5 for Run II
+physics.producers.tof.HitDiffMeanDS:                            0.4  # 1.0 for Run I, 0.4 for Run II
 
 physics.producers.caldata.dQdxCalibFileName: "LArIATChargeCorrectionFactors_Run2.txt"
 
