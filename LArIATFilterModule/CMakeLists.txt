@@ -22,7 +22,7 @@ art_make(BASENAME_ONLY
          
          
          larsim_MCCheater_BackTracker_service
-         larsim_RandomUtils_LArSeedService_service
+         nutools_RandomUtils_NuRandomService_service
          nusimdata_SimulationBase
          ${ART_FRAMEWORK_CORE}
          ${ART_FRAMEWORK_PRINCIPAL}

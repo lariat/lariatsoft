@@ -34,7 +34,7 @@ lariat_services:
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
  DetectorClocksService:        @local::lariat_detectorclocks
  BackTracker:                  @local::standard_backtracker
- LArSeedService:               @local::random_seedservice
+ NuRandomService:               @local::random_NuRandomService
  DetPedestalService:           @local::lariat_detpedestalservice
  ChannelStatusService:         @local::lariat_channel_filter
  SpaceCharge:                  @local::standard_spacecharge
@@ -58,7 +58,7 @@ lariat_simulation_services:
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
  DetectorClocksService:        @local::lariat_detectorclocks
  BackTracker:                  @local::standard_backtracker
- LArSeedService:               @local::random_seedservice
+ NuRandomService:               @local::random_NuRandomService
  ChannelStatusService:         @local::lariat_channel_filter
  SpaceCharge:                  @local::standard_spacecharge
  #OpDetResponseInterface:      @local::lariat_opdetresponse

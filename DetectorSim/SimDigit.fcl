@@ -15,7 +15,7 @@ services:
   TimeTracker:  {}
   RandomNumberGenerator: {} #ART native random number generator
   @table::lariat_services
-  LArSeedService: @local::random_seedservice
+  NuRandomService: @local::random_NuRandomService
 }
 
 
