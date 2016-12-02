@@ -26,6 +26,7 @@ from ctypes import *
 import random
 import ctypes
 import copy
+import pickle
 
 parser = optparse.OptionParser("usage: %prog [options]<input file.ROOT> \n")
 parser.add_option ('--maxspill', dest='maxspill', type='int',
@@ -61,6 +62,7 @@ debug = options.debug
 test = options.test
 photoncutoff=options.photoncutoff
 infile = args[0]
+picklefilename=str(infile.split(".root")[0])+".pickle"
 
 ## Constants and such.
 OneDrift = 0.0003932160 # 128 ns * 3072 samples
@@ -224,32 +226,13 @@ for spill, intree in InputSpillTrees.iteritems():
         # add dynamically attribute to the baby class
         pyl.__setattr__(name,leaf)
 
-    # Build a dictionary of index values, with their times as the keys
-    allentriesbytime = {}
+    # Get a dictionary of index values, with their times as the keys
+    allentriesbytime= pickle.load(open(picklefilename,"rb"))
+    allentriesbytime=allentriesbytime[spill]
+    entrytimes=allentriesbytime.keys()
     # Also some useful other lists:
-    entrytimes = []
     triggertimes = []
     triggerentrynums = []
-    
-    # First Loop over this tree: Get the entry numbers and tStartLine (if defined)
-    if debug: print '    Beginning 1st loop over', n_entries," entries."
-    for n in xrange(0, n_entries):
-        intree.GetEntry(n) # Fill pyl with values from the entry at index n
-
-        # Has to occur in StartLine
-        timeExists = pyl.TrackPresentStartLine.GetValue()
-        if not timeExists: continue
-
-        time = float(pyl.tStartLine.GetValue())
-        if debug: print n,":",time
-        entrytimes.append(time) # All tStartLine values. Values can be non-unique.
-
-        # Make sure there's a list of entry numbers in the dictionary for this time
-        if time not in allentriesbytime.keys(): allentriesbytime[time] = []
-
-        # For each unique tStartLine, make a list of the entry numbers.
-        allentriesbytime[time].append(n)
-
     # What did we get?  Any non-unique index values?
     timecount = len(entrytimes)
     uniqcount = len(set(entrytimes))
