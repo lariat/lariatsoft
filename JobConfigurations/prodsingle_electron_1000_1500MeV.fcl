@@ -31,7 +31,7 @@ services:
   #              @table::lariat_simulation_services
   
   @table::lariat_simulation_services
-  LArSeedService: @local::random_seedservice
+  NuRandomService: @local::random_NuRandomService
 }
 
 
