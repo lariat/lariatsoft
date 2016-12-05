@@ -1,4 +1,4 @@
-g#!/usr/bin/env python
+#!/usr/bin/env python
 # Author: Jason St. John
 # A very brief skeleton of a script to read in a file of TTrees representing particle interactions in G4BL, all assumed to be part of
 # the same simulated particle interactions such that EventID and TrackID combinations are unique, and save them in new trees, one for
