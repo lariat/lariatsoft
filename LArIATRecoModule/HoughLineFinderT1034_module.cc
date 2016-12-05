@@ -23,7 +23,7 @@
 #include "art/Framework/Services/Optional/TFileService.h"
 #include "CLHEP/Random/JamesRandom.h"
 
-#include "larsim/RandomUtils/LArSeedService.h"
+#include "nutools/RandomUtils/NuRandomService.h"
 
 //C/C++ standard library
 #include <algorithm>
@@ -112,7 +112,7 @@ namespace cluster {
     produces< art::Assns<raw::Trigger, recob::Cluster > >();
     
     //Create random number engine
-    art::ServiceHandle<sim::LArSeedService>()->createEngine(*this, pset, "Seed");
+    art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, pset, "Seed");
   }
   
   //****************************************************************************

@@ -53,7 +53,7 @@ physics:
   end_paths: [ analysis ]  
 }
 
-services.LArSeedService: @local::random_seedservice
+services.NuRandomService: @local::random_NuRandomService
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.MinSamples:                   2
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.ResidualThreshold:            1
 #physics.analyzers.ClockCorrectionCheck.ClockCorrectionAlg.MaxTrials:                    10000

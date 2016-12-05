@@ -1,7 +1,7 @@
 #include "multiple_input_output_slice_job.fcl"
 
-services.LArSeedService.policy: "preDefinedSeed"
-services.LArSeedService.baseSeed: 1234
+services.NuRandomService.policy: "preDefinedSeed"
+services.NuRandomService.baseSeed: 1234
 
 #services.RandomNumberGenerator.restoreFrom: "SlicerRandomSeeds_Ref.dat"
 #services.RandomNumberGenerator.saveTo: "SlicerRandomSeeds.dat"
