@@ -73,7 +73,7 @@ if picklefilename == '': picklefilename=str(infile.split(".root")[0])+".pickle"
 if os.path.isfile(picklefilename): timeindexfromfile = True
 else: 
     timeindexfromfile = False
-    print "Unable to find pickle file ",picklefilename".  Will extract time index from ROOT file."
+    print "Unable to find pickle file ",picklefilename,".  Will extract time index from ROOT file."
 
 ## Constants and such.
 OneDrift = 0.0003932160 # 128 ns * 3072 samples
@@ -247,6 +247,8 @@ for spill, intree in InputSpillTrees.iteritems():
         triggertimes = []
         triggerentrynums = []
     else: # Have to get it the old-fashioned way
+        entrytimes=[]
+	allentriesbytime={}
         # First Loop over this tree: Get the entry numbers and tStartLine (if defined)
         if debug: print '    Beginning 1st loop over', n_entries," entries."
         for n in xrange(0, n_entries):
