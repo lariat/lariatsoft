@@ -51,18 +51,29 @@ parser.add_option ('--test', dest='test', action="store_true", default=False,
 parser.add_option ('--photoncutoff', dest='photoncutoff', type='float',
                    default =0.001,
                    help="Minimum photon inclusion energy for textfile (GeV)")
+parser.add_option ('--timeindex', dest='picklefilename', type='string',
+                   default ='',
+                   help="Name of pickle file containing time index.")
 
 options, args = parser.parse_args()
-maxspill = options.maxspill
-firstspill = options.firstspill
-lastspill = options.lastspill
-spillinterval = options.spillinterval
-driftinterval = options.driftinterval
-debug = options.debug
-test = options.test
-photoncutoff=options.photoncutoff
-infile = args[0]
-picklefilename=str(infile.split(".root")[0])+".pickle"
+maxspill       = options.maxspill
+firstspill     = options.firstspill
+lastspill      = options.lastspill
+spillinterval  = options.spillinterval
+driftinterval  = options.driftinterval
+debug          = options.debug
+test           = options.test
+photoncutoff   = options.photoncutoff
+picklefilename = options.picklefilename
+infile         = args[0]
+
+## Attempt to make picklefilename automatically
+if picklefilename == '': picklefilename=str(infile.split(".root")[0])+".pickle"
+    
+if os.path.isfile(picklefilename): timeindexfromfile = True
+else: 
+    timeindexfromfile = False
+    print "Unable to find pickle file ",picklefilename".  Will extract time index from ROOT file."
 
 ## Constants and such.
 OneDrift = 0.0003932160 # 128 ns * 3072 samples
@@ -226,13 +237,32 @@ for spill, intree in InputSpillTrees.iteritems():
         # add dynamically attribute to the baby class
         pyl.__setattr__(name,leaf)
 
-    # Get a dictionary of index values, with their times as the keys
-    allentriesbytime= pickle.load(open(picklefilename,"rb"))
-    allentriesbytime=allentriesbytime[spill]
-    entrytimes=allentriesbytime.keys()
-    # Also some useful other lists:
-    triggertimes = []
-    triggerentrynums = []
+    # Get the time index allentriesbytime from a pickle file if possible. 
+    if timeindexfromfile:
+        # Get a dictionary of index values, with their times as the keys
+        allentriesbytime= pickle.load(open(picklefilename,"rb"))
+        allentriesbytime=allentriesbytime[spill]
+        entrytimes=allentriesbytime.keys()
+        # Also some useful other lists:
+        triggertimes = []
+        triggerentrynums = []
+    else: # Have to get it the old-fashioned way
+        # First Loop over this tree: Get the entry numbers and tStartLine (if defined)
+        if debug: print '    Beginning 1st loop over', n_entries," entries."
+        for n in xrange(0, n_entries):
+            intree.GetEntry(n) # Fill pyl with values from the entry at index n
+            # Has to occur in StartLine
+            timeExists = pyl.TrackPresentStartLine.GetValue()
+            if not timeExists: continue
+            # Get the time value
+            time = float(pyl.tStartLine.GetValue())
+            if debug: print n,":",time
+            entrytimes.append(time) # All tStartLine values. Values can be non-unique.
+            # Make sure there's a list of entry numbers in the dictionary for this time
+            if time not in allentriesbytime.keys(): allentriesbytime[time] = []
+            # For each unique tStartLine, make a list of the entry numbers.
+            allentriesbytime[time].append(n)
+
     # What did we get?  Any non-unique index values?
     timecount = len(entrytimes)
     uniqcount = len(set(entrytimes))
