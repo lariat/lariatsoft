@@ -236,7 +236,8 @@ for spill, intree in InputSpillTrees.iteritems():
         name = leaf.GetName()
         # add dynamically attribute to the baby class
         pyl.__setattr__(name,leaf)
-
+    triggertimes = []
+    triggerentrynums = []
     # Get the time index allentriesbytime from a pickle file if possible. 
     if timeindexfromfile:
         # Get a dictionary of index values, with their times as the keys
@@ -261,7 +262,8 @@ for spill, intree in InputSpillTrees.iteritems():
             if debug: print n,":",time
             entrytimes.append(time) # All tStartLine values. Values can be non-unique.
             # Make sure there's a list of entry numbers in the dictionary for this time
-            if time not in allentriesbytime.keys(): allentriesbytime[time] = []
+            if time not in allentriesbytime.keys():
+	      allentriesbytime[time] = []
             # For each unique tStartLine, make a list of the entry numbers.
             allentriesbytime[time].append(n)
 
