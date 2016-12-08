@@ -38,6 +38,9 @@ parser.add_option ('--spillsize', dest='spillsize', type='int',
 parser.add_option ('--spillinterval', dest='spillinterval', type='float',
                    default = 60.0,
                    help="The duration of a sub-run. (seconds)")
+parser.add_option ('--gammafloor', dest='gammacutoff', type='float',
+                   default = 0.5,
+                   help="In the starterTree gammas less than this energy will be ignored. default: 0.5 (MeV)")
 parser.add_option ('-l', dest='keepitlocal', action="store_true", default=False,
                    help="Keep the output file in the same directory as the input file.")
 parser.add_option ('-v', dest='debug', action="store_true", default=False,
@@ -45,13 +48,14 @@ parser.add_option ('-v', dest='debug', action="store_true", default=False,
 
 
 options, args = parser.parse_args()
-outfile = options.outfile
-debug = options.debug
-starterTree = options.starterTree
-maxspill = options.maxspill
-spillsize = options.spillsize
+outfile       = options.outfile
+debug         = options.debug
+starterTree   = options.starterTree
+maxspill      = options.maxspill
+spillsize     = options.spillsize
 spillinterval = options.spillinterval
 keepitlocal   = options.keepitlocal
+gammacutoff   = options.gammacutoff
 infile = args[0]
 
 ################################
@@ -265,8 +269,11 @@ for ds_track in INtuples[starterTree]:
     spill = 1 + (event/spillsize) # Arbitrarily group tracks by EventID into spills. 
 
     # Skip low-E photons
-    # E = pow( pow(ds_track.pxStartLine,2) + pow(ds_track.pyStartLine,2) + pow(ds_track.pzStartLine,2), 0.5)
-    # if ds_track.PDGidStartLine == 22 and E < 200: continue 
+    if ds_track.PDGid == 22:
+        E = pow( pow(ds_track.Px,2) + pow(ds_track.Py,2) + pow(ds_track.Pz,2), 0.5)
+        if E < gammacutoff: 
+            if debug: print "Gamma cutoff at ",gammacutoff
+            continue 
     
     # New spill?  Needs a new TTree
     if spill not in newTrees.keys(): 
