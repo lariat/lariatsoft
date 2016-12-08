@@ -130,6 +130,7 @@ dumtuple = ROOT.TNtuple() # Just need an instance of this class, it seems.
 print "Looping over input file contents, getting trees."
 # Read in all the single-detector TTree objects in the input file.
 for key in ROOT.gDirectory.GetListOfKeys():
+    if key.GetName() in INtuples.keys(): continue # Do not pick up further, lower-cycle versions of trees already grabbed. 
     if dumtuple.Class() == key.ReadObj().Class():
         if debug: print key.GetName(),
         if debug: print key.ReadObj().ClassName()
