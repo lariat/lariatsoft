@@ -73,7 +73,7 @@ if picklefilename == '': picklefilename=str(infile.split(".root")[0])+".pickle"
 if os.path.isfile(picklefilename): timeindexfromfile = True
 else: 
     timeindexfromfile = False
-    print "Unable to find pickle file ",picklefilename".  Will extract time index from ROOT file."
+    print "Unable to find pickle file ",picklefilename,".  Will extract time index from ROOT file."
 
 ## Constants and such.
 OneDrift = 0.0003932160 # 128 ns * 3072 samples
@@ -236,7 +236,8 @@ for spill, intree in InputSpillTrees.iteritems():
         name = leaf.GetName()
         # add dynamically attribute to the baby class
         pyl.__setattr__(name,leaf)
-
+    triggertimes = []
+    triggerentrynums = []
     # Get the time index allentriesbytime from a pickle file if possible. 
     if timeindexfromfile:
         # Get a dictionary of index values, with their times as the keys
@@ -247,6 +248,8 @@ for spill, intree in InputSpillTrees.iteritems():
         triggertimes = []
         triggerentrynums = []
     else: # Have to get it the old-fashioned way
+        entrytimes=[]
+	allentriesbytime={}
         # First Loop over this tree: Get the entry numbers and tStartLine (if defined)
         if debug: print '    Beginning 1st loop over', n_entries," entries."
         for n in xrange(0, n_entries):
@@ -259,7 +262,8 @@ for spill, intree in InputSpillTrees.iteritems():
             if debug: print n,":",time
             entrytimes.append(time) # All tStartLine values. Values can be non-unique.
             # Make sure there's a list of entry numbers in the dictionary for this time
-            if time not in allentriesbytime.keys(): allentriesbytime[time] = []
+            if time not in allentriesbytime.keys():
+	      allentriesbytime[time] = []
             # For each unique tStartLine, make a list of the entry numbers.
             allentriesbytime[time].append(n)
 
