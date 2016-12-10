@@ -20,6 +20,7 @@ from array import *
 import math
 from ctypes import *
 import random
+import pickle
 
 parser = optparse.OptionParser("usage: %prog [options]<input file.ROOT> \n")
 parser.add_option ('--o', dest='outfile', type='string',
@@ -37,6 +38,9 @@ parser.add_option ('--spillsize', dest='spillsize', type='int',
 parser.add_option ('--spillinterval', dest='spillinterval', type='float',
                    default = 60.0,
                    help="The duration of a sub-run. (seconds)")
+parser.add_option ('--gammafloor', dest='gammacutoff', type='float',
+                   default = 0.5,
+                   help="In the starterTree gammas less than this energy will be ignored. default: 0.5 (MeV)")
 parser.add_option ('-l', dest='keepitlocal', action="store_true", default=False,
                    help="Keep the output file in the same directory as the input file.")
 parser.add_option ('-v', dest='debug', action="store_true", default=False,
@@ -44,13 +48,14 @@ parser.add_option ('-v', dest='debug', action="store_true", default=False,
 
 
 options, args = parser.parse_args()
-outfile = options.outfile
-debug = options.debug
-starterTree = options.starterTree
-maxspill = options.maxspill
-spillsize = options.spillsize
+outfile       = options.outfile
+debug         = options.debug
+starterTree   = options.starterTree
+maxspill      = options.maxspill
+spillsize     = options.spillsize
 spillinterval = options.spillinterval
 keepitlocal   = options.keepitlocal
+gammacutoff   = options.gammacutoff
 infile = args[0]
 
 ################################
@@ -129,6 +134,7 @@ dumtuple = ROOT.TNtuple() # Just need an instance of this class, it seems.
 print "Looping over input file contents, getting trees."
 # Read in all the single-detector TTree objects in the input file.
 for key in ROOT.gDirectory.GetListOfKeys():
+    if key.GetName() in INtuples.keys(): continue # Do not pick up further, lower-cycle versions of trees already grabbed. 
     if dumtuple.Class() == key.ReadObj().Class():
         if debug: print key.GetName(),
         if debug: print key.ReadObj().ClassName()
@@ -200,7 +206,7 @@ else:
     outfilename = "MergedAt"+starterTree+infilename
 outfile = ROOT.TFile(outfilename,"RECREATE")
 
-
+timeindexf = outfilename.replace('root','pickle')
 newTrees = {} # dictionary of new TTrees to save to outfile
 pointers = {} # dictionary of pointers, to please ROOT, which loves pointers for its TTrees
 
@@ -209,7 +215,10 @@ pointers = {} # dictionary of pointers, to please ROOT, which loves pointers for
 # and supply it and its variable pointers to the  relevant dictionaries. 
 # Also hooks the branches to their pointers.
 #
-def AddTree(treedict, spillnum, pointers):
+def AddTree(treedict, spillnum, pointers, timeindex):
+    # Add a dictionary for the time index of this spill
+    timeindex[spillnum] = {}
+
     print "Adding tree for spill ",spillnum
     treename = "EventTree_Spill"+str(spillnum)
     # Make the new TTree ans store it in the TTree dictionary
@@ -235,7 +244,7 @@ def AddTree(treedict, spillnum, pointers):
                 name = var+det
                 if debug: print "                              ",name
                 pointers[spillnum, name] = array( 'd', [ 0 ] ) ## Double, initialized to 0
-                treedict[spillnum].Branch(name,pointers[spillnum, name],name+"/d")
+                treedict[spillnum].Branch(name,pointers[spillnum, name],name+"/d") ## Add this branch to the treedict
 #End of AddTree definition
 
 # Be sure we're working in the correct output file.
@@ -245,6 +254,8 @@ outfile.cd()
 trackcount = 0
 lastspill = 0
 spillcount = 0
+entrytally = 0
+timeindex = {}
 
 if maxspill <= 0: print ("Making as many spills of %s events each as %s contains." % (spillsize,infilename))
 else: print ("Processing %s into %s spills of %s events each." % (infilename, maxspill, spillsize ))
@@ -252,13 +263,22 @@ else: print ("Processing %s into %s spills of %s events each." % (infilename, ma
 # Loop over input TTree
 for ds_track in INtuples[starterTree]:
     trackcount += 1
+    entrytally += 1
     ## Unique identifiers for this track:
     (event, track) = (int(ds_track.EventID), int(ds_track.TrackID))
     spill = 1 + (event/spillsize) # Arbitrarily group tracks by EventID into spills. 
+
+    # Skip low-E photons
+    if ds_track.PDGid == 22:
+        E = pow( pow(ds_track.Px,2) + pow(ds_track.Py,2) + pow(ds_track.Pz,2), 0.5)
+        if E < gammacutoff: 
+            if debug: print "Gamma cutoff at ",gammacutoff
+            continue 
     
     # New spill?  Needs a new TTree
     if spill not in newTrees.keys(): 
-        AddTree(newTrees, spill, pointers)
+        AddTree(newTrees, spill, pointers, timeindex) # Also adds a dictionary of TTree entry times for this spill
+        entrytally = 1
         spillcount += 1
         if maxspill > 0 and spillcount > maxspill: break
     # Development purposes: (Abbreviated run)
@@ -292,9 +312,16 @@ for ds_track in INtuples[starterTree]:
                         if tuplename in syst:
                             if debug: print "Filling ",vardet," in ",systname
                             if var == 't':  # Convert times to seconds & add an offset mimicking spill time profile
-                                random.seed(event) #Same random offset for each event.
+                                random.seed(event) #Same random offset for each event; progeny of the same pion on target have the same offset.
                                 spilltimeoffset = spillinterval * float (spill)
-                                pointers[spill, vardet][0] = getattr(structs[systname],vardet)*1e-9 + RandomOffsetSeconds() + spilltimeoffset
+                                newtime = getattr(structs[systname],vardet)*1e-9 + RandomOffsetSeconds() + spilltimeoffset
+                                pointers[spill, vardet][0] = newtime
+                                # Special need to track entrie by tTOFds
+                                if tuplename == 'TOFds': 
+                                    # Make a new list if this time has never been seen before
+                                    if newtime not in timeindex[spill].keys():  timeindex[spill][newtime] = []
+                                    # Add this entry number to the list of entries at this time. (For next stage of processing.)
+                                    timeindex[spill][newtime].append(entrytally)
                             else:
                                 pointers[spill, vardet][0] = getattr(structs[systname],vardet)
                             #-close else from var == 't'
@@ -307,7 +334,7 @@ for ds_track in INtuples[starterTree]:
 
     # Push the values to the TTree
     newTrees[spill].Fill()
-
+    
 #-Closes for ds_track in INtuples[starterTree]
 
 print trackcount, "  total tracks in ",starterTree
@@ -322,3 +349,6 @@ infile.Close()
 
 print "Here ya go: ",
 commands.getoutput("ls -ltra")
+
+with open(timeindexf, 'wb') as handle:
+  pickle.dump(timeindex, handle)
