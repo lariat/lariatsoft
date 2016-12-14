@@ -29,6 +29,10 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+// ROOT includes
+#include "TH1F.h"
+#include "TF1.h"
+
 enum {
   V1740_N_CHANNELS = 64,
   V1751_N_CHANNELS = 8,
@@ -247,16 +251,32 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
 //===============================================================----------
 float FragmentToDigitAlg::findPedestal(const std::vector<short> & adcVec)
 {
+
   // do nothing if there are no values in the vector
   if(adcVec.size() < 1) return 0.;
-
-  // for now try taking the simple mean of the values in the 
-  // vector and return that as the pedestal
+  
+  // first find overall mean and RMS
   float mean = 0.;
-  for(auto const& adc : adcVec) mean += adc;
-  mean /= 1.*adcVec.size();
+  float rms = 0.;
+  float n = 1.*adcVec.size();
+  for(auto const& adc : adcVec) mean += adc/n;
+  for(auto const& adc : adcVec) rms += pow(1.*adc-mean,2);
+  rms = sqrt( rms / n );
+  
+  // recalculate mean, but limiting to 
+  // values within 1 sigma of overall mean
+  float pedestal = 0.;
+  int nn = 0;
+  for(auto const& adc : adcVec){
+    if( fabs(adc - mean) < rms ) {
+      pedestal += 1.*adc;
+      nn++;
+    }
+  }
+  pedestal /= 1.*nn;
+  
+  return pedestal;
 
-  return mean;
 }
 
 //===============================================================----------
