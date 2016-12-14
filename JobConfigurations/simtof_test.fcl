@@ -17,7 +17,6 @@
 #include "lariatanamodules.fcl"
 #include "cluster_lariat.fcl"
 #include "showerfindermodules.fcl"
-#include "pandoramodules.fcl"
  
 process_name: Reco2D
 
