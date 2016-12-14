@@ -317,7 +317,7 @@ for ds_track in INtuples[starterTree]:
                                 newtime = getattr(structs[systname],vardet)*1e-9 + RandomOffsetSeconds() + spilltimeoffset
                                 pointers[spill, vardet][0] = newtime
                                 # Special need to track entrie by tTOFds
-                                if tuplename == 'TOFds': 
+                                if tuplename == 'StartLine': 
                                     # Make a new list if this time has never been seen before
                                     if newtime not in timeindex[spill].keys():  timeindex[spill][newtime] = []
                                     # Add this entry number to the list of entries at this time. (For next stage of processing.)
