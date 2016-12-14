@@ -29,10 +29,6 @@
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
-// ROOT includes
-#include "TH1F.h"
-#include "TF1.h"
-
 enum {
   V1740_N_CHANNELS = 64,
   V1751_N_CHANNELS = 8,
