@@ -89,7 +89,7 @@ function data_production
         for CUR_OUT in ${OUTPUT_STREAM//-o/}
         do
             CUR_OUT=${CUR_OUT//*:/}
-            CUR_OUT2=$(echo $CUR_OUT | sed -r "s/_%#// ; s/_[0-9]+.root/.root/")
+            CUR_OUT2=$(echo $CUR_OUT | sed -e "s/_%#// ; s/_1.root/.root/")
             [ "${CUR_OUT//_%#.root/_1.root}" = "${CUR_OUT2}" ] || ln -sv ${CUR_OUT//_%#.root/_1.root} ${CUR_OUT2}
         done
 
