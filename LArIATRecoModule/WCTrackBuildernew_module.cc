@@ -252,6 +252,20 @@ void WCTrackBuildernew::produce(art::Event & e)
 					 residual,
 					 hit_position_vect,
                                          offset);			       
+  // Convert quantities from mm to cm, since WCTrackBuilderalg uses mm, 
+  // but LArSoft uses cm for everything
+  for (size_t i = 0; i < x_face_list.size(); i++) x_face_list[i] *= 0.1;
+  for (size_t i = 0; i < y_face_list.size(); i++) y_face_list[i] *= 0.1;
+  for (size_t i = 0; i < x_dist_list.size(); i++) x_dist_list[i] *= 0.1;
+  for (size_t i = 0; i < y_dist_list.size(); i++) y_dist_list[i] *= 0.1;
+  for (size_t i = 0; i < z_dist_list.size(); i++) z_dist_list[i] *= 0.1;
+  for (size_t i = 0; i < 4; i++)
+  {
+    for (size_t j = 0; j < 3; j++)
+    {
+        hit_position_vect[i][j] *= 0.1;
+    }
+  }
   std::cout<<" reco_pz: "<<reco_pz_list.size()<<std::endl;
   if(reco_pz2M_list.size())  std::cout<<"Checking the filling up of reco_pz2m: "<<reco_pz2M_list.size()<<" "<<reco_pz2M_list[0]<<" "<<reco_pz_list[0]<<std::endl;
      //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
