@@ -84,7 +84,7 @@ namespace ldp{
     if (!evt.isRealData() && !fUseDatabaseForMC) return;
     
     if (!fGotElectronLifetimeFromDB) {
-      fProp->Update(evt.getRun().run());
+      fProp->Update(evt.run());
       fGotElectronLifetimeFromDB = true;
     }
     

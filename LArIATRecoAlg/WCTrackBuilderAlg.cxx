@@ -6,6 +6,7 @@
 // Other algs can be created in lieu of this one if a better track    //
 // is developed.  This is merely the version we used when hit finding //
 // and track builder were run together in WCTrackBuilderAlg.cxx       //
+// *** All distances in here are in mm! ***                           //
 // Author: Greg Pulliam gkpullia@syr.edu                              //
 //////////////////////////////////////////////////////////////////////// 
 
