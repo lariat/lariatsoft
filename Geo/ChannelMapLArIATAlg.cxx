@@ -12,8 +12,6 @@
 
 // LArSoft Includes
 #include "larcore/Geometry/GeometryCore.h"
-#include "larcore/Geometry/AuxDetGeo.h"
-#include "larcore/Geometry/AuxDetSensitiveGeo.h"
 #include "larcore/Geometry/CryostatGeo.h"
 #include "larcore/Geometry/TPCGeo.h"
 #include "larcore/Geometry/PlaneGeo.h"

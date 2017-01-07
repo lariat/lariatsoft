@@ -1,4 +1,10 @@
 
+/** Builds tracks from hits
+ *
+ * All distances in this class are in mm
+ * (normally, distances are in cm in LArSoft)
+ *
+ */
 #ifndef WCTRACKBUILDERALG_H
 #define WCTRACKBUILDERALG_H
 
@@ -40,6 +46,11 @@ class WCTrackBuilderAlg{
    
    void loadXMLDatabaseTableForBField( int run, int subrun );
    
+   /**
+    * Main method you use to build tracks.
+    *
+    * All distances are in mm and momentum is in MeV
+    */
    void reconstructTracks(std::vector<double> & reco_pz_list,
 					     std::vector<double> & reco_pz2M_list,               
 					     std::vector<double> & x_face_list,
