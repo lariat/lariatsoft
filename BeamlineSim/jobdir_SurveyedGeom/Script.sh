@@ -9,15 +9,14 @@ setup git
 
 setup ifdhc
 
-jobsize=Size
+jobsize=1000
 first=$((${PROCESS}*${jobsize}))
 last=$(( ${first} + $jobsize - 1 ))
-
 echo "PROCESS is: $PROCESS"
 echo "jobsize is: $jobsize" 
 echo "first = $first"
 echo "last = $last"
-
+SPILL=$((${PROCESS}+1 ))
 ifdh cp path/input input
 ifdh cp path/MergeTrees.py MergeTrees.py
 ls -lrth
@@ -26,15 +25,17 @@ ls -lrth
 
 chmod 777 sim_input.root
 chmod 777 MergeTrees.py
-./MergeTrees.py sim_input.root --spillsize Spillsize -T StartLine
+./MergeTrees.py sim_input.root --spillsize 2000 -T StartLine
 chmod 777 MergedAtStartLinesim_input.root
+chmod 777 MergedAtStartLinesim_input.pickle
 ls -lrth
 
 REALUSER=`basename ${X509_USER_PROXY} .proxy | grep -o -P '(?<=_).*(?=_)'`
 echo '$USER: ' $USER
 echo '$REALUSER: ' $REALUSER
 
-ifdh cp MergedAtStartLinesim_input.root /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$PROCESS.root
+ifdh cp MergedAtStartLinesim_input.root /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$SPILL.root
+ifdh cp MergedAtStartLinesim_input.pickle /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$SPILL.pickle
 ls -lrth
 echo $CONDOR_DIR_INPUT
 
