@@ -9,7 +9,7 @@ setup git
 
 setup ifdhc
 
-jobsize=1000
+jobsize=Size
 first=$((${PROCESS}*${jobsize}))
 last=$(( ${first} + $jobsize - 1 ))
 echo "PROCESS is: $PROCESS"
@@ -25,7 +25,7 @@ ls -lrth
 
 chmod 777 sim_input.root
 chmod 777 MergeTrees.py
-./MergeTrees.py sim_input.root --spillsize 2000 -T StartLine
+./MergeTrees.py sim_input.root --spillsize Spillsize -T StartLine
 chmod 777 MergedAtStartLinesim_input.root
 chmod 777 MergedAtStartLinesim_input.pickle
 ls -lrth
