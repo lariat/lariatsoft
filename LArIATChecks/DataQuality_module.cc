@@ -1143,15 +1143,7 @@ namespace DataQuality {
 
         for (size_t tdcIndex = 0; tdcIndex < TDCFragment::MAX_TDCS; ++tdcIndex) {
 
-////////////////////////////////////////////////////////////////////////
-// temporary band-aid fix
-////////////////////////////////////////////////////////////////////////
- 
-std::cout << "tdcIndex: " << tdcIndex << std::endl;
- 
-if (tdcIndex > 11) continue;
- 
-////////////////////////////////////////////////////////////////////////
+          if (tdcIndex >= tdcDataBlock.size()) continue;
 
           TDCFragment::TdcEventData tdcEventData = tdcDataBlock.at(tdcIndex);
 
@@ -1192,15 +1184,7 @@ if (tdcIndex > 11) continue;
 
         for (size_t tdcIndex = 0; tdcIndex < TDCFragment::MAX_TDCS; ++tdcIndex) {
 
-////////////////////////////////////////////////////////////////////////
-// temporary band-aid fix
-////////////////////////////////////////////////////////////////////////
- 
-std::cout << "tdcIndex: " << tdcIndex << std::endl;
- 
-if (tdcIndex > 11) continue;
- 
-////////////////////////////////////////////////////////////////////////
+          if (tdcIndex >= tdcDataBlock.size()) continue;
 
           TDCFragment::TdcEventData tdcEventData = tdcDataBlock.at(tdcIndex);
 
