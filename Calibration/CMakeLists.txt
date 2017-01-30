@@ -7,7 +7,7 @@ simple_plugin(CalWireT1034 "module"
 			        lardataobj_RawData
               RawDataUtilities
               lardataobj_RecoBase
-              lardata_RecoBaseArt
+              lardata_ArtDataHelper
 			        RawDataUtilities
 		          SignalShapingServiceT1034_service
               ${ART_FRAMEWORK_CORE}
@@ -34,7 +34,7 @@ simple_plugin(CalWireROIT1034 "module"
               larevt_Filters
 			        lardataobj_RawData
               lardataobj_RecoBase
-              lardata_RecoBaseArt
+              lardata_ArtDataHelper
 			        RawDataUtilities
 		          SignalShapingServiceT1034_service
               ${ART_FRAMEWORK_CORE}
