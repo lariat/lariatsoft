@@ -38,7 +38,7 @@ extern "C" {
 #include "TFile.h"
 #include "TH2D.h"
 #include "TF1.h"
-#include "lardata/RecoBaseArt/WireCreator.h"
+#include "lardata/ArtDataHelper/WireCreator.h"
 #include "lardata/Utilities/AssociationUtil.h"
 // ################################
 // ### LArIAT Specific Includes ###
