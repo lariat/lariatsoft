@@ -42,7 +42,7 @@
 #include "lardataobj/RecoBase/Wire.h"
 #include "LArIATDataProducts/Edge.h"
 #include "lardataobj/RecoBase/Hit.h"
-#include "lardata/RecoBaseArt/HitCreator.h"
+#include "lardata/ArtDataHelper/HitCreator.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
