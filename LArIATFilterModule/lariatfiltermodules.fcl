@@ -165,4 +165,12 @@ WCUpperBound: 			2000.
 
 }
 
+lariat_timestampfilter:
+{
+module_type:			TimestampFilter
+T1:				-999.  # time (s) within spill cycle (default accept ALL times)
+T2:				999.   # time (s) within spill cycle (default accept ALL times)
+RequireRawDigits:               false
+}
+
 END_PROLOG
