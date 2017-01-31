@@ -20,7 +20,7 @@ art_make(BASENAME_ONLY
          larcore_Geometry_Geometry_service
          RawDataUtilities
          lardataobj_RecoBase
-         lardata_RecoBaseArt
+         lardata_ArtDataHelper
          lardata_RecoObjects larreco_Deprecated
          lardata_Utilities
          

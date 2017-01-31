@@ -17,7 +17,7 @@ art_make(BASENAME_ONLY
                           larcore_Geometry_Geometry_service
                           lardataobj_RecoBase
 			  lardataobj_RawData
-                          lardata_RecoBaseArt
+                          lardata_ArtDataHelper
                           lardata_Utilities
                           larcore_Geometry_AuxDetGeometry_service
 			  SignalShapingServiceT1034_service
