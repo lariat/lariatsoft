@@ -3,10 +3,7 @@ import optparse
 import commands
 import os
 import pickle
-<<<<<<< HEAD
-=======
 import time
->>>>>>> 5cd660ae62a13d657de00a6fc62fc23d8ed4e11e
 from timeit import default_timer
 
 parser = optparse.OptionParser("usage: %prog /inputdirectory/ \n")
@@ -62,11 +59,9 @@ for file in sorted(filelist):
   filebasename=file.split("Amps")[0]+"Amps"
   Process=file.split(".")[0].split("Amps")[1]
   Spill=((int(Process)-1)-(int(Process)-1)%jobsperspill)/jobsperspill+1
-<<<<<<< HEAD
+
   #print Process, Spill
-=======
 #  print Process, Spill
->>>>>>> 5cd660ae62a13d657de00a6fc62fc23d8ed4e11e
   if not Spill in SpilltoProcessDict.keys():
     SpilltoProcessDict[Spill]=[]
   if not Process in SpilltoProcessDict[Spill]:
