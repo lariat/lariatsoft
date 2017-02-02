@@ -3,6 +3,10 @@ import optparse
 import commands
 import os
 import pickle
+<<<<<<< HEAD
+=======
+import time
+>>>>>>> 5cd660ae62a13d657de00a6fc62fc23d8ed4e11e
 from timeit import default_timer
 
 parser = optparse.OptionParser("usage: %prog /inputdirectory/ \n")
@@ -58,7 +62,11 @@ for file in sorted(filelist):
   filebasename=file.split("Amps")[0]+"Amps"
   Process=file.split(".")[0].split("Amps")[1]
   Spill=((int(Process)-1)-(int(Process)-1)%jobsperspill)/jobsperspill+1
+<<<<<<< HEAD
   #print Process, Spill
+=======
+#  print Process, Spill
+>>>>>>> 5cd660ae62a13d657de00a6fc62fc23d8ed4e11e
   if not Spill in SpilltoProcessDict.keys():
     SpilltoProcessDict[Spill]=[]
   if not Process in SpilltoProcessDict[Spill]:
@@ -90,6 +98,7 @@ for spill in SpilltoProcessDict.keys():
   print "Starting to merge pickle for Spill: "+str(spill)
   outputpicklefilename=outputfilebase+"Spill"+str(spill)+".pickle"
   MergeDict = {} #The final merged dictionary. Can contain multiple spills.
+  start = default_timer()
   if spill not in MergeDict.keys():
     MergeDict[spill]={}
   for process in SpilltoProcessDict[spill]:
@@ -97,6 +106,8 @@ for spill in SpilltoProcessDict.keys():
     print "Starting to merge pickle for Process: "+str(process)
     print default_timer()-start
     processfilename=inpath+"/"+filebasename+process+".pickle"
+    print process, spill
+    print default_timer() - start
     if not os.path.isabs(processfilename):
       exit("Trying to open a pickle file, {}, that does not exist.".format(processfilename))
     Processdict=pickle.load(open(processfilename,"rb")) #open the individual pickle file for the job  

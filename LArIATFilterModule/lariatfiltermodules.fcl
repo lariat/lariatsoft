@@ -11,6 +11,14 @@ lariat_triggerpattern:
   TriggerPattern:     "<+BEAMON-PILEUP>"
 }
 
+lariat_timestampfilter:
+{
+module_type:			TimestampFilter
+T1:				-999.  # time (s) within spill cycle (default accept ALL times)
+T2:				999.   # time (s) within spill cycle (default accept ALL times)
+RequireRawDigits:               false
+}
+
 lariat_kaonfilter:
 {
   module_type:                 KaonFilter
@@ -164,5 +172,6 @@ WCLowerBound: 			0.
 WCUpperBound: 			2000.
 
 }
+
 
 END_PROLOG

@@ -14,7 +14,7 @@ art_make(BASENAME_ONLY
                           larcore_Geometry_Geometry_service
                           RawDataUtilities
                           lardataobj_RecoBase
-                          lardata_RecoBaseArt
+                          lardata_ArtDataHelper
                           lardata_Utilities
                           larsim_MCCheater_BackTracker_service
                           nutools_RandomUtils_NuRandomService_service
