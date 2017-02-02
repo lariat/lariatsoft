@@ -38,6 +38,12 @@ parser.add_option ('--spillsize', dest='spillsize', type='int',
 parser.add_option ('--spillinterval', dest='spillinterval', type='float',
                    default = 60.0,
                    help="The duration of a sub-run. (seconds)")
+parser.add_option ('--subspillnumber', dest='subspillnumber', type='int',
+                   default = 1,
+                   help="If processing the spill in parallel tranches, which subspill number is this.")
+parser.add_option ('--subspillcount', dest='subspillcount', type='int',
+                   default = 1,
+                   help="If processing the spill in parallel tranches, how many subspills to assume.")
 parser.add_option ('--gammafloor', dest='gammacutoff', type='float',
                    default = 0.5,
                    help="In the starterTree gammas less than this energy will be ignored. default: 0.5 (MeV)")
@@ -47,15 +53,17 @@ parser.add_option ('-v', dest='debug', action="store_true", default=False,
                    help="Turn on verbose debugging.")
 
 
-options, args = parser.parse_args()
-outfile       = options.outfile
-debug         = options.debug
-starterTree   = options.starterTree
-maxspill      = options.maxspill
-spillsize     = options.spillsize
-spillinterval = options.spillinterval
-keepitlocal   = options.keepitlocal
-gammacutoff   = options.gammacutoff
+options, args  = parser.parse_args()
+outfile        = options.outfile
+debug          = options.debug
+starterTree    = options.starterTree
+maxspill       = options.maxspill
+spillsize      = options.spillsize
+spillinterval  = options.spillinterval
+subspillnumber = options.subspillnumber
+subspillcount  = options.subspillcount
+keepitlocal    = options.keepitlocal
+gammacutoff    = options.gammacutoff
 infile = args[0]
 
 ################################
@@ -76,14 +84,20 @@ filledbatches = (1,2,3,4,5,6) # (out of BatchesPerOrbit)
 # Function to return a time during the spill, weighted to get the 
 # time structure of the Fermilab Test Beam Facility's beam
 def RandomOffsetSeconds ():
-    BucketInBatch = random.randint(1,BucketsPerBatch-1)
-    BatchInOrbit = random.choice(filledbatches)
-    OrbitInSpill = random.randint(0,int(OrbitsInSpill))
-    
-    offset = random.gauss(0,bucketwidth)
-    offset += bucketcenterspacing * float(BucketInBatch)
-    offset += batchlength * BatchInOrbit
-    offset += orbitlength * OrbitInSpill
+    subspillduration = spillduration/subspillcount
+    subspilltimewindow_early = subspillnumber * subspillduration
+    subspilltimewindow_late = subspilltimewindow_early + subspillduration
+    offset = -1
+    while offset < subspilltimewindow_early or offset >= subspilltimewindow_late:
+        BucketInBatch = random.randint(1,BucketsPerBatch-1)
+        BatchInOrbit = random.choice(filledbatches)
+        OrbitInSpill = random.randint(0,int(OrbitsInSpill))
+        
+        offset = random.gauss(0,bucketwidth)
+        offset += bucketcenterspacing * float(BucketInBatch)
+        offset += batchlength * BatchInOrbit
+        offset += orbitlength * OrbitInSpill
+    # exit loop when we finally get the right range
     return offset
 
 
