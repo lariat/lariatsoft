@@ -501,7 +501,14 @@ void WCTrackBuilderAlg::calculateTheMomentum(WCHitList & best_track,
 					     std::vector<float> & BestTrackStats,
                                              float offset)
 {
-//We need the x,y,z again, which would be for the last track combination tried. So we need to find the positions again
+  // We need the x,y,z again, which would be for the last track combination tried. 
+  // So we need to find the positions again
+  
+  // 2017-02-08: Class member "WCMissed" is sometimes incorrectly defined at this
+  // point.  Initialize to -999 before calculating hit positions so we don't end 
+  // up with any dummy values assigned to x,y,z.  (TO-DO: more complete fix using
+  // unique names for member and local variables.)
+  WCMissed = -999;
   findTheHitPositions(best_track,x,y,z,WCMissed);
 
   //std::cout<<"Best track hit position found"<<std::endl;
