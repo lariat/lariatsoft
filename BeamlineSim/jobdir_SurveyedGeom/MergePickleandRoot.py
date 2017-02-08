@@ -97,36 +97,37 @@ for spill in SpilltoProcessDict.keys():
   if spill not in MergeDict.keys():
     MergeDict[spill]={}
   for process in SpilltoProcessDict[spill]:
-    print "currently there are "+len(MergeDict[spill])+" times in the Merged Dictionary"
+    print "currently there are "+str(len(MergeDict[spill]))+" times in the Merged Dictionary"
     print "Starting to merge pickle for Process: "+str(process)
     print default_timer()-start
     processfilename=inpath+"/"+filebasename+process+".pickle"
-    print process, spill
-    print default_timer() - start
     if not os.path.isabs(processfilename):
       exit("Trying to open a pickle file, {}, that does not exist.".format(processfilename))
-    Processdict=pickle.load(open(processfilename,"rb")) #open the individual pickle file for the job  
-    for time, entries in Processdict[spill].iteritems(): # Process spills start at 1, everything else starts at 0
+    Processdict=pickle.load(open(processfilename,"rb")) #open the individual pickle file for the job
+    if not spill in Processdict.keys():
+      exit("Tried to create Spill number {}, which does not exist for this pickle file {}. Did you use the correct value for JobsPerSpill (-n)?".format(spill, processfilename))
+    for time, entries in Processdict[spill].iteritems(): 
       #if not time in MergeDict[spill].keys():
         #MergeDict[spill][time]=[]
       #for iEntry in entries:
       MergeDict[spill][time]=entries
   with open(outputpicklefilename,"wb") as f:
     pickle.dump(MergeDict,f)
-  f.close()
+    print "Dictionary dumped to pickle"
+  #f.close()
   
-for spill in SpilltoProcessDict.keys():
-  outputrootfilename=outputfilebase+"Spill"+str(spill)+".root"
-  if force: 
-    commandstr="hadd -f "+outputrootfilename+" "
-  else: 
-    commandstr="hadd "+outputrootfilename+" "
-  for process in SpilltoProcessDict[spill]:
-    processfilename=inpath+"/"+filebasename+process+".root "
-    if not os.path.isabs(processfilename):
-      exit("Trying to hadd a root file, {}, that does not exist.".format(processfilename))
-    commandstr=commandstr+processfilename
-  print commandstr
+#for spill in SpilltoProcessDict.keys():
+#  outputrootfilename=outputfilebase+"Spill"+str(spill)+".root"
+#  if force: 
+#    commandstr="hadd -f "+outputrootfilename+" "
+#  else: 
+#    commandstr="hadd "+outputrootfilename+" "
+#  for process in SpilltoProcessDict[spill]:
+#    processfilename=inpath+"/"+filebasename+process+".root "
+#    if not os.path.isabs(processfilename):
+#      exit("Trying to hadd a root file, {}, that does not exist.".format(processfilename))
+#    commandstr=commandstr+processfilename
+#  print commandstr
   #os.system(commandstr)   
       #print entries
     
