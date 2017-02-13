@@ -97,7 +97,8 @@ commands.getoutput(sedspill)
 #commands.getoutput('sed -i '+ ";s/jobsize=Size/jobsize="+str(jobsize)+"/g " +newdirname+"/Script.sh ")
 commands.getoutput('cp '+olddir+'/MergeFiles.sh '+newdirname+'/.')
 commands.getoutput('cp '+olddir+'/Jobsubmit.sh '+newdirname+'/.')
-sedcount = "sed -i 's/-N X/-N "+str(jobcount)+"/' "+newdirname+"/Jobsubmit.sh "
+#sedcount = "sed -i 's/-N X/-N "+str(jobcount)+"/' "+newdirname+"/Jobsubmit.sh "
+sedcount = "sed -i 's/X/"+str(jobcount)+"/' "+newdirname+"/Jobsubmit.sh "
 #commands.getoutput('sed -i '+ ";s/-N X/-N "+str(jobcount)+"/g "+newdirname+"/Jobsubmit.sh ")
 commands.getoutput(sedcount)
 ################################################################

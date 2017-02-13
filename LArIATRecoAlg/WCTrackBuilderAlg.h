@@ -200,16 +200,18 @@ class WCTrackBuilderAlg{
 				  float (&y)[4],
 			          float (&z)[4],
 				  float & reco_pz);
+
+  float calculateRecoPz(float theta_x_us, float theta_x_ds, float bestTrackSlope );
 				  					    
  					    
   float fMCMagneticField;
   float fB_field_tesla;	
   private:
   
-  bool   fPickyTracks;
-  bool   fDiagnostics;
-  int NHits;
-  int WCMissed;
+  bool  fPickyTracks;
+  bool  fDiagnostics;
+  int   fNHits;
+  int   fWCMissed;
   float trackres;
   //float hit_position_vect_alg[4][3];				 
   art::ServiceHandle<util::DatabaseUtilityT1034> fDatabaseUtility;
@@ -222,7 +224,8 @@ class WCTrackBuilderAlg{
 
   float fL_eff;      /// the effective magnetic length of the magnet
   float fmm_to_m;
-  float fGeV_to_MeV;				 
+  float fGeV_to_MeV;
+  float fDeg_to_Rad; 
 
   //center of the WC's
   float fX_cntr[4];
