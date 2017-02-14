@@ -46,7 +46,7 @@ namespace rdu {
     
     // This option enables event sorting by CAEN event count number -- ie,
     // the order the data is collected, ideally -- rather than by the
-    // assigned timestamp (which is buggy for timestmaps > ~35sec).
+    // assigned timestamp (which is buggy for timestamps > ~35sec).
     fSortCAENEventCounter = pset.get< bool >("SortCAENEventCounter", false);
 
     return;
