@@ -43,6 +43,11 @@ namespace rdu {
   {
     fTPCReadoutBufferLow  = pset.get< double >("TPCReadoutBufferLow",  10.0);
     fTPCReadoutBufferHigh = pset.get< double >("TPCReadoutBufferHigh", 10.0);
+    
+    // This option enables event sorting by CAEN event count number -- ie,
+    // the order the data is collected, ideally -- rather than by the
+    // assigned timestamp (which is buggy for timestmaps > ~35sec).
+    fSortCAENEventCounter = pset.get< bool >("SortCAENEventCounter", false);
 
     return;
   }
@@ -501,6 +506,9 @@ namespace rdu {
       rdu::DataBlockCollection Collection;
       Collection.interval = std::make_pair(t_a, t_b);
 
+      // "histogram" of CAEN event counters
+      std::map< int, unsigned int > CAENEventCounterCounts;
+
       // number of data blocks in this interval
       size_t NumberDataBlocks = 0;
 
@@ -519,6 +527,9 @@ namespace rdu {
             Collection.caenBlocks.push_back(* caenFrag);
             Collection.caenBlockTimeStamps.push_back(correctedTimestamp);
 
+            // add to CAEN event counter "histogram"
+            CAENEventCounterCounts[caenFrag->header.eventCounter] += 1;
+
             // increment number of data blocks
             ++NumberDataBlocks;
           } // end loop over CAEN data blocks
@@ -534,6 +545,20 @@ namespace rdu {
         }
 
       } // end loop through data blocks
+
+      // get the most common CAEN event counter
+      unsigned int caenEventCounterCounts = 0;
+      int caenEventCounter = 0;
+
+      for (auto const& k : CAENEventCounterCounts) {
+        if (k.second > caenEventCounterCounts) {
+          caenEventCounter = k.first;
+          caenEventCounterCounts = k.second;
+        }
+      }
+
+      // set CAEN event counter of data block collection
+      Collection.caenEventCounter = caenEventCounter;
 
       // add collection to vector of collections only if
       // there are data blocks present
@@ -632,6 +657,14 @@ namespace rdu {
 
       std::cout << "Number of TPC readouts: " << NumberTPCReadouts << std::endl;
 
+    }
+
+    if (fSortCAENEventCounter) {
+      // sort data block collections by their CAEN event counter
+      std::sort(Collections.begin(), Collections.end(),
+                [] (rdu::DataBlockCollection const& a, rdu::DataBlockCollection const& b) {
+                  return a.caenEventCounter < b.caenEventCounter;
+                });
     }
 
     return Collections;
