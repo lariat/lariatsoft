@@ -68,6 +68,7 @@ class TOFBuilderAlg{
   double fHitDiffMeanDS;
   double fHitMatchThresholdUS;
   double fHitMatchThresholdDS;   
+  bool   fUseConstantFractionHitTime;
 
   TH1F*  fdeltaHit;
   TH1F*  fdeltaHitUS;

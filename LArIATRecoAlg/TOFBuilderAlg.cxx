@@ -74,6 +74,7 @@ void TOFBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fHitMatchThresholdUS  = pset.get<double>("HitMatchThresholdUS", 3.0); // default 3ns (+/- 1.5ns around mean)
   fHitMatchThresholdDS  = pset.get<double>("HitMatchThresholdDS", 6.0); // default 6ns (+/- 3.0ns around mean)
   fHitWait              = pset.get<double>("HitWait", 20);
+  fUseConstantFractionHitTime = pset.get<bool>("UseConstantFractionHitTime",false);
 
   // vector to hold hit amplituds
   hitAmps[0].reserve(100);
@@ -301,6 +302,23 @@ std::vector<float> TOFBuilderAlg::find_hits(std::vector<float> wv, std::string t
       //std::cout << "Old time : " << i << " new time : " << new_time << " \n";
 
       rising_edge = true;
+      
+      // Emulate "constant fraction discrimination" by assigning the hit time 
+      // as point where waveform reaches 80% of maximum (extrapolating linearly 
+      // between neighboring samples).
+      if( fUseConstantFractionHitTime ){
+        unsigned short jj = std::max(0,i - 20);
+        for(unsigned short j = jj; j < i+30; j++){
+          float wv2 = fabs(wv[j]-baseline);
+          if( wv2 >= 0.8*fabs(amp_max) ) {
+            float mm = (wv2-fabs(wv[j-1]-baseline))/2.;
+            float bb = wv2 - mm*float(j);
+            new_time = (0.8*fabs(amp_max) - bb)/mm;
+            break;
+          }
+        }
+      }
+      
       hits.push_back(new_time);
       if(tag == "usa") hitAmps[0].push_back(fabs(amp_max));
       if(tag == "usb") hitAmps[1].push_back(fabs(amp_max));
