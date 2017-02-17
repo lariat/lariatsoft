@@ -1,0 +1,71 @@
+# This script produces output files with events segregated based on 
+# their run numbers.  For ex, if you have an art-ROOT file or file 
+# list containing events from runs 1020, 1021, 1025, running
+#
+#     lar -c runsort.fcl -s file.root (or -S files.list)
+#
+# will produce 3 output files:
+#
+#     out_r1020_20170217T143824_1.root
+#     out_r1021_20170217T143824_2.root
+#     out_r1025_20170217T143824_3.root
+#
+# This functionality is particularly useful for viewing events using the 
+# LArSoft event display which, due to a bug, crashes when transitioning to 
+# an event with a new run number within the same file (as of Feb 2017).
+# You can get around this bug by running the event viewer over the list of 
+# files that runsort outputs.
+#
+# Runsort.fcl may also produce some "empty" files if the original file 
+# contains runs whose events have been depopulated through filters, etc.  
+# You can run the command "count_events [file]" to check for this, though 
+# it does not pose a problem for the event viewer if that's what you're
+# using this for.
+#
+
+#include "services_lariat.fcl"
+##include "resourcetracking_services.fcl"
+ 
+process_name: RunSort
+
+services:
+{
+  #@table::standard_resourcetrackers
+  RandomNumberGenerator: {} #ART native random number generator
+  #message:      @local::lariat_message_services
+  @table::lariat_services
+}
+#services.DatabaseUtil.ShouldConnect: false
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        
+}
+
+
+physics:
+{
+ stream1:  [ out1 ]
+ trigger_paths: [ ] 
+ end_paths:     [ stream1 ]  
+}
+
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "out_r%R_%tc_%#.root"
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
+   fileProperties:
+   {
+    maxRuns: 1
+    granularity: Run
+   }
+ }
+}
+
