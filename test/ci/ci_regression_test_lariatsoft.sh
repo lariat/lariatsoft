@@ -118,8 +118,8 @@ function fetch_files
     echo "fetch_files $@"
     echo
 
-    maxretries_backup= $IFDH_CP_MAXRETRIES
-    debug_backup= $IFDH_DEBUG
+    maxretries_backup=$IFDH_CP_MAXRETRIES
+    debug_backup=$IFDH_DEBUG
     export IFDH_DEBUG=1
     export IFDH_CP_MAXRETRIES=0
 
