@@ -211,10 +211,10 @@ for(size_t wcCount = 0; wcCount < wctrack.size(); wcCount++)
 // 			   Grabbing the upstream most trajectory points
 // ---------------------------------------------------------------------------------------------
 // ---------------------------------------------------------------------------------------------
-double larStart[3];
-double larEnd[3];
-std::vector<double> trackStart;
-std::vector<double> trackEnd;
+//double larStart[3];
+//double larEnd[3];
+//std::vector<double> trackStart;
+//std::vector<double> trackEnd;
 
 
 int ntrks = 0;
@@ -254,17 +254,17 @@ TVector3 z_hat(0,0,1);
 for(size_t i=0; i<tracklist.size();++i)
    {
    // ### Clearing the vectors for each track ###
-   trackStart.clear();
-   trackEnd.clear();
+   //trackStart.clear();
+   //trackEnd.clear();
 	
 	TVector3 p_hat_0;
     
    // ### Setting the track information into memory ###
-   memset(larStart, 0, 3);
-   memset(larEnd, 0, 3);
-   tracklist[i]->Extent(trackStart,trackEnd); 
-   tracklist[i]->Direction(larStart,larEnd);
-  
+   //memset(larStart, 0, 3);
+   //memset(larEnd, 0, 3);
+   //tracklist[i]->Extent(trackStart,trackEnd); 
+   //tracklist[i]->Direction(larStart,larEnd);
+
    //std::cout << "Track " << i << " in WCTPCMatch step" << std::endl;
    
    
