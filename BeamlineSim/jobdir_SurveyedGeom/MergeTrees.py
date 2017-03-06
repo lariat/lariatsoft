@@ -270,6 +270,8 @@ lastspill = 0
 spillcount = 0
 entrytally = 0
 timeindex = {}
+particlestarttimes = []
+particleentrynumbers = []
 
 if maxspill <= 0: print ("Making as many spills of %s events each as %s contains." % (spillsize,infilename))
 else: print ("Processing %s into %s spills of %s events each." % (infilename, maxspill, spillsize ))
@@ -283,7 +285,7 @@ for ds_track in INtuples[starterTree]:
     spill = 1 + (event/spillsize) # Arbitrarily group tracks by EventID into spills. 
 
     # Skip low-E photons
-    if ds_track.PDGid == 22:
+    if gammacutoff > 0.0 and ds_track.PDGid == 22:
         E = pow( pow(ds_track.Px,2) + pow(ds_track.Py,2) + pow(ds_track.Pz,2), 0.5)
         if E < gammacutoff: 
             if debug: print "Gamma cutoff at ",gammacutoff

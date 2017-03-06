@@ -203,19 +203,22 @@ physics.producers.trajcluster.TrajClusterAlg.MakeNewHits: false
 physics.producers.trajcluster.TrajClusterAlg.AngleRanges: [30, 65, 80, 90]
 physics.producers.trajcluster.TrajClusterAlg.MinPtsFit:     [ 4,  4, 2]
 physics.producers.trajcluster.TrajClusterAlg.MinPts:        [10, 10, 3]
-physics.producers.trajcluster.TrajClusterAlg.MaxAngleRange: [ 0,  1, 9]
+physics.producers.trajcluster.TrajClusterAlg.MaxAngleCode:  [0, 2, 3]
 physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipNoSignal: 2
 physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipWithSignal: 20
 physics.producers.trajcluster.TrajClusterAlg.HitErrFac: 0.4
 physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.6
-physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:   [ "RefineVtx" ]
+#physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:   [ "RefineVtx" ]
 physics.producers.trajcluster.TrajClusterAlg.ProjectionErrFactor: 3
 physics.producers.trajcluster.TrajClusterAlg.ChgPullCut: 5   # Use trajectory points/hits if (Chg/AveChg - 1) / ChgRMS < cut
 physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.3 # was 0.2
 physics.producers.trajcluster.TrajClusterAlg.MaxChi: 3
 physics.producers.trajcluster.TrajClusterAlg.MuonTag: [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
-physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [50, 5, 1]    # max MCSMom for a shower tag, max separation, min #traj < separation
-physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5, 100] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr, min MCSMom]
+#physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [50, 5, 1]    # max MCSMom for a shower tag, max separation, min #traj < separation
+physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [ -1, 150, 20, 0.5, 3, 2, 100, 5, 2] # default settings that turn shower tagging off
+physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5, 100, 0.6] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr, min MCSMom, min Pt/Wire fraction]
+# parameters used in MicroBooNE:
+#physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [ 6, 8, 40, 3, 5, 60, 0.6] # max short TjLen, max ShortTj-vtx sep, max LongTj-vtx sep, max PosPull, max PosErr, min MCSMom, min Pt/Wire fraction
 physics.producers.trajcluster.TrajClusterAlg.MaxVertexTrajSep: [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
 physics.producers.trajcluster.TrajClusterAlg.FillTruth: 0
 physics.producers.trajcluster.TrajClusterAlg.StudyMode: false

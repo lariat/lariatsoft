@@ -1266,10 +1266,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   // === Saving the number of tracks per event ===
   ntracks_reco=tracklist.size();
-  double larStart[3];
-  double larEnd[3];
-  std::vector<double> trackStart;
-  std::vector<double> trackEnd;
   
   // === Association between WC Tracks and TPC Tracks ===
   //int TempTrackMatchedID = -1;                                                                                                                               
@@ -1319,16 +1315,15 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   double maxtrackenergy = -1;
   for(size_t i=0; i<tracklist.size();++i)
     {
-      // ### Clearing the vectors for each track ###
-      trackStart.clear();
-      trackEnd.clear();
-    
-      // ### Setting the track information into memory ###
-      memset(larStart, 0, 3);
-      memset(larEnd, 0, 3);
-      tracklist[i]->Extent(trackStart,trackEnd); 
-      tracklist[i]->Direction(larStart,larEnd);
-      
+
+      //-----------------------------------------------------------------------
+      // get track information
+      //-----------------------------------------------------------------------
+      // returns type std::pair<recob::Track::Point_t, recob::Track::Point_t>
+      auto trackStartEnd = tracklist[i]->Extent();
+      // returns type std::pair<recob::Track::Vector_t, recob::Track::Vector_t>
+      auto larStartEnd = tracklist[i]->Direction();
+
       // ### Storing an integer for the match of a WC to TPC track ###
       int trackMatch = 0;
       if(TempTrackMatchedID == tracklist[i]->ID() )
@@ -1340,27 +1335,27 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
       trkWCtoTPCMatch[i] = trackMatch;
       // ### Setting the WC to TPC match ###
-            
+
       // ### Recording the track vertex x, y, z location ###
-      trkvtxx[i]        = trackStart[0];
-      trkvtxy[i]        = trackStart[1];
-      trkvtxz[i]        = trackStart[2];
-    
+      trkvtxx[i]        = trackStartEnd.first.X();
+      trkvtxy[i]        = trackStartEnd.first.Y();
+      trkvtxz[i]        = trackStartEnd.first.Z();
+
       // ### Recording the track end point x, y, z location ###
-      trkendx[i]        = trackEnd[0];
-      trkendy[i]        = trackEnd[1];
-      trkendz[i]        = trackEnd[2];
-    
+      trkendx[i]        = trackStartEnd.second.X();
+      trkendy[i]        = trackStartEnd.second.Y();
+      trkendz[i]        = trackStartEnd.second.Z();
+
       // ### Recording the directional cosine at the start of the track ###
-      trkstartdcosx[i]  = larStart[0];
-      trkstartdcosy[i]  = larStart[1];
-      trkstartdcosz[i]  = larStart[2];
-    
+      trkstartdcosx[i]  = larStartEnd.first.X();
+      trkstartdcosy[i]  = larStartEnd.first.Y();
+      trkstartdcosz[i]  = larStartEnd.first.Z();
+
       // ### Recording the directional cosine at the end of the track ###
-      trkenddcosx[i]    = larEnd[0];
-      trkenddcosy[i]    = larEnd[1];
-      trkenddcosz[i]    = larEnd[2];
-    
+      trkenddcosx[i]    = larStartEnd.second.X();
+      trkenddcosy[i]    = larStartEnd.second.Y();
+      trkenddcosz[i]    = larStartEnd.second.Z();
+
       // ### Recording the track length as calculated by the tracking module ###
       // ####                (each one may do it differently                 ###
       trklength[i]         = tracklist[i]->Length();
