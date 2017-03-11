@@ -220,7 +220,7 @@ namespace cluster {
              // make the wire - hit association
              if(!util::CreateAssn(*this, evt, *hits, chIDToWire[chid], *wh_assn))
              {
-                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with wire ";
+                throw art::Exception(art::errors::ProductRegistrationFailure) <<"Failed to associate hit "<< h << " with wire ";
              } // exception
 
           }   
@@ -232,14 +232,14 @@ namespace cluster {
    	     vertices->push_back(clusToVertex[ic][v]);
              if(!util::CreateAssn(*this, evt, *clusters, *vertices, *cv_assn, vertices->size()-1, vertices->size()))
              {
-                throw art::Exception(art::errors::InsertFailure) <<"Failed to associate vertex "<< vertices->size()-1 << " with cluster "<<ic;
+                throw art::Exception(art::errors::ProductRegistrationFailure) <<"Failed to associate vertex "<< vertices->size()-1 << " with cluster "<<ic;
              } // exception
           }
  
           // make the cluster - hit association
           if(!util::CreateAssn(*this, evt, *clusters, *hits, *hc_assn, startHitIdx, endHitIdx))
           {
-             throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<<" with cluster "<<ic;
+             throw art::Exception(art::errors::ProductRegistrationFailure) <<"Failed to associate hit "<<" with cluster "<<ic;
           } // exception
 
        } // Loop over clusters
@@ -251,7 +251,7 @@ namespace cluster {
        {
           if(!util::CreateAssn(*this, evt, *clusters, trig, *tc_assn, c))
           {
-            throw art::Exception(art::errors::InsertFailure) <<"Failed to associate cluster "<< c << " with trigger "<<trig.key();
+            throw art::Exception(art::errors::ProductRegistrationFailure) <<"Failed to associate cluster "<< c << " with trigger "<<trig.key();
           } // exception
        }
 
@@ -260,7 +260,7 @@ namespace cluster {
        {
           if(!util::CreateAssn(*this, evt, *hits, trig, *th_assn, h))
           {
-            throw art::Exception(art::errors::InsertFailure) <<"Failed to associate hit "<< h << " with trigger "<<trig.key();
+            throw art::Exception(art::errors::ProductRegistrationFailure) <<"Failed to associate hit "<< h << " with trigger "<<trig.key();
           } // exception
        }
 
@@ -269,7 +269,7 @@ namespace cluster {
        {
           if(!util::CreateAssn(*this, evt, *vertices, trig, *tv_assn, v))
           {
-            throw art::Exception(art::errors::InsertFailure) <<"Failed to associate vertex "<< v << " with trigger "<<trig.key();
+            throw art::Exception(art::errors::ProductRegistrationFailure) <<"Failed to associate vertex "<< v << " with trigger "<<trig.key();
           } // exception
        }
 
