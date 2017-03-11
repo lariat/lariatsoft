@@ -16,7 +16,7 @@ LariatFilters   v01_02
 lariatfragments v06_00_01
 artdaq_core     v1_06_01
 LariatBeamFiles v01_00		-	optional
-lariatutil	    v06_27_00 -	optional
+lariatutil	    v06_30_00_rc1 -	optional
 cetbuildtools   v5_06_07	-	only_for_build
 end_product_list
 
