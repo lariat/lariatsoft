@@ -33,22 +33,17 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
-  void ChannelMapLArIATAlg::Initialize( GeometryData_t& geodata )
+  void ChannelMapLArIATAlg::Initialize( GeometryData_t const& geodata )
   {
     // start over:
     Uninitialize();
     
-    std::vector<geo::CryostatGeo*>& cgeo = geodata.cryostats;
+    std::vector<geo::CryostatGeo*> const& cgeo = geodata.cryostats;
     
     fNcryostat = cgeo.size();
     
     mf::LogInfo("ChannelMapLArIATAlg") << "Initializing LArIAT ChannelMap...";
 
-    // First sort the LArTPC related geometry objects and get their channel mapping
-    fSorter.SortCryostats(cgeo);
-    for(size_t c = 0; c < cgeo.size(); ++c) 
-      cgeo[c]->SortSubVolumes(fSorter);
-    
     fNTPC.resize(fNcryostat);
     fWireCounts             .resize(fNcryostat);
     fNPlanes                .resize(fNcryostat);
@@ -460,6 +455,8 @@ namespace geo{
   readout::ROPID ChannelMapLArIATAlg::ChannelToROP
     (raw::ChannelID_t channel) const
   {
+    if (!raw::isValidChannelID(channel)) return {}; // invalid ROP returned
+    
     // which wires does the channel cover?
     std::vector<geo::WireID> wires = ChannelToWire(channel);
     

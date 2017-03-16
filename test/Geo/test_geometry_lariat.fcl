@@ -71,23 +71,17 @@ physics: {
         # in addition (overriding the default): print wires
         "+PrintWires",
         
-        # - WireIntersection fails because the test is not always able to compute
-        #   the correct expected distance from the intersection;
-        #   this is a bug related to having a point not lying on a z wire together
-        #   with the presence of planes in which the wire doesn;t increase with z;
-        #   the test needs to be fixed
-        "-WireIntersection",
-        
         # - WirePitch fails, exposing the non-constant wire pitch
         "-WirePitch",
         
-        # - NearestWire fails because NearestWireID() assumes constant wire pitch
-        "-NearestWire",
-        
-        # - WireIntersection and WireCoordAngle fail because its expectation relies on NearestWireID()
-        "-WireCoordAngle",
-        "-WireIntersection"
+        # - WireCoordFromPlane and PlanePointDecomposition fail because test
+        #   expectation assumes constant wire pitch
+        "-WireCoordFromPlane",
+        "-PlanePointDecomposition",
 
+        # - WireCoordAngle fails because its expectation relies on NearestWireID()
+        "-WireCoordAngle"
+        
       ]
       
       # wire pitch for planes #0 and #1
