@@ -18,6 +18,7 @@ set( lariat_util_lib_list lardata_Utilities_LArFFT_service
      ${MF_UTILITIES}
      ${CETLIB}
      ${ROOT_BASIC_LIB_LIST}
+     ${ROOT_GEOM}
 )
 
 simple_plugin( FileCatalogMetadataLArIAT "service"
@@ -49,9 +50,9 @@ simple_plugin( DatabaseUtilityT1034  "service"
 
 simple_plugin( DetectorPropertiesServiceLArIAT  "service"
                LArIATDataProviders
-	       ${lariat_util_lib_list}
-	       ${SQLITE3}
-	       ${ART_PERSISTENCY_ROOTDB}
+               ${lariat_util_lib_list}
+               ${SQLITE3}
+               ${ART_PERSISTENCY_ROOTDB}
                BASENAME_ONLY
 )
 
