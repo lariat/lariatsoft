@@ -41,28 +41,17 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   double centerOfDet[3] = {0,0,0};
   for( size_t iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
     geo::AuxDetGeo* anAuxDetGeo = theAuxDetGeoVect.at(iDet);
-    anAuxDetGeo->GetCenter(centerOfDet);
-
-    //Setting the TGeo world locations of the MWPCs in mm
-    if(iDet == 1){ //WC1
-      fX_cntr[0] = centerOfDet[0] * CLHEP::cm;
-      fY_cntr[0] = centerOfDet[1] * CLHEP::cm;
-      fZ_cntr[0] = centerOfDet[2] * CLHEP::cm;
-    }
-   if(iDet == 2){ //WC2
-      fX_cntr[1] = centerOfDet[0] * CLHEP::cm;
-      fY_cntr[1] = centerOfDet[1] * CLHEP::cm;
-      fZ_cntr[1] = centerOfDet[2] * CLHEP::cm;
-    }
-   if(iDet == 3){ //WC3
-      fX_cntr[2] = centerOfDet[0] * CLHEP::cm;
-      fY_cntr[2] = centerOfDet[1] * CLHEP::cm;
-      fZ_cntr[2] = centerOfDet[2] * CLHEP::cm;
-    }
-   if(iDet == 4){ //WC4
-      fX_cntr[3] = centerOfDet[0] * CLHEP::cm;
-      fY_cntr[3] = centerOfDet[1] * CLHEP::cm;
-      fZ_cntr[3] = centerOfDet[2] * CLHEP::cm;
+    std::string detName = anAuxDetGeo->Name();
+    size_t wcnum = 999;
+    if( detName == "volAuxDetSensitiveWC1") wcnum = 1;
+    if( detName == "volAuxDetSensitiveWC2") wcnum = 2;
+    if( detName == "volAuxDetSensitiveWC3") wcnum = 3;
+    if( detName == "volAuxDetSensitiveWC4") wcnum = 4;
+    if( wcnum != 999 ){
+      anAuxDetGeo->GetCenter(centerOfDet);
+      fX_cntr[wcnum-1] = centerOfDet[0] * CLHEP::cm;
+      fY_cntr[wcnum-1] = centerOfDet[1] * CLHEP::cm;
+      fZ_cntr[wcnum-1] = centerOfDet[2] * CLHEP::cm;
     }
   }
   auto tpcGeo = fGeo->begin_TPC_id().get();
