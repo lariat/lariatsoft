@@ -283,12 +283,17 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
   uint32_t boardId        = 0;
   uint32_t boardIdquery   = 0;
   uint32_t chanOff        = 0;
-  std::string value("CRYO"); // why are we searching on CRYO?  that is not obvious for this method and a comment would be helpful
+
+  // keywords for the light detection system (in retrospect we should have 
+  // used some unique designator word like "lightsys_" for these channels...)
+  const char *keywords[] = {"CRYO","SIPM","ARAPUCA"};
+  std::vector< std::string > values(keywords,std::end(keywords));
+
   std::string board("board_");
   std::string channel("_channel_");
   size_t boardLoc;
   size_t channelLoc;
-  size_t temp;
+  size_t temp = -1; // initilize to max value
   uint32_t triggerTimeTag = 0;
   int      firstSample    = 0;
 
@@ -299,12 +304,18 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
 
     for(auto hardwareIter : fHardwareConnections)
     {
-      temp  = hardwareIter.second.find(value);
+      // search for one of the light-system keywords 
+      // in this channel's name (from the hardware DB)
+      for(size_t i=0; i<values.size(); i++){
+        temp = hardwareIter.second.find(values[i]);
+        if( temp != std::string::npos) break;
+      }
+
       if(temp != std::string::npos)
       {
         boardLoc   = hardwareIter.first.find(board) + board.size();				//location in string where board ID is
         channelLoc = hardwareIter.first.find(channel) + channel.size();		//location in string where channel ID is
-     
+    
         if(boardLoc !=std::string::npos)
         {
           std::string strboardId (hardwareIter.first, boardLoc, channelLoc - channel.size());
@@ -312,6 +323,7 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
           
           boardIdquery = std::stoi(strboardId); 					//convert string boardID to uint32
           chanOff      = std::stoi(strchannelId); 			  //convert string channel to uint32
+
         }//end setting board/channel ID
 
 
@@ -331,14 +343,13 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
           firstSample = (int)((100.-fV1751PostPercent) * 0.01 * waveForm.size());
         
           LOG_VERBATIM("FragmentToDigitAlg")
-          << " Found cryoPMT"
-          << "\n Writing opdetpulses "
-          << " boardID : " << boardId
-          << " channel " << chanOff
-          << " size of wvform data " << waveForm.size()
-          << " Column: "<< hardwareIter.first<<" Value: "<<hardwareIter.second
-          << " BoardId: "<< boardId <<" ChannelId: "<< chanOff
-          << " firstSample: "<< firstSample << " triggerTimeTag: " << triggerTimeTag;
+          << " Found optical detector "
+          << " boardID: " << boardId 
+          << " channel: " << chanOff 
+          << " wvform size: " << waveForm.size()
+          << " Column: "<< hardwareIter.first<<" Value: "<<hardwareIter.second;
+          //<< " BoardId: "<< boardId <<" ChannelId: "<< chanOff
+          //<< " firstSample: "<< firstSample << " triggerTimeTag: " << triggerTimeTag;
         
           opDetPulse.push_back(raw::OpDetPulse(static_cast <unsigned short> (chanOff),
                                                waveForm,
