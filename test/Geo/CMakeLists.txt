@@ -26,7 +26,7 @@ cet_test(geometry_lariat_test
             ${MF_MESSAGELOGGER}
             ${MF_UTILITIES}
             ${FHICLCPP}
-            ${CETLIB}
+            cetlib cetlib_except
 )
 
 
@@ -39,7 +39,7 @@ cet_test(geometry_iterator_lariat_test
             ${MF_MESSAGELOGGER}
             ${MF_UTILITIES}
             ${FHICLCPP}
-            ${CETLIB}
+            cetlib cetlib_except
   USE_BOOST_UNIT
 )
 
@@ -52,7 +52,7 @@ cet_test(geometry_iterator_loop_lariat_test
             ${MF_MESSAGELOGGER}
             ${MF_UTILITIES}
             ${FHICLCPP}
-            ${CETLIB}
+            cetlib cetlib_except
 )
 
 
@@ -65,7 +65,7 @@ cet_test(geometry_lariatchannelmapping_test
             ${MF_MESSAGELOGGER}
             ${MF_UTILITIES}
             ${FHICLCPP}
-            ${CETLIB}
+            cetlib cetlib_except
   USE_BOOST_UNIT
   DATAFILES test_geometry_lariat.fcl
   TEST_ARGS ./test_geometry_lariat.fcl
