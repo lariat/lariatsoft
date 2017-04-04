@@ -9,12 +9,12 @@ art_make(BASENAME_ONLY
 	 LIB_LIBRARIES    lardataobj_RawData
 			  ${ART_FRAMEWORK_CORE}
 			  ${ART_FRAMEWORK_PRINCIPAL}
-			  art_Persistency_Common canvas_Persistency_Common
-			  art_Persistency_Provenance canvas_Persistency_Provenance
-			  art_Utilities canvas_Utilities
+			  art_Persistency_Common canvas
+			  art_Persistency_Provenance canvas
+			  art_Utilities canvas
 			  ${MF_MESSAGELOGGER}
 			  ${MF_UTILITIES}
-			  ${CETLIB}
+			  cetlib cetlib_except
 			  ${ROOT_BASIC_LIB_LIST}
          DICT_LIBRARIES   lardataobj_RawData
 )
