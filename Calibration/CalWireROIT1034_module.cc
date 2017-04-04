@@ -343,7 +343,7 @@ namespace caldata {
         // add an association between the last object in wirecol
         // (that we just inserted) and digitVec
         if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
-          throw art::Exception(art::errors::InsertFailure)
+          throw art::Exception(art::errors::ProductRegistrationFailure)
           << "Can't associate wire #" << (wirecol->size() - 1)
           << " with raw digit #" << digitVec.key();
         } // if failed to add association
@@ -353,7 +353,7 @@ namespace caldata {
         // add an association between the last object in wirecol
         // (that we just inserted) and digitVec
         if (!util::CreateAssn(*this, evt, *wirecol, digitVec, *WireDigitAssn, fSpillName)) {
-          throw art::Exception(art::errors::InsertFailure)
+          throw art::Exception(art::errors::ProductRegistrationFailure)
           << "Can't associate wire #" << (wirecol->size() - 1)
           << " with raw digit #" << digitVec.key();
         } // if failed to add association
