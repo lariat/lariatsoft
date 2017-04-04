@@ -9,7 +9,7 @@ art_make_library( LIBRARY_NAME Geo
 			    ${FHICLCPP}
 			    ${ROOT_BASIC_LIB_LIST} 
 			    ${ROOT_GEOM}
-			    ${CETLIB}
+			    cetlib cetlib_except
 )
 
 simple_plugin( LArIATGeometryHelper service
@@ -18,14 +18,14 @@ simple_plugin( LArIATGeometryHelper service
 		${ART_FRAMEWORK_CORE}
 		${ART_FRAMEWORK_IO_SOURCES}
 		${ART_FRAMEWORK_PRINCIPAL}
-		art_Persistency_Common canvas_Persistency_Common
-		art_Persistency_Provenance canvas_Persistency_Provenance
-		art_Utilities canvas_Utilities
+		art_Persistency_Common canvas
+		art_Persistency_Provenance canvas
+		art_Utilities canvas
 		${ART_FRAMEWORK_SERVICES_REGISTRY}
 		${MF_MESSAGELOGGER}
 		${MF_UTILITIES}
 		${ROOT_BASIC_LIB_LIST}                
-		${CETLIB}
+		cetlib cetlib_except
 		BASENAME_ONLY
 )
 
@@ -35,14 +35,14 @@ simple_plugin( LArIATAuxDetGeometryHelper service
 		${ART_FRAMEWORK_CORE}
 		${ART_FRAMEWORK_IO_SOURCES}
 		${ART_FRAMEWORK_PRINCIPAL}
-		art_Persistency_Common canvas_Persistency_Common
-		art_Persistency_Provenance canvas_Persistency_Provenance
-		art_Utilities canvas_Utilities
+		art_Persistency_Common canvas
+		art_Persistency_Provenance canvas
+		art_Utilities canvas
 		${ART_FRAMEWORK_SERVICES_REGISTRY}
 		${MF_MESSAGELOGGER}
 		${MF_UTILITIES}
 		${ROOT_BASIC_LIB_LIST}                
-		${CETLIB}
+		cetlib cetlib_except
 		BASENAME_ONLY
 )
 
