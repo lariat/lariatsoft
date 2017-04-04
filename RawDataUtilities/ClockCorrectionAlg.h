@@ -99,6 +99,7 @@ namespace rdu {
 
     std::pair< double, double > interval;
     size_t numberTPCReadouts;
+    int caenEventCounter = -1;
 
     // vector of pairs where the first is the corrected timestamp
     // and the second is a pointer to the data block
@@ -123,6 +124,7 @@ namespace rdu {
     {
       interval = std::make_pair(0.0, 0.0);
       numberTPCReadouts = 0;
+      caenEventCounter = -1;
       caenBlocks.clear();
       tdcBlocks.clear();
       caenBlockTimeStamps.clear();

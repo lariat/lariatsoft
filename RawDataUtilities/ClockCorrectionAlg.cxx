@@ -519,8 +519,21 @@ namespace rdu {
                                          << " index: "
                                          << index;
 
-      // each CAEN Trigger Time Tag count is 8 ns
-      double timestamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+      // each CAEN V1740/V1751 Trigger Time Tag count is 8 ns
+      //double timestamp = caenFrag.header.triggerTimeTag * 0.008;  // convert to microseconds
+
+      double timestamp = caenFrag.header.triggerTimeTag;
+
+      if (boardId == 11)
+      {
+        // each CAEN V1742 Trigger Time Tag count is 8.5 ns
+        timestamp *= 0.0085;  // convert to microseconds
+      }
+      else 
+      {
+        // each CAEN V1740/V1751 Trigger Time Tag count is 8 ns
+        timestamp *= 0.008;  // convert to microseconds
+      }
 
       // create DataBlock struct and add to vector of DataBlocks
       DataBlock caenBlock;

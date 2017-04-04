@@ -20,7 +20,7 @@ art_make(BASENAME_ONLY
          larcore_Geometry_Geometry_service
          RawDataUtilities
          lardataobj_RecoBase
-         lardata_RecoBaseArt
+         lardata_ArtDataHelper
          lardata_RecoObjects larreco_Deprecated
          lardata_Utilities
          
@@ -35,13 +35,13 @@ art_make(BASENAME_ONLY
          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
          ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR}
-         art_Persistency_Common canvas_Persistency_Common
-         art_Persistency_Provenance canvas_Persistency_Provenance
-         art_Utilities canvas_Utilities
+         art_Persistency_Common canvas
+         art_Persistency_Provenance canvas
+         art_Utilities canvas
          ${MF_MESSAGELOGGER}
          ${MF_UTILITIES}
          ${FHICLCPP}
-         ${CETLIB}
+         cetlib cetlib_except
          ${CLHEP}
          ${ROOT_BASIC_LIB_LIST}
 	

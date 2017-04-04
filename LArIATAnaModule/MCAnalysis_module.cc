@@ -1167,18 +1167,21 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    
    // ### Variables for determining the matching of the end point ###
    float TrackEndX = 999, TrackEndY = 999, TrackEndZ = 999;
-   std::vector<double> trackStart0;
-   std::vector<double> trackEnd0;
 
    for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
       {
 
-      tracklist[iTrk]->Extent(trackStart0,trackEnd0); 
+      //-----------------------------------------------------------------------
+      // get track information
+      //-----------------------------------------------------------------------
+      // returns type std::pair<recob::Track::Point_t, recob::Track::Point_t>
+      auto trackStartEnd = tracklist[iTrk]->Extent();
+
       if(iTrk == RecoTrackIndex)
 	{
-      	TrackEndX = trackEnd0[0];
-      	TrackEndY = trackEnd0[1];
-      	TrackEndZ = trackEnd0[2];
+      	TrackEndX = trackStartEnd.second.X();
+      	TrackEndY = trackStartEnd.second.Y();
+      	TrackEndZ = trackStartEnd.second.Z();
       
 
       	nPionSpts = 0;

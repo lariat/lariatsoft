@@ -73,11 +73,9 @@ namespace rdu {
 
     // get data blocks with corrected timestamps
     std::vector< rdu::DataBlock > GetDataBlocks(const LariatFragment * data);
-    //void GetDataBlocks(const LariatFragment * data, std::vector< rdu::DataBlock > & DataBlocks);
 
     // build
     std::vector< rdu::DataBlockCollection > Build(const LariatFragment * data);
-    //void Build(const LariatFragment * data, std::vector< rdu::DataBlockCollection > & Collections);
 
     // this method is used for testing porpoises
     void hello_world();
@@ -104,6 +102,9 @@ namespace rdu {
     // parameters for counting the number of TPC readouts in an interval
     double fTPCReadoutBufferLow;
     double fTPCReadoutBufferHigh;
+
+    // flag for sorting data block collections by their CAEN event counter
+    bool fSortCAENEventCounter;
 
     // clock correction algorithm
     rdu::ClockCorrectionAlg fClockCorrectionAlg;

@@ -38,7 +38,7 @@ extern "C" {
 #include "TFile.h"
 #include "TH2D.h"
 #include "TF1.h"
-#include "lardata/RecoBaseArt/WireCreator.h"
+#include "lardata/ArtDataHelper/WireCreator.h"
 #include "lardata/Utilities/AssociationUtil.h"
 // ################################
 // ### LArIAT Specific Includes ###
@@ -343,7 +343,7 @@ namespace caldata {
         // util::CreateAssn(*this, evt, *wirecol, rdvec[rdItr], *WireDigitAssn);
         if (!util::CreateAssn(*this, evt, *wirecol, rdvec[rdItr], *WireDigitAssn))
         {
-          throw art::Exception(art::errors::InsertFailure) << "Can't associate wire #" << (wirecol->size() - 1)
+          throw art::Exception(art::errors::ProductRegistrationFailure) << "Can't associate wire #" << (wirecol->size() - 1)
           << " with raw digit #" << rdvec[rdItr].key();
         } // if failed to add association
         //util::CreateAssn(*this, evt, *wirecol, trigger, *TrigWireAssn);
@@ -351,7 +351,7 @@ namespace caldata {
         // (that we just inserted) and digitVec
         if (!util::CreateAssn(*this, evt, *wirecol, trigger, *TrigWireAssn))
         {
-          throw art::Exception(art::errors::InsertFailure) << "Can't associate wire #" << (wirecol->size() - 1)
+          throw art::Exception(art::errors::ProductRegistrationFailure) << "Can't associate wire #" << (wirecol->size() - 1)
           << " with Trigger #" << trigger.key();
         } // if failed to add association      
         

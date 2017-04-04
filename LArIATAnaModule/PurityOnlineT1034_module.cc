@@ -44,7 +44,7 @@
 #include "lardataobj/RecoBase/TrackHitMeta.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
-#include "lardata/RecoBaseArt/TrackUtils.h"
+#include "lardata/ArtDataHelper/TrackUtils.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -384,20 +384,18 @@ void lariat::PurityOnlineT1034::analyze(art::Event const & evt)
    if(fVerbose) std::cout << "Tracklist size " << tracklist.size() << std::endl;
 
    ntracks_reco=tracklist.size();
-   std::vector<double> trackStart;
-   std::vector<double> trackEnd;
 
    for(size_t i=0; i<tracklist.size();++i)
    {
-      // ### Clearing the vectors for each track ###
-      trackStart.clear();
-      trackEnd.clear();
-    
-      // ### Setting the track information into memory ###
-      tracklist[i]->Extent(trackStart,trackEnd); 
-      trkvtxx[i]        = trackStart[0];
-      trkendx[i]        = trackEnd[0];    
 
+      //-----------------------------------------------------------------------
+      // get track information
+      //-----------------------------------------------------------------------
+      // returns type std::pair<recob::Track::Point_t, recob::Track::Point_t>
+      auto trackStartEnd = tracklist[i]->Extent();
+
+      trkvtxx[i] = trackStartEnd.first.X();
+      trkendx[i] = trackStartEnd.second.X();
 
       // ###########################################
       // ### Calculating the pitch for the track ###

@@ -32,7 +32,7 @@
 #include "lardataobj/RecoBase/Cluster.h"
 #include "lardataobj/RecoBase/Track.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
-#include "lardata/RecoBaseArt/TrackUtils.h" // lar::util::TrackPitchInView()
+#include "lardata/ArtDataHelper/TrackUtils.h" // lar::util::TrackPitchInView()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
@@ -247,29 +247,26 @@ void bo::AnaTree::analyze(art::Event const & evt)
   trkf::TrackMomentumCalculator trkm;
   trkm.SetMinLength(10); //change the minimal track length requirement to 10 cm
   ntracks_reco=tracklist.size();
-  double larStart[3];
-  double larEnd[3];
-  std::vector<double> trackStart;
-  std::vector<double> trackEnd;
   for(size_t i=0; i<tracklist.size();++i){
-    trackStart.clear();
-    trackEnd.clear();
-    memset(larStart, 0, 3);
-    memset(larEnd, 0, 3);
-    tracklist[i]->Extent(trackStart,trackEnd); 
-    tracklist[i]->Direction(larStart,larEnd);
-    trkvtxx[i]        = trackStart[0];
-    trkvtxy[i]        = trackStart[1];
-    trkvtxz[i]        = trackStart[2];
-    trkendx[i]        = trackEnd[0];
-    trkendy[i]        = trackEnd[1];
-    trkendz[i]        = trackEnd[2];
-    trkstartdcosx[i]  = larStart[0];
-    trkstartdcosy[i]  = larStart[1];
-    trkstartdcosz[i]  = larStart[2];
-    trkenddcosx[i]    = larEnd[0];
-    trkenddcosy[i]    = larEnd[1];
-    trkenddcosz[i]    = larEnd[2];
+    //-------------------------------------------------------------------------
+    // get track information
+    //-------------------------------------------------------------------------
+    // returns type std::pair<recob::Track::Point_t, recob::Track::Point_t>
+    auto trackStartEnd = tracklist[i]->Extent();
+    // returns type std::pair<recob::Track::Vector_t, recob::Track::Vector_t>
+    auto larStartEnd = tracklist[i]->Direction();
+    trkvtxx[i]        = trackStartEnd.first.X();
+    trkvtxy[i]        = trackStartEnd.first.Y();
+    trkvtxz[i]        = trackStartEnd.first.Z();
+    trkendx[i]        = trackStartEnd.second.X();
+    trkendy[i]        = trackStartEnd.second.Y();
+    trkendz[i]        = trackStartEnd.second.Z();
+    trkstartdcosx[i]  = larStartEnd.first.X();
+    trkstartdcosy[i]  = larStartEnd.first.Y();
+    trkstartdcosz[i]  = larStartEnd.first.Z();
+    trkenddcosx[i]    = larStartEnd.second.X();
+    trkenddcosy[i]    = larStartEnd.second.Y();
+    trkenddcosz[i]    = larStartEnd.second.Z();
     trklen[i]         = tracklist[i]->Length();
     trkmomrange[i]    = trkm.GetTrackMomentum(trklen[i],13);
     trkmommschi2[i]   = trkm.GetMomentumMultiScatterChi2(tracklist[i]);
