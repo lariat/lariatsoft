@@ -513,8 +513,12 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
   std::set<std::string> TOFNames;
   TOFNames.insert("USTOF1");
   TOFNames.insert("USTOF2");
+  TOFNames.insert("USTOF3");
+  TOFNames.insert("USTOF4");
   TOFNames.insert("DSTOF1");
   TOFNames.insert("DSTOF2");
+  TOFNames.insert("DSTOF3");
+  TOFNames.insert("DSTOF4");
   std::string board("board_");
   std::string channel("_channel_");
   size_t boardLoc;
@@ -544,8 +548,8 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
       // \todo These values for chanOff may not be correct.  The chanOff value is intended to allow
       // the caenFragmentToAuxDetDigit know how many to subtract from the board channel such that the
       // channels from the auxdet all satisfy the range of 0-N.
-      if     ( hardwareIter.second == "USTOF1" || hardwareIter.second == "USTOF2" ) boardChansUS.insert(chanOff);
-      else if( hardwareIter.second == "DSTOF1" || hardwareIter.second == "DSTOF2" ) boardChansDS.insert(chanOff);
+      if     ( hardwareIter.second == "USTOF1" || hardwareIter.second == "USTOF2" || hardwareIter.second == "USTOF3" || hardwareIter.second == "USTOF4" ) boardChansUS.insert(chanOff);
+      else if( hardwareIter.second == "DSTOF1" || hardwareIter.second == "DSTOF2" || hardwareIter.second == "DSTOF3" || hardwareIter.second == "DSTOF4" ) boardChansDS.insert(chanOff);
     }//end find TOFNames
   }//end loop over hardwareDatabase
 
