@@ -77,10 +77,12 @@ std::vector<int> AGCounterAlg::HitsFinder(std::string const& AuxDetName, raw::Au
   bool RisingEdge = false;
   int wait = 0;
   
-  std::cout << "Hit Threshold = " << Threshold << std::endl;
+  //std::cout << "Hit Threshold = " << Threshold << std::endl;
 
 
   // Requires the waveform is sufficiently long to prevent segfaults
+  
+  //std::cout<<"WaveformDigit.NADC() = "<<WaveformDigit.NADC()<<std::endl;
   if(WaveformDigit.NADC() < 200) {
     if (Hits.size() == 0) { Hits.push_back(0); }    
     return Hits;
@@ -89,7 +91,7 @@ std::vector<int> AGCounterAlg::HitsFinder(std::string const& AuxDetName, raw::Au
   // Loop over all the ADC values
   //   within a bounds of 5 to NADC-50 to prevent seg faults
   //   in the differentiation equation
-  for (size_t i = 5; (int)i < (int)WaveformDigit.NADC() - 50; ++i) {
+  for (size_t i = 5; (int)i < (int)WaveformDigit.NADC() - 75; ++i) {
 
     // Numerical differentiation
     double gradient = double(8.0*WaveformDigit.ADC(i+1) - 8.0*WaveformDigit.ADC(i-1) +
