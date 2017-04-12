@@ -75,6 +75,9 @@ physics:
 
 services.NuRandomService: @local::random_NuRandomService
 
+# specify the wire pitch (default 4mm)
+source.FragmentToDigitAlg.WirePitch: "4mm" # Options: "4mm" or "5mm"
+
 # parameters for EventBuilderAlg
 source.EventBuilderAlg.TPCReadoutBufferLow:  10.0  # microseconds
 source.EventBuilderAlg.TPCReadoutBufferHigh: 10.0  # microseconds

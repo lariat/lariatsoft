@@ -118,6 +118,7 @@ class FragmentToDigitAlg{
   std::vector<std::string>                   		fConfigParams;            	///< vector of parameter names to be queried
   std::string		                   		fRunDateTime;  	           	///< string of Date/Time to use to querry HardwareConnectionsTable-----------jess lines
   std::uint32_t		                   		fRunTimestamp; 	           	///<Timestamp from runNumber to use to querry HardwareConnectionsTable-------jess lines
+  std::string                                           fWirePitch;                     /// "4mm", "5mm", or "3mm"
 
 };
 
