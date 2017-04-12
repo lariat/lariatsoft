@@ -76,3 +76,7 @@ outputs:
   }
  }
 }
+
+# specify the wire pitch (default 4mm)
+source.FragmentToDigitAlg.WirePitch: "4mm" # Options: "4mm" or "5mm"
+

@@ -64,6 +64,8 @@ void FragmentToDigitAlg::reconfigure( fhicl::ParameterSet const& pset )
   fTriggerDecisionTick    = pset.get< unsigned int>("TriggerDecisionTick",    135    ); 
   fTrigger1740Pedestal    = pset.get< float       >("Trigger1740Pedestal",    2000.  );
   fTrigger1740Threshold   = pset.get< float       >("Trigger1740Threshold",   0.     );
+  fWirePitch              = pset.get< std::string >("WirePitch",              "4mm"  );
+
 }
 
 //=====================================================================
@@ -182,44 +184,85 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
 void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
                                           std::vector<raw::RawDigit>     & tpcDigits)
 {
+
   raw::ChannelID_t tpcChan = 0;
   size_t maxChan = 64;
   size_t boardId = 0;
   float  ped     = 0.;
 
   // make a list of the starting wire number for each board channel 0
-  size_t startWireInd[8] = {239, 175, 111, 47,   0,   0,   0, 0 };
-  size_t startWireCol[8] = {0,   0,   0,   239, 223, 159, 95, 31};
+  size_t wires_per_plane = 240;                                           // default 4mm case
+  size_t startWireInd[8] = {  239,  175,  111,  47,   0,    0,    0,    0 }; // default 4mm case
+  size_t startWireCol[8] = {  0,    0,    0,    239,  223,  159,  95,   31}; // default 4mm case
+
+  if( fWirePitch == "5mm" ) {
+    wires_per_plane = 192;
+    size_t tmpInd[8] = {  191,  127,  63,   0,    0,    0,    0,    0 };
+    size_t tmpCol[8] = {  0,    0,    0,    191,  127,  63,   0,    0 };
+    std::copy(std::begin(tmpInd), std::end(tmpInd), std::begin(startWireInd));
+    std::copy(std::begin(tmpCol), std::end(tmpCol), std::begin(startWireCol));
+  }
+
  
   for(auto const& frag : caenFrags){
     
-    // the TPC mapping has the readout going to boards 0-7 of
-    // the CAEN 1751, channels 0-63 of the boards 0-6, channels 0-31 of board 7
+    // the TPC mapping has the readout going to boards 0-7 of the CAEN 1740.  
+    // For Runs I-II, this translates to channels 0-63 of the boards 0-6, channels 0-31 of board 7
     // To make things hard, we decided to count the wires down instead of up
-    // Board 0 channel 0  --> wire 239 of the induction plane
-    // Board 3 channel 48 --> wire 0   of the induction plane
-    // Board 3 channel 49 --> wire 239 of the collection plane
-    // Board 7 channel 32 --> wire 0   of the collection plane
+    // 
+    // Run I,II (4mm pitch):
+    //  Board 0 channel 0  --> wire 239 of the induction plane
+    //  Board 3 channel 48 --> wire 0   of the induction plane
+    //  Board 3 channel 49 --> wire 239 of the collection plane
+    //  Board 7 channel 32 --> wire 0   of the collection plane
+    //
+    // Run III (5mm pitch):
+    //  Board 0 channel 0  --> wire 191 of the induction plane
+    //  Board 2 channel 63 --> wire 0   of the induction plane
+    //  Board 3 channel 0  --> wire 191 of the collection plane
+    //  Board 5 channel 63 --> wire 0   of the collection plane 
+    //
     boardId = frag.header.boardId;
     if(boardId > 7) continue;
     else{
       if(boardId < 7) maxChan = 64;
       else maxChan = 32;
+
       for(size_t chan = 0; chan < maxChan; ++chan){ 
         if(chan > frag.waveForms.size() )
         throw cet::exception("FragmentToDigitAlg") << "attempting to access channel "
 						  << chan << " from 1740 fragment with only "
 						  << frag.waveForms.size() << " channels";
+       
+        // the mapping is a little complicated for the 4mm case, so for now, 
+        // use separate code for 4mm and 5mm (not the most elegant solution 
+        // but it gets the job done)
         
-        // get TPC channel for the induction plane
-        if( boardId < 3 || (boardId == 3 && chan < 48) )
-        tpcChan = startWireInd[boardId] - chan;
-        // get TPC Channel for the collection plane
-        else if( boardId > 3)
-        tpcChan = 240 + startWireCol[boardId] - chan;
-        else if(boardId == 3 && chan > 47)
-        tpcChan = 240 + startWireCol[boardId] - chan + 48;
+        if( fWirePitch == "4mm" ) {
+          
+          // get TPC channel for the induction plane
+          if( boardId < 3 || (boardId == 3 && chan < 48) )
+            tpcChan = startWireInd[boardId] - chan;
+          // get TPC Channel for the collection plane
+          else if( boardId > 3)
+            tpcChan = wires_per_plane + startWireCol[boardId] - chan;
+          else if(boardId == 3 && chan > 47)
+            tpcChan = wires_per_plane + startWireCol[boardId] - chan + 48;
         
+        } else
+        if( fWirePitch == "5mm" ) {
+          
+          // get TPC channel for the induction plane
+          if( boardId < 3 )
+            tpcChan = startWireInd[boardId] - chan;
+          // get TPC Channel for the collection plane
+          else if( boardId >= 3 && boardId < 6)
+            tpcChan = wires_per_plane + startWireCol[boardId] - chan;
+          else if( boardId >= 6 ) continue;
+
+        }
+        
+
         // as of v04_13_00 of LArSoft, the event display no longer takes the
         // pedestal value from the RawDigit and uses an interface to a database instead
         // that doesn't really work for LArIAT, so pre-pedestal subtract the data
