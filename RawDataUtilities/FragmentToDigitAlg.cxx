@@ -258,6 +258,7 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
           // get TPC Channel for the collection plane
           else if( boardId >= 3 && boardId < 6)
             tpcChan = wires_per_plane + startWireCol[boardId] - chan;
+          else if( boardId >= 6 ) continue;
 
         }
         
