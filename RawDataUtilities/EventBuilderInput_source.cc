@@ -393,6 +393,11 @@ namespace rdu
 
     fRunNumber    = fEventAux.run();
     fSubRunNumber = fEventAux.subRun();
+    
+    // we will need to create a new run and subrun principal later on
+    // so let's reset the cached values
+    fCachedRunNumber    = -1;
+    fCachedSubRunNumber = -1; 
 
     LOG_VERBATIM("EventBuilderInput")
         << "\n////////////////////////////////////"
