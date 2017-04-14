@@ -407,7 +407,9 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   
   // Fill x,y arrays to be used in the TGraph
   // during the fit later
-  int x[prepulse_bins],y[prepulse_bins];
+  //int x[prepulse_bins],y[prepulse_bins];
+  std::vector<int> x(prepulse_bins,0);
+  std::vector<int> y(prepulse_bins,0);
   prepulse_baseline = 0.;
   for( int i = 0; i < prepulse_bins; i++) {
     x[i] = int(x1) + i;
@@ -445,7 +447,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( std::vector<short> wfm, short hi
   if(fUsePrepulseFit){ 
       
       // Fit prepulse region with above function
-      TGraph graph(prepulse_bins,x,y);
+      TGraph graph(prepulse_bins,x.data(),y.data());
       graph.Fit("prepulse_exp_fit","QN0");
 
   } else {

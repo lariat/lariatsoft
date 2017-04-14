@@ -629,8 +629,8 @@ namespace evgen{
 //       }
 //      } // if !useTrigger
      
-     if (fMuonsFileType.compare("root")==0) 
-      fMuonFileR->Close();
+     if (fMuonsFileType.compare("root")==0) {
+      fMuonFileR->Close(); }
       testfile->Close();
     
   }
