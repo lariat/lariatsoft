@@ -331,8 +331,10 @@ bool StoppingTracks::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindMa
       // double lastHitsdEdx[16]={0.};
       // double lastHitsRR[16]={0.};
       
-      double lastHitsdEdx[fMinNofSpacePoints]={0.};
-      double lastHitsRR[fMinNofSpacePoints]={0.};
+      //double lastHitsdEdx[fMinNofSpacePoints]={0.};
+      //double lastHitsRR[fMinNofSpacePoints]={0.};
+      std::vector<double> lastHitsdEdx(fMinNofSpacePoints,0.);
+      std::vector<double> lastHitsRR(fMinNofSpacePoints,0.);
 
       double ordereddEdx[1000]={0.};
       double orderedRR[1000]={0.};
@@ -408,7 +410,7 @@ bool StoppingTracks::isStoppingTrack( art::Ptr<recob::Track> aTrack, art::FindMa
       double p1=0.;
       
       if(check != fMinNofSpacePoints){
-	TGraph *g1 = new TGraph(16,lastHitsRR,lastHitsdEdx);
+	TGraph *g1 = new TGraph(16,lastHitsRR.data(),lastHitsdEdx.data());
 	TF1 *fitFcn = new TF1("fitFcn","[0]*pow(x,[1])",0.,10.);
 	fitFcn->SetParameter(1,-0.4);
 	g1->Fit("fitFcn");
