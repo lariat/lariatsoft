@@ -72,7 +72,7 @@ namespace {
 
   // Retrieves branch name (a la art convention) where object resides
   template <typename PROD>
-  const char * getBranchName(art::InputTag const& tag)
+  std::string getBranchName(art::InputTag const& tag)
   {
     std::ostringstream oss;
     oss << art::TypeID(typeid(PROD)).friendlyClassName()
@@ -83,7 +83,7 @@ namespace {
           << '_'
           << tag.process()
           << ".obj";
-    return oss.str().data();
+    return oss.str();
   }
 
   artdaq::Fragments * getFragments(TBranch * br, unsigned entry)
@@ -374,7 +374,7 @@ namespace rdu
     // get artdaq::Fragments branch
     fFile.reset(new TFile(filename.data()));
     TTree * eventTree  = reinterpret_cast <TTree *> (fFile->Get(art::rootNames::eventTreeName().c_str()));
-    fFragmentsBranch   = eventTree->GetBranch(getBranchName<artdaq::Fragments>(fInputTag)); // get branch for specific input tag
+    fFragmentsBranch   = eventTree->GetBranch(getBranchName<artdaq::Fragments>(fInputTag).data()); // get branch for specific input tag
     fEventAuxBranch    = eventTree->GetBranch("EventAuxiliary");
     fNumberInputEvents = static_cast <size_t> (fFragmentsBranch->GetEntries()); // Number of fragment-containing events to read in from input file
     fTreeIndex         = 0ul;
