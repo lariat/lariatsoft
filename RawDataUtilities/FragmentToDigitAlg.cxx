@@ -1046,7 +1046,7 @@ void FragmentToDigitAlg::InitializeRun(art::RunNumber_t runNumber, uint64_t time
   LOG_VERBATIM("FragmentToDigitAlg") << "Initializing Run"
                                      << " RunNumber: "     << fRunNumber
                                      <<  "; Date/Time: "   << fRunDateTime
-                                     << "; RunTimestamp: " << fRunTimestamp;
+                                     << "; RunTimestamp: " << timestamp;
 
   // Set config parameters to get from the lariat_prd database
   fConfigParams.clear();

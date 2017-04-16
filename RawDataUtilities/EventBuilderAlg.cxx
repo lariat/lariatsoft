@@ -437,7 +437,7 @@ namespace rdu {
 
     for (std::vector< std::pair< double, double > >::const_iterator
          iter = CAENBoard0Intervals.begin(); iter != CAENBoard0Intervals.end(); ++iter) {
-      std::cout << iter->first << ", " << iter->second << std::endl;
+      //std::cout << iter->first << ", " << iter->second << std::endl;
     }
 
     std::cout << "//////////////////////////////////////////////" << std::endl;
@@ -446,7 +446,7 @@ namespace rdu {
 
     for (std::vector< std::pair< double, double > >::const_iterator
          iter = CAENBoard8Intervals.begin(); iter != CAENBoard8Intervals.end(); ++iter) {
-      std::cout << iter->first << ", " << iter->second << std::endl;
+      //std::cout << iter->first << ", " << iter->second << std::endl;
     }
 
     std::cout << "//////////////////////////////////////////////" << std::endl;
@@ -455,7 +455,7 @@ namespace rdu {
 
     for (std::vector< std::pair< double, double > >::const_iterator
          iter = TDCIntervals.begin(); iter != TDCIntervals.end(); ++iter) {
-      std::cout << iter->first << ", " << iter->second << std::endl;
+      //std::cout << iter->first << ", " << iter->second << std::endl;
     }
 
     // vector of merged intervals
@@ -483,7 +483,7 @@ namespace rdu {
 
     for (std::vector< std::pair< double, double > >::const_iterator
          iter = MergedIntervals.begin(); iter != MergedIntervals.end(); ++iter) {
-      std::cout << iter->first << ", " << iter->second << std::endl;
+      //std::cout << iter->first << ", " << iter->second << std::endl;
     }
 
     std::cout << "//////////////////////////////////////////////" << std::endl;
@@ -572,9 +572,10 @@ namespace rdu {
       size_t const& NumberCaenBlocks = Collection.caenBlocks.size();
       size_t const& NumberTdcBlocks = Collection.tdcBlocks.size();
 
-      std::cout << "Collection: " << i << std::endl;
-      std::cout << "  Number of CAEN data blocks: " << NumberCaenBlocks << std::endl;
-      std::cout << "  Number of TDC data blocks:  " << NumberTdcBlocks << std::endl;
+      mf::LogDebug("EventBuilderAlg") 
+        << "Collection: " << i
+        << "\n  Number of CAEN data blocks: " << NumberCaenBlocks
+        << "\n  Number of TDC data blocks:  " << NumberTdcBlocks << std::endl;
 
       // used for counting the number of TPC readouts
       std::vector< std::pair< double, double > > TPCReadout;
@@ -586,18 +587,20 @@ namespace rdu {
         double const& timestamp = Collection.caenBlockTimeStamps[j];
         unsigned int boardId = caenFrag.header.boardId;
 
-        std::cout << "    CAEN block: " << j << std::endl;
-        std::cout << "      Board ID: " << boardId << std::endl;
-        std::cout << "           TTT: " << caenFrag.header.triggerTimeTag << std::endl;
-        std::cout << "      Timestamp: " << timestamp << std::endl;
+        mf::LogDebug("EventBuilderAlg") 
+          << "    CAEN block: " << j
+          << "\n      Board ID: " << boardId
+          << "\n           TTT: " << caenFrag.header.triggerTimeTag
+          << "\n      Timestamp: " << timestamp << std::endl;
 
         // a +- 10-microsecond buffer time should be sufficient
         // in a TPCReadout "interval"
         double TPCReadoutLow  = timestamp - fTPCReadoutBufferLow;
         double TPCReadoutHigh = timestamp + fTPCReadoutBufferHigh;
 
-        std::cout << "      TPCReadoutLow:  " << TPCReadoutLow  << std::endl;
-        std::cout << "      TPCReadoutHigh: " << TPCReadoutHigh << std::endl;
+        mf::LogDebug("EventBuilderAlg") 
+          << "      TPCReadoutLow:  " << TPCReadoutLow
+          << "\n      TPCReadoutHigh: " << TPCReadoutHigh << std::endl;
 
         TPCReadout.push_back(std::make_pair(TPCReadoutLow, TPCReadoutHigh));
       }
@@ -650,12 +653,14 @@ namespace rdu {
         //std::vector<TDCFragment::TdcEventData> const& tdcEvents = Collection.tdcBlockTimeStamps[j];
         double const& timestamp = Collection.tdcBlockTimeStamps[j];
 
-        std::cout << "    TDC block: " << j << std::endl;
-        std::cout << "      Timestamp: " << timestamp << std::endl;
+        mf::LogDebug("EventBuilderAlg") 
+          << "    TDC block: " << j
+          << "\n      Timestamp: " << timestamp << std::endl;
         //std::cout << "      TDC events: " << tdcEvents->size() << std::endl;
       }
 
-      std::cout << "Number of TPC readouts: " << NumberTPCReadouts << std::endl;
+      mf::LogDebug("EventBuilderAlg") 
+        << "Number of TPC readouts: " << NumberTPCReadouts << std::endl;
 
     }
 

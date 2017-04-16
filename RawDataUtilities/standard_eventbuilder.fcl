@@ -75,6 +75,10 @@ physics:
 
 services.NuRandomService: @local::random_NuRandomService
 
+# set Unix epoch timestamp manually if needed
+# (default 0 == use value obtained from spillTrailer)
+source.SetTimestamp: 0
+
 # specify the wire pitch (default 4mm)
 source.FragmentToDigitAlg.WirePitch: "4mm" # Options: "4mm" or "5mm"
 
@@ -95,4 +99,3 @@ source.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
 source.EventBuilderAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
 source.EventBuilderAlg.ClockCorrectionAlg.MinNumberTimeStamps:          3
 source.EventBuilderAlg.ClockCorrectionAlg.MinNumberDataPoints:          3
-

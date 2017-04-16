@@ -281,6 +281,7 @@ namespace rdu
 
     // timestamp from SpillTrailer
     std::uint64_t fTimestamp;
+    std::uint64_t fSetTimestamp;
 
   }; // class EventBuilder
 
@@ -310,6 +311,7 @@ namespace rdu
     , fSpillWrapper(nullptr)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
+    , fSetTimestamp(0)
   {
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
@@ -363,7 +365,7 @@ namespace rdu
     fTDCPreAcquisitionWindow     = pset.get< double >("TDCPreAcquisitionWindow",     -1);
     fTDCPostAcquisitionWindow    = pset.get< double >("TDCPostAcquisitionWindow",    -1);
     fTDCAcquisitionWindow        = pset.get< double >("TDCAcquisitionWindow",        -1);
-
+    fSetTimestamp                = pset.get< std::uint64_t>("SetTimestamp",           0);
     return;
   }
 
@@ -467,11 +469,31 @@ namespace rdu
       throw cet::exception("EventBuilder") << "Spill construction failed; spill is incomplete\n";
     }
 
-    // get SpillTrailer
-    LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
+    
+    if( fSetTimestamp == 0 ){ 
+      
+      // get SpillTrailer
+      LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
 
-    // get timestamp from SpillTrailer, cast as uint64_t
-    fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
+      // get timestamp from SpillTrailer, cast as uint64_t
+      fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
+      
+      std::cout<<"Timestamp from spillTrailer: "<<fTimestamp<<"\n";
+
+      if(fTimestamp < 1388534400 ){
+        std::cout<<"\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+        std::cout<<"WARNING: spillTrailer.timeStamp returns date prior to 2014!  Something is wrong!\n";
+        std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n";
+      }
+
+    } else {
+
+      // spillTrailer messes up and returns faulty timestamps from ~1970 sometimes,
+      // pre-dating any hardware database configurations, so set it manually
+      fTimestamp = static_cast<std::uint64_t> (fSetTimestamp);
+      std::cout<<"Setting timestamp manually: "<<fTimestamp<<"\n";
+    
+    }
 
     // group data blocks into collections
     fCollectionIndex = 0;
