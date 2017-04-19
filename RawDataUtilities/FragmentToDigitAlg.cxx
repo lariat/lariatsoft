@@ -1055,36 +1055,47 @@ std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t
 //void FragmentToDigitAlg::InitializeRun(art::RunPrincipal* const& run, art::RunNumber_t runNumber, uint64_t timestamp)
 void FragmentToDigitAlg::InitializeRun(art::RunNumber_t runNumber, uint64_t timestamp)
 {
-  fRunNumber=runNumber;
-  fRunDateTime = this->TimestampToString(timestamp);	//jess lines
+  
+  // Get run number, and timestamp
+  fRunNumber    =runNumber;
+  fRunDateTime  = this->TimestampToString(timestamp);	//jess lines
+  
+  // Initialize MWPC containers
   this->InitializeMWPCContainers();
+  
+  // Retrieve hardware connections and configuration parameters from the
+  // lariat_prd database only if the run number has changed
+  if( fRunNumber != fPreviousRunNumber ) {
+
+    fHardwareConnections.clear();   
+    fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);
+    
+    fConfigParams.clear();
+    fConfigParams.push_back("v1495_config_v1495_delay_ticks");
+    fConfigParams.push_back("v1740_config_caen_postpercent");
+    fConfigParams.push_back("v1740_config_caen_recordlength");
+    fConfigParams.push_back("v1740b_config_caen_postpercent");
+    fConfigParams.push_back("v1740b_config_caen_recordlength");
+    fConfigParams.push_back("v1751_config_caen_postpercent");
+    fConfigParams.push_back("v1751_config_caen_recordlength");
+    fConfigParams.push_back("v1740_config_caen_v1740_samplereduction");
+    fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
+    fConfigParams.push_back("tdc_config_tdc_pipelinedelay");
+    fConfigParams.push_back("tdc_config_tdc_gatewidth");
+    
+    std::map<std::string, std::string> configValues;
+    configValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));
+    fV1751PostPercent = std::atof(configValues["v1751_config_caen_postpercent"].c_str());
+
+    fPreviousRunNumber = fRunNumber;
+  }
+  
   LOG_VERBATIM("FragmentToDigitAlg") << "Initializing Run"
                                      << " RunNumber: "     << fRunNumber
                                      <<  "; Date/Time: "   << fRunDateTime
                                      << "; RunTimestamp: " << timestamp;
-
-  // Set config parameters to get from the lariat_prd database
-  fConfigParams.clear();
-  fConfigParams.push_back("v1495_config_v1495_delay_ticks");
-  fConfigParams.push_back("v1740_config_caen_postpercent");
-  fConfigParams.push_back("v1740_config_caen_recordlength");
-  fConfigParams.push_back("v1740b_config_caen_postpercent");
-  fConfigParams.push_back("v1740b_config_caen_recordlength");
-  fConfigParams.push_back("v1751_config_caen_postpercent");
-  fConfigParams.push_back("v1751_config_caen_recordlength");
-  fConfigParams.push_back("v1740_config_caen_v1740_samplereduction");
-  fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
-  fConfigParams.push_back("tdc_config_tdc_pipelinedelay");
-  fConfigParams.push_back("tdc_config_tdc_gatewidth");
-  
-  // Get V1751 PostPercent settings from database
-  fConfigValues.clear();
-  fHardwareConnections.clear();											//jess lines
-  fHardwareConnections = fDatabaseUtility->GetHardwareConnections(fRunDateTime);			        //jess lines
-  fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams, static_cast <int> (fRunNumber));		
-  fV1751PostPercent = std::atof(fConfigValues["v1751_config_caen_postpercent"].c_str());
-
 }
+
 //-------------------jess lines
 //=====================================================================
   std::string FragmentToDigitAlg::TimestampToString(std::time_t const& Timestamp) {
