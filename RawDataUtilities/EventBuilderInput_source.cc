@@ -72,7 +72,7 @@ namespace {
 
   // Retrieves branch name (a la art convention) where object resides
   template <typename PROD>
-  const char * getBranchName(art::InputTag const& tag)
+  std::string getBranchName(art::InputTag const& tag)
   {
     std::ostringstream oss;
     oss << art::TypeID(typeid(PROD)).friendlyClassName()
@@ -83,7 +83,7 @@ namespace {
           << '_'
           << tag.process()
           << ".obj";
-    return oss.str().data();
+    return oss.str();
   }
 
   artdaq::Fragments * getFragments(TBranch * br, unsigned entry)
@@ -183,7 +183,9 @@ namespace rdu
     art::SubRunNumber_t    fSubRunNumber;
     art::EventNumber_t     fEventNumber;
     art::RunNumber_t       fCachedRunNumber;
+    art::RunNumber_t       fPreviousRunNumber;
     art::SubRunNumber_t    fCachedSubRunNumber;
+    
 
     // EventAuxiliary for fetching run and sub-run numbers
     art::EventAuxiliary    fEventAux;
@@ -281,6 +283,7 @@ namespace rdu
 
     // timestamp from SpillTrailer
     std::uint64_t fTimestamp;
+    std::uint64_t fSetTimestamp;
 
   }; // class EventBuilder
 
@@ -306,10 +309,12 @@ namespace rdu
     , fSubRunNumber(0)
     , fEventNumber()
     , fCachedRunNumber(-1)
+    , fPreviousRunNumber(-1)
     , fCachedSubRunNumber(-1)
     , fSpillWrapper(nullptr)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
+    , fSetTimestamp(0)
   {
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
@@ -323,6 +328,7 @@ namespace rdu
 
     // set config parameters to get from the lariat_prd database
     fConfigParams.clear();
+    fConfigParams.push_back("runstarttimesec");
     fConfigParams.push_back("v1495_config_v1495_delay_ticks");
     fConfigParams.push_back("v1740_config_caen_postpercent");
     fConfigParams.push_back("v1740_config_caen_recordlength");
@@ -334,6 +340,12 @@ namespace rdu
     fConfigParams.push_back("v1740b_config_caen_v1740_samplereduction");
     fConfigParams.push_back("tdc_config_tdc_pipelinedelay");
     fConfigParams.push_back("tdc_config_tdc_gatewidth");
+    fConfigParams.push_back("v1751_config_caen_enablereadout");
+    fConfigParams.push_back("larasic_config_larasic_collection_filter");
+    fConfigParams.push_back("larasic_config_larasic_collection_gain");
+    fConfigParams.push_back("larasic_config_larasic_enablereadout");
+    fConfigParams.push_back("larasic_config_larasic_pulseron");
+    fConfigParams.push_back("larasic_config_larasic_channelscan");
   }
 
   //-----------------------------------------------------------------------
@@ -363,7 +375,7 @@ namespace rdu
     fTDCPreAcquisitionWindow     = pset.get< double >("TDCPreAcquisitionWindow",     -1);
     fTDCPostAcquisitionWindow    = pset.get< double >("TDCPostAcquisitionWindow",    -1);
     fTDCAcquisitionWindow        = pset.get< double >("TDCAcquisitionWindow",        -1);
-
+    fSetTimestamp                = pset.get< std::uint64_t>("SetTimestamp",           0);
     return;
   }
 
@@ -374,7 +386,7 @@ namespace rdu
     // get artdaq::Fragments branch
     fFile.reset(new TFile(filename.data()));
     TTree * eventTree  = reinterpret_cast <TTree *> (fFile->Get(art::rootNames::eventTreeName().c_str()));
-    fFragmentsBranch   = eventTree->GetBranch(getBranchName<artdaq::Fragments>(fInputTag)); // get branch for specific input tag
+    fFragmentsBranch   = eventTree->GetBranch(getBranchName<artdaq::Fragments>(fInputTag).data()); // get branch for specific input tag
     fEventAuxBranch    = eventTree->GetBranch("EventAuxiliary");
     fNumberInputEvents = static_cast <size_t> (fFragmentsBranch->GetEntries()); // Number of fragment-containing events to read in from input file
     fTreeIndex         = 0ul;
@@ -411,7 +423,11 @@ namespace rdu
     //       previous run number. If it is, don't bother querying the
     //       database again since it will return the same results as
     //       before.
-    this->getDatabaseParameters_(fRunNumber);
+    if( fRunNumber != fPreviousRunNumber ) {
+      std::cout<<"New run number, query database!\n";
+      fPreviousRunNumber = fRunNumber;
+      this->getDatabaseParameters_(fRunNumber);
+    }
 
     // configure the event builder algorithm
     fEventBuilderAlg.Configure(fV1740PreAcquisitionWindow,
@@ -467,11 +483,31 @@ namespace rdu
       throw cet::exception("EventBuilder") << "Spill construction failed; spill is incomplete\n";
     }
 
-    // get SpillTrailer
-    LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
+    // As of 4-19-17, we get timestamp from configurations database, which seems to be 
+    // more reliable than spillTrailer
+    /*
+    if( fSetTimestamp == 0 ){ 
+      
+      // get SpillTrailer
+      LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
 
-    // get timestamp from SpillTrailer, cast as uint64_t
-    fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
+      // get timestamp from SpillTrailer, cast as uint64_t
+      fTimestamp = (static_cast <std::uint64_t> (spillTrailer.timeStamp));
+      
+      if(fTimestamp < 1388534400 ){
+        std::cout<<"\n!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n";
+        std::cout<<"WARNING: spillTrailer.timeStamp returns date prior to 2014!  Something is wrong!\n";
+        std::cout<<"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n";
+      }
+    } else {
+
+      // spillTrailer messes up and returns faulty timestamps from ~1970 sometimes,
+      // pre-dating any hardware database configurations, so set it manually
+      fTimestamp = static_cast<std::uint64_t> (fSetTimestamp);
+      std::cout<<"Setting timestamp manually: "<<fTimestamp<<"\n";
+    
+    }
+    */
 
     // group data blocks into collections
     fCollectionIndex = 0;
@@ -692,20 +728,23 @@ namespace rdu
 
     LOG_VERBATIM("EventBuilderInput")
       << "//////////////////////////////////////////////"
-      << "V1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           
-      << "V1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            
-      << "V1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           
-      << "V1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            
-      << "V1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           
-      << "V1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          
-      << "V1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           
-      << "V1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  
-      << "V1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] 
-      << "fTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             
-      << "fTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 
-      << "//////////////////////////////////////////////";
+      << "\nRun start time [sec]:  " << fConfigValues["runstarttimesec"]
+      << "\nV1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           
+      << "\nV1740PostPercent:      " << fConfigValues["v1740_config_caen_postpercent"]            
+      << "\nV1740BPostPercent:     " << fConfigValues["v1740b_config_caen_postpercent"]           
+      << "\nV1751PostPercent:      " << fConfigValues["v1751_config_caen_postpercent"]            
+      << "\nV1740RecordLength:     " << fConfigValues["v1740_config_caen_recordlength"]           
+      << "\nV1740BRecordLength:    " << fConfigValues["v1740b_config_caen_recordlength"]          
+      << "\nV1751RecordLength:     " << fConfigValues["v1751_config_caen_recordlength"]           
+      << "\nV1740SampleReduction:  " << fConfigValues["v1740_config_caen_v1740_samplereduction"]  
+      << "\nV1740BSampleReduction: " << fConfigValues["v1740b_config_caen_v1740_samplereduction"] 
+      << "\nfTDCPipelineDelay:     " << fConfigValues["tdc_config_tdc_pipelinedelay"]             
+      << "\nfTDCGateWidth:         " << fConfigValues["tdc_config_tdc_gatewidth"]                 
+      << "\n//////////////////////////////////////////////";
+    
 
     // cast from string to size_t
+    fTimestamp             = static_cast <std::uint64_t>(this->castToSizeT_(fConfigValues["runstarttimesec"]));
     fV1495DelayTicks       = this->castToSizeT_(fConfigValues["v1495_config_v1495_delay_ticks"]);
     fV1740PostPercent      = this->castToSizeT_(fConfigValues["v1740_config_caen_postpercent"]);
     fV1740BPostPercent     = this->castToSizeT_(fConfigValues["v1740b_config_caen_postpercent"]);
@@ -838,7 +877,8 @@ namespace rdu
 //      "tertiary.punch_through",
 //      "file_format"
 //    };
-    
+   
+   /* 
     std::initializer_list<std::string> run_params = {
       "v1751_config_caen_enablereadout",
       "larasic_config_larasic_collection_filter",
@@ -848,17 +888,19 @@ namespace rdu
       "larasic_config_larasic_channelscan",
       "v1740_config_caen_recordlength",
     };
+    */
 
     std::initializer_list<std::string> subrun_params = {
       "end_f_mc7sc1"
     };
 
-    std::vector<std::string> runparams(run_params);
+    //std::vector<std::string> runparams(run_params);
     std::vector<std::string> subrunparams(subrun_params);
     
     // get the relevant information from the database
-    auto runValues    = fDatabaseUtility->GetConfigValues(runparams,
-                                                          static_cast <int> (fRunNumber));
+    //auto runValues    = fDatabaseUtility->GetConfigValues(runparams,
+    //                                                      static_cast <int> (fRunNumber));
+    
     auto subrunValues = fDatabaseUtility->GetIFBeamValues(subrunparams,
                                                           static_cast <int> (fRunNumber),
                                                           static_cast <int> (fSubRunNumber));
@@ -907,13 +949,13 @@ namespace rdu
     LOG_VERBATIM("EventBuilderInput") << subrunValues["end_f_mc7sc1"];
 
     size_t              endMC7SC1              = this->castToSizeT_(subrunValues["end_f_mc7sc1"]);
-    bool                v1751CaenEnableReadout = this->castToSizeT_(runValues["v1751_config_caen_enablereadout"]);
-    size_t              asicCollectionFilter   = this->castToSizeT_(runValues["larasic_config_larasic_collection_filter"]);
-    size_t              asicCollectionGain     = this->castToSizeT_(runValues["larasic_config_larasic_collection_gain"]);
-    bool                asicEnableReadout      = this->castToSizeT_(runValues["larasic_config_larasic_enablereadout"]);
-    bool                asicPulserOn           = this->castToSizeT_(runValues["larasic_config_larasic_pulseron"]);
-    bool                asicChannelScan        = this->castToSizeT_(runValues["larasic_config_larasic_channelscan"]);
-    size_t              v1740RecordLength      = this->castToSizeT_(runValues["v1740_config_caen_recordlength"]);
+    bool                v1751CaenEnableReadout = this->castToSizeT_(fConfigValues["v1751_config_caen_enablereadout"]);
+    size_t              asicCollectionFilter   = this->castToSizeT_(fConfigValues["larasic_config_larasic_collection_filter"]);
+    size_t              asicCollectionGain     = this->castToSizeT_(fConfigValues["larasic_config_larasic_collection_gain"]);
+    bool                asicEnableReadout      = this->castToSizeT_(fConfigValues["larasic_config_larasic_enablereadout"]);
+    bool                asicPulserOn           = this->castToSizeT_(fConfigValues["larasic_config_larasic_pulseron"]);
+    bool                asicChannelScan        = this->castToSizeT_(fConfigValues["larasic_config_larasic_channelscan"]);
+    size_t              v1740RecordLength      = this->castToSizeT_(fConfigValues["v1740_config_caen_recordlength"]);
     
     
 

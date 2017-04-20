@@ -98,6 +98,7 @@ class FragmentToDigitAlg{
  private:
 
   int                                        		fRunNumber;               	///< current run number
+  int                                                   fPreviousRunNumber;             /// Keep previous run number in memory 
   std::string                                		fRawFragmentLabel;        	///< label for module producing artdaq fragments
   std::string                                		fRawFragmentInstance;     	///< instance label for artdaq fragments        
   size_t                                     		fMaxNumberFitIterations;  	///< number of fit iterations before stopping
