@@ -11,6 +11,14 @@ lariat_geo:
 #ROOT:     "lariat_wdisk.gdml"
 }
 
+lariat_geo_5mm:
+{
+ SurfaceY: 130.0e2                      #in cm, vertical distance to the surface
+ Name:     "lariat"
+ GDML:     "lariat_5mm.gdml"
+ ROOT:     "lariat_5mm.gdml"
+}
+
 lariat_geometry_helper:
 {
  service_provider : LArIATGeometryHelper
@@ -21,6 +29,14 @@ lariat_auxdetgeo:
  Name:            "lariat"
  GDML:            "lariat.gdml"
  ROOT:            "lariat.gdml"
+ SortingParameters: {}                   # empty parameter set for default
+}
+
+lariat_auxdetgeo_5mm: 
+{
+ Name:            "lariat"
+ GDML:            "lariat_5mm.gdml"
+ ROOT:            "lariat_5mm.gdml"
  SortingParameters: {}                   # empty parameter set for default
 }
 
