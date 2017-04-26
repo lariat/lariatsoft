@@ -8,9 +8,9 @@ process_name: EventBuilderNoMerge
 services:
 {
  ExptGeoHelperInterface: @local::lariat_geometry_helper
- Geometry:               @local::lariat_geo
+ Geometry:               @local::lariat_geo_5mm
  #AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
- #AuxDetGeometry:         @local::lariat_auxdetgeo
+ #AuxDetGeometry:         @local::lariat_auxdetgeo_5mm
  DatabaseUtilityT1034:   @local::lariat_databaseutility
 }
 
@@ -84,5 +84,5 @@ outputs:
 source.SetTimestamp: 0
 
 # specify the wire pitch (default 4mm)
-source.FragmentToDigitAlg.WirePitch: "4mm" # Options: "4mm" or "5mm"
+source.FragmentToDigitAlg.WirePitch: "5mm" # Options: "4mm" or "5mm"
 

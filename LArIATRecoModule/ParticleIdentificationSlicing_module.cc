@@ -1095,8 +1095,9 @@ void ParticleIdentificationSlicing::queryDataBaseForMagnetAndEnergy()
   int magSettingSize = 5;
   int energySettingSize = 4;
   //  float I2B = 0.0035;
-  float magSettings[magSettingSize] = {40,50,60,80,100};
-  float energySettings[energySettingSize] = {8,16,32,64};
+  // use actual values of magSettingSize and energySettingSize
+  float magSettings[5] = {40,50,60,80,100};
+  float energySettings[4] = {8,16,32,64};
   
   
   //Loop through and find the closest discrete/known settings
