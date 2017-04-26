@@ -613,14 +613,14 @@ void lariat::Lifetime::analyze(art::Event const & evt)
       trackEnd.clear();
     
       // ### Setting the track information into memory ###
-      tracklist[i]-> Extent(trackStart,trackEnd); 
-      trkvtxx[i]        = trackStart[0];
-      trkvtxy[i]        = trackStart[1];
-      trkvtxz[i]        = trackStart[2];
+      auto extent = tracklist[i]-> Extent();
+      trkvtxx[i]        = extent.first.X();
+      trkvtxy[i]        = extent.first.Y();
+      trkvtxz[i]        = extent.first.Z();
 
-      trkendx[i]        = trackEnd[0];  
-      trkendy[i]        = trackEnd[1];
-      trkendz[i]        = trackEnd[2];
+      trkendx[i]        = extent.second.X();
+      trkendy[i]        = extent.second.Y();
+      trkendz[i]        = extent.second.Z();
 
       // ### Recording the directional cosine at the start of the track ###
       memset(larStart, 0, 3);
