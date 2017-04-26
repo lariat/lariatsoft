@@ -9,7 +9,8 @@ services:
 {
  ExptGeoHelperInterface: @local::lariat_geometry_helper
  Geometry:               @local::lariat_geo
- AuxDetGeometry:         @local::lariat_auxdetgeo
+ #AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
+ #AuxDetGeometry:         @local::lariat_auxdetgeo
  DatabaseUtilityT1034:   @local::lariat_databaseutility
 }
 
