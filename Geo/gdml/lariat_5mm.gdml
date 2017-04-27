@@ -987,7 +987,7 @@
     <position name="volTPCWPlaneWidthSide_718involTPCPlaneCollectionpos" x="0" y="0" z="-22.5" unit="cm"/>
     <position name="volTPCPlaneCollection_727involTPCpos" x="-24.785" y="0" z="0" unit="cm"/>
     <rotation name="volTPCPlaneCollection_727involTPCrot" x="90" y="-0" z="-90" unit="deg"/>
-    <position name="volTPC_738involCryostatpos" x="0.435" y="-0.2" z="0" unit="cm"/>
+    <position name="volTPC_738involCryostatpos"  x="0.524" y="-0.2" z="-2,424" unit="cm"/>
     <position name="volInner_ring_739involCryostatpos" x="0" y="0" z="-40.7225" unit="cm"/>
     <position name="volInner_ring2_740involCryostatpos" x="0" y="0" z="-47.39" unit="cm"/>
     <position name="volInner_endcap_front_mod_741involCryostatpos" x="0" y="0" z="-0.24376844" unit="cm"/>
@@ -1006,8 +1006,8 @@
     <rotation name="volBottom_751involDetEnclosurerot" x="90" y="-0" z="0" unit="deg"/>
     <position name="voltheX_752involDetEnclosurepos" x="-60.96" y="-79.56101154" z="37.31" unit="cm"/>
     <position name="voltheX_753involDetEnclosurepos" x="-60.96" y="-79.56101154" z="-37.31" unit="cm"/>
-    <position name="volDetEnclosure_754involWorldpos" x="23.75" y="-12" z="45" unit="cm"/>
-    <position name="volAuxDetTOFUS_6ing4blpos" x="-30.14472" y="0.43434" z="140.39342" unit="cm"/>
+    <position name="volDetEnclosure_754involWorldpos" x="23.73" y="-12.01" z="43.77" unit="cm"/>
+    <position name="volAuxDetTOFUS_6ing4blpos" x="-31.4452" y="0.47244" z="144.51838" unit="cm"/>
     <rotation name="volAuxDetTOFUS_6ing4blrot" x="-9.27166181885" y="9.15259576143" z="-45.7437332364" unit="deg"/>
     <position name="volAuxDetSensitiveWC1_0involAuxDetMWPC1pos" x="0" y="0" z="0" unit="cm"/>
     <position name="FramS_0inChFrampos" x="-9.55" y="0" z="0" unit="cm"/>
@@ -1015,23 +1015,23 @@
     <position name="FramT_2inChFrampos" x="0" y="-9.55" z="0" unit="cm"/>
     <position name="FramT_3inChFrampos" x="0" y="9.55" z="0" unit="cm"/>
     <position name="ChFram_1involAuxDetMWPC1pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="volAuxDetMWPC1_7ing4blpos" x="-39.2176" y="-0.00254" z="169.8244" unit="cm"/>
+    <position name="volAuxDetMWPC1_7ing4blpos" x="-40.51808" y="0.03556" z="173.949360" unit="cm"/>
     <rotation name="volAuxDetMWPC1_7ing4blrot" x="0" y="13" z="0" unit="deg"/>
     <position name="volAuxDetSensitiveWC2_0involAuxDetMWPC2pos" x="0" y="0" z="0" unit="cm"/>
     <position name="ChFram_10x1involAuxDetMWPC2pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="volAuxDetMWPC2_8ing4blpos" x="-75.69962" y="0.0381" z="319.60058" unit="cm"/>
+    <position name="volAuxDetMWPC2_8ing4blpos" x="-73.787" y="0.01524" z="318.282320" unit="cm"/>
     <rotation name="volAuxDetMWPC2_8ing4blrot" x="0" y="13" z="0" unit="deg"/>
     <position name="volAuxDetSensitiveWC3_0involAuxDetMWPC3pos" x="0" y="0" z="0" unit="cm"/>
     <position name="ChFram_10x2involAuxDetMWPC3pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="volAuxDetMWPC3_9ing4blpos" x="-106.30154" y="-0.2794" z="516.38454" unit="cm"/>
+    <position name="volAuxDetMWPC3_9ing4blpos" x="-106.344720" y="-0.32258" z="516.686800" unit="cm"/>
     <rotation name="volAuxDetMWPC3_9ing4blrot" x="0" y="3" z="0" unit="deg"/>
     <position name="volAuxDetSensitiveWC4_0involAuxDetMWPC4pos" x="0" y="0" z="0" unit="cm"/>
     <position name="ChFram_10x3involAuxDetMWPC4pos" x="0" y="0" z="0" unit="cm"/>
-    <position name="volAuxDetMWPC4_11ing4blpos" x="-119.07266" y="-2.0066" z="760.20168" unit="cm"/>
+    <position name="volAuxDetMWPC4_11ing4blpos" x="-119.115840" y="-1.94564" z="762.0736608" unit="cm"/>
     <rotation name="volAuxDetMWPC4_11ing4blrot" x="0" y="3" z="0" unit="deg"/>
-    <position name="volAuxDetHalo_13ing4blpos" x="-118.61546" y="-2.0066" z="792.97022" unit="cm"/>
-    <rotation name="volAuxDetHalo_13ing4blrot" x="0" y="3" z="0" unit="deg"/>
-    <position name="volAuxDetTOFDS_14ing4blpos" x="-118.61546" y="-3.35788" z="800.59022" unit="cm"/>
+    <position name="volAuxDetLAPPD_13ing4blpos" x="-31.4452" y="0.43434" z="157.44838" unit="cm"/>
+    <rotation name="volAuxDetLAPPD_13ing4blrot" x="-9.27166181885" y="9.15259576143" z="-45.7437332364" unit="deg"/>
+    <position name="volAuxDetTOFDS_14ing4blpos"  x="-122.110500" y="-3.35788" z="784.232620" unit="cm"/>
     <rotation name="volAuxDetTOFDS_14ing4blrot" x="-3" y="1.83613095409e-16" z="-90" unit="deg"/>
     <position name="volAuxDetSensitivePunchUL_0involAuxDetPunchPaddlespos" x="14.5" y="0" z="0.5" unit="cm"/>
     <position name="volAuxDetSensitivePunchLR_1involAuxDetPunchPaddlespos" x="-14.5" y="0" z="-0.5" unit="cm"/>
@@ -1891,7 +1891,7 @@
       <section zOrder="0" zPosition="0" xOffset="0" yOffset="0" scalingFactor="1"/>
       <section zOrder="1" zPosition="12.7" xOffset="0" yOffset="0" scalingFactor="1"/>
     </xtru>
-    <tube name="HaloHole" rmin="0" rmax="6.5" z="1.5" startphi="0" deltaphi="360" aunit="deg" lunit="cm"/>
+    <box name="LAPPDPad" x="15" y="15" z="15" lunit="cm"/>
     <box name="volAuxDetTOFUS0x1" x="15" y="15" z="5.08" lunit="cm"/>
     <box name="MWPC1" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="volAuxDetDet" x="12.8" y="12.5" z="2.5" lunit="cm"/>
@@ -1901,7 +1901,7 @@
     <box name="MWPC2" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC3" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC4" x="12.8" y="25.4" z="2.5" lunit="cm"/>
-    <box name="volAuxDetHalo0" x="39" y="38" z="1" lunit="cm"/>
+    <box name="volAuxDetLAPPD0" x="22.86" y="15.24" z="7.62" lunit="cm"/>
     <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="5.08" lunit="cm"/>
     <box name="PunchPaddles" x="31" y="101" z="5" lunit="cm"/>
     <box name="volAuxDetPunch" x="31" y="101" z="1" lunit="cm"/>
@@ -1915,11 +1915,11 @@
     <trap name="volAuxDetCosmic40x1" z="3.02" theta="0" phi="0" x1="27" x2="33.2" x3="27" x4="33.2" y1="70.8" y2="70.8" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
     <trap name="volAuxDetCosmic20x1" z="3.02" theta="0" phi="0" x1="26.7" x2="32.2" x3="26.7" x4="32.2" y1="61" y2="61" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
 
-    <subtraction name="volAuxDetHalo0x1">
-      <first ref="volAuxDetHalo0"/>
-      <second ref="HaloHole"/>
-      <position name="HaloHoleInHalopos" x="0" y="0" z="0" unit="cm"/>
-    </subtraction>
+    <assembly name="volAuxDetLAPPD0x1">
+      <first ref="volAuxDetLAPPD0"/>
+      <second ref="LAPPDPad"/>
+      <position name="LAPPDPadinvolAuxDetLAPPD" x="0" y="0" z="6.35" unit="cm"/>
+    </assembly>
   </solids>
   <structure>
     <volume name="volTubBottom">
@@ -5307,9 +5307,9 @@
         <positionref ref="ChFram_10x3involAuxDetMWPC4pos"/>
       </physvol>
     </volume>
-    <volume name="volAuxDetHalo">
+    <volume name="volAuxDetLAPPD">
       <materialref ref="POLYSTYRENE0x1"/>
-      <solidref ref="volAuxDetHalo0x1"/>
+      <solidref ref="volAuxDetLAPPD0x1"/>
     </volume>
     <volume name="volAuxDetTOFDS">
       <materialref ref="LUCITE0x1"/>
@@ -5616,9 +5616,9 @@
         <rotationref ref="volAuxDetMWPC4_11ing4blrot"/>
       </physvol>
       <physvol>
-        <volumeref ref="volAuxDetHalo"/>
-        <positionref ref="volAuxDetHalo_13ing4blpos"/>
-        <rotationref ref="volAuxDetHalo_13ing4blrot"/>
+        <volumeref ref="volAuxDetLAPPD"/>
+        <positionref ref="volAuxDetLAPPD_13ing4blpos"/>
+        <rotationref ref="volAuxDetLAPPD_13ing4blrot"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetTOFDS"/>
