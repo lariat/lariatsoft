@@ -292,12 +292,13 @@ private:
    int    subrun;
    int    event;
    int    nhits;
-   int    ntracks_reco; 
-   int    ntrkhits[260];
+   int    ntracks_reco;
+  static const int kMaxTracks=260;
+   int    ntrkhits[kMaxTracks];
    
-   double trkx[260][1000];
-   double trky[260][1000];
-   double trkz[260][1000];
+   double trkx[kMaxTracks][1000];
+   double trky[kMaxTracks][1000];
+   double trkz[kMaxTracks][1000];
    int    hit_plane[kMaxHits];
    int    hit_wire[kMaxHits];
    int    hit_trkkey[kMaxHits];
@@ -309,18 +310,18 @@ private:
    float  hit_y[kMaxHits];        //<---hit y coordinate
    float  hit_z[kMaxHits];        //<---hit z coordinate
   
-   double trkstartdcosx[260];
-   double trkstartdcosy[260];
-   double trkstartdcosz[260];
-   double trkenddcosx[260];
-   double trkenddcosy[260];
-   double trkenddcosz[260];
-   double trkvtxx[260];
-   double trkvtxy[260];
-   double trkvtxz[260];
-   double trkendx[260];
-   double trkendy[260];
-   double trkendz[260];	
+   double trkstartdcosx[kMaxTracks];
+   double trkstartdcosy[kMaxTracks];
+   double trkstartdcosz[kMaxTracks];
+   double trkenddcosx[kMaxTracks];
+   double trkenddcosy[kMaxTracks];
+   double trkenddcosz[kMaxTracks];
+   double trkvtxx[kMaxTracks];
+   double trkvtxy[kMaxTracks];
+   double trkvtxz[kMaxTracks];
+   double trkendx[kMaxTracks];
+   double trkendy[kMaxTracks];
+   double trkendz[kMaxTracks];
 
 
    int tothit;
@@ -485,9 +486,11 @@ void lariat::Lifetime::ResetVars()
 
    for (int i = 0; i < 1000; ++i)
    {
-      trkvtxx[i] = -99999;
-      trkendx[i] = -99999;
-      for (int j = 0; j<2; ++j) trkpitch[i][j] = -99999;
+     if(i < kMaxTracks){
+       trkvtxx[i] = -99999;
+       trkendx[i] = -99999;
+     }
+     for (int j = 0; j<2; ++j) trkpitch[i][j] = -99999;
    }
 
    for (int i = 0; i<20000; ++i)
