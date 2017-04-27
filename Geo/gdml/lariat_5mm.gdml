@@ -3828,7 +3828,7 @@
       <physvol>
         <volumeref ref="volTPCWire155"/>
         <positionref ref="volTPCWire155_336involTPCPlaneInductionpos"/>
-        <rotationref ref="volTPCWire155_36involTPCPlaneInductionrot"/>
+        <rotationref ref="volTPCWire155_336involTPCPlaneInductionrot"/>
       </physvol>
       <physvol>
         <volumeref ref="volTPCWire156"/>
@@ -3848,7 +3848,7 @@
       <physvol>
         <volumeref ref="volTPCWire159"/>
         <positionref ref="volTPCWire159_340involTPCPlaneInductionpos"/>
-        <rotationref ref="volTPCWire199_340involTPCPlaneInductionrot"/>
+        <rotationref ref="volTPCWire159_340involTPCPlaneInductionrot"/>
       </physvol>
       <physvol>
         <volumeref ref="volTPCWire160"/>
