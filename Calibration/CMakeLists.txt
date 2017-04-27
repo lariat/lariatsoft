@@ -9,7 +9,7 @@ simple_plugin(CalWireT1034 "module"
               lardataobj_RecoBase
               lardata_ArtDataHelper
 			        RawDataUtilities
-		          SignalShapingServiceT1034_service
+		          Utilities_SignalShapingServiceT1034_service
               ${ART_FRAMEWORK_CORE}
 			        ${ART_FRAMEWORK_PRINCIPAL}
 			        ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -26,7 +26,6 @@ simple_plugin(CalWireT1034 "module"
               ${ROOT_XMLIO}
               ${ROOT_GDML}
 			        ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
 )
 
 simple_plugin(CalWireROIT1034 "module"
@@ -36,7 +35,7 @@ simple_plugin(CalWireROIT1034 "module"
               lardataobj_RecoBase
               lardata_ArtDataHelper
 			        RawDataUtilities
-		          SignalShapingServiceT1034_service
+		          Utilities_SignalShapingServiceT1034_service
               ${ART_FRAMEWORK_CORE}
 			        ${ART_FRAMEWORK_PRINCIPAL}
               ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -53,7 +52,6 @@ simple_plugin(CalWireROIT1034 "module"
               ${ROOT_XMLIO}
               ${ROOT_GDML}
 			        ${ROOT_BASIC_LIB_LIST}
-              BASENAME_ONLY
 )
 
 install_headers()
