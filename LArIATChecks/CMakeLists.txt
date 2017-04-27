@@ -1,5 +1,4 @@
-art_make(BASENAME_ONLY
-         LIB_LIBRARIES    larcore_Geometry
+art_make(LIB_LIBRARIES    larcore_Geometry
                           larreco_RecoAlg_ClusterRecoUtil
                           lardataobj_RecoBase
          MODULE_LIBRARIES LArIATRecoAlg
