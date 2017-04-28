@@ -26,7 +26,6 @@ simple_plugin( LArIATGeometryHelper service
 		${MF_UTILITIES}
 		${ROOT_BASIC_LIB_LIST}                
 		cetlib cetlib_except
-		BASENAME_ONLY
 )
 
 simple_plugin( LArIATAuxDetGeometryHelper service
@@ -43,7 +42,6 @@ simple_plugin( LArIATAuxDetGeometryHelper service
 		${MF_UTILITIES}
 		${ROOT_BASIC_LIB_LIST}                
 		cetlib cetlib_except
-		BASENAME_ONLY
 )
 
 install_headers()

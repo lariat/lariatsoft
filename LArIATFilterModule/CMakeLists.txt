@@ -1,5 +1,4 @@
-art_make(BASENAME_ONLY
-         LIB_LIBRARIES larcore_Geometry
+art_make(LIB_LIBRARIES larcore_Geometry
          larreco_RecoAlg_ClusterRecoUtil
          lardataobj_RecoBase
          MODULE_LIBRARIES LArIATRecoAlg
@@ -7,7 +6,7 @@ art_make(BASENAME_ONLY
          larevt_Filters
          larreco_ClusterFinder
          larreco_RecoAlg_ClusterRecoUtil
-         DatabaseUtilityT1034_service
+         Utilities_DatabaseUtilityT1034_service
          larreco_RecoAlg
          lardataobj_RawData
          larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
@@ -19,8 +18,6 @@ art_make(BASENAME_ONLY
          lardata_ArtDataHelper
          lardata_RecoObjects larreco_Deprecated
          lardata_Utilities
-         
-         
          larsim_MCCheater_BackTracker_service
          nutools_RandomUtils_NuRandomService_service
          nusimdata_SimulationBase
