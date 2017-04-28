@@ -106,16 +106,26 @@ namespace geo{
 
           fViews.emplace(cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).View());
           fPlaneIDs.emplace(PlaneID(cs, TPCCount, PlaneCount));
-          
-          for(size_t w = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires()-1; w > 0; --w){
+          size_t nwires = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
+          for(size_t w = 0; w < nwires; ++w){
             auto const& wire1 = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w);
-            auto const& wire2 = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w-1);
+            auto const& wire2 = (w == nwires - 1) ? cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w - 1) : cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w + 1);
+            
             double pitch = geo::WireGeo::WirePitch(wire1, wire2);
+            double xyz[3] = {0.};
+            wire1.GetCenter(xyz);
             LOG_VERBATIM("ChannelMapLArIATAlg")
             << "\t\t wire: "
             << w
             << " pitch: "
-            << pitch;
+            << pitch
+            << " center ("
+            << xyz[0]
+            << ", "
+            << xyz[1]
+            << ", "
+            << xyz[2]
+            << ")";
           }
           
           double ThisWirePitch = cgeo[cs]->TPC(TPCCount).WirePitch(0, 1, PlaneCount);
