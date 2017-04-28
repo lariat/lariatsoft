@@ -42,7 +42,7 @@ namespace geo{
     
     fNcryostat = cgeo.size();
     
-    LOG_VERBATIM("ChannelMapLArIATAlg")
+    LOG_DEBUG("ChannelMapLArIATAlg")
     << "Initializing LArIAT ChannelMap..."
     << "\t There are "
     << fNcryostat
@@ -68,7 +68,7 @@ namespace geo{
       
       fNTPC[cs] = cgeo[cs]->NTPC();
       
-      LOG_VERBATIM("ChannelMapLArIATAlg")
+      LOG_DEBUG("ChannelMapLArIATAlg")
       << "\t Cryostat "
       << cs
       << " has "
@@ -90,7 +90,7 @@ namespace geo{
         
         unsigned int PlanesThisTPC = cgeo[cs]->TPC(TPCCount).Nplanes();
         
-        LOG_VERBATIM("ChannelMapLArIATAlg")
+        LOG_DEBUG("ChannelMapLArIATAlg")
         << "\t TPC "
         << TPCCount
         << " has "
@@ -106,33 +106,37 @@ namespace geo{
 
           fViews.emplace(cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).View());
           fPlaneIDs.emplace(PlaneID(cs, TPCCount, PlaneCount));
-          size_t nwires = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
-          for(size_t w = 0; w < nwires; ++w){
-            auto const& wire1 = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w);
-            auto const& wire2 = (w == nwires - 1) ? cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w - 1) : cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w + 1);
-            
-            double pitch = geo::WireGeo::WirePitch(wire1, wire2);
-            double xyz[3] = {0.};
-            wire1.GetCenter(xyz);
-            LOG_VERBATIM("ChannelMapLArIATAlg")
-            << "\t\t wire: "
-            << w
-            << " pitch: "
-            << pitch
-            << " center ("
-            << xyz[0]
-            << ", "
-            << xyz[1]
-            << ", "
-            << xyz[2]
-            << ")";
-          }
+
+          // the following commented out code is for debugging purposes
+//          size_t nwires = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
+//          for(size_t w = 0; w < nwires; ++w){
+//            auto const& wire1 = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w);
+//            auto const& wire2 = (w == nwires - 1) ? cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w - 1) : cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w + 1);
+//            
+//            double pitch = geo::WireGeo::WirePitch(wire1, wire2);
+//            double xyz[3] = {0.};
+//            wire1.GetCenter(xyz);
+//            
+//            if(std::abs(pitch - 0.5) > 1.e-3)
+//              LOG_VERBATIM("ChannelMapLArIATAlg")
+//              << "\t\t wire: "
+//              << w
+//              << " pitch: "
+//              << pitch
+//              << " center ("
+//              << xyz[0]
+//              << ", "
+//              << xyz[1]
+//              << ", "
+//              << xyz[2]
+//              << ")";
+//          }
           
           double ThisWirePitch = cgeo[cs]->TPC(TPCCount).WirePitch(0, 1, PlaneCount);
           
           fWireCounts[cs][TPCCount][PlaneCount] = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
 
-          LOG_VERBATIM("ChannelMapLArIATAlg")
+          LOG_DEBUG("ChannelMapLArIATAlg")
           << "\t Plane "
           << PlaneCount
           << " has "
