@@ -41,7 +41,7 @@ lariat_services:
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
 
-lariat_services_4mm:                @local::lariat_services_4mm
+lariat_services_4mm:                @local::lariat_services
 
 lariat_services_5mm:                @local::lariat_services
 lariat_services_5mm.Geometry:       @local::lariat_geo_5mm
