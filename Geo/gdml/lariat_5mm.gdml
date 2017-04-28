@@ -986,7 +986,7 @@
     <position name="volTPCWire190_564involTPCPlaneCollectionpos" x="44.16729" y="-0.2" z="-19.0638784068" unit="cm"/>
     <rotation name="volTPCWire190_564involTPCPlaneCollectionrot" x="0" y="-30" z="0" unit="deg"/> 
     <position name="volTPCWire191_565involTPCPlaneCollectionpos" x="44.45589" y="-0.2" z="-19.5" unit="cm"/>
-    <rotation name="volTPCWire191_565involTPCPlaneCollectionrot" x="0" y="-30" z="0" unit="deg"/>  
+    <rotation name="volTPCWire191_565involTPCPlaneCollectionrot" x="0" y="-30" z="0" unit="deg"/>
     <position name="volTPCWPlaneLengthSide_715involTPCPlaneCollectionpos" x="-47.5" y="0" z="0" unit="cm"/>
     <position name="volTPCWPlaneLengthSide_716involTPCPlaneCollectionpos" x="47.5" y="0" z="0" unit="cm"/>
     <position name="volTPCWPlaneWidthSide_717involTPCPlaneCollectionpos" x="0" y="0" z="22.5" unit="cm"/>
