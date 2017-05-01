@@ -1,0 +1,88 @@
+#include "services_lariat.fcl"
+#include "ophitbuilderalg.fcl"
+
+process_name: OpDetSER
+
+services:
+{
+  TFileService: { fileName: "SER.root" }
+  TimeTracker:  {}
+  RandomNumberGenerator: {}
+  message:      @local::standard_info
+  scheduler:    {}
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        
+}
+
+outputs: {}
+
+physics:
+{
+  analyzers:
+  {
+    ser:
+    {
+      module_type:      OpDetSER
+      OpHitBuilderAlg: { }  
+    }
+  }
+  analysis:   [ ser ]
+  end_paths:  [ analysis ]
+}
+
+################################################################
+# Single photoelectron calibration parameters
+
+physics.analyzers.ser.Verbose:                 false
+
+# By default, look only at two PMTs (ch0 and ch1)
+physics.analyzers.ser.SelectChannels:	      [ 0,    1 ]
+physics.analyzers.ser.OpDetChannels:	      [ 0,    1,    4   ]
+physics.analyzers.ser.OpDetPolarity:          [-1,    -1,   -1  ]
+
+physics.analyzers.ser.WfmAbsRMSCut:            [ 0.4,  0.4,    0.5   ] # mV
+physics.analyzers.ser.PrePE_RMSFactorCut:      [ 5.,   5.,	3.   ] # xRMS
+physics.analyzers.ser.PulseHitRMSThresh:       [ 2.5,  2.5,   4.0 ] # xRMS
+physics.analyzers.ser.PulseHitThresh_high:     [ 5.,   5.,     30. ] # mV
+physics.analyzers.ser.PreIntWindow:            [ 5,    5,      100 ]
+physics.analyzers.ser.PostIntWindow:           [ 20,   20,     600 ]
+
+physics.analyzers.ser.MaxSavedWaveforms:       50
+physics.analyzers.ser.T1:                      5000   # Samples to scan over.  Referenced with
+physics.analyzers.ser.T2:                      19500  # with respect to the "t0" trigger position.
+physics.analyzers.ser.SelectEventTypes:        ["pedestal","beam","cosmic"] # Any combo of "pedestal", "beam", "cosmic" (or "all")
+physics.analyzers.ser.Timestamp_T1:            5.2     # Only analyze events with a timestamp (sec)
+physics.analyzers.ser.Timestamp_T2:            60.     # between these two limits.
+physics.analyzers.ser.BaselineWindowLength:    1000
+physics.analyzers.ser.DeadTimeMin:             10
+physics.analyzers.ser.QuietTimeMin:            500
+physics.analyzers.ser.PrePEBaselineWindow:     50
+physics.analyzers.ser.MaxWindowFactor:         1.5
+physics.analyzers.ser.ThreshPersist:           1     # Signal must remain above a factor of the full threshold
+physics.analyzers.ser.ThreshPersistFactor:     0.5   # for N consecutive samples following initial sample 
+
+physics.analyzers.ser.SubtractRunningBaseline: true  # Good for single pe's but will distort large pulses 
+physics.analyzers.ser.RunningBaselineLength:   256
+
+# SER histogram ranges (x1,x2) and initial guesses for fit
+physics.analyzers.ser.SER_x1:                  [ -50.,   -50.,   -1500.  ] # ADC
+physics.analyzers.ser.SER_x2:                  [ 250.,   250.,   15000.  ] # ADC
+physics.analyzers.ser.PedestalMaxWidth:        [ 30.,     30.,   500     ] # ADC
+physics.analyzers.ser.Mean_set:                [ 50.,     50.,   4000    ] # ADC
+physics.analyzers.ser.Width_set:               [ 20.,     20.,   100.    ] # ADC
+
+# Perform 2nd SER fit with restricted range (excluding most of the pedestal 
+# peak) if chi2/NDF of initial fit is above some threshold
+physics.analyzers.ser.DoSecondFit:             true 
+physics.analyzers.ser.SecondFitChi2Thresh:     1.5
+
+# Average photoelectron waveform 
+physics.analyzers.ser.SaveAvePhelWfm:	       true
+physics.analyzers.ser.SinglePE:                [ 50.0,   50.0,   4000] # ADC (for ave PE wfm selection)
+physics.analyzers.ser.SinglePE_tolerance:      [ .1,     0.1,    0.1] # +/- % (for ave PE wfm selection)
+

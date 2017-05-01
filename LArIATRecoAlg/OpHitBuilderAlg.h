@@ -46,6 +46,7 @@ class OpHitBuilderAlg{
   
   std::vector<short>            HitMerger( std::vector<short>, short, int);
   std::vector<float>            MakeGradient( std::vector<short> );
+  std::vector<float>            MakeGradient( std::vector<float> );
   std::vector<float>            GetBaselineAndRMS( std::vector<short>, short, short);
   std::vector<float>            GetBaselineAndRMS( std::vector<float>, short, short);
   std::vector<float>            GetHitInfo( std::vector<short>, short, short, std::vector<short>);
@@ -54,8 +55,15 @@ class OpHitBuilderAlg{
   float                         GetHitFullIntegral(   std::vector<short>, short, short);  
   short                         GetLocalMinimum( std::vector<short>, short);
   float                         GetLocalMinimum( std::vector<float>, short);
-  std::vector<float>           GetPedestalAndRMS( std::vector<float>, short, short);
-  std::vector<float>           GetPedestalAndRMS( std::vector<short>, short, short);
+  std::vector<float>		GetPedestalAndRMS( std::vector<float>, short, short);
+  std::vector<float>		GetPedestalAndRMS( std::vector<short>, short, short);
+  void				SubtractRunningBaseline(const std::vector<short>, std::vector<float>&, const size_t, const size_t);
+  void				SubtractRunningBaseline(const std::vector<float>, std::vector<float>&, const size_t, const size_t);
+  
+  std::string                   eventType(float);
+  bool                          eventTypeFilter(float,std::vector<std::string>);
+  
+  
   
   // Average waveform vector
   std::vector<float>    AverageWaveform;
