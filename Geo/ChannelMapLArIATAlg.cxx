@@ -42,7 +42,11 @@ namespace geo{
     
     fNcryostat = cgeo.size();
     
-    mf::LogInfo("ChannelMapLArIATAlg") << "Initializing LArIAT ChannelMap...";
+    LOG_DEBUG("ChannelMapLArIATAlg")
+    << "Initializing LArIAT ChannelMap..."
+    << "\t There are "
+    << fNcryostat
+    << " cryostats";
 
     fNTPC.resize(fNcryostat);
     fWireCounts             .resize(fNcryostat);
@@ -64,6 +68,13 @@ namespace geo{
       
       fNTPC[cs] = cgeo[cs]->NTPC();
       
+      LOG_DEBUG("ChannelMapLArIATAlg")
+      << "\t Cryostat "
+      << cs
+      << " has "
+      << fNTPC[cs]
+      << " TPCs";
+
       // Size up all the vectors 
       fWireCounts[cs]             .resize(fNTPC[cs]);
       fFirstWireProj[cs] 	        .resize(fNTPC[cs]);
@@ -76,7 +87,16 @@ namespace geo{
       fFirstChannelInNextPlane[cs].resize(fNTPC[cs]);
 
       for(unsigned int TPCCount = 0; TPCCount != fNTPC[cs]; ++TPCCount){
+        
         unsigned int PlanesThisTPC = cgeo[cs]->TPC(TPCCount).Nplanes();
+        
+        LOG_DEBUG("ChannelMapLArIATAlg")
+        << "\t TPC "
+        << TPCCount
+        << " has "
+        << PlanesThisTPC
+        << " planes";
+        
         fWireCounts[cs][TPCCount]   .resize(PlanesThisTPC);
         fFirstWireProj[cs][TPCCount].resize(PlanesThisTPC);
         fOrthVectorsY[cs][TPCCount] .resize(PlanesThisTPC);
@@ -86,8 +106,42 @@ namespace geo{
 
           fViews.emplace(cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).View());
           fPlaneIDs.emplace(PlaneID(cs, TPCCount, PlaneCount));
+
+          // the following commented out code is for debugging purposes
+//          size_t nwires = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
+//          for(size_t w = 0; w < nwires; ++w){
+//            auto const& wire1 = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w);
+//            auto const& wire2 = (w == nwires - 1) ? cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w - 1) : cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Wire(w + 1);
+//            
+//            double pitch = geo::WireGeo::WirePitch(wire1, wire2);
+//            double xyz[3] = {0.};
+//            wire1.GetCenter(xyz);
+//            
+//            if(std::abs(pitch - 0.5) > 1.e-3)
+//              LOG_VERBATIM("ChannelMapLArIATAlg")
+//              << "\t\t wire: "
+//              << w
+//              << " pitch: "
+//              << pitch
+//              << " center ("
+//              << xyz[0]
+//              << ", "
+//              << xyz[1]
+//              << ", "
+//              << xyz[2]
+//              << ")";
+//          }
+          
           double ThisWirePitch = cgeo[cs]->TPC(TPCCount).WirePitch(0, 1, PlaneCount);
+          
           fWireCounts[cs][TPCCount][PlaneCount] = cgeo[cs]->TPC(TPCCount).Plane(PlaneCount).Nwires();
+
+          LOG_DEBUG("ChannelMapLArIATAlg")
+          << "\t Plane "
+          << PlaneCount
+          << " has "
+          << fWireCounts[cs][TPCCount][PlaneCount]
+          << " wires";
           
           double  WireCentre1[3] = {0.,0.,0.};
           double  WireCentre2[3] = {0.,0.,0.};

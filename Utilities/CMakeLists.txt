@@ -23,12 +23,10 @@ set( lariat_util_lib_list lardata_Utilities_LArFFT_service
 
 simple_plugin( FileCatalogMetadataLArIAT "service"
                ${lariat_util_lib_list}
-               BASENAME_ONLY
 )
 
 simple_plugin( SignalShapingServiceT1034  "service"
                ${lariat_util_lib_list}
-               BASENAME_ONLY
 )
 
 simple_plugin( DatabaseUtilityT1034  "service"
@@ -45,7 +43,6 @@ simple_plugin( DatabaseUtilityT1034  "service"
                art_Persistency_Common canvas
                art_Persistency_Provenance canvas
                ${ART_FRAMEWORK_SERVICES_REGISTRY}
-               BASENAME_ONLY
 )
 
 simple_plugin( DetectorPropertiesServiceLArIAT  "service"
@@ -53,7 +50,6 @@ simple_plugin( DetectorPropertiesServiceLArIAT  "service"
                ${lariat_util_lib_list}
                ${SQLITE3}
                ${ART_PERSISTENCY_ROOTDB}
-               BASENAME_ONLY
 )
 
 file(GLOB pwd_files *passwd)

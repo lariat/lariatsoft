@@ -8,11 +8,10 @@ include_directories( $ENV{LARCORE_INC}                         )
 include_directories( $ENV{LARSIM_INC}                          )
 include_directories( $ENV{POSTGRESQL_INC}                      )
 
-art_make(BASENAME_ONLY
-         LIBRARY_NAME     RawDataUtilities
+art_make(LIBRARY_NAME     RawDataUtilities
          LIB_LIBRARIES    lardataobj_RawData
                           LariatFragments
-                          DatabaseUtilityT1034_service
+                          Utilities_DatabaseUtilityT1034_service
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}
                           art_Persistency_Common canvas
@@ -37,7 +36,7 @@ art_make(BASENAME_ONLY
                           LArIATDataProducts
                           larcoreobj_SummaryData
                           RawDataUtilities
-                          DatabaseUtilityT1034_service
+                          Utilities_DatabaseUtilityT1034_service
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
                           ${ART_FRAMEWORK_SERVICES_BASIC}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL}

@@ -1,18 +1,17 @@
-art_make(BASENAME_ONLY
-         LIB_LIBRARIES larcore_Geometry
+art_make(LIB_LIBRARIES larcore_Geometry
          larreco_RecoAlg_ClusterRecoUtil
          lardataobj_RecoBase
          ${ROOT_BASIC_LIB_LIST}
          ${ROOT_SPECTRUM}
          MODULE_LIBRARIES LArIATRecoAlg
          LArIATDataProducts
-	 LArIATAnaModule
+	       LArIATAnaModule
          larevt_Filters
          larreco_ClusterFinder
          larreco_RecoAlg_ClusterRecoUtil
-         DatabaseUtilityT1034_service
+         Utilities_DatabaseUtilityT1034_service
          larreco_RecoAlg
-	 larreco_Calorimetry
+	       larreco_Calorimetry
          lardataobj_RawData
          larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
          larcoreobj_SummaryData
