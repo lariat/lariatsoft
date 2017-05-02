@@ -1898,7 +1898,7 @@
       <section zOrder="0" zPosition="0" xOffset="0" yOffset="0" scalingFactor="1"/>
       <section zOrder="1" zPosition="12.7" xOffset="0" yOffset="0" scalingFactor="1"/>
     </xtru>
-    <box name="LAPPDPad" x="15" y="15" z="15" lunit="cm"/>
+    <box name="LAPPDPad" x="15" y="15" z="2.54" lunit="cm"/>
     <box name="volAuxDetTOFUS0x1" x="15" y="15" z="5.08" lunit="cm"/>
     <box name="MWPC1" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="volAuxDetDet" x="12.8" y="12.5" z="2.5" lunit="cm"/>
@@ -1908,7 +1908,7 @@
     <box name="MWPC2" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC3" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC4" x="12.8" y="25.4" z="2.5" lunit="cm"/>
-    <box name="volAuxDetLAPPD0" x="22.86" y="15.24" z="7.62" lunit="cm"/>
+    <box name="volAuxDetLAPPD0" x="22.86" y="15.24" z="0.762" lunit="cm"/>
     <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="5.08" lunit="cm"/>
     <box name="PunchPaddles" x="31" y="101" z="5" lunit="cm"/>
     <box name="volAuxDetPunch" x="31" y="101" z="1" lunit="cm"/>
@@ -1923,9 +1923,14 @@
     <trap name="volAuxDetCosmic20x1" z="3.02" theta="0" phi="0" x1="26.7" x2="32.2" x3="26.7" x4="32.2" y1="61" y2="61" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
 
     <assembly name="volAuxDetLAPPD0x1">
-      <first ref="volAuxDetLAPPD0"/>
-      <second ref="LAPPDPad"/>
+      <physvol>
+      <volumeref ref="volAuxDetLAPPD0"/>
+      <position name="LAPPD0involAuxDetLAPPD" x="0" y="0" z="0" unit="cm"/>
+      </physvol>
+      <physvol>
+      <volumeref ref="LAPPDPad"/>
       <position name="LAPPDPadinvolAuxDetLAPPD" x="0" y="0" z="6.35" unit="cm"/>
+      </physvol>
     </assembly>
   </solids>
   <structure>
