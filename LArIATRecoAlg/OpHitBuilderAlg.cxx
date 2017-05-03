@@ -1,4 +1,4 @@
-//////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////
 //                                                                  
 // These are functions used to process optical detector information
 // (particulary PMTs) and find/integrate hits.  They've been used
@@ -303,12 +303,24 @@ std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse )
 // MakeGradient
 std::vector<float> OpHitBuilderAlg::MakeGradient( std::vector<short> wfm )
 {
+  std::vector<float> translate(wfm.size());
+  
+  for(size_t i=0; i<wfm.size(); i++) translate[i] = wfm[i];
+  return MakeGradient(translate);
+}
+
+
+//--------------------------------------------------------------
+// MakeGradient
+std::vector<float> OpHitBuilderAlg::MakeGradient( std::vector<float> wfm )
+{
   std::vector<float> g(wfm.size());
   g[0]=0; 
   g[1]=0; 
   for(size_t i=2; i<wfm.size(); i++) g[i] = float(wfm[i] - wfm[i-2])*0.5;
   return g;
 }
+
 
 
 
@@ -665,11 +677,60 @@ std::vector<float> OpHitBuilderAlg::GetPedestalAndRMS( std::vector<float> wfm, s
   return out;
 }
 
-
-
 // Get pedestal (for vector<short> input)
 std::vector<float> OpHitBuilderAlg::GetPedestalAndRMS( std::vector<short> v, short x1, short x2)
 {
   std::vector<float> wfm(v.begin(),v.end());
   return GetPedestalAndRMS(wfm,x1,x2);
 }
+
+
+//--------------------------------------------------------------------------
+// Performs a running baseline subtraction
+void OpHitBuilderAlg::SubtractRunningBaseline(const std::vector<float> wvform, std::vector<float> &wvformout, const size_t nsamples, const size_t range)
+{  
+  wvformout.clear();
+  wvformout.resize(nsamples);
+
+  for(size_t i=0; i<nsamples; i++) {
+    int kstart  = (((int)i-(int)range)/2 > 0 ) ? i-range/2 : 0;
+    int kend	  = (i+range/2 >= nsamples ) ? nsamples : i+range/2;
+    //int kstart  = ( i-range > 0 ) ? i-range : 0;
+    //int kend	  = i;
+    double kaverage=0;
+    for(int k=kstart;k<kend;k++) kaverage += wvform[k];
+    kaverage	  /=(double)(kend-kstart);
+    wvformout[i]  = wvform[i]-kaverage;
+  }
+}
+
+void OpHitBuilderAlg::SubtractRunningBaseline(const std::vector<short> wvform, std::vector<float> &wvformout, const size_t nsamples, const size_t range)
+{  
+  std::vector<float> wvform_float(wvform.begin(), wvform.end());
+  SubtractRunningBaseline(wvform_float, wvformout, nsamples, range);
+}
+
+
+//--------------------------------------------------------------------------
+// eventType: Classify event based on its timestamp.
+std::string OpHitBuilderAlg::eventType(float T){
+  if      ( T >= 0.   &&  T < 1.2 ) {return "pedestal";}
+  else if ( T >= 1.2  &&  T < 5.5 ) {return "beam";}
+  else if ( T >= 5.5 ) {return "cosmic";}
+  else                              {return "unknown";} 
+}
+
+//--------------------------------------------------------------------------
+// eventType: filter events.  Returns TRUE if Timestamp matches any of
+// the input categories 
+bool OpHitBuilderAlg::eventTypeFilter(float T, std::vector<std::string> categories){
+  if( categories.size() == 0 ) {  return true; }
+  else {
+    bool out = false;
+    for(size_t i = 0; i < categories.size(); i++){
+      if(   eventType(T)  == categories[i]
+        ||  categories[i] == "all"          ) out = true; }
+    return out;
+  }
+}
+
