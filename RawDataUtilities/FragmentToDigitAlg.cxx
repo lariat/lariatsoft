@@ -198,7 +198,7 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
   if( fWirePitch == "5mm" ) {
     wires_per_plane = 192;
     size_t tmpInd[8] = {  191,  127,  63,   0,    0,    0,    0,    0 };
-    size_t tmpCol[8] = {  0,    0,    0,    191,  127,  63,   0,    0 };
+    size_t tmpCol[8] = {  0,    0,    0,    191,  175,  111,   47,    0 };
     std::copy(std::begin(tmpInd), std::end(tmpInd), std::begin(startWireInd));
     std::copy(std::begin(tmpCol), std::end(tmpCol), std::begin(startWireCol));
   }
@@ -212,15 +212,15 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
     // 
     // Run I,II (4mm pitch):
     //  Board 0 channel 0  --> wire 239 of the induction plane
-    //  Board 3 channel 48 --> wire 0   of the induction plane
-    //  Board 3 channel 49 --> wire 239 of the collection plane
+    //  Board 3 channel 47 --> wire 0   of the induction plane
+    //  Board 3 channel 48 --> wire 239 of the collection plane
     //  Board 7 channel 32 --> wire 0   of the collection plane
     //
     // Run III (5mm pitch):
     //  Board 0 channel 0  --> wire 191 of the induction plane
     //  Board 2 channel 63 --> wire 0   of the induction plane
-    //  Board 3 channel 0  --> wire 191 of the collection plane
-    //  Board 5 channel 63 --> wire 0   of the collection plane 
+    //  Board 3 channel 48  --> wire 191 of the collection plane
+    //  Board 6 channel 47  --> wire 0   of the collection plane 
     //
     boardId = frag.header.boardId;
     if(boardId > 7) continue;
@@ -251,14 +251,18 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
         
         } else
         if( fWirePitch == "5mm" ) {
-          
+         
           // get TPC channel for the induction plane
           if( boardId < 3 )
             tpcChan = startWireInd[boardId] - chan;
           // get TPC Channel for the collection plane
-          else if( boardId >= 3 && boardId < 6)
+          else if( boardId == 3 && chan > 47)
+            tpcChan = wires_per_plane + startWireCol[boardId] - chan + 48;
+          else if( boardId > 3 && boardId < 6)
             tpcChan = wires_per_plane + startWireCol[boardId] - chan;
-          else if( boardId >= 6 ) continue;
+          else if( boardId == 6 && chan < 48 )
+            tpcChan = wires_per_plane + startWireCol[boardId] - chan;
+          else if( boardId > 6 ) continue;
 
         }
         
