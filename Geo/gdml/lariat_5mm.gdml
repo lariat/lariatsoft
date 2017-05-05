@@ -211,397 +211,397 @@
     <position name="volTPCShieldPlaneWidthSide_230involTPCShieldPlanepos" x="0" y="0" z="22.5" unit="cm"/>
     <position name="volTPCShieldPlane_725involTPCpos" x="-23.985" y="0" z="0" unit="cm"/>
     <rotation name="volTPCShieldPlane_725involTPCrot" x="90" y="-0" z="90" unit="deg"/>
-    <position name="volTPCWire0_182involTPCPlaneInductionpos" x="-43.87862" y="0.2" z="18.5" unit="cm"/>
+    <position name="volTPCWire0_182involTPCPlaneInductionpos" x="-43.87862" y="0" z="18.5" unit="cm"/>
     <rotation name="volTPCWire0_182involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire1_183involTPCPlaneInductionpos" x="-43.58994" y="0.2" z="18.0" unit="cm"/>
+    <position name="volTPCWire1_183involTPCPlaneInductionpos" x="-43.58994" y="0" z="18.0" unit="cm"/>
     <rotation name="volTPCWire1_183involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire2_184involTPCPlaneInductionpos" x="-43.30127" y="0.2" z="17.5" unit="cm"/>
+    <position name="volTPCWire2_184involTPCPlaneInductionpos" x="-43.30127" y="0" z="17.5" unit="cm"/>
     <rotation name="volTPCWire2_184involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire3_185involTPCPlaneInductionpos" x="-43.01259" y="0.2" z="17.0" unit="cm"/>
+    <position name="volTPCWire3_185involTPCPlaneInductionpos" x="-43.01259" y="0" z="17.0" unit="cm"/>
     <rotation name="volTPCWire3_185involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire4_186involTPCPlaneInductionpos" x="-42.72392" y="0.2" z="16.5" unit="cm"/>
+    <position name="volTPCWire4_186involTPCPlaneInductionpos" x="-42.72392" y="0" z="16.5" unit="cm"/>
     <rotation name="volTPCWire4_186involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire5_187involTPCPlaneInductionpos" x="-42.43524" y="0.2" z="16.0" unit="cm"/>
+    <position name="volTPCWire5_187involTPCPlaneInductionpos" x="-42.43524" y="0" z="16.0" unit="cm"/>
     <rotation name="volTPCWire5_187involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire6_188involTPCPlaneInductionpos" x="-42.14657" y="0.2" z="15.5" unit="cm"/>
+    <position name="volTPCWire6_188involTPCPlaneInductionpos" x="-42.14657" y="0" z="15.5" unit="cm"/>
     <rotation name="volTPCWire6_188involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire7_189involTPCPlaneInductionpos" x="-41.85789" y="0.2" z="15.0" unit="cm"/>
+    <position name="volTPCWire7_189involTPCPlaneInductionpos" x="-41.85789" y="0" z="15.0" unit="cm"/>
     <rotation name="volTPCWire7_189involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire8_190involTPCPlaneInductionpos" x="-41.56922" y="0.2" z="14.5" unit="cm"/>
+    <position name="volTPCWire8_190involTPCPlaneInductionpos" x="-41.56922" y="0" z="14.5" unit="cm"/>
     <rotation name="volTPCWire8_190involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire9_191involTPCPlaneInductionpos" x="-41.28054" y="0.2" z="14.0" unit="cm"/>
+    <position name="volTPCWire9_191involTPCPlaneInductionpos" x="-41.28054" y="0" z="14.0" unit="cm"/>
     <rotation name="volTPCWire9_191involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire10_192involTPCPlaneInductionpos" x="-40.99187" y="0.2" z="13.5" unit="cm"/>
+    <position name="volTPCWire10_192involTPCPlaneInductionpos" x="-40.99187" y="0" z="13.5" unit="cm"/>
     <rotation name="volTPCWire10_192involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire11_193involTPCPlaneInductionpos" x="-40.70319" y="0.2" z="13.0" unit="cm"/>
+    <position name="volTPCWire11_193involTPCPlaneInductionpos" x="-40.70319" y="0" z="13.0" unit="cm"/>
     <rotation name="volTPCWire11_193involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire12_194involTPCPlaneInductionpos" x="-40.41451" y="0.2" z="12.5" unit="cm"/>
+    <position name="volTPCWire12_194involTPCPlaneInductionpos" x="-40.41451" y="0" z="12.5" unit="cm"/>
     <rotation name="volTPCWire12_194involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire13_195involTPCPlaneInductionpos" x="-40.12584" y="0.2" z="12.0" unit="cm"/>
+    <position name="volTPCWire13_195involTPCPlaneInductionpos" x="-40.12584" y="0" z="12.0" unit="cm"/>
     <rotation name="volTPCWire13_195involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire14_196involTPCPlaneInductionpos" x="-39.83717" y="0.2" z="11.5" unit="cm"/>
+    <position name="volTPCWire14_196involTPCPlaneInductionpos" x="-39.83717" y="0" z="11.5" unit="cm"/>
     <rotation name="volTPCWire14_196involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire15_197involTPCPlaneInductionpos" x="-39.54849" y="0.2" z="11.0" unit="cm"/>
+    <position name="volTPCWire15_197involTPCPlaneInductionpos" x="-39.54849" y="0" z="11.0" unit="cm"/>
     <rotation name="volTPCWire15_197involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire16_198involTPCPlaneInductionpos" x="-39.25982" y="0.2" z="10.5" unit="cm"/>
+    <position name="volTPCWire16_198involTPCPlaneInductionpos" x="-39.25982" y="0" z="10.5" unit="cm"/>
     <rotation name="volTPCWire16_198involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire17_199involTPCPlaneInductionpos" x="-38.97114" y="0.2" z="10.0" unit="cm"/>
+    <position name="volTPCWire17_199involTPCPlaneInductionpos" x="-38.97114" y="0" z="10.0" unit="cm"/>
     <rotation name="volTPCWire17_199involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire18_200involTPCPlaneInductionpos" x="-38.68247" y="0.2" z="9.5" unit="cm"/>
+    <position name="volTPCWire18_200involTPCPlaneInductionpos" x="-38.68247" y="0" z="9.5" unit="cm"/>
     <rotation name="volTPCWire18_200involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire19_201involTPCPlaneInductionpos" x="-38.39379" y="0.2" z="9.0" unit="cm"/>
+    <position name="volTPCWire19_201involTPCPlaneInductionpos" x="-38.39379" y="0" z="9.0" unit="cm"/>
     <rotation name="volTPCWire19_201involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire20_202involTPCPlaneInductionpos" x="-38.10512" y="0.2" z="8.5" unit="cm"/>
+    <position name="volTPCWire20_202involTPCPlaneInductionpos" x="-38.10512" y="0" z="8.5" unit="cm"/>
     <rotation name="volTPCWire20_202involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire21_203involTPCPlaneInductionpos" x="-37.81644" y="0.2" z="8.0" unit="cm"/>
+    <position name="volTPCWire21_203involTPCPlaneInductionpos" x="-37.81644" y="0" z="8.0" unit="cm"/>
     <rotation name="volTPCWire21_203involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire22_204involTPCPlaneInductionpos" x="-37.52777" y="0.2" z="7.5" unit="cm"/>
+    <position name="volTPCWire22_204involTPCPlaneInductionpos" x="-37.52777" y="0" z="7.5" unit="cm"/>
     <rotation name="volTPCWire22_204involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire23_205involTPCPlaneInductionpos" x="-37.23909" y="0.2" z="7.0" unit="cm"/>
+    <position name="volTPCWire23_205involTPCPlaneInductionpos" x="-37.23909" y="0" z="7.0" unit="cm"/>
     <rotation name="volTPCWire23_205involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire24_206involTPCPlaneInductionpos" x="-36.95042" y="0.2" z="6.5" unit="cm"/>
+    <position name="volTPCWire24_206involTPCPlaneInductionpos" x="-36.95042" y="0" z="6.5" unit="cm"/>
     <rotation name="volTPCWire24_206involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire25_207involTPCPlaneInductionpos" x="-36.66174" y="0.2" z="6.0" unit="cm"/>
+    <position name="volTPCWire25_207involTPCPlaneInductionpos" x="-36.66174" y="0" z="6.0" unit="cm"/>
     <rotation name="volTPCWire25_207involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire26_208involTPCPlaneInductionpos" x="-36.37307" y="0.2" z="5.5" unit="cm"/>
+    <position name="volTPCWire26_208involTPCPlaneInductionpos" x="-36.37307" y="0" z="5.5" unit="cm"/>
     <rotation name="volTPCWire26_208involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire27_209involTPCPlaneInductionpos" x="-36.08439" y="0.2" z="5.0" unit="cm"/>
+    <position name="volTPCWire27_209involTPCPlaneInductionpos" x="-36.08439" y="0" z="5.0" unit="cm"/>
     <rotation name="volTPCWire27_209involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire28_210involTPCPlaneInductionpos" x="-35.79572" y="0.2" z="4.5" unit="cm"/>
+    <position name="volTPCWire28_210involTPCPlaneInductionpos" x="-35.79572" y="0" z="4.5" unit="cm"/>
     <rotation name="volTPCWire28_210involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire29_211involTPCPlaneInductionpos" x="-35.50704" y="0.2" z="4.0" unit="cm"/>
+    <position name="volTPCWire29_211involTPCPlaneInductionpos" x="-35.50704" y="0" z="4.0" unit="cm"/>
     <rotation name="volTPCWire29_211involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire30_212involTPCPlaneInductionpos" x="-35.21837" y="0.2" z="3.5" unit="cm"/>
+    <position name="volTPCWire30_212involTPCPlaneInductionpos" x="-35.21837" y="0" z="3.5" unit="cm"/>
     <rotation name="volTPCWire30_212involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire31_213involTPCPlaneInductionpos" x="-34.92969" y="0.2" z="3.0" unit="cm"/>
+    <position name="volTPCWire31_213involTPCPlaneInductionpos" x="-34.92969" y="0" z="3.0" unit="cm"/>
     <rotation name="volTPCWire31_213involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire32_214involTPCPlaneInductionpos" x="-34.64102" y="0.2" z="2.5" unit="cm"/>
+    <position name="volTPCWire32_214involTPCPlaneInductionpos" x="-34.64102" y="0" z="2.5" unit="cm"/>
     <rotation name="volTPCWire32_214involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire33_215involTPCPlaneInductionpos" x="-34.35234" y="0.2" z="2.0" unit="cm"/>
+    <position name="volTPCWire33_215involTPCPlaneInductionpos" x="-34.35234" y="0" z="2.0" unit="cm"/>
     <rotation name="volTPCWire33_215involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire34_216involTPCPlaneInductionpos" x="-34.06367" y="0.2" z="1.5" unit="cm"/>
+    <position name="volTPCWire34_216involTPCPlaneInductionpos" x="-34.06367" y="0" z="1.5" unit="cm"/>
     <rotation name="volTPCWire34_216involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire35_217involTPCPlaneInductionpos" x="-33.77499" y="0.2" z="1.0" unit="cm"/>
+    <position name="volTPCWire35_217involTPCPlaneInductionpos" x="-33.77499" y="0" z="1.0" unit="cm"/>
     <rotation name="volTPCWire35_217involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire36_218involTPCPlaneInductionpos" x="-33.486316" y="0.2" z="0.5" unit="cm"/>
+    <position name="volTPCWire36_218involTPCPlaneInductionpos" x="-33.486316" y="0" z="0.5" unit="cm"/>
     <rotation name="volTPCWire36_218involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_219involTPCPlaneInductionpos" x="-33.19764" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_219involTPCPlaneInductionpos" x="-33.19764" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_219involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_220involTPCPlaneInductionpos" x="-32.62029" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_220involTPCPlaneInductionpos" x="-32.62029" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_220involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_221involTPCPlaneInductionpos" x="-32.04294" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_221involTPCPlaneInductionpos" x="-32.04294" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_221involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_222involTPCPlaneInductionpos" x="-31.46559" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_222involTPCPlaneInductionpos" x="-31.46559" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_222involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_223involTPCPlaneInductionpos" x="-30.88824" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_223involTPCPlaneInductionpos" x="-30.88824" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_223involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_224involTPCPlaneInductionpos" x="-30.31089" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_224involTPCPlaneInductionpos" x="-30.31089" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_224involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_225involTPCPlaneInductionpos" x="-29.73354" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_225involTPCPlaneInductionpos" x="-29.73354" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_225involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_226involTPCPlaneInductionpos" x="-29.15619" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_226involTPCPlaneInductionpos" x="-29.15619" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_226involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_227involTPCPlaneInductionpos" x="-28.57889" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_227involTPCPlaneInductionpos" x="-28.57889" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_227involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_228involTPCPlaneInductionpos" x="-28.00149" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_228involTPCPlaneInductionpos" x="-28.00149" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_228involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_229involTPCPlaneInductionpos" x="-27.42414" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_229involTPCPlaneInductionpos" x="-27.42414" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_229involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_230involTPCPlaneInductionpos" x="-26.84679" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_230involTPCPlaneInductionpos" x="-26.84679" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_230involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_231involTPCPlaneInductionpos" x="-26.26944" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_231involTPCPlaneInductionpos" x="-26.26944" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_231involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_232involTPCPlaneInductionpos" x="-25.69209" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_232involTPCPlaneInductionpos" x="-25.69209" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_232involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_233involTPCPlaneInductionpos" x="-25.11473" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_233involTPCPlaneInductionpos" x="-25.11473" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_233involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_234involTPCPlaneInductionpos" x="-24.53739" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_234involTPCPlaneInductionpos" x="-24.53739" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_234involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_235involTPCPlaneInductionpos" x="-23.96007" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_235involTPCPlaneInductionpos" x="-23.96007" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_235involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_236involTPCPlaneInductionpos" x="-23.38269" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_236involTPCPlaneInductionpos" x="-23.38269" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_236involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_237involTPCPlaneInductionpos" x="-22.80534" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_237involTPCPlaneInductionpos" x="-22.80534" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_237involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_238involTPCPlaneInductionpos" x="-22.22798" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_238involTPCPlaneInductionpos" x="-22.22798" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_238involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_239involTPCPlaneInductionpos" x="-21.65063" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_239involTPCPlaneInductionpos" x="-21.65063" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_239involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_240involTPCPlaneInductionpos" x="-21.07328" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_240involTPCPlaneInductionpos" x="-21.07328" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_240involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_241involTPCPlaneInductionpos" x="-20.49593" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_241involTPCPlaneInductionpos" x="-20.49593" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_241involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_242involTPCPlaneInductionpos" x="-19.91858" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_242involTPCPlaneInductionpos" x="-19.91858" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_242involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_243involTPCPlaneInductionpos" x="-19.34123" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_243involTPCPlaneInductionpos" x="-19.34123" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_243involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_244involTPCPlaneInductionpos" x="-18.76388" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_244involTPCPlaneInductionpos" x="-18.76388" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_244involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_245involTPCPlaneInductionpos" x="-18.18653" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_245involTPCPlaneInductionpos" x="-18.18653" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_245involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_246involTPCPlaneInductionpos" x="-17.60918" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_246involTPCPlaneInductionpos" x="-17.60918" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_246involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_247involTPCPlaneInductionpos" x="-17.03183" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_247involTPCPlaneInductionpos" x="-17.03183" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_247involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_248involTPCPlaneInductionpos" x="-16.45448" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_248involTPCPlaneInductionpos" x="-16.45448" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_248involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_249involTPCPlaneInductionpos" x="-15.87713" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_249involTPCPlaneInductionpos" x="-15.87713" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_249involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_250involTPCPlaneInductionpos" x="-15.29978" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_250involTPCPlaneInductionpos" x="-15.29978" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_250involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_251involTPCPlaneInductionpos" x="-14.72243" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_251involTPCPlaneInductionpos" x="-14.72243" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_251involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_252involTPCPlaneInductionpos" x="-14.14508" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_252involTPCPlaneInductionpos" x="-14.14508" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_252involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_253involTPCPlaneInductionpos" x="-13.56773" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_253involTPCPlaneInductionpos" x="-13.56773" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_253involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_254involTPCPlaneInductionpos" x="-12.99038" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_254involTPCPlaneInductionpos" x="-12.99038" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_254involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_255involTPCPlaneInductionpos" x="-12.41303" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_255involTPCPlaneInductionpos" x="-12.41303" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_255involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_256involTPCPlaneInductionpos" x="-11.83568" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_256involTPCPlaneInductionpos" x="-11.83568" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_256involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_257involTPCPlaneInductionpos" x="-11.25833" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_257involTPCPlaneInductionpos" x="-11.25833" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_257involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_258involTPCPlaneInductionpos" x="-10.68098" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_258involTPCPlaneInductionpos" x="-10.68098" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_258involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_259involTPCPlaneInductionpos" x="-10.10363" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_259involTPCPlaneInductionpos" x="-10.10363" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_259involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_260involTPCPlaneInductionpos" x="-9.52628" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_260involTPCPlaneInductionpos" x="-9.52628" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_260involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_261involTPCPlaneInductionpos" x="-8.94893" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_261involTPCPlaneInductionpos" x="-8.94893" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_261involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_262involTPCPlaneInductionpos" x="-8.37158" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_262involTPCPlaneInductionpos" x="-8.37158" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_262involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_263involTPCPlaneInductionpos" x="-7.79423" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_263involTPCPlaneInductionpos" x="-7.79423" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_263involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_264involTPCPlaneInductionpos" x="-7.21688" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_264involTPCPlaneInductionpos" x="-7.21688" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_264involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_265involTPCPlaneInductionpos" x="-6.63952" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_265involTPCPlaneInductionpos" x="-6.63952" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_265involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_266involTPCPlaneInductionpos" x="-6.06218" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_266involTPCPlaneInductionpos" x="-6.06218" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_266involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_267involTPCPlaneInductionpos" x="-5.48483" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_267involTPCPlaneInductionpos" x="-5.48483" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_267involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_268involTPCPlaneInductionpos" x="-4.90748" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_268involTPCPlaneInductionpos" x="-4.90748" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_268involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_269involTPCPlaneInductionpos" x="-4.33013" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_269involTPCPlaneInductionpos" x="-4.33013" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_269involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_270involTPCPlaneInductionpos" x="-3.75277" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_270involTPCPlaneInductionpos" x="-3.75277" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_270involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_271involTPCPlaneInductionpos" x="-3.17542" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_271involTPCPlaneInductionpos" x="-3.17542" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_271involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_272involTPCPlaneInductionpos" x="-2.59808" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_272involTPCPlaneInductionpos" x="-2.59808" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_272involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_273involTPCPlaneInductionpos" x="-2.02073" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_273involTPCPlaneInductionpos" x="-2.02073" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_273involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_274involTPCPlaneInductionpos" x="-1.44337" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_274involTPCPlaneInductionpos" x="-1.44337" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_274involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_275involTPCPlaneInductionpos" x="-0.86602" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_275involTPCPlaneInductionpos" x="-0.86602" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_275involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_276involTPCPlaneInductionpos" x="-0.28867" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_276involTPCPlaneInductionpos" x="-0.28867" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_276involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_277involTPCPlaneInductionpos" x="0.28867" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_277involTPCPlaneInductionpos" x="0.28867" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_277involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_278involTPCPlaneInductionpos" x="0.86602" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_278involTPCPlaneInductionpos" x="0.86602" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_278involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_279involTPCPlaneInductionpos" x="1.44337" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_279involTPCPlaneInductionpos" x="1.44337" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_279involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_280involTPCPlaneInductionpos" x="2.02073" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_280involTPCPlaneInductionpos" x="2.02073" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_280involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_281involTPCPlaneInductionpos" x="2.59808" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_281involTPCPlaneInductionpos" x="2.59808" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_281involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_282involTPCPlaneInductionpos" x="3.17542" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_282involTPCPlaneInductionpos" x="3.17542" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_282involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_283involTPCPlaneInductionpos" x="3.75277" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_283involTPCPlaneInductionpos" x="3.75277" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_283involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_284involTPCPlaneInductionpos" x="4.33013" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_284involTPCPlaneInductionpos" x="4.33013" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_284involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_285involTPCPlaneInductionpos" x="4.90748" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_285involTPCPlaneInductionpos" x="4.90748" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_285involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_286involTPCPlaneInductionpos" x="5.48483" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_286involTPCPlaneInductionpos" x="5.48483" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_286involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_287involTPCPlaneInductionpos" x="6.06218" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_287involTPCPlaneInductionpos" x="6.06218" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_287involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_288involTPCPlaneInductionpos" x="6.63952" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_288involTPCPlaneInductionpos" x="6.63952" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_288involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_289involTPCPlaneInductionpos" x="7.21688" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_289involTPCPlaneInductionpos" x="7.21688" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_289involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_290involTPCPlaneInductionpos" x="7.79423" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_290involTPCPlaneInductionpos" x="7.79423" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_290involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_291involTPCPlaneInductionpos" x="8.37158" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_291involTPCPlaneInductionpos" x="8.37158" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_291involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_292involTPCPlaneInductionpos" x="8.94893" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_292involTPCPlaneInductionpos" x="8.94893" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_292involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_293involTPCPlaneInductionpos" x="9.52628" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_293involTPCPlaneInductionpos" x="9.52628" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_293involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_294involTPCPlaneInductionpos" x="10.10363" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_294involTPCPlaneInductionpos" x="10.10363" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_294involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_295involTPCPlaneInductionpos" x="10.68098" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_295involTPCPlaneInductionpos" x="10.68098" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_295involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_296involTPCPlaneInductionpos" x="11.25833" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_296involTPCPlaneInductionpos" x="11.25833" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_296involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_297involTPCPlaneInductionpos" x="11.83568" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_297involTPCPlaneInductionpos" x="11.83568" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_297involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_298involTPCPlaneInductionpos" x="12.41303" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_298involTPCPlaneInductionpos" x="12.41303" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_298involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_299involTPCPlaneInductionpos" x="12.99038" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_299involTPCPlaneInductionpos" x="12.99038" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_299involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_300involTPCPlaneInductionpos" x="13.56773" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_300involTPCPlaneInductionpos" x="13.56773" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_300involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_301involTPCPlaneInductionpos" x="14.14508" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_301involTPCPlaneInductionpos" x="14.14508" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_301involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_302involTPCPlaneInductionpos" x="14.72243" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_302involTPCPlaneInductionpos" x="14.72243" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_302involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_303involTPCPlaneInductionpos" x="15.29978" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_303involTPCPlaneInductionpos" x="15.29978" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_303involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_304involTPCPlaneInductionpos" x="15.87713" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_304involTPCPlaneInductionpos" x="15.87713" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_304involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_305involTPCPlaneInductionpos" x="16.45448" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_305involTPCPlaneInductionpos" x="16.45448" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_305involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_306involTPCPlaneInductionpos" x="17.03183" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_306involTPCPlaneInductionpos" x="17.03183" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_306involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_307involTPCPlaneInductionpos" x="17.60918" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_307involTPCPlaneInductionpos" x="17.60918" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_307involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_308involTPCPlaneInductionpos" x="18.18653" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_308involTPCPlaneInductionpos" x="18.18653" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_308involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_309involTPCPlaneInductionpos" x="18.76388" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_309involTPCPlaneInductionpos" x="18.76388" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_309involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_310involTPCPlaneInductionpos" x="19.34123" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_310involTPCPlaneInductionpos" x="19.34123" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_310involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_311involTPCPlaneInductionpos" x="19.91858" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_311involTPCPlaneInductionpos" x="19.91858" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_311involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_312involTPCPlaneInductionpos" x="20.49593" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_312involTPCPlaneInductionpos" x="20.49593" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_312involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_313involTPCPlaneInductionpos" x="21.07328" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_313involTPCPlaneInductionpos" x="21.07328" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_313involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_314involTPCPlaneInductionpos" x="21.65063" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_314involTPCPlaneInductionpos" x="21.65063" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_314involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_315involTPCPlaneInductionpos" x="22.22798" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_315involTPCPlaneInductionpos" x="22.22798" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_315involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_316involTPCPlaneInductionpos" x="22.80534" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_316involTPCPlaneInductionpos" x="22.80534" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_316involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_317involTPCPlaneInductionpos" x="23.38269" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_317involTPCPlaneInductionpos" x="23.38269" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_317involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_318involTPCPlaneInductionpos" x="23.96007" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_318involTPCPlaneInductionpos" x="23.96007" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_318involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_319involTPCPlaneInductionpos" x="24.53739" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_319involTPCPlaneInductionpos" x="24.53739" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_319involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_320involTPCPlaneInductionpos" x="25.11473" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_320involTPCPlaneInductionpos" x="25.11473" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_320involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_321involTPCPlaneInductionpos" x="25.69209" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_321involTPCPlaneInductionpos" x="25.69209" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_321involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_322involTPCPlaneInductionpos" x="26.26944" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_322involTPCPlaneInductionpos" x="26.26944" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_322involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_323involTPCPlaneInductionpos" x="26.84679" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_323involTPCPlaneInductionpos" x="26.84679" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_323involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_324involTPCPlaneInductionpos" x="27.42414" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_324involTPCPlaneInductionpos" x="27.42414" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_324involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_325involTPCPlaneInductionpos" x="28.00149" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_325involTPCPlaneInductionpos" x="28.00149" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_325involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_326involTPCPlaneInductionpos" x="28.57889" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_326involTPCPlaneInductionpos" x="28.57889" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_326involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_327involTPCPlaneInductionpos" x="29.15619" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_327involTPCPlaneInductionpos" x="29.15619" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_327involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_328involTPCPlaneInductionpos" x="29.73354" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_328involTPCPlaneInductionpos" x="29.73354" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_328involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_329involTPCPlaneInductionpos" x="30.31089" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_329involTPCPlaneInductionpos" x="30.31089" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_329involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_330involTPCPlaneInductionpos" x="30.88824" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_330involTPCPlaneInductionpos" x="30.88824" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_330involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_331involTPCPlaneInductionpos" x="31.46559" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_331involTPCPlaneInductionpos" x="31.46559" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_331involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_332involTPCPlaneInductionpos" x="32.04294" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_332involTPCPlaneInductionpos" x="32.04294" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_332involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_333involTPCPlaneInductionpos" x="32.62029" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_333involTPCPlaneInductionpos" x="32.62029" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_333involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_334involTPCPlaneInductionpos" x="33.19764" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_334involTPCPlaneInductionpos" x="33.19764" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_334involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWireCommon_334involTPCPlaneInductionpos" x="33.19764" y="0.2" z="0" unit="cm"/>
+    <position name="volTPCWireCommon_334involTPCPlaneInductionpos" x="33.19764" y="0" z="0" unit="cm"/>
     <rotation name="volTPCWireCommon_334involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire153_335involTPCPlaneInductionpos" x="33.486316" y="0.2" z="-0.5" unit="cm"/>
+    <position name="volTPCWire153_335involTPCPlaneInductionpos" x="33.486316" y="0" z="-0.5" unit="cm"/>
     <rotation name="volTPCWire153_335involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire154_336involTPCPlaneInductionpos" x="33.77499" y="0.2" z="-1.0" unit="cm"/>
+    <position name="volTPCWire154_336involTPCPlaneInductionpos" x="33.77499" y="0" z="-1.0" unit="cm"/>
     <rotation name="volTPCWire154_336involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire155_337involTPCPlaneInductionpos" x="34.06367" y="0.2" z="-1.5" unit="cm"/>
+    <position name="volTPCWire155_337involTPCPlaneInductionpos" x="34.06367" y="0" z="-1.5" unit="cm"/>
     <rotation name="volTPCWire155_337involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire156_338involTPCPlaneInductionpos" x="34.35234" y="0.2" z="-2.0" unit="cm"/>
+    <position name="volTPCWire156_338involTPCPlaneInductionpos" x="34.35234" y="0" z="-2.0" unit="cm"/>
     <rotation name="volTPCWire156_338involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire157_339involTPCPlaneInductionpos" x="34.64102" y="0.2" z="-2.5" unit="cm"/>
+    <position name="volTPCWire157_339involTPCPlaneInductionpos" x="34.64102" y="0" z="-2.5" unit="cm"/>
     <rotation name="volTPCWire157_339involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire158_340involTPCPlaneInductionpos" x="34.929692" y="0.2" z="-3.0" unit="cm"/>
+    <position name="volTPCWire158_340involTPCPlaneInductionpos" x="34.929692" y="0" z="-3.0" unit="cm"/>
     <rotation name="volTPCWire158_340involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire159_341involTPCPlaneInductionpos" x="35.21837" y="0.2" z="-3.5" unit="cm"/>
+    <position name="volTPCWire159_341involTPCPlaneInductionpos" x="35.21837" y="0" z="-3.5" unit="cm"/>
     <rotation name="volTPCWire159_341involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire160_342involTPCPlaneInductionpos" x="35.50704" y="0.2" z="-4.0" unit="cm"/>
+    <position name="volTPCWire160_342involTPCPlaneInductionpos" x="35.50704" y="0" z="-4.0" unit="cm"/>
     <rotation name="volTPCWire160_342involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire161_343involTPCPlaneInductionpos" x="35.79572" y="0.2" z="-4.5" unit="cm"/>
+    <position name="volTPCWire161_343involTPCPlaneInductionpos" x="35.79572" y="0" z="-4.5" unit="cm"/>
     <rotation name="volTPCWire161_343involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire162_344involTPCPlaneInductionpos" x="36.08439" y="0.2" z="-5.0" unit="cm"/>
+    <position name="volTPCWire162_344involTPCPlaneInductionpos" x="36.08439" y="0" z="-5.0" unit="cm"/>
     <rotation name="volTPCWire162_344involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire163_345involTPCPlaneInductionpos" x="36.37307" y="0.2" z="-5.5" unit="cm"/>
+    <position name="volTPCWire163_345involTPCPlaneInductionpos" x="36.37307" y="0" z="-5.5" unit="cm"/>
     <rotation name="volTPCWire163_345involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire164_346involTPCPlaneInductionpos" x="36.66174" y="0.2" z="-6.0" unit="cm"/>
+    <position name="volTPCWire164_346involTPCPlaneInductionpos" x="36.66174" y="0" z="-6.0" unit="cm"/>
     <rotation name="volTPCWire164_346involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire165_347involTPCPlaneInductionpos" x="36.95042" y="0.2" z="-6.5" unit="cm"/>
+    <position name="volTPCWire165_347involTPCPlaneInductionpos" x="36.95042" y="0" z="-6.5" unit="cm"/>
     <rotation name="volTPCWire165_347involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire166_348involTPCPlaneInductionpos" x="37.23909" y="0.2" z="-7.0" unit="cm"/>
+    <position name="volTPCWire166_348involTPCPlaneInductionpos" x="37.23909" y="0" z="-7.0" unit="cm"/>
     <rotation name="volTPCWire166_348involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire167_349involTPCPlaneInductionpos" x="37.52777" y="0.2" z="-7.5" unit="cm"/>
+    <position name="volTPCWire167_349involTPCPlaneInductionpos" x="37.52777" y="0" z="-7.5" unit="cm"/>
     <rotation name="volTPCWire167_349involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire168_350involTPCPlaneInductionpos" x="37.81644" y="0.2" z="-8.0" unit="cm"/>
+    <position name="volTPCWire168_350involTPCPlaneInductionpos" x="37.81644" y="0" z="-8.0" unit="cm"/>
     <rotation name="volTPCWire168_350involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire169_351involTPCPlaneInductionpos" x="38.10512" y="0.2" z="-8.5" unit="cm"/>
+    <position name="volTPCWire169_351involTPCPlaneInductionpos" x="38.10512" y="0" z="-8.5" unit="cm"/>
     <rotation name="volTPCWire169_351involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire170_352involTPCPlaneInductionpos" x="38.39379" y="0.2" z="-9.0" unit="cm"/>
+    <position name="volTPCWire170_352involTPCPlaneInductionpos" x="38.39379" y="0" z="-9.0" unit="cm"/>
     <rotation name="volTPCWire170_352involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire171_353involTPCPlaneInductionpos" x="38.68247" y="0.2" z="-9.5" unit="cm"/>
+    <position name="volTPCWire171_353involTPCPlaneInductionpos" x="38.68247" y="0" z="-9.5" unit="cm"/>
     <rotation name="volTPCWire171_353involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire172_354involTPCPlaneInductionpos" x="38.97114" y="0.2" z="-10.0" unit="cm"/>
+    <position name="volTPCWire172_354involTPCPlaneInductionpos" x="38.97114" y="0" z="-10.0" unit="cm"/>
     <rotation name="volTPCWire172_354involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire173_355involTPCPlaneInductionpos" x="39.25982" y="0.2" z="-10.5" unit="cm"/>
+    <position name="volTPCWire173_355involTPCPlaneInductionpos" x="39.25982" y="0" z="-10.5" unit="cm"/>
     <rotation name="volTPCWire173_355involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire174_356involTPCPlaneInductionpos" x="39.54849" y="0.2" z="-11.0" unit="cm"/>
+    <position name="volTPCWire174_356involTPCPlaneInductionpos" x="39.54849" y="0" z="-11.0" unit="cm"/>
     <rotation name="volTPCWire174_356involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire175_357involTPCPlaneInductionpos" x="39.83717" y="0.2" z="-11.5" unit="cm"/>
+    <position name="volTPCWire175_357involTPCPlaneInductionpos" x="39.83717" y="0" z="-11.5" unit="cm"/>
     <rotation name="volTPCWire175_357involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire176_358involTPCPlaneInductionpos" x="40.12584" y="0.2" z="-12.0" unit="cm"/>
+    <position name="volTPCWire176_358involTPCPlaneInductionpos" x="40.12584" y="0" z="-12.0" unit="cm"/>
     <rotation name="volTPCWire176_358involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire177_359involTPCPlaneInductionpos" x="40.41451" y="0.2" z="-12.5" unit="cm"/>
+    <position name="volTPCWire177_359involTPCPlaneInductionpos" x="40.41451" y="0" z="-12.5" unit="cm"/>
     <rotation name="volTPCWire177_359involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire178_360involTPCPlaneInductionpos" x="40.70319" y="0.2" z="-13.0" unit="cm"/>
+    <position name="volTPCWire178_360involTPCPlaneInductionpos" x="40.70319" y="0" z="-13.0" unit="cm"/>
     <rotation name="volTPCWire178_360involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire179_361involTPCPlaneInductionpos" x="40.99187" y="0.2" z="-13.5" unit="cm"/>
+    <position name="volTPCWire179_361involTPCPlaneInductionpos" x="40.99187" y="0" z="-13.5" unit="cm"/>
     <rotation name="volTPCWire179_361involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire180_362involTPCPlaneInductionpos" x="41.28054" y="0.2" z="-14.0" unit="cm"/>
+    <position name="volTPCWire180_362involTPCPlaneInductionpos" x="41.28054" y="0" z="-14.0" unit="cm"/>
     <rotation name="volTPCWire180_362involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire181_363involTPCPlaneInductionpos" x="41.56922" y="0.2" z="-14.5" unit="cm"/>
+    <position name="volTPCWire181_363involTPCPlaneInductionpos" x="41.56922" y="0" z="-14.5" unit="cm"/>
     <rotation name="volTPCWire181_363involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire182_364involTPCPlaneInductionpos" x="41.85789" y="0.2" z="-15.0" unit="cm"/>
+    <position name="volTPCWire182_364involTPCPlaneInductionpos" x="41.85789" y="0" z="-15.0" unit="cm"/>
     <rotation name="volTPCWire182_364involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire183_365involTPCPlaneInductionpos" x="42.14657" y="0.2" z="-15.5" unit="cm"/>
+    <position name="volTPCWire183_365involTPCPlaneInductionpos" x="42.14657" y="0" z="-15.5" unit="cm"/>
     <rotation name="volTPCWire183_365involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire184_366involTPCPlaneInductionpos" x="42.43524" y="0.2" z="-16.0" unit="cm"/>
+    <position name="volTPCWire184_366involTPCPlaneInductionpos" x="42.43524" y="0" z="-16.0" unit="cm"/>
     <rotation name="volTPCWire184_366involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire185_367involTPCPlaneInductionpos" x="42.72392" y="0.2" z="-16.5" unit="cm"/>
+    <position name="volTPCWire185_367involTPCPlaneInductionpos" x="42.72392" y="0" z="-16.5" unit="cm"/>
     <rotation name="volTPCWire185_367involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire186_368involTPCPlaneInductionpos" x="43.01259" y="0.2" z="-17.0" unit="cm"/>
+    <position name="volTPCWire186_368involTPCPlaneInductionpos" x="43.01259" y="0" z="-17.0" unit="cm"/>
     <rotation name="volTPCWire186_368involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire187_369involTPCPlaneInductionpos" x="43.30127" y="0.2" z="-17.5" unit="cm"/>
+    <position name="volTPCWire187_369involTPCPlaneInductionpos" x="43.30127" y="0" z="-17.5" unit="cm"/>
     <rotation name="volTPCWire187_369involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire188_370involTPCPlaneInductionpos" x="43.58994" y="0.2" z="-18.0" unit="cm"/>
+    <position name="volTPCWire188_370involTPCPlaneInductionpos" x="43.58994" y="0" z="-18.0" unit="cm"/>
     <rotation name="volTPCWire188_370involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire189_371involTPCPlaneInductionpos" x="43.87862" y="0.2" z="-18.5" unit="cm"/>
+    <position name="volTPCWire189_371involTPCPlaneInductionpos" x="43.87862" y="0" z="-18.5" unit="cm"/>
     <rotation name="volTPCWire189_371involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire190_372involTPCPlaneInductionpos" x="44.16729" y="0.2" z="-19.0" unit="cm"/>
+    <position name="volTPCWire190_372involTPCPlaneInductionpos" x="44.16729" y="0" z="-19.0" unit="cm"/>
     <rotation name="volTPCWire190_372involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
-    <position name="volTPCWire191_373involTPCPlaneInductionpos" x="44.45589" y="0.2" z="-19.5" unit="cm"/>
+    <position name="volTPCWire191_373involTPCPlaneInductionpos" x="44.45589" y="0" z="-19.5" unit="cm"/>
     <rotation name="volTPCWire191_373involTPCPlaneInductionrot" x="0" y="-30" z="0" unit="deg"/>
     <position name="volTPCWPlaneLengthSide_471involTPCPlaneInductionpos" x="-47.5" y="0" z="0" unit="cm"/>
     <position name="volTPCWPlaneLengthSide_472involTPCPlaneInductionpos" x="47.5" y="0" z="0" unit="cm"/>
     <position name="volTPCWPlaneWidthSide_473involTPCPlaneInductionpos" x="0" y="0" z="22.5" unit="cm"/>
     <position name="volTPCWPlaneWidthSide_474involTPCPlaneInductionpos" x="0" y="0" z="-22.5" unit="cm"/>
-    <position name="volTPCPlaneInduction_726involTPCpos" x="-24.485" y="0" z="0" unit="cm"/>
+    <position name="volTPCPlaneInduction_726involTPCpos" x="-24.385" y="0" z="0" unit="cm"/>
     <rotation name="volTPCPlaneInduction_726involTPCrot" x="90" y="-0" z="90" unit="deg"/>
     <position name="volTPCWire0_374involTPCPlaneCollectionpos" x="-43.87862" y="-0.2" z="18.5" unit="cm"/>
     <rotation name="volTPCWire0_374involTPCPlaneCollectionrot" x="0" y="-30" z="0" unit="deg"/>
@@ -991,7 +991,7 @@
     <position name="volTPCWPlaneLengthSide_716involTPCPlaneCollectionpos" x="47.5" y="0" z="0" unit="cm"/>
     <position name="volTPCWPlaneWidthSide_717involTPCPlaneCollectionpos" x="0" y="0" z="22.5" unit="cm"/>
     <position name="volTPCWPlaneWidthSide_718involTPCPlaneCollectionpos" x="0" y="0" z="-22.5" unit="cm"/>
-    <position name="volTPCPlaneCollection_727involTPCpos" x="-24.985" y="0" z="0" unit="cm"/>
+    <position name="volTPCPlaneCollection_727involTPCpos" x="-24.785" y="0" z="0" unit="cm"/>
     <rotation name="volTPCPlaneCollection_727involTPCrot" x="90" y="-0" z="-90" unit="deg"/>
     <position name="volTPC_738involCryostatpos"  x="0.524" y="-0.2" z="-2.424" unit="cm"/>
     <position name="volInner_ring_739involCryostatpos" x="0" y="0" z="-40.7225" unit="cm"/>
@@ -1015,12 +1015,6 @@
     <position name="volDetEnclosure_754involWorldpos" x="23.73" y="-12.01" z="43.77" unit="cm"/>
     <position name="volAuxDetTOFUS_6ing4blpos" x="-31.4452" y="0.47244" z="144.51838" unit="cm"/>
     <rotation name="volAuxDetTOFUS_6ing4blrot" x="-9.27166181885" y="9.15259576143" z="-45.7437332364" unit="deg"/>
-    <position name="volLAPPD_13ing4blpos" x="-31.4452" y="0.43434" z="153.13838" unit="cm"/>
-    <rotation name="volLAPPD_13ing4blrot" x="-9.27166181885" y="9.15259576143" z="-45.7437332364" unit="deg"/>
-    <position name="volLAPPDSteelShim_13ing4blpos" x="-31.4452" y="0.43434" z="153.99088" unit="cm"/>
-    <rotation name="volLAPPDSteelShim_13ing4blrot" x="-9.27166181885" y="9.15259576143" z="-45.7437332364" unit="deg"/>
-    <position name="volLAPPDPadandBox_13ing4blpos" x="-31.4452" y="0.43434" z="161.25838" unit="cm"/>
-    <rotation name="volLAPPDPadandBox_13ing4blrot" x="-9.27166181885" y="9.15259576143" z="-45.7437332364" unit="deg"/>
     <position name="volAuxDetSensitiveWC1_0involAuxDetMWPC1pos" x="0" y="0" z="0" unit="cm"/>
     <position name="FramS_0inChFrampos" x="-9.55" y="0" z="0" unit="cm"/>
     <position name="FramS_1inChFrampos" x="9.55" y="0" z="0" unit="cm"/>
@@ -1903,9 +1897,6 @@
       <section zOrder="1" zPosition="12.7" xOffset="0" yOffset="0" scalingFactor="1"/>
     </xtru>
     <box name="volAuxDetTOFUS0x1" x="15" y="15" z="5.08" lunit="cm"/>
-    <box name="LAPPD" x="22.86" y="15.24" z="1.325" lunit="cm"/>
-    <box name="LAPPDSteelShim" x="22.86" y="15.24" z="0.2" lunit="cm"/>
-    <box name="LAPPDPadandBox" x="15" y="15" z="3.54" lunit="cm"/>
     <box name="MWPC1" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="volAuxDetDet" x="12.8" y="12.5" z="2.5" lunit="cm"/>
     <box name="ChFram0x1" x="12.8" y="25.4" z="2.5" lunit="cm"/>
@@ -1926,6 +1917,7 @@
     <trap name="volAuxDetCosmic10x1" z="3.02" theta="0" phi="0" x1="26.7" x2="32.2" x3="26.7" x4="32.2" y1="61" y2="61" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
     <trap name="volAuxDetCosmic40x1" z="3.02" theta="0" phi="0" x1="27" x2="33.2" x3="27" x4="33.2" y1="70.8" y2="70.8" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
     <trap name="volAuxDetCosmic20x1" z="3.02" theta="0" phi="0" x1="26.7" x2="32.2" x3="26.7" x4="32.2" y1="61" y2="61" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
+
 
   </solids>
   <structure>
@@ -5233,19 +5225,7 @@
     <volume name="volAuxDetTOFUS">
       <materialref ref="LUCITE0x1"/>
       <solidref ref="volAuxDetTOFUS0x1"/>
-    </volume>   
-    <volume name="volLAPPD"/>
-      <materialref ref="fibrous_glass"/>
-      <solidref ref="LAPPD"/>
     </volume>
-    <volume name="volLAPPDSteelShim"/>
-      <materialref ref="STEEL_STAINLESS_Fe7Cr2Ni"/>
-      <solidref ref="LAPPDSteelShim"/>
-    </volume>
-    <volume name="volLAPPDPadandBox"/>
-      <materialref ref="LUCITE0x1"/>
-      <solidref ref="LAPPDPadandBox"/>
-    </volume>      
     <volume name="volAuxDetSensitiveWC1">
       <materialref ref="Vacuum"/>
       <solidref ref="volAuxDetDet"/>
@@ -5641,21 +5621,6 @@
         <volumeref ref="volAuxDetMWPC4"/>
         <positionref ref="volAuxDetMWPC4_11ing4blpos"/>
         <rotationref ref="volAuxDetMWPC4_11ing4blrot"/>
-      </physvol>
-      <physvol>
-        <volumeref ref="volLAPPD"/>
-        <positionref ref="volLAPPD_13ing4blpos"/>
-        <rotationref ref="volLAPPD_13ing4blrot"/>
-      </physvol>
-      <physvol>
-        <volumeref ref="volLAPPDSteelShim"/>
-        <positionref ref="volLAPPDSteelShim_13ing4blpos"/>
-        <rotationref ref="volLAPPDSteelShim_13ing4blrot"/>
-      </physvol>
-      <physvol>
-        <volumeref ref="volLAPPD"/>
-        <positionref ref="volLAPPDPadandBox_13ing4blpos"/>
-        <rotationref ref="volLAPPDPadandBox_13ing4blrot"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetTOFDS"/>
