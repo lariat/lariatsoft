@@ -86,3 +86,5 @@ source.SetTimestamp: 0
 # specify the wire pitch (default 4mm)
 source.FragmentToDigitAlg.WirePitch: "5mm" # Options: "4mm" or "5mm"
 
+services.Geometry.GDML: "lariat_5mm.gdml"
+
