@@ -113,7 +113,6 @@ public:
   void reconfigure(fhicl::ParameterSet const & p);
 
 private:
-
   // === Function used to reset all the variables  ===
   void ResetVars();
   
@@ -248,12 +247,20 @@ private:
   float  WC4zPos[kMaxWCTracks];
   float  WCTrackResidual[kMaxWCTracks]; //How far off a straight line in YZ plane was the the WCTrack?
   float  WCTrackWCMissed[kMaxWCTracks]; //If this was made with 3 points, was it WC2 or WC3 missed?
+
+  float  wcP [kMaxWCTracks];
+  float  wcPx[kMaxWCTracks];
+  float  wcPy[kMaxWCTracks];
+  float  wcPz[kMaxWCTracks];
    
   // === Storing Time of Flight information ===
   int ntof;
   double tofObject[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
   double tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
-   
+  float cTOF[kMaxTOF];	//<---Time Stamp for this TOF object*C
+  // === Storing Mass  information ===
+  float massObj;	//<---Beamline Mass object   
+ 
   // === Storing Aerogel Counter Information ===
 
   int               nAG;
@@ -1117,17 +1124,32 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       WCTrackResidual[wct_count]= wctrack[wct_count]->Residual();
       WCTrackWCMissed[wct_count]= wctrack[wct_count]->WCMissed();
 
+
+      // Compute wcP, wcPx and wcPy
+      if (TMath::Cos(wctrk_theta[wct_count])) 
+	{ 
+	  float PT = wctrk_momentum[wct_count];
+	  float tanThetaCosPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Cos(wctrk_phi[wct_count]);
+	  float tanThetaSinPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Sin(wctrk_phi[wct_count]);
+	  float den = TMath::Sqrt(1+tanThetaCosPhi*tanThetaCosPhi);
+	  wcPz[wct_count] = PT/den;
+	  wcPy[wct_count] = wcPz[wct_count]*tanThetaSinPhi;
+	  wcPx[wct_count] = wcPz[wct_count]*tanThetaCosPhi;
+	  wcP [wct_count] = wcPz[wct_count]* TMath::Sqrt(1+TMath::Tan(wctrk_theta[wct_count])*TMath::Tan(wctrk_theta[wct_count]));
+
+
+	}
       
       // === Getting individual channel information ===
       for(size_t chIt = 0; 2*chIt+1 < wctrack[wct_count]->NHits(); ++chIt)
 	{
-	  if(float(chIt)!=wctrack[wct_count]->WCMissed()){
+	  if(float(chIt)!=wctrack[wct_count]->WCMissed()){  
 	    XWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt);
 	    YWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt+1);
 	 
 	    XAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt);
 	    YAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt+1);
-          }//<-- end if chIt != WCMissed
+	  }//<-- end if chIt != WCMissed  
 	}//<---End chIt loop
       
     }//<---end wctrack auto loop
@@ -1145,16 +1167,41 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ################################
   size_t tof_counter = 0; // book-keeping
   for(size_t i = 0; i < tof.size(); i++) {
+    
+    size_t number_tof = tof[i]->NTOF();
 
-	  size_t number_tof = tof[i]->NTOF();
-
-     for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
-			tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
-			tof_timestamp[tof_counter] = tof[i]->TimeStamp(tof_idx);
-			++tof_counter;
+    for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
+      tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
+      tof_timestamp[tof_counter] = tof[i]->TimeStamp(tof_idx);
+      cTOF[tof_counter] = tof_timestamp[tof_counter]*0.299792 ;
+      ++tof_counter;
      } // loop over TOF
 
   }//<---End tof_count loop
+
+  // Beamline Mass info
+  if ( ntof == 1 && nwctrks == 1)
+    {
+      double reco_momo = wctrackHandle->at(0).Momentum();
+      double reco_tof = tofObject[0];// TOFColHandle->at(0).SingleTOF(0);
+      //double fSpeedOfLight = 3e+8;
+      double fDistanceTraveled = 6.652;
+      //float fMass = pow(pow((fSpeedOfLight*(reco_tof)*(1E-9)/fDistanceTraveled)*reco_momo, 2.0) - pow(reco_momo,2.0),0.5);
+      float fMass = -99999.;
+      float radical = reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1;
+      
+      if (reco_tof>0)
+	{
+	  if (radical < 0)
+	    {
+	      fMass = -reco_momo*pow(-radical ,0.5);
+	    }else
+	    {  fMass = reco_momo*pow(radical ,0.5); }
+	  
+	  massObj = fMass;
+	}
+    }
+
 
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
@@ -1266,7 +1313,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   // === Saving the number of tracks per event ===
   ntracks_reco=tracklist.size();
-  
+    
   // === Association between WC Tracks and TPC Tracks ===
   //int TempTrackMatchedID = -1;                                                                                                                               
   /*
@@ -1286,11 +1333,11 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Association between WC Tracks and TPC Tracks ===
 
   int TempTrackMatchedID = -1; 
-
+   
   if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
     {
       art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
-     
+
       if (fWC2TPC.isValid())
 	{
 	  // === Loop on all the Assn WC-TPC tracks === 
@@ -1335,27 +1382,27 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
       trkWCtoTPCMatch[i] = trackMatch;
       // ### Setting the WC to TPC match ###
-
+            
       // ### Recording the track vertex x, y, z location ###
       trkvtxx[i]        = trackStartEnd.first.X();
       trkvtxy[i]        = trackStartEnd.first.Y();
       trkvtxz[i]        = trackStartEnd.first.Z();
-
+    
       // ### Recording the track end point x, y, z location ###
       trkendx[i]        = trackStartEnd.second.X();
       trkendy[i]        = trackStartEnd.second.Y();
       trkendz[i]        = trackStartEnd.second.Z();
-
+    
       // ### Recording the directional cosine at the start of the track ###
       trkstartdcosx[i]  = larStartEnd.first.X();
       trkstartdcosy[i]  = larStartEnd.first.Y();
       trkstartdcosz[i]  = larStartEnd.first.Z();
-
+    
       // ### Recording the directional cosine at the end of the track ###
       trkenddcosx[i]    = larStartEnd.second.X();
       trkenddcosy[i]    = larStartEnd.second.Y();
       trkenddcosz[i]    = larStartEnd.second.Z();
-
+    
       // ### Recording the track length as calculated by the tracking module ###
       // ####                (each one may do it differently                 ###
       trklength[i]         = tracklist[i]->Length();
@@ -1792,11 +1839,18 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("WC4yPos",WC4yPos,"WC4yPos[nwctrks]/F");
   fTree->Branch("WC4zPos",WC4zPos,"WC4zPos[nwctrks]/F");
   fTree->Branch("WCTrackResidual", WCTrackResidual,"WCTrackResidual[nwctrks]/F");
-  fTree->Branch("WCTrackWCMissed", WCTrackWCMissed,"WCTrackWCMissed[nwctrks]/I");
-  
+  fTree->Branch("WCTrackWCMissed", WCTrackWCMissed,"WCTrackWCMissed[nwctrks]/I");  
+
   fTree->Branch("ntof", &ntof, "ntof/I");
   fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
+
+  fTree->Branch("wcP" ,wcP ,"wcP[nwctrks]/F");
+  fTree->Branch("wcPx",wcPx,"wcPx[nwctrks]/F");
+  fTree->Branch("wcPy",wcPy,"wcPy[nwctrks]/F");
+  fTree->Branch("wcPz",wcPz,"wcPz[nwctrks]/F");  
   fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
+  fTree->Branch("cTOF", cTOF, "cTOF[ntof]/F"); 
+  fTree->Branch("mass", &massObj, "massObj/F");
 
   fTree->Branch("nAG", &nAG, "nAG/I");
   fTree->Branch("HitTimeStamp1p10_1", HitTimeStamp1p10_1, "HitTimeStamp1p10_1[nAG]/D");
@@ -2015,6 +2069,7 @@ void lariat::AnaTreeT1034::ResetVars()
   }
   
   nwctrks = -99999;
+
   for (int i = 0; i < kMaxWCTracks; i++)
     {
       wctrk_XFaceCoor[i] = -99999;	//<---The projected X position of the wctrack at the front face of the TPC
@@ -2046,16 +2101,19 @@ void lariat::AnaTreeT1034::ResetVars()
       WC4xPos[i] = -99999;
       WC4yPos[i] = -99999;
       WC4zPos[i] = -99999;
-      WCTrackResidual[i] = -99999;
-      WCTrackWCMissed[i] = -99999;
-   
+      wcP [i] = -99999;
+      wcPx[i] = -99999;
+      wcPy[i] = -99999;
+      wcPz[i] = -99999;
     }//<---End I loop
   
   ntof = -99999;
+  massObj = -99999; 
   for (int i = 0; i < kMaxTOF; i++)
     {
       tofObject[i] = -99999;
       tof_timestamp[i] = -99999;
+      cTOF[i] = -99999;
 	
 	
     }//<---End i loop
