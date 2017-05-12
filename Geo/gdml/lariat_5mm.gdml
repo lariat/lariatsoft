@@ -1035,8 +1035,6 @@
     <position name="ChFram_10x3involAuxDetMWPC4pos" x="0" y="0" z="0" unit="cm"/>
     <position name="volAuxDetMWPC4_11ing4blpos" x="-119.115840" y="-1.94564" z="762.0736608" unit="cm"/>
     <rotation name="volAuxDetMWPC4_11ing4blrot" x="0" y="3" z="0" unit="deg"/>
-    <position name="volAuxDetLAPPD_13ing4blpos" x="-31.4452" y="0.43434" z="157.44838" unit="cm"/>
-    <rotation name="volAuxDetLAPPD_13ing4blrot" x="-9.27166181885" y="9.15259576143" z="-45.7437332364" unit="deg"/>
     <position name="volAuxDetTOFDS_14ing4blpos"  x="-122.110500" y="-3.35788" z="784.232620" unit="cm"/>
     <rotation name="volAuxDetTOFDS_14ing4blrot" x="-3" y="1.83613095409e-16" z="-90" unit="deg"/>
     <position name="volAuxDetSensitivePunchUL_0involAuxDetPunchPaddlespos" x="14.5" y="0" z="0.5" unit="cm"/>
@@ -1898,7 +1896,6 @@
       <section zOrder="0" zPosition="0" xOffset="0" yOffset="0" scalingFactor="1"/>
       <section zOrder="1" zPosition="12.7" xOffset="0" yOffset="0" scalingFactor="1"/>
     </xtru>
-    <box name="LAPPDPad" x="15" y="15" z="2.54" lunit="cm"/>
     <box name="volAuxDetTOFUS0x1" x="15" y="15" z="5.08" lunit="cm"/>
     <box name="MWPC1" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="volAuxDetDet" x="12.8" y="12.5" z="2.5" lunit="cm"/>
@@ -1908,7 +1905,6 @@
     <box name="MWPC2" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC3" x="12.8" y="25.4" z="2.5" lunit="cm"/>
     <box name="MWPC4" x="12.8" y="25.4" z="2.5" lunit="cm"/>
-    <box name="volAuxDetLAPPD0" x="22.86" y="15.24" z="0.762" lunit="cm"/>
     <box name="volAuxDetTOFDS0x1" x="11.8" y="60.96" z="5.08" lunit="cm"/>
     <box name="PunchPaddles" x="31" y="101" z="5" lunit="cm"/>
     <box name="volAuxDetPunch" x="31" y="101" z="1" lunit="cm"/>
@@ -1922,16 +1918,7 @@
     <trap name="volAuxDetCosmic40x1" z="3.02" theta="0" phi="0" x1="27" x2="33.2" x3="27" x4="33.2" y1="70.8" y2="70.8" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
     <trap name="volAuxDetCosmic20x1" z="3.02" theta="0" phi="0" x1="26.7" x2="32.2" x3="26.7" x4="32.2" y1="61" y2="61" alpha1="0" alpha2="0" aunit="deg" lunit="cm"/>
 
-    <assembly name="volAuxDetLAPPD0x1">
-      <physvol>
-      <volumeref ref="volAuxDetLAPPD0"/>
-      <position name="LAPPD0involAuxDetLAPPD" x="0" y="0" z="0" unit="cm"/>
-      </physvol>
-      <physvol>
-      <volumeref ref="LAPPDPad"/>
-      <position name="LAPPDPadinvolAuxDetLAPPD" x="0" y="0" z="6.35" unit="cm"/>
-      </physvol>
-    </assembly>
+
   </solids>
   <structure>
     <volume name="volTubBottom">
@@ -5331,10 +5318,6 @@
         <positionref ref="ChFram_10x3involAuxDetMWPC4pos"/>
       </physvol>
     </volume>
-    <volume name="volAuxDetLAPPD">
-      <materialref ref="POLYSTYRENE0x1"/>
-      <solidref ref="volAuxDetLAPPD0x1"/>
-    </volume>
     <volume name="volAuxDetTOFDS">
       <materialref ref="LUCITE0x1"/>
       <solidref ref="volAuxDetTOFDS0x1"/>
@@ -5638,11 +5621,6 @@
         <volumeref ref="volAuxDetMWPC4"/>
         <positionref ref="volAuxDetMWPC4_11ing4blpos"/>
         <rotationref ref="volAuxDetMWPC4_11ing4blrot"/>
-      </physvol>
-      <physvol>
-        <volumeref ref="volAuxDetLAPPD"/>
-        <positionref ref="volAuxDetLAPPD_13ing4blpos"/>
-        <rotationref ref="volAuxDetLAPPD_13ing4blrot"/>
       </physvol>
       <physvol>
         <volumeref ref="volAuxDetTOFDS"/>
