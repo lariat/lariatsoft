@@ -248,6 +248,7 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
             tpcChan = wires_per_plane + startWireCol[boardId] - chan;
           else if(boardId == 3 && chan > 47)
             tpcChan = wires_per_plane + startWireCol[boardId] - chan + 48;
+          else continue;
         
         } else
         if( fWirePitch == "5mm" ) {
@@ -262,11 +263,11 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
             tpcChan = wires_per_plane + startWireCol[boardId] - chan;
           else if( boardId == 6 && chan < 48 )
             tpcChan = wires_per_plane + startWireCol[boardId] - chan;
-          else if( boardId > 6 ) continue;
+          else continue;
 
         }
         
-
+        
         // as of v04_13_00 of LArSoft, the event display no longer takes the
         // pedestal value from the RawDigit and uses an interface to a database instead
         // that doesn't really work for LArIAT, so pre-pedestal subtract the data
