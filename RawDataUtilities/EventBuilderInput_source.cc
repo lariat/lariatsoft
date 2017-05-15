@@ -283,7 +283,6 @@ namespace rdu
 
     // timestamp from SpillTrailer
     std::uint64_t fTimestamp;
-    std::uint64_t fSetTimestamp;
 
   }; // class EventBuilder
 
@@ -314,7 +313,6 @@ namespace rdu
     , fSpillWrapper(nullptr)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
-    , fSetTimestamp(0)
   {
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
@@ -375,7 +373,6 @@ namespace rdu
     fTDCPreAcquisitionWindow     = pset.get< double >("TDCPreAcquisitionWindow",     -1);
     fTDCPostAcquisitionWindow    = pset.get< double >("TDCPostAcquisitionWindow",    -1);
     fTDCAcquisitionWindow        = pset.get< double >("TDCAcquisitionWindow",        -1);
-    fSetTimestamp                = pset.get< std::uint64_t>("SetTimestamp",           0);
     return;
   }
 
@@ -419,13 +416,10 @@ namespace rdu
         << "\n////////////////////////////////////\n";
 
     // get database parameters
-    // TODO: Check to see if the current run number is the same as the
-    //       previous run number. If it is, don't bother querying the
-    //       database again since it will return the same results as
-    //       before.
     if( fRunNumber != fPreviousRunNumber ) {
-      std::cout<<"New run number, query database!\n";
+      std::cout<<"New run number, query database and reset event count!\n";
       fPreviousRunNumber = fRunNumber;
+      fEventNumber = 0ul;
       this->getDatabaseParameters_(fRunNumber);
     }
 
@@ -545,7 +539,7 @@ namespace rdu
     if (fRunNumber != fCachedRunNumber) {
       outRun = fSourceHelper.makeRunPrincipal(fRunNumber, timestamp);
       fCachedRunNumber = fRunNumber;
-      fEventNumber = 0ul;
+      // fEventNumber = 0ul; 
 
       this->commenceRun(outRun);
     }
