@@ -2,16 +2,13 @@
 #include "geometry_lariat.fcl"
 #include "eventbuilderalg.fcl"
 #include "RawDataUtilities_algs.fcl"
+#include "services_lariat.fcl"
 
 process_name: EventBuilderNoMerge
 
 services:
 {
- ExptGeoHelperInterface: @local::lariat_geometry_helper
- Geometry:               @local::lariat_geo
- #AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
- #AuxDetGeometry:         @local::lariat_auxdetgeo
- DatabaseUtilityT1034:   @local::lariat_databaseutility
+ @table::lariat_services
 }
 
 source:

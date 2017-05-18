@@ -1,0 +1,64 @@
+#include "evdservices_lariat.fcl"
+#include "geometry_lariat.fcl"
+
+
+process_name: EVD
+
+services:
+{
+  TimeTracker:  {}
+  RandomNumberGenerator: {} #ART native random number generator
+  message:      @local::evd_message
+  Geometry:               @local::lariat_geo_5mm
+  @table::lariat_disp
+  #@table::lariat_services_5mm
+}
+
+# Define the services
+
+#Look at the input files
+source:
+{
+  module_type: RootInput
+  fileNames:  [ "data.root" ]
+  maxEvents:   -1       # Number of events to create
+  #inputCommands:["keep*","drop sim::PMTHits_*_*_*"]
+}
+
+outputs:{}
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+ producers: 
+ {
+ }
+
+ filters:{}
+
+ analyzers:
+ {
+  evdisp: {module_type: EVD}
+ }
+ 
+ #list the modules for this path, order matters, filters reject all following items
+ evd: [ evdisp ] 
+ recopath: []
+}
+
+services.Geometry.GDML: "lariat_5mm.gdml"
+
+services.RawDrawingOptions.MinimumSignal: 5
+services.RecoDrawingOptions.DrawClusters: 1
+services.RecoDrawingOptions.ClusterModuleLabels: ["linecluster"]
+services.RecoDrawingOptions.HitModuleLabels: ["linecluster"]
+services.RecoDrawingOptions.DrawTracks: 1
+services.RecoDrawingOptions.DrawTrackTrajectoryPoints: 1
+services.RecoDrawingOptions.TrackModuleLabels: ["pmtrack"]
+services.RecoDrawingOptions.Draw2DEndPoints: 1
+services.RecoDrawingOptions.EndPoint2DModuleLabels: ["linecluster"]
+services.RecoDrawingOptions.DrawVertices: 1
+services.RecoDrawingOptions.VertexModuleLabels: ["pmtrack"]

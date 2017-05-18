@@ -185,7 +185,8 @@ namespace rdu
     art::RunNumber_t       fCachedRunNumber;
     art::RunNumber_t       fPreviousRunNumber;
     art::SubRunNumber_t    fCachedSubRunNumber;
-    
+    bool                   fUseSequentialEventNumbers; 
+    art::EventNumber_t     fEventNumberInSubRun;
 
     // EventAuxiliary for fetching run and sub-run numbers
     art::EventAuxiliary    fEventAux;
@@ -283,7 +284,6 @@ namespace rdu
 
     // timestamp from SpillTrailer
     std::uint64_t fTimestamp;
-    std::uint64_t fSetTimestamp;
 
   }; // class EventBuilder
 
@@ -314,7 +314,6 @@ namespace rdu
     , fSpillWrapper(nullptr)
     , fEventBuilderAlg(pset.get<fhicl::ParameterSet>("EventBuilderAlg"))
     , fFragmentToDigitAlg(pset.get<fhicl::ParameterSet>("FragmentToDigitAlg"))
-    , fSetTimestamp(0)
   {
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
@@ -375,7 +374,9 @@ namespace rdu
     fTDCPreAcquisitionWindow     = pset.get< double >("TDCPreAcquisitionWindow",     -1);
     fTDCPostAcquisitionWindow    = pset.get< double >("TDCPostAcquisitionWindow",    -1);
     fTDCAcquisitionWindow        = pset.get< double >("TDCAcquisitionWindow",        -1);
-    fSetTimestamp                = pset.get< std::uint64_t>("SetTimestamp",           0);
+
+    fUseSequentialEventNumbers   = pset.get< bool >("UseSequentialEventNumbers",      false);
+
     return;
   }
 
@@ -406,8 +407,8 @@ namespace rdu
     fRunNumber    = fEventAux.run();
     fSubRunNumber = fEventAux.subRun();
     
-    // we will need to create a new run and subrun principal later on
-    // so let's reset the cached values
+    // need to create a new run and subrun principal later on since a new 
+    // file was opened, resetting cached numbers will trigger this
     fCachedRunNumber    = -1;
     fCachedSubRunNumber = -1; 
 
@@ -419,15 +420,25 @@ namespace rdu
         << "\n////////////////////////////////////\n";
 
     // get database parameters
-    // TODO: Check to see if the current run number is the same as the
-    //       previous run number. If it is, don't bother querying the
-    //       database again since it will return the same results as
-    //       before.
     if( fRunNumber != fPreviousRunNumber ) {
-      std::cout<<"New run number, query database!\n";
+      std::cout<<"New run number, query database and reset event count!\n";
       fPreviousRunNumber = fRunNumber;
+      fEventNumber = 0ul;
       this->getDatabaseParameters_(fRunNumber);
     }
+    
+    // new file means new subrun, so reset the counter  
+    fEventNumberInSubRun    = 0ul;
+    
+    // Unique event numbering scheme adopted 2017-05-16 which encodes
+    // subrun information into the higher digits of event number. For 
+    // example, evt 78 in subrun 42 will be assigned event number 420078.
+    //
+    // To revert to old number scheme (sequential/unique per processing job
+    // only), set fUseSequentialEventNumbers = true
+    //
+    if( !fUseSequentialEventNumbers ) fEventNumber = fSubRunNumber*10000ul;
+    
 
     // configure the event builder algorithm
     fEventBuilderAlg.Configure(fV1740PreAcquisitionWindow,
@@ -538,30 +549,27 @@ namespace rdu
                               art::SubRunPrincipal *      & outSubRun,
                               art::EventPrincipal  *      & outEvent)
   {
-    if (fDoneWithFile) return false;
+    if ( fDoneWithFile ) return false;
+   
+    // safeguard necessary for new numbering scheme 
+    if ( !fUseSequentialEventNumbers && fEventNumberInSubRun == 9999 ) return false;
 
     art::Timestamp timestamp = fTimestamp;
 
     if (fRunNumber != fCachedRunNumber) {
       outRun = fSourceHelper.makeRunPrincipal(fRunNumber, timestamp);
       fCachedRunNumber = fRunNumber;
-      fEventNumber = 0ul;
-
       this->commenceRun(outRun);
     }
 
     if (fSubRunNumber != fCachedSubRunNumber) {
       outSubRun = fSourceHelper.makeSubRunPrincipal(fRunNumber, fSubRunNumber, timestamp);
       fCachedSubRunNumber = fSubRunNumber;
-      // fEventNumber = 0ul;
-      
       this->commenceSubRun(outSubRun);
     }
 
-    LOG_VERBATIM("EventBuilderInput") << "fCollections.size(): " << fCollections.size();
-
     this->makeEventAndPutDigits_(outEvent);
-
+  
     return true;
   }
 
@@ -597,6 +605,7 @@ namespace rdu
   void EventBuilder::makeEventAndPutDigits_(art::EventPrincipal * & outEvent)
   {
 
+    ++fEventNumberInSubRun;
     ++fEventNumber;
 
     outEvent = fSourceHelper.makeEventPrincipal(fRunNumber, fSubRunNumber, fEventNumber, art::Timestamp());
@@ -806,7 +815,7 @@ namespace rdu
       << "\nTDCPreAcquisitionWindow:     " << fTDCPreAcquisitionWindow
       << "\nTDCPostAcquisitionWindow:    " << fTDCPostAcquisitionWindow
       << "\nTDCAcquisitionWindow:        " << fTDCAcquisitionWindow
-      << "//////////////////////////////////////////////";
+      << "\n//////////////////////////////////////////////";
 
     return;
   }

@@ -37,8 +37,8 @@ enum {
 };
 
 
-typedef std::map< int, std::map< int, std::vector< std::map< unsigned int, std::vector<unsigned int> > > > > match_maps;
-typedef std::map< int, std::map< int, std::vector< std::pair<double, double> > > > fit_params_maps;
+//typedef std::map< int, std::map< int, std::vector< std::map< unsigned int, std::vector<unsigned int> > > > > match_maps;
+//typedef std::map< int, std::map< int, std::vector< std::pair<double, double> > > > fit_params_maps;
 typedef std::vector<TDCFragment::TdcEventData> TDCDataBlock; 
 
 
@@ -184,7 +184,6 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
 void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenFrags,
                                           std::vector<raw::RawDigit>     & tpcDigits)
 {
-
   raw::ChannelID_t tpcChan = 0;
   size_t maxChan = 64;
   size_t boardId = 0;
@@ -248,6 +247,7 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
             tpcChan = wires_per_plane + startWireCol[boardId] - chan;
           else if(boardId == 3 && chan > 47)
             tpcChan = wires_per_plane + startWireCol[boardId] - chan + 48;
+          else continue;
         
         } else
         if( fWirePitch == "5mm" ) {
@@ -262,11 +262,11 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
             tpcChan = wires_per_plane + startWireCol[boardId] - chan;
           else if( boardId == 6 && chan < 48 )
             tpcChan = wires_per_plane + startWireCol[boardId] - chan;
-          else if( boardId > 6 ) continue;
+          else continue;
 
         }
         
-
+        
         // as of v04_13_00 of LArSoft, the event display no longer takes the
         // pedestal value from the RawDigit and uses an interface to a database instead
         // that doesn't really work for LArIAT, so pre-pedestal subtract the data
@@ -294,7 +294,7 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
 //===============================================================----------
 float FragmentToDigitAlg::findPedestal(const std::vector<short> & adcVec)
 {
-
+  
   // do nothing if there are no values in the vector
   if(adcVec.size() < 1) return 0.;
   
@@ -392,7 +392,6 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
         
           // calculate first sample
           firstSample = (int)((100.-fV1751PostPercent) * 0.01 * waveForm.size());
-        
           LOG_VERBATIM("FragmentToDigitAlg")
           << " Found optical detector "
           << " boardID: " << boardId 
@@ -552,8 +551,6 @@ void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const
       boardChans.insert(chanOff);
     }//end if MURS
   }//end loop over HardwareConnections
-  LOG_VERBATIM("FragmentToDigitAlg")
-  << "ChannelOffset: " << *(boardChans.begin());
   
   this->caenFragmentToAuxDetDigits(caenFrags, mrAuxDigits, boardId, boardChans,*(boardChans.begin()) , "MuonRangeStack");
   boardChans.clear();
@@ -618,7 +615,7 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
   LOG_VERBATIM("FragmentToDigitAlg")
   << "ChannelOffset: " << *(boardChansUS.begin())
   << " ChannelOffset: " << *(boardChansDS.begin());
-  
+
   this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChansUS, *(boardChansUS.begin()), "TOFUS");
   this->caenFragmentToAuxDetDigits(caenFrags, tofAuxDigits, boardId, boardChansDS, *(boardChansDS.begin()), "TOFDS");
   
@@ -633,7 +630,6 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
 void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& caenFrags,
                                            std::vector<raw::AuxDetDigit>      & agAuxDigits)
 {
-
   uint32_t boardId1p06_1 = 0;
   uint32_t boardId1p06_2 = 0;
   uint32_t boardId1p10_1 = 0;
@@ -679,7 +675,6 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
 	 else if(hardwareIter.second == "AG1p06_2") boardId1p06_2 = boardId;
 
          chanOff = std::stoi(strchannelId);
-
          LOG_VERBATIM("FragmentToDigitAlg")<< " Found AeroGel"
          << " Column: "  << hardwareIter.first
          << " Value: "   << hardwareIter.second
@@ -703,7 +698,6 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
   << " ChannelOffset: " <<  *(chanAG1p10_2.begin())
   << " ChannelOffset: " <<  *(chanAG1p06_1.begin())
   << " ChannelOffset: " <<  *(chanAG1p06_2.begin());
-
 
   this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId1p10_1, chanAG1p10_1, *(chanAG1p10_1.begin()), "AG1p10_1");
   this->caenFragmentToAuxDetDigits(caenFrags, agAuxDigits, boardId1p10_2, chanAG1p10_2, *(chanAG1p10_2.begin()), "AG1p10_2");
@@ -749,14 +743,14 @@ void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& cae
         
         boardId = std::stoi(strboardId); 								//convert string boardID to uint32
         chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
-        
+       
         LOG_VERBATIM("FragmentToDigitAlg")
         <<" Found HALO"
         <<" Column: "   << hardwareIter.first
         <<" Value: "    << hardwareIter.second
         <<" BoardId: "  << boardId
         <<" ChannelId: "<< chanOff;
-        
+
       }//end setting board/channel ID
       
       // \todo This value for chanOff may not be correct.  The chanOff value is intended to allow
@@ -832,7 +826,7 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
       // channels from the auxdet all satisfy the range of 0-N.
       boardChans.insert(chanOff);
       
-      LOG_VERBATIM("FragmentToDigitAlg") << "ChannelOffset: " << *(boardChans.begin());
+      //LOG_VERBATIM("FragmentToDigitAlg") << "ChannelOffset: " << *(boardChans.begin());
       
       this->caenFragmentToAuxDetDigits(caenFrags, trAuxDigits, boardId, boardChans, *(boardChans.begin()), hardwareIter.second);
       boardChans.clear();
