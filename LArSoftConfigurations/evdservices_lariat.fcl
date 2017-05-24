@@ -38,6 +38,7 @@ lariat_evdlayoutopt.ChangeWire:	              1
 lariat_scanopt:                               @local::standard_scanopt              
 lariat_evd:                                   @local::standard_evd                  
 lariat_infotransfer:                          @local::standard_infotransfer         
+
 lariat_disp:                                                                       
 {                                                                                  
  ExptGeoHelperInterface:                      @local::lariat_geometry_helper        
@@ -59,8 +60,11 @@ lariat_disp:
  DetectorClocksService:                  		      @local::lariat_detectorclocks
  DetPedestalService:                         @local::lariat_detpedestalservice
  ChannelStatusService: @local::lariat_channel_filter
- 
 }                                                                                  
+
+lariat_disp_5mm:              @local::lariat_disp
+lariat_disp_5mm.Geometry:     @local::lariat_geo_5mm
+
                                                                                    
 #######################################                                            
                                                                                    
