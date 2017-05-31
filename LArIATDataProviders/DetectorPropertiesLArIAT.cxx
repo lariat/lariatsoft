@@ -54,6 +54,9 @@ namespace ldp{
     
     fTPCClock = fClocks->TPCClock();
     
+    // initialize prev run number
+    fPrevRunNumber = 0;
+    
   }
     
   //--------------------------------------------------------------------
@@ -77,8 +80,13 @@ namespace ldp{
 
     bool retVal = true;
     
-    if (fGetElectronlifetimeFromDB) 
+    // only update electron lifetime when the run changes (to save time)
+    if (fGetElectronlifetimeFromDB && t != fPrevRunNumber) {
       retVal = UpdateElectronLifetime(t);
+      fPrevRunNumber = t;
+    }
+   
+    std::cout<<"Using electron lifetime "<<fElectronlifetime<<" ns.\n";
     
     return retVal;
   }
