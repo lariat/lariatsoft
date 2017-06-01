@@ -292,6 +292,8 @@ namespace ldp{
       const geo::GeometryCore* fGeo;
 
       bool  fGetElectronlifetimeFromDB;
+
+      uint64_t fPrevRunNumber;
       
       std::vector< double >          fEfield;           ///< kV/cm (per inter-plane volume)
       double                         fElectronlifetime; ///< microseconds
