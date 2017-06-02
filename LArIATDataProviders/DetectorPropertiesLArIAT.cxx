@@ -56,6 +56,7 @@ namespace ldp{
     
     // initialize prev run number
     fPrevRunNumber = 0;
+    fCachedElectronLifetimes.reserve(10000);
     
   }
     
@@ -79,13 +80,28 @@ namespace ldp{
     CalculateXTicksParams();
 
     bool retVal = true;
-    
-    // only update electron lifetime when the run changes (to save time)
+   
+    // if the run number changed, we will need to update the electron lifetime
     if (fGetElectronlifetimeFromDB && t != fPrevRunNumber) {
-      retVal = UpdateElectronLifetime(t);
+    
+      // let's avoid DB queries if we can (which can take up to 30 seconds on 
+      // bad days!) by checking cached electron lifetimes to see if we've already 
+      // found this run's lifetime value
+      fElectronlifetime = 0;
+      for(size_t i=0; i<fCachedElectronLifetimes.size(); i++){
+        if( fCachedElectronLifetimes[i].first == t ) {
+          fElectronlifetime = fCachedElectronLifetimes[i].second;
+          break;
+        }
+      }
+      if( fElectronlifetime == 0 ){
+        retVal = UpdateElectronLifetime(t);
+        fCachedElectronLifetimes.push_back(std::make_pair(t,fElectronlifetime));
+      }
+      
       fPrevRunNumber = t;
     }
-   
+    
     std::cout<<"Using electron lifetime "<<fElectronlifetime<<" ns.\n";
     
     return retVal;
