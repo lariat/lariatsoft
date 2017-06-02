@@ -237,7 +237,7 @@ void FragmentToDigitAlg::makeTPCRawDigits(std::vector<CAENFragment> const& caenF
         // use separate code for 4mm and 5mm (not the most elegant solution 
         // but it gets the job done)
         
-        if( fWirePitch == "4mm" ) {
+        if( fWirePitch == "4mm" || fWirePitch == "3mm" ) {
           
           // get TPC channel for the induction plane
           if( boardId < 3 || (boardId == 3 && chan < 48) )
