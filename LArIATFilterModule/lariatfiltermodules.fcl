@@ -11,6 +11,25 @@ lariat_triggerpattern:
   TriggerPattern:     "<+BEAMON-PILEUP>"
 }
 
+lariat_massfilter:
+{
+    module_type: MassSelectionFilter
+    TOFModuleLabel:     "tof"      # TOF module label                                                                                                                                          
+    nTOFObjects:        1          # number of TOF objects in the event to pass the filter                                                                                                     
+    WCTrackLabel:       "wctrack"  # WC module label                                                                                                                                           
+    NumberWCTrack:      1          # number of WCTracks                                                                                                                                       \
+                                                                                                                                                                                               
+    MassUpperLimit:  350.0
+    MassLowerLimit:  600.0
+}
+
+lariat_WC2TPCAss:
+{
+    module_type: WC2TPCAssFilter
+    WCTrackModuleLabel:          "WCTrackBuilder"
+    WC2TPCModuleLabel:          "WC2TPCtrk"
+}
+
 lariat_timestampfilter:
 {
 module_type:			TimestampFilter
