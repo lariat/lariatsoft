@@ -217,8 +217,8 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
     		          reco_pz_list,
 			  x_face_list,
 			  y_face_list,
-			  incoming_phi_list,
 			  incoming_theta_list,
+			  incoming_phi_list,
 			  event_final_tracks,
 			  y_kink_list,
 			  x_dist_list,
@@ -557,30 +557,26 @@ void WCTrackBuilderAlg::projectToTPC(WCHitList & best_track,
 					     std::vector<double> & incoming_theta_list,
 					     std::vector<double> & incoming_phi_list)
 {					         
-//The intercept of the regression is where the track hits at z=0, which is the TPC face, so we get the y position on the TPC for free
-  double y_face=bestRegressionStats[1];
-  y_face_list.push_back(y_face);
-//Though the regression probably gives the best extrapolation to the TPC, we can only use it for y projections. If we need x values, we have to use the positions ds, which could introduce error if we have either WC3,4 wrong
-//For the x position at the TPC, we need to use the ds WC to extrapolate a line to the TPC (z==0)
-  float dx_ds=x[3]-x[2];  
-  float dz_ds=z[3]-z[2];
-  float dy_ds=y[3]-y[2];
-  float ds_slope=dx_ds/dz_ds;
-  float ds_x_intercept=x[3]-ds_slope*z[3];
-  double x_face=ds_x_intercept;
-  x_face_list.push_back(x_face);
-			      
-//We can use the atan2 to find phi (the angle in the XY plane) of the track, which will go CCW around the circle starting at (x,y)=(1,0). This will be in radians
-  float phi=atan2(dy_ds,dx_ds);
-  incoming_phi_list.push_back(phi);
-//The vector pointing from WC4(x4,y4,z4) to the X,Y face hit (Xface,Yface,0) can be rotated around the Z axis, which would trace out a cone.  The opening angle of that cone would be 2*theta.  So we can use the equation of
-//a cone to find theta 
+  // The intercept of the regression is where the track hits at z=0, which is the TPC face, 
+  // so we get the y position on the TPC for free
+  y_face_list.push_back(bestRegressionStats[1]);
 
-  double r=pow(pow(x_face-x[3],2)+pow(y_face-y[3],2),0.5);
-//Unforunately, this angle will always be positive, even though we expect tracks to enter around -3 degrees to the z axis.  However, the previous iteration of WCTrackBuilder left theta positive, so I will too.  The negative
-//accounts for the fact that I use z4 as the height, which is a negative number, which we need to make positive.
-  double theta=atan(-r/z[3]);
-  incoming_theta_list.push_back(theta);
+  // Though the regression probably gives the best extrapolation to the TPC, we can only use 
+  // it for y projections. If we need x values, we have to use the positions ds, which could 
+  // introduce error if we have either WC3,4 wrong.  For the x position at the TPC, we need 
+  // to use the ds WC to extrapolate a line to the TPC (z==0)
+  float dx_ds = x[3] - x[2];  
+  float dy_ds = y[3] - y[2];
+  float dz_ds = z[3] - z[2];
+  float ds_slopex = dx_ds / dz_ds;
+  x_face_list.push_back( x[3] - ds_slopex*z[3] );
+  
+  // Phi is measured CCW around a circle starting at (x,y) = (1,0), in radians. 
+  // Theta is the opening angle relative to the z-axis.
+  // Make TVector3 out of the dx,dy and extract phi/theta from it.
+  TVector3 vec(dx_ds, dy_ds, dz_ds);
+  incoming_phi_list.push_back(vec.Phi());
+  incoming_theta_list.push_back(vec.Theta());
 }
 //====================================================================================
 void WCTrackBuilderAlg::calculateTrackKink_Dists(float (&x)[4],
