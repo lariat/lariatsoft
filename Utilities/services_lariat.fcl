@@ -47,6 +47,10 @@ lariat_services_5mm:                @local::lariat_services
 lariat_services_5mm.Geometry:       @local::lariat_geo_5mm
 lariat_services_5mm.AuxDetGeometry: @local::lariat_auxdetgeo_5mm
 
+lariat_services_3mm:                @local::lariat_services
+lariat_services_3mm.Geometry:       @local::lariat_geo_3mm
+lariat_services_3mm.AuxDetGeometry: @local::lariat_auxdetgeo_3mm
+
 lariat_simulation_services:
 {
  LArG4Parameters:              @local::lariat_largeantparameters

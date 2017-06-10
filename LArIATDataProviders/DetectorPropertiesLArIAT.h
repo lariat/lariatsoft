@@ -294,6 +294,7 @@ namespace ldp{
       bool  fGetElectronlifetimeFromDB;
 
       uint64_t fPrevRunNumber;
+      std::vector<std::pair<uint64_t,float>> fCachedElectronLifetimes;
       
       std::vector< double >          fEfield;           ///< kV/cm (per inter-plane volume)
       double                         fElectronlifetime; ///< microseconds
