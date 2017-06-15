@@ -1,8 +1,6 @@
 
 #include "SpillWrapper.h"
 
-#include "artdaq-core/Data/Fragments.hh"
-
 #include "cetlib/exception.h"
 
 #include <iostream>
