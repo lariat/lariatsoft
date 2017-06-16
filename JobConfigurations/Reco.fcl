@@ -3,7 +3,7 @@
 #include "hitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
-#include "calorimetry.fcl"
+#include "calorimetry_lariat.fcl"
 #include "particleid.fcl"
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
@@ -96,9 +96,9 @@ physics:
 #  pandora:            @local::standard_pandoraneutrino
 
   ### calorimetry and pid
-  calo:                 @local::standard_calodata
+  calo:                 @local::lariat_calodata
   pid:                  @local::standard_chi2pid
-#  pandoracalo:          @local::standard_calodata
+#  pandoracalo:          @local::lariat_calodata
 #  pandorapid:           @local::standard_chi2pid
 
 

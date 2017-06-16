@@ -5,7 +5,7 @@
 #include "hitfindermodules.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
-#include "calorimetry.fcl"
+#include "calorimetry_lariat.fcl"
 #include "particleid.fcl"
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
