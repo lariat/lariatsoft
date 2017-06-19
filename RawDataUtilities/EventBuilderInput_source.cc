@@ -28,7 +28,6 @@
 
 // artdaq includes
 #include "artdaq-core/Data/Fragment.hh"
-#include "artdaq-core/Data/Fragments.hh"
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
