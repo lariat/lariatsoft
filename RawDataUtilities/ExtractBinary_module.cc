@@ -31,7 +31,7 @@
 #include "cetlib/exception.h"
 
 // artdaq includes
-#include "artdaq-core/Data/Fragments.hh"
+#include "artdaq-core/Data/Fragment.hh"
 
 // C++ includes
 #include <iomanip>
