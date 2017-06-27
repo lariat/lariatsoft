@@ -65,6 +65,9 @@ lariat_disp:
 lariat_disp_5mm:              @local::lariat_disp
 lariat_disp_5mm.Geometry:     @local::lariat_geo_5mm
 
+lariat_disp_3mm:              @local::lariat_disp
+lariat_disp_3mm.Geometry:     @local::lariat_geo_3mm
+
                                                                                    
 #######################################                                            
                                                                                    
