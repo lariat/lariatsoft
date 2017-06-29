@@ -102,7 +102,7 @@ namespace ldp{
       fPrevRunNumber = t;
     }
     
-    std::cout<<"Using electron lifetime "<<fElectronlifetime<<" ms.\n";
+    std::cout<<"Using electron lifetime "<<fElectronlifetime<<" microseconds.\n";
     
     return retVal;
   }
