@@ -1,4 +1,4 @@
-art_make(LIB_LIBRARIES    larcore_Geometry
+art_make(LIB_LIBRARIES    larcorealg_Geometry
                           larreco_RecoAlg_ClusterRecoUtil
                           lardataobj_RecoBase
          MODULE_LIBRARIES LArIATRecoAlg
@@ -9,7 +9,7 @@ art_make(LIB_LIBRARIES    larcore_Geometry
                           larreco_RecoAlg
                           lardataobj_RawData
                           larcoreobj_SummaryData
-                          larcore_Geometry
+                          larcorealg_Geometry
                           larcore_Geometry_Geometry_service
                           RawDataUtilities
                           lardataobj_RecoBase

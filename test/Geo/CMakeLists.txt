@@ -20,7 +20,7 @@ cet_test(geometry_lariat_test
   SOURCES geometry_lariat_test.cxx
   DATAFILES test_geometry_lariat.fcl
   TEST_ARGS ./test_geometry_lariat.fcl
-  LIBRARIES larcore_Geometry
+  LIBRARIES larcorealg_Geometry
             GeometryTestLib
             Geo # this is LArIAT's geometry
             ${MF_MESSAGELOGGER}
@@ -33,7 +33,7 @@ cet_test(geometry_lariat_test
 # this uses BOOST for the test
 cet_test(geometry_iterator_lariat_test
   SOURCES geometry_iterator_lariat_test.cxx
-  LIBRARIES larcore_Geometry
+  LIBRARIES larcorealg_Geometry
             GeometryTestLib
             Geo # this is LArIAT's geometry
             ${MF_MESSAGELOGGER}
@@ -46,7 +46,7 @@ cet_test(geometry_iterator_lariat_test
 
 cet_test(geometry_iterator_loop_lariat_test
   SOURCES geometry_iterator_loop_lariat_test.cxx
-  LIBRARIES larcore_Geometry
+  LIBRARIES larcorealg_Geometry
             GeometryTestLib
             Geo # this is LArIAT's geometry
             ${MF_MESSAGELOGGER}
@@ -59,7 +59,7 @@ cet_test(geometry_iterator_loop_lariat_test
 # test for channel mapping (BOOST unit test)
 cet_test(geometry_lariatchannelmapping_test
   SOURCES geometry_lariatchannelmapping_test.cxx
-  LIBRARIES larcore_Geometry
+  LIBRARIES larcorealg_Geometry
             GeometryTestLib
             Geo # this is LArIAT's geometry
             ${MF_MESSAGELOGGER}
