@@ -2,6 +2,7 @@ art_make(LIB_LIBRARIES larcore_Geometry
          larreco_RecoAlg_ClusterRecoUtil
          lardataobj_RecoBase
          MODULE_LIBRARIES LArIATRecoAlg
+         larreco_RecoAlg_ImagePatternAlgs_PointIdAlg
          LArIATDataProducts
          larevt_Filters
          larreco_ClusterFinder

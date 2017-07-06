@@ -2,6 +2,7 @@ art_make(LIB_LIBRARIES    larcore_Geometry
                           larreco_RecoAlg_ClusterRecoUtil
                           lardataobj_RecoBase
          MODULE_LIBRARIES LArIATRecoAlg
+	          	  larreco_RecoAlg_ImagePatternAlgs_PointIdAlg
                           LArIATDataProducts
                           larevt_Filters
                           larreco_ClusterFinder
@@ -17,6 +18,8 @@ art_make(LIB_LIBRARIES    larcore_Geometry
                           lardata_Utilities
                           larsim_MCCheater_BackTracker_service
                           nutools_RandomUtils_NuRandomService_service
+         		  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+
                           nusimdata_SimulationBase
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}

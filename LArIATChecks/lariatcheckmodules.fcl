@@ -1,6 +1,4 @@
 
-
-
 BEGIN_PROLOG
 
 lariat_tofchecker:
@@ -14,6 +12,36 @@ lariat_murschecker:
 {
   module_type:        MuRSChecker
   MuRSBuilderLabel:   murs
+}
+
+
+lariat_nnplotter:
+{
+	module_type: NNPlotter
+	WireLabel:	"caldata"
+	TrackModuleLabel: "pmtrack"
+	HitModuleLabel: "linecluster"
+	EntireImage: false
+}
+
+
+lariat_nntrackshower:
+{
+	module_type:        NNTrackShowerEff
+	HitModuleLabel:                "linecluster" # all hits (used to classify leftovers from clustering)
+	ClusterModuleLabel:            "linecluster" # clusters to be classified
+	WireLabel: "caldata"
+	TrackModuleLabel: "pmtrack"
+	WC2TPCModuleLabel: WC2TPCtrk
+	WCTrackLabel: wctrack
+	EyeScanFile: "/lariat/app/users/dsmith/mar21_nn_pi_sample/develop/srcs/lariatsoft/LArIATAnaModule/eyescan.csv" 
+}
+
+lariat_nnmctrackshower:
+{
+	module_type:        NNMCTrackShowerEff
+	WireLabel: "caldata"
+	SimChanLabel: largeant
 }
 
 END_PROLOG

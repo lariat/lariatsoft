@@ -1,0 +1,71 @@
+#include "services_lariat.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatanamodules.fcl"
+#include "lariatcheckmodules.fcl"
+
+process_name: MCNNEff
+
+services:
+{
+  TFileService: { fileName: "MCNNEff_hist.root" }
+  RandomNumberGenerator: {} #ART native random number generator
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+physics:
+{
+ 
+
+ producers: { }
+
+ analyzers:
+ {
+   MCNNEff: @local::lariat_nnmctrackshower
+ }
+ 
+ filters: { } 
+
+ reco: [  ] 
+ ana:[ MCNNEff ]
+ filt:[  ]
+
+
+ stream1:  [ out1 ]
+ trigger_paths: [reco] 
+ end_paths:     [ana, stream1]  
+}
+
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "MCNNEff_output.root"
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
+ }
+}
+
+physics.analyzers.MCNNEff.PointIdAlg.NNetModelFile:      "/lariat/data/users/dsmith/nnclassifier/6jul_3cat.nnet"
+
+physics.analyzers.MCNNEff.PointIdAlg.PatchSizeW:         32     # how many wires in patch
+physics.analyzers.MCNNEff.PointIdAlg.PatchSizeD:         44     # how many downsampled ADC entries
+physics.analyzers.MCNNEff.PointIdAlg.DriftWindow:        13      # downsampling window in drift ticks
+physics.analyzers.MCNNEff.PointIdAlg.DownscaleFn:        "mean" # downs ampling function
+physics.analyzers.MCNNEff.PointIdAlg.CalibrateAmpl: true
+physics.analyzers.MCNNEff.PointIdAlg.BlurKernel: []
+physics.analyzers.MCNNEff.PointIdAlg.NoiseSigma: 0.0
+physics.analyzers.MCNNEff.PointIdAlg.CoherentSigma: 0.0
+physics.analyzers.MCNNEff.PointIdAlg.DownscaleFullView: true
+
+physics.analyzers.MCNNEff.PointIdAlg.CalorimetryAlg.CalAreaConstants: [ 2.47e-2, 4.8e-2] 
+physics.analyzers.MCNNEff.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 8.78e-3, 15.e-3 ]
+
+physics.analyzers.MCNNEff.PointIdAlg.CalorimetryAlg.CaloUseModBox: true
+physics.analyzers.MCNNEff.PointIdAlg.CalorimetryAlg.CaloLifeTimeForm: 0

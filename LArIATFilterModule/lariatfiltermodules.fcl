@@ -173,5 +173,19 @@ WCUpperBound: 			2000.
 
 }
 
+lariat_nnshower:
+{
+module_type:    NNShowerFilter
+
+ShowerThresh: 0.85
+
+WireLabel: caldata
+HitModuleLabel: linecluster
+TrackModuleLabel: pmtrack
+WC2TPCModuleLabel: WC2TPCtrk
+WCTrackLabel: wctrack
+  
+}
+
 
 END_PROLOG
