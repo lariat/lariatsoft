@@ -90,12 +90,12 @@ source.EventBuilderAlg.TPCReadoutBufferHigh: 10.0  # microseconds
 source.EventBuilderAlg.ClockCorrectionAlg.MinSamples:                   2
 source.EventBuilderAlg.ClockCorrectionAlg.ResidualThreshold:            1
 source.EventBuilderAlg.ClockCorrectionAlg.MaxTrials:                    10000
-source.EventBuilderAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
+#source.EventBuilderAlg.ClockCorrectionAlg.StopSampleNumber:             15000000000000000000
 source.EventBuilderAlg.ClockCorrectionAlg.StopResidualsSum:             0
 source.EventBuilderAlg.ClockCorrectionAlg.StopProbability:              1
 source.EventBuilderAlg.ClockCorrectionAlg.TimeStampDifferenceThreshold: 1e4  # microseconds
 source.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutLower:          0.9
 source.EventBuilderAlg.ClockCorrectionAlg.SampleSlopeCutUpper:          1.1
-source.EventBuilderAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
+#source.EventBuilderAlg.ClockCorrectionAlg.MaxContinuations:             15000000000000000000
 source.EventBuilderAlg.ClockCorrectionAlg.MinNumberTimeStamps:          3
 source.EventBuilderAlg.ClockCorrectionAlg.MinNumberDataPoints:          3
