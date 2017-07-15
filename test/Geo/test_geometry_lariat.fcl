@@ -75,10 +75,11 @@ physics: {
         "-WirePitch",
         
         # - WireCoordFromPlane and PlanePointDecomposition fail because test
-        #   expectation assumes constant wire pitch
+        #   expectation assumes constant wire pitch; same for WireIntersection
         "-WireCoordFromPlane",
         "-PlanePointDecomposition",
-
+        "-WireIntersection",
+        
         # - WireCoordAngle fails because its expectation relies on NearestWireID()
         "-WireCoordAngle"
         

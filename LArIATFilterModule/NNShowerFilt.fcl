@@ -1,0 +1,72 @@
+#include "services_lariat.fcl"
+#include "triggeralgo_service.fcl"
+#include "imagepatternalgs.fcl"
+#include "lariatfiltermodules.fcl"
+
+## Daniel Smith
+## dansmith@bu.edu
+
+process_name: NNShowerFilter
+
+
+services:
+{
+  TFileService: { fileName: "NNShowerFilter_hist.root" }
+  RandomNumberGenerator: {} #ART native random number generator
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+physics:
+{
+ 
+ producers: {}
+ analyzers: {}
+ filters:
+ {
+ ShowerFilt:	@local::lariat_nnshower 
+ }
+
+ 
+ reco: [  ] 
+ ana:[ ] 
+ filt:[ ShowerFilt ]
+
+ stream1:  [ out1 ]
+ trigger_paths: [filt,reco] 
+ end_paths:     [ana, stream1]  
+}
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   SelectEvents: {SelectEvents:[filt]}
+   fileName:    "NNShowerFilter_events.root"
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
+ }
+}
+
+physics.filters.ShowerFilt.ShowerThresh: 0.85
+
+physics.filters.ShowerFilt.PointIdAlg.NNetModelFile: "/lariat/data/users/dsmith/nnclassifier/6jul_3cat.nnet"
+physics.filters.ShowerFilt.PointIdAlg.PatchSizeW: 32     # how many wires in patch
+physics.filters.ShowerFilt.PointIdAlg.PatchSizeD: 44     # how many downsampled ADC entries
+physics.filters.ShowerFilt.PointIdAlg.DriftWindow: 13      # downsampling window in drift ticks
+physics.filters.ShowerFilt.PointIdAlg.DownscaleFn: "mean" # downsampling function
+physics.filters.ShowerFilt.PointIdAlg.CalibrateAmpl: true
+physics.filters.ShowerFilt.PointIdAlg.DownscaleFullView: true
+physics.filters.ShowerFilt.PointIdAlg.BlurKernel: []
+physics.filters.ShowerFilt.PointIdAlg.NoiseSigma: 0.0
+physics.filters.ShowerFilt.PointIdAlg.CoherentSigma: 0.0
+physics.filters.ShowerFilt.PointIdAlg.CalorimetryAlg.CalAreaConstants: [0.0247, 0.048]           # As outlined in Reco.fcl
+physics.filters.ShowerFilt.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 8.73831e-3, 17.4891e-3] # Multiplied by 15 to normalize 
+physics.filters.ShowerFilt.PointIdAlg.CalorimetryAlg.CaloUseModBox: true
+physics.filters.ShowerFilt.PointIdAlg.CalorimetryAlg.CaloLifeTimeForm: 0

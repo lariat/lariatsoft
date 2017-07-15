@@ -11,9 +11,9 @@
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 
 // LArSoft Includes
-#include "larcore/Geometry/AuxDetGeo.h"
-#include "larcore/Geometry/AuxDetSensitiveGeo.h"
-#include "larcore/Geometry/AuxDetGeometryCore.h"
+#include "larcorealg/Geometry/AuxDetGeo.h"
+#include "larcorealg/Geometry/AuxDetSensitiveGeo.h"
+#include "larcorealg/Geometry/AuxDetGeometryCore.h"
 
 // LArIATSoft
 #include "Geo/AuxDetChannelMapLArIATAlg.h"

@@ -1,5 +1,5 @@
 
-art_make( MODULE_LIBRARIES larcore_Geometry
+art_make( MODULE_LIBRARIES larcorealg_Geometry
 			larcore_Geometry_Geometry_service
 			larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
 			larsim_MCCheater_BackTracker_service

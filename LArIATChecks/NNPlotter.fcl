@@ -1,0 +1,75 @@
+#include "services_lariat.fcl"
+#include "triggeralgo_service.fcl"
+#include "imagepatternalgs.fcl"
+#include "lariatfiltermodules.fcl"
+#include "lariatcheckmodules.fcl"
+
+## Daniel Smith
+## dansmith@bu.edu
+
+process_name: NNPlotter
+
+services:
+{
+  TFileService: { fileName: "plotter_hist.root" }
+  RandomNumberGenerator: {} #ART native random number generator
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+physics:
+{ 
+
+ producers: {}
+ analyzers: {}
+
+ filters:
+ {
+ NNPlot:	@local::lariat_nnplotter
+ }
+ 
+ reco: [  ] 
+ ana:[ ]
+ filt:[ NNPlot ]
+
+ stream1:  [ out1 ]
+ trigger_paths: [filt,reco] 
+ end_paths:     [ana, stream1]  
+
+}
+
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   SelectEvents: {SelectEvents:[filt]}
+   fileName:    "plotted_event.root"
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
+ }
+}
+
+
+physics.filters.NNPlot.SelectedEvent: [ ] 
+
+physics.filters.NNPlot.PointIdAlg.NNetModelFile: "/lariat/data/users/dsmith/nnclassifier/6jul_3cat.nnet"
+physics.filters.NNPlot.PointIdAlg.PatchSizeW: 32      # how many wires in patch
+physics.filters.NNPlot.PointIdAlg.PatchSizeD: 44      # how many downsampled ADC entries
+physics.filters.NNPlot.PointIdAlg.DriftWindow: 13     # downsampling window in drift ticks
+physics.filters.NNPlot.PointIdAlg.DownscaleFn: "mean" # downsampling function
+physics.filters.NNPlot.PointIdAlg.CalibrateAmpl: true
+physics.filters.NNPlot.PointIdAlg.DownscaleFullView: true
+physics.filters.NNPlot.PointIdAlg.BlurKernel: []
+physics.filters.NNPlot.PointIdAlg.NoiseSigma: 0.0
+physics.filters.NNPlot.PointIdAlg.CoherentSigma: 0.0
+physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CalAreaConstants: [0.0247, 0.048]
+physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 8.73831e-3, 17.49e-3 ]
+physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CaloUseModBox: true
+physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CaloLifeTimeForm: 0

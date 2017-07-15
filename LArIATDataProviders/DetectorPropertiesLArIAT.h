@@ -11,8 +11,8 @@
 #define DETECTOR_PROPERTIES_LARIAT_H
 
 // LArSoft libraries
-#include "larcore/Geometry/GeometryCore.h"
-#include "larcore/CoreUtils/ProviderPack.h"
+#include "larcorealg/Geometry/GeometryCore.h"
+#include "larcorealg/CoreUtils/ProviderPack.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfo/DetectorClocks.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
