@@ -50,12 +50,12 @@
 #include "larcore/CoreUtils/ServiceUtil.h" 
 
 // LArSoft includes
-#include "larcore/Geometry/ChannelMapAlg.h" 
-#include "larcore/Geometry/GeometryCore.h"
+#include "larcorealg/Geometry/ChannelMapAlg.h" 
+#include "larcorealg/Geometry/GeometryCore.h"
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/Geometry/TPCGeo.h"
-#include "larcore/Geometry/PlaneGeo.h"
-#include "larcore/Geometry/WireGeo.h"
+#include "larcorealg/Geometry/TPCGeo.h"
+#include "larcorealg/Geometry/PlaneGeo.h"
+#include "larcorealg/Geometry/WireGeo.h"
 #include "lardataobj/RecoBase/Wire.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Track.h"

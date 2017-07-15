@@ -9,7 +9,7 @@
 
 // LArSoft includes
 #include "larcore/Geometry/Geometry.h"
-#include "larcore/Geometry/AuxDetGeo.h"
+#include "larcorealg/Geometry/AuxDetGeo.h"
 //add AuxDetGeoSensitive here when relevant
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "lardataobj/RawData/AuxDetDigit.h"

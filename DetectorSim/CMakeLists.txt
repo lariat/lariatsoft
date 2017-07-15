@@ -4,14 +4,14 @@ include_directories( $ENV{LARCORE_INC}    )
 include_directories( $ENV{LARSIM_INC}     )
 include_directories( $ENV{POSTGRESQL_INC} )
 
-art_make(LIB_LIBRARIES larcore_Geometry
+art_make(LIB_LIBRARIES larcorealg_Geometry
                        larreco_RecoAlg_ClusterRecoUtil
                        lardataobj_RecoBase
                        LArIATChecks
          MODULE_LIBRARIES 
                           larevt_Filters
                           lardataobj_Simulation
-                          larcore_Geometry
+                          larcorealg_Geometry
                           larcore_Geometry_Geometry_service
                           lardataobj_RecoBase
 			                    lardataobj_RawData
