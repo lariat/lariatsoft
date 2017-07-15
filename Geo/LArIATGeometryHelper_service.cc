@@ -6,8 +6,8 @@
 ////////////////////////////////////////////////////////////////////////////////
 
 #include "Geo/LArIATGeometryHelper.h"
-#include "larcore/Geometry/ChannelMapAlg.h"
-#include "larcore/Geometry/GeometryCore.h"
+#include "larcorealg/Geometry/ChannelMapAlg.h"
+#include "larcorealg/Geometry/GeometryCore.h"
 
 #include "Geo/ChannelMapLArIATAlg.h"
 

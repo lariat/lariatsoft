@@ -13,7 +13,7 @@
 
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
-#include "larcore/Geometry/AuxDetChannelMapAlg.h"
+#include "larcorealg/Geometry/AuxDetChannelMapAlg.h"
 #include "Geo/AuxDetGeoObjectSorterLArIAT.h"
 #include "fhiclcpp/ParameterSet.h"
 
