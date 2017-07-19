@@ -266,6 +266,7 @@ namespace ldp{
       virtual double       ConvertTDCToTicks(double tdc) const override;
       virtual double       ConvertTicksToTDC(double ticks) const override;
       
+      virtual bool SimpleBoundary() const override { return fSimpleBoundary; }
       
       /// Verifies that the provider is in a fully configured status
       /// @throw cet::exception (category DetectorPropertiesLArIAT) if not ok
@@ -315,6 +316,7 @@ namespace ldp{
       std::vector<std::vector<double> >               fDriftDirection;
 
       ::detinfo::ElecClock fTPCClock;     ///< TPC electronics clock
+      bool fSimpleBoundary;      
     }; // class DetectorPropertiesLArIAT
 } //namespace detinfo
 
