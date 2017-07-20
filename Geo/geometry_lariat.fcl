@@ -23,8 +23,8 @@ lariat_geo_3mm:
 {
  SurfaceY: 130.0e2                      #in cm, vertical distance to the surface
  Name:     "lariat"
- GDML:     "lariat.gdml"  # NEED TO UPDATE TO 3MM GEOMETRY WHEN FINISHED!!!
- ROOT:     "lariat.gdml"  # NEED TO UPDATE TO 3MM GEOMETRY WHEN FINISHED!!!
+ GDML:     "lariat_3mm.gdml"
+ ROOT:     "lariat_3mm.gdml"
 }
 
 lariat_geometry_helper:
@@ -51,8 +51,8 @@ lariat_auxdetgeo_5mm:
 lariat_auxdetgeo_3mm: 
 {
  Name:            "lariat"
- GDML:            "lariat_5mm.gdml"  # IF SURVEY RESULTS ARE DIFFERENT, WILL NEED TO
- ROOT:            "lariat_5mm.gdml"  # UPDATE THIS TO NEW GDML!!!!
+ GDML:            "lariat_3mm.gdml" 
+ ROOT:            "lariat_3mm.gdml" 
  SortingParameters: {}                   # empty parameter set for default
 }
 
