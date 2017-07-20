@@ -316,7 +316,7 @@ namespace ldp{
       std::vector<std::vector<double> >               fDriftDirection;
 
       ::detinfo::ElecClock fTPCClock;     ///< TPC electronics clock
-      bool fSimpleBoundary;      
+      bool fSimpleBoundary;
     }; // class DetectorPropertiesLArIAT
 } //namespace detinfo
 
