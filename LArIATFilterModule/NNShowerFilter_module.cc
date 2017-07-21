@@ -50,12 +50,7 @@
 #include "larcore/CoreUtils/ServiceUtil.h" 
 
 // LArSoft includes
-#include "larcorealg/Geometry/ChannelMapAlg.h" 
-#include "larcorealg/Geometry/GeometryCore.h"
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/TPCGeo.h"
-#include "larcorealg/Geometry/PlaneGeo.h"
-#include "larcorealg/Geometry/WireGeo.h"
+
 #include "lardataobj/RecoBase/Wire.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Track.h"
@@ -108,6 +103,16 @@ public:
 
     fhicl::Atom<float> ShowerThresh { Name("ShowerThresh"),      
 	Comment("Threshold used to determine if a shower or not. ") };
+
+    fhicl::Atom<bool> Data { Name("Data"),      
+	Comment("True for Data, False for MC") };
+
+    fhicl::Atom<bool> Verbose { Name("Verbose"),      
+	Comment("Boolean for printouts") };
+
+    fhicl::Atom<bool> RemoveOrSelect { Name("RemoveOrSelect"),      
+	Comment("True for Select and False for Remove") };
+
   
   };
   
@@ -149,6 +154,13 @@ private:
   TH1F* fProbHitShower;
   TH1F* fProbHitNothing;
 
+  TH1F* fProbBoxTrack;
+  TH1F* fProbBoxShower;
+
+  TH1F* fRejectionModes;
+
+  TH1F* momo;
+
   nnet::PointIdAlg fPointIdAlg;
   art::InputTag fWireProducerLabel;
   art::InputTag fHitModuleLabel;
@@ -156,6 +168,11 @@ private:
   art::InputTag fWC2TPCModuleLabel;
   art::InputTag fWCTrackLabel;
   float fShowerThresh;
+  bool bData;
+  bool bVerbose;
+  bool bRemoveOrSelect;
+
+
 
 };
 
@@ -168,19 +185,15 @@ NNShowerFilter::NNShowerFilter(NNShowerFilter::Parameters const & config)
     fTrackModuleLabel(config().TrackModuleLabel()),
     fWC2TPCModuleLabel(config().WC2TPCModuleLabel()),
     fWCTrackLabel(config().WCTrackLabel()),
-    fShowerThresh(config().ShowerThresh())
+    fShowerThresh(config().ShowerThresh()),
+    bData(config().Data()),
+    bVerbose(config().Verbose()),
+    bRemoveOrSelect(config().RemoveOrSelect())
 {
   // Call appropriate produces<>() functions here.
 }
 
 bool NNShowerFilter::filter(art::Event & event) { 
-
-  // WC info
-  art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
-  std::vector<art::Ptr<ldp::WCTrack> > wctrack;
-   
-  if(event.getByLabel(fWCTrackLabel, wctrackHandle))
-    art::fill_ptr_vector(wctrack, wctrackHandle);
 
   // Wire info
   art::Handle< std::vector<recob::Wire> > WireHandle;
@@ -206,8 +219,221 @@ bool NNShowerFilter::filter(art::Event & event) {
   // Association between Tracks and 2d Hits
   art::FindManyP<recob::Track> ass_trk_hits(HitHandle,   event, fTrackModuleLabel);
 
-  // Association between Tracks and WC event
-  art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, event, fWC2TPCModuleLabel);
+  // WC face
+  double xface = 0.0; double yface = 0.0;
+
+  // MC vs Data difference
+  if(bData) {
+    if(bVerbose) { std::cout << " Data event. " << std::endl; }
+
+   // WC info
+    art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
+    std::vector<art::Ptr<ldp::WCTrack> > wctrack;
+   
+    if(event.getByLabel(fWCTrackLabel, wctrackHandle))
+      art::fill_ptr_vector(wctrack, wctrackHandle);
+
+    // Association between Tracks and WC event
+    //art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, event, fWC2TPCModuleLabel);
+
+    // requires single WC track
+    if(wctrack.size() != 1) { fRejectionModes->Fill(1.0); return false; }
+
+    xface = wctrack[0]->XYFace(0);
+    yface = wctrack[0]->XYFace(1);
+
+    if(bVerbose) { std::cout << "Data WC projection (" << xface << ", " << yface << ")" << std::endl; }
+
+  } else {
+    if(bVerbose) { std::cout << " MC event. " << std::endl; }
+
+    // BackTracker service ===
+    art::ServiceHandle<cheat::BackTracker> bt;
+    const sim::ParticleList& plist = bt->ParticleList();
+
+    std::vector<const simb::MCParticle* > geant_part;     
+    for(size_t p = 0; p < plist.size(); ++p) { geant_part.push_back(plist.Particle(p)); }
+
+    bool found = false;
+
+    for(unsigned int i = 0; i < geant_part.size(); ++i ) {
+      if(geant_part[i]->Process() != "primary") { continue; }
+
+      // <x, y, z> = <px, py, pz> * t + <startx, starty, startz>
+      // (z - startz) / pz = t
+      // x = px * t + startx
+      // y = px * t + srarty
+      
+      // intercept time
+      double t = (0.0 - geant_part[i]->Vz()) / geant_part[i]->Pz(); 
+
+      xface = geant_part[i]->Px() * t + geant_part[i]->Vx(); 
+      yface = geant_part[i]->Py() * t + geant_part[i]->Vy();
+    
+      found = true;
+    }
+
+    if(!found) { 
+      if(bVerbose) { std::cout << "Could not find an MC WC-TPC match!" << std::endl; } 
+      fRejectionModes->Fill(1.0); 
+      return false; 
+    }
+
+    if(bVerbose) { std::cout << "MC TPC face intercept - " << xface << " " << yface << std::endl; }
+
+  }
+
+
+  // ----- 
+  // Need to create box on Wire / TDC view starting from where WC projects into the event
+  // Complicated because we are going to 3D space to Wire / TDC, reverse to normal progression
+  //
+  // First, start with tracks (3D object)
+  //   find track closest to the projected WC track
+  // If track is close enough, find associated hit that is lowest wire number
+  // This hit is start point of box, then run for every hit in box
+  // ---
+
+  float total_shower_prob = 0.0;
+  int num_hits = 0;
+
+  // First, find closest track to the projected WC track
+  double lowest_dist = 100.0;
+  double closest_track_index = 0;
+
+
+
+  bool changed = false;
+
+  for(size_t i = 0; i < Tracklist.size(); i++) {
+    if(bVerbose) { 
+      std::cout << "Start of track: " << Tracklist[i]->Start().X() << " " << Tracklist[i]->Start().Y() << " " << Tracklist[i]->Start().Z() << std::endl;
+      std::cout << "End of track: "   << Tracklist[i]->End().X()   << " " << Tracklist[i]->End().Y()   << " " << Tracklist[i]->End().Z()   << std::endl;
+    }
+    
+    // Require track starts (or ends if backwards) within the first 10 cm of TPC
+    if(Tracklist[i]->Start().Z() > 10. and Tracklist[i]->End().Z() > 10.) { continue; }
+
+    if(TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + 
+		   TMath::Power(Tracklist[i]->Start().Y() - yface, 2) +
+		   TMath::Power(Tracklist[i]->Start().Z(), 2)) < lowest_dist) {
+      closest_track_index = i;
+      lowest_dist = TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + 
+				TMath::Power(Tracklist[i]->Start().Y() - yface, 2) +
+				TMath::Power(Tracklist[i]->Start().Z(), 2));
+      changed = true;
+    }
+
+  }
+
+  if(bVerbose) { std::cout << "lowest dist = " << lowest_dist << " at " << closest_track_index << std::endl; }
+
+  // If it didn't change, couldn't find a track match, so we Reject this event
+  if(!changed) { 
+    if(bVerbose) { std::cout << "No new track found ... " << std::endl; }
+    fRejectionModes->Fill(2.0);
+    return false; 
+  }
+
+
+
+  // Now, we find the lowest Hit on that very same track (hit with lowest wireid)
+  int lowest_hit = -1;
+  for(size_t iHit = 0; iHit < Hitlist.size(); ++iHit) {
+    if(Hitlist[iHit]->View() != 1) { continue; }    
+    if(ass_trk_hits.at(iHit).size() == 0) { continue; }
+    if(ass_trk_hits.at(iHit)[0]->ID() != Tracklist[closest_track_index]->ID()) { continue; }
+
+    if(lowest_hit == -1) { lowest_hit = iHit; }
+      
+    if(Hitlist[iHit]->WireID().Wire < Hitlist[lowest_hit]->WireID().Wire) { lowest_hit = iHit; changed = true; }       
+  }
+
+  if(bVerbose) { std::cout << "lowest hit number = " << lowest_hit << " at wire ID " << Hitlist[lowest_hit]->WireID() << std::endl; }
+
+  // If we for some reason didn't find any hits on this track, we reject this event
+  if(lowest_hit == -1) {   
+    if(bVerbose) { std::cout << "lowest_hit never initialized" << std::endl; } 
+    fRejectionModes->Fill(3.0);
+    return false; 
+  }
+
+  float inter = Hitlist[lowest_hit]->PeakTime();
+  float offset = Hitlist[lowest_hit]->WireID().Wire;
+
+  if(inter > 3000.) { 
+    if(bVerbose) { std::cout << " Failed match ... " << std::endl; } 
+    fRejectionModes->Fill(4.0);
+    return false; 
+  }
+
+  // Setting wire data into CNN 
+  fPointIdAlg.setWireDriftData(*WireHandle, 1, 0, 0);
+
+  for(size_t jHit = 0; jHit < Hitlist.size(); ++jHit) {
+    //std::cout << jHit << " of " << Hitlist.size() << " ";
+
+    if(Hitlist[jHit]->View() != 1) { continue; }    
+
+    int wireID = Hitlist[jHit]->WireID().Wire;
+    int hitTime = Hitlist[jHit]->PeakTime();
+
+    // Box --- --- 
+    if(wireID > (offset+100) or wireID < offset) { continue; }
+    if(hitTime > inter + 250 or hitTime < inter - 250) { continue; }
+    // --- --- ---
+
+    if(hitTime > 3000.) {  if(bVerbose) { std::cout << "too hit high time ... " << std::endl; } continue; }
+    if(wireID > 240.)   {  if(bVerbose) { std::cout << "too hit high wire ... " << std::endl; } continue; }
+
+    if(bVerbose) { std::cout << " wireID, hitTime about to do vector " << wireID << " " << hitTime << std::endl; }
+
+    std::vector<float> results = fPointIdAlg.predictIdVector(wireID, hitTime);  
+
+    if(bVerbose) { std::cout << "CNN results " << results[0] << " " << results[1] << " " << results[2] << " " << std::endl; }
+
+    results[0] += results[2];
+
+    std::vector<float> temp_results = results;
+
+    results[0] = temp_results[0] / (temp_results[0] + temp_results[1]); // + temp_results[2]);
+    results[1] = temp_results[1] / (temp_results[0] + temp_results[1]); // + temp_results[2]);
+    //results[2] = temp_results[2] / (temp_results[0] + temp_results[1] + temp_results[2]);
+
+    if(bVerbose) { std::cout << "Normalized CNN results " << results[0] << " " << results[1] << " " << results[2] << " " << std::endl; }
+
+    total_shower_prob += results[1];
+    num_hits += 1;
+
+    fProbHitTrack->Fill(results[0]);
+    fProbHitShower->Fill(results[1]);
+    fProbHitNothing->Fill(results[2]);
+
+    fMapTrack->Fill(wireID, hitTime, results[0]);
+    fMapShower->Fill(wireID, hitTime, results[1]);
+    fMapNothing->Fill(wireID, hitTime, results[2]);
+
+  }
+
+
+  total_shower_prob /= float(num_hits);
+  fProbBoxShower->Fill(total_shower_prob);
+  if(bVerbose) { std::cout << "shower prob = " << total_shower_prob; }
+
+  // Select things above this threshold
+  if(bRemoveOrSelect) { return (total_shower_prob > fShowerThresh); }
+  // Remove things above this threshold
+  else { return (total_shower_prob < fShowerThresh); }
+
+
+
+
+
+
+
+
+    /*
+
 
   // Requiring one WC-TPC match
   if(fWC2TPC.size() != 1) { return false; }
@@ -252,6 +478,8 @@ bool NNShowerFilter::filter(art::Event & event) {
     } // End of hitlist.size
 
   }
+    */
+
 
   // Plotting average NN outputs for each hit in a track
   /*
@@ -260,11 +488,11 @@ bool NNShowerFilter::filter(art::Event & event) {
   std::cout << "\n\n";
   */
 
-  fProb0->Fill(probs[0] / numHits);
-  fProb1->Fill(probs[1] / numHits);
-  fProb2->Fill(probs[2] / numHits);
+  //fProb0->Fill(probs[0] / numHits);
+  //fProb1->Fill(probs[1] / numHits);
+  //fProb2->Fill(probs[2] / numHits);
   
-  return ((probs[1] / numHits) > fShowerThresh);
+  //return //((probs[1] / numHits) > fShowerThresh);
 
 }
 
@@ -277,9 +505,13 @@ void NNShowerFilter::beginJob()
   fProb1 = tfs->make<TH1F>("fProb1","fProb1",50, 0.0, 1.0);
   fProb2 = tfs->make<TH1F>("fProb2","fProb2",50, 0.0, 1.0);
 
+  momo = tfs->make<TH1F>("momo","momo",20, 0.0, 1500.0);
+
   fProbHitTrack = tfs->make<TH1F>("fProbHitTrack","fProbHitTrack",50, 0.0, 1.0);
   fProbHitShower = tfs->make<TH1F>("fProbHitShower","fProbHitShower",50, 0.0, 1.0);
   fProbHitNothing = tfs->make<TH1F>("fProbHitNothing","fProbHitNothing",50, 0.0, 1.0);
+
+  fProbBoxShower = tfs->make<TH1F>("fProbBoxShower","fProbBoxShower",50, 0.0, 1.0);
 
   fMapTrack = tfs->make<TH2F>("fMapTrack","fMapTrack",500, 0.0, 500.0, 300, 0.0, 3000.); 
   fMapShower = tfs->make<TH2F>("fMapShower","fMapShower",500, 0.0, 500.0, 300, 0.0, 3000.); 
@@ -288,6 +520,8 @@ void NNShowerFilter::beginJob()
   fMapTrack->GetZaxis()->SetRangeUser(0.0, 1.0);
   fMapShower->GetZaxis()->SetRangeUser(0.0, 1.0);
   fMapNothing->GetZaxis()->SetRangeUser(0.0, 1.0);
+
+  fRejectionModes = tfs->make<TH1F>("RejectionModes","RejectionModes",10, 0.0, 10.0);
 
 }
 
