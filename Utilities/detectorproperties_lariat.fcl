@@ -2,23 +2,52 @@
 
 BEGIN_PROLOG
 
-lariat_detproperties:                   @local::standard_detproperties
+#lariat_detproperties:                   @local::standard_detproperties
 
-lariat_detproperties.service_provider: "DetectorPropertiesServiceLArIAT"
-lariat_detproperties.GetElectronlifetimeFromDB: true
-lariat_detproperties.UseDatabaseForMC: false
+#lariat_detproperties.service_provider: "DetectorPropertiesServiceLArIAT"
+#lariat_detproperties.GetElectronlifetimeFromDB: true
+#lariat_detproperties.UseDatabaseForMC: false
 
-lariat_detproperties.Temperature:       88.4  #(measured in ArgoNeut)
-lariat_detproperties.Efield:            [0.481,0.700,0.890]  #(measured in ArgoNeut)
-lariat_detproperties.Electronlifetime: 1600
+#lariat_detproperties.Temperature:       88.4  #(measured in ArgoNeut)
+#lariat_detproperties.Efield:            [0.481,0.700,0.890]  #(measured in ArgoNeut)
+#lariat_detproperties.Electronlifetime: 1600
 
-lariat_detproperties.ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
-lariat_detproperties.NumberTimeSamples: 3072
-lariat_detproperties.TimeOffsetU:       0.
-lariat_detproperties.TimeOffsetV:       0.
-lariat_detproperties.TimeOffsetZ:       0.
-lariat_detproperties.ReadOutWindowSize: 3072
-lariat_detproperties.InheritNumberTimeSamples: false
+#lariat_detproperties.ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
+#lariat_detproperties.NumberTimeSamples: 3072
+#lariat_detproperties.TimeOffsetU:       0.
+#lariat_detproperties.TimeOffsetV:       0.
+#lariat_detproperties.TimeOffsetZ:       0.
+#lariat_detproperties.ReadOutWindowSize: 3072
+#lariat_detproperties.InheritNumberTimeSamples: false
+
+lariat_detproperties:
+{
+  service_provider: "DetectorPropertiesServiceLArIAT"
+  GetElectronlifetimeFromDB: true
+  UseDatabaseForMC: false
+
+  Temperature:       88.4  #(measured in ArgoNeut)
+  Efield:            [0.481,0.700,0.890]  #(measured in ArgoNeut)
+  Electronlifetime: 1600
+
+  ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
+  NumberTimeSamples: 3072
+  TimeOffsetU:       0.
+  TimeOffsetV:       0.
+  TimeOffsetZ:       0.
+  ReadOutWindowSize: 3072
+  InheritNumberTimeSamples: false
+
+  SternheimerA:     0.1956  # Ar Sternheimer parameter a.
+  SternheimerK:     3.0000  # Ar Sternheimer parameter k.
+  SternheimerX0:    0.2000  # Ar Sternheimer parameter x0.
+  SternheimerX1:    3.0000  # Ar Sternheimer parameter x0.
+  SternheimerCbar:  5.2146  # Ar Sternheimer parameter Cbar.
+
+  # PARAMETER NOT RECOGNIZED IN v06_44_00 
+  #SimpleBoundaryProcess: true  #enable opticalBoundaryProcessSimple instead of G4 default
+
+}
 
 
 END_PROLOG
