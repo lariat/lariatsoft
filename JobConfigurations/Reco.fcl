@@ -260,7 +260,7 @@ physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.calo.CaloAlg.CalAreaConstants: [0.025,0.052] # DocDB 2513
 #physics.producers.pandoracalo.TrackModuleLabel:                   "pandora"
 #physics.producers.pandoracalo.SpacePointModuleLabel:              "pandora"
 #physics.producers.pandoracalo.CaloAlg.CalAreaConstants: [0.0247,0.048]

@@ -19,7 +19,7 @@
 #include "test/Geometry/ChannelMapStandardTestAlg.h"
 #include "larcorealg/TestUtils/boost_unit_test_base.h"
 #include "larcorealg/Geometry/GeometryCore.h"
-#include "lariatsoft/Geo/ChannelMapLArIATAlg.h"
+#include "Geo/ChannelMapLArIATAlg.h"
 
 // utility libraries
 #include "messagefacility/MessageLogger/MessageLogger.h"
