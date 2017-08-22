@@ -6,8 +6,7 @@
 ## Daniel Smith
 ## dansmith@bu.edu
 
-process_name: NNShowerFilterNewio
-
+process_name: NNShowerFilter
 
 services:
 {
@@ -55,32 +54,12 @@ outputs:
 }
 
 physics.filters.ShowerFilt.ShowerThresh: 0.75
-physics.filters.ShowerFilt.Data: true
-physics.filters.ShowerFilt.Verbose: true
-physics.filters.ShowerFilt.RemoveOrSelect: true # removes things above the threshold
+physics.filters.ShowerFilt.RemoveOrSelect: true # selects things above the threshold
 
-physics.filters.ShowerFilt.PointIdAlg.NNetModelFile: "/lariat/data/users/dsmith/nnclassifier/correct_sigmoid_may27.nnet"
-physics.filters.ShowerFilt.PointIdAlg.PatchSizeW: 32     # how many wires in patch
-physics.filters.ShowerFilt.PointIdAlg.PatchSizeD: 40     # how many downsampled ADC entries
-
-physics.filters.ShowerFilt.PointIdAlg.DriftWindow: 13      # downsampling window in drift ticks
-physics.filters.ShowerFilt.PointIdAlg.DownscaleFn: "mean" # downsampling function
-physics.filters.ShowerFilt.PointIdAlg.CalibrateAmpl: true
-physics.filters.ShowerFilt.PointIdAlg.DownscaleFullView: true
-physics.filters.ShowerFilt.PointIdAlg.BlurKernel: []
-physics.filters.ShowerFilt.PointIdAlg.NoiseSigma: 0.0
-physics.filters.ShowerFilt.PointIdAlg.CoherentSigma: 0.0
-
-
-physics.filters.ShowerFilt.WireLabel: "caldata"
+physics.filters.ShowerFilt.NNetModuleLabel: "emtrkmichelid:emtrkmichel:EvtFilterMaker"
+physics.filters.ShowerFilt.HitModuleLabel: "linecluster"
 physics.filters.ShowerFilt.TrackModuleLabel: "pmtrack"
-physics.filters.ShowerFilt.WC2TPCModuleLabel: WC2TPCtrk
-physics.filters.ShowerFilt.WCTrackLabel: wctrack
+physics.filters.ShowerFilt.WCTrackLabel: "wctrack"
 
-
-physics.filters.ShowerFilt.PointIdAlg.CalorimetryAlg.CalAreaConstants: [6.8e-3, 1.53e-2]           # As outlined in Reco.fcl
-physics.filters.ShowerFilt.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 1.18e-3, 1.8e-2] # Multiplied by 15 to normalize 
-physics.filters.ShowerFilt.PointIdAlg.CalorimetryAlg.CaloUseModBox: true
-physics.filters.ShowerFilt.PointIdAlg.CalorimetryAlg.CaloLifeTimeForm: 0
-
-services.DetectorPropertiesService.GetElectronlifetimeFromDB: false
+physics.filters.ShowerFilt.Data: true
+physics.filters.ShowerFilt.Verbose: false
