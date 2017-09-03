@@ -99,6 +99,19 @@ MaxNTracksUpstream:	4	# maximum number of tracks which can be in this upstream p
 }
 
 
+lariat_wcquality:
+{
+module_type:		WCQualityFilter
+
+TOFModuleLabel: "tof"
+WCTrackLabel: "wctrack"
+fNumberWCTrack: 1
+fMassUpperLimit: 700.0
+fMassLowerLimit: 300.0
+
+
+}
+
 lariat_stoppingtracksfilter:
 {
 module_type:		StoppingTracksFilter
