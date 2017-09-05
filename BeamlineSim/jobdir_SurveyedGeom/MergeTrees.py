@@ -65,7 +65,7 @@ subspillcount  = options.subspillcount
 keepitlocal    = options.keepitlocal
 gammacutoff    = options.gammacutoff
 infile = args[0]
-
+jobsinspill    = subspillnumber%subspillcount
 ################################
 # Timing offset generator
 ################################
@@ -85,7 +85,7 @@ filledbatches = (1,2,3,4,5,6) # (out of BatchesPerOrbit)
 # time structure of the Fermilab Test Beam Facility's beam
 def RandomOffsetSeconds ():
     subspillduration = spillduration/subspillcount
-    subspilltimewindow_early = subspillnumber * subspillduration
+    subspilltimewindow_early = jobinspill * subspillduration
     subspilltimewindow_late = subspilltimewindow_early + subspillduration
     offset = -1
     while offset < subspilltimewindow_early or offset >= subspilltimewindow_late:

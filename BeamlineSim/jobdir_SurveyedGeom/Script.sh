@@ -18,6 +18,7 @@ echo "jobsize is: $jobsize"
 echo "first = $first"
 echo "last = $last"
 SUBSPILL=$((${PROCESS}+1 ))
+Particlesperspill=$jobsize * $SUBspillcount
 ifdh cp path/input input
 ifdh cp path/MergeTrees.py MergeTrees.py
 ls -lrth
@@ -26,7 +27,7 @@ ls -lrth
 
 chmod 777 sim_input.root
 chmod 777 MergeTrees.py
-./MergeTrees.py sim_input.root --subspillnumber $SUBSPILL --subspillcount $SUBspillcount
+./MergeTrees.py sim_input.root --subspillnumber $SUBSPILL --subspillcount $SUBspillcount --spillsize $Particlesperspill
 chmod 777 MergedAtStartLinesim_input.root
 chmod 777 MergedAtStartLinesim_input.pickle
 ls -lrth

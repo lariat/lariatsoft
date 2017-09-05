@@ -40,6 +40,7 @@ beamNrg        = options.beamNrg
 jobcount     = options.jobcount
 jobsize      = options.jobsize
 spillsize    = options.spillsize
+jobsperspill= spillsize/jobsize
 olddir = args[0]
 
 ##__Use the number of arguments to decide if a replacement string has been given.__##
@@ -99,6 +100,8 @@ commands.getoutput('cp '+olddir+'/MergeFiles.sh '+newdirname+'/.')
 commands.getoutput('cp '+olddir+'/Jobsubmit.sh '+newdirname+'/.')
 #sedcount = "sed -i 's/-N X/-N "+str(jobcount)+"/' "+newdirname+"/Jobsubmit.sh "
 sedcount = "sed -i 's/X/"+str(jobcount)+"/' "+newdirname+"/Jobsubmit.sh "
+commands.getoutput(sedcount)
+sedcount = "sed -i 's/jobsperspill/"+str(jobsperspill)+"/' "+newdirname+"/Jobsubmit.sh "
 #commands.getoutput('sed -i '+ ";s/-N X/-N "+str(jobcount)+"/g "+newdirname+"/Jobsubmit.sh ")
 commands.getoutput(sedcount)
 ################################################################
