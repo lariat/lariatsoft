@@ -30,7 +30,7 @@ lariat_detproperties:
   #Efield:            [0.481,0.700,0.890]  #(measured in ArgoNeut)
   #Electronlifetime: 1600
   
-  Temperature:        90.7  #(E-field study, DocDB 2750)
+  Temperature:        90.3  #(E-field study, DocDB 2750)
   Efield:             [0.4865,0.700,0.890]  #(E-field study, DocDB 2750)
   Electronlifetime:   1600
 

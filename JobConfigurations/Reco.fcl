@@ -1,6 +1,6 @@
 #include "services_lariat.fcl"
 #include "caldata_lariat.fcl"
-#include "hitfindermodules.fcl"
+#include "hitfindermodules_lariat.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"
@@ -16,7 +16,7 @@
 #include "cluster_lariat.fcl"
 #include "showerfindermodules.fcl"
 ##include "pandoramodules.fcl"
-##include "resourcetracking_services.fcl"
+#include "resourcetracking_services.fcl"
  
 process_name: Reco2D
 
@@ -74,7 +74,7 @@ physics:
   caldata:              @local::lariat_calroi
 
   ### hit-finder producers ###
-  gaushit:             @local::gaus_hitfinder
+  gaushit:             @local::lariat_gaushitfinder
   cchit:               @local::standard_clustercrawlerhit
 
   ### cluster-finder producers
@@ -158,7 +158,6 @@ physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.caldata.DodQdxCalib:                          true
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
-physics.producers.gaushit.Chi2NDFRetry:                          1000.
 
 physics.producers.linecluster.HitFinderModuleLabel: "gaushit"
 physics.producers.linecluster.ClusterCrawlerAlg.NumPass: 3      # Number of passes through the hit collection
