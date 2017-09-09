@@ -1,7 +1,7 @@
 #include "services_lariat.fcl"
 #include "caldata_lariat.fcl"
 ##include "triggeralgo_service.fcl"
-#include "hitfindermodules.fcl"
+#include "hitfindermodules_lariat.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"
@@ -58,7 +58,7 @@ physics:
   caldata:              @local::lariat_calroi
 
   ### hit-finder producers ###
-   gaushit:             @local::gaus_hitfinder
+   gaushit:             @local::lariat_gaushitfinder
    cchit:               @local::standard_clustercrawlerhit
 #  rffhit:              @local::lariat_rffhitfinder   
 

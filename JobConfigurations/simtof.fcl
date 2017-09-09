@@ -1,6 +1,6 @@
 #include "services_lariat.fcl"
 #include "caldata_lariat.fcl"
-#include "hitfindermodules.fcl"
+#include "hitfindermodules_lariat.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"

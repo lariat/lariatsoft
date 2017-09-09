@@ -5,7 +5,7 @@ import os
 import pickle
 import time
 from timeit import default_timer
-
+import resource
 parser = optparse.OptionParser("usage: %prog /inputdirectory/ \n")
 parser.add_option ('-v', dest='debug', action="store_true", default=False,
                    help="Turn on verbose debugging.")
@@ -91,13 +91,13 @@ print filebasename
 for spill in SpilltoProcessDict.keys():
   start=default_timer()
   print "Starting to merge pickle for Spill: "+str(spill)
-  outputpicklefilename=outputfilebase+"Spill"+str(spill)+".pickle"
+  outputpicklefilename=outputfilebase+str(spill)+".pickle"
   MergeDict = {} #The final merged dictionary. Can contain multiple spills.
   start = default_timer()
   if spill not in MergeDict.keys():
     MergeDict[spill]={}
   for process in SpilltoProcessDict[spill]:
-    print "currently there are "+str(len(MergeDict[spill]))+" times in the Merged Dictionary"
+    print "currently there are "+str(len(MergeDict[spill]))+" times in the Merged Dictionary. We've used {} MB of memory".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
     print "Starting to merge pickle for Process: "+str(process)
     print default_timer()-start
     processfilename=inpath+"/"+filebasename+process+".pickle"
