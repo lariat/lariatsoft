@@ -9,7 +9,7 @@ lariat_mc_hitfinder.AreaNorms: [ 12.89, 14.51 ]
 lariat_gaushitfinder:                             @local::gaus_hitfinder
 lariat_gaushitfinder.MinSig:                      [ 6.0, 11.0 ] # thresholds for hit-finding
 lariat_gaushitfinder.FilterHits:                  true          # filter noise hits
-lariat_gaushitfinder.AllHitsInstanceName:         "allhits"
+lariat_gaushitfinder.AllHitsInstanceName:         ""  # IF using larreco v06_39_00 or lower, must provide name or NO filtering will take place (this is corrected only in larreco v06_39_01+)
 lariat_gaushitfinder.HitFilterAlg.MinPulseSigma:  [ 4.0, 6.0 ]  
 
 END_PROLOG
