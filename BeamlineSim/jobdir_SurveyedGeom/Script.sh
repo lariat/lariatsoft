@@ -18,7 +18,7 @@ echo "jobsize is: $jobsize"
 echo "first = $first"
 echo "last = $last"
 SUBSPILL=$((${PROCESS}+1 ))
-Particlesperspill=$jobsize * $SUBspillcount
+Particlesperspill=$((${jobsize} * ${SUBspillcount}))
 ifdh cp path/input input
 ifdh cp path/MergeTrees.py MergeTrees.py
 ls -lrth
