@@ -173,8 +173,6 @@ physics.producers.pmtrack.RunVertexing: true
 services.DetectorPropertiesService.TimeOffsetV: 0.0
 services.DetectorPropertiesService.Electronlifetime: 1600
 ################################################################
-#physics.producers.calo.CaloAlg.CalAreaConstants: [0.031,0.076]
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.037,0.091]
 ################################################################
 
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
