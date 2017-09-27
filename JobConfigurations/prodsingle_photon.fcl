@@ -4,7 +4,7 @@
 #include "detsimmodules_lariat.fcl"
 #include "caldata_lariat.fcl"
 ##include "triggeralgo_service.fcl"
-#include "hitfindermodules.fcl"
+#include "hitfindermodules_lariat.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"
@@ -52,7 +52,7 @@ physics:
    largeant:  @local::lariat_largeant	  
    daq:       @local::lariat_simwire
    caldata:              @local::lariat_calroi 
-   gaushit:             @local::gaus_hitfinder 
+   gaushit:             @local::lariat_gaushitfinder 
    linecluster:          @local::standard_linecluster  
    pmtrack:              @local::standard_pmalgtrackmaker
    calo:                 @local::standard_calodata

@@ -1,7 +1,7 @@
 #include "services_lariat.fcl"
 #include "caldata_lariat.fcl"
 ##include "triggeralgo_service.fcl"
-#include "hitfindermodules.fcl"
+#include "hitfindermodules_lariat.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"
@@ -54,7 +54,7 @@ physics:
   caldata:              @local::lariat_calroi
 
   ### hit-finder producers ###
-   gaushit:             @local::gaus_hitfinder
+   gaushit:             @local::lariat_gaushitfinder
    cchit:               @local::standard_clustercrawlerhit
 #  rffhit:              @local::lariat_rffhitfinder   
 
@@ -203,35 +203,35 @@ physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
 physics.producers.showerreco.InputProducer:        "linecluster"
 
 #### Here we try to suppress known and pointless messages
-services.message.destinations :
-{
-  STDCOUT: 
-  {
-     type:      "cout"      #tells the message service to output this destination to cout
-     threshold: "WARNING"   #tells the message service that this destination applies to WARNING and higher level messages
-     append:     true       #says to append all messages to the output
-     categories:
-     {
-       ChannelFilter:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       TrackStitcher:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       CRHitRemoval:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       default:
-       {
-         limit: -1  #don't print anything at the infomsg level except the explicitly named categories
-         reportEvery: 1
-       }
-     }
-  }
-}
+#services.message.destinations :
+#{
+#  STDCOUT:
+#  {
+#     type:      "cout"      #tells the message service to output this destination to cout
+#     threshold: "WARNING"   #tells the message service that this destination applies to WARNING and higher level messages
+#     append:     true       #says to append all messages to the output
+#     categories:
+#     {
+#       ChannelFilter:
+#       {
+#         limit: 0
+#         reportEvery: 0
+#       }
+#       TrackStitcher:
+#       {
+#         limit: 0
+#         reportEvery: 0
+#       }
+#       CRHitRemoval:
+#       {
+#         limit: 0
+#         reportEvery: 0
+#       }
+#       default:
+#       {
+#         limit: -1  #don't print anything at the infomsg level except the explicitly named categories
+#         reportEvery: 1
+#       }
+#     }
+#  }
+#}

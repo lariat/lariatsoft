@@ -1,6 +1,6 @@
 #include "services_lariat.fcl"
 #include "caldata_lariat.fcl"
-#include "hitfindermodules.fcl"
+#include "hitfindermodules_lariat.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"
@@ -16,7 +16,7 @@
 #include "cluster_lariat.fcl"
 #include "showerfindermodules.fcl"
 ##include "pandoramodules.fcl"
-##include "resourcetracking_services.fcl"
+#include "resourcetracking_services.fcl"
  
 process_name: Reco2D
 
@@ -74,7 +74,7 @@ physics:
   caldata:              @local::lariat_calroi
 
   ### hit-finder producers ###
-  gaushit:             @local::gaus_hitfinder
+  gaushit:             @local::lariat_gaushitfinder
   cchit:               @local::standard_clustercrawlerhit
 
   ### cluster-finder producers
@@ -158,7 +158,6 @@ physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.caldata.DodQdxCalib:                          true
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
-physics.producers.gaushit.Chi2NDFRetry:                          1000.
 
 physics.producers.linecluster.HitFinderModuleLabel: "gaushit"
 physics.producers.linecluster.ClusterCrawlerAlg.NumPass: 3      # Number of passes through the hit collection
@@ -277,35 +276,35 @@ physics.producers.blurredcluster.BlurredClusterAlg.ClusterTickDistance: 50
 #### Here we try to suppress known and pointless messages
 physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,0.048]
 
-services.message.destinations :
-{
-  STDCOUT: 
-  {
-     type:      "cout"      #tells the message service to output this destination to cout
-     threshold: "WARNING"   #tells the message service that this destination applies to WARNING and higher level messages
-     append:     true       #says to append all messages to the output
-     categories:
-     {
-       ChannelFilter:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       TrackStitcher:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       CRHitRemoval:
-       {
-         limit: 0
-         reportEvery: 0
-       }
-       default:
-       {
-         limit: -1  #don't print anything at the infomsg level except the explicitly named categories
-         reportEvery: 1
-       }
-     }
-  }
-}
+#services.message.destinations :
+#{
+#  STDCOUT:
+#  {
+#     type:      "cout"      #tells the message service to output this destination to cout
+#     threshold: "WARNING"   #tells the message service that this destination applies to WARNING and higher level messages
+#     append:     true       #says to append all messages to the output
+#     categories:
+#     {
+#       ChannelFilter:
+#       {
+#         limit: 0
+#         reportEvery: 0
+#       }
+#       TrackStitcher:
+#       {
+#         limit: 0
+#         reportEvery: 0
+#       }
+#       CRHitRemoval:
+#       {
+#         limit: 0
+#         reportEvery: 0
+#       }
+#       default:
+#       {
+#         limit: -1  #don't print anything at the infomsg level except the explicitly named categories
+#         reportEvery: 1
+#       }
+#     }
+#  }
+#}

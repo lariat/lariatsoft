@@ -3,7 +3,7 @@
 #include "services_lariat.fcl"
 #include "lariatanamodules.fcl"
 #include "caldata_lariat.fcl"
-#include "hitfindermodules.fcl"
+#include "hitfindermodules_lariat.fcl"
 #include "cluster_lariat.fcl"
 #include "lariattrackfindermodules.fcl"
 #include "trackfindermodules_lariat.fcl"

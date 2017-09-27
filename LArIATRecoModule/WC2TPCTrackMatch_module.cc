@@ -127,7 +127,7 @@ WC2TPCTrackMatch::WC2TPCTrackMatch(fhicl::ParameterSet const & p)
 {
   // Call appropriate produces<>() functions here.
   this->reconfigure(p);
-  produces < art::Assns<ldp::WCTrack,recob::Track> >();
+  produces < art::Assns<recob::Track,ldp::WCTrack> >();
   //produces < std::vector<ldp::WCTrack> >();
 }
 
@@ -200,8 +200,8 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       // ##################################
       for(size_t wcCount = 0; wcCount < wctrack.size(); wcCount++)
 	{
-	  wctrk_XFace[nwctrk] = wctrack[nwctrk]->XYFace(0) * 0.1;//<---Note: *0.1 to convert to cm
-	  wctrk_YFace[nwctrk] = wctrack[nwctrk]->XYFace(1) * 0.1;//<---Note: *0.1 to convert to cm
+	  wctrk_XFace[nwctrk] = wctrack[nwctrk]->XYFace(0);// * 0.1;//<---Note: *0.1 to convert to cm
+	  wctrk_YFace[nwctrk] = wctrack[nwctrk]->XYFace(1);// * 0.1;//<---Note: *0.1 to convert to cm
 	  wctrk_theta[nwctrk] = wctrack[nwctrk]->Theta();
 	  wctrk_phi[nwctrk]   = wctrack[nwctrk]->Phi();
 	  wcTrackKey[nwctrk]  = wctrack[nwctrk].key();
@@ -472,7 +472,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	}//<---End aa loop
 
       
-      //std::cout<<"@@@@@@@@@@ MapSize = "<<mapCandidates.size()<<std::endl;
+      std::cout<<"@@@@@@@@@@ MapSize = "<<mapCandidates.size()<<std::endl;
       
       /////////////////////////////////////////////////
       //  Find the best match with then give metric  //
@@ -596,9 +596,9 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       //evt.put(std::move(WCTrackCol));
     }
   
-  
   evt.put(std::move(wcTpcTrackAssn));
-      
+  
+  
 }//<----End Event Loop
 
 // ---------------------- Begin Job ---------------------------
@@ -648,7 +648,7 @@ void WC2TPCTrackMatch::reconfigure(fhicl::ParameterSet const & p)
 {
   fTrackModuleLabel		= p.get< std::string >("TrackModuleLabel");
   fWCTrackLabel 		= p.get< std::string >("WCTrackLabel");
-  falpha			= p.get< double >("alpha", 20.0);
+  falpha			= p.get< double >("alpha", 10.0);
   fDeltaXLow			= p.get< double >("DeltaXLow", -2.0);
   fDeltaXHigh			= p.get< double >("DeltaXHigh", 6.0);
   fDeltaYLow			= p.get< double >("DeltaYLow", -3.0);
