@@ -14,7 +14,11 @@ parser.add_option ('-f', dest='force', action="store_true", default=False,
 parser.add_option ('-o', dest='outputfilename', default="", type='string',
                    help="The path and output file name for the .root and .pickle.")
 parser.add_option ('-n', dest='jobsperspill', default=-1, type='int',
-                   help="Number of jobs needed to make a spill")		   	  
+                   help="Number of jobs needed to make a spill")
+parser.add_option ('-r', dest='RootFileOnly', action="store_true", default=False,
+                   help='Only make the Root file, skip making the pickle file.')
+parser.add_option ('-p', dest='PickleFileOnly', action="store_true", default=False,
+                   help='Only make the Pickle file, skip making the root file.')	   		   	  
 		   
 options, args = parser.parse_args()
 inpath= args[0]
@@ -22,7 +26,8 @@ debug=options.debug
 force=options.force
 outputfilename=options.outputfilename
 jobsperspill=options.jobsperspill
-
+RootFileOnly=options.RootFileOnly
+PickleFileOnly=options.PickleFileOnly
 if outputfilename=="":
   exit("No output file name specified")
 
@@ -57,7 +62,9 @@ filebasename=""
 for file in sorted(filelist):
   if file.count("Amps")!=1: continue
   filebasename=file.split("Amps")[0]+"Amps"
+  print filebasename
   Process=file.split(".")[0].split("Amps")[1]
+  print Process
   Spill=((int(Process)-1)-(int(Process)-1)%jobsperspill)/jobsperspill+1
 
   #print Process, Spill
@@ -88,48 +95,50 @@ print filebasename
 #      pickle.dump(MergeDict,f)
 #    pickle.close()
 #
-for spill in SpilltoProcessDict.keys():
-  start=default_timer()
-  print "Starting to merge pickle for Spill: "+str(spill)
-  outputpicklefilename=outputfilebase+str(spill)+".pickle"
-  MergeDict = {} #The final merged dictionary. Can contain multiple spills.
-  start = default_timer()
-  if spill not in MergeDict.keys():
-    MergeDict[spill]={}
-  for process in SpilltoProcessDict[spill]:
-    print "currently there are "+str(len(MergeDict[spill]))+" times in the Merged Dictionary. We've used {} MB of memory".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
-    print "Starting to merge pickle for Process: "+str(process)
-    print default_timer()-start
-    processfilename=inpath+"/"+filebasename+process+".pickle"
-    if not os.path.isabs(processfilename):
-      exit("Trying to open a pickle file, {}, that does not exist.".format(processfilename))
-    Processdict=pickle.load(open(processfilename,"rb")) #open the individual pickle file for the job
-    if not spill in Processdict.keys():
-      exit("Tried to create Spill number {}, which does not exist for this pickle file {}. Did you use the correct value for JobsPerSpill (-n)?".format(spill, processfilename))
-    for time, entries in Processdict[spill].iteritems(): 
+if not RootFileOnly:
+  for spill in SpilltoProcessDict.keys():
+    start=default_timer()
+    print "Starting to merge pickle for Spill: "+str(spill)
+    outputpicklefilename=outputfilebase+"Spill"+str(spill)+".pickle"
+    MergeDict = {} #The final merged dictionary. Can contain multiple spills.
+    start = default_timer()
+    if spill not in MergeDict.keys():
+      MergeDict[spill]={}
+    for process in SpilltoProcessDict[spill]:
+      print "currently there are "+str(len(MergeDict[spill]))+" times in the Merged Dictionary. We've used {} MB of memory".format(resource.getrusage(resource.RUSAGE_SELF).ru_maxrss)
+      print "Starting to merge pickle for Process: "+str(process)
+      print default_timer()-start
+      processfilename=inpath+"/"+filebasename+process+".pickle"
+      if not os.path.isabs(processfilename):
+        exit("Trying to open a pickle file, {}, that does not exist.".format(processfilename))
+      Processdict=pickle.load(open(processfilename,"rb")) #open the individual pickle file for the job
+      if not spill in Processdict.keys():
+        exit("Tried to create Spill number {}, which does not exist for this pickle file {}. Did you use the correct value for JobsPerSpill (-n)?".format(spill, processfilename))
+      for time, entries in Processdict[spill].iteritems(): 
       #if not time in MergeDict[spill].keys():
         #MergeDict[spill][time]=[]
       #for iEntry in entries:
-      MergeDict[spill][time]=entries
-  with open(outputpicklefilename,"wb") as f:
-    pickle.dump(MergeDict,f)
-    print "Dictionary dumped to pickle"
-  #f.close()
-  
-#for spill in SpilltoProcessDict.keys():
-#  outputrootfilename=outputfilebase+"Spill"+str(spill)+".root"
-#  if force: 
-#    commandstr="hadd -f "+outputrootfilename+" "
-#  else: 
-#    commandstr="hadd "+outputrootfilename+" "
-#  for process in SpilltoProcessDict[spill]:
-#    processfilename=inpath+"/"+filebasename+process+".root "
-#    if not os.path.isabs(processfilename):
-#      exit("Trying to hadd a root file, {}, that does not exist.".format(processfilename))
-#    commandstr=commandstr+processfilename
-#  print commandstr
-  #os.system(commandstr)   
-      #print entries
+        MergeDict[spill][time]=entries
+    with open(outputpicklefilename,"wb") as f:
+      pickle.dump(MergeDict,f)
+      print "Dictionary dumped to pickle"
+      print entries
+    f.close()
+if not PickleFileOnly:  
+  for spill in SpilltoProcessDict.keys():
+    outputrootfilename=outputfilebase+"Spill"+str(spill)+".root"
+    if force: 
+      commandstr="hadd -f "+outputrootfilename+" "
+    else: 
+      commandstr="hadd "+outputrootfilename+" "
+    for process in SpilltoProcessDict[spill]:
+      processfilename=inpath+"/"+filebasename+process+".root "
+      if not os.path.isabs(processfilename):
+        exit("Trying to hadd a root file, {}, that does not exist.".format(processfilename))
+      commandstr=commandstr+processfilename
+    print commandstr
+    os.system(commandstr)   
+
     
   
 #    basename=file.split("Amps")[0]+"Amps"
