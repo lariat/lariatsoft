@@ -66,7 +66,7 @@ test           = options.test
 photoncutoff   = options.photoncutoff
 picklefilename = options.picklefilename
 infile         = args[0]
-
+os.system("date")
 ## Attempt to make picklefilename automatically
 if picklefilename == '': picklefilename=str(infile.split(".root")[0])+".pickle"
     
@@ -442,4 +442,4 @@ spillrange_str = 'Spill_'+str(lo_spill)+'thru'+str(lo_spill)
 if not (hi_spill-lo_spill == 0): 
     os.rename(outfilename,outfilename.replace('.txt',spillrange_str+'.txt')) # List both spill numbers if the difference is not 0.
 infile.Close()
-
+os.system("date")

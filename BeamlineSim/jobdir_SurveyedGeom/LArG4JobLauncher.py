@@ -22,14 +22,14 @@
 ##
 ## NOTE:  IT IS UP TO THE USER TO DO SOME PRE-EDITS TO THE XML/FCL FILE.
 ##
-## 1. You must edit the "FclDir" in the XML "entity" section to point to your "JobConfigurations" directory in lariatsoft.  IF NOT: You are going to edit MY version of prodtext_lariat.fcl in my JobConfigurations
+## 1. You must edit the "FclDir" in the XML "entity" section to point to a directory on the grid where you have prodtext_lariat.fcl and prodtext_lariat_edit.fcl  IF NOT: You are going to edit MY version of prodtext_lariat.fcl in my JobConfigurations
 ##
 ## 2. Change the base paths for the output and work directories for the job. This script only makes new directories at the end.  IF NOT: You are going to send files to my pnfs area.      
 ##
 ## 3  Edit prodtext_lariat.fcl, changing the Magnetic Field Descriptions at the bottom to have a B field consistent with the G4BL run. 
 ##    Somewhere in the text file name should be the current setting. For now, 100A=.35T, and positive polarity corresponds to a negative B_y (check yourself, with F=q(vxB))
 ##
-## usage: python LArG4JobLauncher.py /folder/where/you/have/saved/text/files/
+## usage: python LArG4JobLauncher.py /folder/where/you/have/saved/text/files/ This folder must be on pnfs, because grid reasons.
 ##
 ## Author: Greg Pulliam gkpullia@syr.edu
 

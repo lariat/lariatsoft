@@ -3,12 +3,12 @@
 <!-- Production Project -->
 
 <!DOCTYPE project [
-<!ENTITY release "v06_08_00">
+<!ENTITY release "v06_34_01">
 <!ENTITY file_type "digit">
 <!ENTITY run_type "physics"> 
 <!ENTITY name "LArG4">
 <!ENTITY tag "LArG4">
-<!ENTITY fclDir "/lariat/app/users/gpulliam/develop/srcs/lariatsoft/JobConfigurations/">
+<!ENTITY fclDir "/lariat/app/users/gpulliam/BeamSim/srcs/lariatsoft/JobConfigurations/">
 <!ENTITY jobnumber "0"> 
 ]>
 
@@ -23,20 +23,20 @@
   <!-- Batch resources -->
   <resource>DEDICATED,OPPORTUNISTIC</resource>
   <memory>8000</memory>
-  <disk>70GB</disk>
+  <disk>10GB</disk>
 
   <!-- Larsoft information -->
   <larsoft>
     <tag>&release;</tag>
     <qual>e10:debug</qual>
-    <local>/lariat/app/users/gpulliam/develop/local.tar</local>
+    <local>/pnfs/lariat/scratch/users/gpulliam/350kSpills/LArG4/local/G4BLtoLArG4.tar</local>
   </larsoft>
 
   <stage name="LArG4">
     <fcldir>&fclDir;</fcldir>
     <fcl>prodtext_lariat_edit.fcl</fcl>
-    <outdir>/pnfs/lariat/scratch/users/gpulliam/64GeVPos100_LArG4/&jobnumber;/</outdir>
-    <workdir>/lariat/app/users/gpulliam/develop/64GeVPos100_LArG4/&jobnumber;/</workdir>
+    <outdir>/pnfs/lariat/scratch/users/gpulliam/350kSpills/LArG4/outdir/&jobnumber;/</outdir>
+    <workdir>/pnfs/lariat/scratch/users/gpullian/350kSpills/LArG4/workdir/&jobnumber;/</workdir>
     <inputmode> textfile </inputmode>
     <inputfile>  </inputfile>
     <numjobs>1</numjobs>
