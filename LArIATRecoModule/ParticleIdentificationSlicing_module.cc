@@ -1287,11 +1287,10 @@ void ParticleIdentificationSlicing::beginJob()
   float dsTOFctr[3] = {0,0,0};
 
   //Testing the AuxDetGeo capabilitites
-  std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
   double centerOfDet[3] = {0,0,0};
   for( size_t iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
-    geo::AuxDetGeo* anAuxDetGeo = theAuxDetGeoVect.at(iDet);
-    anAuxDetGeo->GetCenter(centerOfDet);
+    geo::AuxDetGeo const& anAuxDetGeo = fGeo->AuxDet(iDet);
+    anAuxDetGeo.GetCenter(centerOfDet);
 
     //    LOG_VERBATIM("ParticleIdentificationSlicing") << "AuxDetGeo " << iDet << " center: (" << centerOfDet[0] << "," << centerOfDet[1] << "," << centerOfDet[2] << ")";
     //0 and 6 are US and DS TOF
