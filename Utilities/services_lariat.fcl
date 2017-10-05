@@ -41,6 +41,9 @@ lariat_services:
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
 
+lariat_services_run2:               @local::lariat_services
+lariat_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
+
 lariat_services_4mm:                @local::lariat_services
 
 lariat_services_5mm:                @local::lariat_services
@@ -74,6 +77,14 @@ lariat_simulation_services:
  #OpDetResponseInterface:      @local::lariat_opdetresponse
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
+lariat_simulation_services.DetectorPropertiesService.TimeOffsetU: 0.0
+lariat_simulation_services.DetectorPropertiesService.TimeOffsetV: 0.0
+lariat_simulation_services.DetectorPropertiesService.ElectronLifetime: 1600
 
+lariat_simulation_services_run2:  @local::lariat_simulation_services
+lariat_simulation_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
+lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetU: 0.0
+lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetV: 0.0
+lariat_simulation_services_run2.DetectorPropertiesService.ElectronLifetime: 1600
 
 END_PROLOG
