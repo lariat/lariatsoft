@@ -79,12 +79,12 @@ lariat_simulation_services:
 }
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetV: 0.0
-lariat_simulation_services.DetectorPropertiesService.ElectronLifetime: 1600
+lariat_simulation_services.DetectorPropertiesService.Electronlifetime: 1600
 
 lariat_simulation_services_run2:  @local::lariat_simulation_services
 lariat_simulation_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetV: 0.0
-lariat_simulation_services_run2.DetectorPropertiesService.ElectronLifetime: 1600
+lariat_simulation_services_run2.DetectorPropertiesService.Electronlifetime: 1600
 
 END_PROLOG
