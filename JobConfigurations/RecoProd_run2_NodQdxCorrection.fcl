@@ -28,7 +28,7 @@ services:
  #@table::standard_resourcetrackers
   RandomNumberGenerator: {} #ART native random number generator
   #message:      @local::lariat_message_services
-  @table::lariat_services
+  @table::lariat_services_run2
 }
 #services.DatabaseUtil.ShouldConnect: false
 services.scheduler.SkipEvent: [ ProductNotFound ]
@@ -229,9 +229,6 @@ physics.producers.cctrack.MatchAlgs: 1
 #services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
 #services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
 #services.SignalShapingServiceT1034.UseHistogramFieldShape: true
-#services.DetectorPropertiesService.TimeOffsetV: -13.2
-services.DetectorPropertiesService.TimeOffsetV: -2.0
-services.DetectorPropertiesService.Electronlifetime: 1600
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
