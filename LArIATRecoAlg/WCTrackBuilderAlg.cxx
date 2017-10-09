@@ -37,18 +37,17 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
   this->reconfigure(pset);
   fB_field_tesla=fMCMagneticField;
   //Testing the AuxDetGeo capabilitites
-  std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = fGeo->AuxDetGeoVec();
   double centerOfDet[3] = {0,0,0};
   for( size_t iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
-    geo::AuxDetGeo* anAuxDetGeo = theAuxDetGeoVect.at(iDet);
-    std::string detName = anAuxDetGeo->Name();
+    geo::AuxDetGeo const& anAuxDetGeo = fGeo->AuxDet(iDet);
+    std::string detName = anAuxDetGeo.Name();
     size_t wcnum = 999;
     if( detName == "volAuxDetSensitiveWC1") wcnum = 1;
     if( detName == "volAuxDetSensitiveWC2") wcnum = 2;
     if( detName == "volAuxDetSensitiveWC3") wcnum = 3;
     if( detName == "volAuxDetSensitiveWC4") wcnum = 4;
     if( wcnum != 999 ){
-      anAuxDetGeo->GetCenter(centerOfDet);
+      anAuxDetGeo.GetCenter(centerOfDet);
       fX_cntr[wcnum-1] = centerOfDet[0] * CLHEP::cm;
       fY_cntr[wcnum-1] = centerOfDet[1] * CLHEP::cm;
       fZ_cntr[wcnum-1] = centerOfDet[2] * CLHEP::cm;
