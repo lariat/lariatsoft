@@ -48,6 +48,7 @@ tpcreco: [ caldata,
            showerreco,
            pmtrack,
            pmtracktc,
+           pmtrajfit,
            calo,
            pid
 #           pandoracalo,
@@ -83,10 +84,11 @@ physics:
   blurredcluster:       @local::standard_blurredcluster
 
   ### track-finder producers
-  costrk:               @local::standard_cosmictracker
+  #costrk:               @local::standard_cosmictracker
   pmtrack:              @local::standard_pmalgtrackmaker
   pmtracktc:            @local::standard_pmalgtrackmaker
-  cctrack:              @local::standard_cctrackmaker
+  pmtrajfit:            @local::standard_pmalgtrajfitter
+  #cctrack:              @local::standard_cctrackmaker
   
   ### Shower-Finder producers
   showerreco:  	 	@local::standard_showerreco3d
@@ -198,17 +200,14 @@ physics.producers.linecluster.ClusterCrawlerAlg.DebugPlane: -1
 physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  0
 physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
-physics.producers.trajcluster.TrajClusterAlg.FillTruth: 0
-physics.producers.trajcluster.TrajClusterAlg.StudyMode: false
-physics.producers.trajcluster.TrajClusterAlg.DebugPlane:     -1
-physics.producers.trajcluster.TrajClusterAlg.DebugWire:       0
-physics.producers.trajcluster.TrajClusterAlg.DebugTick:       0
+#physics.producers.trajcluster.TrajClusterAlg.MinPts: [10,3,2]
+#physics.producers.trajcluster.TrajClusterAlg.Match3DCuts: [ 0.3, 0.1, 2, 0.5 ]
+#physics.producers.trajcluster.TrajClusterAlg.SkipAlgs: [  "VtxHitsSwap", "SplitHiChgHits", "CTKink", "HED", "Split
 physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:     0
+physics.producers.trajcluster.TrajClusterAlg.DebugPlane: -1
+physics.producers.trajcluster.TrajClusterAlg.DebugWire: 0
+physics.producers.trajcluster.TrajClusterAlg.DebugTick: 0
 
-
-physics.producers.costrk.ClusterModuleLabel:  "linecluster"
-physics.producers.costrk.VertexModuleLabel:   "linecluster"
-physics.producers.costrk.ClusterMatch.KSCut:  0.5
 physics.producers.pmtrack.ClusterModuleLabel: "linecluster"
 physics.producers.pmtrack.HitModuleLabel:     "linecluster"
 physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
@@ -216,15 +215,15 @@ physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
 physics.producers.pmtrack.PMAlgTracking.RunVertexing: true
 
 physics.producers.pmtracktc.ClusterModuleLabel: "trajcluster"
-physics.producers.pmtracktc.HitModuleLabel:     "gaushit"
+physics.producers.pmtracktc.HitModuleLabel:     "trajcluster"
 physics.producers.pmtracktc.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtracktc.PMAlgTracking.FlipToBeam: true
 physics.producers.pmtracktc.PMAlgTracking.RunVertexing: true
 
-physics.producers.cctrack.HitModuleLabel:     "linecluster"
-physics.producers.cctrack.ClusterModuleLabel: "linecluster"
-physics.producers.cctrack.VertexModuleLabel:  "linecluster"
-physics.producers.cctrack.MatchAlgs: 1
+physics.producers.pmtrajfit.HitModuleLabel:             "trajcluster"
+physics.producers.pmtrajfit.PfpModuleLabel:             "trajcluster"
+physics.producers.pmtrajfit.PMAlgFitting.RunVertexing:   true
+
 #physics.producers.pandora.HitFinderModuleLabel:         "linecluster"
 #physics.producers.pandora.GeantModuleLabel:                     "largeant"
 #physics.producers.pandora.HitFinderModuleLabel:                 "gaushit"
@@ -252,35 +251,22 @@ physics.producers.blurredcluster.BlurredClusterAlg.ClusterTickDistance: 50
 #### Here we try to suppress known and pointless messages
 physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,0.048]
 
-#services.message.destinations :
-#{
-#  STDCOUT:
-#  {
-#     type:      "cout"      #tells the message service to output this destination to cout
-#     threshold: "WARNING"   #tells the message service that this destination applies to WARNING and higher level messages
-#     append:     true       #says to append all messages to the output
-#     categories:
-#     {
-#       ChannelFilter:
-#       {
-#         limit: 0
-#         reportEvery: 0
-#       }
-#       TrackStitcher:
-#       {
-#         limit: 0
-#         reportEvery: 0
-#       }
-#       CRHitRemoval:
-#       {
-#         limit: 0
-#         reportEvery: 0
-#       }
-#       default:
-#       {
-#         limit: -1  #don't print anything at the infomsg level except the explicitly named categories
-#         reportEvery: 1
-#       }
-#     }
-#  }
-#}
+#services.SignalShapingServiceT1034.DebugFieldShape: true
+#services.SignalShapingServiceT1034.ColFilter:       "(x>0.0)*gaus"
+#services.SignalShapingServiceT1034.ColFilterParams: [ 1.0, 0.0, 0.2 ]
+#services.SignalShapingServiceT1034.IndFilter:       "(x>0.0)*gaus"
+#services.SignalShapingServiceT1034.IndFilterParams: [ 1.0, 0.0, 0.2 ]
+
+#services.message.destinations.debugmsg.type:  "file"
+#services.message.destinations.errormsg.type:  "cerr"
+#services.message.destinations.warningmsg.type:  "cout"
+#services.message.destinations.debugmsg.categories.default: {limit: 1}
+#services.message.destinations.debugmsg.categories.ArtState.limit: 0
+#services.message.destinations.debugmsg.categories.BackTracker.limit: 0
+#services.message.destinations.debugmsg.categories.NuRandomService.limit: 0
+#services.message.destinations.debugmsg.categories.TC.limit: -1
+#services.message.destinations.warningmsg.categories.TC.limit: -1
+#services.message.destinations.warningmsg.categories.RootInputFile.limit: 0
+#services.message.destinations.errormsg.categories.TC.limit: -1
+#services.message.destinations.debugmsg.categories.default.reportEvery: 1
+#services.message.destinations.debugmsg.filename: "debug.txt"
