@@ -7,7 +7,7 @@
 #include "hitfindermodules_lariat.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
-#include "calorimetry.fcl"
+#include "calorimetry_lariat.fcl"
 #include "particleid.fcl"
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
@@ -55,7 +55,7 @@ physics:
    gaushit:             @local::lariat_gaushitfinder 
    linecluster:          @local::standard_linecluster  
    pmtrack:              @local::standard_pmalgtrackmaker
-   calo:                 @local::standard_calodata
+   calo:                 @local::lariat_calomc
    pid:                  @local::standard_chi2pid
    rns:       { module_type: "RandomNumberSaver" }
  }
@@ -160,10 +160,6 @@ physics.producers.pmtrack.HitModuleLabel:     "linecluster"
 physics.producers.pmtrack.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.FlipToBeam: true
 physics.producers.pmtrack.RunVertexing: true
-
-services.DetectorPropertiesService.TimeOffsetV: 0.0
-services.DetectorPropertiesService.Electronlifetime: 1600
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.035,0.086]
 
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"

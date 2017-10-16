@@ -1,6 +1,15 @@
 #include "Reco.fcl"
  
 process_name: Reco2D
+
+services:
+{
+  TFileService: { fileName: "anaTree_histo.root" }
+  RandomNumberGenerator: {} #ART native random number generator
+  @table::lariat_services_run2
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
 physics.producers.caldata.DodQdxCalib:  false
 #physics.producers.caldata.dQdxCalibFileName: "LArIATChargeCorrectionFactors_Run2.txt"
 

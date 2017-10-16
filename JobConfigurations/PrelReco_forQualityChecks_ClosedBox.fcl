@@ -4,7 +4,7 @@
 #include "hitfindermodules_lariat.fcl"
 #include "lariatclustermodules.fcl"
 #include "trackfindermodules.fcl"
-#include "calorimetry.fcl"
+#include "calorimetry_lariat.fcl"
 #include "particleid.fcl"
 #include "showerreco3d.fcl"
 #include "showerquality.fcl"
@@ -80,7 +80,7 @@ physics:
   ### pandora
 #  pandora:             @local::standard_pandora
 
-  calo:                 @local::standard_calodata
+  calo:                 @local::lariat_calodata
   pid:                  @local::standard_chi2pid
  }
 
@@ -240,9 +240,6 @@ physics.producers.cctrack.MatchAlgs: 1
 #services.SignalShapingServiceT1034.ScaleNegativeResponse: [3, 1]
 #services.SignalShapingServiceT1034.ScaleResponseTime: [0.98, 0.98]
 
-#services.DetectorPropertiesService.TimeOffsetV: -13.2
-services.DetectorPropertiesService.TimeOffsetV: -2.0
-services.DetectorPropertiesService.Electronlifetime: 1600
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"

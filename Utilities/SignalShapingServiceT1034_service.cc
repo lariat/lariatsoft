@@ -375,6 +375,19 @@ void util::SignalShapingServiceT1034::init()
     fIndSignalShaping.AddFilterFunction(fIndFilter);
     fIndSignalShaping.CalculateDeconvKernel();
 
+    if (fDebugFieldShape){
+      std::ofstream outfile("rescoltest.txt");
+      for (size_t i = 0; i<fColSignalShaping.Response().size(); ++i){
+        outfile<<i<<" "<<fColSignalShaping.Response()[i]<<std::endl;
+      }
+      outfile.close();
+      outfile.clear();
+      outfile.open("resindtest.txt");
+      for (size_t i = 0; i<fIndSignalShaping.Response().size(); ++i){
+        outfile<<i<<" "<<fIndSignalShaping.Response()[i]<<std::endl;
+      }
+      outfile.close();
+    }
   }
 }
 
@@ -699,6 +712,7 @@ void util::SignalShapingServiceT1034::SetResponseSampling()
     default: fColSignalShaping.AddResponseFunction( SamplingResp, true ); break;
     }
 
+    /*
     if (fDebugFieldShape){
       if (iplane == 0){
 	std::ofstream outfile("resindtest.txt");
@@ -715,7 +729,7 @@ void util::SignalShapingServiceT1034::SetResponseSampling()
 	outfile.close();
       }
     }
-
+    */
 
   } // for ( int iplane = 0; iplane < fNPlanes; iplane++ )
 

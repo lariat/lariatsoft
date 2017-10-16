@@ -2,12 +2,22 @@
  
 process_name: Reco2D
 
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "anaTree_histo.root" }
+  RandomNumberGenerator: {} #ART native random number generator
+  @table::lariat_simulation_services
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
 physics.reco: [ @sequence::tpcreco ]
 
-services.DetectorPropertiesService.TimeOffsetV: 0.0
-services.DetectorPropertiesService.Electronlifetime: 1600
 physics.producers.caldata.DodQdxCalib:           false
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.084,0.091]
+physics.producers.trajcluster:                   @local::lariat_trajcluster_mc
+physics.producers.calo:                          @local::lariat_calomc
+#the following is now set at calorimetry_lariat.fcl
+#physics.producers.calo.CaloAlg.CalAreaConstants: [0.084,0.091]
 physics.producers.linecluster.ClusterCrawlerAlg.HitErrFac: 0.22  # Fraction of hit RMS to calculate cluster fit chisq, MC hits are narrower than data hits. 
 
 
