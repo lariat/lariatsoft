@@ -49,12 +49,13 @@ parser.add_option ('-v', dest='debug', action="store_true", default=False,
 parser.add_option ('--test', dest='test', action="store_true", default=False,
                    help="Abbreviate to first spill, first 0.2 seconds")
 parser.add_option ('--photoncutoff', dest='photoncutoff', type='float',
-                   default =0.001,
+                   default =0.0005,
                    help="Minimum photon inclusion energy for textfile (GeV)")
 parser.add_option ('--timeindex', dest='picklefilename', type='string',
                    default ='',
                    help="Name of pickle file containing time index.")
-
+parser.add_option ('--gimmeTrigger', dest='gimmeTrigger',action="store_true", default=False,
+                   help="Also return a text file of just the triggering particles.")
 options, args = parser.parse_args()
 maxspill       = options.maxspill
 firstspill     = options.firstspill
@@ -65,8 +66,10 @@ debug          = options.debug
 test           = options.test
 photoncutoff   = options.photoncutoff
 picklefilename = options.picklefilename
+gimmeTrigger   = options.gimmeTrigger
 infile         = args[0]
 os.system("date")
+triggeronlytriggercount=0
 ## Attempt to make picklefilename automatically
 if picklefilename == '': picklefilename=str(infile.split(".root")[0])+".pickle"
     
@@ -208,6 +211,9 @@ infilepath = os.path.abspath(infilename)
 infilename = os.path.basename(infilename)
 
 outfilename = "hepevt_"+infilename.replace('.root','.txt')
+if gimmeTrigger:
+  Triggeroutfile="TriggersOnly"+infilename.replace('.root','.txt')
+  triggerfile=open(Triggeroutfile,'w')
 outfile = open(outfilename,'w')
 
 # Initialize a handy list of spill numbers visited
@@ -306,7 +312,12 @@ for spill, intree in InputSpillTrees.iteritems():
                 triggerentrynums.append(n) 
                 LastTriggerTime = time
                 print "Triggering: ",n,":",time,"PDG:  ",pdg
-
+                if gimmeTrigger:
+		  triggeronlytriggertime=pyl.tTOFds.GetValue()
+		  triggeronlytxtstr=gimmestr(pyl,triggeronlytriggertime)
+		  triggerfile.write(str(triggeronlytriggercount)+" 1\n")
+		  triggeronlytriggercount+=1
+		  triggerfile.write(triggeronlytxtstr)
         # Testing mode. Had enough? Break the loop.
         if test and time - firsttime > 0.1: 
             die = True
@@ -436,6 +447,8 @@ for spill, intree in InputSpillTrees.iteritems():
             if debug: print line
 
 outfile.close()
+if gimmeTrigger:
+  triggerfile.close()
 lo_spill = sorted(spillnums)[0]
 hi_spill = sorted(spillnums)[len(spillnums)-1]
 spillrange_str = 'Spill_'+str(lo_spill)+'thru'+str(lo_spill)

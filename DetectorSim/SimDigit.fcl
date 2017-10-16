@@ -118,6 +118,7 @@ physics.producers.SimWCDigit.MCBField: .35
 physics.producers.SimWCReco.SourceLabel: "SimWCDigit"
 #physics.producers.SimWCReco.CheckTracks: "true"
 physics.producers.SimTOFReco.SourceLabel: "SimTOFDigit"
-#physics.producers.SimWCReco.Verbose: "true"
-physics.producers.SimWCReco.PickyTracks: "true"
+physics.producers.SimWCReco.Verbose: "false"
+physics.producers.SimWCReco.PickyTracks: "false"
+physics.producers.SimWCDigit.PickyTracks: "false"
 
