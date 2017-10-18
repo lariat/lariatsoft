@@ -23,8 +23,8 @@ REALUSER=`basename ${X509_USER_PROXY} .proxy | grep -o -P '(?<=_).*(?=_)'`
 echo '$USER: ' $USER
 echo '$REALUSER: ' $REALUSER
 
-ifdh cp -D hepevt*.txt /pnfs/lariat/scratch/users/$REALUSER/MCdata/350kSpills/LArG4/txt/
-
+ifdh cp -D hepevt*.txt /pnfs/lariat/scratch/users/$REALUSER/MCdata/350kSpills/LArG4/txtwithtriggers/
+ifdh cp -D TriggersOnly*.txt /pnfs/lariat/scratch/users/$REALUSER/MCdata/350kSpills/LArG4/txtwithtriggers/
 ls -lrth
 echo $CONDOR_DIR_INPUT
 

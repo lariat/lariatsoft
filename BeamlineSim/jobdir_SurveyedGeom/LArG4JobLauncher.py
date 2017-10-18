@@ -39,7 +39,10 @@ import os
 
 
 parser=optparse.OptionParser("usage: %prof [options] /directoryinput/ \n")
+parser.add_option ('--clean', dest='clean', action="store_true", default=False,
+                   help="run the --clean option for jobsub_submit to clear out work/out directories")
 options, args=parser.parse_args()
+clean=options.clean
 inpath=args[0]
 
 # Some dictionaries to fill
@@ -81,12 +84,16 @@ print str(len(filestorun))+ "files in this folder."
 print "Found "+str(len(filestorun))+" files to process"
 
 for file in filestorun:
+  print "opening "+file
   with open(inpath+file, "r") as infile:
+    print "OPEN!"
     counter=0
     for line in infile:
       if line.count(".")==0:  #particle lines will have at least 1 "." in it when printing various kinematic variables. We dont want those, leaving only the "header" lines for each event. How many lines that pass will be the number of events in the file.
         counter+=1
+	print counter
   numberofeventsinfile.append(counter)
+  print "Found :"+str(counter)
   
   
 # For each file to process, edit the .xml file
@@ -131,6 +138,8 @@ for iter in range(0, len(filestorun)):
           outfcl.write(line)
 
 # Now we have everything edited and ready to go, submit a grid job for each text file
-  #os.system("project.py --xml LArG4.xml --stage LArG4 --clean")
-  os.system("project.py --xml LArG4.xml --stage LArG4 --submit")
+  if(clean):
+    os.system("project.py --xml LArG4.xml --stage LArG4 --clean")
+  else:  
+    os.system("project.py --xml LArG4.xml --stage LArG4 --submit")
 
