@@ -51,7 +51,7 @@ physics:
  ### Here you will define any filter modules you want to run ###
  filters:
  {
- TOFFilt:	@local::lariat_wctrackfilter
+ TOFFilt:	@local::lariat_wcquality
  
  }
 
@@ -84,7 +84,7 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   SelectEvents: {SelectEvents:[filt]}
+   SelectEvents: [filt]
    fileName:    "WCTrackFilter.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1

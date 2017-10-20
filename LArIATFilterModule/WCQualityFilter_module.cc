@@ -57,7 +57,9 @@ public:
   void reconfigure(fhicl::ParameterSet const & p) override;
 
   bool insideImagPipe(std::vector<double> pos);
-
+  bool CheckUpstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2);
+  bool CheckDownstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2);
+  bool CheckDownstreamCollimatorAperture(std::vector<double> hit1, std::vector<double> hit2);
   std::vector<double> projToZ(std::vector<double> hit0, std::vector<double> hit1, double zpos);
 
   void beginJob() override;
@@ -73,6 +75,9 @@ private:
   std::string fWCTrackLabel;
 
   bool bCreateMassPlots;
+  bool UseMidplaneCut;
+  bool UseWC4MatchCut;
+  bool UseCollimatorCut;
   double fMidPlaneCut;
   double fWC4ProjCut;       
 
@@ -100,7 +105,30 @@ private:
 
   TH3F* hMomoVsProjXVsZ;
   TH3F* hMomoVsProjYVsZ;
-
+  
+  bool MPToWC4;  //Using WC1, WC2, project to midplane. Use that point with WC3 to project to WC4. The boolean that said that passed. Used with fWC4ProjCut
+  bool ExtrapolateToMP;  //Using WC1, WC2 project to midplane. Use WC3, WC4, project to Midplane. Are those points close? Used with fMidplaneCut.
+  
+  //Bools that track hit apertures.
+  bool Magnet1ApertureCheck;
+  bool Magnet2ApertureCheck;
+  bool DSColApertureCheck;
+  
+  bool KeepTheEvent; //Depending on which Checks you want to use, the final boolean that combines these checks to decide if the event is good.
+  //For each "collimator", the bounds of the face of both aperatures [xlow_frontface, xhigh_frontface, xlow_backface, xhigh_backface], similarly for y. In cm, in TPC coordinates. Taken from survey.
+  double xboundMagnet1[4]={45.74, 75.52, 35.09, 64.87};
+  double yboundMagnet1[4]={-13.12, 13.59, -13.16, 13.55};
+  
+  double xboundMagnet2[4]={34.88, 65.12, 27.90, 58.15};
+  double yboundMagnet2[4]={-13.10, 13.61, -13.08, 13.63};
+ 
+  double xboundDSCol[4]={30.33, 45.42, 26.65, 41.73};
+  double yboundDSCol[4]={-15.70, 14.91, -15.53, 15.08};
+  // Z Position of the center of the aperatures of each collimator, found by taking the average of the z bounds of the aperature. [zcent_US, zcent_DS]
+  double zcentMagnet1[2] = { (-501.95-494.98)/2, (-449.49-456.46)/2};
+  double zcentMagnet2[2] = { (-432.04-427.50)/2, (-381.27-385.81)/2};
+  double zcentDSCol[2]   = { (-296.67-297.36)/2, (-205.94-206.63)/2};
+  double Keepcount=0;
 };
 
 // ---------------------- Begin Job ---------------------------
@@ -152,7 +180,14 @@ WCQualityFilter::WCQualityFilter(fhicl::ParameterSet const & p)
 
 bool WCQualityFilter::filter(art::Event & evt)
 {
- 
+  MPToWC4 =true;  
+  ExtrapolateToMP=true;  
+  
+
+ Magnet1ApertureCheck=true;
+ Magnet2ApertureCheck=true;
+  DSColApertureCheck=true;
+  KeepTheEvent=true;
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   std::vector<art::Ptr<ldp::TOF> > tof;  
 
@@ -171,7 +206,7 @@ bool WCQualityFilter::filter(art::Event & evt)
   if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)){ return false; } 
   art::fill_ptr_vector(wctrack, wctrackHandle);
 
-  int nGoodWC = 0;
+  //int nGoodWC = 0;
 
   double reco_momo = -1.0;
   double reco_tof = -1.0;
@@ -232,14 +267,10 @@ bool WCQualityFilter::filter(art::Event & evt)
     // The actual cut - make sure that hits match within 8 cm, decided from the hRadDist plot
     if(TMath::Sqrt(pow(ProjDown[0] - wctrack[iWC]->HitPosition(3, 0), 2.0) + 
 		   pow(ProjDown[1] - wctrack[iWC]->HitPosition(3, 1), 2.0)) > fWC4ProjCut) { 
-      if(bCreateMassPlots) {
-	hTOFVsMomRejected->Fill(reco_momo,reco_tof);
-	hBeamlineMassRejected->Fill(mass);     
-      }	
 
-      hMomRejected->Fill(reco_momo);
-      continue;
-
+      MPToWC4 =false;
+      //continue;
+      
     }
 
 
@@ -261,17 +292,17 @@ bool WCQualityFilter::filter(art::Event & evt)
     // NOTE : 0.75 added to the X coordinates to make sure that the 2D guassian is centered at (0, 0). 
     //   the reason it is off origin is because of 1) Magnets aren't identical or 2) Something else?
     if(TMath::Sqrt(pow(resultUp[0] - resultDown[0]  + 0.75, 2.0) + pow(resultUp[1] - resultDown[1], 2.0)) > fMidPlaneCut) { 
-      if(bCreateMassPlots) {
-	hTOFVsMomRejected->Fill(reco_momo,reco_tof);
-	hBeamlineMassRejected->Fill(mass);     
-      }
-      hMomRejected->Fill(reco_momo);
+      ExtrapolateToMP=false;
 
-      continue;
 
     }
-
-
+    
+    // For each of the "collimator" like object, check that the projection of the WCtrack intersects the aperature of each face of the collimator. For x-direction, doesn't check the DS end of Magnet 1 or the US end of Magnet 2, as a bend has happened.
+    Magnet1ApertureCheck = CheckUpstreamMagnetAperture(wcHit0,wcHit1);
+    Magnet2ApertureCheck = CheckDownstreamMagnetAperture(wcHit2,wcHit3);
+    DSColApertureCheck   = CheckDownstreamCollimatorAperture(wcHit2,wcHit3);
+   
+/* 
     // 
     // Check every 10 cm if particle passed through matter
     // 
@@ -313,30 +344,42 @@ bool WCQualityFilter::filter(art::Event & evt)
     }
 
     if(bad) { continue; }
-    nGoodWC += 1;
+    nGoodWC += 1; */
   }
 
 
-  if(nGoodWC != 1) { return false; } // if we didn't find a single good WC, eject that stuff
+  //if(nGoodWC != 1) { return false; } // if we didn't find a single good WC, eject that stuff
 
-
+ 
   // 
   // This is the end of WC quality control. Thank you for visiting.
   //
-
-  if(bCreateMassPlots) {
-    hTOFVsMomAfterQuality->Fill(reco_momo,reco_tof);
-    hBeamlineMassAfterQuality->Fill(mass);      
+  if(UseMidplaneCut && !ExtrapolateToMP){KeepTheEvent=false;}
+  if(UseWC4MatchCut && !MPToWC4){KeepTheEvent=false;}
+  if(UseCollimatorCut && (!Magnet1ApertureCheck || !Magnet2ApertureCheck || !DSColApertureCheck)){KeepTheEvent=false;}
+  if(KeepTheEvent){
+    if(bCreateMassPlots) {
+      hTOFVsMomAfterQuality->Fill(reco_momo,reco_tof);
+      hBeamlineMassAfterQuality->Fill(mass);      
+    }
+    hMomAfterQuality->Fill(reco_momo);
+  }  
+  if(!KeepTheEvent)
+  {
+    if (bCreateMassPlots)
+    {
+     	hTOFVsMomRejected->Fill(reco_momo,reco_tof);
+	hBeamlineMassRejected->Fill(mass);    
+    }
+    hMomRejected->Fill(reco_momo);
   }
-
-  hMomAfterQuality->Fill(reco_momo);
-
+  
   // If the event makes it all the way here, congrats you get to graduate now
-  return true;
+  return KeepTheEvent;
   
 }
 
-
+//==================================================================================================
 void WCQualityFilter::reconfigure(fhicl::ParameterSet const & p)
 {                                                                                                   
   fTOFModuleLabel = p.get< std::string >("TOFModuleLabel");
@@ -345,9 +388,56 @@ void WCQualityFilter::reconfigure(fhicl::ParameterSet const & p)
   bCreateMassPlots = p.get<bool>("CreateMassPlots", true);
   fMidPlaneCut = p.get<double>("MidPlaneCut", 3.0);
   fWC4ProjCut = p.get<double>("WC4ProjCut", 8.0);
+  UseMidplaneCut = p.get<bool>("ApplyMidplaneCut", true);
+  UseWC4MatchCut = p.get<bool>("ApplyWC4MatchCut", true);
+  UseCollimatorCut = p.get<bool>("ApplyCollimatorCut", true);
 
 }
 
+//COLLIMATOR CHECKS! MAGNET 1
+//===================================================================================================
+bool WCQualityFilter::CheckUpstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2)
+{
+   std::vector<double> USHit=projToZ(hit1,hit2,zcentMagnet1[0]);
+   std::vector<double> DSHit=projToZ(hit1,hit2,zcentMagnet1[1]);
+   
+   if ( USHit[0] < xboundMagnet1[0] || USHit[0] > xboundMagnet1[1] ){return false;}  //Upstream Aperture X Check
+   else if ( USHit[1] < yboundMagnet1[0] || USHit[1] > yboundMagnet1[1] ){return false;}  //Upstream Aperture Y Check
+   
+   else if ( DSHit[1] < yboundMagnet1[2] || DSHit[1] > yboundMagnet1[3] ){return false;}  //Downstream Aperture Y Check
+   else {return true;} //If all checks pass, then we're good for this collimator.
+}
+
+//MAGNET 2
+//===================================================================================================
+bool WCQualityFilter::CheckDownstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2)
+{
+   std::vector<double> USHit=projToZ(hit1,hit2,zcentMagnet2[0]);
+   std::vector<double> DSHit=projToZ(hit1,hit2,zcentMagnet2[1]);
+   
+   if ( USHit[1] < yboundMagnet2[0] || USHit[1] > yboundMagnet2[1] ){return false;}  //Upstream Aperture Y Check
+   
+   else if ( DSHit[0] < xboundMagnet2[2] || DSHit[0] > xboundMagnet2[3] ){return false;}  //Downstream Aperture X Check   
+   else if ( DSHit[1] < yboundMagnet2[2] || DSHit[1] > yboundMagnet2[3] ){return false;}  //Downstream Aperture Y Check
+
+   else {return true;} //If all checks pass, then we're good for this collimator.
+}
+//DS Collimator
+//===================================================================================================
+bool WCQualityFilter::CheckDownstreamCollimatorAperture(std::vector<double> hit1, std::vector<double> hit2)
+{
+   std::vector<double> USHit=projToZ(hit1,hit2,zcentDSCol[0]);
+   std::vector<double> DSHit=projToZ(hit1,hit2,zcentDSCol[1]);
+   
+   if ( USHit[0] < xboundDSCol[0] || USHit[0] > xboundDSCol[1] ){return false;}  //Upstream Aperture X Check
+   else if ( USHit[1] < yboundDSCol[0] || USHit[1] > yboundDSCol[1] ){return false;}  //Upstream Aperture Y Check
+   
+   else if ( DSHit[0] < xboundDSCol[2] || DSHit[0] > xboundDSCol[3] ){return false;}  //Downstream Aperture X Check   
+   else if ( DSHit[1] < yboundDSCol[2] || DSHit[1] > yboundDSCol[3] ){return false;}  //Downstream Aperture Y Check
+
+   else {return true;} //If all checks pass, then we're good for this collimator.
+}
+//===================================================================================================
 bool WCQualityFilter::insideImagPipe(std::vector<double> pos)
 {
  
