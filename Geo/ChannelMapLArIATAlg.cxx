@@ -58,7 +58,6 @@ namespace geo{
     fWiresPerPlane          .resize(fNcryostat);
     fFirstChannelInNextPlane.resize(fNcryostat);
     fFirstChannelInThisPlane.resize(fNcryostat);
-    fViews.clear();
     fPlaneIDs.clear();
     fTopChannel = 0;
 
@@ -107,7 +106,6 @@ namespace geo{
         for(unsigned int PlaneCount = 0; PlaneCount != PlanesThisTPC; ++PlaneCount){
           geo::PlaneGeo const& plane = TPC.Plane(PlaneCount);
 
-          fViews.emplace(plane.View());
           fPlaneIDs.emplace(PlaneID(cs, TPCCount, PlaneCount));
 
           // the following commented out code is for debugging purposes
@@ -358,6 +356,7 @@ namespace geo{
   }
 
   //----------------------------------------------------------------------------
+  /* // this code should be equivalent to the logic implemented in geo::PlaneGeo::UpdateView()
   View_t ChannelMapLArIATAlg::View(raw::ChannelID_t const channel) const
   {
 
@@ -381,12 +380,7 @@ namespace geo{
 
     return view;
   }  
-
-  //----------------------------------------------------------------------------
-  std::set<View_t> const& ChannelMapLArIATAlg::Views() const
-  {
-    return fViews;
-  }
+  */
 
   //----------------------------------------------------------------------------
   std::set<PlaneID> const& ChannelMapLArIATAlg::PlaneIDs() const
