@@ -74,12 +74,14 @@ private:
   std::string fTOFModuleLabel;
   std::string fWCTrackLabel;
 
-  bool bCreateMassPlots;
   bool UseMidplaneCut;
   bool UseWC4MatchCut;
   bool UseCollimatorCut;
+  bool ApplyMassCut;
   double fMidPlaneCut;
-  double fWC4ProjCut;       
+  double fWC4ProjCut; 
+  double fMassLowerLimit;
+  double fMassUpperLimit;      
 
 
   art::ServiceHandle<geo::Geometry> fGeo;  
@@ -108,13 +110,14 @@ private:
   
   bool MPToWC4;  //Using WC1, WC2, project to midplane. Use that point with WC3 to project to WC4. The boolean that said that passed. Used with fWC4ProjCut
   bool ExtrapolateToMP;  //Using WC1, WC2 project to midplane. Use WC3, WC4, project to Midplane. Are those points close? Used with fMidplaneCut.
-  
+
   //Bools that track hit apertures.
   bool Magnet1ApertureCheck;
   bool Magnet2ApertureCheck;
   bool DSColApertureCheck;
   
   bool KeepTheEvent; //Depending on which Checks you want to use, the final boolean that combines these checks to decide if the event is good.
+  
   //For each "collimator", the bounds of the face of both aperatures [xlow_frontface, xhigh_frontface, xlow_backface, xhigh_backface], similarly for y. In cm, in TPC coordinates. Taken from survey.
   double xboundMagnet1[4]={45.74, 75.52, 35.09, 64.87};
   double yboundMagnet1[4]={-13.12, 13.59, -13.16, 13.55};
@@ -144,7 +147,7 @@ void WCQualityFilter::beginJob()
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
 
-  if(bCreateMassPlots) {
+  if(ApplyMassCut) {
     hTOFVsMomOriginal = tfs->make<TH2F>("hTOFVsMomOriginal", "hTOFVsMomOriginal; WC Momentum [MeV/c];TOF [ns];", 1000, 0, 2000, 500, 0, 100); 
     hTOFVsMomAfterQuality     = tfs->make<TH2F>("hTOFvsMomAfterQualitys"    , "hTOFvsMomAfterQualitys;WC Momentum [MeV/c];TOF [ns];", 1000, 0, 2000, 500, 0, 100); 
     hTOFVsMomRejected = tfs->make<TH2F>("hTOFvsMomRejected"    , "hTOFvsMomRejected;WC Momentum [MeV/c];TOF [ns];", 1000, 0, 2000, 500, 0, 100); 
@@ -180,30 +183,35 @@ WCQualityFilter::WCQualityFilter(fhicl::ParameterSet const & p)
 
 bool WCQualityFilter::filter(art::Event & evt)
 {
+  std::cout<<"PRINTING THINGS TO CHECK COUT!"<<std::endl;
+   std::cout<<"fMassLowerLimit: "<<fMassLowerLimit<<std::endl;
+  std::cout<<"fMassUpperLimit: "<<fMassUpperLimit<<std::endl;
+  std::cout<<"ApplyMassCut: "<<ApplyMassCut<<std::endl;
   MPToWC4 =true;  
   ExtrapolateToMP=true;  
   
 
- Magnet1ApertureCheck=true;
- Magnet2ApertureCheck=true;
+  Magnet1ApertureCheck=true;
+  Magnet2ApertureCheck=true;
   DSColApertureCheck=true;
   KeepTheEvent=true;
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   std::vector<art::Ptr<ldp::TOF> > tof;  
 
-  if(bCreateMassPlots) {
+  if(ApplyMassCut) {
     // Getting the Time of Flight (TOF) Information
-    if(!evt.getByLabel(fTOFModuleLabel,TOFColHandle)) { return false; }
+    if(!evt.getByLabel(fTOFModuleLabel,TOFColHandle)) { KeepTheEvent=false; }
     art::fill_ptr_vector(tof, TOFColHandle);   
-    if(tof.size() != 1) { return false; }
-    if(tof[0]->NTOF() != 1) { return false; }
+    if(tof.size() != 1) { KeepTheEvent=false; }
+    std::cout<<"NTOF :"<<tof[0]->NTOF()<<std::endl;
+    if(tof[0]->NTOF() != 1) { KeepTheEvent=false; }
   }
 
   // Getting the Momentum (WC) Information  
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
   std::vector<art::Ptr<ldp::WCTrack> > wctrack;
 
-  if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)){ return false; } 
+  if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)){ KeepTheEvent=false; } 
   art::fill_ptr_vector(wctrack, wctrackHandle);
 
   //int nGoodWC = 0;
@@ -211,9 +219,9 @@ bool WCQualityFilter::filter(art::Event & evt)
   double reco_momo = -1.0;
   double reco_tof = -1.0;
   float mass = -1.0;
-
+  if(wctrack.size()==0){KeepTheEvent=false;}
   for(size_t iWC = 0; iWC < wctrack.size(); iWC++) {
-    if(wctrack[iWC]->NHits() != 8) { continue; } // require a hit on each wc plane
+    if(wctrack[iWC]->NHits() != 8) { KeepTheEvent=false; } // require a hit on each wc plane
 
     //
     // Calculating the mass
@@ -223,17 +231,19 @@ bool WCQualityFilter::filter(art::Event & evt)
     reco_momo = wctrack[iWC]->Momentum();
     hMomOriginal->Fill(reco_momo);
 
-    if(bCreateMassPlots) {
+
       double tofObject[1];            // The TOF calculated (in ns) for this TOF object   
       tofObject[0] =  tof[0]->SingleTOF(0);
 
       reco_tof = tofObject[0];  
+      std::cout<<"TOF: "<<reco_tof<<std::endl;
       mass = reco_momo*pow(reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1 ,0.5);
-
+    if(ApplyMassCut && (mass<fMassLowerLimit || mass>fMassUpperLimit)){KeepTheEvent=false;}
+    
+    if(ApplyMassCut) {
       hTOFVsMomOriginal->Fill(reco_momo,reco_tof);
       hBeamlineMassOriginal->Fill(mass);
     }
-
 
     // 
     // Here starts my own code
@@ -302,6 +312,7 @@ bool WCQualityFilter::filter(art::Event & evt)
     Magnet2ApertureCheck = CheckDownstreamMagnetAperture(wcHit2,wcHit3);
     DSColApertureCheck   = CheckDownstreamCollimatorAperture(wcHit2,wcHit3);
    
+   
 /* 
     // 
     // Check every 10 cm if particle passed through matter
@@ -358,7 +369,7 @@ bool WCQualityFilter::filter(art::Event & evt)
   if(UseWC4MatchCut && !MPToWC4){KeepTheEvent=false;}
   if(UseCollimatorCut && (!Magnet1ApertureCheck || !Magnet2ApertureCheck || !DSColApertureCheck)){KeepTheEvent=false;}
   if(KeepTheEvent){
-    if(bCreateMassPlots) {
+    if(ApplyMassCut) {
       hTOFVsMomAfterQuality->Fill(reco_momo,reco_tof);
       hBeamlineMassAfterQuality->Fill(mass);      
     }
@@ -366,7 +377,7 @@ bool WCQualityFilter::filter(art::Event & evt)
   }  
   if(!KeepTheEvent)
   {
-    if (bCreateMassPlots)
+    if (ApplyMassCut)
     {
      	hTOFVsMomRejected->Fill(reco_momo,reco_tof);
 	hBeamlineMassRejected->Fill(mass);    
@@ -375,6 +386,8 @@ bool WCQualityFilter::filter(art::Event & evt)
   }
   
   // If the event makes it all the way here, congrats you get to graduate now
+  std::cout<<"KeepTheEvent: "<<KeepTheEvent<<std::endl;
+ 
   return KeepTheEvent;
   
 }
@@ -385,12 +398,15 @@ void WCQualityFilter::reconfigure(fhicl::ParameterSet const & p)
   fTOFModuleLabel = p.get< std::string >("TOFModuleLabel");
   fWCTrackLabel   = p.get< std::string >("WCTrackLabel");
 
-  bCreateMassPlots = p.get<bool>("CreateMassPlots", true);
   fMidPlaneCut = p.get<double>("MidPlaneCut", 3.0);
   fWC4ProjCut = p.get<double>("WC4ProjCut", 8.0);
   UseMidplaneCut = p.get<bool>("ApplyMidplaneCut", true);
   UseWC4MatchCut = p.get<bool>("ApplyWC4MatchCut", true);
   UseCollimatorCut = p.get<bool>("ApplyCollimatorCut", true);
+  ApplyMassCut=p.get<bool>("ApplyMassCut",false);
+  fMassLowerLimit=p.get<double>("LowerMassLimit",0);
+  fMassUpperLimit=p.get<double>("UpperMassLimit",2000);
+  
 
 }
 

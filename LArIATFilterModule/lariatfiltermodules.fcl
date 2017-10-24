@@ -106,8 +106,6 @@ module_type:		WCQualityFilter
 TOFModuleLabel: "tof"
 WCTrackLabel: "wctrack"
 fNumberWCTrack: 1
-fMassUpperLimit: 700.0
-fMassLowerLimit: 300.0
 
 
 }
