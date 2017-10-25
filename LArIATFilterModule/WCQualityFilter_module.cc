@@ -203,48 +203,48 @@ bool WCQualityFilter::filter(art::Event & evt)
     if(!evt.getByLabel(fTOFModuleLabel,TOFColHandle)) { KeepTheEvent=false; }
     art::fill_ptr_vector(tof, TOFColHandle);   
     if(tof.size() != 1) { KeepTheEvent=false; }
-    std::cout<<"NTOF :"<<tof[0]->NTOF()<<std::endl;
-    if(tof[0]->NTOF() != 1) { KeepTheEvent=false; }
+    else if(tof[0]->NTOF() != 1) { KeepTheEvent=false; }
   }
-
+  std::cout<<"Through TOF existence"<<std::endl;
   // Getting the Momentum (WC) Information  
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
   std::vector<art::Ptr<ldp::WCTrack> > wctrack;
 
   if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)){ KeepTheEvent=false; } 
   art::fill_ptr_vector(wctrack, wctrackHandle);
-
+  
   //int nGoodWC = 0;
-
   double reco_momo = -1.0;
   double reco_tof = -1.0;
   float mass = -1.0;
-  if(wctrack.size()==0){KeepTheEvent=false;}
+  if(KeepTheEvent && wctrack.size()==0){KeepTheEvent=false;}
+  std::cout<<"Checked WC size: "<<wctrack.size()<<std::endl;
+  if(KeepTheEvent){  
   for(size_t iWC = 0; iWC < wctrack.size(); iWC++) {
-    if(wctrack[iWC]->NHits() != 8) { KeepTheEvent=false; } // require a hit on each wc plane
+    if(KeepTheEvent && wctrack[iWC]->NHits() != 8) { KeepTheEvent=false; } // require a hit on each wc plane
 
     //
     // Calculating the mass
     //
-
+   
     float fDistanceTraveled = 6.652; 
     reco_momo = wctrack[iWC]->Momentum();
     hMomOriginal->Fill(reco_momo);
 
+    if(KeepTheEvent && tof[0]->NTOF()==1){
+        double tofObject[1];            // The TOF calculated (in ns) for this TOF object   
+        tofObject[0] =  tof[0]->SingleTOF(0);
 
-      double tofObject[1];            // The TOF calculated (in ns) for this TOF object   
-      tofObject[0] =  tof[0]->SingleTOF(0);
-
-      reco_tof = tofObject[0];  
-      std::cout<<"TOF: "<<reco_tof<<std::endl;
-      mass = reco_momo*pow(reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1 ,0.5);
-    if(ApplyMassCut && (mass<fMassLowerLimit || mass>fMassUpperLimit)){KeepTheEvent=false;}
+        reco_tof = tofObject[0];  
+        std::cout<<"TOF: "<<reco_tof<<std::endl;
+        mass = reco_momo*pow(reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1 ,0.5);
+      if(KeepTheEvent && ApplyMassCut && (mass<fMassLowerLimit || mass>fMassUpperLimit)){KeepTheEvent=false;}
     
-    if(ApplyMassCut) {
-      hTOFVsMomOriginal->Fill(reco_momo,reco_tof);
-      hBeamlineMassOriginal->Fill(mass);
+      if(KeepTheEvent && ApplyMassCut) {
+        hTOFVsMomOriginal->Fill(reco_momo,reco_tof);
+        hBeamlineMassOriginal->Fill(mass);
+      }
     }
-
     // 
     // Here starts my own code
     // 
@@ -358,7 +358,7 @@ bool WCQualityFilter::filter(art::Event & evt)
     nGoodWC += 1; */
   }
 
-
+}
   //if(nGoodWC != 1) { return false; } // if we didn't find a single good WC, eject that stuff
 
  
