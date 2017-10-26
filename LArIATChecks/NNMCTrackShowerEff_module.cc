@@ -21,7 +21,7 @@
 #include "canvas/Persistency/Common/FindOneP.h" 
 #include "canvas/Persistency/Common/FindManyP.h" 
 #include "lardata/Utilities/AssociationUtil.h"
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "lardataobj/MCBase/MCShower.h"
 #include "art/Framework/Core/EDAnalyzer.h"
 #include "art/Framework/Core/ModuleMacros.h"
@@ -148,9 +148,9 @@ void NNMCTrackShowerEff::beginJob() {
 
 void NNMCTrackShowerEff::analyze(art::Event const & event) {
 
-  // === BackTracker service ===
-  art::ServiceHandle<cheat::BackTracker> bt;
-  const sim::ParticleList& plist = bt->ParticleList();
+  // === ParticleInventoryService service ===
+  art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+  const sim::ParticleList& plist = pi_serv->ParticleList();
 
   // Implementation of required member function here.
 
