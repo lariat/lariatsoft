@@ -10,7 +10,10 @@
 #include "database_lariat.fcl"
 #include "detectorclocks_lariat.fcl"
 #include "backtrackerservice.fcl"
+<<<<<<< HEAD
 #include "particleinventoryservice.fcl"
+=======
+>>>>>>> cb1f2d7e9a3edba8da7e060173d6a080e9f04779
 #include "sam_lariat.fcl"
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
