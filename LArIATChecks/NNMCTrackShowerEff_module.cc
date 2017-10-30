@@ -21,6 +21,7 @@
 #include "canvas/Persistency/Common/FindOneP.h" 
 #include "canvas/Persistency/Common/FindManyP.h" 
 #include "lardata/Utilities/AssociationUtil.h"
+#include "lardataobj/Simulation/SimChannel.h"
 #include "larsim/MCCheater/ParticleInventoryService.h"
 #include "lardataobj/MCBase/MCShower.h"
 #include "art/Framework/Core/EDAnalyzer.h"

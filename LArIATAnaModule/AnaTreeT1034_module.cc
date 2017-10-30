@@ -478,7 +478,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Detector properties service ===
   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   // === BackTracker service ===
-  art::ServiceHandle<cheat::BackTrackerSerice> bt_serv;
+  art::ServiceHandle<cheat::BackTrackerService> bt_serv;
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
   const sim::ParticleList& plist = pi_serv->ParticleList();
    
