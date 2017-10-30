@@ -15,7 +15,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -184,9 +184,9 @@ bool NNShowerFilter::filter(art::Event & e)
   } else {
     if(bVerbose) { std::cout << " MC event. " << std::endl; }
 
-    // BackTracker service ===
-    art::ServiceHandle<cheat::BackTracker> bt;
-    const sim::ParticleList& plist = bt->ParticleList();
+    // ParticleInventoryService service ===
+    art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+    const sim::ParticleList& plist = pi_serv->ParticleList();
 
     std::vector<const simb::MCParticle* > geant_part;     
     for(size_t p = 0; p < plist.size(); ++p) { geant_part.push_back(plist.Particle(p)); }

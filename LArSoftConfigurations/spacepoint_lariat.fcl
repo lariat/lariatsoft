@@ -25,7 +25,8 @@ services.DetectorPropertiesService: @local::lariat_detproperties
 services.LArPropertiesService:      @local::lariat_properties
 services.LArFFT:                    @local::lariat_larfft
 services.DatabaseUtil:              @local::lariat_database
-services.BackTracker:               @local::lariat_backtracker
+services.BackTrackerService:               @local::lariat_backtrackerservice
+services.ParticleInventoryService:               @local::standard_particleinventoryservice
 
 services.message.destinations.debugmsg.type: "cout"
 services.message.destinations.debugmsg.categories.default.limit: 1000000

@@ -51,7 +51,7 @@
 //#include "RawData/ExternalTrigger.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RawData/raw.h"
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "larevt/Filters/ChannelFilter.h"
@@ -405,9 +405,9 @@ ResetVars();
 // #######################################
 // === Geometry Service ===
 art::ServiceHandle<geo::Geometry> geom;
-// === BackTracker service ===
-art::ServiceHandle<cheat::BackTracker> bt;
-const sim::ParticleList& plist = bt->ParticleList();
+// === ParticleInventoryService service ===
+art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+const sim::ParticleList& plist = pi_serv->ParticleList();
    
    
 // === Run Number ===
@@ -520,7 +520,7 @@ if(!isdata)
    // ######################################   
    std::vector<const simb::MCParticle* > geant_part;
       
-   // ### Looping over all the Geant4 particles from the BackTracker ###
+   // ### Looping over all the Geant4 particles from the ParticleInventoryService ###
    for(size_t p = 0; p < plist.size(); ++p) 
       {
       // ### Filling the vector with MC Particles ###
