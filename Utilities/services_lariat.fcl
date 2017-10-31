@@ -10,10 +10,7 @@
 #include "database_lariat.fcl"
 #include "detectorclocks_lariat.fcl"
 #include "backtrackerservice.fcl"
-<<<<<<< HEAD
 #include "particleinventoryservice.fcl"
-=======
->>>>>>> cb1f2d7e9a3edba8da7e060173d6a080e9f04779
 #include "sam_lariat.fcl"
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
@@ -37,8 +34,8 @@ lariat_services:
  DatabaseUtilityT1034:         @local::lariat_databaseutility
  SignalShapingServiceT1034:    @local::lariat_signalshapingservice
  DetectorClocksService:        @local::lariat_detectorclocks
-  BackTrackerService:       @local::standard_backtrackerservice
-  ParticleInventoryService: @local::standard_particleinventoryservice
+ BackTrackerService:           @local::standard_backtrackerservice
+ ParticleInventoryService:     @local::standard_particleinventoryservice
  NuRandomService:              @local::random_NuRandomService
  DetPedestalService:           @local::lariat_detpedestalservice
  ChannelStatusService:         @local::lariat_channel_filter
