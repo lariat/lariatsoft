@@ -51,7 +51,11 @@ lariat_xsanalysis:
     RecombinationFactor:      1.3
     ThinSlabThickness:        0.4725 #in cm
 }
-
+lariat_WCAnalysis:
+{
+  module_type:              "ThreePointWCCalibration"
+  WCTrackBuilderLabel:      "wctrack"
+}
 lariat_purityonline:
 {
     module_type:              "PurityOnlineT1034"

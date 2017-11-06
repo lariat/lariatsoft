@@ -183,10 +183,7 @@ WCQualityFilter::WCQualityFilter(fhicl::ParameterSet const & p)
 
 bool WCQualityFilter::filter(art::Event & evt)
 {
-  std::cout<<"PRINTING THINGS TO CHECK COUT!"<<std::endl;
-   std::cout<<"fMassLowerLimit: "<<fMassLowerLimit<<std::endl;
-  std::cout<<"fMassUpperLimit: "<<fMassUpperLimit<<std::endl;
-  std::cout<<"ApplyMassCut: "<<ApplyMassCut<<std::endl;
+
   MPToWC4 =true;  
   ExtrapolateToMP=true;  
   
@@ -205,7 +202,7 @@ bool WCQualityFilter::filter(art::Event & evt)
     if(tof.size() != 1) { KeepTheEvent=false; }
     else if(tof[0]->NTOF() != 1) { KeepTheEvent=false; }
   }
-  std::cout<<"Through TOF existence"<<std::endl;
+
   // Getting the Momentum (WC) Information  
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
   std::vector<art::Ptr<ldp::WCTrack> > wctrack;
@@ -218,7 +215,6 @@ bool WCQualityFilter::filter(art::Event & evt)
   double reco_tof = -1.0;
   float mass = -1.0;
   if(KeepTheEvent && wctrack.size()==0){KeepTheEvent=false;}
-  std::cout<<"Checked WC size: "<<wctrack.size()<<std::endl;
   if(KeepTheEvent){  
   for(size_t iWC = 0; iWC < wctrack.size(); iWC++) {
     if(KeepTheEvent && wctrack[iWC]->NHits() != 8) { KeepTheEvent=false; } // require a hit on each wc plane
@@ -231,15 +227,13 @@ bool WCQualityFilter::filter(art::Event & evt)
     reco_momo = wctrack[iWC]->Momentum();
     hMomOriginal->Fill(reco_momo);
 
-    if(KeepTheEvent && tof[0]->NTOF()==1){
+    if(KeepTheEvent && ApplyMassCut&& tof[0]->NTOF()==1){
         double tofObject[1];            // The TOF calculated (in ns) for this TOF object   
         tofObject[0] =  tof[0]->SingleTOF(0);
 
         reco_tof = tofObject[0];  
-        std::cout<<"TOF: "<<reco_tof<<std::endl;
         mass = reco_momo*pow(reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1 ,0.5);
-      if(KeepTheEvent && ApplyMassCut && (mass<fMassLowerLimit || mass>fMassUpperLimit)){KeepTheEvent=false;}
-    
+      if(KeepTheEvent && ApplyMassCut && !(mass>=fMassLowerLimit && mass<=fMassUpperLimit)){KeepTheEvent=false;} //have to !(positive condition) because "nan" gets by if(negative condition). Damn tachyons. 
       if(KeepTheEvent && ApplyMassCut) {
         hTOFVsMomOriginal->Fill(reco_momo,reco_tof);
         hBeamlineMassOriginal->Fill(mass);
@@ -386,7 +380,6 @@ bool WCQualityFilter::filter(art::Event & evt)
   }
   
   // If the event makes it all the way here, congrats you get to graduate now
-  std::cout<<"KeepTheEvent: "<<KeepTheEvent<<std::endl;
  
   return KeepTheEvent;
   

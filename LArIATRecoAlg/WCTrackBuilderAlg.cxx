@@ -845,37 +845,33 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
     }
     fMP_M=1;
     fMP_X=1;
-    //std::cout<<"Midplane set"<<std::endl;
-    //float midplane_slope=1/(tan((3.141592654/180))*8.0)*fMP_M;
+
     float midplane_slope=1./tan(fDeg_to_Rad*8.0)*fMP_M;
     float midplane_intercept=fMidplane_intercept*fMP_X;
-    //std::cout<<"fMidplane int "<<fMidplane_intercept<<std::endl;
-    //std::cout<<"mp int "<<midplane_intercept<<std::endl;
+
     float ds_dz=z[3]-z[2];
     float ds_dx=x[3]-x[2];
     float ds_slope=ds_dx/ds_dz;
     float ds_int_x= x[2]-ds_slope*z[2];
     float z_ds=(midplane_intercept-ds_int_x)/(ds_slope-midplane_slope); //Solving tan8*Z+Bmp == Mds*Z+Bds
     float x_ds=ds_slope*z_ds+ ds_int_x;
-    //std::cout<<"x hits "<<x[2]<<", "<<x[3]<<std::endl;
-    //std::cout<<"z hits "<<z[2]<<", "<<z[3]<<std::endl;
-    //std::cout<<"X centers "<<fX_cntr[2]<<", "<<fX_cntr[3]<<std::endl;
-    //std::cout<<"Z centers "<<fZ_cntr[2]<<", "<<fZ_cntr[3]<<std::endl;
-    //std::cout<<"ds_dx, ds_dz, slope, int"<<ds_dx<<", "<<ds_dz<<", "<<ds_slope<<", "<<ds_int_x<<std::endl;
-    //std::cout<<"midplane x,z"<<x_ds<<" "<<z_ds<<std::endl;
+
     float us_dz=(z_ds-z[0]);
     float us_dx=(x_ds-x[0]);       
     float theta_x_us=atan(us_dx/us_dz);
     float theta_x_ds=atan(ds_dx/ds_dz); 
-    //std::cout<<"WC 2 Theta US: "<<theta_x_us<<std::endl;
-    //std::cout<<"WC 2 Theta DS: "<<theta_x_ds<<std::endl;
-    //float theta_y_ds=atan(((y[3]-y[2])/(z[3]-z[2])));
-    //reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (float (3.3*(theta_x_ds - theta_x_us)*cos(theta_y_ds)));
-    //std::cout<<"S2 mom: "<<reco_pz<<std::endl;
-    //reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (float (3.3*(sin(theta_x_ds) - sin(theta_x_us))*cos(atan(BestTrackStats[0]))));
+
     reco_pz = calculateRecoPz(theta_x_us,theta_x_ds,BestTrackStats[0]);
-    //std::cout<<"momentum set"<<std::endl;
-    reco_pz=(reco_pz+13)/1.15;
+    double scalingfactor=0;
+    if(fB_field_tesla<0.3) //Only have correction factors for 60A and 100A. .3T will separate the samples, as that's like ~90A.
+    {
+      scalingfactor=.000121*reco_pz+.0458;
+    }
+    if(fB_field_tesla>0.3)
+    {
+      scalingfactor=7.39E-5*reco_pz+.0479;
+    }
+    reco_pz=reco_pz/(1+scalingfactor);
 
 
     
@@ -911,8 +907,17 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
       //reco_pz =(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /( float(3.3 * (theta_x_ds-theta_x_us)*cos(theta_y_us))); 
       //reco_pz =(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /( float(3.3 * (sin(theta_x_ds)-sin(theta_x_us))*cos(atan(BestTrackStats[0])))); 
       reco_pz = calculateRecoPz(theta_x_us,theta_x_ds,BestTrackStats[0]);
-      //Caibrate depending on WCMissed
-      reco_pz=(reco_pz-7)/.91;
+
+      double scalingfactor=0;
+    if(fB_field_tesla<0.3) //Only have correction factors for 60A and 100A. .3T will separate the samples, as that's like ~90A.
+    {
+       scalingfactor=-5.71E-5*reco_pz-.0483;
+    }
+    if(fB_field_tesla>0.3)
+    {
+       scalingfactor=-4.2E-5*reco_pz-.0444;
+    }
+    reco_pz=reco_pz/(1+scalingfactor);
     
   }
    if(WCMissed==4){
