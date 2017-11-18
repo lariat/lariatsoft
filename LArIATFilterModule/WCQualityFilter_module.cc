@@ -226,17 +226,18 @@ bool WCQualityFilter::filter(art::Event & evt)
     float fDistanceTraveled = 6.652; 
     reco_momo = wctrack[iWC]->Momentum();
     hMomOriginal->Fill(reco_momo);
-
-    if(KeepTheEvent && ApplyMassCut&& tof[0]->NTOF()==1){
+    if(KeepTheEvent && ApplyMassCut){    //Cant check TOF until I know it exists. So breaking into two if statements.
+      if(tof[0]->NTOF()==1){
         double tofObject[1];            // The TOF calculated (in ns) for this TOF object   
         tofObject[0] =  tof[0]->SingleTOF(0);
 
         reco_tof = tofObject[0];  
         mass = reco_momo*pow(reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1 ,0.5);
-      if(KeepTheEvent && ApplyMassCut && !(mass>=fMassLowerLimit && mass<=fMassUpperLimit)){KeepTheEvent=false;} //have to !(positive condition) because "nan" gets by if(negative condition). Damn tachyons. 
-      if(KeepTheEvent && ApplyMassCut) {
-        hTOFVsMomOriginal->Fill(reco_momo,reco_tof);
-        hBeamlineMassOriginal->Fill(mass);
+        if(KeepTheEvent && ApplyMassCut && !(mass>=fMassLowerLimit && mass<=fMassUpperLimit)){KeepTheEvent=false;} //have to !(positive condition) because "nan" gets by if(negative condition). Damn tachyons. 
+        if(KeepTheEvent && ApplyMassCut) {
+          hTOFVsMomOriginal->Fill(reco_momo,reco_tof);
+          hBeamlineMassOriginal->Fill(mass);
+        }
       }
     }
     // 
