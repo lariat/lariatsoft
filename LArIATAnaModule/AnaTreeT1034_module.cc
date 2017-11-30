@@ -52,7 +52,8 @@
 //#include "RawData/ExternalTrigger.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RawData/raw.h"
-#include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/BackTrackerService.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "larevt/Filters/ChannelFilter.h"
@@ -477,8 +478,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Detector properties service ===
   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   // === BackTracker service ===
-  art::ServiceHandle<cheat::BackTracker> bt;
-  const sim::ParticleList& plist = bt->ParticleList();
+  art::ServiceHandle<cheat::BackTrackerService> bt_serv;
+  art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+  const sim::ParticleList& plist = pi_serv->ParticleList();
    
    
   // === Run Number ===
@@ -1610,7 +1612,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	  std::map<int,double> trkide;
 	  for(size_t h = 0; h < allHits.size(); ++h){
 	    art::Ptr<recob::Hit> hit = allHits[h];
-	    std::vector<sim::TrackIDE> TrackIDs = bt->HitToTrackID(hit);
+	    std::vector<sim::TrackIDE> TrackIDs = bt_serv->HitToTrackIDEs(hit);
 	    for(size_t e = 0; e < TrackIDs.size(); ++e){
 	      trkide[TrackIDs[e].trackID] += TrackIDs[e].energy;
 	    }	    
@@ -1632,7 +1634,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    }
 	  }
 	  // Now have trackID, so get PdG code and T0 etc.
-	  const simb::MCParticle *particle = bt->TrackIDToParticle(TrackID);
+	  const simb::MCParticle *particle = pi_serv->TrackIdToParticle_P(TrackID);
 	  if (particle){
 	    trkg4id[i] = TrackID;
 	  }
@@ -1703,7 +1705,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    hit_rms[i] = sqrt(mean_t2-mean_t*mean_t);
 	    if (!evt.isRealData()){
 	      //	std::vector<sim::IDE> ides;	
-	      //	bt->HitToSimIDEs(hitlist[i], ides);
+	      //	bt_serv->HitToSimIDEs(hitlist[i], ides);
 	      hit_nelec[i] = 0;
 	      hit_energy[i] = 0;
 	      //	for (size_t j = 0; j<ides.size(); ++j){

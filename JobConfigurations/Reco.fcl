@@ -262,7 +262,7 @@ physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,
 #services.message.destinations.warningmsg.type:  "cout"
 #services.message.destinations.debugmsg.categories.default: {limit: 1}
 #services.message.destinations.debugmsg.categories.ArtState.limit: 0
-#services.message.destinations.debugmsg.categories.BackTracker.limit: 0
+#services.message.destinations.debugmsg.categories.BackTrackerService.limit: 0
 #services.message.destinations.debugmsg.categories.NuRandomService.limit: 0
 #services.message.destinations.debugmsg.categories.TC.limit: -1
 #services.message.destinations.warningmsg.categories.TC.limit: -1
