@@ -39,7 +39,7 @@
 //#include "RawData/ExternalTrigger.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RawData/raw.h"
-#include "larsim/MCCheater/BackTracker.h"
+//#include "larsim/MCCheater/BackTracker.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
@@ -168,7 +168,7 @@ void bo::AnaTree::analyze(art::Event const & evt)
   art::ServiceHandle<geo::Geometry> geom;
   //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-  art::ServiceHandle<cheat::BackTracker> bt;
+//  art::ServiceHandle<cheat::BackTracker> bt;
 
 //  for (size_t i = 0; i<geom->Nplanes(); ++i){
 //    for (size_t j = 0; j<geom->Plane(i).Nwires(); ++j){

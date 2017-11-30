@@ -19,7 +19,8 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
          lardata_ArtDataHelper
          lardata_RecoObjects larreco_Deprecated
          lardata_Utilities
-         larsim_MCCheater_BackTracker_service
+         larsim_MCCheater_BackTrackerService_service
+         larsim_MCCheater_ParticleInventoryService_service
          nutools_RandomUtils_NuRandomService_service
          nusimdata_SimulationBase
          ${ART_FRAMEWORK_CORE}
