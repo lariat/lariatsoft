@@ -54,7 +54,7 @@
 //#include "RawData/ExternalTrigger.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RawData/raw.h"
-#include "larsim/MCCheater/BackTracker.h"
+//#include "larsim/MCCheater/ParticleInventoryService.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
 #include "larevt/Filters/ChannelFilter.h"
@@ -528,9 +528,9 @@ void lariat::Lifetime::analyze(art::Event const & evt)
    //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
    // === Detector properties service ===
   // auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
-   // === BackTracker service ===
-   art::ServiceHandle<cheat::BackTracker> bt;
-  // const sim::ParticleList& plist = bt->ParticleList();
+   // === ParticleInventoryService service ===
+//   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+  // const sim::ParticleList& plist = pi_serv->ParticleList();
 
    // === Run Number ===
    run = evt.run();
