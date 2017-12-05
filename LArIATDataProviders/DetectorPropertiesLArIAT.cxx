@@ -50,9 +50,9 @@ namespace ldp{
 					 ):
     fLP(lp), fClocks(c), fGeo(geo)
   {
-    ValidateAndConfigure(pset, ignore_params);
-    
     fTPCClock = fClocks->TPCClock();
+    
+    ValidateAndConfigure(pset, ignore_params);
     
     // initialize prev run number
     fPrevRunNumber = 0;
