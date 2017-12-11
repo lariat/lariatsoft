@@ -307,6 +307,143 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
+  void EventBuilderAlg::ReadV1495Fragments(const LariatFragment * data)
+  {
+    std::cout << "///////////////////////////////////////" << std::endl;
+    std::cout << " Begin reading CAEN V1495 fragments! " << std::endl;
+    std::cout << "///////////////////////////////////////" << std::endl;
+
+    const size_t numberV1495Frags = data->v1495Frags.size();
+
+    //std::cout << " Found " << numberV1495Frags << " fragment(s)." << std::endl;
+
+    std::cout << " Found " << numberV1495Frags << " V1495";
+
+    if (numberV1495Frags == 1)
+        std::cout << " fragment." << std::endl;
+    else
+        std::cout << " fragments." << std::endl;
+
+    for (size_t i = 0; i < numberV1495Frags; ++i)
+    {
+      // get V1495 fragment
+      V1495Fragment const& v1495Frag = data->v1495Frags[i];
+
+      //std::cout << v1495Frag.header.nChan << std::endl;
+
+      std::cout << "=========== v1495Fragment ============="<< std::endl;
+      std::cout << "fragmentSize: " << v1495Frag.header.fragmentSize << std::endl;
+      std::cout << "fragmentType: " << v1495Frag.header.fragmentType << std::endl;
+      std::cout << "nChan:        " << v1495Frag.header.nChan << std::endl;
+      std::cout << "nTrigPat:     " << v1495Frag.header.nTrigPat << std::endl;
+      std::cout << "nVetoPat:     " << v1495Frag.header.nVetoPat << std::endl;
+      std::cout << "M:            " << v1495Frag.header.M << std::endl;
+      std::cout << "tvMask:       0x" << std::hex << v1495Frag.header.tvMask << std::dec << std::endl;
+
+      for (size_t j = 0; j < v1495Frag.header.nChan; ++j)
+      {
+        std::cout << "*** Channel " << v1495Frag.channelData[j].num<< " ***" << std::endl;
+        std::cout << "Name:   " << v1495Frag.channelData[j].name << std::endl;
+        std::cout << "Counts: " << v1495Frag.channelData[j].counts << std::endl;
+      }
+
+      for (size_t j = 0; j < v1495Frag.header.nTrigPat; ++j)
+      {
+        std::cout << "*** Trigger " << v1495Frag.triggerPatternData[j].num << " ***" << std::endl;
+        std::cout << "Pattern: 0x" << std::hex << v1495Frag.triggerPatternData[j].pattern << std::dec << std::endl;
+        std::cout << "Counts:  " << v1495Frag.triggerPatternData[j].counts << std::endl;
+      }
+
+      for (size_t j = 0; j < v1495Frag.header.nVetoPat; ++j)
+      {
+        std::cout << "*** Veto " << v1495Frag.vetoPatternData[j].num << " ***" << std::endl;
+        std::cout << "Pattern: 0x" << std::hex << v1495Frag.vetoPatternData[j].pattern << std::dec << std::endl;
+        std::cout << "Counts:  " << v1495Frag.vetoPatternData[j].counts << std::endl;
+      }
+    }
+
+    std::cout << "///////////////////////////////////////" << std::endl;
+    std::cout << " End reading CAEN V1495 fragments! " << std::endl;
+    std::cout << "///////////////////////////////////////" << std::endl;
+  }
+
+  //-----------------------------------------------------------------------
+  void EventBuilderAlg::ReadTriggerFragments(const LariatFragment * data)
+  {
+    std::cout << "///////////////////////////////////////" << std::endl;
+    std::cout << " Begin reading trigger fragment! " << std::endl;
+    std::cout << "///////////////////////////////////////" << std::endl;
+
+    TriggerFragment triggerFragment = data->triggerFragment;
+
+    triggerFragment.print();
+
+    std::cout << "///////////////////////////////////////" << std::endl;
+
+    for (size_t idx = 0; idx < triggerFragment.triggerFragment.nEntries; ++idx)
+    {
+      std::cout << triggerFragment.triggerFragment.patterns[idx] << std::endl;
+    }
+
+    std::cout << "///////////////////////////////////////" << std::endl;
+    std::cout << " End reading trigger fragment! " << std::endl;
+    std::cout << "///////////////////////////////////////" << std::endl;
+  }
+
+  //-----------------------------------------------------------------------
+  void EventBuilderAlg::ReadBERNFragments(const LariatFragment * data)
+  {
+    std::cout << "///////////////////////////////////////" << std::endl;
+    std::cout << " Begin reading BERN fragments! " << std::endl;
+    std::cout << "///////////////////////////////////////" << std::endl;
+
+    const size_t numberBERNFrags = data->bernFrags.size();
+
+    std::cout << " Found " << numberBERNFrags << " BERN";
+
+    if (numberBERNFrags == 1)
+        std::cout << " fragment." << std::endl;
+    else
+        std::cout << " fragments." << std::endl;
+
+    for (size_t frag_idx = 0; frag_idx < numberBERNFrags; ++frag_idx)
+    {
+      // get BERN fragment
+      BERNFragment const& bernFrag = data->bernFrags[frag_idx];
+
+      std::cout << "BernHitFrame" << std::endl
+                << "  FragmentSize: " << bernFrag.header.fragmentSize << std::endl
+                << "  FragmentType: " << bernFrag.header.fragmentType << std::endl
+                << "  nHits:        " << bernFrag.header.nHits        << std::endl;
+
+      char line[256];
+      std::sprintf(line, "  TimeStart:    %d.%3.3d",
+          (int) bernFrag.header.tStart.time,
+          (int) bernFrag.header.tStart.millitm);
+      std::cout << line << std::endl;
+      std::sprintf(line, "  TimeEnd:      %d.%3.3d",
+          (int) bernFrag.header.tEnd.time,
+          (int) bernFrag.header.tEnd.millitm);
+      std::cout << line << std::endl;
+
+      for (size_t hit_idx = 0; hit_idx < bernFrag.header.nHits; ++hit_idx)
+      {
+        std::cout << "    Hit index: " << hit_idx << std::endl;
+        std::cout << "    " << bernFrag.hits[hit_idx] << std::endl;
+        std::cout << "    ADC: " << std::endl;
+        for (size_t adc_idx = 0; adc_idx < BERNFragment::MAX_CARDS; ++adc_idx)
+        {
+          std::cout << "      " << bernFrag.hits[hit_idx].adc[adc_idx] << std::endl;
+        }
+      }
+    }
+
+    std::cout << "///////////////////////////////////////" << std::endl;
+    std::cout << " End reading BERN fragments! " << std::endl;
+    std::cout << "///////////////////////////////////////" << std::endl;
+  }
+
+  //-----------------------------------------------------------------------
   std::vector< rdu::DataBlock > EventBuilderAlg::GetDataBlocks(const LariatFragment * data)
   {
 
@@ -320,9 +457,9 @@ namespace rdu {
     for (std::map< unsigned int, std::vector< double> >::const_iterator
          iter = TimeStampMap.begin(); iter != TimeStampMap.end(); ++iter) {
       mf::LogVerbatim("EventBuilderAlg") << "Device ID: "
-                                           << iter->first
-                                           << "; number of data blocks: "
-                                           << iter->second.size();
+                                         << iter->first
+                                         << "; number of data blocks: "
+                                         << iter->second.size();
     }
 
     // get clock correction parameters
@@ -364,6 +501,11 @@ namespace rdu {
   //-----------------------------------------------------------------------
   std::vector< rdu::DataBlockCollection > EventBuilderAlg::Build(const LariatFragment * data)
   {
+
+    // testing...
+    //this->ReadV1495Fragments(data);
+    //this->ReadTriggerFragments(data);
+    //this->ReadBERNFragments(data);
 
     // get data blocks
     std::vector< rdu::DataBlock > DataBlocks;

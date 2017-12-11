@@ -14,9 +14,11 @@
 
 // LArIATFragments includes
 #include "LArIATFragments/LariatFragment.h"
+#include "LArIATFragments/BERNFragment.h"
 #include "LArIATFragments/CAENFragment.h"
 #include "LArIATFragments/TDCFragment.h"
-//#include "LArIATFragments/V1495Fragment.h"
+#include "LArIATFragments/TriggerFragment.h"
+#include "LArIATFragments/V1495Fragment.h"
 //#include "LArIATFragments/WUTFragment.h"
 //#include "LArIATFragments/LARASICFragment.h"
 //#include "LArIATFragments/ReadoutError.h"
@@ -70,6 +72,10 @@ namespace rdu {
     // merge overlapping intervals between two vectors of intervals
     std::vector< std::pair< double, double > > MergeIntervals(std::vector< std::pair< double, double > > const& IntervalsA,
                                                               std::vector< std::pair< double, double > > const& IntervalsB);
+
+    void ReadV1495Fragments(const LariatFragment * data);
+    void ReadTriggerFragments(const LariatFragment * data);
+    void ReadBERNFragments(const LariatFragment * data);
 
     // get data blocks with corrected timestamps
     std::vector< rdu::DataBlock > GetDataBlocks(const LariatFragment * data);
