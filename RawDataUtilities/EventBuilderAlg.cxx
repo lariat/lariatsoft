@@ -43,7 +43,7 @@ namespace rdu {
   {
     fTPCReadoutBufferLow  = pset.get< double >("TPCReadoutBufferLow",  10.0);
     fTPCReadoutBufferHigh = pset.get< double >("TPCReadoutBufferHigh", 10.0);
-    
+
     // This option enables event sorting by CAEN event count number -- ie,
     // the order the data is collected, ideally -- rather than by the
     // assigned timestamp (which is buggy for timestamps > ~35sec).
@@ -660,7 +660,7 @@ namespace rdu {
         //unsigned int   const& DeviceID           = block.deviceId;
         double         const& correctedTimestamp = block.correctedTimestamp;
 
-        if ((correctedTimestamp > t_a) and (correctedTimestamp < t_b)) {
+        if ((correctedTimestamp >= t_a) and (correctedTimestamp <= t_b)) {
           // there should be at most one data block for each
           // DataBlock struct
 
