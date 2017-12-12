@@ -12,6 +12,9 @@
 // Framework includes
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
+// boost includes
+#include "boost/property_tree/xml_parser.hpp"
+
 // C++ includes
 #include <cstdlib>
 #include <iomanip>
@@ -307,6 +310,29 @@ namespace rdu {
   }
 
   //-----------------------------------------------------------------------
+  void EventBuilderAlg::ReadLariatConfig(const LariatFragment * data)
+  {
+    LariatFragment::LariatConfig const& lariatConfig = data->lariatConfig;
+    //std::cout << "LariatConfig"       << std::endl
+    //          << "  FragmentSize    " << lariatConfig.fragmentSize  << std::endl
+    //          << "  FragmentType    " << lariatConfig.fragmentType  << std::endl
+    //          << "  XML:" << std::endl
+    //          << lariatConfig.xml;
+
+    std::string lariatConfigXML = lariatConfig.xml;
+    std::cout << lariatConfigXML << std::endl;
+
+    std::stringstream ss;
+    ss << lariatConfigXML;
+
+    boost::property_tree::ptree tree;
+    boost::property_tree::xml_parser::read_xml(ss, tree);
+
+    std::string s(tree.get<std::string>("LariatConfiguration.V1740_Config.CAEN.V1740.sampleReduction"));
+    std::cout << "V1740 sample reduction: " << s << std::endl;
+  }
+
+  //-----------------------------------------------------------------------
   void EventBuilderAlg::ReadV1495Fragments(const LariatFragment * data)
   {
     std::cout << "///////////////////////////////////////" << std::endl;
@@ -503,6 +529,7 @@ namespace rdu {
   {
 
     // testing...
+    //this->ReadLariatConfig(data);
     //this->ReadV1495Fragments(data);
     //this->ReadTriggerFragments(data);
     //this->ReadBERNFragments(data);

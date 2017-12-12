@@ -73,6 +73,7 @@ namespace rdu {
     std::vector< std::pair< double, double > > MergeIntervals(std::vector< std::pair< double, double > > const& IntervalsA,
                                                               std::vector< std::pair< double, double > > const& IntervalsB);
 
+    void ReadLariatConfig(const LariatFragment * data);
     void ReadV1495Fragments(const LariatFragment * data);
     void ReadTriggerFragments(const LariatFragment * data);
     void ReadBERNFragments(const LariatFragment * data);
