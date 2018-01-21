@@ -113,24 +113,29 @@ bool NNShowerFilter::filter(art::Event & e)
   art::Handle< std::vector<recob::Hit> > HitHandle;
   std::vector< art::Ptr<recob::Hit> > Hitlist;
   if(e.getByLabel(fHitModuleLabel, HitHandle))
-    art::fill_ptr_vector(Hitlist, HitHandle);
+    {//std::cout<<" Filling Hit List."<<std::endl;
+     art::fill_ptr_vector(Hitlist, HitHandle);
+    }
 
   // Track info
   art::Handle< std::vector<recob::Track> > TrackHandle;
   std::vector< art::Ptr<recob::Track> > Tracklist;
 
   if(e.getByLabel(fTrackModuleLabel, TrackHandle))
+    {//std::cout<<" Filling Track List."<<std::endl;
     art::fill_ptr_vector(Tracklist, TrackHandle);
-
+    }
   // Association between Tracks and 2d Hits
-  art::FindManyP<recob::Track> ass_trk_hits(HitHandle,   e, fTrackModuleLabel);
+  art::FindManyP<recob::Track> ass_trk_hits(HitHandle,   e, fTrackModuleLabel); //is valid
+  art::FindManyP<recob::Hit> HitsInTrackAssn(TrackHandle,   e, fTrackModuleLabel); //is not valid
 
 
 
-  // Get some basic histograms of what is going on
+  // Get some basic histograms of what is going onss
 
   if(bVerbose) {
-    std::cout << "Hitlist.size()=" << Hitlist.size() 
+    std::cout << "Hitlist.size()=" << Hitlist.size()
+              << " Tracklist.size()=" << Tracklist.size()  
 	      << " featVec.size()=" << featVec.size() << std::endl;
   }
 
@@ -258,7 +263,13 @@ bool NNShowerFilter::filter(art::Event & e)
     }
     
     // Require track starts (or ends if backwards) within the first 10 cm of TPC
-    if(Tracklist[i]->Start().Z() > 2. and Tracklist[i]->End().Z() > 2.) { continue; }
+    if(Tracklist[i]->Start().Z() > 2.0) { continue; }
+
+    // track length requirement ... we wills ee if this does anything good for us
+    if(TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - Tracklist[i]->End().X(), 2) + 
+		   TMath::Power(Tracklist[i]->Start().Y() - Tracklist[i]->End().Y(), 2) +
+		   TMath::Power(Tracklist[i]->Start().Z() - Tracklist[i]->End().Z(), 2)) < 5.0) { continue; }
+
 
     if(TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + 
 		   TMath::Power(Tracklist[i]->Start().Y() - yface, 2) +
@@ -281,22 +292,26 @@ bool NNShowerFilter::filter(art::Event & e)
     return false; 
   }
 
+  if(lowest_dist > 5.0) { return false; }
 
 
   // Now, we find the lowest Hit on that very same track (hit with lowest wireid)
-  int lowest_hit = -1;
-  for(size_t iHit = 0; iHit < Hitlist.size(); ++iHit) {
-    if(Hitlist[iHit]->View() != 1) { continue; }    
-    if(ass_trk_hits.at(iHit).size() == 0) { continue; }
-    if(ass_trk_hits.at(iHit)[0]->ID() != Tracklist[closest_track_index]->ID()) { continue; }
 
-    if(lowest_hit == -1) { lowest_hit = iHit; }
-      
-    if(Hitlist[iHit]->WireID().Wire < Hitlist[lowest_hit]->WireID().Wire) { lowest_hit = iHit; changed = true; }       
+  // This is wrong! Ha. What if wires aren't sequential like this?
+
+  int lowest_hit = -1;
+  if(HitsInTrackAssn.isValid()) {
+    //std::cout<<"Trying to make this work"<<std::endl;
+    std::vector<art::Ptr<recob::Hit> > trackhits = HitsInTrackAssn.at(closest_track_index);
+    for (size_t iHit =0 ; iHit < trackhits.size(); ++iHit) {
+      if(trackhits[iHit]->View() != 1) { continue; }    
+      if(lowest_hit == -1) { lowest_hit = iHit; }       
+      if(trackhits[iHit]->WireID().Wire < trackhits[lowest_hit]->WireID().Wire) { lowest_hit = iHit; }
+    }
   }
 
-  if(bVerbose) { std::cout << "lowest hit number = " << lowest_hit << " at wire ID " << Hitlist[lowest_hit]->WireID() << std::endl; }
-
+  //if(bVerbose) { std::cout << "lowest hit number = " << lowest_hit << " at wire ID " << Hitlist[lowest_hit]->WireID() << std::endl; }
+  
   // If we for some reason didn't find any hits on this track, we reject this event
   if(lowest_hit == -1) {   
     if(bVerbose) { std::cout << "lowest_hit never initialized" << std::endl; } 
@@ -306,6 +321,8 @@ bool NNShowerFilter::filter(art::Event & e)
 
   float inter = Hitlist[lowest_hit]->PeakTime();
   float offset = Hitlist[lowest_hit]->WireID().Wire;
+
+  if(bVerbose) { std::cout << " Network choose to start the box at: (wire, tdc) = " << offset << ", " << inter << std::endl; } 
 
   // If inter is greater than the tdcs, reject it
   if(inter > 3000.) { 
@@ -327,8 +344,8 @@ bool NNShowerFilter::filter(art::Event & e)
     int hitTime = Hitlist[jHit]->PeakTime();
 
     // Box --- --- 
-    if(wireID > (offset+50) or wireID < offset) { continue; }
-    if(hitTime > inter + 300. or hitTime < inter - 300.) { continue; }
+    if(wireID > (offset+100.0) or wireID < offset) { continue; }
+    if(hitTime > inter + 200. or hitTime < inter - 200.) { continue; }
     // --- --- ---
 
     if(hitTime > 3000.) {  if(bVerbose) { std::cout << "too hit high in time ... " << std::endl; } continue; }
@@ -342,20 +359,22 @@ bool NNShowerFilter::filter(art::Event & e)
     results.push_back(featVec[jHit][2]);
     results.push_back(featVec[jHit][3]);
 
-    if(bVerbose) { std::cout << "CNN results " << results[0] << " " << results[1] << " " << results[2] << " " << std::endl; }
+    if(results[0] > 1e-5 and results[1] > 1e-5) {
 
-    results[0] += results[3];
+      if(bVerbose) { std::cout << "CNN results " << results[0] << " " << results[1] << " " << results[2] << " " << std::endl; }
 
-    std::vector<float> temp_results = results;
+      //results[0] += results[3];
 
-    results[0] = temp_results[0] / (temp_results[0] + temp_results[1]);
-    results[1] = temp_results[1] / (temp_results[0] + temp_results[1]);
+      std::vector<float> temp_results = results;
 
-    if(bVerbose) { std::cout << "Normalized CNN results " << results[0] << " " << results[1] << " " << std::endl; }
+      results[0] = temp_results[0] / (temp_results[0] + temp_results[1]);
+      results[1] = temp_results[1] / (temp_results[0] + temp_results[1]);
 
-    total_shower_prob += results[1];
-    num_hits += 1;
+      if(bVerbose) { std::cout << "Normalized CNN results " << results[0] << " " << results[1] << " " << std::endl; }
 
+      total_shower_prob += results[1];
+      num_hits += 1;
+    }
   }
 
   total_shower_prob = total_shower_prob / double(num_hits);

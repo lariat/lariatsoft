@@ -49,27 +49,50 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   SelectEvents: {SelectEvents:[filt]}
+   SelectEvents:[filt]
    fileName:    "plotted_event.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1
  }
 }
 
-
 physics.filters.NNPlot.SelectedEvent: [ ] 
 
-physics.filters.NNPlot.PointIdAlg.NNetModelFile: "/lariat/data/users/dsmith/nnclassifier/6jul_3cat.nnet"
+physics.filters.NNPlot.PointIdAlg.NNetModelFile: "/lariat/data/users/dsmith/nnclassifier/correct_sigmoid_may27.nnet"
 physics.filters.NNPlot.PointIdAlg.PatchSizeW: 32      # how many wires in patch
-physics.filters.NNPlot.PointIdAlg.PatchSizeD: 44      # how many downsampled ADC entries
+physics.filters.NNPlot.PointIdAlg.PatchSizeD: 40      # how many downsampled ADC entries
 physics.filters.NNPlot.PointIdAlg.DriftWindow: 13     # downsampling window in drift ticks
 physics.filters.NNPlot.PointIdAlg.DownscaleFn: "mean" # downsampling function
 physics.filters.NNPlot.PointIdAlg.CalibrateAmpl: true
 physics.filters.NNPlot.PointIdAlg.DownscaleFullView: true
 physics.filters.NNPlot.PointIdAlg.BlurKernel: []
+physics.filters.NNPlot.PointIdAlg.NNetOutputs: []
 physics.filters.NNPlot.PointIdAlg.NoiseSigma: 0.0
 physics.filters.NNPlot.PointIdAlg.CoherentSigma: 0.0
-physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CalAreaConstants: [0.0247, 0.048]
-physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 8.73831e-3, 17.49e-3 ]
+
+#########################
+#
+# This amplitude constant is important to make the data signal amplitudes normalized to what they were in the original MC training set
+#   Changing this constant does NOT change the signal / calorimetry, it is only used for normalization. 
+#   This constant is found for Data as of 20 Jan 2018
+#   To use on MC, replace 1.94e-2 with 1.28e-2
+#   Any questions, give me an email: dansmith@bu.edu
+#
+#########################
+
+physics.filters.NNPlot.PointIdAlg.CalibrateAmpl: true
+physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 1.0, 1.94e-2]
+
+# These values don't matter, they just need to be put in to prevent complains
+physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CalAreaConstants: [1.0, 1.0]
+
 physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CaloUseModBox: true
 physics.filters.NNPlot.PointIdAlg.CalorimetryAlg.CaloLifeTimeForm: 0
+physics.filters.NNPlot.PointIdAlg.CalibrateLifetime: false  
+physics.filters.NNPlot.PointIdAlg.AdcMax:            150.0 # input saturation max value
+physics.filters.NNPlot.PointIdAlg.AdcMin:            -50.0 # input saturation min value
+physics.filters.NNPlot.PointIdAlg.OutMax:             15.0 # output max value
+physics.filters.NNPlot.PointIdAlg.OutMin:             -5.0 # output min value
+
+physics.filters.NNPlot.HitModuleLabel: "gaushit"
+physics.filters.NNPlot.TrackModuleLabel: "pmtracktc"
