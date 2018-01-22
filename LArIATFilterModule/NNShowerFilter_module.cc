@@ -74,6 +74,7 @@ private:
   TH1F* fEmptyProb;
 
   TH1F* fProbBoxShower;
+  TH1F* fProbBoxShowerMult;
   TH2F* fProbBoxShowerVsMomo;
 
   TH1F* fRejectionModes;
@@ -86,6 +87,11 @@ private:
   TH2F* fReNormTrackVsWireID;
 
   TH1F* fMomo;
+
+  TH1F* fXface;
+  TH1F* fYface;
+  TH1F* fDistface;
+  TH1F* fAlpha;
 
   float fShowerThresh;
   bool bData;
@@ -164,6 +170,8 @@ bool NNShowerFilter::filter(art::Event & e)
   double xface = 0.0; double yface = 0.0;
   double momo = 0.0;
 
+  std::vector<double> WC_vec = {-1.0, -1.0, -1.0};
+
   if(bData) {
     if(bVerbose) { std::cout << " Data event. " << std::endl; }
 
@@ -183,6 +191,10 @@ bool NNShowerFilter::filter(art::Event & e)
 
     momo = wctrack[0]->Momentum();
     fMomo->Fill(wctrack[0]->Momentum());
+
+    WC_vec[0] = wctrack[0]->HitPosition(3, 0) - wctrack[0]->HitPosition(2, 0);
+    WC_vec[1] = wctrack[0]->HitPosition(3, 1) - wctrack[0]->HitPosition(2, 1);
+    WC_vec[2] = wctrack[0]->HitPosition(3, 2) - wctrack[0]->HitPosition(2, 2);
 
     if(bVerbose) { std::cout << "Data WC projection (" << xface << ", " << yface << ")" << std::endl; }
 
@@ -224,6 +236,10 @@ bool NNShowerFilter::filter(art::Event & e)
       momo = wcVec.Mag()*1000.;
       fMomo->Fill(wcVec.Mag() * 1000.);
 
+      WC_vec[0] = wcVec[0];
+      WC_vec[1] = wcVec[1];
+      WC_vec[2] = wcVec[2];
+
       found = true;
     }
 
@@ -251,64 +267,84 @@ bool NNShowerFilter::filter(art::Event & e)
   // ---
 
   // First, find closest track to the projected WC track
-  double lowest_dist = 100.0;
   double closest_track_index = 0;
-
-  bool changed = false;
+  int nMatched = 0.0;
 
   for(size_t i = 0; i < Tracklist.size(); i++) {
+
     if(bVerbose) { 
       std::cout << "Start of track: " << Tracklist[i]->Start().X() << " " << Tracklist[i]->Start().Y() << " " << Tracklist[i]->Start().Z() << std::endl;
       std::cout << "End of track: "   << Tracklist[i]->End().X()   << " " << Tracklist[i]->End().Y()   << " " << Tracklist[i]->End().Z()   << std::endl;
     }
     
     // Require track starts (or ends if backwards) within the first 10 cm of TPC
-    if(Tracklist[i]->Start().Z() > 2.0) { continue; }
+    if(Tracklist[i]->Start().Z() > 5.0) { continue; }
+
+    auto larStartEnd = Tracklist[i]->Direction();
+
+    TVector3 wcz(WC_vec[0], WC_vec[1], WC_vec[2]);
+    TVector3 tpcz(larStartEnd.first.X(), larStartEnd.first.Y(), larStartEnd.first.Z());
+
+    //larStartEnd.first.X();
 
     // track length requirement ... we wills ee if this does anything good for us
+
+    /*
     if(TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - Tracklist[i]->End().X(), 2) + 
 		   TMath::Power(Tracklist[i]->Start().Y() - Tracklist[i]->End().Y(), 2) +
 		   TMath::Power(Tracklist[i]->Start().Z() - Tracklist[i]->End().Z(), 2)) < 5.0) { continue; }
+    */
+
+    std::cout << "passed track lenght " << std::endl;
+
+    fXface->Fill(Tracklist[i]->Start().X() - xface);
+    fYface->Fill(Tracklist[i]->Start().Y() - yface);
+    fDistface->Fill(TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + 
+				TMath::Power(Tracklist[i]->Start().Y() - yface, 2)));
+    fAlpha->Fill(acos(tpcz.Dot(wcz) / (wcz.Mag() * tpcz.Mag())) * (180.0 / 3.14159));
 
 
+    // Track spatial match
     if(TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + 
-		   TMath::Power(Tracklist[i]->Start().Y() - yface, 2) +
-		   TMath::Power(Tracklist[i]->Start().Z(), 2)) < lowest_dist) {
-      closest_track_index = i;
-      lowest_dist = TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + 
-				TMath::Power(Tracklist[i]->Start().Y() - yface, 2) +
-				TMath::Power(Tracklist[i]->Start().Z(), 2));
-      changed = true;
-    }
+		   TMath::Power(Tracklist[i]->Start().Y() - yface, 2)) >  5.0) { continue; }
+
+    std::cout << "space match " << std::endl;
+
+    // Alpha
+    std::cout << "alpha =" << acos(tpcz.Dot(wcz) / (wcz.Mag() * tpcz.Mag())) * (180.0 / 3.14159) << std::endl;
+    if(acos(wcz.Dot(tpcz) / (wcz.Mag() * tpcz.Mag())) * (180.0 / 3.14159) > 15.0) { continue; }
+
+    closest_track_index = i;
+    nMatched += 1;
 
   }
 
-  if(bVerbose) { std::cout << "lowest dist = " << lowest_dist << " at " << closest_track_index << std::endl; }
 
   // If it didn't change, couldn't find a track match, so we Reject this event
-  if(!changed) { 
+  if(nMatched != 1) {
     if(bVerbose) { std::cout << "No new track found ... " << std::endl; }
     fRejectionModes->Fill(2.0);
     return false; 
   }
 
-  if(lowest_dist > 5.0) { return false; }
+  std::cout << "Matched track!" << std::endl;
 
 
   // Now, we find the lowest Hit on that very same track (hit with lowest wireid)
 
   // This is wrong! Ha. What if wires aren't sequential like this?
 
+  if(!HitsInTrackAssn.isValid()) { return false; }
+
+
   int lowest_hit = -1;
-  if(HitsInTrackAssn.isValid()) {
-    //std::cout<<"Trying to make this work"<<std::endl;
-    std::vector<art::Ptr<recob::Hit> > trackhits = HitsInTrackAssn.at(closest_track_index);
-    for (size_t iHit =0 ; iHit < trackhits.size(); ++iHit) {
-      if(trackhits[iHit]->View() != 1) { continue; }    
-      if(lowest_hit == -1) { lowest_hit = iHit; }       
-      if(trackhits[iHit]->WireID().Wire < trackhits[lowest_hit]->WireID().Wire) { lowest_hit = iHit; }
-    }
+  std::vector<art::Ptr<recob::Hit> > trackhits = HitsInTrackAssn.at(closest_track_index);
+  for (size_t iHit =0 ; iHit < trackhits.size(); ++iHit) {
+    if(trackhits[iHit]->View() != 1) { continue; }    
+    if(lowest_hit == -1) { lowest_hit = iHit; }       
+    if(trackhits[iHit]->WireID().Wire < trackhits[lowest_hit]->WireID().Wire) { lowest_hit = iHit; }
   }
+
 
   //if(bVerbose) { std::cout << "lowest hit number = " << lowest_hit << " at wire ID " << Hitlist[lowest_hit]->WireID() << std::endl; }
   
@@ -319,10 +355,12 @@ bool NNShowerFilter::filter(art::Event & e)
     return false; 
   }
 
-  float inter = Hitlist[lowest_hit]->PeakTime();
-  float offset = Hitlist[lowest_hit]->WireID().Wire;
+  float inter = trackhits[lowest_hit]->PeakTime(); //Hitlist[lowest_hit]->PeakTime();
+  float offset = trackhits[lowest_hit]->WireID().Wire;
 
   if(bVerbose) { std::cout << " Network choose to start the box at: (wire, tdc) = " << offset << ", " << inter << std::endl; } 
+
+  if(offset > 100.0) { return false; } // make sure things don't get out of hand
 
   // If inter is greater than the tdcs, reject it
   if(inter > 3000.) { 
@@ -331,8 +369,12 @@ bool NNShowerFilter::filter(art::Event & e)
     return false; 
   }
 
-  //for(float iLength = 10.; iLength < 500.; iLength++) {
+
   double total_shower_prob = 0.0;
+
+  double mult_shower = -1.0;
+  double trac_shower = -1.0;
+
   int num_hits = 0;
 
   for(size_t jHit = 0; jHit < Hitlist.size(); ++jHit) {
@@ -359,30 +401,35 @@ bool NNShowerFilter::filter(art::Event & e)
     results.push_back(featVec[jHit][2]);
     results.push_back(featVec[jHit][3]);
 
-    if(results[0] > 1e-5 and results[1] > 1e-5) {
+    if(bVerbose) { std::cout << "CNN results " << results[0] << " " << results[1] << " " << results[2] << " " << std::endl; }
 
-      if(bVerbose) { std::cout << "CNN results " << results[0] << " " << results[1] << " " << results[2] << " " << std::endl; }
+    //results[0] += results[3];
 
-      //results[0] += results[3];
+    std::vector<float> temp_results = results;
 
-      std::vector<float> temp_results = results;
+    results[0] = temp_results[0] / (temp_results[0] + temp_results[1]);
+    results[1] = temp_results[1] / (temp_results[0] + temp_results[1]);
 
-      results[0] = temp_results[0] / (temp_results[0] + temp_results[1]);
-      results[1] = temp_results[1] / (temp_results[0] + temp_results[1]);
+    if(bVerbose) { std::cout << "Normalized CNN results " << results[0] << " " << results[1] << " " << std::endl; }
 
-      if(bVerbose) { std::cout << "Normalized CNN results " << results[0] << " " << results[1] << " " << std::endl; }
+    total_shower_prob += results[1];
 
-      total_shower_prob += results[1];
-      num_hits += 1;
-    }
+    if(trac_shower == -1.0) { trac_shower = results[0]; }
+    if(mult_shower == -1.0) { mult_shower = results[1]; }
+
+    trac_shower *= results[0];
+    mult_shower *= results[1];
+
+    num_hits += 1;
   }
 
   total_shower_prob = total_shower_prob / double(num_hits);
 
   fProbBoxShower->Fill(total_shower_prob);
+  fProbBoxShowerMult->Fill(mult_shower / (trac_shower + mult_shower));
   fProbBoxShowerVsMomo->Fill(total_shower_prob, momo);
 
-  if(bVerbose) { std::cout << "shower prob = " << total_shower_prob; }
+  if(bVerbose) { std::cout << "shower prob = " << total_shower_prob << std::endl; }
 
   if(total_shower_prob < fShowerThresh) {
     fPassingEvents->Fill(6); // My new EM cut 
@@ -410,6 +457,7 @@ void NNShowerFilter::beginJob()
   fShowerReNormProb = tfs->make<TH1F>("ShowerReNormProb","ShowerReNormProb",100,0.0,1.0);
 
   fProbBoxShower = tfs->make<TH1F>("fProbBoxShower","fProbBoxShower",50, 0.0, 1.0); //, 500, 0, 500);
+  fProbBoxShowerMult = tfs->make<TH1F>("fProbBoxShowerMult","fProbBoxShowerMult",200, 0.0, 1.0); //, 500, 0, 500);
   fProbBoxShowerVsMomo  = tfs->make<TH2F>("fProbBoxShowerVsMomo","fProbBoxShowerVsMomo",50, 0.0, 1.0, 200, 0, 2000); //, 500, 0, 500);
 
   fReNormTrackVsEnergy = tfs->make<TH2F>("ReNormTrackVsEnergy","ReNormTrackVsEnergy",100,0.0,1.0, 100, 0.0, 10000.0);
@@ -421,6 +469,12 @@ void NNShowerFilter::beginJob()
   fPassingEventsVsPz = tfs->make<TH2F>("PassingEventsVsPz","PassingEventsVsPz",15, 0.0, 15.0, 200, 0, 2000);
 
   fMomo = tfs->make<TH1F>("Momo","Momo",200, 0.0, 2000.0);
+
+  fXface = tfs->make<TH1F>("XFace","XFace",100, -20.0, 20.0);
+  fYface = tfs->make<TH1F>("YFace","YFace",100, -20.0, 20.0);
+  fDistface = tfs->make<TH1F>("DistFace","DistFace",100, 0.0, 50.0);
+  fAlpha = tfs->make<TH1F>("Alpha","Alpha",100, 0.0, 50.0);
+
 
 }
 
