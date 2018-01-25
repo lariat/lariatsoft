@@ -128,7 +128,7 @@ namespace rdu
     // Constructor and destructor.
     explicit EventBuilder(fhicl::ParameterSet        const& pset,
                           art::ProductRegistryHelper      & prhelper,
-                          art::SourceHelper               & shelper);
+                          art::SourceHelper          const& shelper);
     virtual ~EventBuilder();
 
     ///////////////////////////////////////////////////////////////////
@@ -173,7 +173,7 @@ namespace rdu
     std::unique_ptr<TFile> fFile;
     bool                   fDoneWithFile;
     art::InputTag          fInputTag;
-    art::SourceHelper      fSourceHelper;
+    art::SourceHelper const& fSourceHelper;
     TBranch *              fFragmentsBranch;
     TBranch *              fEventAuxBranch;
     size_t                 fNumberInputEvents;
@@ -294,7 +294,7 @@ namespace rdu
   // constructor
   EventBuilder::EventBuilder(fhicl::ParameterSet        const& pset,
                              art::ProductRegistryHelper      & prhelper,
-                             art::SourceHelper               & shelper)
+                             art::SourceHelper          const& shelper)
     : fSourceName("daq")
     , fLastFileName(pset.get< std::vector< std::string > >("fileNames", {}).back())
     , fFile()

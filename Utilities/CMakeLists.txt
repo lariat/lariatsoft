@@ -39,7 +39,7 @@ simple_plugin( DatabaseUtilityT1034  "service"
                art_Utilities canvas
                ${ART_FRAMEWORK_CORE}
                ${ART_FRAMEWORK_PRINCIPAL}
-               ${ART_PERSISTENCY_ROOTDB}
+               ${ART_FRAMEWORK_IO_ROOT_ROOTDB}
                art_Persistency_Common canvas
                art_Persistency_Provenance canvas
                ${ART_FRAMEWORK_SERVICES_REGISTRY}
@@ -49,7 +49,7 @@ simple_plugin( DetectorPropertiesServiceLArIAT  "service"
                LArIATDataProviders
                ${lariat_util_lib_list}
                ${SQLITE3}
-               ${ART_PERSISTENCY_ROOTDB}
+               ${ART_FRAMEWORK_IO_ROOT_ROOTDB}
 )
 
 file(GLOB pwd_files *passwd)

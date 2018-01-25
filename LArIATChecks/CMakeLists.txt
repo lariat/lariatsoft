@@ -38,7 +38,7 @@ art_make(LIB_LIBRARIES    larcorealg_Geometry
   cetlib cetlib_except
   ${CLHEP}
   ${ROOT_BASIC_LIB_LIST}
-
+  ${TBB}
   )
 
 install_headers()
