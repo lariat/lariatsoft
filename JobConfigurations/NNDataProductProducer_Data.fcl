@@ -53,36 +53,34 @@ outputs:
 }
 
 # Model configuration:
-#
 physics.producers.emtrkmichelid.PointIdAlg.NNetModelFile:      "/lariat/data/users/dsmith/nnclassifier/correct_sigmoid_may27.nnet"
 physics.producers.emtrkmichelid.PointIdAlg.PatchSizeW:         32     # how many wires in patch
 physics.producers.emtrkmichelid.PointIdAlg.PatchSizeD:         40     # how many downsampled ADC entries
 physics.producers.emtrkmichelid.PointIdAlg.DriftWindow:        13      # downsampling window in drift ticks
 physics.producers.emtrkmichelid.PointIdAlg.DownscaleFn:        "mean" # downsampling function
 physics.producers.emtrkmichelid.PointIdAlg.DownscaleFullView:  true  # downsample after the patch position is selected
-physics.producers.emtrkmichelid.PointIdAlg.CalibrateAmpl: true
 
-physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CalAreaConstants: [6.8e-3, 1.53e-2]           # As outlined in Reco.fcl
-physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 1.18e-3, 1.8e-2] # Multiplied by 15 to normalize 
+#########################
+#
+# This amplitude constant is important to make the data signal amplitudes normalized to what they were in the original MC training set
+#   Changing this constant does NOT change the signal / calorimetry, it is only used for normalization. 
+#   This constant is found for Data as of 20 Jan 2018
+#   Any questions, give me an email: dansmith@bu.edu
+#
+#########################
+
+physics.producers.emtrkmichelid.PointIdAlg.CalibrateAmpl: true
+physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 1.0, 1.94e-2]
+
 physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CaloUseModBox: true
 physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CaloLifeTimeForm: 0
-
+physics.producers.emtrkmichelid.PointIdAlg.AdcMax:            150.0 # input saturation max value
+physics.producers.emtrkmichelid.PointIdAlg.AdcMin:            -50.0 # input saturation min value
+physics.producers.emtrkmichelid.PointIdAlg.OutMax:             15.0 # output max value
+physics.producers.emtrkmichelid.PointIdAlg.OutMin:             -5.0 # output min value
 
 # Input selection:
-#
-physics.producers.emtrkmichelid.HitModuleLabel:                "linecluster" # all hits (used to classify leftovers from clustering)
-physics.producers.emtrkmichelid.ClusterModuleLabel:            "linecluster" # clusters to be classified
-physics.producers.emtrkmichelid.TrackModuleLabel:              "pmtrack"     # tracks to be classified (leave that one empty if there are no 3D tracks yet)
+physics.producers.emtrkmichelid.HitModuleLabel:                "gaushit" # all hits (used to classify leftovers from clustering)
+physics.producers.emtrkmichelid.ClusterModuleLabel:            "trajcluster" # clusters to be classified
+physics.producers.emtrkmichelid.TrackModuleLabel:              "pmtracktc"     # tracks to be classified (leave that one empty if there are no 3D tracks yet)
 physics.producers.emtrkmichelid.Views:                         [1]  # possible to run over selected views only (all views if empty list)
-
-# Calibration,  NOTE: use the same settings as for the training data preparation
-#
-#physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg:  @local::standard_calorimetryalgmc # use your detector calibration constants, this the default
-#physics.producers.emtrkmichelid.PointIdAlg.CalibrateAmpl:   true                              # this equalizes ADC amplitudes between planes and MC/data
-
-# Noise and distortions testing (off by default):
-#
-#physics.producers.emtrkmichelid.PointIdAlg.BlurKernel:      [0.03, 0.15, 0.64, 0.15, 0.03] # wire to wire blur
-#physics.producers.emtrkmichelid.PointIdAlg.NoiseSigma:      4                              # uncorrelated noise
-#physics.producers.emtrkmichelid.PointIdAlg.CoherentSigma:   6                              # coherent noise, over 32 wire groups
-

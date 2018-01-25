@@ -209,6 +209,8 @@ bool NNPlotter::filter(art::Event & event)
 
   } else {
 
+    std::cout << " Mehr" << std::endl;
+
     // Plotting from Hits, not entire Image
     // Much faster
 
@@ -233,20 +235,21 @@ bool NNPlotter::filter(art::Event & event)
     
     for(size_t iHit = 0; iHit < Hitlist.size(); ++iHit) {
 
-      if(ass_trk_hits.at(iHit).size() == 0) continue; 
+      //if(ass_trk_hits.at(iHit).size() == 0) continue; 
       if(Hitlist[iHit]->View() != 1) continue;
+
 
       int wireID = Hitlist[iHit]->WireID().Wire;
       int hitTime = Hitlist[iHit]->PeakTime();
   
-      std::vector<float> results = fPointIdAlg.predictIdVector(wireID, hitTime);
+      std::vector<float> results = fPointIdAlg.predictIdVector(wireID, hitTime);  
 
-      fProbHit0->Fill(results[0]);
-      fProbHit1->Fill(results[1]);
+      fProbHit0->Fill(results[0] / (results[0] + results[1]));
+      fProbHit1->Fill(results[1] / (results[0] + results[1]));
       fProbHit2->Fill(results[2]);
 
-      fMap0->Fill(wireID, hitTime, results[0]);
-      fMap1->Fill(wireID, hitTime, results[1]);
+      fMap0->Fill(wireID, hitTime, results[0] / (results[0] + results[1]));
+      fMap1->Fill(wireID, hitTime, results[1] / (results[0] + results[1]));
       fMap2->Fill(wireID, hitTime, results[2]);
 
     } // End of hitlist.size

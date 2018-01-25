@@ -42,7 +42,7 @@ namespace rdu
     // constructor and destructor
     explicit DoNothingInput(fhicl::ParameterSet        const& pset,
                             art::ProductRegistryHelper      & prhelper,
-                            art::SourceHelper               & shelper);
+                            art::SourceHelper          const& shelper);
     virtual ~DoNothingInput();
 
     bool readFile(std::string const& filename, art::FileBlock * & fileblock);
@@ -71,7 +71,7 @@ namespace rdu
   // constructor
   DoNothingInput::DoNothingInput(fhicl::ParameterSet        const& pset,
                                  art::ProductRegistryHelper      & prhelper,
-                                 art::SourceHelper               & shelper)
+                                 art::SourceHelper          const& shelper)
   {
     // read in the parameters from the .fcl file
     this->reconfigure(pset);
