@@ -99,10 +99,10 @@ lariat_trajclusteralg.VertexScoreWeights: [1, 2, 10, 2]
 lariat_trajclusteralg.Vertex2DCuts:  [ 6, 8, 45, 3, 3, 50, 0.6, 10, 0.8, 0.8]
 lariat_trajclusteralg.Match3DCuts: [ 0.4, 0.1, 4, 0.5, 2000, 0.99] 
 lariat_trajclusteralg.MinMCSMom: [ 0, 0, 0]
-lariat_trajclusteralg.kfpropagator: @local::kalmanfilterfittrackmakertool.propagator
-lariat_trajclusteralg.kffitter: @local::kalmanfilterfittrackmakertool.fitter
-lariat_trajclusteralg.kffitter.skipNegProp: false # gc: do we need this?
-lariat_trajclusteralg.kffitter.dumpLevel: 10
+#lariat_trajclusteralg.kfpropagator: @local::kalmanfilterfittrackmakertool.propagator
+#lariat_trajclusteralg.kffitter: @local::kalmanfilterfittrackmakertool.fitter
+#lariat_trajclusteralg.kffitter.skipNegProp: false # gc: do we need this?
+#lariat_trajclusteralg.kffitter.dumpLevel: 10
 #lariat_trajclusteralg.Vertex2DCuts:  [6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0.8]
 # 0 User definition of a short Tj => max number of Tj points
 # 1 max separation between a vertex and the start of a trajectory for a user-defined short Tj
