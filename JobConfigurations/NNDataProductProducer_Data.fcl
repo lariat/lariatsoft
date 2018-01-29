@@ -70,7 +70,7 @@ physics.producers.emtrkmichelid.PointIdAlg.DownscaleFullView:  true  # downsampl
 #########################
 
 physics.producers.emtrkmichelid.PointIdAlg.CalibrateAmpl: true
-physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 1.0, 0.554e-2]
+physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 1.0, 0.554e-3]
 
 physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CaloUseModBox: true
 physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CaloLifeTimeForm: 0
