@@ -70,14 +70,14 @@ physics.producers.emtrkmichelid.PointIdAlg.DownscaleFullView:  true  # downsampl
 #########################
 
 physics.producers.emtrkmichelid.PointIdAlg.CalibrateAmpl: true
-physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 1.0, 1.94e-2]
+physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CalAmpConstants: [ 1.0, 0.554e-3]
 
 physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CaloUseModBox: true
 physics.producers.emtrkmichelid.PointIdAlg.CalorimetryAlg.CaloLifeTimeForm: 0
 physics.producers.emtrkmichelid.PointIdAlg.AdcMax:            150.0 # input saturation max value
 physics.producers.emtrkmichelid.PointIdAlg.AdcMin:            -50.0 # input saturation min value
-physics.producers.emtrkmichelid.PointIdAlg.OutMax:             15.0 # output max value
-physics.producers.emtrkmichelid.PointIdAlg.OutMin:             -5.0 # output min value
+physics.producers.emtrkmichelid.PointIdAlg.OutMax:             1.0 # output max value
+physics.producers.emtrkmichelid.PointIdAlg.OutMin:             -0.33333 # output min value
 
 # Input selection:
 physics.producers.emtrkmichelid.HitModuleLabel:                "gaushit" # all hits (used to classify leftovers from clustering)
