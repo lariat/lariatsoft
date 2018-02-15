@@ -118,6 +118,7 @@ namespace ldp{
     tbl.SetTableName(tableName);
     tbl.SetTableType(nutools::dbi::kConditionsTable);
     tbl.SetDataTypeMask(nutools::dbi::kDataOnly);
+    if( fElectronlifetimeTag != "" ) tbl.SetTag(fElectronlifetimeTag);
 
     int ltIdx = tbl.AddCol("lt","float");
     //    int ltErrPlusIdx = tbl.AddCol("ltsigplus","float");
@@ -212,6 +213,7 @@ namespace ldp{
     
     fEfield                     = config.Efield();
     fElectronlifetime           = config.Electronlifetime();
+    fElectronlifetimeTag        = config.ElectronlifetimeTag();
     fGetElectronlifetimeFromDB  = config.GetElectronlifetimeFromDB();
     fTemperature                = config.Temperature();
     fElectronsToADC             = config.ElectronsToADC();

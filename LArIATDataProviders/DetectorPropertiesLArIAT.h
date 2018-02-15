@@ -55,6 +55,10 @@ namespace ldp{
           Name("GetElectronlifetimeFromDB"),
           Comment("option to get electron lifetime from LArIAT conditions database")
         };
+        fhicl::Atom<std::string        > ElectronlifetimeTag {
+          Name("ElectronlifetimeTag"),
+          Comment("tag of snapshot retrieved from conditions database")
+        };
         fhicl::Atom<double      > Temperature              {
           Name("Temperature"             ),
           Comment("argon temperature [K]")
@@ -293,6 +297,7 @@ namespace ldp{
       const geo::GeometryCore* fGeo;
 
       bool  fGetElectronlifetimeFromDB;
+      std::string fElectronlifetimeTag;
 
       uint64_t fPrevRunNumber;
       std::vector<std::pair<uint64_t,float>> fCachedElectronLifetimes;

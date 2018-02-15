@@ -6,6 +6,7 @@ lariat_detproperties:
 {
   service_provider: "DetectorPropertiesServiceLArIAT"
   GetElectronlifetimeFromDB: true
+  ElectronlifetimeTag: "" # use tag "v1.0" for DB snapshot prior to Feb 8, 2018 
   UseDatabaseForMC: false
 
   Temperature:        89.60  #(tuned to yield drift vel. consistent w/ DocDB 2750)
