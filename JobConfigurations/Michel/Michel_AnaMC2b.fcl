@@ -1,0 +1,16 @@
+#include "Michel_Ana2b.fcl"
+
+services:
+{
+  TFileService: { fileName: "MichelAnaFilterMC.root" }
+  @table::lariat_simulation_services_run2
+}
+services.DetectorPropertiesService.Electronlifetime: 500
+
+physics.filt:                                     [ michelana ]
+physics.filters.michelana.LateLightTau:           1050.
+physics.filters.michelana.MuContamCorr_EffTau:    [ 1201., 1201. ]
+physics.filters.michelana.CalAreaConstants:       [ 0.084, 0.091 ]
+physics.filters.michelana.FiducialMarginX:        1.
+physics.filters.michelana.FiducialMarginY:        1.
+physics.filters.michelana.FiducialMarginZ:        1.

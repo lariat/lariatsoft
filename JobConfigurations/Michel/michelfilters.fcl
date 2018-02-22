@@ -1,0 +1,147 @@
+#include "lariat_reco_algs.fcl"
+
+BEGIN_PROLOG
+
+lariat_michelanafilter:
+{
+  # Optical reco/filter settings
+  module_type:			  MichelAnaFilter
+  TruncateWfm:                    18000
+  SelectChannels:                 [ 1  ]
+  OpDetChannels:                  [ 0,    1 ]
+  MaxWfmRMS:                      [ 2.0 , 2.0 ]
+  BaselineWindowLength:           1000  
+  WfmSmoothingRange:              1
+  CorrectOvershootMode:           ""
+  MskBaselineSubtr:               true
+  GradHitThresh:                  [ -14., -14. ] # -9 default
+  MinOpHitWidth:                  [ 10.,   10.  ]
+  PromptPECut:                    [ 130. , 40. ]
+  OpHitMatchThresh:               [ 300., 150. ] # pulses below this amplitude (ADC) must match other PMT if using >1 PMT
+  MaxDiff_dT:                     15.
+  GateDelay:                      300. # 300ns in Run 1, 250ns in Run 2
+  MaxDecayTime:                   7200.
+  dTcut:                          2000.
+  OpHitBuilderAlg:
+  {
+    BaselineWindowLength:       1000
+    HitFindingMode:       "grad"
+    GradHitThresh:        -10.
+    GradRMSThresh:        3
+    MinHitSeparation:     20 # 20
+    UsePrepulseFit:       "true"  
+    ReturnRawIntegrals:   "false"
+    PrePulseBaselineFit:  1800
+    PrePulseDisplay:      500
+    PrePulseTau1:         800
+    PrePulseTau2:               1600
+    MskBaselineSubtr_waitprd:   50
+    MskBaselineSubtr_minseg:    50
+    MskBaselineSubtr_range:     100
+    MskBaselineSubtr_P:         0.15
+    MskBaselineSubtr_grmsfac:   3
+    MskBaselineSubtr_adcthresh: 5
+  
+  }
+  SmearMode:                      1
+  SmearFactor:                    [ 0, 0 ]
+  TauT:                           1300. # Heindl 2010/2011
+  FastLightRatio:                 0.46
+  LateLightTau:                   1150. 
+  LightQuenching:                 true
+  CollectionEff:                  [ 0.95, 0.80 ] 
+  ApplyTrigEffCut:                true
+  TrigEff_P:                      [ 80. , 25. ]
+  TrigEff_K:                      [ 8  ,  8  ]
+  MuContamCorr:                   true
+  MuContamCorr_dTmin:             2000
+  MuContamCorr_EffTau:            [0., 0.]
+
+  # Track reco and selection settings:
+  HitsModule:                     "gaushit"
+  TrackModule:                    "pmtracktc"
+  TrackCalModule:                 "calotc"
+  LookAtTracks:                   true
+  Req1StpTrk:                     true
+  UseCrossingMuons:               false
+  FiducialMarginX:                2.
+  FiducialMarginY:                2.
+  FiducialMarginZ:                2.
+  MuTrackLengthMin:               5.
+
+  # clustering/shower reco settings:
+  MaxHitSeparation:               2.5 
+  TruncMeanWindow:                4
+  TruncMeanP:                     0.25 # 0.20
+  MaxMatchDistance:               5 # 4
+  LocalLinearityWindow:           4
+  LinThresh:                      0.80
+  LinTol:                         3
+  LinThreshMuHits:                0.60
+  MuEndRadius:                    3.
+  ShowerAcceptanceAngle:          60. 
+  
+  RFactor:                        1.51
+  RFactorTrack:                   1.47
+  RFactorShower:                  1.70
+  
+  # event cut params:
+  MinClusterSize:                 10
+  MinElClusterSize:               3 
+  MaxElClusterSize:               80 
+  MinMuClusterSize:               5
+  MinExtraHits:                   0 
+  MinMuLinearity:                 0.8 # 0.8
+  MinFracMuHitsLinear:            0.5 # 0.6 
+  MinMuClusterHitsEndFit:         4 # 4
+  MinDecayAngle2D:                30.
+  MaxDecayAngle2D:                160.
+  MinElShowerFrac:                0.6
+  MinNumPts3D:                    3
+  MinFracHits3D:                  0.3
+   
+}
+
+# ===============================================================================
+lariat_michelanafilter_run1:                      @local::lariat_michelanafilter
+lariat_michelanafilter_run1.SelectChannels:       [ 1 ]
+lariat_michelanafilter_run1.GateDelay:            300.
+lariat_michelanafilter_run1.CalAreaConstants:     [ 0.025, 0.052 ]
+lariat_michelanafilter_run1.LibraryFile:          "PhotonLibrary_ToyMC_20171223_Run1_300kPerVoxel_24x_20y_45z.root"
+lariat_michelanafilter_run1.FiducialMarginX:      1.0
+lariat_michelanafilter_run1.FiducialMarginY:      1.5
+lariat_michelanafilter_run1.FiducialMarginZ:      1.0
+lariat_michelanafilter_run1.SPE_ScaleFactor:      [ 1.0,    1.1250 ]
+lariat_michelanafilter_run1.DeleteNarrowHits:     false
+lariat_michelanafilter_run1.SmearSigT:            [ 0.,     0.0426  ]
+lariat_michelanafilter_run1.SmearSigPE:           [ 0.,     0.487  ]
+lariat_michelanafilter_run1.QE_ScaleFactor:       [0., 1.2266  ]   
+lariat_michelanafilter_run1.TrigEff_P:            [0., 27.8006 ]   
+lariat_michelanafilter_run1.SmearFactor:          [0., 1.67089 ]   
+
+# ===============================================================================
+lariat_michelanafilter_run2b:                     @local::lariat_michelanafilter
+lariat_michelanafilter_run2b.SelectChannels:      [ 0, 1 ]
+lariat_michelanafilter_run2b.GradHitThresh:       [ -14., -10. ]
+lariat_michelanafilter_run2b.RequireHitMatching:  false 
+lariat_michelanafilter_run2b.GateDelay:           300.
+lariat_michelanafilter_run2b.MinOpHitWidth:       [ 10.,  7.  ]
+lariat_michelanafilter_run2b.DeleteNarrowHits:    false
+lariat_michelanafilter_run2b.MaxWfmRMS:           [ 1.5, 1.5 ]
+lariat_michelanafilter_run2b.CalAreaConstants:    [ 0.022, 0.0445 ]
+lariat_michelanafilter_run2b.RFactor:             1.52
+lariat_michelanafilter_run2b.RFactorTrack:        1.48
+lariat_michelanafilter_run2b.RFactorShower:       1.72
+lariat_michelanafilter_run2b.CorrectOvershootMode: "int"
+lariat_michelanafilter_run2b.LibraryFile:         "PhotonLibrary_ToyMC_20171223_Run2_300kPerVoxel_24x_20y_45z.root"
+lariat_michelanafilter_run2b.FiducialMarginX:      1.5
+lariat_michelanafilter_run2b.FiducialMarginY:      1.5
+lariat_michelanafilter_run2b.FiducialMarginZ:      1.5
+lariat_michelanafilter_run2b.SPE_ScaleFactor:     [1.050, 1.056] 
+lariat_michelanafilter_run2b.SmearSigT:           [ 0.024,     0.024    ]
+lariat_michelanafilter_run2b.SmearSigPE:          [ 0.328,     0.445    ]
+lariat_michelanafilter_run2b.QE_ScaleFactor:      [ 1.0349,   0.9348    ] 
+lariat_michelanafilter_run2b.TrigEff_P:           [ 79.9801, 19.1320    ] 
+lariat_michelanafilter_run2b.SmearFactor:         [ 2.2490,   1.6899    ] 
+
+END_PROLOG

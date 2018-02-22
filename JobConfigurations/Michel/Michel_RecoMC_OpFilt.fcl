@@ -1,0 +1,18 @@
+#include "Michel_Reco.fcl"
+
+services:
+{
+  TFileService: { fileName: "histos.root" }
+  @table::lariat_simulation_services_run2
+}
+
+physics.reco:                                               [ opfilt, @sequence::tpcreco ]
+physics.producers.caldata.DodQdxCalib:                      false
+physics.producers.calo.CaloAlg.CalAreaConstants:            [0.084,0.091]
+physics.producers.calotc.CaloAlg.CalAreaConstants:          [0.084,0.091]
+physics.producers.linecluster.ClusterCrawlerAlg.HitErrFac:  0.22  # Fraction of hit RMS to calculate cluster fit chisq, MC hits are narrower than data hits. 
+
+physics.filters.opfilt:                                     @local::lariat_michelanafilter_run2b
+physics.filters.opfilt.Filter_OpticalMode:                  true
+
+physics.filters.opfilt.CalAreaConstants:                    [ 0.084, 0.091 ]

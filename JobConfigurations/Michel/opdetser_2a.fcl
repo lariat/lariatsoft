@@ -1,0 +1,69 @@
+#include "opdetser.fcl"
+
+
+physics.analyzers.ser.Verbose:                false
+
+physics.analyzers.ser.PreIntWindow:           [ 5,   5,      100 ]
+physics.analyzers.ser.PostIntWindow:          [ 25,   25,     600 ]
+physics.analyzers.ser.PrePE_TruncP:           0
+physics.analyzers.ser.PrePE_TruncSkew:        0
+
+physics.analyzers.ser.DownsampleInterval:     20
+physics.analyzers.ser.SelectChannels:	      [ 1]
+physics.analyzers.ser.OpDetChannels:	      [ 0,    1 ]
+physics.analyzers.ser.OpDetPolarity:          [-1,    -1 ]
+physics.analyzers.ser.SaveAvePulses:          false
+physics.analyzers.ser.AvePulse_preWindow:     1000
+physics.analyzers.ser.AvePulse_postWindow:    14000
+
+physics.analyzers.ser.SmoothingRange:           1
+
+physics.analyzers.ser.SubtractRunningBaseline:  true
+physics.analyzers.ser.RunningBaselineLength:    250
+
+physics.analyzers.ser.SubtractMaskedBaseline:                   false
+physics.analyzers.ser.OpHitBuilderAlg.MskBaselineSubtr_grms:   3 # 3
+physics.analyzers.ser.OpHitBuilderAlg.MskBasleineSubtr_adcthresh:       10
+physics.analyzers.ser.OpHitBuilderAlg.MskBaselineSubtr_range:           500
+physics.analyzers.ser.OpHitBuilderAlg.MskBaselineSubtr_P:               0
+
+physics.analyzers.ser.WfmAbsRMSCut:            [ 0.5,  0.5  ] # mV
+physics.analyzers.ser.PrePE_RMSFactorCut:      [ 1.2,  1.2  ] # xRMS
+physics.analyzers.ser.PulseHitRMSThresh:       [ 3.0,  3.0  ] # xRMS
+physics.analyzers.ser.PulseHitThresh_high:     [ 5.,   5.   ] # mV
+
+physics.analyzers.ser.MaxSavedWaveforms:       200
+physics.analyzers.ser.T1:                      -8500  
+physics.analyzers.ser.T2:                      19500 
+physics.analyzers.ser.SelectEventTypes:        ["all"] 
+physics.analyzers.ser.Timestamp_T1:            0.    
+physics.analyzers.ser.Timestamp_T2:            60.  
+physics.analyzers.ser.BaselineWindowLength:    1000
+physics.analyzers.ser.QuietTimeMin:            1000 #1000
+physics.analyzers.ser.DeadTimeMin:             500 
+physics.analyzers.ser.PrePEBaselineWindow:     100
+physics.analyzers.ser.MaxWindowFactor:         1.5
+physics.analyzers.ser.ThreshPersist:           1   
+physics.analyzers.ser.ThreshPersistFactor:     0.5 
+
+# Average photoelectron waveform 
+physics.analyzers.ser.SaveAvePhelWfm:	       true
+physics.analyzers.ser.PEWfm_preWindow:         [ 40., 40. ]
+physics.analyzers.ser.PEWfm_postWindow:        [ 100., 100. ]
+physics.analyzers.ser.SinglePE:                [ 38.0,  40.0] # ADC (for ave PE wfm selection)
+physics.analyzers.ser.SinglePE_tolerance:      [ .1,     0.1] # +/- % (for ave PE wfm selection)
+
+
+# SER histogram ranges (x1,x2) and initial guesses for fit
+physics.analyzers.ser.SER_x1:                  [ -50.,   -50.  ] # ADC
+physics.analyzers.ser.SER_x2:                  [ 250.,   250.  ] # ADC
+physics.analyzers.ser.PedestalMaxWidth:        [ 30.,     30.  ] # ADC
+physics.analyzers.ser.Mean_set:                [ 40.,     40.  ] # ADC # 60 default
+physics.analyzers.ser.Width_set:               [ 20.,     20.  ] # ADC
+
+# Perform 2nd SER fit with restricted range (excluding most of the pedestal 
+# peak) if chi2/NDF of initial fit is above some threshold
+physics.analyzers.ser.DoSecondFit:             false
+physics.analyzers.ser.SecondFitChi2Thresh:     0.
+
+

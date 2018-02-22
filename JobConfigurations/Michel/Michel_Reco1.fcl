@@ -1,0 +1,10 @@
+#include "Michel_Reco.fcl"
+
+physics.filters.opfilt:                                     @local::lariat_michelanafilter_run1
+#physics.filters.opfilt.MaskedBaselineSubtraction:           false
+physics.filters.opfilt.Filter_OpticalMode:                  true
+
+physics.producers.calo.CaloAlg.CalAreaConstants:            [0.025,0.052] # tuning DocDB 2513
+physics.producers.calotc.CaloAlg.CalAreaConstants:          [0.025,0.052] # tuning DocDB 2513
+physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.025,0.052]
+
