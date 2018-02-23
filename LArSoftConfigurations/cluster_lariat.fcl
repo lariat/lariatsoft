@@ -89,12 +89,19 @@ lariat_trajclusteralg.MinPtsFit:   [ 4,  3, 2]
 lariat_trajclusteralg.MinPts:      [10, 3, 3]        # Min number of points in the trajectory required on each pass
 lariat_trajclusteralg.MaxAngleCode: [0, 2, 3]
 lariat_trajclusteralg.MaxVertexTrajSep: [ 6, 6, 4]
- 
+
 lariat_trajclusteralg.AngleRanges: [30, 65, 85, 90]
- 
+
 lariat_trajclusteralg.MuonTag: [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
 lariat_trajclusteralg.MaxVertexTrajSep: [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
-#lariat_trajclusteralg.SkipAlgs: [ "ChkStop", "ChkAllStop", "CTKink", "HiEndDelta" ]
+lariat_trajclusteralg.SkipAlgs: [ "ChkStop", "CTKink", "VtxHitsSwap","SplitHiChgHits","CTKink","HED","Split" ]
+#lariat_trajclusteralg.SkipAlgs: [ "All" ]
+#    Valid AlgNames:  MaskHits MaskBadTPs Michel DeltaRay CTKink CTStepChk TryNextPass RvPrp CHMH Split Comp3DVx Comp3DVxIG HED 
+#                     HamVx HamVx2 JunkTj Killed Merge TEP CHMEH FillGap Ghost ChkInTraj StopBadFits FixBegin BeginChg FixEnd UUH 
+#                     MisdVxTj VtxTj ChkVxTj RefVtx VxMerge NoKinkChk SoftKink ChkStop ChkStopEP FTBRvProp StopAtTj M3D Mat3DMerge 
+#                     TjHiVx3Score VtxHitsSwap SplitHiChgHits InShower ShowerTj ShwrParent MergeOverlap MergeSubShowers MergeNrShowers 
+#                     MergeShChain SplitTarjCV
+#    Or specify All to turn all algs off
 #lariat_trajclusteralg.Vertex2DCuts:  [6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0.8]
 # 0 User definition of a short Tj => max number of Tj points
 # 1 max separation between a vertex and the start of a trajectory for a user-defined short Tj

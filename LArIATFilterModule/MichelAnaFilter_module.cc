@@ -330,6 +330,7 @@ private:
   float               fMuEndRadius;         // radius (WX space) around mu endpt to find extra hits
   float               fMaxDecayAngle2D;     // max 2D decay angle for histos
   float               fMinDecayAngle2D;     // min 2D decay angle for histos
+  float               fMaxHitTimeDiff;      // max allowable time diff to match hits btwn planes
   int                 fMinNumPts3D;         // min num 3D pts for histos
   float               fMinFracHits3D;       // min frac of hits made into 3D points for histos
   
@@ -706,6 +707,7 @@ private:
   char	              buffer[200], histName[200], histTitle[200];
   float               fEfield;
   float               fDriftVelocity; 
+  float               fSamplingRate; 
   float               fXTicksOffset[2]; 
   int                 fElectronID;
   int                 fMuonID;
@@ -998,20 +1000,21 @@ void MichelAnaFilter::reconfigure(fhicl::ParameterSet const & p)
   fMinElClusterSize         = p.get< int >                  ("MinElClusterSize",3);
   fMaxElClusterSize         = p.get< int >                  ("MaxElClusterSize",50);
   fMaxExtraHits             = p.get< int >                  ("MaxExtraHits",0);
+  fMuEndRadius              = p.get< float >                ("MuEndRadius",3.);
   fMinDecayAngle2D          = p.get< float >                ("DecayAngle2DMin",10.);
   fMaxDecayAngle2D          = p.get< float >                ("DecayAngle2DMax",170.);
   fShowerAcceptanceAngle    = p.get< float >                ("ShowerAcceptanceAngle",60.);
   fWValue                   = p.get< float >                ("WValue", 19.5 ); // 19.5 eV used in NEST
-  fRFactor                   = p.get< float >                ("RFactor",1.51);
-  fRFactorTrack              = p.get< float >                ("RFactorTrack", 1.47);
-  fRFactorShower             = p.get< float >                ("RFactorShower", 1.70);
-  fMinNumPts3D              = p.get< int >                  ("MinNumPts3D",3);
+  fRFactor                  = p.get< float >                ("RFactor",1.51);
+  fRFactorTrack             = p.get< float >                ("RFactorTrack", 1.47);
+  fRFactorShower            = p.get< float >                ("RFactorShower", 1.70);
+  fMaxHitTimeDiff           = p.get< float >                ("MaxHitTimeDiff", 1.5 );
+  fMinNumPts3D              = p.get< int >                  ("MinNumPts3D",2);
   fMinFracHits3D            = p.get< float >                ("MinFracHits3D",0.3);
   fLinThreshMuFit           = p.get< float >                ("LinThreshMuFit",0.8);
   fMinMuClusterHitsEndFit   = p.get< int >                  ("MinMuClusterHitsEndFit",5);
   fMinMuLinearity           = p.get< float >                ("MinMuLinearity",0.9);
   fMinMuClusterSize         = p.get< int >                  ("MinMuClusterSize",8);
-  fMuEndRadius              = p.get< float >                ("MuEndRadius",3.);
   fMinFracMuHitsLinear      = p.get< float >                ("MinFracMuHitsLinear",0.5);  
   fMaxSavedHitGraphs        = p.get< int >                  ("MaxSavedHitGraphs",0);
   fMaxSavedWfmGraphs        = p.get< int >                  ("MaxSavedWfmGraphs",0);
@@ -1453,8 +1456,8 @@ void MichelAnaFilter::beginJob()
   hShowerSizeCompare    ->SetOption("colz");
   hElClusterSizeCompare   = diagDir.make<TH2D>("ElClusterSizeCompare","Electron cluster size on both planes;Collection Plane;Induction Plane",100,0,100,100,0,100);
   hElClusterSizeCompare    ->SetOption("colz");
-  hElOffsetT            = diagDir.make<TH1D>("ElOffsetT","Time difference between first electron / last #mu hit;#DeltaT [#mus]",200,-10.,10);
-  hHitTimeDiff          = diagDir.make<TH1D>("HitTimeDiff","Hit time differences between Michel shower hits in collection/induction planes;T(coll.) - T(ind.) [#mus]",200,-5.,5.);
+  hElOffsetT            = diagDir.make<TH1D>("ElOffsetT","Time difference between first electron / last #mu hit;#DeltaT [#mus]",200,-20.,20);
+  hHitTimeDiff          = diagDir.make<TH1D>("HitTimeDiff","Hit time differences between Michel shower hits in collection/induction planes;T(coll.) - T(ind.) [#mus]",200,-10.,10.);
   
   // ======================================================================
   // 3D shower reco performance diagnostics  
@@ -2582,8 +2585,7 @@ bool MichelAnaFilter::filter(art::Event & e)
   // IF this event is interesting to us based on the reconstruction up to now, 
   // save the wire hit information and apply time/offset and calibration scaling.
   // **************************************************************************
-  //if( (fMichelOpticalID && fMuTrackIndex >= 0) || ( isCalibrationEvent ) ){
-  if( 1 ) {
+  if( (fMichelOpticalID && fMuTrackIndex >= 0) || ( isCalibrationEvent ) ){
    
     fTotalCharge      = 0;
     fTotalCharge_Pl0  = 0;
@@ -2604,7 +2606,7 @@ bool MichelAnaFilter::filter(art::Event & e)
     fHitCharge    .reserve( nWireHits );
     fHitIntegral  .reserve( nWireHits );
     for(size_t i=0; i<nWireHits; i++){
-      float hitTime = 0.128*(hitlist[i]->PeakTime()-fXTicksOffset[hitlist[i]->WireID().Plane]);
+      float hitTime = fSamplingRate*(hitlist[i]->PeakTime()-fXTicksOffset[hitlist[i]->WireID().Plane]);
       fHitT         .push_back(hitTime); // us
       fHitX         .push_back(hitTime*fDriftVelocity);
       fHitWire      .push_back(hitlist[i]->Channel());
@@ -2619,11 +2621,10 @@ bool MichelAnaFilter::filter(art::Event & e)
       hHitRMS[fHitPlane.at(i)]       ->Fill( hitlist[i]->RMS() );
       hHitAmplitude[fHitPlane.at(i)]  ->Fill( hitlist[i]->PeakAmplitude() );
       if( fHitPlane.at(i) == 1 ) {
-        std::cout<<"Hit charge (coll plane): "<<hitlist[i]->Integral()<<" ADC\n";
         fTotalCharge  += fHitCharge.at(i);
-        hHitIntegral       ->Fill(hitlist[i]->Integral());
+        hHitIntegral  ->Fill(hitlist[i]->Integral());
         hHitCharge    ->Fill(fHitCharge.at(i));
-        hHitSummedADC    ->Fill(hitlist[i]->SummedADC());
+        hHitSummedADC ->Fill(hitlist[i]->SummedADC());
       }
       if( fHitPlane.at(i) == 0 ) fTotalCharge_Pl0  += fHitCharge.at(i);
       fNumPlaneHits[ fHitPlane.at(i) ]++;
@@ -2852,7 +2853,7 @@ bool MichelAnaFilter::filter(art::Event & e)
             if( !flag_1.at(i) ) continue;
             for(size_t j=0; j<shower0.size(); j++){
              if( !flag_0.at(j) ) continue;
-             if(       fabs(diff_array.at(i).at(j)) < 2.0 
+             if(       fabs(diff_array.at(i).at(j)) < fMaxHitTimeDiff
                    &&  fabs(diff_array.at(i).at(j)) < minDiff ) {
                  minDiff = diff_array.at(i).at(j);
                  min_i = i;
@@ -2885,7 +2886,7 @@ bool MichelAnaFilter::filter(art::Event & e)
         fNumPts3D   = Pts.size();
         fFracHits3D = float(Pts.size()) / float(std::min( fElShowerSize, fElShowerSize_Pl0 ));
         LOG_VERBATIM("MichelAnaFilter")
-        <<"Found "<<Pts.size()<<" 3D points (frac = "<<fFracHits3D;
+        <<"Found "<<Pts.size()<<" 3D points (frac = "<<fFracHits3D<<")";
       
 
         // ====================================================================
@@ -3543,6 +3544,8 @@ void MichelAnaFilter::GetDetProperties(){
     fDriftVelocity      = detprop->DriftVelocity();
     fXTicksOffset[0]    = detprop->GetXTicksOffset(0,0,0);
     fXTicksOffset[1]    = detprop->GetXTicksOffset(1,0,0);
+    fSamplingRate       = detprop->SamplingRate()*1e-3;
+    std::cout<<"SAMPLING RATE: "<<fSamplingRate<<"\n";
   
   if( fRunNumber != fCachedRunNumber ) {
     fCachedRunNumber = fRunNumber;
@@ -4171,7 +4174,7 @@ void MichelAnaFilter::Clustering( int plane, michelcluster& cl, float muTrackX, 
   cl.plane = plane;
   LOG_VERBATIM("MichelAnaFilter")
   <<"Begin clustering on plane "<<plane<<"\n"
-  <<"Looking for hit best matched to mu track start-point of X = "<<muTrackX<<" cm.... there were "<<muTrackHits.size()<<" total hits associated with the tagged mu trk";
+  <<"Looking for hit best matched to mu track startX = "<<muTrackX<<" cm .... "<<muTrackHits.size()<<" total hits associated with mu trk";
  
   // -------------------------------------------------------------
   // Find hit that is best matched to the muon's vertex X coordinate
@@ -4437,118 +4440,112 @@ void MichelAnaFilter::Clustering( int plane, michelcluster& cl, float muTrackX, 
       // ------------------------------------------------------------------
       // Find the 2D direction of mu/el subclusters
       if( cl.nPtsMuFit  >= fMinMuClusterHitsEndFit ){
-         
+        
+        // First compute a "simple" (ie, dumb)  muon vector by drawing
+        // a vector btwn first and last hits to be used in the fit
+        TVector3 muEndDir_simple = muEndDir_Pt2 - muEndDir_Pt1;
+        
+        // Do linear fit to the good muon hits and get the slope 
         TF1 muTr("muTr","[0]*x+[1]",0.,100.);
         muTr.SetParameter(0, 1.);
         muTr.SetParameter(1, 1.);
         g_mu.Fit("muTr","Q");
         float m = muTr.GetParameter(0);
-        //std::cout<<"Fit results: m = "<<m<<", b = "<<muTr.GetParameter(1)<<"\n";
         
-        // Convert this into a TVector
-        TVector3 muEndDir_simple = muEndDir_Pt2 - muEndDir_Pt1;
+        // Convert slope into a TVector
         cl.muEndDir2D.SetXYZ( 1., m, 0. );
         cl.muEndDir2D.SetMag(muEndDir_simple.Mag());
 
-        //std::cout<<"pt1 -> pt2          : "<<muEndDir_Pt1.X()<<","<<muEndDir_Pt1.Y()<<" --> "<<muEndDir_Pt2.X()<<","<<muEndDir_Pt2.Y()<<"\n";
-        //std::cout<<"Muon vector (simple): "<<muEndDir_simple.X()<<", "<<muEndDir_simple.Y()<<"\n";
-        //std::cout<<"Muon vector from fit: "<<cl.muEndDir2D.X()<<", "<<cl.muEndDir2D.Y()<<"\n";
-          float ang = muEndDir_simple.Angle(cl.muEndDir2D) * RAD_TO_DEG;
-          //std::cout<<"Angular difference  : "<< ang <<"\n";
-          // Flip the vector if necessary
-          if( ang > 90 ) {
-            //std::cout<<"Flipping muon vector...\n";
-            cl.muEndDir2D.SetX( -1.* cl.muEndDir2D.X() );
-            cl.muEndDir2D.SetY( -1.* cl.muEndDir2D.Y() );
+        // Use the simple vector to get a rough idea of the angle,
+        // and reverse the slope-calculated vector if necessary
+        float ang = muEndDir_simple.Angle(cl.muEndDir2D) * RAD_TO_DEG;
+        if( ang > 90 ) {
+          cl.muEndDir2D.SetX( -1.* cl.muEndDir2D.X() );
+          cl.muEndDir2D.SetY( -1.* cl.muEndDir2D.Y() );
+        }
+
+        // Now calculate the direction of the electron cluster, but this time just
+        // draw a vector from the starting point to the charge-weighted centroid
+        if( elHits >= 2 ) {
+          float sumW = 0., sumX = 0., sumWeight = 0.;
+          for(auto hit : cl.cluster_el ){
+            sumX += fHitX.at(hit)*fHitCharge.at(hit);
+            sumW += fHitW.at(hit)*fHitCharge.at(hit);
+            sumWeight += fHitCharge.at(hit);
           }
-          //std::cout<<"Angular difference  : "<< muEndDir_simple.Angle(cl.muEndDir2D) * RAD_TO_DEG <<"\n";
+          float meanX = sumX / sumWeight;
+          float meanW = sumW / sumWeight;
+          TVector3 elDir_Pt1 = elStart2D;
+          TVector3 elDir_Pt2(meanW, meanX, 0.);
+          elDir2D = elDir_Pt2 - elDir_Pt1;
+          cl.decayAngle2D = cl.muEndDir2D.Angle(elDir2D) * RAD_TO_DEG;
+          LOG_VERBATIM("MichelAnaFilter")
+          <<"Angle between muon and electron clusters: "<<cl.decayAngle2D;
+        }
 
-          // Now do similar for electron hits, but this time just find the 
-          // mean charge-weighted point and draw a vector from the boundary
-          // hit to it.
-          if( elHits >= 2 ) {
+      }//<-- endif enough muon points for directional fit
 
-            float sumW = 0., sumX = 0., sumWeight = 0.;
-            for(auto hit : cl.cluster_el ){
-              sumX += fHitX.at(hit)*fHitCharge.at(hit);
-              sumW += fHitW.at(hit)*fHitCharge.at(hit);
-              sumWeight += fHitCharge.at(hit);
-            }
-            float meanX = sumX / sumWeight;
-            float meanW = sumW / sumWeight;
-            TVector3 elDir_Pt1 = elStart2D;
-            TVector3 elDir_Pt2(meanW, meanX, 0.);
-            elDir2D = elDir_Pt2 - elDir_Pt1;
-            cl.decayAngle2D = cl.muEndDir2D.Angle(elDir2D) * RAD_TO_DEG;
-            LOG_VERBATIM("MichelAnaFilter")
-            <<"Angle between muon and electron clusters: "<<cl.decayAngle2D;
-          }
-
-        }//<-- endif enough muon points for directional fit
-
-      }//<-- endif a boundary point was determined
-    
-    }//<-- endif cluster size cut
-    
-
-    // =====================================================================
-    // Electron shower clustering: if a decay angle was calculated above, then
-    // proceed to cluster all hits along the reconstructed direction in 2D.
-    
-    if( cl.decayAngle2D > 0 ){
-      float sum_t = 0.; 
-      float sum_x = 0.;
-      float sum_w = 0.;
+    }//<-- endif a boundary point was determined
   
-      // histogram to keep track of anglular spread of shower
-      // (charge-weighted)
-      TH1D hAng("hAng","ang",180,0,180);
-   
-      for(size_t i=0; i<fHitX.size(); i++){
-         
-          if( fHitPlane.at(i) != plane ) continue;
-          
-          // Skip unphysical hit times, as well as any hits with small X
-          if( fHitT.at(i) < 0 || fHitX.at(i) < 1. ) continue;
-          
-          // Skip muon hits
-          if( std::find(cl.cluster_mu.begin(), cl.cluster_mu.end(), i ) != cl.cluster_mu.end() ) continue;
+  }//<-- endif cluster size cut
+    
 
-          bool isInElCluster = false;
-          if( std::find(cl.cluster_el.begin(), cl.cluster_el.end(), i ) != cl.cluster_el.end() ) isInElCluster = true;
-          
-          // Find angle of this hit relative to Michel direction (2D)
-          TVector3 loc(fHitW.at(i), fHitX.at(i), 0.);
-          TVector3 hv = loc - elStart2D; 
-          float ang = hv.Angle(elDir2D) * RAD_TO_DEG;
-          
-          if( cl.plane == 1 ) hElShowerDepAngle2D->Fill(ang);
-          
-          // If this part of the original electron-portion of total cluster, or if 
-          // it lies within 2D acceptance angle cone, add it to the shower.
-          if( isInElCluster || ang <= fShowerAcceptanceAngle ) {
-            cl.shower     .push_back( i );
-            cl.isInTrk    .push_back(isInElCluster);
-            hAng          .Fill(ang,fHitCharge.at(i));
-            sum_t         += fHitT.at(i) * fHitCharge.at(i);
-            sum_x         += fHitX.at(i) * fHitCharge.at(i);
-            sum_w         += fHitCharge.at(i);
-          }//<-- end if in 2D cone
-          
-      }//<-- end loop over hits
-
-      if( sum_w > 0. ) {
-        cl.aveDriftTime  = sum_t / sum_w;
-        cl.aveX          = sum_x / sum_w;
-      }
+  // =====================================================================
+  // Electron shower clustering: if a decay angle was calculated above, then
+  // proceed to cluster all hits along the reconstructed direction in 2D.
   
-      cl.elShowerFrac = cl.shower.size() / float( fNumPlaneHits[plane] - (int)cl.cluster_mu.size());
-      cl.showerAngleMean     = hAng.GetMean();
-      cl.showerAngleRMS     = hAng.GetRMS();
-    
-    } // end Michel shower 2D clustering (if decay angle found)
-   
-    
+  if( cl.decayAngle2D > 0 ){
+    float sum_t = 0.; 
+    float sum_x = 0.;
+    float sum_w = 0.;
+  
+    // histogram to keep track of anglular spread of shower
+    // (charge-weighted)
+    TH1D hAng("hAng","ang",180,0,180);
+  
+    for(size_t i=0; i<fHitX.size(); i++){
+       
+        if( fHitPlane.at(i) != plane ) continue;
+        
+        // Skip unphysical hit times, as well as any hits with small X
+        if( fHitT.at(i) < 0 || fHitX.at(i) < 1. ) continue;
+        
+        // Skip muon hits
+        if( std::find(cl.cluster_mu.begin(), cl.cluster_mu.end(), i ) != cl.cluster_mu.end() ) continue;
+
+        bool isInElCluster = false;
+        if( std::find(cl.cluster_el.begin(), cl.cluster_el.end(), i ) != cl.cluster_el.end() ) isInElCluster = true;
+        
+        // Find angle of this hit relative to Michel direction (2D)
+        TVector3 loc(fHitW.at(i), fHitX.at(i), 0.);
+        TVector3 hv = loc - elStart2D; 
+        float ang = hv.Angle(elDir2D) * RAD_TO_DEG;
+        
+        if( cl.plane == 1 ) hElShowerDepAngle2D->Fill(ang);
+        
+        // If this part of the original electron-portion of total cluster, or if 
+        // it lies within 2D acceptance angle cone, add it to the shower.
+        if( isInElCluster || ang <= fShowerAcceptanceAngle ) {
+          cl.shower     .push_back( i );
+          cl.isInTrk    .push_back(isInElCluster);
+          hAng          .Fill(ang,fHitCharge.at(i));
+          sum_t         += fHitT.at(i) * fHitCharge.at(i);
+          sum_x         += fHitX.at(i) * fHitCharge.at(i);
+          sum_w         += fHitCharge.at(i);
+        }//<-- end if in 2D cone
+        
+    }//<-- end loop over hits
+
+    if( sum_w > 0. ) {
+      cl.aveDriftTime  = sum_t / sum_w;
+      cl.aveX          = sum_x / sum_w;
+    }
+  
+    cl.elShowerFrac = cl.shower.size() / float( fNumPlaneHits[plane] - (int)cl.cluster_mu.size());
+    cl.showerAngleMean     = hAng.GetMean();
+    cl.showerAngleRMS     = hAng.GetRMS();
+  
+  } // end Michel shower 2D clustering (if decay angle found)
 
 }
 
@@ -4593,7 +4590,7 @@ void MichelAnaFilter::CalcMichelShowerEnergy( michelcluster& cl ) {
 
 //########################################################################################
 // A simple clustering algorithm that starts at some "seed" hit and clusters hits based on
-// proximity in 2D 'XW' space.
+// proximity in 2D 'WX' space.
 void MichelAnaFilter::ProximityCluster(
 std::vector<float>& hitX, std::vector<float>& hitW, std::vector<float>& hitCharge, std::vector<int>& hitPlane, 
 std::vector<int>& cluster, int plane, int seedHit, float distThresh)

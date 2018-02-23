@@ -63,7 +63,7 @@ lariat_michelanafilter:
   TrackCalModule:                 "calotc"
   LookAtTracks:                   true
   Req1StpTrk:                     true
-  UseCrossingMuons:               false
+  UseCrossingMuons:               true
   FiducialMarginX:                2.
   FiducialMarginY:                2.
   FiducialMarginZ:                2.
@@ -72,14 +72,15 @@ lariat_michelanafilter:
   # clustering/shower reco settings:
   MaxHitSeparation:               2.5 
   TruncMeanWindow:                4
-  TruncMeanP:                     0.25 # 0.20
-  MaxMatchDistance:               5 # 4
+  TruncMeanP:                     0.25 
+  MaxMatchDistance:               5 
   LocalLinearityWindow:           4
   LinThresh:                      0.80
   LinTol:                         3
   LinThreshMuHits:                0.60
-  MuEndRadius:                    3.
+  MuEndRadius:                    3.  # cm
   ShowerAcceptanceAngle:          60. 
+  MaxHitTimeDiff:                 1.5 # microseconds 
   
   RFactor:                        1.51
   RFactorTrack:                   1.47

@@ -26,8 +26,7 @@ lariat_detproperties:
   SternheimerX1:    3.0000  # Ar Sternheimer parameter x0.
   SternheimerCbar:  5.2146  # Ar Sternheimer parameter Cbar.
 
-  # PARAMETER NOT RECOGNIZED IN v06_44_00 
-  #SimpleBoundaryProcess: true  #enable opticalBoundaryProcessSimple instead of G4 default
+  SamplingRate:     128.    # Set <= 0 to obtain this from TPC clock
 
 }
 
