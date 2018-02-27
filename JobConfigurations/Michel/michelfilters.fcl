@@ -77,7 +77,7 @@ lariat_michelanafilter:
   LocalLinearityWindow:           4
   LinThresh:                      0.80
   LinTol:                         3
-  LinThreshMuHits:                0.60
+  LinThreshMuFit:                 0.60
   MuEndRadius:                    3.  # cm
   ShowerAcceptanceAngle:          60. 
   MaxHitTimeDiff:                 1.5 # microseconds 

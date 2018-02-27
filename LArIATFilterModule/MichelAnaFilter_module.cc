@@ -373,8 +373,14 @@ private:
   bool                fMuTrackIsCaloOrdered;
   TVector3            fMuTrackVertex;
   TVector3            fMuTrackEnd;
+  float               fCrossingMuVertex_X;
+  float               fCrossingMuVertex_Y;
+  float               fCrossingMuVertex_Z;
+  float               fCrossingMuEnd_X;
+  float               fCrossingMuEnd_Y;
+  float               fCrossingMuEnd_Z;
   float               fCrossingMuLength;
-  float               fCrossingMuLight;
+  float               fCrossingMuPhotons;
   float               fCrossingMuCharge;
 
   // Optical information
@@ -440,6 +446,8 @@ private:
   float               fAveDriftTime;
   float               fAveX;
   float               fElOffsetT;
+  int                 fElStartWire;
+  int                 fMuEndWire;
   // ...collection plane
   float               fMinCovAtBnd;
   int                 fClusterSize;
@@ -616,6 +624,8 @@ private:
   TH1D*               hElShowerSize;
   TH1D*               hMuClusterHitsEndFit; 
   TH1D*               hDecayAngle2D;
+  TH1D*               hRecombination;
+  TH1D*               hRecombinationCrsMuTrk;
   TH1D*               hElShowerDepAngle2D;
   TH1D*               hElShowerAngleMean;
   TH1D*               hElShowerAngleRMS;
@@ -628,6 +638,8 @@ private:
   TH1D*               hMuEndHitTimeDiff;
   TH2D*               hMuEnd3D_ZX;
   TH2D*               hMuEnd3D_ZY;
+  TH1D*               hCrsMuQPerCm;
+  TH1D*               hCrsMuLPerCm;
   TH1D*               hElectronLifetime;
   TH1D*               hElectronLifetimeReco;
   TH1D*               hTrue_NumElectrons;
@@ -1045,9 +1057,15 @@ void MichelAnaFilter::beginJob()
   fTree->Branch("MuTrackLength",            &fMuTrackLength,          "MuTrackLength/F");
   fTree->Branch("MuTrackEnergy",            &fMuTrackEnergy,          "MuTrackEnergy/F");
   fTree->Branch("MuTrackZenithAngle",       &fMuTrackZenithAngle,     "MuTrackZenithAngle/F");
+  fTree->Branch("CrossingMuVertex_X",         &fCrossingMuVertex_X,       "CrossingMuVertex_X/F");
+  fTree->Branch("CrossingMuVertex_Y",         &fCrossingMuVertex_Y,       "CrossingMuVertex_Y/F");
+  fTree->Branch("CrossingMuVertex_Z",         &fCrossingMuVertex_Z,       "CrossingMuVertex_Z/F");
+  fTree->Branch("CrossingMuEnd_X",         &fCrossingMuEnd_X,       "CrossingMuEnd_X/F");
+  fTree->Branch("CrossingMuEnd_Y",         &fCrossingMuEnd_Y,       "CrossingMuEnd_Y/F");
+  fTree->Branch("CrossingMuEnd_Z",         &fCrossingMuEnd_Z,       "CrossingMuEnd_Z/F");
   fTree->Branch("CrossingMuLength",         &fCrossingMuLength,       "CrossingMuLength/F");
   fTree->Branch("CrossingMuCharge",         &fCrossingMuCharge,       "CrossingMuCharge/F");
-  fTree->Branch("CrossingMuLight",          &fCrossingMuLight,        "CrossingMuLight/F");
+  fTree->Branch("CrossingMuPhotons",          &fCrossingMuPhotons,        "CrossingMuPhotons/F");
   // ...optical information
   fTree->Branch("NumOpHits0",               &fNumOpHits0,             "NumOpHits0[2]/I");
   fTree->Branch("NumOpHits",                &fNumOpHits,              "NumOpHits[2]/I");
@@ -1408,7 +1426,7 @@ void MichelAnaFilter::beginJob()
   // Wire charge-hit diagnostics  
   hHitX[0]              = diagDir.make<TH1D>("HitX_Ind","Calculated drift position from hit time (induction plane);X [cm]",300,-5.,55.);
   hHitX[1]              = diagDir.make<TH1D>("HitX_Col","Calculated drift position from hit time (collection plane);X [cm]",300,-5.,55.);
-  hHitRMS[0]            = diagDir.make<TH1D>("HitRMS_Ind","Hit RMS (induction plane)",60,0.,15.);
+  hHitRMS[0]            = diagDir.make<TH1D>("HitRMS_Ind","Hit RMS (induction plane)",120,0.,30.);
   hHitRMS[1]            = diagDir.make<TH1D>("HitRMS_Col","Hit RMS (collection plane)",120,0.,30.);
   hHitAmplitude[0]      = diagDir.make<TH1D>("HitAmplitude_Ind","Hit amplitude (induction plane);ADC",100,0,50);
   hHitAmplitude[1]      = diagDir.make<TH1D>("HitAmplitude_Col","Hit amplitude (collection plane);ADC",100,0,50);
@@ -1456,7 +1474,7 @@ void MichelAnaFilter::beginJob()
   hShowerSizeCompare    ->SetOption("colz");
   hElClusterSizeCompare   = diagDir.make<TH2D>("ElClusterSizeCompare","Electron cluster size on both planes;Collection Plane;Induction Plane",100,0,100,100,0,100);
   hElClusterSizeCompare    ->SetOption("colz");
-  hElOffsetT            = diagDir.make<TH1D>("ElOffsetT","Time difference between first electron / last #mu hit;#DeltaT [#mus]",200,-20.,20);
+  hElOffsetT            = diagDir.make<TH1D>("ElOffsetT","Time difference between first electron / last #mu hit (same wire only);#DeltaT [#mus]",200,-20.,20);
   hHitTimeDiff          = diagDir.make<TH1D>("HitTimeDiff","Hit time differences between Michel shower hits in collection/induction planes;T(coll.) - T(ind.) [#mus]",200,-10.,10.);
   
   // ======================================================================
@@ -1476,6 +1494,10 @@ void MichelAnaFilter::beginJob()
   hElShowerEnergy         = tfs->make<TH1D>("ElShowerEnergy","Reco Michel Electron Shower Energy;Energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
   hElShowerEnergyQL       = tfs->make<TH1D>("ElShowerEnergyQL","Reco Michel Electron Shower Energy (Q+L);Energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
   hElTrackdEdx            = tfs->make<TH1D>("ElTrackdEdx","Averaged dE/dx along 3D electron track;dE/dx [MeV/cm]",100,0.,10.);
+  hRecombination          = tfs->make<TH1D>("Recombination","Recombination calculated from Q/L;Recombination probability #it{r}",140,-0.2,1.2);
+  hRecombinationCrsMuTrk  = tfs->make<TH1D>("Recombination_CrsMuTrk","Recombination calculated from Q/L (crossing muons);Recombination probability #it{r}",140,-0.2,1.2);
+  hCrsMuQPerCm            = tfs->make<TH1D>("CrsMuQPerCm","Q/cm for crossing muons;Charge deposited per unit length [e-/cm]",140,0.,14e4);
+  hCrsMuLPerCm            = tfs->make<TH1D>("CrsMuLPerCm","L/cm for crossing muons;Photons produced per unit length [#gamma/cm]",140,0.,14e4);
     
   // ======================================================================
   // Truth plots
@@ -1616,7 +1638,6 @@ void MichelAnaFilter::ResetVariables()
   fMuTrackIsCaloOrdered     = false;
   fMuTrackHits              .clear();
   fMuTrackID                = -999 ;
-  fCrossingMuTrackIndex     = -999 ;
   fMuTrackIndex             = -999 ;
   fMuTrackLength            = -999.;
   fMuTrackEnergy            = -999.;
@@ -1631,9 +1652,16 @@ void MichelAnaFilter::ResetVariables()
   fMuTrackEnd               .SetXYZ(-99.,-99.,-99.);
 
   // Mu calibration variables
+  fCrossingMuVertex_X       = -999.;
+  fCrossingMuVertex_Y       = -999.;
+  fCrossingMuVertex_Z       = -999.;
+  fCrossingMuEnd_X       = -999.;
+  fCrossingMuEnd_Y       = -999.;
+  fCrossingMuEnd_Z       = -999.;
+  fCrossingMuTrackIndex     = -999 ;
   fCrossingMuLength        = -9.;
   fCrossingMuCharge        = -9999.;
-  fCrossingMuLight         = -9999.;
+  fCrossingMuPhotons         = -9999.;
 
   // Shower/charge
   fHitPlane               .clear();
@@ -1646,6 +1674,8 @@ void MichelAnaFilter::ResetVariables()
   fElOffsetT            = -99.;
   fAveDriftTime         = -9.;
   fAveX                 = -9.;
+  fMuEndWire            = -9;
+  fElStartWire          = -9;
   
   fClusterSize          = -9;
   fMuClusterSize        = -9;
@@ -1849,6 +1879,9 @@ bool MichelAnaFilter::filter(art::Event & e)
     float stpTrkLength    = -9.; 
     TVector3 stpTrkVertex;
     TVector3 stpTrkEnd;
+    TVector3 crsTrkVertex;
+    TVector3 crsTrkEnd; 
+  
     
     // ================================================================
     // Loop over the tracks in the event
@@ -1872,8 +1905,7 @@ bool MichelAnaFilter::filter(art::Event & e)
       hTrackLength  ->Fill( TheTrack.Length() );
       
       // ------------------------------------------------------------
-      // Is track stopping, passing, or contained? Classify "stopping" 
-      // track only if coming through top or sides, not the bottom.
+      // Is track stopping, passing, or contained? 
       bool endIsInFid     = IsPointInFiducialVolume(TheTrack.End(),fFiducialMarginX,fFiducialMarginY,fFiducialMarginZ);
       bool vertexIsInFid  = IsPointInFiducialVolume(TheTrack.Vertex(),fFiducialMarginX,fFiducialMarginY,fFiducialMarginZ);
       bool isCrossingTrack  = (!endIsInFid && !vertexIsInFid);
@@ -1883,16 +1915,30 @@ bool MichelAnaFilter::filter(art::Event & e)
       fNumTrackStopping   += isStoppingTrack; 
       fNumTrackCrossing   += isCrossingTrack;
       fNumTrackContained  += isContainedTrack;
+      
+      // ------------------------------------------------------------
+      // Call the node that's outside the fiducial volume the "vertex".
+      // If both are outside fiducial volume (ie, crossing track), then
+      // whichever has higher 'Y' coordinate is the vertex.
+      TVector3 vertex = TheTrack.Vertex();
+      TVector3 end    = TheTrack.End();
+      if( (isStoppingTrack && vertexIsInFid) || (isCrossingTrack && vertex.Y() < end.Y() ) ){
+        vertex  = TheTrack.End();
+        end     = TheTrack.Vertex();
+      } 
+      
       if( isStoppingTrack ) {
         stpTrkIndex = track_index;
         stpTrkID    = TheTrack.ID();
         stpTrkLength= TheTrack.Length();
-        stpTrkVertex= TheTrack.Vertex();
-        stpTrkEnd   = TheTrack.End();
+        stpTrkVertex= vertex;
+        stpTrkEnd   = end;
       }
       if( isCrossingTrack ) {
-        crsTrkIndex = track_index;
-        crsTrkLength = TheTrack.Length();
+        crsTrkIndex   = track_index;
+        crsTrkLength  = TheTrack.Length();
+        crsTrkVertex  = vertex;
+        crsTrkEnd     = end;
       }
       
       LOG_VERBATIM("MicheAnaFilter")
@@ -1918,9 +1964,20 @@ bool MichelAnaFilter::filter(art::Event & e)
     // ===================================================================
     // Identify events with 1 crossing track and no others for calibration
     if( !fIsMC && fNumTrackCrossing == 1 && fNumTrack == 1 ) {
-      isOneCrossingTrack    = true; 
-      fCrossingMuTrackIndex = crsTrkIndex;
-      fCrossingMuLength     = crsTrkLength; 
+      // Exclude tracks passing through wireplanes
+      bool isEndOnWireplane     = ( crsTrkEnd.X() < fFiducialMarginX && IsPointInFiducialVolume( crsTrkEnd, 0., fFiducialMarginY, fFiducialMarginZ ) );
+      bool isVertexOnWireplane  = ( crsTrkVertex.X() < fFiducialMarginX && IsPointInFiducialVolume( crsTrkVertex, 0., fFiducialMarginY, fFiducialMarginZ ) );
+      if( !isEndOnWireplane && !isVertexOnWireplane ) {
+        isOneCrossingTrack    = true; 
+        fCrossingMuTrackIndex = crsTrkIndex;
+        fCrossingMuLength     = crsTrkLength; 
+        fCrossingMuVertex_X   = crsTrkVertex.X();
+        fCrossingMuVertex_Y   = crsTrkVertex.Y();
+        fCrossingMuVertex_Z   = crsTrkVertex.Z();
+        fCrossingMuEnd_X      = crsTrkEnd.X();
+        fCrossingMuEnd_Y      = crsTrkEnd.Y();
+        fCrossingMuEnd_Z      = crsTrkEnd.Z();
+      }
     }
     
 
@@ -1931,38 +1988,25 @@ bool MichelAnaFilter::filter(art::Event & e)
       
       isOneStoppingTrack = true;
       fNumEvents_StpTrk++;
-
-//      art::Ptr< recob::Track > StopTrackPtr(TrackHandle,stpTrkIndex);
-//      recob::Track StopTrack = *StopTrackPtr;
-      
-      // ------------------------------------------------------------
-      // Call the node that's outside the fiducial volume the "vertex"
-      TVector3 vertex, end;
-      vertex    = stpTrkVertex;
-      end       = stpTrkEnd;
-      if( IsPointInFiducialVolume(vertex,fFiducialMarginX, fFiducialMarginY, fFiducialMarginZ )){
-        vertex  = stpTrkEnd;
-        end     = stpTrkVertex;
-      }
       
       // -------------------------------------------------------------  
       // Save info.
       fMuTrackIndex       = stpTrkIndex;
       fMuTrackID          = stpTrkID;
-      fMuTrackVertex      = vertex;
-      fMuTrackEnd         = end;
-      fMuTrackVertex_X    = vertex.X();
-      fMuTrackVertex_Y    = vertex.Y();
-      fMuTrackVertex_Z    = vertex.Z();
-      fMuTrackEnd_X       = end.X();
-      fMuTrackEnd_Y       = end.Y();
-      fMuTrackEnd_Z       = end.Z();
+      fMuTrackVertex      = stpTrkVertex;
+      fMuTrackEnd         = stpTrkEnd;
+      fMuTrackVertex_X    = stpTrkVertex.X();
+      fMuTrackVertex_Y    = stpTrkVertex.Y();
+      fMuTrackVertex_Z    = stpTrkVertex.Z();
+      fMuTrackEnd_X       = stpTrkEnd.X();
+      fMuTrackEnd_Y       = stpTrkEnd.Y();
+      fMuTrackEnd_Z       = stpTrkEnd.Z();
       fMuTrackLength      = stpTrkLength;
         
       // -------------------------------------------------------------  
       // Calculate zenith angle.
       TVector3 vert(0.,1.,0.);
-      TVector3 tmp = (vertex-end);
+      TVector3 tmp = (stpTrkVertex-stpTrkEnd);
       fMuTrackZenithAngle = tmp.Angle(vert)*RAD_TO_DEG;
 
       LOG_VERBATIM("MichelAnaFilter")
@@ -2675,8 +2719,15 @@ bool MichelAnaFilter::filter(art::Event & e)
       }
     }
     float mean_vis = sum_vis / float( CrsTrack.NumberTrajectoryPoints() );
-          
-    fCrossingMuLight = sum_pe / mean_vis;
+    if( mean_vis > 0 && sum_pe > 0 ) fCrossingMuPhotons = sum_pe / mean_vis;
+
+    // Recomb. (exclude muons that pass through wire planes)
+    if( fCrossingMuCharge > 0 && fCrossingMuPhotons > 0 && fCrossingMuLength > 10. ){
+      float r = (1. - 0.21*(fCrossingMuCharge / fCrossingMuPhotons)) / (1. + (fCrossingMuCharge / fCrossingMuPhotons) );
+      hRecombinationCrsMuTrk->Fill( r );
+      hCrsMuQPerCm->Fill( fCrossingMuCharge / fCrossingMuLength );
+      hCrsMuLPerCm->Fill( fCrossingMuPhotons / fCrossingMuLength );
+    }
 
   }//<-- end calibration event information
 
@@ -2747,8 +2798,11 @@ bool MichelAnaFilter::filter(art::Event & e)
     // Measure the drift offset (X) of the first electron hit 
     // from the last muon hit
     if( isClusterBndFound && fMuClusterSize > 0 && fElClusterSize > 0 ){ 
+      fElStartWire = fHitWire[ cl_pl1.cluster_el.at(0) ];
+      fMuEndWire   = fHitWire[ cl_pl1.muEndHit ];
       fElOffsetT = fHitT[ cl_pl1.cluster_el.at(0) ] - fHitT[ cl_pl1.muEndHit ];
-      hElOffsetT ->Fill(fElOffsetT);
+      if( fElStartWire == fMuEndWire ) 
+        hElOffsetT ->Fill(fElOffsetT);
     }
   
     // ===========================================================
@@ -3154,6 +3208,8 @@ bool MichelAnaFilter::filter(art::Event & e)
     if( goodShower3D ) {
       hElShowerEnergyQL ->Fill(fElShowerEnergyQL);
       hElTrackdEdx      ->Fill(fElTrackdEdx);
+      float r = (1. - 0.21*(fElShowerCharge / fElShowerPhotons)) / (1. + (fElShowerCharge / fElShowerPhotons) );
+      hRecombination    ->Fill( r ); 
     }
 
     if( fTrue_ElShowerEnergyDep > 0. ) {
@@ -3509,33 +3565,48 @@ float MichelAnaFilter::CalcSigma(size_t ch, float PE, float T ) {
 //########################################################################################
 // Function for determining if a point [cm] is inside or outside predefined fiducial volume 
 // (fiducial margins [cm] = fx, fy, fz)
-bool MichelAnaFilter::IsPointInFiducialVolume(TVector3 p, float fX = 0., float fY = 0., float fZ = 0.)
+/*
+bool MichelAnaFilter::IsPointInFiducialVolume(
+  TVector3 p, 
+  float dx1 = 0., float dx2 = 0.,
+  float dy1 = 0., float dy2 = 0.,
+  float dz1 = 0., float dz2 = 0. )
 {
-  float        TPC_Range_X[2];
-  float        TPC_Range_Y[2];
-  float        TPC_Range_Z[2];
-  TPC_Range_X[0]  = 0.;
-  TPC_Range_X[1]  = fGeo->DetHalfWidth() * 2.;
-  TPC_Range_Y[0]  = fGeo->DetHalfHeight()* -1.;
-  TPC_Range_Y[1]  = fGeo->DetHalfHeight();
-  TPC_Range_Z[0]  = 0.;
-  TPC_Range_Z[1]  = fGeo->DetLength();
-
-  if(    (p.X() >= TPC_Range_X[0] + fX) && (p.X() <= TPC_Range_X[1] - fX)
-      && (p.Y() >= TPC_Range_Y[0] + fY) && (p.Y() <= TPC_Range_Y[1] - fY)
-      && (p.Z() >= TPC_Range_Z[0] + fZ) && (p.Z() <= TPC_Range_Z[1] - fZ) )
+  if(    (p.X() >= 0. + dx1) && (p.X() <= 2.*fGeo->DetHalfWidth() - dx2)
+      && (p.Y() >= -1.*fGeo->DetHalfHeight() + dy1) && (p.Y() <= fGeo->DetHalfHeight() - dy2)
+      && (p.Z() >= 0. + dz1) && (p.Z() <= fGeo->DetLength() - dz2) )
   {
     return true;
   } else {
     return false;
   }
-  
 }
+*/
+
+//########################################################################################
+// Function for determining if a point [cm] is inside or outside predefined fiducial volume 
+// (fiducial margins [cm] = fx, fy, fz)
+bool MichelAnaFilter::IsPointInFiducialVolume(TVector3 p, float dx = 0., float dy = 0., float dz = 0.)
+{
+  if(    (p.X() >= 0. + dx) && (p.X() <= 2.*fGeo->DetHalfWidth() - dx)
+      && (p.Y() >= -1.*fGeo->DetHalfHeight() + dy) && (p.Y() <= fGeo->DetHalfHeight() - dy)
+      && (p.Z() >= 0. + dz) && (p.Z() <= fGeo->DetLength() - dz) )
+  {
+    return true;
+  } else {
+    return false;
+  }
+}
+
+
 
 //########################################################################################
 // Retrieve all detector properties (TPC and PMTs)
 void MichelAnaFilter::GetDetProperties(){
 
+  if( fRunNumber != fCachedRunNumber ) {
+    fCachedRunNumber = fRunNumber;
+    
     // ================================================   
     // Update detector properties
     auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -3545,10 +3616,6 @@ void MichelAnaFilter::GetDetProperties(){
     fXTicksOffset[0]    = detprop->GetXTicksOffset(0,0,0);
     fXTicksOffset[1]    = detprop->GetXTicksOffset(1,0,0);
     fSamplingRate       = detprop->SamplingRate()*1e-3;
-    std::cout<<"SAMPLING RATE: "<<fSamplingRate<<"\n";
-  
-  if( fRunNumber != fCachedRunNumber ) {
-    fCachedRunNumber = fRunNumber;
 
     // ================================================   
     // Get SPE values for PMTs

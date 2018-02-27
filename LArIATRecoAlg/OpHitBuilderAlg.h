@@ -150,12 +150,7 @@ class OpHitBuilderAlg{
   float   fMskBaselineSubtr_P;
   float   fMskBaselineSubtr_grmsfac;
   float   fMskBaselineSubtr_adcthresh;
-  
-//  float fBslnSbtr_GradRmsFactor;
-//  float fBslnSbtr_AdcThresh;
-//  size_t fBslnSbtr_Range;
-//  float fBslnSbtr_P; 
-
+ 
  private:
   
   bool fReturnRawIntegrals;

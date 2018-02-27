@@ -355,22 +355,7 @@ std::vector<float> OpHitBuilderAlg::MakeGradient( const std::vector<float>& wfm 
     g[i] = (-wfm[i+2]+8.*wfm[i+1]-8*wfm[i-1]+wfm[i-2])/12.;
     if( fMakeHistograms ) hGradient->Fill(g[i]); 
   }
-
   return g;
-  
-  // Old method: simple gradient over 2-sample width
-  /*
-  std::vector<float> g(wfm.size());
-  g[0]=0; 
-  g[1]=0; 
-  for(size_t i=2; i<wfm.size(); i++) {
-    float grad = float(wfm[i]-wfm[i-2])*0.5;
-    g[i] = grad;
-    hGradient->Fill(grad);
-  }
-  return g;
-  */
-
 }
 
 
@@ -500,8 +485,6 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
   
   // If the hit is too early to reliably calculate a baseline, OR if the 
   // previous hit is too close, stop now and return defaults
- // if( (hit < 110)||(hit-prev_hit < 200 ) || ( hit > (short)nSamples-100) ) {
-  //if( (hit < 310)||(hit-prev_hit < 300 ) || ( hit > (short)nSamples-100) ) {
   if( (hit < 110)||(hit-prev_hit < 200 ) || ( hit > (short)nSamples-100) ) {
     LOG_DEBUG("OpHitBuilder") << "!!! Hit is too early or close to prev hit -- abort.";
     return hit_info;
@@ -700,13 +683,6 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<short>& wfm, s
   return GetHitInfo(wfm2, hit, prev_hit, windows, usePrepulseFit);
 }
 
-
-//-------------------------------------------------------------
-// Performs prepulse fit on a hit and returns baseline -corrected 
-// vector<float> for easier integration or for making ave waveform
-//std::vector<float> OpHitBuilderAlg::HitBaselineCorrection( std::vector<short> wfm, short hit, int pre, int post){
-//
-//}
 
 //-------------------------------------------------------------
 // Scans segment of vector<float> around a designated sample point
