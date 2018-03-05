@@ -40,7 +40,7 @@ public:
   WCEfficiencies & operator = (WCEfficiencies const &) = delete;
   WCEfficiencies & operator = (WCEfficiencies &&) = delete;
   void beginJob() override;
-  void  reconfigure(fhicl::ParameterSet const & p) override;
+  void  reconfigure(fhicl::ParameterSet const & p) ;
   
   // Required functions.
   void analyze(art::Event const & e) override;

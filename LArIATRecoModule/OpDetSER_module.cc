@@ -60,7 +60,7 @@ public:
   void endJob() override;
   void endRun(art::Run const & r) override;
   void endSubRun(art::SubRun const & sr) override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   std::vector<float> FitSER(TH1D* h_SER, float x1, float x2, float meanSet, float width, float pedMaxWidth, bool refit);
 
 private:
