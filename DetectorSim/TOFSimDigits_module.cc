@@ -58,7 +58,7 @@ public:
   TOFSimDigits(TOFSimDigits &&) = delete;
   TOFSimDigits & operator = (TOFSimDigits const &) = delete;
   TOFSimDigits & operator = (TOFSimDigits &&) = delete;
-  void  reconfigure(fhicl::ParameterSet const & p) override;
+  void  reconfigure(fhicl::ParameterSet const & p) ;
   void beginJob() override;
   // Required functions.
   void produce(art::Event & e) override;

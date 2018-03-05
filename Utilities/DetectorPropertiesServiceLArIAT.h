@@ -80,7 +80,7 @@ namespace ldp{
       DetectorPropertiesServiceLArIAT(fhicl::ParameterSet const& pset,
 				art::ActivityRegistry& reg);
 
-      virtual void   reconfigure(fhicl::ParameterSet const& pset) override;
+      virtual void   reconfigure(fhicl::ParameterSet const& pset) ;
       void   preProcessEvent(const art::Event& evt);
       void   postOpenFile(const std::string& filename);
       void   preBeginRun(const art::Run& run) { fGotElectronLifetimeFromDB=false; }

@@ -51,7 +51,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   
 private:
   void ResetVars();

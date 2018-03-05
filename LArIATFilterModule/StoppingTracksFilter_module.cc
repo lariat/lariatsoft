@@ -84,7 +84,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   /*
   bool beginRun(art::Run & r) override;
   bool beginSubRun(art::SubRun & sr) override;

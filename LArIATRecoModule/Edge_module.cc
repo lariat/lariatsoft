@@ -82,7 +82,7 @@ public:
   void beginRun(art::Run & r) override;
   void beginSubRun(art::SubRun & sr) override;
   void endJob() override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
 
 private:
 
