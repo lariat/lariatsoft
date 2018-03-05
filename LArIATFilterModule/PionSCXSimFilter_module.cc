@@ -47,7 +47,7 @@ namespace PionSCXSimFilter {
     virtual ~PionSCXSimFilter();
 
     // this method reads in any parameters from the .fcl files
-    virtual void reconfigure(fhicl::ParameterSet const& parameterSet) override;
+    virtual void reconfigure(fhicl::ParameterSet const& parameterSet) ;
 
     // the filter routine, called once per event
     bool filter(art::Event & event) override;

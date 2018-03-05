@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v06_69_01
+parent	lariatsoft v06_70_00
 defaultqual	e15
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
@@ -11,20 +11,20 @@ gdmldir product_dir gdml
 # dependencies on external packages
 product         version
 
-larsoft		      v06_69_01
+larsoft		      v06_70_00
 LariatFilters   v01_02
 lariatfragments v06_68_00
-artdaq_core     v3_00_08
+artdaq_core     v3_01_06
 LariatBeamFiles v01_00		-	optional
-lariatutil	    v06_69_01 -	optional
+lariatutil	    v06_70_00 -	optional
 cetbuildtools   v7_00_03	-	only_for_build
 end_product_list
 
 # e15 - with gcc 6.4.0 and -std=c++14
-qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	    LariatBeamFiles	lariatutil	notes
-e15:debug	e15:debug -nq-		e15:debug	 e15:nu:s62:debug  -nq-		        e15:debug
-e15:opt		e15:opt	  -nq-		e15:opt		 e15:nu:s62:opt	   -nq-		        e15:opt
-e15:prof	e15:prof  -nq-		e15:prof	 e15:nu:s62:prof   -nq-		        e15:prof
+qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	LariatBeamFiles	lariatutil	notes
+e15:debug	e15:debug -nq-		e15:debug	 e15:s65:debug  -nq-		e15:debug
+e15:opt		e15:opt	  -nq-		e15:opt		 e15:s65:opt	-nq-		e15:opt
+e15:prof	e15:prof  -nq-		e15:prof	 e15:s65:prof   -nq-		e15:prof
 end_qualifier_list
 
 # table file fragment to set FW_DATA
@@ -34,7 +34,7 @@ table_fragment_begin
     pathPrepend(FHICL_FILE_PATH,      .)
     envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
     envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
-    envSet(ART_WORKBOOK_QUAL,         "s62:e15")
+    envSet(ART_WORKBOOK_QUAL,         "s65:e15")
     envSet(LARIATDBNAME,              lariat_prd)
     envSet(LARIATDBPORT,              5443)
     envSet(LARIATDBHOST,              ifdbprod2.fnal.gov)

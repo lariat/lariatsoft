@@ -59,7 +59,7 @@ public:
   MassSelectionFilter & operator = (MassSelectionFilter const &) = delete;
   MassSelectionFilter & operator = (MassSelectionFilter &&) = delete;
 
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void beginJob() override;
   void endJob() override;
   // Required functions.

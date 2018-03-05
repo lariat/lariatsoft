@@ -66,7 +66,7 @@ public:
   // Required functions.
   bool filter(art::Event & e) override;
   // Optional functions
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void beginJob   (                ) override;
 
 private:
