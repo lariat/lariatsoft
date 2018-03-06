@@ -54,7 +54,7 @@ public:
   WCQualityFilter & operator = (WCQualityFilter const &) = delete;
   WCQualityFilter & operator = (WCQualityFilter &&) = delete;
 
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
 
   bool insideImagPipe(std::vector<double> pos);
   bool CheckUpstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2);

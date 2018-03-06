@@ -26,6 +26,8 @@ lariat_detproperties:
   SternheimerX0:    0.2000  # Ar Sternheimer parameter x0.
   SternheimerX1:    3.0000  # Ar Sternheimer parameter x0.
   SternheimerCbar:  5.2146  # Ar Sternheimer parameter Cbar.
+  
+  SamplingRate:      -128.  # Set <= 0 to get from TPCClock.TimeTick() (prev. default behavior)
 
   # PARAMETER NOT RECOGNIZED IN v06_44_00 
   #SimpleBoundaryProcess: true  #enable opticalBoundaryProcessSimple instead of G4 default

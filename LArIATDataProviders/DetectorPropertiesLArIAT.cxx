@@ -228,6 +228,9 @@ namespace ldp{
     fSternheimerParameters.x0   = config.SternheimerX0();
     fSternheimerParameters.x1   = config.SternheimerX1();
     fSternheimerParameters.cbar = config.SternheimerCbar();
+    
+    fSamplingRate               = config.SamplingRate();
+    if( fSamplingRate <= 0 )    fSamplingRate = fTPCClock.TickPeriod() * 1.e3;
 
     CalculateXTicksParams();
     
