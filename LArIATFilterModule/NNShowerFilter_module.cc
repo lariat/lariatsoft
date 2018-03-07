@@ -74,17 +74,18 @@ private:
   TH1F* fEmptyProb;
 
   TH1F* fProbBoxShower;
+  TH1F* fProbBoxTrack;
   TH1F* fProbBoxShowerMult;
-  TH2F* fProbBoxShowerVsMomo;
-
+  TH2F* fProbBoxTrackVsMomo;
+  
   TH1F* fRejectionModes;
   TH1F* fPassingEvents;
   TH2F* fPassingEventsVsPz;
   TH1F* fTrackReNormProb; 
   TH1F* fShowerReNormProb;
 
-  TH2F* fReNormTrackVsEnergy;
-  TH2F* fReNormTrackVsWireID;
+  //TH2F* fReNormTrackVsEnergy;
+  //TH2F* fReNormTrackVsWireID;
 
   TH1F* fMomo;
 
@@ -97,6 +98,7 @@ private:
   bool bData;
   bool bVerbose;
   bool bRemoveOrSelect;
+  bool DoWCTPCMatch;
 
 };
 
@@ -132,8 +134,8 @@ bool NNShowerFilter::filter(art::Event & e)
     art::fill_ptr_vector(Tracklist, TrackHandle);
     }
   // Association between Tracks and 2d Hits
-  art::FindManyP<recob::Track> ass_trk_hits(HitHandle,   e, fTrackModuleLabel); //is valid
-  art::FindManyP<recob::Hit> HitsInTrackAssn(TrackHandle,   e, fTrackModuleLabel); //is not valid
+  art::FindManyP<recob::Track> ass_trk_hits(HitHandle,   e, fTrackModuleLabel); 
+  art::FindManyP<recob::Hit> HitsInTrackAssn(TrackHandle,   e, fTrackModuleLabel); 
 
 
 
@@ -160,8 +162,8 @@ bool NNShowerFilter::filter(art::Event & e)
     fTrackReNormProb->Fill(renormTrack);
     fShowerReNormProb->Fill(renormShower);
 
-    fReNormTrackVsEnergy->Fill(renormTrack, Hitlist[iHit]->SummedADC());
-    fReNormTrackVsWireID->Fill(renormTrack, (float)Hitlist[iHit]->WireID().Wire);
+   // fReNormTrackVsEnergy->Fill(renormTrack, Hitlist[iHit]->SummedADC());
+   // fReNormTrackVsWireID->Fill(renormTrack, (float)Hitlist[iHit]->WireID().Wire);
   }
 
 
@@ -234,7 +236,7 @@ bool NNShowerFilter::filter(art::Event & e)
       wcVec.SetZ(geant_part[i]->Pz());
 
       momo = wcVec.Mag()*1000.;
-      fMomo->Fill(wcVec.Mag() * 1000.);
+      fMomo->Fill(momo);
 
       WC_vec[0] = wcVec[0];
       WC_vec[1] = wcVec[1];
@@ -254,7 +256,7 @@ bool NNShowerFilter::filter(art::Event & e)
   }
 
   fPassingEvents->Fill(1); // Pass WC existing
-  fPassingEventsVsPz->Fill(1, momo);
+  //fPassingEventsVsPz->Fill(1, momo);
 
   // ----- 
   // Need to create box on Wire / TDC view starting from where WC projects into the event
@@ -268,6 +270,7 @@ bool NNShowerFilter::filter(art::Event & e)
 
   // First, find closest track to the projected WC track
   double closest_track_index = 0;
+  double closest_dist=99999;
   int nMatched = 0.0;
 
   for(size_t i = 0; i < Tracklist.size(); i++) {
@@ -295,8 +298,6 @@ bool NNShowerFilter::filter(art::Event & e)
 		   TMath::Power(Tracklist[i]->Start().Z() - Tracklist[i]->End().Z(), 2)) < 5.0) { continue; }
     */
 
-    std::cout << "passed track lenght " << std::endl;
-
     fXface->Fill(Tracklist[i]->Start().X() - xface);
     fYface->Fill(Tracklist[i]->Start().Y() - yface);
     fDistface->Fill(TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + 
@@ -304,25 +305,40 @@ bool NNShowerFilter::filter(art::Event & e)
     fAlpha->Fill(acos(tpcz.Dot(wcz) / (wcz.Mag() * tpcz.Mag())) * (180.0 / 3.14159));
 
 
-    // Track spatial match
-    if(TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + 
-		   TMath::Power(Tracklist[i]->Start().Y() - yface, 2)) >  5.0) { continue; }
+    // Track spatial match using wc2tpc filer values dx=[-2,6]cm dy=[-3,6]cm
 
-    std::cout << "space match " << std::endl;
-
+   
     // Alpha
     std::cout << "alpha =" << acos(tpcz.Dot(wcz) / (wcz.Mag() * tpcz.Mag())) * (180.0 / 3.14159) << std::endl;
-    if(acos(wcz.Dot(tpcz) / (wcz.Mag() * tpcz.Mag())) * (180.0 / 3.14159) > 15.0) { continue; }
-
+    if(DoWCTPCMatch)
+    {
+    if(acos(wcz.Dot(tpcz) / (wcz.Mag() * tpcz.Mag())) * (180.0 / 3.14159) > 20.0) { continue; }
+    if(
+      (Tracklist[i]->Start().X() - xface) < -2 || 
+      (Tracklist[i]->Start().X() - xface) > 6  ||
+      (Tracklist[i]->Start().Y() - xface) > -3 ||
+      (Tracklist[i]->Start().Y() - xface) > 6 ||
+       acos(wcz.Dot(tpcz) / (wcz.Mag() * tpcz.Mag())) * (180.0 / 3.14159) > 20.0) {continue;}
+    std::cout << "space match " << std::endl;
     closest_track_index = i;
+    
     nMatched += 1;
-
+    }
+   if(!DoWCTPCMatch)
+   {
+    double temp_dist=TMath::Sqrt(TMath::Power(Tracklist[i]->Start().X() - xface, 2) + TMath::Power(Tracklist[i]->Start().Y() - yface, 2));
+    if(temp_dist<closest_dist)
+    {
+      closest_dist=temp_dist;
+      closest_track_index=i;
+    }
+   }
   }
 
 
   // If it didn't change, couldn't find a track match, so we Reject this event
   if(nMatched != 1) {
-    if(bVerbose) { std::cout << "No new track found ... " << std::endl; }
+    if(bVerbose) { std::cout << "Found " <<nMatched<< " tracks. There can only be one!"<<std::endl; }
     fRejectionModes->Fill(2.0);
     return false; 
   }
@@ -334,7 +350,7 @@ bool NNShowerFilter::filter(art::Event & e)
 
   // This is wrong! Ha. What if wires aren't sequential like this?
 
-  if(!HitsInTrackAssn.isValid()) { return false; }
+  if(!HitsInTrackAssn.isValid()) { fRejectionModes->Fill(3.0); return false; }
 
 
   int lowest_hit = -1;
@@ -351,7 +367,7 @@ bool NNShowerFilter::filter(art::Event & e)
   // If we for some reason didn't find any hits on this track, we reject this event
   if(lowest_hit == -1) {   
     if(bVerbose) { std::cout << "lowest_hit never initialized" << std::endl; } 
-    fRejectionModes->Fill(3.0);
+    fRejectionModes->Fill(4.0);
     return false; 
   }
 
@@ -365,7 +381,7 @@ bool NNShowerFilter::filter(art::Event & e)
   // If inter is greater than the tdcs, reject it
   if(inter > 3000.) { 
     if(bVerbose) { std::cout << " Failed match ... " << std::endl; } 
-    fRejectionModes->Fill(4.0);
+    fRejectionModes->Fill(5.0);
     return false; 
   }
 
@@ -426,8 +442,9 @@ bool NNShowerFilter::filter(art::Event & e)
   total_shower_prob = total_shower_prob / double(num_hits);
 
   fProbBoxShower->Fill(total_shower_prob);
+  fProbBoxTrack->Fill(1-total_shower_prob);
   fProbBoxShowerMult->Fill(mult_shower / (trac_shower + mult_shower));
-  fProbBoxShowerVsMomo->Fill(total_shower_prob, momo);
+  fProbBoxTrackVsMomo->Fill(1-total_shower_prob, momo);
 
   if(bVerbose) { std::cout << "shower prob = " << total_shower_prob << std::endl; }
 
@@ -456,12 +473,13 @@ void NNShowerFilter::beginJob()
   fTrackReNormProb = tfs->make<TH1F>("TrackReNormProb","TrackReNormProb",100,0.0,1.0);
   fShowerReNormProb = tfs->make<TH1F>("ShowerReNormProb","ShowerReNormProb",100,0.0,1.0);
 
-  fProbBoxShower = tfs->make<TH1F>("fProbBoxShower","fProbBoxShower",50, 0.0, 1.0); //, 500, 0, 500);
+  fProbBoxShower = tfs->make<TH1F>("fProbBoxShower","fProbBoxShower",100, 0.0, 1.0); //, 500, 0, 500);
+  fProbBoxTrack = tfs->make<TH1F>("fProbBoxTrack","fProbBoxTrack",100, 0.0, 1.0); //, 500, 0, 500);
   fProbBoxShowerMult = tfs->make<TH1F>("fProbBoxShowerMult","fProbBoxShowerMult",200, 0.0, 1.0); //, 500, 0, 500);
-  fProbBoxShowerVsMomo  = tfs->make<TH2F>("fProbBoxShowerVsMomo","fProbBoxShowerVsMomo",50, 0.0, 1.0, 200, 0, 2000); //, 500, 0, 500);
+  fProbBoxTrackVsMomo  = tfs->make<TH2F>("fProbBoxTrackVsMomo","fProbBoxTrackVsMomo",100, 0.0, 1.0, 200, 0, 2000); //, 500, 0, 500);
 
-  fReNormTrackVsEnergy = tfs->make<TH2F>("ReNormTrackVsEnergy","ReNormTrackVsEnergy",100,0.0,1.0, 100, 0.0, 10000.0);
-  fReNormTrackVsWireID = tfs->make<TH2F>("ReNormTrackVsWireID","ReNormTrackVsWireID",100,0.0,1.0, 240, 0.0, 240.0);
+  //fReNormTrackVsEnergy = tfs->make<TH2F>("ReNormTrackVsEnergy","ReNormTrackVsEnergy",100,0.0,1.0, 100, 0.0, 10000.0);
+  //fReNormTrackVsWireID = tfs->make<TH2F>("ReNormTrackVsWireID","ReNormTrackVsWireID",100,0.0,1.0, 240, 0.0, 240.0);
 
   fRejectionModes = tfs->make<TH1F>("RejectionModes","RejectionModes",10, 0.0, 10.0);
 
@@ -484,14 +502,14 @@ void NNShowerFilter::endJob()
   //  TH2F* fProbBoxShowerVsMomo;
   //TH1F* fMomo;
 
-  for(int x = 1; x < fPassingEventsVsPz->GetNbinsX()+1; x++) {
+/*   for(int x = 1; x < fPassingEventsVsPz->GetNbinsX()+1; x++) {
     for(int y = 1; y < fPassingEventsVsPz->GetNbinsY()+1; y++) {
       //std::cout << fProbBoxShowerVsMomo->GetBinContent(x, y) << std::endl;
       if(fMomo->GetBinContent(y) != 0) {
-	fPassingEventsVsPz->SetBinContent(x, y, fPassingEventsVsPz->GetBinContent(x, y) / fMomo->GetBinContent(y));
+	/fPassingEventsVsPz->SetBinContent(x, y, fPassingEventsVsPz->GetBinContent(x, y) / fMomo->GetBinContent(y));
       }
     }
-  }
+  } */
 
 
 }
@@ -504,7 +522,7 @@ void NNShowerFilter::reconfigure(fhicl::ParameterSet const & p)
   fHitModuleLabel = p.get<std::string>("HitModuleLabel"); 
   fTrackModuleLabel = p.get<std::string>("TrackModuleLabel");
   fWCTrackLabel = p.get<std::string>("WCTrackLabel");
-
+  DoWCTPCMatch=p.get<bool>("DoWCTPCMatch",true);
   fShowerThresh = p.get<float>("ShowerThresh");
   bData = p.get<bool>("Data");
   bVerbose = p.get<bool>("Verbose");
