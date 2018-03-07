@@ -79,13 +79,10 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
-<<<<<<< HEAD
+
   void reconfigure(fhicl::ParameterSet const & p) override;
   bool CutCheck(std::vector<double> lengths, double lcut, double ncut);
-=======
-  void reconfigure(fhicl::ParameterSet const & p) ;
 
->>>>>>> 3e4272502ec754be314a24a86b65c1ea6eab12de
 private:
 
   // Declare member data here.
