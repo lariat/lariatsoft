@@ -80,7 +80,7 @@ public:
   // Selected optional functions.
   void beginJob() override;
 
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p);
   bool CutCheck(std::vector<double> lengths, double lcut, double ncut);
 
 private:
