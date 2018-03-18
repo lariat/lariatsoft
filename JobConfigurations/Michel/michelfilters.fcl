@@ -59,6 +59,7 @@ lariat_michelanafilter:
 
   # Track reco and selection settings:
   HitsModule:                     "gaushit"
+  HitsInstance:                   ""
   TrackModule:                    "pmtracktc"
   TrackCalModule:                 "calotc"
   LookAtTracks:                   true
@@ -82,9 +83,9 @@ lariat_michelanafilter:
   ShowerAcceptanceAngle:          60. 
   MaxHitTimeDiff:                 1.5 # microseconds 
   
-  RFactor:                        1.51
-  RFactorTrack:                   1.47
-  RFactorShower:                  1.70
+  RecombFactor:                   0.652
+  RecombFactorTrack:              0.679
+  RecombFactorShower:             0.552
   
   # event cut params:
   MinClusterSize:                 10
@@ -130,9 +131,9 @@ lariat_michelanafilter_run2b.MinOpHitWidth:       [ 10.,  7.  ]
 lariat_michelanafilter_run2b.DeleteNarrowHits:    false
 lariat_michelanafilter_run2b.MaxWfmRMS:           [ 1.5, 1.5 ]
 lariat_michelanafilter_run2b.CalAreaConstants:    [ 0.022, 0.0445 ]
-lariat_michelanafilter_run2b.RFactor:             1.52
-lariat_michelanafilter_run2b.RFactorTrack:        1.48
-lariat_michelanafilter_run2b.RFactorShower:       1.72
+lariat_michelanafilter_run2b.RecombFactor:        0.648
+lariat_michelanafilter_run2b.RecombFactorTrack:   0.676
+lariat_michelanafilter_run2b.RecombFactorShower:  0.547
 lariat_michelanafilter_run2b.CorrectOvershootMode: "int"
 lariat_michelanafilter_run2b.LibraryFile:         "PhotonLibrary_ToyMC_20171223_Run2_300kPerVoxel_24x_20y_45z.root"
 lariat_michelanafilter_run2b.FiducialMarginX:      1.5

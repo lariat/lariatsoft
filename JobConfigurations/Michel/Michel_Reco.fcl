@@ -45,8 +45,8 @@ tpcreco: [ caldata,
            pmtracktc,
 #           cctrack,
 #           calo,
-           calotc,
-           pid
+           calotc
+#           pid
            ]
 physics:
 {
@@ -144,6 +144,7 @@ physics.producers.trajcluster.TrajClusterAlg.DebugPlane:    -1
 physics.producers.trajcluster.TrajClusterAlg.DebugWire:     0
 physics.producers.trajcluster.TrajClusterAlg.DebugTick:     0
 physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:   0
+physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:      [ "All" ]
 
 #physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel:      "gaushit"
 #physics.producers.trajcluster.TrajClusterAlg.MakeNewHits: false
@@ -185,11 +186,11 @@ physics.producers.pmtracktc.ClusterModuleLabel:             "trajcluster"
 physics.producers.pmtracktc.HitModuleLabel:                 "gaushit"
 physics.producers.pmtracktc.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtracktc.PMAlgTracking.FlipToBeam:       false
-physics.producers.pmtracktc.PMAlgTracking.RunVertexing:     true
-physics.producers.pmtracktc.PMAlgTracking.AutoFlip_dQdx:    true
-#physics.producers.pmtracktc.PMAlgTracking.MergeWithinTPC:   true   # (default false) merge witnin single TPC; finds tracks best matching by angle, with limits:
-#physics.producers.pmtracktc.MergeTransverseShift:   1.0     # (default 2.0)  - max. transverse displacement [cm] between tracks
-#physics.producers.pmtracktc.MergeAngle:             2.0     # (default 2.0)  - max. angle [degree] between tracks (nearest segments)
+physics.producers.pmtracktc.PMAlgTracking.RunVertexing:     false #true
+physics.producers.pmtracktc.PMAlgTracking.AutoFlip_dQdx:    false #true
+#physics.producers.pmtracktc.PMAlgTracking.MergeWithinTPC:   false   # (default false) merge witnin single TPC; finds tracks best matching by angle, with limits:
+#physics.producers.pmtracktc.PMAlgTracking.MergeTransverseShift:   1.0     # (default 2.0)  - max. transverse displacement [cm] between tracks
+#physics.producers.pmtracktc.PMAlgTracking.MergeAngle:             2.0     # (default 2.0)  - max. angle [degree] between tracks (nearest segments)
 
 
 physics.producers.cctrack.HitModuleLabel:     "linecluster"

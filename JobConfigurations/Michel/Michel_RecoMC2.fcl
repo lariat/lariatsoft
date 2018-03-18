@@ -5,7 +5,7 @@ services:
   TFileService: { fileName: "histos.root" }
   @table::lariat_simulation_services_run2
 }
-services.DetectorPropertiesService.Electronlifetime: 500
+#services.DetectorPropertiesService.Electronlifetime: 500
 
 physics.reco:                                               [ @sequence::tpcreco ]
 physics.producers.caldata.DodQdxCalib:                      false

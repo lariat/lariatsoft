@@ -5,7 +5,7 @@ services:
   TFileService: { fileName: "MichelAnaFilterMC.root" }
   @table::lariat_simulation_services
 }
-services.DetectorPropertiesService.Electronlifetime: 1470
+#services.DetectorPropertiesService.Electronlifetime: 1470
 
 physics.filt:                                     [ michelana ]
 physics.filters.michelana.LateLightTau:           1120. 

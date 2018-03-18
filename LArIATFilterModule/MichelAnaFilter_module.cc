@@ -49,6 +49,7 @@
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/ArtDataHelper/TrackUtils.h" 
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/Geometry/TPCGeo.h"
@@ -247,6 +248,7 @@ private:
   std::vector<float>  fFilter_ElShowerEnergy;   // acceptance range of 2D shwr energy
   
   std::string         fHitsModule;          // producer of input recob::Hits
+  std::string         fHitsInstance;        // instance name of input recob::Hits
   std::string         fTrackModule;         // producer of input recob::Tracks
   std::string         fTrackCalModule;      // producer of input anab::Calorimetry
   std::string         fSimProducerModule;   // producer of input sim::MCParticles
@@ -310,11 +312,13 @@ private:
   float               fShowerAcceptanceAngle;// opening angle of 2D electron shower cone
   
   std::vector<float>  fCalAreaConstants;    // scale hit integrals to charge (ADC -> e-)
-  float               fWValue;              // energy to excitate/ionize Ar atom (19.5 eV)
-  float               fMvPerADC;            // scale ADC to Mv
-  float               fRFactor;              // recombination scaling for electron trk/shwr hits
-  float               fRFactorTrack;         // recombination scaling for track-like el. hits
-  float               fRFactorShower;        // recombination scaling for shwr-like el. hits
+  float               fWph;                 // energy to excitate/ionize Ar atom (19.5 eV)
+  float               fWion;                // energy to produce e-ion pair (23.6 eV)
+  float               fExcRatio;            // excitation ratio ( N_ex / N_i ) = 0.21
+  float               fMvPerADC;            // scale ADC to mV
+  float               fRecombFactor;        // recomb. survival frac for electron trk/shwr hits
+  float               fRecombFactorTrack;   // recomb. survival frac for track-like el. hits
+  float               fRecombFactorShower;  // recomb. survival frac for shwr-like el. hits
 
   float               fdTcut;               // min decay time for energy histograms 
   std::vector<float>  fPromptPECut;         // min prompt PE for dT histogram 
@@ -333,6 +337,9 @@ private:
   float               fMaxHitTimeDiff;      // max allowable time diff to match hits btwn planes
   int                 fMinNumPts3D;         // min num 3D pts for histos
   float               fMinFracHits3D;       // min frac of hits made into 3D points for histos
+
+  int                 fBndOffset;           // force offset on cluster bnd. by +/- N hits (for 
+                                            // estimatation of systematics)
   
   int                 fMaxSavedHitGraphs;   // save this many clustering displays
   int                 fMaxSavedWfmGraphs;   // save this many PMT waveform displays
@@ -355,7 +362,6 @@ private:
   int                 fNumTrackCrossing;
   int                 fNumTrackContained;
   std::vector<int>    fMuTrackHits;
-  int                 fCrossingMuTrackIndex;
   int                 fMuTrackIndex;
   int                 fMuTrackID;
   float               fMuTrackLength;
@@ -373,6 +379,7 @@ private:
   bool                fMuTrackIsCaloOrdered;
   TVector3            fMuTrackVertex;
   TVector3            fMuTrackEnd;
+  int                 fCrossingMuTrackIndex;
   float               fCrossingMuVertex_X;
   float               fCrossingMuVertex_Y;
   float               fCrossingMuVertex_Z;
@@ -381,6 +388,7 @@ private:
   float               fCrossingMuEnd_Z;
   float               fCrossingMuLength;
   float               fCrossingMuPhotons;
+  float               fCrossingMuPhotonsPrompt;
   float               fCrossingMuCharge;
 
   // Optical information
@@ -493,13 +501,13 @@ private:
   int                 fNumPts3DTrk;
   float               fElShowerVis;
   float               fElShowerVisCh[2];
-  TVector3            fElShowerCentroid;
+//  TVector3            fElShowerCentroid;
   float               fElShowerCentroid_X;
   float               fElShowerCentroid_Y;
   float               fElShowerCentroid_Z;
   float               fElShowerPhotons;
   float               fElShowerEnergyQL;
-  TVector3            fMuEnd3D;
+//  TVector3            fMuEnd3D;
   float               fMuEnd3D_X;
   float               fMuEnd3D_Y;
   float               fMuEnd3D_Z;
@@ -528,6 +536,7 @@ private:
   float               fTrue_ElTrackChargeDep;
   float               fTrue_ElShowerEnergyDep;
   float               fTrue_ElShowerChargeDep;
+  float               fTrue_ElShowerVis;
   float               fTrue_ElShowerVisCh[2];
   TVector3            fTrue_ElMomentum;
   float               fTrue_ElMomentum_X;
@@ -614,6 +623,8 @@ private:
   TH1D*               hElShowerEnergy;
   TH1D*               hElShowerEnergyQL;
   TH1D*               hElTrackdEdx;
+  TH1D*               hQoverL;
+  TH1D*               hQoverLCrsMuTrk;
   TH1D*               hClusterSize;
   TH1D*               hElShowerFrac;
   TH1D*               hDistMaxTdQdsToMaxQ;
@@ -624,8 +635,8 @@ private:
   TH1D*               hElShowerSize;
   TH1D*               hMuClusterHitsEndFit; 
   TH1D*               hDecayAngle2D;
-  TH1D*               hRecombination;
-  TH1D*               hRecombinationCrsMuTrk;
+  TH1D*               hRecomb;
+  TH1D*               hRecombCrsMuTrk;
   TH1D*               hElShowerDepAngle2D;
   TH1D*               hElShowerAngleMean;
   TH1D*               hElShowerAngleRMS;
@@ -641,7 +652,10 @@ private:
   TH1D*               hCrsMuQPerCm;
   TH1D*               hCrsMuLPerCm;
   TH1D*               hElectronLifetime;
+  TH1D*               hEffTau[2];
   TH1D*               hElectronLifetimeReco;
+  TH1D*               hdQdxVsT;
+  TH1D*               hdQdxVsT_N;
   TH1D*               hTrue_NumElectrons;
   TH1D*               hTrue_NumDRays;
   TH1D*               hTrue_DRayEnergy;
@@ -675,13 +689,21 @@ private:
   TH1D*               hTrue_EnergyResQL;
   TH2D*               hTrue_EnergyVsEnergyRes;
   TH1D*               hTrue_PERes[2];
+  TH1D*               hTrue_VisRes;
   TH1D*               hTrue_PhotonRes;
-  TH1D*               hTrue_R;
-  TH1D*               hTrue_R_Track;
-  TH1D*               hTrue_R_ShowerProducts;
-  TH1D*               hTrue_Recombination;
-  TH1D*               hTrue_Recombination_Track;
-  TH1D*               hTrue_Recombination_ShowerProducts;
+  TH1D*               hTrue_TrajLength;
+  TH1D*               hTrue_dEdx;
+  TH1D*               hTrue_dEdx_ElTrk;
+  TH1D*               hTrue_dEdx_ElShw;
+  TH1D*               hTrue_dQdx;
+  TH1D*               hTrue_dQdx_ElTrk;
+  TH1D*               hTrue_dQdx_ElShw;
+  TH2D*               hTrue_dEdx_vs_dQdx;
+  TH2D*               hTrue_dEdx_vs_dQdx_ElTrk;
+  TH2D*               hTrue_dEdx_vs_dQdx_ElShw;
+  TH1D*               hTrue_RecombFactor;
+  TH1D*               hTrue_RecombFactor_ElTrk;
+  TH1D*               hTrue_RecombFactor_ElShw;
   TH1D*               hTrue_ElShowerDepVsDistFromMuTrackEnd;
   TH1D*               hTrue_VisTotal[2];
   TH1D*               hTrue_Vis[2][2];
@@ -700,6 +722,8 @@ private:
   TH1D*               hTrackNode_Z;
   TH2D*               hTrackNode_ZX;
   TH2D*               hTrackNode_ZY;
+  TH2D*               hCrsTrackNode_ZX;
+  TH2D*               hCrsTrackNode_ZY;
   TH1D*               hTrackLength;
 
   // ...........................................................
@@ -953,7 +977,7 @@ void MichelAnaFilter::reconfigure(fhicl::ParameterSet const & p)
   fTruncateWfm              = p.get< short >                ("TruncateWfm",-1);
   fWfmSmoothingRange        = p.get< int  >                 ("WfmSmoothingRange",1);
   fCorrectOvershootMode     = p.get< std::string >          ("CorrectOvershootMode", "");
-  fUseCrossingMuons             = p.get< bool >             ("UseCrossingMuons",false);
+  fUseCrossingMuons         = p.get< bool >                 ("UseCrossingMuons",false);
   fLookAtTracks             = p.get< bool >                 ("LookAtTracks",true);
   fReq1StpTrk               = p.get< bool >                 ("Req1StpTrk",true);
   fFilter_PassAllEvents     = p.get< bool >                 ("Filter_PassAllEvents", false);
@@ -990,6 +1014,7 @@ void MichelAnaFilter::reconfigure(fhicl::ParameterSet const & p)
   fTrackCalModule           = p.get< std::string >          ("TrackCalModule","calo");
   fSimProducerModule        = p.get< std::string >          ("SimProducerModule","largeant");
   fHitsModule               = p.get< std::string >          ("HitsModule","gaushit");
+  fHitsInstance               = p.get< std::string >          ("HitsInstance","");
   fLibraryFile              = p.get< std::string >          ("LibraryFile","");
   fFastLightRatio           = p.get< float >                ("FastLightRatio",0.30);
   fLateLightTau             = p.get< float >                ("LateLightTau",1300);
@@ -1016,10 +1041,12 @@ void MichelAnaFilter::reconfigure(fhicl::ParameterSet const & p)
   fMinDecayAngle2D          = p.get< float >                ("DecayAngle2DMin",10.);
   fMaxDecayAngle2D          = p.get< float >                ("DecayAngle2DMax",170.);
   fShowerAcceptanceAngle    = p.get< float >                ("ShowerAcceptanceAngle",60.);
-  fWValue                   = p.get< float >                ("WValue", 19.5 ); // 19.5 eV used in NEST
-  fRFactor                  = p.get< float >                ("RFactor",1.51);
-  fRFactorTrack             = p.get< float >                ("RFactorTrack", 1.47);
-  fRFactorShower            = p.get< float >                ("RFactorShower", 1.70);
+  fWph                      = p.get< float >                ("Wph", 19.5 );
+  fWion                     = p.get< float >                ("Wion", 23.6 );
+  fExcRatio                 = p.get< float >                ("ExcRatio", 0.21 ); // Aprile 
+  fRecombFactor             = p.get< float >                ("RecombFactor", 0.645);
+  fRecombFactorTrack        = p.get< float >                ("RecombFactorTrack", 0.688);
+  fRecombFactorShower       = p.get< float >                ("RecombFactorShower", 0.576);
   fMaxHitTimeDiff           = p.get< float >                ("MaxHitTimeDiff", 1.5 );
   fMinNumPts3D              = p.get< int >                  ("MinNumPts3D",2);
   fMinFracHits3D            = p.get< float >                ("MinFracHits3D",0.3);
@@ -1028,6 +1055,7 @@ void MichelAnaFilter::reconfigure(fhicl::ParameterSet const & p)
   fMinMuLinearity           = p.get< float >                ("MinMuLinearity",0.9);
   fMinMuClusterSize         = p.get< int >                  ("MinMuClusterSize",8);
   fMinFracMuHitsLinear      = p.get< float >                ("MinFracMuHitsLinear",0.5);  
+  fBndOffset                = p.get< int >                  ("BndOffset",0);
   fMaxSavedHitGraphs        = p.get< int >                  ("MaxSavedHitGraphs",0);
   fMaxSavedWfmGraphs        = p.get< int >                  ("MaxSavedWfmGraphs",0);
 }
@@ -1066,6 +1094,7 @@ void MichelAnaFilter::beginJob()
   fTree->Branch("CrossingMuLength",         &fCrossingMuLength,       "CrossingMuLength/F");
   fTree->Branch("CrossingMuCharge",         &fCrossingMuCharge,       "CrossingMuCharge/F");
   fTree->Branch("CrossingMuPhotons",          &fCrossingMuPhotons,        "CrossingMuPhotons/F");
+  fTree->Branch("CrossingMuPhotonsPrompt",  &fCrossingMuPhotonsPrompt,"CrossingMuPhotonsPrompt/F");
   // ...optical information
   fTree->Branch("NumOpHits0",               &fNumOpHits0,             "NumOpHits0[2]/I");
   fTree->Branch("NumOpHits",                &fNumOpHits,              "NumOpHits[2]/I");
@@ -1150,6 +1179,7 @@ void MichelAnaFilter::beginJob()
   fTree->Branch("True_ElShowerEnergyDep",   &fTrue_ElShowerEnergyDep, "True_ElShowerEnergyDep/F");
   fTree->Branch("True_ElShowerChargeDep",   &fTrue_ElShowerChargeDep, "True_ElShowerChargeDep/F");
   fTree->Branch("True_ElTrackChargeDep",    &fTrue_ElTrackChargeDep,  "True_ElTrackChargeDep/F");
+  fTree->Branch("True_ElShowerVis",       &fTrue_ElShowerVis,     "True_ElShowerVis/F");
   fTree->Branch("True_ElShowerVisCh",       &fTrue_ElShowerVisCh,     "True_ElShowerVisCh[2]/F");
   fTree->Branch("True_TotalEnergyDep",      &fTrue_TotalEnergyDep,    "True_TotalEnergyDep/F");
   fTree->Branch("True_IsElContained",       &fTrue_IsElContained,     "True_IsElContained/O");
@@ -1193,7 +1223,13 @@ void MichelAnaFilter::beginJob()
   // Electron lifetime histograms 
   hElectronLifetime       = diagDir.make<TH1D>("ElectronLifetime","Electron lifetime from database;Electron lifetime [#mus]",2500,-100.,2400.);
   hElectronLifetimeReco   = diagDir.make<TH1D>("ElectronLifetimeReco","Electron lifetime as measured from passing tracks;Electron lifetime [#mus]",100,0.,2000.);
-  
+  hdQdxVsT         = diagDir.make<TH1D>("dQdxVsT","dQ/dx vs. drift time for single crossing trks;Drift time [#mus];dQ/dx [ADC/cm]",30,10.,310.);
+  hdQdxVsT_N       = diagDir.make<TH1D>("dQdxVsT_N",";Drift time [#mus];Number of entries",30,10.,310.);
+
+  // ==================================================================
+  // Effective tau (from DB)
+  hEffTau[0]              = diagDir.make<TH1D>("0_EffTau","OpDet0: Effective late-light lifetime from DB table;#tau [ns]",70,0,1400.);
+  hEffTau[1]              = diagDir.make<TH1D>("1_EffTau","OpDet1: Effective late-light lifetime from DB table;#tau [ns]",70,0,1400.);
  
   // ==================================================================
   // Light plots for the PMTs
@@ -1255,13 +1291,13 @@ void MichelAnaFilter::beginJob()
     // True PMT scintillation visibilities 
     sprintf(histName,"%lu_True_Vis",ch);
     sprintf(histTitle,"Opdet %lu, total scintillation visiblity;Fractional visibility",ch);
-    hTrue_VisTotal[ch]     = truthDir.make<TH1D>(histName,histTitle,300,-0.0001,0.0014);
+    hTrue_VisTotal[ch]     = truthDir.make<TH1D>(histName,histTitle,200,-0.0001,0.0019);
     sprintf(histName,"%lu_True_Vis_dir",ch);
     sprintf(histTitle,"Opdet %lu, scintillation visiblity, direct light;Fractional visibility",ch);
-    hTrue_Vis[ch][0]     = truthDir.make<TH1D>(histName,histTitle,300,-0.0001,0.0014);
+    hTrue_Vis[ch][0]     = truthDir.make<TH1D>(histName,histTitle,200,-0.0001,0.0019);
     sprintf(histName,"%lu_True_Vis_ref",ch);
     sprintf(histTitle,"Opdet %lu, scintillation visiblity, reflected light;Fracitonal visibility",ch);
-    hTrue_Vis[ch][1]     = truthDir.make<TH1D>(histName,histTitle,300,-0.0001,0.0014);
+    hTrue_Vis[ch][1]     = truthDir.make<TH1D>(histName,histTitle,200,-0.0001,0.0019);
    
     // -------------------------------------------------------------
     // dT + decay time diagnostics 
@@ -1428,8 +1464,8 @@ void MichelAnaFilter::beginJob()
   hHitX[1]              = diagDir.make<TH1D>("HitX_Col","Calculated drift position from hit time (collection plane);X [cm]",300,-5.,55.);
   hHitRMS[0]            = diagDir.make<TH1D>("HitRMS_Ind","Hit RMS (induction plane)",120,0.,30.);
   hHitRMS[1]            = diagDir.make<TH1D>("HitRMS_Col","Hit RMS (collection plane)",120,0.,30.);
-  hHitAmplitude[0]      = diagDir.make<TH1D>("HitAmplitude_Ind","Hit amplitude (induction plane);ADC",100,0,50);
-  hHitAmplitude[1]      = diagDir.make<TH1D>("HitAmplitude_Col","Hit amplitude (collection plane);ADC",100,0,50);
+  hHitAmplitude[0]      = diagDir.make<TH1D>("HitAmplitude_Ind","Hit amplitude (induction plane);ADC",150,0,300);
+  hHitAmplitude[1]      = diagDir.make<TH1D>("HitAmplitude_Col","Hit amplitude (collection plane);ADC",150,0,300);
   hHitSummedADC            = diagDir.make<TH1D>("HitSummedADC","Hit summed ADC (collection plane);ADC",100,0, 50000);
   hHitIntegral            = diagDir.make<TH1D>("HitIntegral","Hit integral (collection plane);ADC",100,0, 50000);
   hHitCharge            = diagDir.make<TH1D>("HitCharge","Hit charge after lifetime correction (collection plane);Q (e-)",100,0, 1000000);
@@ -1445,6 +1481,10 @@ void MichelAnaFilter::beginJob()
   hTrackNode_ZY         = diagDir.make<TH2D>("TrackNode_ZY","Reco track nodes (side view);Z [cm];Y [cm]",200, -5., 95., 100, -25., 25.);
   hTrackNode_ZX         ->SetOption("colz");
   hTrackNode_ZY         ->SetOption("colz");
+  hCrsTrackNode_ZX         = diagDir.make<TH2D>("CrsTrackNode_ZX","Reco track nodes (top-down view);Z [cm];X [cm]",200, -5., 95., 120, -5., 55.);
+  hCrsTrackNode_ZY         = diagDir.make<TH2D>("CrsTrackNode_ZY","Reco track nodes (side view);Z [cm];Y [cm]",200, -5., 95., 100, -25., 25.);
+  hCrsTrackNode_ZX         ->SetOption("colz");
+  hCrsTrackNode_ZY         ->SetOption("colz");
   hTrackLength          = diagDir.make<TH1D>("TrackLength","Track lengths;L [cm]",240,0.,120.);
   hNumTrackStopping     = diagDir.make<TH1D>("NumTrackStopping","Number of identified stopping tracks per event",20,0,20);
   hNumTrackCrossing     = diagDir.make<TH1D>("NumTrackCrossing","Number of identified passing tracks per event",20,0,20);
@@ -1489,13 +1529,15 @@ void MichelAnaFilter::beginJob()
 
   // ======================================================================
   // Michel electron charge and energy
-  hElShowerCharge         = tfs->make<TH1D>("ElShowerCharge","Reco charge of Michel electron;Q",100,0,5000000);
-  hElShowerPhotons        = tfs->make<TH1D>("ElShowerPhotons","Photons produced by Michel electron;L",100,0,5000000);
-  hElShowerEnergy         = tfs->make<TH1D>("ElShowerEnergy","Reco Michel Electron Shower Energy;Energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
-  hElShowerEnergyQL       = tfs->make<TH1D>("ElShowerEnergyQL","Reco Michel Electron Shower Energy (Q+L);Energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
+  hElShowerCharge         = tfs->make<TH1D>("ElShowerCharge","Reco charge of Michel electron;Reconstructed #it{Q} [e-]",100,0,5000000);
+  hElShowerPhotons        = tfs->make<TH1D>("ElShowerPhotons","Photons produced by Michel electron;Reconstructed #it{L} [#gamma]",100,0,5000000);
+  hElShowerEnergy         = tfs->make<TH1D>("ElShowerEnergy","Reco Michel Electron Shower Energy;Reconstructed energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
+  hElShowerEnergyQL       = tfs->make<TH1D>("ElShowerEnergyQL","Reco Michel Electron Shower Energy (Q+L);Reconstructed energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
   hElTrackdEdx            = tfs->make<TH1D>("ElTrackdEdx","Averaged dE/dx along 3D electron track;dE/dx [MeV/cm]",100,0.,10.);
-  hRecombination          = tfs->make<TH1D>("Recombination","Recombination calculated from Q/L;Recombination probability #it{r}",140,-0.2,1.2);
-  hRecombinationCrsMuTrk  = tfs->make<TH1D>("Recombination_CrsMuTrk","Recombination calculated from Q/L (crossing muons);Recombination probability #it{r}",140,-0.2,1.2);
+  hQoverL                 = tfs->make<TH1D>("QoverL","Q/L for Michel electrons;Q/L",80,0.,4.);
+  hQoverLCrsMuTrk         = tfs->make<TH1D>("QoverL_CrsMuTrk","Q/L for crossing muon tracks;Q/L",80,0.,4.);
+  hRecomb                 = tfs->make<TH1D>("Recomb","Recombination (e- survival fraction) calculated from Q/L;Electron survival fraction #it{R}",140,-0.2,1.2);
+  hRecombCrsMuTrk         = tfs->make<TH1D>("Recomb_CrsMuTrk","Recombination calculated from Q/L (crossing muons);Electron survival fraction #{R}",140,-0.2,1.2);
   hCrsMuQPerCm            = tfs->make<TH1D>("CrsMuQPerCm","Q/cm for crossing muons;Charge deposited per unit length [e-/cm]",140,0.,14e4);
   hCrsMuLPerCm            = tfs->make<TH1D>("CrsMuLPerCm","L/cm for crossing muons;Photons produced per unit length [#gamma/cm]",140,0.,14e4);
     
@@ -1504,12 +1546,30 @@ void MichelAnaFilter::beginJob()
   hTrue_X                 = truthDir.make<TH1D>("True_X","X position of energy depositions [cm]",600,-5.,55.);
   hTrue_Y                 = truthDir.make<TH1D>("True_Y","Y position of energy depositions [cm]",500,-25.,25.);
   hTrue_Z                 = truthDir.make<TH1D>("True_Z","Z position of energy depositions [cm]",1000,-5.,95.);
-  hTrue_R                 = truthDir.make<TH1D>("True_R","N/Q for Michel electron deposits (shower + track);R [ (N_{ex} + N_{i}) / e- ]",400,0.,8.);
-  hTrue_R_Track           = truthDir.make<TH1D>("True_R_Track","N/Q for Michel electron ionization track deposits;R [ (N_{ex} + N_{i}) / e- ]",400,0.,8.);
-  hTrue_R_ShowerProducts  = truthDir.make<TH1D>("True_R_ShowerProducts","N/Q for Michel electron shower product depositions;R [ (N_{ex} + N_{i}) / e- ]",400,0.,8.);
-  hTrue_Recombination     = truthDir.make<TH1D>("True_Recombination",             "Recombination for all Michel track+shower depositions;r",100,0.,1.0);
-  hTrue_Recombination_Track = truthDir.make<TH1D>("True_Recombination_Track", "Recombination for electron ionization track deposits;r",100.,0.,1.);
-  hTrue_Recombination_ShowerProducts = truthDir.make<TH1D>("True_Recombination_ShowerProducts","Recombination for electron shower deposits;r",100.,0.,1.);
+  hTrue_TrajLength        = truthDir.make<TH1D>("True_TrajLength","Particle trajectory length;L [cm]",500,0.,5.);
+  hTrue_dQdx              = truthDir.make<TH1D>("True_dQdx","dQ/dx (avg. per particle) for Michel trk + shower depositions;dQ/dx [e-/cm]",80,0.,4e5);
+  hTrue_dQdx_ElTrk        = truthDir.make<TH1D>("True_dQdx_ElTrk","dQ/dx (avg. per particle) for Michel trk depositions;dQ/dx [e-/cm]",80,0.,4e5);
+  hTrue_dQdx_ElShw        = truthDir.make<TH1D>("True_dQdx_ElShw","dQ/dx (avg. per particle) for Michel shower depositions;dQ/dx [e-/cm]",80,0.,4e5);
+  hTrue_dEdx              = truthDir.make<TH1D>("True_dEdx","dE/dx (avg. per particle) for Michel trk + shower depositions;dE/dx [MeV/cm]",60,0.,12.);
+  hTrue_dEdx_ElTrk        = truthDir.make<TH1D>("True_dEdx_ElTrk","dE/dx (avg. per particle) for Michel trk depositions;dE/dx [MeV/cm]",60,0.,12.);
+  hTrue_dEdx_ElShw        = truthDir.make<TH1D>("True_dEdx_ElShw","dE/dx (avg. per particle) for Michel shower depositions;dE/dx [MeV/cm]",60,0.,12.);
+  hTrue_dEdx_vs_dQdx      = truthDir.make<TH2D>("True_dEdx_vs_dQdx","dE/dx vs. dQ/dx (avg. per particle) for Michel track+shower depositions;dE/dx [MeV/cm];dQ/dx [e-/cm]",
+    80,0.,8.,
+    125,0.,250e3);
+  hTrue_dEdx_vs_dQdx_ElTrk      = truthDir.make<TH2D>("True_dEdx_vs_dQdx_ElTrk","dE/dx vs. dQ/dx (avg. per particle) for Michel track depositions;dE/dx [MeV/cm];dQ/dx [e-/cm]",
+    80,0.,8.,
+    125,0.,250e3);
+  hTrue_dEdx_vs_dQdx_ElShw      = truthDir.make<TH2D>("True_dEdx_vs_dQdx_ElShw","dE/dx vs. dQ/dx (avg. per particle) for Michel shower depositions;dE/dx [MeV/cm];dQ/dx [e-/cm]",
+    80,0.,8.,
+    125,0.,250e3);
+  hTrue_dEdx              ->SetOption("hist");
+  hTrue_dQdx              ->SetOption("hist");
+  hTrue_dEdx_vs_dQdx      ->SetOption("colz");
+  hTrue_dEdx_vs_dQdx_ElTrk->SetOption("colz");
+  hTrue_dEdx_vs_dQdx_ElShw->SetOption("colz");
+  hTrue_RecombFactor      = truthDir.make<TH1D>("True_RecombFactor","Survival prob of ionization electrons for all Michel depositions;P",100,0.,1.);
+  hTrue_RecombFactor_ElTrk      = truthDir.make<TH1D>("True_RecombFactor_ElTrk","Survival prob of ionization electrons for Michel tracks;P",100,0.,1.);
+  hTrue_RecombFactor_ElShw      = truthDir.make<TH1D>("True_RecombFactor_ElShw","Survival prob of ionization electrons for Michel shower hoton depositions;P",100,0.,1.);
   hTrue_NumDRays        = truthDir.make<TH1D>("True_NumDRays","Number delta rays per event",50,0,50);
   hTrue_DRayEnergy      = truthDir.make<TH1D>("True_DRayEnergy","Energy deposited by delta rays off muon;Energy deposited [MeV]",30,0.,3.);
   hTrue_NumElectrons    = truthDir.make<TH1D>("True_NumElectrons","Number of electrons from IDE objects",400,0,4000);
@@ -1518,8 +1578,8 @@ void MichelAnaFilter::beginJob()
   hTrue_ElEnergyCapture = truthDir.make<TH1D>("True_ElEnergyCapture","True Michel Electron Energy (from #mu-)",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
   hTrue_ElTrackEnergyDep     = truthDir.make<TH1D>("True_ElTrackEnergyDep","Michel track energy deposited;Energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
   hTrue_ElShowerEnergyDep     = truthDir.make<TH1D>("True_ElShowerEnergyDep","True Deposited Michel Electron Energy;Energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
-  hTrue_ElShowerChargeDep     = truthDir.make<TH1D>("True_ElShowerChargeDep","True Deposited Michel Electron Charge;Electrons [e-]",300,0,3000000);
   hTrue_ElTrackChargeDep     = truthDir.make<TH1D>("True_ElTrackChargeDep","True Deposited Michel Electron track Charge;Electrons [e-]",300,0,3000000);
+  hTrue_ElShowerChargeDep     = truthDir.make<TH1D>("True_ElShowerChargeDep","True Deposited Michel Electron Charge;Electrons [e-]",300,0,3000000);
   hTrue_EnergyDepVsRecoEnergy = truthDir.make<TH2D>("True_EnergyDepVsRecoEnergy","True Michel energy deposited in LAr vs. reco energy;True deposited Michel electron energy [MeV];Reconstructed energy [MeV]",
     120,0,60,240,0,120);
   hTrue_EnergyDepVsRecoEnergy->SetOption("colz");
@@ -1532,6 +1592,7 @@ void MichelAnaFilter::beginJob()
   hTrue_ElShowerPhotons = truthDir.make<TH1D>("True_ElShowerPhotons","Number of scintillation photons produced",300,0,3000000);
   hTrue_MuLateLightContamination = truthDir.make<TH2D>("True_MuLateLightContamination","ETL PMT;#DeltaT [ns];Contamination Fraction", 75,0.,7500, 110, 0.,1.1);
   hTrue_MuLateLightContamination->SetOption("colz");
+  hTrue_VisRes          = truthDir.make<TH1D>("True_VisRes","Resolution of reconstructed Michel shower vis.;(reco-true)/true",150,-1.5,1.5);
   hTrue_PhotonRes       = truthDir.make<TH1D>("True_PhotonRes","Photon resolution of Michel candidate;(reco-true)/true",150,-1.5,1.5);
   hTrue_MuTrackEnd_ZX   = truthDir.make<TH2D>("True_MuTrackEnd_ZX","True #mu endpoint;Z [cm];X [cm]",100,-5.,95, 57,-5.,52.);
   hTrue_MuTrackEnd_ZY   = truthDir.make<TH2D>("True_MuTrackEnd_ZY","True #mu endpoint;Z [cm];Y [cm]",100,-5.,95, 50,-25.,25.);
@@ -1662,6 +1723,7 @@ void MichelAnaFilter::ResetVariables()
   fCrossingMuLength        = -9.;
   fCrossingMuCharge        = -9999.;
   fCrossingMuPhotons         = -9999.;
+  fCrossingMuPhotonsPrompt         = -9999.;
 
   // Shower/charge
   fHitPlane               .clear();
@@ -1713,17 +1775,17 @@ void MichelAnaFilter::ResetVariables()
   fElShowerEnergy_Pl0       = -9.;
   fElTrackEnergy_Pl0        = -9.;                 
   
-  fMuEnd3D                  .SetXYZ(-99., -99., -99.);
+  //fMuEnd3D                  .SetXYZ(-99., -99., -99.);
   fMuEndHitTimeDiff         = -999.;
   fElShowerPhotons          = -999.;
   fElTrackdEdx              = -999.;
   fFracHits3D               = -9.;
   fNumPts3D                 = -9;
   fNumPts3DTrk              = -9;
-  fElShowerVis              = -9.;
-  fElShowerVisCh[0]         = -9.;
-  fElShowerVisCh[1]         = -9.;
-  fElShowerCentroid         .SetXYZ(-99,-99,-99.);
+  fElShowerVis              = -0.09;
+  fElShowerVisCh[0]         = -0.09;
+  fElShowerVisCh[1]         = -0.09;
+  //fElShowerCentroid         .SetXYZ(-99,-99,-99.);
   fElShowerCentroid_X       = -99.;
   fElShowerCentroid_Y       = -99.;
   fElShowerCentroid_Z       = -99.;
@@ -1747,8 +1809,9 @@ void MichelAnaFilter::ResetVariables()
   fTrue_ElMomentum_Z      = -9.;
   fTrue_ElAngle           = -999.;
   fTrue_ElEnergy          = -999.;
-  fTrue_ElShowerVisCh[0]       = -9.;
-  fTrue_ElShowerVisCh[1]       = -9.;
+  fTrue_ElShowerVis       = -0.09;
+  fTrue_ElShowerVisCh[0]       = -0.09;
+  fTrue_ElShowerVisCh[1]       = -0.09;
   fTrue_ElShowerPhotons   = -999;
   fTrue_ElTrackPhotons   = -999;
   fTrue_ElShowerPhotonsPrompt   = -999;
@@ -1819,6 +1882,8 @@ bool MichelAnaFilter::filter(art::Event & e)
   
   // Skip event if the electron lifetime isn't defined for this run
   hElectronLifetime ->Fill(fElectronLifetime); 
+  hEffTau[0]        ->Fill(fMuContamCorr_EffTau[0]);
+  hEffTau[1]        ->Fill(fMuContamCorr_EffTau[1]);
   if( fElectronLifetime <= 0 ) return false;
  
   
@@ -1963,11 +2028,7 @@ bool MichelAnaFilter::filter(art::Event & e)
 
     // ===================================================================
     // Identify events with 1 crossing track and no others for calibration
-    if( !fIsMC && fNumTrackCrossing == 1 && fNumTrack == 1 ) {
-      // Exclude tracks passing through wireplanes
-      bool isEndOnWireplane     = ( crsTrkEnd.X() < fFiducialMarginX && IsPointInFiducialVolume( crsTrkEnd, 0., fFiducialMarginY, fFiducialMarginZ ) );
-      bool isVertexOnWireplane  = ( crsTrkVertex.X() < fFiducialMarginX && IsPointInFiducialVolume( crsTrkVertex, 0., fFiducialMarginY, fFiducialMarginZ ) );
-      if( !isEndOnWireplane && !isVertexOnWireplane ) {
+    if( fNumTrackCrossing == 1 && fNumTrack == 1 ) {
         isOneCrossingTrack    = true; 
         fCrossingMuTrackIndex = crsTrkIndex;
         fCrossingMuLength     = crsTrkLength; 
@@ -1977,7 +2038,6 @@ bool MichelAnaFilter::filter(art::Event & e)
         fCrossingMuEnd_X      = crsTrkEnd.X();
         fCrossingMuEnd_Y      = crsTrkEnd.Y();
         fCrossingMuEnd_Z      = crsTrkEnd.Z();
-      }
     }
     
 
@@ -2575,6 +2635,7 @@ bool MichelAnaFilter::filter(art::Event & e)
     // If there's exactly 1 passing track, and 1 optical hit on each PMT,
     // then use this crossing muon event for calibration purposes
     if( fUseCrossingMuons && isOneCrossingTrack ) {
+      
        
       // Check that both PMTs saw *one* unsaturated hit at nearly the same time
       float maxdiff = -999.;
@@ -2593,7 +2654,6 @@ bool MichelAnaFilter::filter(art::Event & e)
           }
         }
       }
-
       if( N == fSelectChannels.size() ) {
         if( (N==1) || (maxdiff <= fMaxDiff_dT) ) {
           isCalibrationEvent = true;
@@ -2637,7 +2697,7 @@ bool MichelAnaFilter::filter(art::Event & e)
     // Get recob::Hit information
     art::Handle< std::vector<recob::Hit> > hitListHandle;
     std::vector<art::Ptr<recob::Hit> > hitlist;
-    if (e.getByLabel(fHitsModule,"",hitListHandle))
+    if (e.getByLabel(fHitsModule,fHitsInstance,hitListHandle))
     {art::fill_ptr_vector(hitlist, hitListHandle);}
     
     // Assign a location to each hit, relative to projections on wire plane
@@ -2692,9 +2752,18 @@ bool MichelAnaFilter::filter(art::Event & e)
     e.getByLabel(fTrackModule,TrackHandle);
     art::Ptr< recob::Track > CrsTrackPtr(TrackHandle,fCrossingMuTrackIndex);
     recob::Track CrsTrack = *CrsTrackPtr;
-   
-    //fCrossingMuCharge = fTotalCharge;
+    
+    hCrsTrackNode_ZX->Fill( fCrossingMuVertex_Z, fCrossingMuVertex_X );
+    hCrsTrackNode_ZX->Fill( fCrossingMuEnd_Z, fCrossingMuEnd_X );
+    hCrsTrackNode_ZY->Fill( fCrossingMuVertex_Z, fCrossingMuVertex_Y );
+    hCrsTrackNode_ZY->Fill( fCrossingMuEnd_Z, fCrossingMuEnd_Y );
+
+
+    fCrossingMuCharge = fTotalCharge;
+    /*
     // Get the total charge by adding up charge from all the associated hits
+    // Track pitch
+    float trkPitch = lar::util::TrackPitchInView(CrsTrack, geo::kV);
     art::FindManyP<recob::Hit, recob::TrackHitMeta> fmthm(TrackHandle, e, fTrackModule);
     std::vector<int> muTrackHits;
     if (fmthm.isValid()){
@@ -2703,31 +2772,44 @@ bool MichelAnaFilter::filter(art::Event & e)
     }
     fCrossingMuCharge = 0;
     for(size_t i=0; i<muTrackHits.size(); i++){
-      if( fHitPlane.at( muTrackHits.at(i) ) == 1 )
+      if( fHitPlane.at( muTrackHits.at(i) ) == 1 ){
         fCrossingMuCharge += fHitCharge.at( muTrackHits.at(i) );
-    }
-
-    // Find average optical visibility of the 3D traj. pts within the track
-    float sum_pe = 0;
-    float sum_vis = 0.;
-    for( size_t ipmt = 0; ipmt < fPulses.size(); ipmt++){
-      size_t ch   = fPulses[ipmt].OpChannel(); 
-      sum_pe += fvHitADC_7000ns[ch].at(0) / fSPE[ch];
-      for(size_t i=0; i<CrsTrack.NumberTrajectoryPoints(); i++){
-        TVector3 point = CrsTrack.LocationAtPoint(i);
-        sum_vis += GetVisibility( point , ch); 
+        hdQdxVsT    ->Fill( fHitT.at(muTrackHits.at(i)), fHitIntegral.at(muTrackHits.at(i))/trkPitch );
+        hdQdxVsT_N  ->Fill( fHitT.at(muTrackHits.at(i)) );
       }
     }
-    float mean_vis = sum_vis / float( CrsTrack.NumberTrajectoryPoints() );
-    if( mean_vis > 0 && sum_pe > 0 ) fCrossingMuPhotons = sum_pe / mean_vis;
+    */
 
-    // Recomb. (exclude muons that pass through wire planes)
-    if( fCrossingMuCharge > 0 && fCrossingMuPhotons > 0 && fCrossingMuLength > 10. ){
-      float r = (1. - 0.21*(fCrossingMuCharge / fCrossingMuPhotons)) / (1. + (fCrossingMuCharge / fCrossingMuPhotons) );
-      hRecombinationCrsMuTrk->Fill( r );
-      hCrsMuQPerCm->Fill( fCrossingMuCharge / fCrossingMuLength );
-      hCrsMuLPerCm->Fill( fCrossingMuPhotons / fCrossingMuLength );
-    }
+    // Find average optical visibility of the 3D traj. pts within the track
+      float sum_pe    = 0;
+      float sum_pe_pr = 0;
+      float sum_vis   = 0.;
+      for( size_t ipmt = 0; ipmt < fPulses.size(); ipmt++){
+        size_t ch   = fPulses[ipmt].OpChannel(); 
+        sum_pe    += fvHitADC_7000ns[ch].at(0) / fSPE[ch];
+        sum_pe_pr += fvHitADC_100ns[ch].at(0) / fSPE[ch];
+        for(size_t i=0; i<CrsTrack.NumberTrajectoryPoints(); i++){
+          TVector3 point = CrsTrack.LocationAtPoint(i);
+          sum_vis += GetVisibility( point , ch); 
+        }
+      }
+      float mean_vis = sum_vis / float( CrsTrack.NumberTrajectoryPoints() );
+      if( mean_vis > 0 && sum_pe > 0 ) {
+        fCrossingMuPhotons        = sum_pe / mean_vis;
+        fCrossingMuPhotonsPrompt  = fCrossingMuPhotons * (sum_pe_pr / sum_pe);
+      }
+
+      // Recomb. (exclude muons that pass through wire planes)
+      if( fCrossingMuCharge > 0 && fCrossingMuPhotons > 0 && fCrossingMuLength > 20. 
+        && fCrossingMuVertex_X > 2. && fCrossingMuEnd_X > 2. ){
+        float QoverL = fCrossingMuCharge / fCrossingMuPhotons;
+        float R = ( 1.+fExcRatio ) * QoverL / ( 1.+QoverL );
+        hQoverLCrsMuTrk->Fill( QoverL );
+        hRecombCrsMuTrk->Fill( R );
+        hCrsMuQPerCm->Fill( fCrossingMuCharge / fCrossingMuLength );
+        hCrsMuLPerCm->Fill( fCrossingMuPhotons / fCrossingMuLength );
+      }
+
 
   }//<-- end calibration event information
 
@@ -2817,13 +2899,13 @@ bool MichelAnaFilter::filter(art::Event & e)
       double y = -99.;
       double z = -99.;
       fGeo->ChannelsIntersect( fHitWire.at(hit0), fHitWire.at(hit1), y, z );
-      fMuEnd3D.SetXYZ(fHitX.at(hit1), y, z);
-      hMuEnd3D_ZX->Fill( fMuEnd3D.Z(), fMuEnd3D.X());
-      hMuEnd3D_ZY->Fill( fMuEnd3D.Z(), fMuEnd3D.Y());
+      //fMuEnd3D.SetXYZ(fHitX.at(hit1), y, z);
+      fMuEnd3D_X = fHitX.at(hit1);
+      fMuEnd3D_Y = y;
+      fMuEnd3D_Z = z;
+      hMuEnd3D_ZX->Fill( fMuEnd3D_Z, fMuEnd3D_X );
+      hMuEnd3D_ZY->Fill( fMuEnd3D_Z, fMuEnd3D_Y );
     }
-    fMuEnd3D_X = fMuEnd3D.X();
-    fMuEnd3D_Y = fMuEnd3D.Y();
-    fMuEnd3D_Z = fMuEnd3D.Z();
     
     
     // ===========================================================
@@ -3028,15 +3110,17 @@ bool MichelAnaFilter::filter(art::Event & e)
           fElShowerCentroid_X = sum_x / sum_W;
           fElShowerCentroid_Y = sum_y / sum_W;
           fElShowerCentroid_Z = sum_z / sum_W;
-          fElShowerCentroid.SetXYZ(fElShowerCentroid_X, fElShowerCentroid_Y, fElShowerCentroid_Z);
+          //fElShowerCentroid.SetXYZ(fElShowerCentroid_X, fElShowerCentroid_Y, fElShowerCentroid_Z);
         }
        
 
         // ---------------------------------------------------------
         // Calculate L and Q+L energy
+        //   E = (N_i + N_ex) * W_ph
+        //   N_i + N_ex = N_e + N_ph 
         if( fElShowerVis > 0 ) {
           fElShowerPhotons  = fPE / fElShowerVis;
-          fElShowerEnergyQL = ( fElShowerPhotons + fElShowerCharge )* (fWValue * 1e-6);
+          fElShowerEnergyQL = ( fElShowerPhotons + fElShowerCharge )* (fWph * 1e-6);
         }
         
       }//<-- endif Npts3D > 0 
@@ -3203,13 +3287,15 @@ bool MichelAnaFilter::filter(art::Event & e)
     hElShowerAngleRMS   ->Fill( fElShowerAngleRMS );
     hElShowerEnergy     ->Fill(fElShowerEnergy);
     hElShowerCharge     ->Fill(fElShowerCharge);
-    hElShowerPhotons    ->Fill(fElShowerPhotons);
     
     if( goodShower3D ) {
-      hElShowerEnergyQL ->Fill(fElShowerEnergyQL);
-      hElTrackdEdx      ->Fill(fElTrackdEdx);
-      float r = (1. - 0.21*(fElShowerCharge / fElShowerPhotons)) / (1. + (fElShowerCharge / fElShowerPhotons) );
-      hRecombination    ->Fill( r ); 
+      hElShowerPhotons    ->Fill(fElShowerPhotons);
+      hElShowerEnergyQL   ->Fill(fElShowerEnergyQL);
+      hElTrackdEdx        ->Fill(fElTrackdEdx);
+      float QoverL = fElShowerCharge / fElShowerPhotons;
+      float R = ( 1.+fExcRatio ) * QoverL / ( 1.+QoverL );
+      hQoverL   ->Fill( QoverL );
+      hRecomb   ->Fill( R ); 
     }
 
     if( fTrue_ElShowerEnergyDep > 0. ) {
@@ -3229,6 +3315,7 @@ bool MichelAnaFilter::filter(art::Event & e)
         hTrue_EnergyResQL ->Fill((fElShowerEnergyQL - fTrue_ElShowerEnergyDep) / fTrue_ElShowerEnergyDep);
         hTrue_EnergyRes_Shwr3D       ->Fill( (fElShowerEnergy - fTrue_ElShowerEnergyDep) / fTrue_ElShowerEnergyDep );
         hTrue_PhotonRes        ->Fill( (fElShowerPhotons - fTrue_ElShowerPhotons) / fTrue_ElShowerPhotons );
+        hTrue_VisRes            ->Fill( (fElShowerVis - fTrue_ElShowerVis) / fTrue_ElShowerVis );
       }
     }
 
@@ -3277,6 +3364,7 @@ bool MichelAnaFilter::filter(art::Event & e)
 //########################################################################################
 void MichelAnaFilter::endJob()
 {
+  TF1 fit("fit","[0]*exp(-x/[1])",300,7000);
   if( fNumEvents_Shwr == 0 ) {
     hTrue_EnergyRes->Fill(-9);
     hElShowerEnergy->Fill(-9); 
@@ -3318,9 +3406,9 @@ void MichelAnaFilter::endJob()
   <<"  MinElShowerFrac                        : "<<fMinElShowerFrac<<"\n"
   <<"  MinFracMuHitsLinear                    : "<<fMinFracMuHitsLinear<<"\n"
   <<"\n"
-  <<"  RFactor                                 : "<<fRFactor<<"\n"
-  <<"  RFactorTrack                            : "<<fRFactorTrack<<"\n"
-  <<"  RFactorShower                           : "<<fRFactorShower<<"\n"
+  <<"  RFactor                                 : "<<fRecombFactor<<"\n"
+  <<"  RFactorTrack                            : "<<fRecombFactorTrack<<"\n"
+  <<"  RFactorShower                           : "<<fRecombFactorShower<<"\n"
   <<"\n";
   
   
@@ -3382,7 +3470,6 @@ void MichelAnaFilter::endJob()
   <<"    - Num entries in ave electron wfm    : "<<aveWfmCounter_el[ch]
   <<"\n\n";
   
-  TF1 fit("fit","[0]*exp(-x/[1])",300,7000);
   float t1 = 300;
   float t2 = 4000;
   std::cout<<"  Extracting tau from ave wfms, T=("<<t1<<","<<t2<<")ns\n";
@@ -3437,7 +3524,22 @@ void MichelAnaFilter::endJob()
   std::cout<<"\n";
 
   }
-  
+ 
+  // -------------------------------------------
+  // Estimate e lifetime
+  if( hdQdxVsT->GetEntries() > 0 ) {
+  hdQdxVsT->Divide(hdQdxVsT_N);
+  fit.SetRange(10.,310.);
+  fit.SetParameter(0, hdQdxVsT->GetMaximum() );
+  fit.SetParLimits(0, 0., hdQdxVsT->GetMaximum() * 3. );
+  fit.SetParameter(1, 800.);
+  fit.SetParLimits(1, 50., 3000.);
+  hdQdxVsT->Fit("fit","RQN0");
+  hElectronLifetimeReco->Fill(fit.GetParameter(1) );
+  std::cout
+  <<"  Reco'd electron lifetime               : "<<fit.GetParameter(1)<<" +/- "<<fit.GetParError(1)<<" us\n\n";
+  }
+     
   std::cout
   <<"  Saved PMT waveforms                    : "<<fNumSavedWfmGraphs<<" / "<<fMaxSavedWfmGraphs<<"\n"
   <<"  Saved hit-clustering graphs            : "<<fNumSavedHitGraphs<<" / "<<fMaxSavedHitGraphs<<"\n"
@@ -3916,17 +4018,20 @@ void MichelAnaFilter::ParticleTracker(const art::Event& e, int muID, int elID, T
   fTrue_NumBremmPhotons = 0;
   fTrue_TotalChargeDep  =0.;
   fTrue_TotalEnergyDep  =0.;
-
-  int   Nq_trk = 0;
-  int   Nq_shwr = 0;
-  float Q_trk = 0.;
-  float Q_shwr = 0.;
-  float L_trk = 0.;
-  float L_shwr = 0.;
+  
+  // Keep track of total charge (electrons escaping recomb.) 
+  // for Michel electrons and their shower products, and
+  // total number of electron-ion pairs. These are used to 
+  // calculate recombination factors.
+  int   Ni_trk  = 0;
+  int   Ni_shwr = 0;
+  float Q_trk   = 0.;
+  float Q_shwr  = 0.;
   
   if( elID > 0 ) {
-    fTrue_ElShowerVisCh[0] = 0.;
-    fTrue_ElShowerVisCh[1] = 0.;
+    fTrue_ElShowerVis     = 0.; // total frac. vis
+    fTrue_ElShowerVisCh[0] = 0.; // total frac. vis: ETL
+    fTrue_ElShowerVisCh[1] = 0.; // total frac. vis: HMM
     fTrue_ElTrackPhotons = 0;
     fTrue_ElShowerPhotons   = 0;
     fTrue_ElShowerPhotonsPrompt   = 0;
@@ -3943,6 +4048,7 @@ void MichelAnaFilter::ParticleTracker(const art::Event& e, int muID, int elID, T
   // ancestor, determine energy loss deposited INTO LAr at each step.
   for( auto const& particle : (*particleHandle) )
   {
+    
     // Is this particle descended from electron, or is it the muon?
     bool isFromElectron = IsParticleDescendedFrom(particleHandle,particle.TrackId(),elID);
     bool isElectron     = (particle.TrackId() == elID);
@@ -3963,8 +4069,13 @@ void MichelAnaFilter::ParticleTracker(const art::Event& e, int muID, int elID, T
     int Npts = particle.NumberTrajectoryPoints();
     if( Npts < 1 ) continue;
 
-    // Particle time
+    // Particle start time
     float particleTime = particle.T(0);
+    
+
+    // Particle's deposited charge and energy
+    float particleDepEnergy = 0.;
+    float particleDepCharge = 0.;
     
     // Loop over track's IDEs and convert each to scintillation 
     for(size_t nChan = 0; nChan < simList.size(); nChan++) {
@@ -3992,7 +4103,7 @@ void MichelAnaFilter::ParticleTracker(const art::Event& e, int muID, int elID, T
 
           // correct numElectrons for drift attenuation
           float T = x / fDriftVelocity;
-          int numElectronsOrig = it->second.at(i).numElectrons * TMath::Exp( T / fElectronLifetime );
+          int numElectrons = it->second.at(i).numElectrons * TMath::Exp( T / fElectronLifetime );
           hTrue_NumElectrons->Fill(it->second.at(i).numElectrons);
           
           // Use deposited energy to back-calculate scintillation.
@@ -4002,38 +4113,38 @@ void MichelAnaFilter::ParticleTracker(const art::Event& e, int muID, int elID, T
           // recoils, there is a further reduction due to the "L" factor as per Lindhard
           // theory ("YieldFactor") but for now we ignore this.
           // http://nusoft.fnal.gov/larsoft/doxsvn/html/NestAlg_8cxx_source.html
-          float meanNumQuanta = dE / ( fWValue * 1e-6 );
+          float meanNumQuanta = dE / ( fWph * 1e-6 );
           int totalQuanta = meanNumQuanta;
           //float sigma = sqrt( 0.107 * meanNumQuanta );
           //totalQuanta = (int)fRand->Gaus( meanNumQuanta, sigma );
           if( totalQuanta <= 0 ) continue;
-          int numPhotons = totalQuanta - numElectronsOrig;
+          int numExc      = totalQuanta*(fExcRatio / (1. + fExcRatio));
+          int numIon      = totalQuanta - numExc;
+          int numPhotons  = totalQuanta - numElectrons;
           if( numPhotons <= 0 ) numPhotons = 0; 
 
           // add up the energy
-          fTrue_TotalChargeDep        += numElectronsOrig; 
+          fTrue_TotalChargeDep        += numElectrons; 
           fTrue_TotalEnergyDep        += dE;
+          particleDepCharge           += numElectrons;
+          particleDepEnergy           += dE;
           
           // Keep track of total charge, light, and quanta for the different components
           // of the Michel shower (electron ionization track and displaced shower products)
           if( isElectron ){
-            Nq_trk += totalQuanta;
-            Q_trk += numElectronsOrig;
-            L_trk += numPhotons;
+            Ni_trk  += numIon; 
+            Q_trk   += numElectrons;
             fTrue_ElTrackPhotons      += numPhotons;
-            fTrue_ElTrackChargeDep    += numElectronsOrig;     
             fTrue_ElTrackEnergyDep    += dE;
           }
           if( isFromElectron || isElectron ){
-            fTrue_ElShowerChargeDep   += numElectronsOrig;     
             fTrue_ElShowerEnergyDep   += dE;
             fTrue_ElShowerPhotons     += numPhotons;
             hTrue_ElShowerDepVsDistFromMuTrackEnd->Fill( (loc-fTrue_MuTrackEnd).Mag() );
           }
           if( !isElectron && isFromElectron ) {
-            Nq_shwr += totalQuanta;
-            Q_shwr += numElectronsOrig;
-            L_shwr += numPhotons;
+            Ni_shwr += numIon;
+            Q_shwr  += numElectrons;
           }
           if( !isFromElectron && !isMuon && particle.T(0) <= fTrue_MuStopTime ) {
             hTrue_DRayEnergy          ->Fill(dE);
@@ -4089,7 +4200,7 @@ void MichelAnaFilter::ParticleTracker(const art::Event& e, int muID, int elID, T
             hTrue_VisTotal[ch]->Fill(total_vis_ch);
             hTrue_Vis[ch][0]  ->Fill(vis[0]);
             hTrue_Vis[ch][1]  ->Fill(vis[1]);
-            fTrue_ElShowerVisCh[ch] += total_vis_ch;
+            
 
             // ------------------------------- 
             // Determine number of phots detected by this PMT
@@ -4098,7 +4209,12 @@ void MichelAnaFilter::ParticleTracker(const art::Event& e, int muID, int elID, T
             int Ndet_fast = nDetDistFast(generator); 
             int Ndet_late = nDetDistLate(generator); 
             Ndet[ch] = Ndet_fast + Ndet_late;
-            if( isFromElectron || isElectron ) fTrue_PE[ch] += Ndet[ch];
+            if( isFromElectron || isElectron ){ 
+              fTrue_PE[ch] += Ndet[ch];
+              // weighted vis
+              fTrue_ElShowerVisCh[ch] += total_vis_ch * float(numPhotons);
+              fTrue_ElShowerVis      +=  total_vis_ch * float(numPhotons); 
+            }
             
             // Loop over those photons 
             for(int iph = 0; iph < Ndet[ch]; iph++){
@@ -4122,29 +4238,69 @@ void MichelAnaFilter::ParticleTracker(const art::Event& e, int muID, int elID, T
       }//<-- endloop over time ticks
     }//<-- loop over channels
 
+    // ----------------------------------------------------------------------------------
+    // If this particle was Michel electron or one of its shower products, 
+    // record total dE/dx and dQ/dx into histograms
+    if( (isElectron || isFromElectron) ) {
+      
+      // traj. length (if fully contained in TPC)
+      float particleTrajLength = 0.;
+      for( size_t i=0; i<particle.NumberTrajectoryPoints(); i++)
+      {
+        if( i > 0 ) particleTrajLength += (particle.Position(i).Vect()-particle.Position(i-1).Vect()).Mag();
+        if( !IsPointInFiducialVolume( particle.Position(i).Vect(), 0., 0., 0.)){
+          particleTrajLength  = 0.;
+          break;
+        }
+      }
+
+      // now calculate dE/dx
+      if( particleTrajLength > 0 ) {
+        hTrue_TrajLength    ->Fill( particleTrajLength ); 
+        
+        if( particleTrajLength > 0.1 && particleDepEnergy > 0. ) {
+          float dEdx = particleDepEnergy / particleTrajLength;
+          float dQdx = particleDepCharge / particleTrajLength;
+          hTrue_dEdx          ->Fill( dEdx, particleDepEnergy );
+          hTrue_dQdx          ->Fill( dQdx, particleDepCharge );
+          hTrue_dEdx_vs_dQdx  ->Fill( dEdx, dQdx);
+          if( isElectron ) {
+            hTrue_dEdx_ElTrk  ->Fill( dEdx ); 
+            hTrue_dQdx_ElTrk  ->Fill( dQdx );
+            hTrue_dEdx_vs_dQdx_ElTrk  ->Fill( dEdx, dQdx);
+          }
+          if( !isElectron && isFromElectron ) {
+            hTrue_dEdx_ElShw  ->Fill( dEdx );
+            hTrue_dQdx_ElShw  ->Fill( dQdx );
+            hTrue_dEdx_vs_dQdx_ElShw  ->Fill( dEdx, dQdx);
+          }
+        }// endif L > 0.1 && dE > 0
+      }// endif > 0
+    }// endif electron shower product
 
   }//<-- end loop over particles
  
   hTrue_NumDRays->Fill(numDRays); 
   hTrue_ElEnergyVsNumBremmPhotons->Fill(fTrue_ElEnergy, fTrue_NumBremmPhotons);
   
+  // ----------------------------------------------------------
+  // Normalize the weighted true visibilities
+  fTrue_ElShowerVisCh[0]  /= fTrue_ElShowerPhotons;
+  fTrue_ElShowerVisCh[1]  /= fTrue_ElShowerPhotons;
+  fTrue_ElShowerVis       /= fTrue_ElShowerPhotons;
+
   // -----------------------------------------------------------    
   // Record the survival yield, or, ratio of surviving ionizaiton electrons
   // out of the total number of quanta produced by the energy deposit. The mean
   // from these histograms will be the scale factors we use for charge deposits
-  // in data when calculating Q-based energy.
-  int   Nq_total  = Nq_trk + Nq_shwr;
-  float Q_total   = Q_trk + Q_shwr;
-  float L_total   = L_trk + L_shwr;
-  float QoverL    = Q_total / L_total;
-  float QoverL_trk = Q_trk / L_trk;
-  float QoverL_shwr = Q_shwr / L_shwr;
-  hTrue_R                                 ->Fill( float(Nq_total)/Q_total );
-  hTrue_R_Track                           ->Fill( float(Nq_trk)/Q_trk );
-  hTrue_R_ShowerProducts                  ->Fill( float(Nq_shwr)/Q_shwr );
-  hTrue_Recombination               ->Fill((1. - QoverL * 0.21) / (1. + QoverL ) ); 
-  hTrue_Recombination_Track         ->Fill((1. - QoverL_trk*0.21 ) / (1. + QoverL_trk ));
-  hTrue_Recombination_ShowerProducts->Fill((1. - QoverL_shwr*0.21 ) / (1. + QoverL_shwr ));
+  // in data when calculating Q-based energy. (NOTE: this is for Michel electrons
+  // and their shower products only.)
+  fTrue_ElTrackChargeDep    = Q_trk;
+  fTrue_ElShowerChargeDep   = Q_shwr;
+  fTrue_ElShowerChargeDep   = Q_trk + Q_shwr;
+  hTrue_RecombFactor        ->Fill( (Q_trk + Q_shwr) / float(Ni_trk + Ni_shwr) );
+  hTrue_RecombFactor_ElTrk  ->Fill( Q_trk / float(Ni_trk) );
+  hTrue_RecombFactor_ElShw  ->Fill( Q_shwr / float(Ni_shwr) );
 
   LOG_VERBATIM("MichelAnaFilter")<<"Done with particle tracker.";
 
@@ -4420,6 +4576,10 @@ void MichelAnaFilter::Clustering( int plane, michelcluster& cl, float muTrackX, 
 
     if( bnd2 >= 0 ) {
       LOG_VERBATIM("MichelAnaFilter")<<"YES!  bnd2 = "<<bnd2;
+      if( fBndOffset != 0 ){
+        LOG_VERBATIM("MichelAnaFilter")<<"Offsetting bnd by "<<fBndOffset<<" hits";
+        bnd2 += fBndOffset;
+      }
       cl.bnd_i = bnd2;
       cl.bnd_s = profile_s.at(bnd2);
       cl.muEnd2D.SetXYZ(profile_W.at(bnd2), profile_X.at(bnd2), 0.);
@@ -4631,8 +4791,8 @@ void MichelAnaFilter::CalcMichelShowerEnergy( michelcluster& cl ) {
     bool    isInTrack   = cl.isInTrk.at(i);
     size_t  hitID       = cl.shower.at(i);
 
-    float rfac = fRFactorShower;
-    if( isInTrack ) rfac = fRFactorTrack;
+    float rfac = fRecombFactorShower;
+    if( isInTrack ) rfac = fRecombFactorTrack;
           
     // Add to Michel charge
     cl.elShowerCharge   += fHitCharge.at(hitID);
@@ -4640,7 +4800,10 @@ void MichelAnaFilter::CalcMichelShowerEnergy( michelcluster& cl ) {
       cl.elTrackCharge  += fHitCharge.at(hitID);
          
     // Scale charge to energy
-    float dE = fHitCharge.at(hitID) * (fWValue * 1e-6) * rfac;
+    //   dE = N_i * W_ion
+    //   N_i = dQ/R
+    //   W_ion = W_ph * (1+alpha)
+    float dE = ( fHitCharge.at(hitID) / rfac ) * (fWion * 1e-6);
     cl.elShowerEnergy   += dE;
     if( isInTrack ) 
       cl.elTrackEnergy  += dE;
