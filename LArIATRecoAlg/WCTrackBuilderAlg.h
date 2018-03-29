@@ -44,7 +44,7 @@ class WCTrackBuilderAlg{
   
    void reconfigure( fhicl::ParameterSet const& pset );
    
-   void loadXMLDatabaseTableForBField( int run, int subrun );
+   double loadXMLDatabaseTableForBField( int run, int subrun );
    
    /**
     * Main method you use to build tracks.
@@ -206,11 +206,11 @@ class WCTrackBuilderAlg{
  					    
   float fMCMagneticField;
   float fB_field_tesla;	
+  int   fNHits;
   private:
   
-  bool  fPickyTracks;
+  bool  bPickyTracks;
   bool  fDiagnostics;
-  int   fNHits;
   int   fWCMissed;
   float trackres;
   //float hit_position_vect_alg[4][3];				 
@@ -238,7 +238,7 @@ class WCTrackBuilderAlg{
   
   				 
   //Misc				 
-  bool fVerbose;
+  bool bVerbose;
   int fRun;
   int fSubRun;
   float current;

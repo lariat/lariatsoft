@@ -139,7 +139,7 @@ void findGoodHits( std::vector<std::vector<float> > cluster_time_buffer,
 
 
   //Misc
-  bool fVerbose;
+  bool bVerbose;
   
 };
 

@@ -51,6 +51,7 @@ WCTrackBuilderAlg::WCTrackBuilderAlg( fhicl::ParameterSet const& pset )
       fX_cntr[wcnum-1] = centerOfDet[0] * CLHEP::cm;
       fY_cntr[wcnum-1] = centerOfDet[1] * CLHEP::cm;
       fZ_cntr[wcnum-1] = centerOfDet[2] * CLHEP::cm;
+
     }
   }
   auto tpcGeo = fGeo->begin_TPC_id().get();
@@ -87,14 +88,15 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   //fSigmaYDist           = pset.get<float >("SigmaYDist",          18.0      );
 
  // fPrintDisambiguation = false;
-  fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
-  fDiagnostics          = pset.get<bool  >("Diagnostics",         false     );
+  bVerbose          = pset.get<bool>("bVerbose",         false     );
+  bPickyTracks          = pset.get<bool>("PickyTracks",  false     );
+  fDiagnostics          = pset.get<bool>("Diagnostics",  false     );
   
   //Survey constants
   //fDelta_z_us           = pset.get<float >("DeltaZus",            1551.15   );  //this will recalculated using geometry instead of hardcoding. 
   //fDelta_z_ds 		= pset.get<float >("DeltaZds",   	  1570.06   );   
   //fL_eff        	= pset.get<float >("LEffective", 	  1145.34706);	
-  fL_eff        	= pset.get<float >("LEffective", 	  1204);	
+  fL_eff        	= pset.get<float >("LEffective", 	  1204);	  
   fMP_X                 = pset.get<float> ("MidplaneInterceptFactor", 1);
   fMP_M                 = pset.get<float> ("MidplaneSlopeFactor", 1);
   fMidplane_intercept   = pset.get<float> ("MidplaneIntercept", 31067.4); 
@@ -108,18 +110,31 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   return;
 }
 //-------------------------------------------------------------------------------
-void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
+double WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
 {
   fRun = run;
   fSubRun = subrun;
-  current=fabs(std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun)));
-//if(fabs(current)>90){fB_field_tesla= .003375*current;}
-//if(fabs(current)<90 && fabs(current)>70){fB_field_tesla= .0034875*current;}	
-//if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}	
-//if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  	
-//if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
-  fB_field_tesla= (-.1538*pow(10,-4)*pow(current,3)+.2245*pow(10,-2)*pow(current,2)-.1012*current+36.59)*current/10000; // Doug Jensen's cubic equation for magnetic field as a function of current.
-  std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl;
+
+  // stod kept killing stuff randomly, so put it all inside of a try catch clause
+  try {
+    current = fabs(std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun)));
+  } catch (...) {
+    std::cout << "Failed to get B Field from Utility" << std::endl; 
+    return 0.0;
+  }
+
+  //if(fabs(current)>90){fB_field_tesla= .003375*current;}
+  //if(fabs(current)<90 && fabs(current)>70){fB_field_tesla= .0034875*current;}	
+  //if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}	
+  //if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  	
+  //if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
+  
+  // Doug Jensen's cubic equation for magnetic field as a function of current.
+  fB_field_tesla = (-0.1538*pow(10.0,-4.0)*pow(current,3.0)+0.2245*pow(10.0,-2.0)* pow(current, 2.0)-0.1012*current+36.59)*current / 10000.0; 
+
+  if(bVerbose) { std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl; } 
+
+  return fB_field_tesla;
 }
 //--------------------------------------------------------------
 //Main function called for each trigger
@@ -144,7 +159,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 					     float (&hit_position_vect)[4][3],
                                              float offset)
 {					   
-  fPickyTracks = pickytracks;
+  bPickyTracks = pickytracks;
   fDiagnostics= diagnostics;
 //  for(int i=0; i<4; ++i){
 //    for(int j=0; j<3; ++j){
@@ -153,7 +168,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 //  }
   
   //std::cout<<"Time to make some tracks!"<<std::endl;
-  //std::cout<<"PickyTracks : "<<fPickyTracks<<"High Yield : "<<fHighYield<<"Diagnostics : "<<fDiagnostics<<std::endl;
+  //std::cout<<"PickyTracks : "<<bPickyTracks<<"High Yield : "<<fHighYield<<"Diagnostics : "<<fDiagnostics<<std::endl;
   
   initialconst=-999;  //Just a number to use to initialize things before they get filled correctly.
   WCMissed=initialconst;
@@ -194,7 +209,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 					   
    //std::cout<<"Built four point track"<<std::endl;					     
   //Need to use the cut information to whittle down track candidates
-//     if( !fPickyTracks ){
+//     if( !bPickyTracks ){
 //       disambiguateTracks( reco_pz_list,
 // 			  y_kink_list,
 // 			  x_dist_list,
@@ -254,8 +269,8 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   bool skip = false;
   fNHits=0;
   for( size_t iWC = 0; iWC < 4 ; ++iWC ){
-    if(good_hits[iWC][0].hits.size()>0 && good_hits[iWC][1].hits.size()>0){++fNHits;}
-    else{WCMissed=iWC+1;}
+    if(good_hits[iWC][0].hits.size() > 0 && good_hits[iWC][1].hits.size() > 0) { ++fNHits; }
+    else { WCMissed = iWC+1; }
   }
   
   WCDist->Fill(0);
@@ -267,41 +282,48 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   if(fNHits==4){WCDist->Fill(6);}
   
   //If we don't have 3 or 4 hits, skip.
-  if(fNHits<3){
+
+  if(fNHits < 3){
     skip = true;
   } 
-  if(fPickyTracks){
+
+  if(bPickyTracks){
     for(size_t iWC=0; iWC<4; ++iWC){
       for(size_t iAX=0; iAX<2; ++iAX){
         if(good_hits[iWC][iAX].hits.size() != 1){  
-	//Only allow events with 1 and only 1 hit on each axis
+	  //Only allow events with 1 and only 1 hit on each axis
           skip = true;
 	  break;
 	}
       }
     }   
   }
-  if(!fPickyTracks){
+
+  if(!bPickyTracks){
     if(WCMissed==1 || WCMissed==4){ //skip events with less than 3 X/Y hits or is missing the first or last WC
       skip = true;
     }  
   }
-  //if(WCMissed !=2 && WCMissed !=3){
-    //skip=true;
-    //}
-  if( skip == true ){
-    if( fVerbose ){
-      std::cout << "skipping this event." << std::endl;
-    }
+
+  /*
+  if(WCMissed !=2 && WCMissed !=3){
+    skip=true;
+  }
+  */
+
+  if( skip ){
+    if( bVerbose ){ std::cout << "skipping this event." << std::endl; }
+      
     //Clear the hit lists for each WC/axis
     for( size_t iWC = 0; iWC < good_hits.size() ; ++iWC ){
       for( size_t iAx = 0; iAx < good_hits.at(iWC).size() ; ++iAx ){
 	good_hits.at(iWC).at(iAx).hits.clear();
       }
     }
-    return true;
+
   }
-  else return false;
+
+  return skip;
 
 }
 
@@ -843,8 +865,9 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
       fMP_M=1.01;
       fMP_X=1;
     }
-    fMP_M=1;
-    fMP_X=1;
+
+    fMP_M=1.0;
+    fMP_X=1.0;
 
     float midplane_slope=1./tan(fDeg_to_Rad*8.0)*fMP_M;
     float midplane_intercept=fMidplane_intercept*fMP_X;
@@ -862,6 +885,7 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
     float theta_x_ds=atan(ds_dx/ds_dz); 
 
     reco_pz = calculateRecoPz(theta_x_us,theta_x_ds,BestTrackStats[0]);
+
     double scalingfactor=0;
     if(fB_field_tesla<0.3) //Only have correction factors for 60A and 100A. .3T will separate the samples, as that's like ~90A.
     {
@@ -918,7 +942,7 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
        scalingfactor=-4.2E-5*reco_pz-.0444;
     }
     reco_pz=reco_pz/(1+scalingfactor);
-    
+
   }
    if(WCMissed==4){
     if(current>50 && current< 70){
@@ -950,7 +974,7 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
       //reco_pz =(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /( float(3.3 * (sin(theta_x_ds)-sin(theta_x_us))*cos(atan(BestTrackStats[0])))); 
       reco_pz = calculateRecoPz(theta_x_us,theta_x_ds,BestTrackStats[0]);
    //Calibrate depending on current
-      reco_pz=(reco_pz-37.7883)/.701274;
+      //reco_pz=(reco_pz-37.7883)/.701274;
     
   }   
 }
@@ -1116,7 +1140,7 @@ void WCTrackBuilderAlg::MakeDiagnosticPlots(std::vector<std::vector<WCHitList> >
   float offset = 0.;
   calculateTheMomentum(best_track,x,y,z,reco_pz, reco_pz2M, bestRegressionStats, offset);
   float fourmom=reco_pz;
-  std::cout<<"Reco 2M: "<<reco_pz2M<<std::endl;
+  if(bVerbose) { std::cout<<"Reco 2M: "<<reco_pz2M<<std::endl; }
   float fourx[4]={x[0],x[1],x[2],x[3]};
   float foury[4]={y[0],y[1],y[2],y[3]};
   float fourz[4]={z[0],z[1],z[2],z[3]};
@@ -1597,7 +1621,7 @@ float WCTrackBuilderAlg::CalculateTheMomentumError(float (&x)[4],
   float error_us=gamma_us*(2*pow(xerror_us,2)+pow(theta_us,2)*(2*pow(zerror_us,2)));
   float error_ds=gamma_ds*(2*pow(xerror_ds,2)+pow(theta_ds,2)*(2*pow(zerror_ds,2)));
   float error_mom=pow(Berror+error_us+error_ds,.5);
-  std::cout<<theta_us<<" "<<theta_ds<<" "<<xerror_us<<" "<<xerror_ds<<" "<<zerror_us<<" "<<zerror_ds<<" "<<Berror<<" "<<error_us<<" "<<error_ds<<" "<<error_mom<<" "<<reco_pz<<" "<<error_mom/reco_pz<<std::endl;
+  if(bVerbose) { std::cout<<theta_us<<" "<<theta_ds<<" "<<xerror_us<<" "<<xerror_ds<<" "<<zerror_us<<" "<<zerror_ds<<" "<<Berror<<" "<<error_us<<" "<<error_ds<<" "<<error_mom<<" "<<reco_pz<<" "<<error_mom/reco_pz<<std::endl; }
   return error_mom;
 }
 //========================================================================================

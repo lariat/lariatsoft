@@ -20,6 +20,8 @@ lariatutil	    v06_71_00 -	optional
 cetbuildtools   v7_02_01	-	only_for_build
 end_product_list
 
+geant4 v4_10_3_p01c
+
 # e15 - with gcc 6.4.0 and -std=c++14
 qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	LariatBeamFiles	lariatutil	notes
 e15:debug	e15:debug -nq-		e15:debug	 e15:s65:debug  -nq-		e15:debug

@@ -59,6 +59,7 @@ find_ups_product( larpandora )
 find_ups_product( lareventdisplay )
 find_ups_product( cetbuildtools )
 
+
 # art related products
 find_ups_product( art )
 find_ups_product( artdaq_core )
@@ -71,6 +72,7 @@ find_ups_product( lariatfragments )
 find_ups_product( postgresql )
 find_ups_product( nutools )
 find_ups_root( root )
+find_ups_geant4( geant4 )
 
 # macros for artdaq_dictionary and simple_plugin
 include(ArtDictionary)
