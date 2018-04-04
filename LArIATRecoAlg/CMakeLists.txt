@@ -1,9 +1,16 @@
+include_directories ( $ENV{GEANT4_FQ_DIR}/include )
+include_directories ( $ENV{GEANT4_FQ_DIR}/lib64 )
 
 art_make( LIBRARY_NAME  LArIATRecoAlg
           LIB_LIBRARIES lardata_Utilities
           larcorealg_Geometry
           lardataobj_RawData
           Utilities_DatabaseUtilityT1034_service
+	  nutools_G4Base
+	  larsim_LArG4
+	  nusimdata_SimulationBase
+	  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+	  ${G4_LIB_LIST}
           ${ART_FRAMEWORK_CORE}
           ${ART_FRAMEWORK_PRINCIPAL}
           ${ART_FRAMEWORK_SERVICES_REGISTRY}
