@@ -114,8 +114,11 @@ private:
         float wire_signal[480][3072];
         int row, col;           // Pixel's row and col positions
         //int row1, col1; // unused         // Pixel's row and col positions
-        int upperThreshold = .8;        // Gradient strength nessicary to start edge
-        int lowerThreshold = .02;               // Minimum gradient strength to continue edge
+        // kludge for c2:  set these to zero since that is what the conversion to int does
+        //int upperThreshold = .8;        // Gradient strength nessicary to start edge
+        //int lowerThreshold = .02;               // Minimum gradient strength to continue edge
+        int upperThreshold = 0;        // Gradient strength nessicary to start edge
+        int lowerThreshold = 0;               // Minimum gradient strength to continue edge
         //unsigned long iOffset; // unused          // Variable to offset row-column vector during sobel mask
         //unsigned long iOffset1; // unused         // Variable to offset row-column vector during sobel mask
         int rowOffset;                  // Row offset from the current pixel
