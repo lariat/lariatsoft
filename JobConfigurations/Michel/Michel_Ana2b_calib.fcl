@@ -4,6 +4,7 @@ services.DetectorPropertiesService:     @local::lariat_detproperties_run2
 physics.filters.michelana:              @local::lariat_michelanafilter_run2b
 physics.filters.michelana.LookAtTracks: false
 physics.filters.michelana.Req1StpTrk:   false
+physics.filters.michelana.MakeAveWfms:  true
 
 physics.filt: [tfilt, michelana]
 physics.filters.tfilt.T1:   5.4

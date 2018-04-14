@@ -52,7 +52,7 @@ physics:
  {
  }
 
- filt:          [ michelana ]
+filt:          [ michelana ]
  stream1:       [ out1 ]
  trigger_paths: [ filt ] 
  #end_paths:     [ stream1 ]  

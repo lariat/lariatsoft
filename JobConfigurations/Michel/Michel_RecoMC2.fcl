@@ -1,4 +1,4 @@
-#include "Michel_Reco.fcl"
+#include "Michel_RecoMC1.fcl"
 
 services:
 {
@@ -7,10 +7,3 @@ services:
 }
 #services.DetectorPropertiesService.Electronlifetime: 500
 
-physics.reco:                                               [ @sequence::tpcreco ]
-physics.producers.caldata.DodQdxCalib:                      false
-physics.producers.calo.CaloAlg.CalAreaConstants:            [0.084,0.091]
-physics.producers.calotc.CaloAlg.CalAreaConstants:          [0.084,0.091]
-physics.producers.linecluster.ClusterCrawlerAlg.HitErrFac:  0.22  # Fraction of hit RMS to calculate cluster fit chisq, MC hits are narrower than data hits. 
-
-physics.filters.opfilt.CalAreaConstants:                     [ 0.084, 0.091 ]

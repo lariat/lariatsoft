@@ -6,10 +6,10 @@ process_name: OpDetSER
 services:
 {
   TFileService: { fileName: "SER.root" }
-  TimeTracker:  {}
-  RandomNumberGenerator: {}
-  message:      @local::standard_info
-  scheduler:    {}
+  #TimeTracker:  {}
+  #RandomNumberGenerator: {}
+  #message:      @local::standard_info
+  #scheduler:    {}
   @table::lariat_services
 }
 
@@ -38,7 +38,7 @@ physics:
 ################################################################
 # Single photoelectron calibration parameters
 
-physics.analyzers.ser.Verbose:                 false
+physics.analyzers.ser.Verbose:                 true
 
 # By default, look only at two PMTs (ch0 and ch1)
 physics.analyzers.ser.SelectChannels:	      [ 0,    1 ]

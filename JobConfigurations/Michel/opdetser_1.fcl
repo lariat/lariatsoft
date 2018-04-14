@@ -8,7 +8,7 @@ physics.analyzers.ser.PostIntWindow:          [ 25,   25,     600 ]
 physics.analyzers.ser.PrePE_TruncP:           0
 physics.analyzers.ser.PrePE_TruncSkew:        0
 
-physics.analyzers.ser.DownsampleInterval:     20
+#physics.analyzers.ser.DownsampleInterval:     20
 physics.analyzers.ser.SelectChannels:	      [ 1 ]
 physics.analyzers.ser.OpDetChannels:	      [ 0,    1 ]
 physics.analyzers.ser.OpDetPolarity:          [-1,    -1 ]
@@ -16,7 +16,7 @@ physics.analyzers.ser.SaveAvePulses:          false
 physics.analyzers.ser.AvePulse_preWindow:     1000
 physics.analyzers.ser.AvePulse_postWindow:    14000
 
-physics.analyzers.ser.SmoothingRange:           1
+physics.analyzers.ser.SmoothingRange:           0
 
 physics.analyzers.ser.SubtractRunningBaseline:  true
 physics.analyzers.ser.RunningBaselineLength:    250
@@ -32,7 +32,7 @@ physics.analyzers.ser.PrePE_RMSFactorCut:      [ 1.2,  1.2  ] # xRMS
 physics.analyzers.ser.PulseHitRMSThresh:       [ 3.0,  3.0  ] # xRMS
 physics.analyzers.ser.PulseHitThresh_high:     [ 5.,   5.   ] # mV
 
-physics.analyzers.ser.MaxSavedWaveforms:       200
+physics.analyzers.ser.MaxSavedWaveforms:       20
 physics.analyzers.ser.T1:                      -8500  
 physics.analyzers.ser.T2:                      19500 
 physics.analyzers.ser.SelectEventTypes:        ["all"] 

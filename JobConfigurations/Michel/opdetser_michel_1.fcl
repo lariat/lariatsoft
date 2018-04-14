@@ -16,7 +16,7 @@ physics.analyzers.ser.SaveAvePulses:          false
 physics.analyzers.ser.AvePulse_preWindow:     1000
 physics.analyzers.ser.AvePulse_postWindow:    14000
 
-physics.analyzers.ser.SmoothingRange:           1
+physics.analyzers.ser.SmoothingRange:           0
 
 physics.analyzers.ser.SubtractRunningBaseline:  true
 physics.analyzers.ser.RunningBaselineLength:    250

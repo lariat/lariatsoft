@@ -8,4 +8,5 @@ services:
 
 physics.filt:                                     [ michelana ]
 physics.filters.michelana.MuContamCorr_EffTau:    [0., 1300. ]
-physics.filters.michelana.CalAreaConstants:       [ 0.084, 0.091 ]
+physics.filters.michelana.CalAreaConstants:       [ 0.0367, 0.0910 ]
+physics.filters.michelana.MinHitAmp:              [ 18., 38. ]

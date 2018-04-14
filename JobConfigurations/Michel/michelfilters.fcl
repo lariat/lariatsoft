@@ -22,6 +22,7 @@ lariat_michelanafilter:
   GateDelay:                      300. # 300ns in Run 1, 250ns in Run 2
   MaxDecayTime:                   7200.
   dTcut:                          2000.
+  CorrectQuenching:               true
   OpHitBuilderAlg:
   {
     BaselineWindowLength:       1000
@@ -48,7 +49,6 @@ lariat_michelanafilter:
   TauT:                           1300. # Heindl 2010/2011
   FastLightRatio:                 0.46
   LateLightTau:                   1150. 
-  LightQuenching:                 true
   CollectionEff:                  [ 0.95, 0.80 ] 
   ApplyTrigEffCut:                true
   TrigEff_P:                      [ 80. , 25. ]
@@ -69,36 +69,38 @@ lariat_michelanafilter:
   FiducialMarginY:                2.
   FiducialMarginZ:                2.
   MuTrackLengthMin:               5.
+  MuTrackZenithAngleMax:          45.
 
   # clustering/shower reco settings:
-  MaxHitSeparation:               2.5 
+  MaxHitSeparation:               2.5 # 2.5 
   TruncMeanWindow:                4
   TruncMeanP:                     0.25 
   MaxMatchDistance:               5 
   LocalLinearityWindow:           4
   LinThresh:                      0.80
-  LinTol:                         3
+  LinTol:                         5
   LinThreshMuFit:                 0.60
-  MuEndRadius:                    3.  # cm
-  ShowerAcceptanceAngle:          60. 
+  MuEndRadius:                    2.  # cm
+  ShowerAcceptanceAngle:          45. # 60. 
   MaxHitTimeDiff:                 1.5 # microseconds 
+  MinHitAmp:                      [ 16., 16. ]
   
-  RecombFactor:                   0.652
-  RecombFactorTrack:              0.679
-  RecombFactorShower:             0.552
+  RecombFactor:                   0.650
+  RecombFactorTrack:              0.676 # 0.676
+  RecombFactorShower:             0.551 # 0.551
   
   # event cut params:
   MinClusterSize:                 10
   MinElClusterSize:               3 
   MaxElClusterSize:               80 
   MinMuClusterSize:               5
-  MinExtraHits:                   0 
-  MinMuLinearity:                 0.8 # 0.8
-  MinFracMuHitsLinear:            0.5 # 0.6 
+  MaxExtraHits:                   10 
+  MinMuLinearity:                 0.7 # 0.8
+  MinFracMuHitsLinear:            0.6 # 0.6 
   MinMuClusterHitsEndFit:         4 # 4
   MinDecayAngle2D:                30.
-  MaxDecayAngle2D:                160.
-  MinElShowerFrac:                0.6
+  MaxDecayAngle2D:                170.
+  MinElShowerFrac:                0.8
   MinNumPts3D:                    3
   MinFracHits3D:                  0.3
    
@@ -108,18 +110,18 @@ lariat_michelanafilter:
 lariat_michelanafilter_run1:                      @local::lariat_michelanafilter
 lariat_michelanafilter_run1.SelectChannels:       [ 1 ]
 lariat_michelanafilter_run1.GateDelay:            300.
-lariat_michelanafilter_run1.CalAreaConstants:     [ 0.025, 0.052 ]
-lariat_michelanafilter_run1.LibraryFile:          "PhotonLibrary_ToyMC_20171223_Run1_300kPerVoxel_24x_20y_45z.root"
+#lariat_michelanafilter_run1.CalAreaConstants:     [ 0.0273, 0.0566 ]
+lariat_michelanafilter_run1.CalAreaConstants:    [ 0.025, 0.052 ]
+lariat_michelanafilter_run1.LibraryFile:          "PhotonLibrary_ToyMC_20180319_Run1_300kPerVoxel_24x_20y_45z.root"
 lariat_michelanafilter_run1.FiducialMarginX:      1.0
 lariat_michelanafilter_run1.FiducialMarginY:      1.5
 lariat_michelanafilter_run1.FiducialMarginZ:      1.0
-lariat_michelanafilter_run1.SPE_ScaleFactor:      [ 1.0,    1.1250 ]
 lariat_michelanafilter_run1.DeleteNarrowHits:     false
-lariat_michelanafilter_run1.SmearSigT:            [ 0.,     0.0426  ]
-lariat_michelanafilter_run1.SmearSigPE:           [ 0.,     0.487  ]
-lariat_michelanafilter_run1.QE_ScaleFactor:       [0., 1.2266  ]   
-lariat_michelanafilter_run1.TrigEff_P:            [0., 27.8006 ]   
-lariat_michelanafilter_run1.SmearFactor:          [0., 1.67089 ]   
+lariat_michelanafilter_run1.SmearSigT:            [ 0., 0.0426 ]
+lariat_michelanafilter_run1.SmearSigPE:           [ 0., 0.49  ]
+lariat_michelanafilter_run1.QE_ScaleFactor:       [ 0., 1.0000 ]  #[0., 1.1148 ] #[0., 1.2266  ]   
+lariat_michelanafilter_run1.TrigEff_P:            [ 0., 25.9933 ]  #[0., 27.839 ] #[0., 27.8006 ]   
+lariat_michelanafilter_run1.SmearFactor:          [ 0., 1.72992 ]   #[0., 1.8283 ] #[0., 1.67089 ]   
 
 # ===============================================================================
 lariat_michelanafilter_run2b:                     @local::lariat_michelanafilter
@@ -130,20 +132,43 @@ lariat_michelanafilter_run2b.GateDelay:           300.
 lariat_michelanafilter_run2b.MinOpHitWidth:       [ 10.,  7.  ]
 lariat_michelanafilter_run2b.DeleteNarrowHits:    false
 lariat_michelanafilter_run2b.MaxWfmRMS:           [ 1.5, 1.5 ]
+#lariat_michelanafilter_run2b.CalAreaConstants:    [ 0.0246, 0.0470 ]
 lariat_michelanafilter_run2b.CalAreaConstants:    [ 0.022, 0.0445 ]
-lariat_michelanafilter_run2b.RecombFactor:        0.648
-lariat_michelanafilter_run2b.RecombFactorTrack:   0.676
-lariat_michelanafilter_run2b.RecombFactorShower:  0.547
+lariat_michelanafilter_run2b.MinHitAmp:           [ 12., 12. ]
+lariat_michelanafilter_run2b.RecombFactor:        0.647
+lariat_michelanafilter_run2b.RecombFactorTrack:   0.674 #0.674
+lariat_michelanafilter_run2b.RecombFactorShower:  0.547 #0.547
 lariat_michelanafilter_run2b.CorrectOvershootMode: "int"
-lariat_michelanafilter_run2b.LibraryFile:         "PhotonLibrary_ToyMC_20171223_Run2_300kPerVoxel_24x_20y_45z.root"
+lariat_michelanafilter_run2b.LibraryFile:         "PhotonLibrary_ToyMC_20180319_Run2_300kPerVoxel_24x_20y_45z.root"
 lariat_michelanafilter_run2b.FiducialMarginX:      1.5
 lariat_michelanafilter_run2b.FiducialMarginY:      1.5
 lariat_michelanafilter_run2b.FiducialMarginZ:      1.5
-lariat_michelanafilter_run2b.SPE_ScaleFactor:     [1.050, 1.056] 
 lariat_michelanafilter_run2b.SmearSigT:           [ 0.024,     0.024    ]
-lariat_michelanafilter_run2b.SmearSigPE:          [ 0.328,     0.445    ]
-lariat_michelanafilter_run2b.QE_ScaleFactor:      [ 1.0349,   0.9348    ] 
-lariat_michelanafilter_run2b.TrigEff_P:           [ 79.9801, 19.1320    ] 
-lariat_michelanafilter_run2b.SmearFactor:         [ 2.2490,   1.6899    ] 
+lariat_michelanafilter_run2b.SmearSigPE:          [ 0.35,     0.45    ]
+lariat_michelanafilter_run2b.QE_ScaleFactor:      [ 1.10647, 1.0112 ]  #[ 1.0627,  0.9946 ]
+lariat_michelanafilter_run2b.TrigEff_P:           [ 77.7476,  19.8668 ]  #[ 85.194, 19.448 ] 
+lariat_michelanafilter_run2b.SmearFactor:         [ 1.63487, 1.7083 ] #[ 2.4696, 1.7066 ] 
+
+# ===================================================================================
+lariat_michelanafilter_mc1:                        @local::lariat_michelanafilter_run1
+lariat_michelanafilter_mc1.MakeAveWfms:            false
+lariat_michelanafilter_mc1.LateLightTau:           1108. 
+lariat_michelanafilter_mc1.MuContamCorr_EffTau:    [ 0., 1265. ]
+lariat_michelanafilter_mc1.CalAreaConstants:       [ 0.0367, 0.0910 ]
+lariat_michelanafilter_mc1.FiducialMarginX:        1.
+lariat_michelanafilter_mc1.FiducialMarginY:        1.
+lariat_michelanafilter_mc1.FiducialMarginZ:        1.
+lariat_michelanafilter_mc1.MinHitAmp:              [ 18., 38. ]
+
+# ===================================================================================
+lariat_michelanafilter_mc2:                        @local::lariat_michelanafilter_run2
+lariat_michelanafilter_mc2b.MakeAveWfms:            false
+lariat_michelanafilter_mc2b.LateLightTau:           1039. 
+lariat_michelanafilter_mc2b.MuContamCorr_EffTau:    [ 1201., 1201. ]
+lariat_michelanafilter_mc2b.CalAreaConstants:       [ 0.0367, 0.0910 ]
+lariat_michelanafilter_mc2b.FiducialMarginX:        1.
+lariat_michelanafilter_mc2b.FiducialMarginY:        1.
+lariat_michelanafilter_mc2b.FiducialMarginZ:        1.
+lariat_michelanafilter_mc2b.MinHitAmp:              [ 18., 38. ]
 
 END_PROLOG
