@@ -209,7 +209,7 @@ namespace ldp{
   
   //--------------------------------------------------------------------
   void DetectorPropertiesLArIAT::Configure(Configuration_t const& config) {
-    
+   
     fEfield                     = config.Efield();
     fElectronlifetime           = config.Electronlifetime();
     fGetElectronlifetimeFromDB  = config.GetElectronlifetimeFromDB();
@@ -226,6 +226,9 @@ namespace ldp{
     fSternheimerParameters.x0   = config.SternheimerX0();
     fSternheimerParameters.x1   = config.SternheimerX1();
     fSternheimerParameters.cbar = config.SternheimerCbar();
+    
+    fSamplingRate               = config.SamplingRate(); // Can't trust the TPC clock! 
+    if( fSamplingRate <= 0 )    fSamplingRate = fTPCClock.TickPeriod() * 1.e3;
 
     CalculateXTicksParams();
     

@@ -12,7 +12,8 @@ lariat_detproperties:
   Efield:             [0.4865,0.700,0.890]  #(E-field study, DocDB 2750)
   Electronlifetime:   1600
 
-  ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
+  #ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
+  ElectronsToADC:    3.786e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
   NumberTimeSamples: 3072
   TimeOffsetU:       -50. # -50 offset to have crossing trk endpts align with anode/cathode in X
   TimeOffsetV:       -52. # -2 offset on collection to prevent curved trks (study by Tingjun)
@@ -26,8 +27,7 @@ lariat_detproperties:
   SternheimerX1:    3.0000  # Ar Sternheimer parameter x0.
   SternheimerCbar:  5.2146  # Ar Sternheimer parameter Cbar.
 
-  # PARAMETER NOT RECOGNIZED IN v06_44_00 
-  #SimpleBoundaryProcess: true  #enable opticalBoundaryProcessSimple instead of G4 default
+  SamplingRate:     128.    # Set <= 0 to obtain this from TPC clock
 
 }
 

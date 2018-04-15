@@ -1,0 +1,9 @@
+#include "Michel_RecoMC1.fcl"
+
+services:
+{
+  TFileService: { fileName: "histos.root" }
+  @table::lariat_simulation_services_run2
+}
+#services.DetectorPropertiesService.Electronlifetime: 500
+

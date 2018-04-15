@@ -1,0 +1,19 @@
+#include "Michel_Reco.fcl"
+
+services:
+{
+  TFileService: { fileName: "histos.root" }
+  @table::lariat_simulation_services
+}
+#services.DetectorPropertiesService.Electronlifetime: 1470
+
+physics.reco:                                               [ @sequence::tpcreco ]
+physics.producers.caldata.DodQdxCalib:                      false
+physics.producers.gaushit.HitFilterAlg.MinPulseSigma:       [ 6.0, 6.0 ] # default is [4.0, 6.0], but induction plane is noisy
+#physics.producers.gaushit.HitFilterAlg.MinPulseHeight:      [ 18.0, 25.0 ] #25.0] #[ 5.0, 5.0 ] # default is [5.0, 5.0]
+#physics.producers.gaushit.PulseHeightCuts:                  [ 18.0, 25.0 ] #25.0] #[ 5.0, 5.0 ] # default is [5.0, 5.0]
+physics.producers.linecluster.ClusterCrawlerAlg.HitErrFac:  0.22  # Fraction of hit RMS to calculate cluster fit chisq, MC hits are narrower than data hits. 
+
+physics.producers.calotc.CaloAlg.CalAreaConstants:          [0.0367,0.091]
+physics.producers.calo.CaloAlg.CalAreaConstants:            [0.0367,0.091]
+physics.filters.opfilt.CalAreaConstants:                    [ 0.0367, 0.091 ]

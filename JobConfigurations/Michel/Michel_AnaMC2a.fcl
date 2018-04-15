@@ -1,0 +1,12 @@
+#include "Michel_Ana2a.fcl"
+
+services:
+{
+  TFileService: { fileName: "MichelAnaFilterMC.root" }
+  @table::lariat_simulation_services_run2
+}
+
+physics.filt:                                     [ michelana ]
+physics.filters.michelana.MuContamCorr_EffTau:    [0., 1300. ]
+physics.filters.michelana.CalAreaConstants:       [ 0.0367, 0.0910 ]
+physics.filters.michelana.MinHitAmp:              [ 18., 38. ]
