@@ -63,7 +63,7 @@
 #include <TGraph.h>
 #include <TF1.h>
 
-const int kMaxTrack      = 1000;  //maximum number of tracks
+//const int kMaxTrack      = 1000; // unused  //maximum number of tracks
 
 class StoppingTracksFilter;
 

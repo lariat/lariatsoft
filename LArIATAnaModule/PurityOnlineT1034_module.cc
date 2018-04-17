@@ -158,8 +158,8 @@ public:
    void analyze(art::Event const & e) override;
 
    // Selected optional functions.
-   void beginJob();
-   void endJob();
+   void beginJob() override;
+   void endJob() override;
 
    void reconfigure(fhicl::ParameterSet const & p);
 
@@ -187,26 +187,26 @@ private:
    double trkendx[1000];
 
    int tothit;
-   int minitr;
-   int checkitr;
+   //int minitr; // unused
+   //int checkitr; // unused
    int entries;
    int fpretrig;             // number of time ticks of pre trigger
-   double avfittau;	    // average tau from fit
-   double eavfittau;	    // error on average tau from fit
+   //double avfittau; // unused	    // average tau from fit
+   //double eavfittau; // unused	    // error on average tau from fit
    double avtau;            // final average tau
    double errtau;           // error on final average tau
    double chisqr;
    double fchargecut;        // cut on hitcharge
    double fitvalue;
-   double lik;
-   double tau;
-   double mpc;             // Corrected most probable value
-   double dqdx;            // dQ0/dx after tau scaling
-   double prob;
-   double mintau;
-   double minlik;
-   double minerrtau;
-   double maxerrtau;
+   //double lik; // unused
+   //double tau; // unused
+   //double mpc; // unused             // Corrected most probable value
+   //double dqdx; // unused            // dQ0/dx after tau scaling
+   //double prob; // unused
+   //double mintau; // unused
+   //double minlik; // unused
+   //double minerrtau; // unused
+   //double maxerrtau; // unused
    double sigminoserrlow[3];
    double sigminoserrhi[3];
    double lowtaulimit;     // lower limit on tau minimization
@@ -422,7 +422,9 @@ void lariat::PurityOnlineT1034::analyze(art::Event const & evt)
    nhits = hitlist.size();
    for (size_t i = 0; i<hitlist.size() && int(i)< 20000; ++i)
    {
-      cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
+      // for c2: rdref is defined here but never used
+      //         Is there a side effect?
+      //cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
       geo::WireID wireid = hitlist[i]->WireID();
 
       hit_plane[i]   = wireid.Plane;

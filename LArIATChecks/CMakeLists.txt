@@ -1,8 +1,18 @@
-art_make(LIB_LIBRARIES    larcorealg_Geometry
+# tensorflow is now optional
+# this is a temporary kludge
+if (DEFINED ENV{TENSORFLOW_DIR})
+set (LARRECO_RECOALG_IMAGEPATTERNALGS_TF larreco_RecoAlg_ImagePatternAlgs_TF)
+else(DEFINED ENV{TENSORFLOW_DIR})
+set (EXCLUDE_LARIAT_TF NNTrackShowerEff_module.cc NNMCTrackShowerEff_module.cc NNPlotter_module.cc)
+endif (DEFINED ENV{TENSORFLOW_DIR})
+
+art_make(
+          EXCLUDE ${EXCLUDE_LARIAT_TF}
+  LIB_LIBRARIES    larcorealg_Geometry
   larreco_RecoAlg_ClusterRecoUtil
   lardataobj_RecoBase
   MODULE_LIBRARIES LArIATRecoAlg
-  larreco_RecoAlg_ImagePatternAlgs_PointIdAlg
+  ${LARRECO_RECOALG_IMAGEPATTERNALGS_TF}
   LArIATDataProducts
   larevt_Filters
   larreco_ClusterFinder

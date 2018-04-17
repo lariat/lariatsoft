@@ -31,7 +31,7 @@ private:
 
  TH1 *wv;
  TH1 *wv_clean;
- Int_t npeaks;
+ //Int_t npeaks; // unused
  Int_t peak_position;
  Int_t nfound;
  std::string polarity;

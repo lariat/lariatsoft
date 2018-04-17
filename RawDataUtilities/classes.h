@@ -36,35 +36,35 @@
 /* template class art::Wrapper< std::vector<V1495ChannelData>	  >; */
 /* template class art::Wrapper< std::vector<V1495TriggerPatternData> >; */
 
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>     >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Wire>       >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Hit>        >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Cluster>    >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::EndPoint2D> >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::SpacePoint> >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Track>      >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Vertex>     >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit>  >;
-template class std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>   >;
-template class std::pair<art::Ptr<ldp::WCTrack>, art::Ptr<recob::Track>      >;
-template class std::pair<art::Ptr<recob::Track>, art::Ptr<ldp::WCTrack>      >;
-/* template class std::pair<art::Ptr<raw::AuxDetDigit>, art::Ptr<sim::AuxDetIDE> >; */ /*ADD to ADI*/
-/*template class std::pair<art::Ptr<ldp::WCTrack>, art::Ptr<raw::AuxDetDigit>  >;  WCT to ADD*/
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::RawDigit>     >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Wire>       >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Hit>        >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Cluster>    >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::EndPoint2D> >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::SpacePoint> >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Track>      >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<recob::Vertex>     >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::AuxDetDigit>  >;
+template struct std::pair<art::Ptr<raw::Trigger>, art::Ptr<raw::OpDetPulse>   >;
+template struct std::pair<art::Ptr<ldp::WCTrack>, art::Ptr<recob::Track>      >;
+template struct std::pair<art::Ptr<recob::Track>, art::Ptr<ldp::WCTrack>      >;
+/* template struct std::pair<art::Ptr<raw::AuxDetDigit>, art::Ptr<sim::AuxDetIDE> >; */ /*ADD to ADI*/
+/*template struct std::pair<art::Ptr<ldp::WCTrack>, art::Ptr<raw::AuxDetDigit>  >;  WCT to ADD*/
 
-template class std::pair<art::Ptr<raw::RawDigit>,     art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<recob::Wire>,       art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<recob::Hit>,        art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<recob::Cluster>,    art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<recob::EndPoint2D>, art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<recob::SpacePoint>, art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<recob::Track>,      art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<recob::Vertex>,     art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<raw::AuxDetDigit>,  art::Ptr<raw::Trigger> >;
-template class std::pair<art::Ptr<raw::OpDetPulse>,   art::Ptr<raw::Trigger> >;
-/* template class std::pair<art::Ptr<sim::AuxDetIDE>, art::Ptr<raw::AuxDetDigit> >; */ /*ADI to ADD*/
-/*template class std::pair<art::Ptr<raw::AuxDetDigit>,   art::Ptr<ldp::WCTrack> >; ADD to WCT*/
-//template class std::pair<art::Ptr<recob::Track>,      art::Ptr<ldp::WCTrack> >;
-//template class std::pair<art::Ptr<ldp::WCTrack>,      art::Ptr<recob::Track> >;
+template struct std::pair<art::Ptr<raw::RawDigit>,     art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<recob::Wire>,       art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<recob::Hit>,        art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<recob::Cluster>,    art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<recob::EndPoint2D>, art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<recob::SpacePoint>, art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<recob::Track>,      art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<recob::Vertex>,     art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<raw::AuxDetDigit>,  art::Ptr<raw::Trigger> >;
+template struct std::pair<art::Ptr<raw::OpDetPulse>,   art::Ptr<raw::Trigger> >;
+/* template struct std::pair<art::Ptr<sim::AuxDetIDE>, art::Ptr<raw::AuxDetDigit> >; */ /*ADI to ADD*/
+/*template struct std::pair<art::Ptr<raw::AuxDetDigit>,   art::Ptr<ldp::WCTrack> >; ADD to WCT*/
+//template struct std::pair<art::Ptr<recob::Track>,      art::Ptr<ldp::WCTrack> >;
+//template struct std::pair<art::Ptr<ldp::WCTrack>,      art::Ptr<recob::Track> >;
 
 template class art::Assns<raw::Trigger, raw::RawDigit,     void>;
 template class art::Assns<raw::Trigger, recob::Wire,       void>;

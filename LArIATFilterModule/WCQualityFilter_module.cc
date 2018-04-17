@@ -131,7 +131,7 @@ private:
   double zcentMagnet1[2] = { (-501.95-494.98)/2, (-449.49-456.46)/2};
   double zcentMagnet2[2] = { (-432.04-427.50)/2, (-381.27-385.81)/2};
   double zcentDSCol[2]   = { (-296.67-297.36)/2, (-205.94-206.63)/2};
-  double Keepcount=0;
+  //double Keepcount=0; // unused
 };
 
 // ---------------------- Begin Job ---------------------------
