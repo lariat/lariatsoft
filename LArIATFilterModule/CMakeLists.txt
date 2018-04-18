@@ -1,8 +1,14 @@
+
+# tensorflow is now optional
+if (DEFINED ENV{TENSORFLOW_DIR})
+  set(TF_POINTIDALG larreco_RecoAlg_ImagePatternAlgs_Tensorflow_PointIdAlg)
+endif (DEFINED ENV{TENSORFLOW_DIR})
+
 art_make(LIB_LIBRARIES larcorealg_Geometry
          larreco_RecoAlg_ClusterRecoUtil
          lardataobj_RecoBase
          MODULE_LIBRARIES LArIATRecoAlg
-         larreco_RecoAlg_ImagePatternAlgs_PointIdAlg
+         ${TF_POINTIDALG}
          LArIATDataProducts
          larevt_Filters
          larreco_ClusterFinder
