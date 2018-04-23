@@ -1,16 +1,16 @@
-source /grid/fermiapp/products/common/etc/setups.sh
-source /grid/fermiapp/products/larsoft/setup
+#!/bin/bash
+
+source  /cvmfs/mu2e.opensciencegrid.org/artexternals/setup
+source /cvmfs/fermilab.opensciencegrid.org/products/common/etc/setup
+source /cvmfs/lariat.opensciencegrid.org/setup_lariat.sh
 export GROUP=lariat
 export JOBSUB_GROUP=lariat
-export PRODUCTS=/grid/fermiapp/products/lariat/:${PRODUCTS}
-setup jobsub_client
-setup G4beamline v2_16 -q e6:prof:nu
-setup git
-
-setup ifdhc
-
-jobsize=Size
-SUBspillcount=subspillcountn
+setup jobsub_client v1_2_6_2
+setup G4beamline v2_16a -q e6:prof:nu
+setup ifdhc v2_3_0 
+setup root v5_34_23 -q e6:prof
+jobsize=1000
+SUBspillcount=1
 first=$((${PROCESS}*${jobsize}))
 last=$(( ${first} + $jobsize - 1 ))
 echo "PROCESS is: $PROCESS"
@@ -36,8 +36,8 @@ REALUSER=`basename ${X509_USER_PROXY} .proxy | grep -o -P '(?<=_).*(?=_)'`
 echo '$USER: ' $USER
 echo '$REALUSER: ' $REALUSER
 
-ifdh cp MergedAtStartLinesim_input.root /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$SUBSPILL.root
-ifdh cp MergedAtStartLinesim_input.pickle /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$SUBSPILL.pickle
+ifdh cp MergedAtStartLinesim_input.root /pnfs/lariat/scratch/users/$REALUSER/MCdatatest/MergedAtStartLinesim_input$SUBSPILL.root
+ifdh cp MergedAtStartLinesim_input.pickle /pnfs/lariat/scratch/users/$REALUSER/MCdatatest/MergedAtStartLinesim_input$SUBSPILL.pickle
 ls -lrth
 echo $CONDOR_DIR_INPUT
 
