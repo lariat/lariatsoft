@@ -46,9 +46,9 @@ art_make(
 if (DEFINED ENV{TENSORFLOW_DIR})
 simple_plugin(NNTrackShowerEff "module"
   LArIATRecoAlg
+  larreco_RecoAlg_ImagePatternAlgs_DataProvider
   larreco_RecoAlg_ImagePatternAlgs_Tensorflow_TF
   larreco_RecoAlg_ImagePatternAlgs_Tensorflow_PointIdAlg
-  larreco_RecoAlg_ImagePatternAlgs_DataProvider
   LArIATDataProducts
   larevt_Filters
   larreco_ClusterFinder
@@ -88,9 +88,9 @@ simple_plugin(NNTrackShowerEff "module"
 
 simple_plugin(NNMCTrackShowerEff "module"
   LArIATRecoAlg
+  larreco_RecoAlg_ImagePatternAlgs_DataProvider
   larreco_RecoAlg_ImagePatternAlgs_Tensorflow_TF
   larreco_RecoAlg_ImagePatternAlgs_Tensorflow_PointIdAlg
-  larreco_RecoAlg_ImagePatternAlgs_DataProvider
   LArIATDataProducts
   larevt_Filters
   larreco_ClusterFinder
@@ -130,9 +130,9 @@ simple_plugin(NNMCTrackShowerEff "module"
 
 simple_plugin(NNPlotter "module"
   LArIATRecoAlg
+  larreco_RecoAlg_ImagePatternAlgs_DataProvider
   larreco_RecoAlg_ImagePatternAlgs_Tensorflow_TF
   larreco_RecoAlg_ImagePatternAlgs_Tensorflow_PointIdAlg
-  larreco_RecoAlg_ImagePatternAlgs_DataProvider
   LArIATDataProducts
   larevt_Filters
   larreco_ClusterFinder
