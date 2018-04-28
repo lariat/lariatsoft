@@ -42,6 +42,13 @@
 //LArIAT Includes
 #include "Utilities/DatabaseUtilityT1034.h"
 
+// This pragma is for pion_muon_likelihood_ratio
+// The code should be checked
+#if defined __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wsometimes-uninitialized"
+#endif
+
 class ParticleIdentificationSlicing;
 
 class ParticleIdentificationSlicing : public art::EDProducer {
@@ -134,10 +141,10 @@ private:
   art::ServiceHandle<geo::Geometry> fGeo;
 
   //Priors storage
-  float fMuonPrior;
-  float fPionPrior;
-  float fKaonPrior;
-  float fProtonPrior;
+  //float fMuonPrior; // unused
+  //float fPionPrior; // unused
+  //float fKaonPrior; // unused
+  //float fProtonPrior; // unused
   
   // Declare member data here.
   std::string       fWCTrackModuleLabel;
@@ -1511,5 +1518,8 @@ void ParticleIdentificationSlicing::respondToOpenOutputFiles(art::FileBlock cons
 {
   // Implementation of optional member function here.
 }
+#if defined __clang__
+  #pragma clang diagnostic pop
+#endif
 
 DEFINE_ART_MODULE(ParticleIdentificationSlicing)

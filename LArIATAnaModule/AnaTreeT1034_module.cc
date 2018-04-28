@@ -110,7 +110,7 @@ public:
   void analyze(art::Event const & e) override;
 
   // Selected optional functions.
-  void beginJob();
+  void beginJob() override;
   void reconfigure(fhicl::ParameterSet const & p);
 
 private:
@@ -387,9 +387,9 @@ private:
   int nshowers; ///number of showers per event
   int shwID[kMaxShower];//ID of the reco shower
   double CosStartShw[3][kMaxShower];
-  double CosStartSigmaShw[3][kMaxShower];
+  //double CosStartSigmaShw[3][kMaxShower]; // unused
   double CosStartXYZShw[3][kMaxShower];
-  double CosStartXYZSigmaShw[3][kMaxShower];
+  //double CosStartXYZSigmaShw[3][kMaxShower]; // unused
   double TotalEShw[2][kMaxShower];/// total energy of the shower (under investigation...)
   //double TotalESigmaShw[2][kMaxShower];// not working
   double dEdxPerPlaneShw[2][kMaxShower];

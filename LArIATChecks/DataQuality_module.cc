@@ -149,14 +149,14 @@ namespace DataQuality {
     double fV1740PostPercent;
     double fV1740BPostPercent;
     double fV1751PostPercent;
-    double fV1742PostPercent;
+    //double fV1742PostPercent; // unused
 
     // record lengths (number of time ticks) of the CAEN
     // V1740 and V1751 digitizers
     size_t fV1740RecordLength;
     size_t fV1740BRecordLength;
     size_t fV1751RecordLength;
-    size_t fV1742RecordLength;
+    //size_t fV1742RecordLength; // unused
 
     // sampling rate in MHz
     double fV1740SamplingRate;

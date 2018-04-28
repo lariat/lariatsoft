@@ -58,7 +58,7 @@
 #include <iostream>
 #include <memory>
 
-const int kMaxTrack      = 1000;  //maximum number of tracks
+//const int kMaxTrack      = 1000; // unused  //maximum number of tracks
 
 class ShowerFilter;
 
@@ -104,7 +104,7 @@ double reversetrackcount=0;
     TVector3 MatchedTrkStartDir;
     TVector3 MatchedTrkStartPos;
     TVector3 MatchedTrkEndPos;
-    double trkLength[kMaxTrack]={0.};
+    //double trkLength[kMaxTrack]={0.}; // unused
   TH1F*  hnTracks;
     TH1F* fXface;
   TH1F* fYface;
