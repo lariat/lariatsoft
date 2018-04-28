@@ -101,7 +101,7 @@ class FragmentToDigitAlg{
   int                                                   fPreviousRunNumber;             /// Keep previous run number in memory 
   std::string                                		fRawFragmentLabel;        	///< label for module producing artdaq fragments
   std::string                                		fRawFragmentInstance;     	///< instance label for artdaq fragments        
-  size_t                                     		fMaxNumberFitIterations;  	///< number of fit iterations before stopping
+// (unused)  size_t                                     		fMaxNumberFitIterations;  	///< number of fit iterations before stopping
   std::map<uint32_t, std::set<uint32_t> >    		fOpticalDetChannels;      	///< key is the board ID, set are channels on that board
   std::map< int, std::vector<CAENFragment> > 		fTriggerToCAENDataBlocks; 	///< map trigger ID to vector of CAEN blocks
   std::map< int, std::vector<TDCDataBlock> > 		fTriggerToTDCDataBlocks;  	///< map trigger ID to vector of TDC blocks
@@ -118,7 +118,7 @@ class FragmentToDigitAlg{
   std::vector<std::string>                   		fHardwareParams;            	///< vector of parameter names to be queried---------------------------------jess lines
   std::vector<std::string>                   		fConfigParams;            	///< vector of parameter names to be queried
   std::string		                   		fRunDateTime;  	           	///< string of Date/Time to use to querry HardwareConnectionsTable-----------jess lines
-  std::uint32_t		                   		fRunTimestamp; 	           	///<Timestamp from runNumber to use to querry HardwareConnectionsTable-------jess lines
+// (unused)  std::uint32_t		                   		fRunTimestamp; 	           	///<Timestamp from runNumber to use to querry HardwareConnectionsTable-------jess lines
   std::string                                           fWirePitch;                     /// "4mm", "5mm", or "3mm"
 
 };

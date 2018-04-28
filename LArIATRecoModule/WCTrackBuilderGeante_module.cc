@@ -570,7 +570,7 @@ void WCTrackBuilderGeante::produce(art::Event & e)
 
       if(bVerbose) { 	std::cout << " 3 pt reco. fNHits = " << fWCTrackBuilderAlg.fNHits << std::endl; }
 
-      float hit_position_array[4][3] = {0.0};
+      float hit_position_array[4][3] = {{0.0}};
 
       double residual = fWCTrackBuilderAlg.buildThreePointTracks(good_hits,
 								 reco_pz_list,

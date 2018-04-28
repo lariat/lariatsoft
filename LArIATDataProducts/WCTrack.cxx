@@ -105,7 +105,9 @@ namespace ldp{
   //--------------------------------------------------
 float WCTrack::DeltaDist(size_t i) const
 {
- if( i >= 3 || i < 0 ){
+ // for c2: i cannot be < 0
+ //if( i >= 3 || i < 0 ){
+ if( i >= 3 ){
    throw cet::exception("WCTrack") << "illegal index requested for DeltaDist vector: "
 << i << "\n";
 }
@@ -115,7 +117,9 @@ return fDeltaDist[i];
   //--------------------------------------------------
   float WCTrack::XYFace(size_t i) const
   {
-    if( i >= 2 || i < 0 ){
+    // for c2: i cannot be < 0
+    //if( i >= 2 || i < 0 ){
+    if( i >= 2 ){
       throw cet::exception("WCTrack") << "illegal index requested for XYFace vector: "
 				      << i << "\n";
     }

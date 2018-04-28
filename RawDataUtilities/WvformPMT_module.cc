@@ -90,16 +90,16 @@ private:
    double fExpS2L;
    double fExpS2H;
    double fExpS3;
-	double fP1;
-	double fSigma;
-	double fLowLimit;
-	double fHighLimit;
+	//double fP1; // unused
+	//double fSigma; // unused
+	//double fLowLimit; // unused
+	//double fHighLimit; // unused
 
    double fFitStart;
    double fFitEnd;
    int fSamples;
     TF1 *fitexp2;
-    TF1 *fitconv;
+    //TF1 *fitconv; // unused
 
     int  fNumberOfPMTs;
     int  fBaselineCounts;

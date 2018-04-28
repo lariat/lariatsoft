@@ -13,7 +13,7 @@ product         version
 
 larsoft		      v06_74_01
 LariatFilters   v01_02
-lariatfragments v06_70_02
+lariatfragments v06_74_01
 artdaq_core     v3_01_06
 LariatBeamFiles v01_00		-	optional
 lariatutil	    v06_74_01 -	optional
@@ -24,6 +24,9 @@ geant4 v4_10_3_p01c
 
 # e15 - with gcc 6.4.0 and -std=c++14
 qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	LariatBeamFiles	lariatutil	notes
+c2:debug	c2:debug  -nq-		c2:debug	 c2:s65:debug   -nq-		c2:debug
+c2:opt		c2:opt	  -nq-		c2:opt		 c2:s65:opt	-nq-		c2:opt
+c2:prof		c2:prof   -nq-		c2:prof	 	 c2:s65:prof    -nq-		c2:prof
 e15:debug	e15:debug -nq-		e15:debug	 e15:s65:debug  -nq-		e15:debug
 e15:opt		e15:opt	  -nq-		e15:opt		 e15:s65:opt	-nq-		e15:opt
 e15:prof	e15:prof  -nq-		e15:prof	 e15:s65:prof   -nq-		e15:prof

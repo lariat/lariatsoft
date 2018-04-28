@@ -12,7 +12,7 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#include "larreco/RecoAlg/ImagePatternAlgs/PointIdAlg/PointIdAlg.h"
+#include "larreco/RecoAlg/ImagePatternAlgs/Tensorflow/PointIdAlg/PointIdAlg.h"
 #include "lardata/ArtDataHelper/MVAWriter.h"
 
 #include "tbb/parallel_for.h"
