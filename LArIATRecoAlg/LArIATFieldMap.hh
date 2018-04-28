@@ -25,7 +25,7 @@ private:
   void TransformToMagCords(double og[3], double trans_mag1[3], double trans_mag2[3]) const;
   void SpaceToArrayCords(double og[3], size_t transformed[3]) const;
 
-  double NDBN_vol[3] = {317.5, 142.2, 591.0};
+  //double NDBN_vol[3] = {317.5, 142.2, 591.0}; // unused
 
   double NDB1_center[3] = {553.06, 21.6165, -4757.22}; //553.31, 22.86, -4745.33};
   double NDB1_rot[3] = {0.0, 10.5, 0.0};

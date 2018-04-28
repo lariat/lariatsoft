@@ -87,9 +87,9 @@ public:
 private:
 
   // Declare member data here.
-  double threshold = 0;
-  double fitWidth = 0;
-  double minWidth = 0;
+  //double threshold = 0; // unused
+  //double fitWidth = 0; // unused
+  //double minWidth = 0; // unused
   std::string fCalDataModuleLabel;
   std::string fDigitModuleLabel;
   int fTimeBins;
@@ -100,8 +100,8 @@ private:
 
         int W, H;               // Width and Height of current frame [pixels]
         int iterator=1; 
-        float collectioniterator;         // 
-        float inductioniterator;         // 
+        //float collectioniterator; // unused         // 
+        //float inductioniterator; // unused         // 
         int edgeDircol[240][256]; // 
         int edgeDirind[240][256]; // 
         float gradientcol[240][256];      // 
@@ -113,19 +113,22 @@ private:
         float wire_map[480][256];
         float wire_signal[480][3072];
         int row, col;           // Pixel's row and col positions
-        int row1, col1;         // Pixel's row and col positions
-        int upperThreshold = .8;        // Gradient strength nessicary to start edge
-        int lowerThreshold = .02;               // Minimum gradient strength to continue edge
-        unsigned long iOffset;          // Variable to offset row-column vector during sobel mask
-        unsigned long iOffset1;         // Variable to offset row-column vector during sobel mask
+        //int row1, col1; // unused         // Pixel's row and col positions
+        // kludge for c2:  set these to zero since that is what the conversion to int does
+        //int upperThreshold = .8;        // Gradient strength nessicary to start edge
+        //int lowerThreshold = .02;               // Minimum gradient strength to continue edge
+        int upperThreshold = 0;        // Gradient strength nessicary to start edge
+        int lowerThreshold = 0;               // Minimum gradient strength to continue edge
+        //unsigned long iOffset; // unused          // Variable to offset row-column vector during sobel mask
+        //unsigned long iOffset1; // unused         // Variable to offset row-column vector during sobel mask
         int rowOffset;                  // Row offset from the current pixel
         int colOffset;                  // Col offset from the current pixel
         int rowTotal = 0;               // Row position of offset pixel
         int colTotal = 0;               // Col position of offset pixel
-        int rowOffset1;                 // Row offset from the current pixel
-        int colOffset1;                 // Col offset from the current pixel
-        int rowTotal1 = 0;              // Row position of offset pixel
-        int colTotal1 = 0;              // Col position of offset pixel
+        //int rowOffset1; // unused                 // Row offset from the current pixel
+        //int colOffset1; // unused                 // Col offset from the current pixel
+        //int rowTotal1 = 0; // unused              // Row position of offset pixel
+        //int colTotal1 = 0; // unused              // Col position of offset pixel
         float Gxcol;                       // Sum of Sobel mask products values in the x direction
         float Gycol;                       // Sum of Sobel mask products values in the y direction
         float thisAnglecol;                // Gradient direction based on Gx and Gy
@@ -137,11 +140,11 @@ private:
         bool edgeEnd;                   // Stores whether or not the edge is at the edge of the possible image
         int GxMask[3][3];               // Sobel mask in the x direction
         int GyMask[3][3];               // Sobel mask in the y direction
-        float newPixelcollection;                 // Sum pixel values for gaussian
-        float newPixelinduction;                 // Sum pixel values for gaussian
+        //float newPixelcollection; // unused                 // Sum pixel values for gaussian
+        //float newPixelinduction; // unused                 // Sum pixel values for gaussian
         float gaussianMask[5][5];               // Gaussian mask
-        float CollectionPic[240*3072];
-        float InductionPic[240*3072];
+        //float CollectionPic[240*3072]; // unused
+        //float InductionPic[240*3072]; // unused
 
 
 

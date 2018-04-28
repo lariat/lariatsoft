@@ -78,9 +78,9 @@ private:
   size_t      fNumberWCTrack;
 
   std::string fTrackModuleLabel;  
-  double fUpstreamZPosition;  
-  double fnTracksUpstream;    
-  double fUpstreamZThreshold; 
+  //double fUpstreamZPosition; // unused  
+  //double fnTracksUpstream; // unused    
+  //double fUpstreamZThreshold; // unused 
   double fMassUpperLimit;  
   double fMassLowerLimit;
         

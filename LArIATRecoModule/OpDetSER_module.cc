@@ -141,7 +141,7 @@ private:
   short               SER_bins[10];
   char		      histName[100];
   char                histTitle[100];
-  char		      buffer[200];
+  //char		      buffer[200]; // unused
   std::string         fDAQModule;
   std::string         fInstanceName;
 

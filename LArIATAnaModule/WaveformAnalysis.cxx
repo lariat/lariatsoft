@@ -53,7 +53,8 @@ baseline = sum_b/bsize;
 sum_b = 0;
 for (int i = 1; i < bsize; i++) sum_b += (1./hb->GetBinContent(i) - baseline)*(1./hb->GetBinContent(i) - baseline);
 rms_baseline = sqrt(sum_b/bsize);
-rms_baseline = rms_baseline;
+// FIXME: this makes no sense
+//rms_baseline = rms_baseline;
 nfound = s.Search(wv_clean,6,"",0.1);
 xpeaks = s.GetPositionX();
 

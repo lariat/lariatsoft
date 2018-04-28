@@ -63,7 +63,7 @@ namespace caldata {
     
   private:
     
-    int          fDataSize;          ///< size of raw data on one wire
+    //int          fDataSize;          ///< size of raw data on one wire // unused
     int          fPostsample;        ///< number of postsample bins
     int          fDoBaselineSub;        ///< number of postsample bins
     bool         fDoROI;             ///< make ROIs
