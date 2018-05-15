@@ -21,7 +21,7 @@
 #include "canvas/Persistency/Common/Assns.h"
 #include "canvas/Persistency/Common/FindManyP.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "RawDataUtilities/TriggerDigitUtility.h"
 

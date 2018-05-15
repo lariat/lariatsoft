@@ -8,7 +8,7 @@
 #include <limits>
 #include <complex>
 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "LArIATDataProducts/ConditionsSummary.h"
 
