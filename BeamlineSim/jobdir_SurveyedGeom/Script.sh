@@ -38,7 +38,7 @@ echo '$REALUSER: ' $REALUSER
 
 ifdh cp MergedAtStartLinesim_input.root /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$SUBSPILL.root
 ifdh cp MergedAtStartLinesim_input.pickle /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$SUBSPILL.pickle
-ifdh cp sim_input.root /pnfs/lariat/scratch/users/$REALUSER/RawG4BLFiles/sim_input$SUBSPILL.pickle
+ifdh cp sim_input.root /pnfs/lariat/scratch/users/$REALUSER/RawG4BLFiles/sim_input$SUBSPILL.root
 ls -lrth
 echo $CONDOR_DIR_INPUT
 
