@@ -133,7 +133,7 @@ namespace geo{
 //              << ")";
 //          }
           
-          double ThisWirePitch = TPC.WirePitch(0, 1, PlaneCount);
+          double ThisWirePitch = TPC.WirePitch(PlaneCount);
           
           fWireCounts[cs][TPCCount][PlaneCount] = plane.Nwires();
 
