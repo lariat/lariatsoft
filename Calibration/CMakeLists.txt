@@ -19,7 +19,7 @@ simple_plugin(CalWireT1034 "module"
 			        art_Persistency_Provenance canvas
 			        art_Utilities canvas
 			        ${MF_MESSAGELOGGER}
-			        ${MF_UTILITIES}
+			        
               ${FHICLCPP}
 			        cetlib cetlib_except
               ${ROOT_GEOM}
@@ -45,7 +45,7 @@ simple_plugin(CalWireROIT1034 "module"
 			        art_Persistency_Provenance canvas
 			        art_Utilities canvas
 			        ${MF_MESSAGELOGGER}
-			        ${MF_UTILITIES}
+			        
               ${FHICLCPP}
 			        cetlib cetlib_except
               ${ROOT_GEOM}

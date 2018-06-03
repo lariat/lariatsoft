@@ -7,7 +7,7 @@
 ///////////////////////////////////////////
 
 #include "LArIATDataProducts/MuonRangeStackHits.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include <math.h>
 #include <vector>
 #include <map>

@@ -5,7 +5,7 @@ art_make_library( LIBRARY_NAME Geo
 			     GeoObjectSorterLArIAT.cxx 
 		  LIBRARIES larcorealg_Geometry
 		            ${MF_MESSAGELOGGER}
-		            ${MF_UTILITIES}
+		            
 			    ${FHICLCPP}
 			    ${ROOT_BASIC_LIB_LIST} 
 			    ${ROOT_GEOM}
@@ -23,7 +23,7 @@ simple_plugin( LArIATGeometryHelper service
 		art_Utilities canvas
 		${ART_FRAMEWORK_SERVICES_REGISTRY}
 		${MF_MESSAGELOGGER}
-		${MF_UTILITIES}
+		
 		${ROOT_BASIC_LIB_LIST}                
 		cetlib cetlib_except
 )
@@ -39,7 +39,7 @@ simple_plugin( LArIATAuxDetGeometryHelper service
 		art_Utilities canvas
 		${ART_FRAMEWORK_SERVICES_REGISTRY}
 		${MF_MESSAGELOGGER}
-		${MF_UTILITIES}
+		
 		${ROOT_BASIC_LIB_LIST}                
 		cetlib cetlib_except
 )
