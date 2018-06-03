@@ -23,7 +23,7 @@ art_make( LIBRARY_NAME  LArIATRecoAlg
           art_Utilities
           canvas
           ${MF_MESSAGELOGGER}
-          ${MF_UTILITIES}
+          
           ${FHICLCPP}
           ${CETLIB}
           cetlib cetlib_except
