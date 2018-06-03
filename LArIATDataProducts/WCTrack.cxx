@@ -8,7 +8,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "LArIATDataProducts/WCTrack.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 namespace ldp{
 

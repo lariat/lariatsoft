@@ -19,7 +19,7 @@
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // LArSoft includes
 #include "lardataobj/RawData/AuxDetDigit.h"

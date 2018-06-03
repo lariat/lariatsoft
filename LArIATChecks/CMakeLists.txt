@@ -34,7 +34,7 @@ art_make(
   art_Persistency_Provenance canvas
   art_Utilities canvas
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
   ${CLHEP}
@@ -78,7 +78,7 @@ simple_plugin(NNTrackShowerEff "module"
   art_Persistency_Provenance canvas
   art_Utilities canvas
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
   ${CLHEP}
@@ -120,7 +120,7 @@ simple_plugin(NNMCTrackShowerEff "module"
   art_Persistency_Provenance canvas
   art_Utilities canvas
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
   ${CLHEP}
@@ -162,7 +162,7 @@ simple_plugin(NNPlotter "module"
   art_Persistency_Provenance canvas
   art_Utilities canvas
   ${MF_MESSAGELOGGER}
-  ${MF_UTILITIES}
+  
   ${FHICLCPP}
   cetlib cetlib_except
   ${CLHEP}
