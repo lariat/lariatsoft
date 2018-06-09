@@ -92,6 +92,8 @@ outputs:
  {
    module_type: RootOutput
    fileName:    "single_photon.root" #default file name, can override from command line with -o or --output
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
  }
 }
 
