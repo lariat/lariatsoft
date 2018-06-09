@@ -19,13 +19,13 @@ process_name: SinglesGen
      group:               "lar1nd"
      fileFormat:          "root"
      fileType:            "unknown"
-             }
+             
 
              art_file_catalog_mc:           @local::art_file_catalog
-             art_file_catalog_mc.fileType:  "mc"
+             #art_file_catalog_mc.fileType:  "mc"
 
              art_file_catalog_data:           @local::art_file_catalog
-             art_file_catalog_data.fileType:  "data"
+             #art_file_catalog_data.fileType:  "data"
 
 
              lar1nd_file_catalog:
