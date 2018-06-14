@@ -92,6 +92,8 @@ outputs:
  {
    module_type: RootOutput
    fileName:    "single_proton.root" #default file name, can override from command line with -o or --output
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
  }
 }
 
@@ -166,9 +168,9 @@ physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
 physics.producers.pmtrack.ClusterModuleLabel: "linecluster"
 physics.producers.pmtrack.HitModuleLabel:     "linecluster"
-physics.producers.pmtrack.MinSeedSize2ndPass: 3
-physics.producers.pmtrack.FlipToBeam: true
-physics.producers.pmtrack.RunVertexing: true
+physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
+physics.producers.pmtrack.PMAlgTracking.RunVertexing: true
 
 ################################################################
 ################################################################

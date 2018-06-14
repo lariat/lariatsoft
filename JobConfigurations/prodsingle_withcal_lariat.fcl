@@ -36,7 +36,7 @@ physics:
    generator: @local::lariat_singlep	  
    largeant:  @local::lariat_largeant	  
    daq:       @local::lariat_simwire       
-   caldata:       @local::lariat_calwire       
+   caldata:       @local::lariat_calroi      
    rns:       { module_type: "RandomNumberSaver" }
  }
 
