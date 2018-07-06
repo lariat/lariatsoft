@@ -27,6 +27,7 @@ services:
  #@table::standard_resourcetrackers
   RandomNumberGenerator: {} #ART native random number generator
   #message:      @local::lariat_message_services
+  message:      @local::standard_debug
   @table::lariat_services
 }
 #services.DatabaseUtil.ShouldConnect: false
@@ -44,15 +45,15 @@ tpcreco: [ caldata,
            gaushit,
            linecluster,
            trajcluster,
-#           pandora,
+           #pandora,
            showerreco,
            pmtrack,
            pmtracktc,
            pmtrajfit,
            calo,
            pid
-#           pandoracalo,
-#           pandorapid,
+           #pandoracalo,
+           #pandorapid,
            #blurredcluster
            #emshower
            ]
@@ -257,16 +258,17 @@ physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,
 #services.SignalShapingServiceT1034.IndFilter:       "(x>0.0)*gaus"
 #services.SignalShapingServiceT1034.IndFilterParams: [ 1.0, 0.0, 0.2 ]
 
-#services.message.destinations.debugmsg.type:  "file"
-#services.message.destinations.errormsg.type:  "cerr"
-#services.message.destinations.warningmsg.type:  "cout"
+#physics.producers.trajcluster.TrajClusterAlg.DebugCryostat:   0
+#physics.producers.trajcluster.TrajClusterAlg.DebugTPC:        0
+#physics.producers.trajcluster.TrajClusterAlg.DebugPlane:      3
+#physics.producers.trajcluster.TrajClusterAlg.DebugWire:       0
+#physics.producers.trajcluster.TrajClusterAlg.DebugTick:       2222 # 3333
+#physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:     0
+#
 #services.message.destinations.debugmsg.categories.default: {limit: 1}
 #services.message.destinations.debugmsg.categories.ArtState.limit: 0
-#services.message.destinations.debugmsg.categories.BackTrackerService.limit: 0
+#services.message.destinations.debugmsg.categories.BackTracker.limit: 0
 #services.message.destinations.debugmsg.categories.NuRandomService.limit: 0
 #services.message.destinations.debugmsg.categories.TC.limit: -1
-#services.message.destinations.warningmsg.categories.TC.limit: -1
-#services.message.destinations.warningmsg.categories.RootInputFile.limit: 0
-#services.message.destinations.errormsg.categories.TC.limit: -1
 #services.message.destinations.debugmsg.categories.default.reportEvery: 1
 #services.message.destinations.debugmsg.filename: "debug.txt"
