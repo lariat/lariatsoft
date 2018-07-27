@@ -16,5 +16,5 @@ physics.producers.tof.HitDiffMeanDS:                            0.4  # 1.0 for R
 
 physics.producers.caldata.dQdxCalibFileName: "LArIATChargeCorrectionFactors_Run2.txt"
 
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.022,0.0445] # DocDB 2513
+physics.producers.calo.CaloAlg: @local::lariat_calorimetryalgdata_run2
 
