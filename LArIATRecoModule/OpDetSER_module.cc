@@ -1132,14 +1132,14 @@ std::vector<float> OpDetSER::FitSER(TH1F* h_SER, float x1, float x2, float meanS
         "+ ([7]/(sqrt(3.)*[5]*sqrt(2.*TMath::Pi())))*exp(-0.5*pow((x-3.*[4])/(sqrt(3)*[5]),2)))",x1,x2);
   SER_fit.SetNpx(1000);
 
-    SER_fit.SetParName(0,"N0");
-    SER_fit.SetParName(1,"#mu0");
-    SER_fit.SetParName(2,"#sigma0");
-    SER_fit.SetParName(3,"N1");
-    SER_fit.SetParName(4,"#mu1 (SER)");
-    SER_fit.SetParName(5,"#sigma1");
-    SER_fit.SetParName(6,"rN2");
-    SER_fit.SetParName(7,"rN3");
+    SER_fit.SetParName(0,"N_{0}");
+    SER_fit.SetParName(1,"#mu_{0}");
+    SER_fit.SetParName(2,"#sigma_{0}");
+    SER_fit.SetParName(3,"N_{1}");
+    SER_fit.SetParName(4,"#mu_{1} (SPE)");
+    SER_fit.SetParName(5,"#sigma_{1}");
+    SER_fit.SetParName(6,"f_{2}");
+    SER_fit.SetParName(7,"f_{3}");
 
     // "Noise" component (gaus)
     SER_fit.SetParameter(0,max);

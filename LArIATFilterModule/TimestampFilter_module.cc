@@ -28,6 +28,8 @@
 // LArSoft includes
 #include "lardataobj/RawData/OpDetPulse.h"
 #include "lardataobj/RawData/RawDigit.h"
+#include "lardataobj/RawData/raw.h"
+#include "larevt/Filters/ChannelFilter.h"
 
 // ROOT includes
 #include <TH1F.h>
@@ -66,9 +68,15 @@ private:
   bool  fRequireRawDigits;
   std::string fDAQModuleLabel;
   std::string fDAQModuleInstanceName;
+  float fMaxWireRms;
+  float fMinWireRms;
 
   TH1F* hTimestamps;
   TH1F* hTimestamps_pass;
+  TH1F* hMaxSignalPulse;
+  TH1F* hAveWireRms;
+  TH1F* hAveWireRms_pass;
+  TH1F* hEvtSelection;
 
 };
 
@@ -81,44 +89,148 @@ TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
   art::ServiceHandle<art::TFileService> tfs;
   hTimestamps       = tfs->make<TH1F>("Timestamps",";Time in spill [sec]",300,0,60.);
   hTimestamps_pass  = tfs->make<TH1F>("Timestamps_pass",";Time in spill [sec]",300,0.,60.);
+  hMaxSignalPulse   = tfs->make<TH1F>("MaxSignalPulse","Collection plane;Wire pulse amplitude [ADC]",200,0,1000);
+  hAveWireRms       = tfs->make<TH1F>("AveWireRms","Collection plane;Wire RMS [ADC]",400,0.,20);
+  hAveWireRms_pass  = tfs->make<TH1F>("AveWireRms_pass","Collection plane;Wire RMS [ADC]",400,0.,20);
+  hEvtSelection     = tfs->make<TH1F>("EvtSelection","",4,0,4);
+  hEvtSelection->SetOption("HIST TEXT");
+  hEvtSelection->GetXaxis()->SetBinLabel(1,"Total evts");          // total events
+  hEvtSelection->GetXaxis()->SetBinLabel(2,"Raw dgts present");  // all opdets present
+  hEvtSelection->GetXaxis()->SetBinLabel(3,"Timestamp cut");             // wfms pass RMS cut
+  hEvtSelection->GetXaxis()->SetBinLabel(4,"Wire RMS cut");              // 2 hits in both PMTs
 }
 
 bool TimestampFilter::filter(art::Event & e)
 {
-  // -----------------------------------------------
-  // Require event contain non-empty container of RawDigits (wires)
-  // If empty, skip event immediately.
+  // Set flags
+  bool timestampFlag  = true;
+  bool rawDigitFlag   = true;
+  bool wireRmsFlag    = true;
+
+  // ------------------------------------------------------------------------
+  // First do timestamp filtering (this only applies to real data)
+  if( e.isRealData() ) {
+    
+    //std::cout<<"TimestampFilter: run "<<e.run()<<", subrun "<<e.subRun()<<", event "<<e.id().event()<<"\n";
+    // Get the timestamp (within the spill cycle) from the opdetpulse
+    // objects because I don't know where else this info is saved!
+    art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
+    e.getByLabel(fDAQModuleLabel, fDAQModuleInstanceName, opdetHandle);
+    
+    float timeStamp = -1.;
+    
+    if( (size_t)opdetHandle->size() > 0 ){
+      // All we want is the timestamp so just grab the first opdetpulse
+      // we can find and call it a day
+      art::Ptr< raw::OpDetPulse > ThePulsePtr(opdetHandle,0); 
+      raw::OpDetPulse pulse = *ThePulsePtr;
+      timeStamp = ((float)pulse.PMTFrame()*8.)/1.0e09;
+      //std::cout<<"Timestamp = "<<timeStamp<<" sec\n";
+      hTimestamps->Fill(timeStamp);
+    }
+  
+    if( timeStamp < fT1 || timeStamp > fT2 ) {
+      timestampFlag = false;
+    } else {
+      hTimestamps_pass->Fill(timeStamp);
+    }
+  
+  }
+    
+  // ----------------------------------------------------------------------
+  // Check that raw digits exist
   art::Handle< std::vector<raw::RawDigit> > DigitHandle;;
   std::vector<art::Ptr<raw::RawDigit> > digit;
   if(e.getByLabel("daq",DigitHandle))
     {art::fill_ptr_vector(digit, DigitHandle);} 
   //std::cout<<"Number of rawDigits: "<<digit.size()<<"\n";
-  if( fRequireRawDigits && digit.size() == 0 ) return false;
-  
-  //std::cout<<"TimestampFilter: run "<<e.run()<<", subrun "<<e.subRun()<<", event "<<e.id().event()<<"\n";
-  // Get the timestamp (within the spill cycle) from the opdetpulse
-  // objects because I don't know where else this info is saved!
-  art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
-  e.getByLabel(fDAQModuleLabel, fDAQModuleInstanceName, opdetHandle);
-  
-  float timeStamp = -1.;
-  
-  if( (size_t)opdetHandle->size() > 0 ){
-    // All we want is the timestamp so just grab the first opdetpulse
-    // we can find and call it a day
-    art::Ptr< raw::OpDetPulse > ThePulsePtr(opdetHandle,0); 
-    raw::OpDetPulse pulse = *ThePulsePtr;
-    timeStamp = ((float)pulse.PMTFrame()*8.)/1.0e09;
-    //std::cout<<"Timestamp = "<<timeStamp<<" sec\n";
-    hTimestamps->Fill(timeStamp);
+  if( fRequireRawDigits && digit.size() == 0 ) rawDigitFlag = false;
+
+
+  // ----------------------------------------------------------------------
+  // Check wire RMS
+  if( timestampFlag && rawDigitFlag ) {
+    
+    art::Handle< std::vector<raw::RawDigit> > digitVecHandle;
+    e.getByLabel("daq", "", digitVecHandle);
+    
+    raw::ChannelID_t channel = raw::InvalidChannelID; // channel number
+    filter::ChannelFilter chanFilt;
+    size_t dataSize = 0;
+    
+    float sum_rms = 0.;
+    int   nchan   = 0;
+
+    for(size_t rdIter = 0; rdIter < digitVecHandle->size(); ++rdIter){
+      
+      // max pulse amplitude
+      float maxpulse = -999.;
+
+      // get the reference to the current raw::RawDigit
+      art::Ptr<raw::RawDigit> digitVec(digitVecHandle, rdIter);
+      channel = digitVec->Channel();
+      
+      // only look at collection plane 
+      if( channel < 240 ) continue;
+      
+      dataSize = digitVec->Samples();
+      std::vector<short> rawadc(dataSize);  // vector holding uncompressed adc values
+      
+      // skip bad channels
+      if(!chanFilt.BadChannel(channel)) {
+        // uncompress the data
+        raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
+        
+        // calculate RMS assuming pedestal already subtracted off.
+        // avoid outliers > 20 ADC
+        size_t k = rawadc.size();
+        if( k > 300 ) k = 300;
+        int nn = 0;
+        float sum_sq = 0.;
+        for(size_t bin = 0; bin < k; ++bin) {
+          if( fabs(rawadc[bin])<20 ) {
+            sum_sq += pow(rawadc[bin],2);
+            nn++;  
+          } 
+          if( rawadc[bin] > maxpulse ) maxpulse = rawadc[bin];
+        }
+        if( nn ) {
+          sum_rms += sqrt(sum_sq / nn );
+          nchan ++;
+        }
+        if( maxpulse > 0 ) hMaxSignalPulse->Fill(maxpulse);
+      }
+    } // Done looping over all wires
+   
+    
+    float aveRms = -9.;
+    if( nchan > 0 ) aveRms = sum_rms / nchan;
+    hAveWireRms->Fill( aveRms );
+    std::cout<<"MAX WIRE RMS = "<<fMaxWireRms<<"  ave RMS "<<aveRms<<"\n";
+    if( fMaxWireRms > 0. && ( aveRms < 0. || aveRms > fMaxWireRms || aveRms < fMinWireRms ) ) {
+      wireRmsFlag = false;
+    } else {
+      hAveWireRms_pass->Fill( aveRms );
+    }
+    
+
+  }
+
+
+  bool passFlag = false;
+  hEvtSelection->Fill(0);
+  if( rawDigitFlag ) {
+    hEvtSelection->Fill(1);
+    if( timestampFlag ) {
+      hEvtSelection->Fill(2);
+      if( wireRmsFlag ) {
+        hEvtSelection->Fill(3);
+        passFlag = true;
+      }
+    }
   }
   
-  if( timeStamp >= fT1 && timeStamp <= fT2 ) {
-    hTimestamps_pass->Fill(timeStamp);
-    return true;
-  }
-  
-  return false;
+  return passFlag;
 
 }
 
@@ -138,8 +250,9 @@ void TimestampFilter::reconfigure(fhicl::ParameterSet const & p)
   fT2				= p.get< float  >("T2",60);
   fDAQModuleLabel               = p.get< std::string >  ("DAQModule","daq");
   fDAQModuleInstanceName        = p.get< std::string >  ("DAQInstanceName","");
-  fRequireRawDigits             = p.get< bool >         ("RequireRawDigits",true); 
-  
+  fRequireRawDigits             = p.get< bool >         ("RequireRawDigits",true);
+  fMinWireRms                   = p.get< float >        ("MinWireRms",-9.);
+  fMaxWireRms                   = p.get< float >        ("MaxWireRms",-9.);
 }
 
 

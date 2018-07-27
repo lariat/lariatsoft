@@ -50,9 +50,9 @@ namespace ldp{
 					 ):
     fLP(lp), fClocks(c), fGeo(geo)
   {
-    ValidateAndConfigure(pset, ignore_params);
-    
     fTPCClock = fClocks->TPCClock();
+    
+    ValidateAndConfigure(pset, ignore_params);
     
     // initialize prev run number
     fPrevRunNumber = 0;
@@ -77,7 +77,8 @@ namespace ldp{
   bool DetectorPropertiesLArIAT::Update(uint64_t t) 
   {
 
-    CalculateXTicksParams();
+    // Only do this this once
+    //CalculateXTicksParams();
 
     bool retVal = true;
    
@@ -118,10 +119,11 @@ namespace ldp{
     tbl.SetTableName(tableName);
     tbl.SetTableType(nutools::dbi::kConditionsTable);
     tbl.SetDataTypeMask(nutools::dbi::kDataOnly);
+    if( fElectronlifetimeTag != "" ) tbl.SetTag(fElectronlifetimeTag);
 
     int ltIdx = tbl.AddCol("lt","float");
-    //    int ltErrPlusIdx = tbl.AddCol("ltsigplus","float");
-    //    int ltErrMinusIdx = tbl.AddCol("ltsigminus","float");
+    //int ltErrPlusIdx = tbl.AddCol("ltsigplus","float");
+    //int ltErrMinusIdx = tbl.AddCol("ltsigminus","float");
     
     tbl.SetMinTSVld(t);
     tbl.SetMaxTSVld(t);
@@ -142,6 +144,8 @@ namespace ldp{
     float lt;
     row = tbl.GetRow(0);
     row->Col(ltIdx).Get(lt);
+    //row->Col(ltErrPlusIdx).Get(lterr1);
+    //row->Col(ltErrMinusIdx).Get(lterr2);
     std::cout << "Setting electron lifetime to database value of " << lt << std::endl;
 
     fElectronlifetime = lt;
@@ -155,7 +159,7 @@ namespace ldp{
     fClocks = clks;
     
     fTPCClock = fClocks->TPCClock();
-    CalculateXTicksParams();
+//    CalculateXTicksParams();
     return true;
   }
   
@@ -212,6 +216,7 @@ namespace ldp{
    
     fEfield                     = config.Efield();
     fElectronlifetime           = config.Electronlifetime();
+    fElectronlifetimeTag        = config.ElectronlifetimeTag();
     fGetElectronlifetimeFromDB  = config.GetElectronlifetimeFromDB();
     fTemperature                = config.Temperature();
     fElectronsToADC             = config.ElectronsToADC();
@@ -227,7 +232,7 @@ namespace ldp{
     fSternheimerParameters.x1   = config.SternheimerX1();
     fSternheimerParameters.cbar = config.SternheimerCbar();
     
-    fSamplingRate               = config.SamplingRate(); // Can't trust the TPC clock! 
+    fSamplingRate               = config.SamplingRate();
     if( fSamplingRate <= 0 )    fSamplingRate = fTPCClock.TickPeriod() * 1.e3;
 
     CalculateXTicksParams();
@@ -501,7 +506,6 @@ namespace ldp{
     double dEdx = (exp(Beta * Wion * dQdx ) - Alpha) / Beta;
     
     return dEdx;
-    
   }
   
   //------------------------------------------------------------------------------------//
@@ -596,6 +600,7 @@ namespace ldp{
 	  for (int igap = 0; igap<3; ++igap){
 	    efieldgap[igap] = Efield(igap);
 	    driftVelocitygap[igap] = DriftVelocity(efieldgap[igap], temperature);
+            std::cout<<"DRIFT VELOCITY IN GAP "<<igap<<" with E="<<Efield(igap)<<" --> "<<driftVelocitygap[igap]<<"\n";
 	    fXTicksCoefficientgap[igap] = 0.001 * driftVelocitygap[igap] * samplingRate;
 	  }
 	  
@@ -604,6 +609,11 @@ namespace ldp{
 	  const double* xyz = tpcgeom.PlaneLocation(0);
 	  
 	  fXTicksOffsets[cstat][tpc][plane] = -xyz[0]/(dir * fXTicksCoefficient) + triggerOffset;
+
+          std::cout
+          <<"Calculating XTicksOffset for plane "<<plane<<":\n"
+          <<"  T0 = "<<fXTicksOffsets[cstat][tpc][plane]<<" (minus trigger offset: "<<fXTicksOffsets[cstat][tpc][plane]-triggerOffset<<"\n";
+
 
 	  if (nplane==3){
 	    /*
@@ -633,10 +643,17 @@ For plane = 0, t offset is pitch/Coeff[1] - (pitch+xyz[0])/Coeff[0]
 	    */
 	    for (int ip = 0; ip < plane; ++ip){
 	      fXTicksOffsets[cstat][tpc][plane] += tpcgeom.PlanePitch(ip,ip+1)/fXTicksCoefficientgap[ip+2];
+              std::cout
+              <<"  + "<<tpcgeom.PlanePitch(ip,ip+1)/fXTicksCoefficientgap[ip+2]<<"\n";
 	    }
 	    fXTicksOffsets[cstat][tpc][plane] -= tpcgeom.PlanePitch()*(1/fXTicksCoefficient-1/fXTicksCoefficientgap[1]);
+            std::cout
+            <<"  - "<<tpcgeom.PlanePitch()*(1/fXTicksCoefficient-1/fXTicksCoefficientgap[1])<<"\n";
 	  }
-	  
+
+          std::cout<<"  final T = "<<fXTicksOffsets[cstat][tpc][plane]<<"\n";
+	
+          std::cout<<"  Adding view-dependent offsets (TimeOffsetU/V/Z)\n";  
 	  // Add view dependent offset
 	  geo::View_t view = pgeom.View();
 	  if(view == geo::kU)

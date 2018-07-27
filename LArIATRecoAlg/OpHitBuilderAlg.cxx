@@ -1,4 +1,4 @@
-/////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////
 //                                                                  
 // These are functions used to process optical detector information
 // (particulary PMTs) and find/integrate hits.  They've been used
@@ -278,7 +278,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<float>& wfm, size_t Tri
       // Calculate quick amplitude of pulse to use in discrimination
       float hit_amp   = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
       
-      LOG_DEBUG("OpHitBuilder")
+      LOG_VERBATIM("OpHitBuilder")
       << "  - " << hits[i] << "(pre-pulse " << rms_window_start << "-" << rms_window_end << ")"
       << " gRMS " << g_rms << " (thresh " << g_rms*fGradRMSThresh
       << ", grad amp " << g_amp 
@@ -363,7 +363,7 @@ std::vector<float> OpHitBuilderAlg::MakeGradient( const std::vector<float>& wfm 
 
 //-------------------------------------------------------------
 // Merge hits
-std::vector<short> OpHitBuilderAlg::HitMerger( std::vector<short> hits, short spacing, int option)
+std::vector<short> OpHitBuilderAlg::HitMerger( std::vector<short>& hits, short spacing, int option)
 {
   LOG_DEBUG("OpHitBuilder")
   << "Merging hits... (" << hits.size() << ")";
@@ -465,17 +465,20 @@ void OpHitBuilderAlg::RebinVector( std::vector<float>& v, int range ) {
 // -------------------------------------------------------------
 // Returns a vector<float> containing (1) the hit's amplitude, and 
 // all the specified integrals
-std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, short hit, short prev_hit, std::vector<short> windows){
+std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, short hit, short prev_hit, std::vector<short>& windows){
   return GetHitInfo(wfm, hit, prev_hit, windows, fUsePrepulseFit);
 }
 
-std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, short hit, short prev_hit, std::vector<short> windows, bool usePrepulseFit)
+std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, short hit, short prev_hit, std::vector<short>& windows, bool usePrepulseFit)
 {
 
   LOG_DEBUG("OpHitBuilder")
   << "GETHITINFO: Processing hit at sample " << hit << "(prev hit @ " << prev_hit << ")";
 
   int polarity = -1;
+
+  PulseWidth = -99.;
+
 
   // Save number of samples in the waveform
   size_t nSamples = wfm.size();
@@ -485,7 +488,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
   
   // If the hit is too early to reliably calculate a baseline, OR if the 
   // previous hit is too close, stop now and return defaults
-  if( (hit < 110)||(hit-prev_hit < 200 ) || ( hit > (short)nSamples-100) ) {
+  if( (hit < 110)||(hit-prev_hit < 250 ) || ( hit > (short)nSamples-100) ) {
     LOG_DEBUG("OpHitBuilder") << "!!! Hit is too early or close to prev hit -- abort.";
     return hit_info;
   }
@@ -498,7 +501,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
 
   // Determine bounds for fit and integration 
   short x1,x1b,x2,x3;
-  x1  = std::max(int(hit - fPrePulseBaselineFit),prev_hit+100);
+  x1  = std::max(int(hit - fPrePulseBaselineFit),prev_hit+200);
   x1b = std::max(int(hit - fPrePulseDisplay),int(x1));
   x2  = hit - 10;
   x3  = std::min(int(hit + windows.at(windows.size()-1)),int(nSamples)-1);
@@ -615,7 +618,8 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
     }
 
     // Save integral at appropriate window sizes
-    if( xx - x2 == windows[iwin]-1) {
+    //if( xx - x2 == windows[iwin]-1) {
+    if( xx - hit == windows[iwin]-1) {
       hit_info[iwin+1] = integral;
       iwin++;
     }
@@ -664,7 +668,6 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
       break;
     }
   }
-  PulseWidth = 0.;
   PulseWidth = p2 - p1;
 
 //  std::cout<<"Done\n";
@@ -673,11 +676,11 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
 
 }
 
-std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<short>& wfm, short hit, short prev_hit, std::vector<short> windows)
+std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<short>& wfm, short hit, short prev_hit, std::vector<short>& windows)
 {
   return GetHitInfo(wfm, hit, prev_hit, windows, fUsePrepulseFit);
 }
-std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<short>& wfm, short hit, short prev_hit, std::vector<short> windows, bool usePrepulseFit)
+std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<short>& wfm, short hit, short prev_hit, std::vector<short>& windows, bool usePrepulseFit)
 {
   std::vector<float> wfm2(wfm.begin(),wfm.end());
   return GetHitInfo(wfm2, hit, prev_hit, windows, usePrepulseFit);
@@ -889,7 +892,7 @@ void OpHitBuilderAlg::MaskedBaselineSubtraction(const std::vector<float>& wvform
   if ( adcThresh < 0 )      adcThresh = 1e6;
   
   // Create "baseline" vector
-  std::vector<float> bs(nsamples, -999);
+  std::vector<float> bs(nsamples, 0.);
   std::vector<bool>  isBs(nsamples, false);
   size_t nQuietSamples = 0;
  
@@ -964,6 +967,7 @@ void OpHitBuilderAlg::MaskedBaselineSubtraction(const std::vector<float>& wvform
       if( isBs.at(k) ) vals.push_back(wvform[k]);
     }
     bs.at(i) = CalcTruncatedMean(vals, fMskBaselineSubtr_P);
+    //bs.at(i) = wvform[i];
   }
 
   LOG_DEBUG("OpHitBuilderAlg")
@@ -982,12 +986,33 @@ void OpHitBuilderAlg::MaskedBaselineSubtraction(const std::vector<float>& wvform
         if( isBs.at(ii) ) {
           x2 = float(ii);
           y2 = bs.at(ii);
-          float m = (y2 - y1) / (x2 - x1);
+            
+          /*  
+            float m = (y2 - y1) / (x2 - x1);
+            for(size_t j=i; j<ii; j++){
+              bs.at(j) = y1 + m*(j-x1);
+            }
+            */
           
-          // apply linear function between
-          for(size_t j=i; j<ii; j++){
-            bs.at(j) = y1 + m*(j-x1);
+          // apply linear function between;
+          // if gap is longer than 300, just
+          // assume BS = 0
+          if( x2-x1 < 500 ) {
+            float m = (y2 - y1) / (x2 - x1);
+            for(size_t j=i; j<ii; j++){
+              bs.at(j) = y1 + m*(j-x1);
+            }
+          } else {
+            // avoid artificially creating sudden jumps in waveform that could 
+            // trick gradient-based hit finder; create 20-sample-long "ramp" 
+            // on both ends
+            size_t nramp = 20;
+            for(size_t j=0; j<nramp; j++){
+              bs.at(i+j)    = y1 - (j+1)*(y1/nramp);
+              bs.at(ii-j-1) = y2 - (j+1)*(y2/nramp);
+            }
           }
+          
           i = ii;
           break;
         
@@ -1088,7 +1113,7 @@ void OpHitBuilderAlg::CorrectWfmOvershoot(std::vector<float>& wfm_in, std::vecto
     fA.FixParameter(1, 0.0002466);
   }
   
-  LOG_VERBATIM("OpHitBuilderAlg")<<"Correcting waveform overshoot -- found "<<kmax<<" hits:";
+  LOG_DEBUG("OpHitBuilderAlg")<<"Correcting waveform overshoot -- found "<<kmax<<" hits:";
 
 //  std::cout<<"Hits.size = "<<hits.size()<<"\n";
 

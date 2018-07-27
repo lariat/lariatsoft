@@ -2,7 +2,7 @@
 
 services:
 {
-  TFileService: { fileName: "MichelAnaFilterMC.root" }
+  TFileService: { fileName: "MichelAnaMC.root" }
   @table::lariat_simulation_services_run2
 }
 

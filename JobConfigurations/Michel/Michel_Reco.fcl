@@ -17,7 +17,7 @@
 #include "showerfindermodules.fcl"
 #include "resourcetracking_services.fcl"
 #include "lariatfiltermodules.fcl"
-#include "michelfilters.fcl"
+#include "michelana.fcl"
  
 process_name: Reco2D
 
@@ -35,14 +35,15 @@ source:
   maxEvents:  -1        # Number of events to create
 }
 
-
 tpcreco: [ caldata,
            gaushit,
+           hitnumfilt,
            # linecluster,
            trajcluster,
            pmtracktc,
            calotc
            ]
+
 physics:
 {
 
@@ -63,14 +64,15 @@ physics:
   pmtracktc:              @local::standard_pmalgtrackmaker
   
   ### calorimetry and pid
-  calo:                 @local::standard_calodata
+  calo:                   @local::standard_calodata
   calotc:                 @local::standard_calodata
  }
 
  filters:
  {
-  opfilt:               @local::lariat_michelanafilter
+  opfilt:               @local::lariat_michelana
   tfilt:                @local::lariat_timestampfilter  
+  hitnumfilt:           @local::lariat_hitnumberfilter
  }
 
  analyzers:
@@ -106,73 +108,88 @@ outputs:
 }
 
 # ====================================================================
+# Calibration constants for different alg (centralized settings)
+physics.producers.trajcluster.TrajClusterAlg.CaloAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.pmtrack.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.pmtracktc.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgdata_run1
+physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgdata_run1
+# ===================================================================
 
 physics.filters.tfilt.T1:                                       5.5
 physics.filters.tfilt.T2:                                       60.
 physics.filters.tfilt.RequireRawDigits:                         true
+#physics.filters.tfilt.MinWireRms:                               2.3
+#physics.filters.tfilt.MaxWireRms:                               3.8
+physics.filters.tfilt.MinWireRms:                               0.
+physics.filters.tfilt.MaxWireRms:                               999.
 
 physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.caldata.DodQdxCalib:                          true
+physics.producers.caldata.PostsampleBins:   300 # baseline subtraction after de-convolution
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 physics.producers.gaushit.FilterHits:                           true
 physics.producers.gaushit.AllHitsInstanceName:                  "allhits"
-physics.producers.gaushit.PulseRatioCuts:                       [ 0.35, 0.40 ] # default [0.35, 0.4]
-physics.producers.gaushit.HitFilterAlg.MinPulseSigma:           [ 6.0, 6.0 ] # default is [4.0, 6.0], but induction plane is noisy
-#physics.producers.gaushit.HitFilterAlg.MinPulseHeight:          [ 16.0, 16.0 ] # 16.0 ]  # default is [5.0, 5.0]
-#physics.producers.gaushit.PulseHeightCuts:                      [ 16.0, 16.0 ] # 16.0 ]  # default is [5.0, 5.0]
+physics.producers.gaushit.MinSig:                               [ 10.,   10.  ] # [ 30., 24. ]  # [ 16.0, 16.0 ] # thresholds for hit-finding
+physics.producers.gaushit.HitFilterAlg.MinPulseSigma:           [ 6.0,  12.0   ] # [ 6.0, 9.0 ] # default is [4.0, 6.0], but induction plane is noisy
+
+physics.filters.hitnumfilt.HitsModuleLabel:                     "gaushit"
+physics.filters.hitnumfilt.HitsInstance:                        ""
+physics.filters.hitnumfilt.MaxNumHits:                          [ 300, 300 ]
 
 physics.producers.linecluster.HitFinderModuleLabel:             "gaushit"
 physics.producers.linecluster.ClusterCrawlerAlg:                @local::lariat_clustercrawleralg 
 
-physics.producers.trajcluster.HitFinderModuleLabel:         "gaushit"
-physics.producers.trajcluster.TrajClusterAlg.FillTruth:     0
-physics.producers.trajcluster.TrajClusterAlg.StudyMode:     false
-physics.producers.trajcluster.TrajClusterAlg.DebugPlane:    -1
-physics.producers.trajcluster.TrajClusterAlg.DebugWire:     0
-physics.producers.trajcluster.TrajClusterAlg.DebugTick:     0
-physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:   0
-#physics.producers.trajcluster.TrajClusterAlg.ChargeCuts:  [10, 0.15, 0.25] # [4, 0.15, 0.25]
-
-#physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:      [ "All" ]
-#physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel:      "gaushit"
-#physics.producers.trajcluster.TrajClusterAlg.MakeNewHits: false
-#physics.producers.trajcluster.TrajClusterAlg.AngleRanges: [30, 65, 80, 90]
-#physics.producers.trajcluster.TrajClusterAlg.KinkCuts:    [0.4, 1.5, 3] # kink angle, MCS kink significance, nPts fit ([0.4, 1.5, 3])
-#physics.producers.trajcluster.TrajClusterAlg.MinPtsFit:     [ 4,  4, 3]
-#physics.producers.trajcluster.TrajClusterAlg.MinPts:        [5, 5, 3]
-#physics.producers.trajcluster.TrajClusterAlg.MaxAngleCode:  [0, 1, 2]
-#physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipNoSignal: 2
-#physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipWithSignal: 20
-#physics.producers.trajcluster.TrajClusterAlg.HitErrFac: 0.4
-#physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.6
-##physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:   [ "RefineVtx", "VtxHitsSwap", "CTKink", "SplitHiChgHits"]
-#physics.producers.trajcluster.TrajClusterAlg.ProjectionErrFactor: 3
-#physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.3 # was 0.2
-#physics.producers.trajcluster.TrajClusterAlg.MaxChi: 3
-#physics.producers.trajcluster.TrajClusterAlg.MuonTag: [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
-##physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [50, 5, 1]    # max MCSMom for a shower tag, max separation, min #traj < separation
-#physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [ -1, 150, 20, 0.5, 3, 2, 100, 5, 2] # default settings that turn shower tagging off
-#physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5, 100, 0.6] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr, min MCSMom, min Pt/Wire fraction]
+physics.producers.trajcluster.HitFinderModuleLabel:             "gaushit"
+physics.producers.trajcluster.TrajClusterAlg.FillTruth:         0
+physics.producers.trajcluster.TrajClusterAlg.StudyMode:         false
+physics.producers.trajcluster.TrajClusterAlg.DebugPlane:        -1
+physics.producers.trajcluster.TrajClusterAlg.DebugWire:         0
+physics.producers.trajcluster.TrajClusterAlg.DebugTick:         0
+physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:       0
+physics.producers.trajcluster.TrajClusterAlg.MakeNewHits:       true
+physics.producers.trajcluster.TrajClusterAlg.Mode:              -1 # step from DS to US
+physics.producers.trajcluster.TrajClusterAlg.MinAmp:            0.1
+physics.producers.trajcluster.TrajClusterAlg.NPTsAve:           10
+physics.producers.trajcluster.TrajClusterAlg.MaxChi:            3
+physics.producers.trajcluster.TrajClusterAlg.HitErrFac:         0.5
+physics.producers.trajcluster.TrajClusterAlg.ChargeCuts:        [5, 0.15, 0.25]
+physics.producers.trajcluster.TrajClusterAlg.KinkCuts:          [ 0.45, 4, 3 ] # kink angle, MCS kink significance, nPts fit
+physics.producers.trajcluster.TrajClusterAlg.ChkStopCuts:       [1.3, 5, 2.5] # [Min chg ratio, Chg slope pull cut, Chg fit Chi cut]
+# configure on each pass...
+physics.producers.trajcluster.TrajClusterAlg.MinPtsFit:         [ 4,  3, 2]
+physics.producers.trajcluster.TrajClusterAlg.MinPts:            [10, 3, 3]        # Min number of points in the trajectory required on each pass
+physics.producers.trajcluster.TrajClusterAlg.MaxAngleCode:      [0, 2, 3]
+physics.producers.trajcluster.TrajClusterAlg.MaxVertexTrajSep:  [ 6, 6, 4]
+physics.producers.trajcluster.TrajClusterAlg.AngleRanges:       [30, 65, 85, 90]
+physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:          [ "ChkStop", "VtxHitsSwap", "SplitHiChgHits", "CTKink","HED","Split" ] # ["FillGap" ]
+#physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:          [ "All" ]
+#    Valid AlgNames:  MaskHits MaskBadTPs Michel DeltaRay CTKink CTStepChk TryNextPass RvPrp CHMH Split Comp3DVx Comp3DVxIG HED 
+#                     HamVx HamVx2 JunkTj Killed Merge TEP CHMEH FillGap Ghost ChkInTraj StopBadFits FixBegin BeginChg FixEnd UUH 
+#                     MisdVxTj VtxTj ChkVxTj RefVtx VxMerge NoKinkChk SoftKink ChkStop ChkStopEP FTBRvProp StopAtTj M3D Mat3DMerge 
+#                     TjHiVx3Score VtxHitsSwap SplitHiChgHits InShower ShowerTj ShwrParent MergeOverlap MergeSubShowers MergeNrShowers 
+#                     MergeShChain SplitTarjCV
+#    Or specify All to turn all algs off
 
 physics.producers.pmtrack.ClusterModuleLabel:               "linecluster"
 physics.producers.pmtrack.HitModuleLabel:                   "linecluster" # gaushit
 physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.PMAlgTracking.FlipToBeam:         false
-physics.producers.pmtrack.PMAlgTracking.RunVertexing:       true
+physics.producers.pmtrack.PMAlgTracking.RunVertexing:       false
 
 physics.producers.pmtracktc.ClusterModuleLabel:             "trajcluster"
-physics.producers.pmtracktc.HitModuleLabel:                 "gaushit"
+physics.producers.pmtracktc.HitModuleLabel:                 "trajcluster" #gaushit
 physics.producers.pmtracktc.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtracktc.PMAlgTracking.FlipToBeam:       false
+physics.producers.pmtracktc.PMAlgTracking.RunVertexing:     true # false
+physics.producers.pmtracktc.PMAlgTracking.AutoFlip_dQdx:    true # default false
 
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.0273,0.0566]
 
 physics.producers.calotc.TrackModuleLabel:      "pmtracktc"
 physics.producers.calotc.SpacePointModuleLabel: "pmtracktc"
 physics.producers.calotc.UseArea:               "true"
-physics.producers.calotc.CaloAlg.CalAreaConstants: [0.0273,0.0566]
 

@@ -17,13 +17,13 @@
 #include "showerfindermodules.fcl"
 #include "resourcetracking_services.fcl"
 #include "lariatfiltermodules.fcl"
-#include "michelfilters.fcl"
+#include "michelana.fcl"
  
 process_name: Ana
 
 services:
 {
-  TFileService: { fileName: "MichelAnaFilter.root" }
+  TFileService: { fileName: "MichelAna.root" }
   @table::lariat_services
 }
 services.scheduler.SkipEvent: [ ProductNotFound ]
@@ -45,7 +45,7 @@ physics:
  filters:
  {
     tfilt:      @local::lariat_timestampfilter  
-    michelana:  @local::lariat_michelanafilter
+    michelana:  @local::lariat_michelana
  }
 
  analyzers:

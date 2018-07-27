@@ -1,9 +1,13 @@
 #include "Michel_Reco.fcl"
 
-physics.filters.opfilt:                                     @local::lariat_michelanafilter_run1
-#physics.filters.opfilt.MaskedBaselineSubtraction:           false
+#physics.reco:                                               [ tfilt, opfilt, @sequence::tpcreco ]
+physics.filters.opfilt:                                     @local::lariat_michelana_run1
 physics.filters.opfilt.Filter_OpticalMode:                  true
+physics.filters.opfilt.LookAtTracks:                        false
 
-physics.producers.calo.CaloAlg.CalAreaConstants:            [0.0273,0.0566] # tuning DocDB 2513
-physics.producers.calotc.CaloAlg.CalAreaConstants:          [0.0273,0.0566] # tuning DocDB 2513
+physics.producers.trajcluster.TrajClusterAlg.CaloAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.pmtrack.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.pmtracktc.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgdata_run1
+physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgdata_run1
 

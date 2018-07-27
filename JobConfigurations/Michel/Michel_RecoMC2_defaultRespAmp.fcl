@@ -1,0 +1,21 @@
+#include "Michel_Reco.fcl"
+
+services:
+{
+  TFileService: { fileName: "histos.root" }
+  @table::lariat_simulation_services_run2
+}
+services.SignalShapingServiceT1034:    @local::lariat_signalshapingservice
+
+physics.reco:                                               [ @sequence::tpcreco ]
+physics.producers.caldata.DodQdxCalib:                      false
+physics.producers.gaushit.HitFilterAlg.MinPulseSigma:       [ 5.3, 10.7 ]  # peak RMS is ~8% SMALLERER in MC
+physics.producers.linecluster.ClusterCrawlerAlg.HitErrFac:  0.22  # Fraction of hit RMS to calculate cluster fit chisq, MC hits are narrower than data hits. 
+
+physics.filters.opfilt.CaloAlg:                       @local::lariat_calorimetryalgmc_run2 
+
+physics.producers.trajcluster.TrajClusterAlg.CaloAlg: @local::lariat_calorimetryalgmc_run2
+physics.producers.pmtrack.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgmc_run2
+physics.producers.pmtracktc.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgmc_run2
+physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgmc_run2
+physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgmc_run2

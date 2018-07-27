@@ -19,6 +19,11 @@ T2:				999.   # time (s) within spill cycle (default accept ALL times)
 RequireRawDigits:               false
 }
 
+lariat_hitnumberfilter:
+{
+  module_type:                HitNumberFilter
+}
+
 lariat_kaonfilter:
 {
   module_type:                 KaonFilter

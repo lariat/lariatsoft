@@ -27,6 +27,7 @@
 #include "TVector3.h"
 #include "TLorentzVector.h"
 #include "TH1F.h"
+#include "TH2F.h"
 
 // LArSoft Includes
 #include "larcore/Geometry/Geometry.h"
@@ -80,6 +81,13 @@ private:
 
   // Diagnostic histograms
   TH1F* hEventCount;
+  TH1F* hMuMomentum;
+  TH1F* hMuMomentum_pass;
+  TH1F* hStoppingMuEndptX;
+  TH1F* hStoppingMuEndptY;
+  TH1F* hStoppingMuEndptZ;
+  TH2F* hStoppingMuEndptZX;
+  TH2F* hStoppingMuEndptZY;
 
   // Counters
   int numMuPlus;
@@ -134,6 +142,7 @@ bool MichelMCFilter::filter(art::Event & e)
   int muID = -99;
   int muCharge = 0;
   float muStopTime = -999.;
+  float muMomentum = -99.;
 
   // Get MCParticles from event
   art::Handle< std::vector<simb::MCParticle> > particleHandle;
@@ -145,11 +154,14 @@ bool MichelMCFilter::filter(art::Event & e)
     if( particle.Process() == "primary" && abs(particle.PdgCode()) == 13 ) {
       int Npts = particle.NumberTrajectoryPoints();
       int last = Npts - 1;
+      muMomentum  = particle.P(0)*1000.;
       muID        = particle.TrackId();
       muCharge    = -1.*(particle.PdgCode()/abs(particle.PdgCode()));
       muStopTime  = particle.T(last);
       //std::cout<<"Found primary muon, charge = "<<muCharge<<"\n";
       
+      hMuMomentum->Fill( muMomentum );
+
       // Add to counter
       if( muCharge == -1 ) numMuMinus++;
       if( muCharge == 1 ) numMuPlus++;
@@ -163,6 +175,14 @@ bool MichelMCFilter::filter(art::Event & e)
         if( muCharge == 1 )   numMuPlusStop++;
         
         muonStopsInTPC = true;
+
+        hStoppingMuEndptX->Fill( particle.Position(last).X() );
+        hStoppingMuEndptY->Fill( particle.Position(last).Y() );
+        hStoppingMuEndptZ->Fill( particle.Position(last).Z() );
+        hStoppingMuEndptZX->Fill( particle.Position(last).Z(), particle.Position(last).X() );
+        hStoppingMuEndptZY->Fill( particle.Position(last).Z(), particle.Position(last).Y() );
+
+          
       }
       
       
@@ -194,7 +214,10 @@ bool MichelMCFilter::filter(art::Event & e)
     && ( (!fRequireDecayElectron) || (fRequireDecayElectron && isDecayElectron)  ) )
     outFlag = true;
 
-  if(outFlag) hEventCount->Fill(1);
+  if(outFlag) {
+    hEventCount->Fill(1);
+    hMuMomentum_pass->Fill( muMomentum );
+  }
   std::cout<<"Passing event? "<<outFlag<<"\n";
   return outFlag;
 
@@ -207,7 +230,15 @@ void MichelMCFilter::beginJob()
   hEventCount = tfs->make<TH1F>("EventCount","MichelMCFilter event count",2,0,2);
   hEventCount ->GetXaxis()->SetBinLabel(1,"Generated");  
   hEventCount ->GetXaxis()->SetBinLabel(2,"Passed");  
-
+  hMuMomentum          = tfs->make<TH1F>("MuMomentum","Initial muon momentum;Momentum [MeV/c]",100.,0.,1000.);
+  hMuMomentum_pass          = tfs->make<TH1F>("MuMomentum_pass","Initial muon momentum (passing filter);Momentum [MeV/c]",100.,0.,1000.);
+  hStoppingMuEndptX  = tfs->make<TH1F>("StoppingMuEndptX","Stopping muon endpoint;X [cm]",55,-5.,50.);
+  hStoppingMuEndptY  = tfs->make<TH1F>("StoppingMuEndptY","Stopping muon endpoint;Y [cm]",50,-25.,25.);
+  hStoppingMuEndptZ  = tfs->make<TH1F>("StoppingMuEndptZ","Stopping muon endpoint;Z [cm]",100,-5.,95.);
+  hStoppingMuEndptZX = tfs->make<TH2F>("StoppingMuEndptZX","Stopping muon endpoint;Z [cm];X [cm]",100,-5.,95.,55,-5.,50.);
+    hStoppingMuEndptZX->SetOption("colz");
+  hStoppingMuEndptZY = tfs->make<TH2F>("StoppingMuEndptZY","Stopping muon endpoint;Z [cm];Y [cm]",100,-5.,95.,50,-25.,25.);
+    hStoppingMuEndptZY->SetOption("colz");
 }
 
 void MichelMCFilter::endJob()

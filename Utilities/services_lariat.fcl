@@ -42,9 +42,14 @@ lariat_services:
  SpaceCharge:                  @local::standard_spacecharge
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
+lariat_services.SignalShapingServiceT1034:    @local::lariat_signalshapingservice_run1
 
-lariat_services_run2:               @local::lariat_services
+lariat_services_run2:                           @local::lariat_services
 lariat_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
+lariat_services_run2.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run2
+
+#lariat_services.SignalShapingServiceT1034.ASICGainInMVPerFC:      [ 18.6 , 15.5 ] # reduced gain for better data-MC agreement
+#lariat_services_run2.SignalShapingServiceT1034.ASICGainInMVPerFC: [ 16.6 , 12.6 ] # reduced gain for better data-MC agreement
 
 lariat_services_4mm:                @local::lariat_services
 
@@ -80,14 +85,25 @@ lariat_simulation_services:
  #OpDetResponseInterface:      @local::lariat_opdetresponse
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
+lariat_simulation_services.DetectorPropertiesService.GetElectronlifetimeFromDB: false
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetV: 0.0
-lariat_simulation_services.DetectorPropertiesService.Electronlifetime: 1600
+lariat_simulation_services.DetectorPropertiesService.Electronlifetime: 1470 # 1470
+lariat_simulation_services.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run1
+lariat_simulation_services.LArG4Parameters.KeepEMShowerDaughters:   true
+lariat_simulation_services.LArG4Parameters.StoreTrajectories:   true
 
 lariat_simulation_services_run2:  @local::lariat_simulation_services
 lariat_simulation_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetV: 0.0
-lariat_simulation_services_run2.DetectorPropertiesService.Electronlifetime: 1600
+lariat_simulation_services_run2.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run2
+
+lariat_simulation_services_run2_elifetime400: @local::lariat_simulation_services_run2
+lariat_simulation_services_run2_elifetime400.DetectorPropertiesService.Electronlifetime: 400.
+
+lariat_simulation_services_run2_elifetime2000: @local::lariat_simulation_services_run2
+lariat_simulation_services_run2_elifetime2000.DetectorPropertiesService.Electronlifetime: 2000.
+
 
 END_PROLOG

@@ -54,7 +54,7 @@ class OpHitBuilderAlg{
   void                          SmoothOutVector( std::vector<float>&, int);
   void                          RebinVector( std::vector<float>&, int);
   
-  std::vector<short>            HitMerger( std::vector<short>, short, int);
+  std::vector<short>            HitMerger( std::vector<short>&, short, int);
   std::vector<float>            MakeGradient( const std::vector<short>& );
   std::vector<float>            MakeGradient( const std::vector<float>& );
   std::vector<float>            GetBaselineAndRMS( const std::vector<short>&, short, short);
@@ -65,10 +65,10 @@ class OpHitBuilderAlg{
   void                          SubtractBaseline( std::vector<float>& );
   void                          SubtractBaseline( std::vector<float>&, float );
 
-  std::vector<float>            GetHitInfo( const std::vector<short>&, short, short, std::vector<short>);
-  std::vector<float>            GetHitInfo( const std::vector<short>&, short, short, std::vector<short>, bool);
-  std::vector<float>            GetHitInfo( const std::vector<float>&, short, short, std::vector<short>);
-  std::vector<float>            GetHitInfo( const std::vector<float>&, short, short, std::vector<short>, bool);
+  std::vector<float>            GetHitInfo( const std::vector<short>&, short, short, std::vector<short>&);
+  std::vector<float>            GetHitInfo( const std::vector<short>&, short, short, std::vector<short>&, bool);
+  std::vector<float>            GetHitInfo( const std::vector<float>&, short, short, std::vector<short>&);
+  std::vector<float>            GetHitInfo( const std::vector<float>&, short, short, std::vector<short>&, bool);
   float                         GetHitAmplitude( const std::vector<short>&, short, short);
   float                         GetHitAmplitude( const std::vector<float>&, short, short);
   float                         GetHitPromptIntegral( const std::vector<short>&, short, short);

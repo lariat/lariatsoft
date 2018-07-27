@@ -1,0 +1,14 @@
+#include "Michel_Reco.fcl"
+services.SignalShapingServiceT1034:    @local::lariat_signalshapingservice
+
+#physics.reco:                                               [ tfilt, opfilt, @sequence::tpcreco ]
+physics.filters.opfilt:                                     @local::lariat_michelana_run1
+physics.filters.opfilt.Filter_OpticalMode:                  true
+physics.filters.opfilt.LookAtTracks:                        false
+
+physics.producers.trajcluster.TrajClusterAlg.CaloAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.pmtrack.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.pmtracktc.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run1
+physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgdata_run1
+physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgdata_run1
+

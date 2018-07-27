@@ -6,17 +6,18 @@ lariat_detproperties:
 {
   service_provider: "DetectorPropertiesServiceLArIAT"
   GetElectronlifetimeFromDB: true
+  ElectronlifetimeTag: "" # use tag "v1.0" for DB snapshot prior to Feb 8, 2018 
   UseDatabaseForMC: false
 
-  Temperature:        89.60  #(tuned to yield drift vel. consistent w/ DocDB 2750)
-  Efield:             [0.4865,0.700,0.890]  #(E-field study, DocDB 2750)
+#Temperature:       89.60  #(tuned to yield drift vel. consistent w/ DocDB 2750)
+  Temperature:        90.7                  # E-field study, DocDB 2750 
+  Efield:             [0.4865,0.700,0.890]  # E-field study, DocDB 2750
   Electronlifetime:   1600
 
-  #ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
-  ElectronsToADC:    3.786e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
+  ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
   NumberTimeSamples: 3072
-  TimeOffsetU:       -50. # -50 offset to have crossing trk endpts align with anode/cathode in X
-  TimeOffsetV:       -52. # -2 offset on collection to prevent curved trks (study by Tingjun)
+  TimeOffsetU:       -50. #-50. # -50 offset to have crossing trk endpts align with anode/cathode in X
+  TimeOffsetV:       -52. #-52. # -2 offset on collection to prevent curved trks (study by Tingjun)
   TimeOffsetZ:       0.
   ReadOutWindowSize: 3072
   InheritNumberTimeSamples: false
@@ -26,14 +27,28 @@ lariat_detproperties:
   SternheimerX0:    0.2000  # Ar Sternheimer parameter x0.
   SternheimerX1:    3.0000  # Ar Sternheimer parameter x0.
   SternheimerCbar:  5.2146  # Ar Sternheimer parameter Cbar.
-
-  SamplingRate:     128.    # Set <= 0 to obtain this from TPC clock
+  
+  SamplingRate:      -128.  # Set <= 0 to get from TPCClock.TimeTick() (prev. default behavior)
 
 }
 
 # Run 2 had slightly lower measured electric field (DocDB 2750)
-lariat_detproperties_run2:        @local::lariat_detproperties
-lariat_detproperties_run2.Efield: [ 0.468, 0.700, 0.890 ]
+lariat_detproperties_run2:                  @local::lariat_detproperties
+lariat_detproperties_run2.Electronlifetime: 800
 
+lariat_detproperties_run2_fieldscan:              @local::lariat_detproperties_run2
+lariat_detproperties_run2_fieldscan.SamplingRate: 256
+lariat_detproperties_run2_fieldscan.TimeOffsetU:  -50.
+lariat_detproperties_run2_fieldscan.TimeOffsetV:  -47.
+lariat_detproperties_270Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_270Vcm.Efield:       [ 0.260,  0.377,  0.479 ] 
+lariat_detproperties_300Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_300Vcm.Efield:       [ 0.288,  0.420,  0.529 ] 
+lariat_detproperties_350Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_350Vcm.Efield:       [ 0.337,  0.489,  0.621 ] 
+lariat_detproperties_400Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_400Vcm.Efield:       [ 0.386,  0.559,  0.710 ] 
+lariat_detproperties_450Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_450Vcm.Efield:       [ 0.434,  0.630,  0.800 ] 
 
 END_PROLOG

@@ -7,7 +7,7 @@ lariat_simwire:
  module_type:        "SimWireT1034"
  TrigModName:        "triggersim"
  DriftEModuleLabel:  "largeant"
- NoiseFact:          0.05       #Noise Scale to use with histogram
+ NoiseFact:          0.135 #0.05       #Noise Scale to use with histogram
  NoiseWidth:         62.4         #Exponential Noise width (kHz)
  NoiseRand:          0.1          #frac of randomness of noise freq-spec
  LowCutoff:          7.5          #Low frequency filter cutoff (kHz)
