@@ -210,7 +210,8 @@ namespace caldata {
     raw::ChannelID_t channel = raw::InvalidChannelID; // channel number
     unsigned int bin(0);     // time bin loop variable
     
-    filter::ChannelFilter *chanFilt = new filter::ChannelFilter();  
+//    filter::ChannelFilter *chanFilt = new filter::ChannelFilter();  
+    filter::ChannelFilter chanFilt;
 
     std::vector<float> holder;                // holds signal data
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
@@ -227,7 +228,7 @@ namespace caldata {
       channel = digitVec->Channel();
       
       // skip bad channels
-      if(!chanFilt->BadChannel(channel)) {
+      if(!chanFilt.BadChannel(channel)) {
         holder.resize(transformSize);
         
 	dataSize = digitVec->Samples();
@@ -377,7 +378,7 @@ namespace caldata {
     evt.put(std::move(wirecol), fSpillName);
     evt.put(std::move(WireDigitAssn), fSpillName);
     
-    delete chanFilt;
+//    delete chanFilt;
     return;
   }
 
