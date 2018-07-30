@@ -600,8 +600,8 @@ void lariat::Lifetime::analyze(art::Event const & evt)
    if(fVerbose) std::cout << "Tracklist size " << tracklist.size() << std::endl;
 
    ntracks_reco=tracklist.size();
-   double larStart[3];
-   double larEnd[3];
+   TVector3 larStart;
+   TVector3 larEnd;
    std::vector<double> trackStart;
    std::vector<double> trackEnd;
    double    sampling    = 0.128;
@@ -626,17 +626,16 @@ void lariat::Lifetime::analyze(art::Event const & evt)
       trkendz[i]        = extent.second.Z();
 
       // ### Recording the directional cosine at the start of the track ###
-      memset(larStart, 0, 3);
-      memset(larEnd, 0, 3);
-      tracklist[i]->Direction(larStart,larEnd);
-      trkstartdcosx[i]  = larStart[0];
-      trkstartdcosy[i]  = larStart[1];
-      trkstartdcosz[i]  = larStart[2];
+      larStart = tracklist[i]->VertexDirection();
+      larEnd = tracklist[i]->EndDirection();
+      trkstartdcosx[i]  = larStart.X();
+      trkstartdcosy[i]  = larStart.Y();
+      trkstartdcosz[i]  = larStart.Z();
     
       // ### Recording the directional cosine at the end of the track ###
-      trkenddcosx[i]    = larEnd[0];
-      trkenddcosy[i]    = larEnd[1];
-      trkenddcosz[i]    = larEnd[2];
+      trkenddcosx[i]    = larEnd.X();
+      trkenddcosy[i]    = larEnd.Y();
+      trkenddcosz[i]    = larEnd.Z();
 
     
       // ### Grabbing the SpacePoints associated with this track ###

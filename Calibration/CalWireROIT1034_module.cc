@@ -210,7 +210,8 @@ namespace caldata {
     raw::ChannelID_t channel = raw::InvalidChannelID; // channel number
     unsigned int bin(0);     // time bin loop variable
     
-    filter::ChannelFilter *chanFilt = new filter::ChannelFilter();  
+//    filter::ChannelFilter *chanFilt = new filter::ChannelFilter();  
+    filter::ChannelFilter chanFilt;
 
     std::vector<float> holder;                // holds signal data
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
@@ -227,7 +228,7 @@ namespace caldata {
       channel = digitVec->Channel();
       
       // skip bad channels
-      if(!chanFilt->BadChannel(channel)) {
+      if(!chanFilt.BadChannel(channel)) {
         holder.resize(transformSize);
         
 	dataSize = digitVec->Samples();
@@ -246,10 +247,21 @@ namespace caldata {
       
       //This restores the DC component to signal removed by the deconvolution.
       if(fPostsample) {
+        //double average=0.0;
+        //for(bin=0; bin < (unsigned int)fPostsample; ++bin)
+        //  average+=holder[holder.size()-1-bin]/(double)fPostsample;
+        //for(bin = 0; bin < holder.size(); ++bin) holder[bin]-=average;
         double average=0.0;
-        for(bin=0; bin < (unsigned int)fPostsample; ++bin)
-          average+=holder[holder.size()-1-bin]/(double)fPostsample;
-        for(bin = 0; bin < holder.size(); ++bin) holder[bin]-=average;
+        double sum=0.0;
+        int n=0;
+        for(bin=0; bin < (unsigned int)fPostsample; ++bin){
+          double val = holder[holder.size()-1-bin];
+          if( fabs(val) > 20 ) continue; // avoid outliers (signal pulses)
+          sum+=holder[holder.size()-1-bin];
+          n++;
+        }
+        if(n) average=sum/n;
+        for(bin=0; bin < holder.size(); ++bin) holder[bin]-=average;
       }
       // adaptive baseline subtraction
       if(fDoBaselineSub) SubtractBaseline(holder);
@@ -366,13 +378,12 @@ namespace caldata {
     evt.put(std::move(wirecol), fSpillName);
     evt.put(std::move(WireDigitAssn), fSpillName);
     
-    delete chanFilt;
+//    delete chanFilt;
     return;
   }
 
   void CalWireROIT1034::SubtractBaseline(std::vector<float>& holder)
   {
-    
     float min = 0,max=0;
     for (unsigned int bin = 0; bin < holder.size(); bin++){
       if (holder[bin] > max) max = holder[bin];
@@ -380,14 +391,14 @@ namespace caldata {
     }
     int nbin = max - min;
     if (nbin!=0){
-      TH1F *h1 = new TH1F("h1","h1",nbin,min,max);
-      for (unsigned int bin = 0; bin < holder.size(); bin++){
-        h1->Fill(holder[bin]);
-      }
-      float ped = h1->GetMaximum();
+      TH1F h1("h1","h1",nbin,min,max);
+      for (unsigned int bin = 0; bin < holder.size(); bin++) 
+        h1.Fill(holder[bin]);
+      float ped = h1.GetMaximum(); // mode
+      float rms = h1.GetRMS();
       float ave=0,ncount = 0;
       for (unsigned int bin = 0; bin < holder.size(); bin++){
-        if (fabs(holder[bin]-ped)<2){
+        if (fabs(holder[bin]-ped)<rms*3.){
           ave +=holder[bin];
           ncount ++;
         }
@@ -397,7 +408,6 @@ namespace caldata {
       for (unsigned int bin = 0; bin < holder.size(); bin++){
         holder[bin] -= ave;
       }
-      h1->Delete();
     }
   }
 

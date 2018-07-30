@@ -131,13 +131,13 @@ lariat_trajclusteralg.ShowerTag: [ 0, 100, 10, 50, 2.5, 1, 15, 3, 5, 1, 1, 10, -
 # 10 max aspect ratio
 # 11 Max length for making a short Tj separation cut
 # 12 Print 2D showers in plane (0,1,2) or all planes (3) or just 3D matching (4)
-lariat_trajclusteralg.CaloAlg:                           @local::lariat_calorimetryalgdata
+lariat_trajclusteralg.CaloAlg:                           @local::lariat_calorimetryalgdata_run1
 
 lariat_trajcluster_data:                                 @local::standard_trajcluster
 lariat_trajcluster_data.TrajClusterAlg:                  @local::lariat_trajclusteralg
 
 lariat_trajcluster_mc:                                   @local::standard_trajcluster
 lariat_trajcluster_mc.TrajClusterAlg:                    @local::lariat_trajclusteralg
-lariat_trajcluster_mc.TrajClusterAlg.CaloAlg:            @local::lariat_calorimetryalgmc
+lariat_trajcluster_mc.TrajClusterAlg.CaloAlg:            @local::lariat_calorimetryalgmc_run1
 
 END_PROLOG

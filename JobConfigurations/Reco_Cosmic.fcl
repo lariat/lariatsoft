@@ -202,7 +202,7 @@ physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run1
 physics.producers.showerreco.InputProducer:        "linecluster"
 
 #### Here we try to suppress known and pointless messages

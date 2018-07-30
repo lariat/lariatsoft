@@ -2,16 +2,20 @@
 
 BEGIN_PROLOG
 
-lariat_calorimetryalgdata:    @local::standard_calorimetryalgdata
-lariat_calorimetryalgmc:      @local::standard_calorimetryalgmc
-lariat_calorimetryalgdata.CalAreaConstants: [0.0247,0.048 ]
-lariat_calorimetryalgmc.CalAreaConstants: [ 0.084,0.091 ]
+lariat_calorimetryalgdata_run1:                 @local::standard_calorimetryalgdata
+lariat_calorimetryalgdata_run2:                 @local::standard_calorimetryalgdata
+lariat_calorimetryalgmc_run1:                   @local::standard_calorimetryalgmc
+lariat_calorimetryalgmc_run2:                   @local::standard_calorimetryalgmc
+lariat_calorimetryalgmc_run1.CalAreaConstants:  [ 0.0840, 0.0910 ] # dE/dx momentum tuning (DocDB 2513)
+lariat_calorimetryalgdata_run1.CalAreaConstants:[ 0.0250, 0.0520 ] # dE/dx momentum tuning
+lariat_calorimetryalgmc_run2.CalAreaConstants:  [ 0.0840, 0.0910 ] # dE/dx momentum tuning
+lariat_calorimetryalgdata_run2.CalAreaConstants:[ 0.0220, 0.0445 ] # dE/dx momentum tuning
 
 lariat_calodata:              @local::standard_calodata
-lariat_calodata.CaloAlg:      @local::lariat_calorimetryalgdata
+lariat_calodata.CaloAlg:      @local::lariat_calorimetryalgdata_run1
 
 lariat_calomc:                @local::standard_calomc
-lariat_calomc.CaloAlg:        @local::lariat_calorimetryalgmc
+lariat_calomc.CaloAlg:        @local::lariat_calorimetryalgmc_run1
 
 
 END_PROLOG

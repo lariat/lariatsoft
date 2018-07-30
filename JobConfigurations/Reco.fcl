@@ -235,7 +235,7 @@ physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.025,0.052] # DocDB 2513
+physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run1
 #physics.producers.pandoracalo.TrackModuleLabel:                   "pandora"
 #physics.producers.pandoracalo.SpacePointModuleLabel:              "pandora"
 #physics.producers.pandoracalo.CaloAlg.CalAreaConstants: [0.0247,0.048]
@@ -250,7 +250,7 @@ physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
 physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
 physics.producers.blurredcluster.BlurredClusterAlg.ClusterTickDistance: 50
 #### Here we try to suppress known and pointless messages
-physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.emshower.EMShowerAlg.CalorimetryAlg:      @local::lariat_calorimetryalgdata_run1
 
 #services.SignalShapingServiceT1034.DebugFieldShape: true
 #services.SignalShapingServiceT1034.ColFilter:       "(x>0.0)*gaus"
