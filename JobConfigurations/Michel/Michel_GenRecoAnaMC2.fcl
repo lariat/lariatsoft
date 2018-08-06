@@ -76,6 +76,7 @@ physics:
      RequireEnteringMuon: true
      RequireDecayElectron: true
   }
+  tfilt:                @local::lariat_timestampfilter  
   hitnumfilt:           @local::lariat_hitnumberfilter
   michelana:            @local::lariat_michelana
  }
@@ -84,7 +85,7 @@ physics:
  {
  }
 
- reco:          [ @sequence::simseq, @sequence::tpcreco, michelana ]
+ reco:          [ @sequence::simseq, tfilt, @sequence::tpcreco, michelana ]
  stream1:       [ out1 ]
  trigger_paths: [ reco ] 
  end_paths:     [ ]  
@@ -128,10 +129,13 @@ services.LArG4Parameters.StoreTrajectories:                     true
 # ==================================================================
 # Reconstruction settings
 # ==================================================================
+physics.filters.tfilt.RequireRawDigits:                         true
+physics.filters.tfilt.MinWireRms:                               0.
+physics.filters.tfilt.MaxWireRms:                               999.
+
 physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.caldata.DodQdxCalib:                          false
 physics.producers.caldata.PostsampleBins:                       300
-
 
 physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
 physics.producers.gaushit.FilterHits:                           true

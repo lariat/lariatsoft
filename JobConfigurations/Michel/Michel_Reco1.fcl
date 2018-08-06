@@ -1,9 +1,11 @@
 #include "Michel_Reco.fcl"
 
-#physics.reco:                                               [ tfilt, opfilt, @sequence::tpcreco ]
 physics.filters.opfilt:                                     @local::lariat_michelana_run1
 physics.filters.opfilt.Filter_OpticalMode:                  true
 physics.filters.opfilt.LookAtTracks:                        false
+
+physics.filters.tfilt.MinWireRms:                           2.2
+physics.filters.tfilt.MaxWireRms:                           4.0
 
 physics.producers.trajcluster.TrajClusterAlg.CaloAlg: @local::lariat_calorimetryalgdata_run1
 physics.producers.pmtrack.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run1

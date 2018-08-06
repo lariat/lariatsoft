@@ -1,0 +1,2 @@
+#include "Michel_Ana1.fcl"
+physics.filters.michelana.CaloAlg:          @local::lariat_calorimetryalgdata_run1_default

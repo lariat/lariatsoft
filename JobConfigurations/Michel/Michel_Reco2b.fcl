@@ -6,14 +6,11 @@ services:
   @table::lariat_services_run2
 }
 
-services.DetectorPropertiesService:                         @local::lariat_detproperties_run2
-
-
 physics.filters.opfilt:                                     @local::lariat_michelana_run2b
 physics.filters.opfilt.Filter_OpticalMode:                  true
 
-#physics.filters.tfilt.MinWireRms:                               1.2
-#physics.filters.tfilt.MaxWireRms:                               2.5
+physics.filters.tfilt.MinWireRms:                               1.2
+physics.filters.tfilt.MaxWireRms:                               2.5
 
 physics.producers.caldata.dQdxCalibFileName:                "LArIATChargeCorrectionFactors_Run2.txt"
 

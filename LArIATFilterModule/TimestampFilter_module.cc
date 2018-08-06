@@ -70,11 +70,12 @@ private:
   std::string fDAQModuleInstanceName;
   float fMaxWireRms;
   float fMinWireRms;
+  float fWireADCThresh;
 
   TH1F* hTimestamps;
   TH1F* hTimestamps_pass;
-  TH1F* hMaxSignalPulse;
-  TH1F* hAveWireRms;
+  TH1F* hMaxSignalPulse[2];
+  TH1F* hAveWireRms[2];
   TH1F* hAveWireRms_pass;
   TH1F* hEvtSelection;
 
@@ -89,8 +90,10 @@ TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
   art::ServiceHandle<art::TFileService> tfs;
   hTimestamps       = tfs->make<TH1F>("Timestamps",";Time in spill [sec]",300,0,60.);
   hTimestamps_pass  = tfs->make<TH1F>("Timestamps_pass",";Time in spill [sec]",300,0.,60.);
-  hMaxSignalPulse   = tfs->make<TH1F>("MaxSignalPulse","Collection plane;Wire pulse amplitude [ADC]",200,0,1000);
-  hAveWireRms       = tfs->make<TH1F>("AveWireRms","Collection plane;Wire RMS [ADC]",400,0.,20);
+  hMaxSignalPulse[0]= tfs->make<TH1F>("MaxSignalPulse_0","Induction plane;Wire pulse amplitude [ADC]",200,0,1000);
+  hMaxSignalPulse[1]= tfs->make<TH1F>("MaxSignalPulse_1","Collection plane;Wire pulse amplitude [ADC]",200,0,1000);
+  hAveWireRms[0]    = tfs->make<TH1F>("AveWireRms_0","Induction plane;Wire RMS [ADC]",400,0.,20);
+  hAveWireRms[1]    = tfs->make<TH1F>("AveWireRms_1","Collection plane;Wire RMS [ADC]",400,0.,20);
   hAveWireRms_pass  = tfs->make<TH1F>("AveWireRms_pass","Collection plane;Wire RMS [ADC]",400,0.,20);
   hEvtSelection     = tfs->make<TH1F>("EvtSelection","",4,0,4);
   hEvtSelection->SetOption("HIST TEXT");
@@ -158,8 +161,8 @@ bool TimestampFilter::filter(art::Event & e)
     filter::ChannelFilter chanFilt;
     size_t dataSize = 0;
     
-    float sum_rms = 0.;
-    int   nchan   = 0;
+    float sum_rms[2] = {0,0};
+    int   nchan[2]   = {0,0};
 
     for(size_t rdIter = 0; rdIter < digitVecHandle->size(); ++rdIter){
       
@@ -169,12 +172,15 @@ bool TimestampFilter::filter(art::Event & e)
       // get the reference to the current raw::RawDigit
       art::Ptr<raw::RawDigit> digitVec(digitVecHandle, rdIter);
       channel = digitVec->Channel();
-      
-      // only look at collection plane 
-      if( channel < 240 ) continue;
-      
       dataSize = digitVec->Samples();
       std::vector<short> rawadc(dataSize);  // vector holding uncompressed adc values
+      
+      // only look at collection plane 
+      //if( channel < 240 ) continue;
+      
+      int plane = 1;
+      if( channel < 240 ) plane = 0; 
+     
       
       // skip bad channels
       if(!chanFilt.BadChannel(channel)) {
@@ -182,35 +188,36 @@ bool TimestampFilter::filter(art::Event & e)
         raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
         
         // calculate RMS assuming pedestal already subtracted off.
-        // avoid outliers > 20 ADC
+        // avoid outliers > [thresh] ADC
         size_t k = rawadc.size();
         if( k > 300 ) k = 300;
         int nn = 0;
         float sum_sq = 0.;
         for(size_t bin = 0; bin < k; ++bin) {
-          if( fabs(rawadc[bin])<20 ) {
-            sum_sq += pow(rawadc[bin],2);
-            nn++;  
-          } 
           if( rawadc[bin] > maxpulse ) maxpulse = rawadc[bin];
+          if( fabs(rawadc[bin])>fWireADCThresh ) continue;
+          sum_sq += pow(rawadc[bin],2);
+          nn++;  
         }
         if( nn ) {
-          sum_rms += sqrt(sum_sq / nn );
-          nchan ++;
+          sum_rms[plane] += sqrt(sum_sq / nn );
+          nchan[plane] ++;
         }
-        if( maxpulse > 0 ) hMaxSignalPulse->Fill(maxpulse);
+        if( maxpulse > 0 ) hMaxSignalPulse[plane]->Fill(maxpulse);
       }
     } // Done looping over all wires
    
-    
-    float aveRms = -9.;
-    if( nchan > 0 ) aveRms = sum_rms / nchan;
-    hAveWireRms->Fill( aveRms );
-    std::cout<<"MAX WIRE RMS = "<<fMaxWireRms<<"  ave RMS "<<aveRms<<"\n";
-    if( fMaxWireRms > 0. && ( aveRms < 0. || aveRms > fMaxWireRms || aveRms < fMinWireRms ) ) {
-      wireRmsFlag = false;
-    } else {
-      hAveWireRms_pass->Fill( aveRms );
+    for(int plane=0; plane<2; plane++){
+      float aveRms = -9.;
+      if( nchan[plane] > 0 ) aveRms = sum_rms[plane] / nchan[plane];
+      hAveWireRms[plane]->Fill( aveRms );
+      if( plane == 1 ) {
+        if( fMaxWireRms > 0. && ( aveRms < 0. || aveRms > fMaxWireRms || aveRms < fMinWireRms ) ) {
+          wireRmsFlag = false;
+        } else {
+          hAveWireRms_pass->Fill( aveRms );
+        }
+      }
     }
     
 
@@ -253,6 +260,7 @@ void TimestampFilter::reconfigure(fhicl::ParameterSet const & p)
   fRequireRawDigits             = p.get< bool >         ("RequireRawDigits",true);
   fMinWireRms                   = p.get< float >        ("MinWireRms",-9.);
   fMaxWireRms                   = p.get< float >        ("MaxWireRms",-9.);
+  fWireADCThresh                = p.get< float >        ("WireADCThresh",30);
 }
 
 

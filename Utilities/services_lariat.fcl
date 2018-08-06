@@ -88,7 +88,7 @@ lariat_simulation_services:
 lariat_simulation_services.DetectorPropertiesService.GetElectronlifetimeFromDB: false
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetV: 0.0
-lariat_simulation_services.DetectorPropertiesService.Electronlifetime: 1470 # 1470
+lariat_simulation_services.DetectorPropertiesService.Electronlifetime: 1500 # 1470
 lariat_simulation_services.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run1
 lariat_simulation_services.LArG4Parameters.KeepEMShowerDaughters:   true
 lariat_simulation_services.LArG4Parameters.StoreTrajectories:   true
@@ -97,6 +97,7 @@ lariat_simulation_services_run2:  @local::lariat_simulation_services
 lariat_simulation_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetV: 0.0
+lariat_simulation_services_run2.DetectorPropertiesService.Electronlifetime: 800 # 830
 lariat_simulation_services_run2.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run2
 
 lariat_simulation_services_run2_elifetime400: @local::lariat_simulation_services_run2

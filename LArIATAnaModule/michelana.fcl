@@ -71,7 +71,7 @@ lariat_michelana:
   EdgeMarginY:                    1.5
   EdgeMarginZ:                    1.5
   MuTrackLengthMin:               5.
-  MuResRangeOffset:               0.17
+  MuResRangeOffset:               0.09 # 0.17
 
   # clustering/shower reco settings:
   CaloAlg:                        @local::lariat_calorimetryalgdata
@@ -79,29 +79,29 @@ lariat_michelana:
   MaxHitSeparation:               2.5 # 2.5 
   TruncMeanWindow:                4
   TruncMeanP:                     0.20 
-  MaxMatchDistance:               5 
+  MaxMatchDistance:               4 
   LocalLinearityWindow:           4
   LinThresh:                      0.80
-  LinTol:                         3
+  LinTol:                         -3 # 3
   LinThreshMuFit:                 0.80
-  ShowerAcceptanceAngle:          45. # 60. 
+  ShowerAcceptanceAngle:          60. # 60. 
   MaxHitTimeDiffFac:              1.0 # xfactor of RMS # microseconds 
  
   UseUniformRecomb:               true 
-  RecombFactor:                   0.696 # for dE/dx = 2.3 MeV/cm at 486.5 V/cm
+  RecombFactor:                   0.696 # for dE/dx = 2.3 MeV/cm, R = 0.696 at 486.5 V/cm (for 2.5 MeV/cm, R = 0.688)
   RecombFactorTrack:              0.679 # 0.676
   RecombFactorShower:             0.631 # 0.551
   
   # event cut params:
   MinClusterSize:                 10
-  MinElClusterSize:               2 
+  MinElClusterSize:               1 
   MaxElClusterSize:               500 
   MinMuClusterSize:               5
   MaxExtraHits:                   999 
   MinMuLinearity:                 0.3
   MinFracMuHitsLinear:            0.3 
   MinMuClusterHitsEndFit:         3 # 4
-  MinTruncMeanSlope:              3000
+  MinTruncMeanSlope:              1000
   MinDecayAngle2D:                20.
   MaxDecayAngle2D:                170.
   MinElShowerFrac:                0.5
@@ -116,7 +116,7 @@ lariat_michelana_run1.CaloAlg:              @local::lariat_calorimetryalgdata_ru
 lariat_michelana_run1.SelectChannels:       [ 1 ]
 lariat_michelana_run1.UsePmtForCalo:        [ false, true ]
 lariat_michelana_run1.GateDelay:            300.
-lairat_michelana_run1.MinOpHitWidth:        [ 0.,   10.  ]
+lariat_michelana_run1.MinOpHitWidth:        [ 0.,   10.  ]
 lariat_michelana_run1.LibraryFile:          "PhotonLibrary_ToyMC_20180704_Run1_300kPerVoxel_24x_20y_45z.root"
 lariat_michelana_run1.SmearSigT:            [ 0., 0.0426 ]
 lariat_michelana_run1.SmearSigPE:           [ 0., 0.43  ]
