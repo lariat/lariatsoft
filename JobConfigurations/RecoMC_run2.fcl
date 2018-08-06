@@ -1,0 +1,12 @@
+#include "RecoMC.fcl"
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "anaTree_histo.root" }
+  RandomNumberGenerator: {} #ART native random number generator
+  @table::lariat_simulation_services_run2
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
+physics.producers.calo:                          @local::lariat_calorimetryalgmc_run2
