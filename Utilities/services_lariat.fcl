@@ -15,7 +15,7 @@
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
 #include "channelstatus_lariat.fcl"
-#include "spacecharge.fcl" 
+#include "spacecharge.fcl"
 # #include "pmtconfig_lariat.fcl"
 # #include "opticaldetectorservices_lariat.fcl"
 
@@ -23,10 +23,10 @@ BEGIN_PROLOG
 
 lariat_services:
 {
- ExptGeoHelperInterface:       @local::lariat_geometry_helper 
- Geometry:                     @local::lariat_geo 	        
- AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
- AuxDetGeometry:               @local::lariat_auxdetgeo            
+ ExptGeoHelperInterface:       @local::lariat_geometry_helper
+ Geometry:                     @local::lariat_geo
+ AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper
+ AuxDetGeometry:               @local::lariat_auxdetgeo
  DetectorPropertiesService:    @local::lariat_detproperties
  LArPropertiesService:         @local::lariat_properties
  LArFFT:                       @local::lariat_larfft
@@ -42,6 +42,9 @@ lariat_services:
  SpaceCharge:                  @local::standard_spacecharge
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
+
+lariat_services.SignalShapingServiceT1034.IndFieldRespAmp: 0.66
+lariat_services.SignalShapingServiceT1034.ColFieldRespAmp: 0.50
 
 lariat_services_run2:               @local::lariat_services
 lariat_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
@@ -63,8 +66,8 @@ lariat_simulation_services:
  MagneticField:                @local::no_mag_larsoft
  ExptGeoHelperInterface:       @local::lariat_geometry_helper
  Geometry:                     @local::lariat_geo
- AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
- AuxDetGeometry:               @local::lariat_auxdetgeo            
+ AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper
+ AuxDetGeometry:               @local::lariat_auxdetgeo
  DetectorPropertiesService:    @local::lariat_detproperties
  LArPropertiesService:         @local::lariat_properties
  LArFFT:                       @local::lariat_larfft
@@ -80,6 +83,10 @@ lariat_simulation_services:
  #OpDetResponseInterface:      @local::lariat_opdetresponse
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
+
+lariat_simulation_services.SignalShapingServiceT1034.IndFieldRespAmp: 0.66
+lariat_simulation_services.SignalShapingServiceT1034.ColFieldRespAmp: 0.50
+
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetV: 0.0
 lariat_simulation_services.DetectorPropertiesService.Electronlifetime: 1600
