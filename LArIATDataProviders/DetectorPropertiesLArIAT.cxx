@@ -77,7 +77,8 @@ namespace ldp{
   bool DetectorPropertiesLArIAT::Update(uint64_t t) 
   {
 
-    CalculateXTicksParams();
+    // Only do this this once
+    //CalculateXTicksParams();
 
     bool retVal = true;
    
@@ -118,10 +119,11 @@ namespace ldp{
     tbl.SetTableName(tableName);
     tbl.SetTableType(nutools::dbi::kConditionsTable);
     tbl.SetDataTypeMask(nutools::dbi::kDataOnly);
+    if( fElectronlifetimeTag != "" ) tbl.SetTag(fElectronlifetimeTag);
 
     int ltIdx = tbl.AddCol("lt","float");
-    //    int ltErrPlusIdx = tbl.AddCol("ltsigplus","float");
-    //    int ltErrMinusIdx = tbl.AddCol("ltsigminus","float");
+    //int ltErrPlusIdx = tbl.AddCol("ltsigplus","float");
+    //int ltErrMinusIdx = tbl.AddCol("ltsigminus","float");
     
     tbl.SetMinTSVld(t);
     tbl.SetMaxTSVld(t);
@@ -142,6 +144,8 @@ namespace ldp{
     float lt;
     row = tbl.GetRow(0);
     row->Col(ltIdx).Get(lt);
+    //row->Col(ltErrPlusIdx).Get(lterr1);
+    //row->Col(ltErrMinusIdx).Get(lterr2);
     std::cout << "Setting electron lifetime to database value of " << lt << std::endl;
 
     fElectronlifetime = lt;
@@ -155,7 +159,7 @@ namespace ldp{
     fClocks = clks;
     
     fTPCClock = fClocks->TPCClock();
-    CalculateXTicksParams();
+//    CalculateXTicksParams();
     return true;
   }
   
@@ -209,9 +213,10 @@ namespace ldp{
   
   //--------------------------------------------------------------------
   void DetectorPropertiesLArIAT::Configure(Configuration_t const& config) {
-    
+   
     fEfield                     = config.Efield();
     fElectronlifetime           = config.Electronlifetime();
+    fElectronlifetimeTag        = config.ElectronlifetimeTag();
     fGetElectronlifetimeFromDB  = config.GetElectronlifetimeFromDB();
     fTemperature                = config.Temperature();
     fElectronsToADC             = config.ElectronsToADC();
@@ -226,6 +231,9 @@ namespace ldp{
     fSternheimerParameters.x0   = config.SternheimerX0();
     fSternheimerParameters.x1   = config.SternheimerX1();
     fSternheimerParameters.cbar = config.SternheimerCbar();
+    
+    fSamplingRate               = config.SamplingRate();
+    if( fSamplingRate <= 0 )    fSamplingRate = fTPCClock.TickPeriod() * 1.e3;
 
     CalculateXTicksParams();
     
@@ -498,7 +506,6 @@ namespace ldp{
     double dEdx = (exp(Beta * Wion * dQdx ) - Alpha) / Beta;
     
     return dEdx;
-    
   }
   
   //------------------------------------------------------------------------------------//
@@ -633,7 +640,7 @@ For plane = 0, t offset is pitch/Coeff[1] - (pitch+xyz[0])/Coeff[0]
 	    }
 	    fXTicksOffsets[cstat][tpc][plane] -= tpcgeom.PlanePitch()*(1/fXTicksCoefficient-1/fXTicksCoefficientgap[1]);
 	  }
-	  
+
 	  // Add view dependent offset
 	  geo::View_t view = pgeom.View();
 	  if(view == geo::kU)
