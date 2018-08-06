@@ -4,8 +4,9 @@ BEGIN_PROLOG
 
 lariat_calorimetryalgdata:    @local::standard_calorimetryalgdata
 lariat_calorimetryalgmc:      @local::standard_calorimetryalgmc
-lariat_calorimetryalgdata.CalAreaConstants: [0.0247,0.048 ]
-lariat_calorimetryalgmc.CalAreaConstants: [ 0.084,0.091 ]
+
+lariat_calorimetryalgdata.CalAreaConstants: [ 0.0382, 0.0917 ]
+lariat_calorimetryalgmc.CalAreaConstants:   [ 0.0356, 0.0912 ]
 
 lariat_calodata:              @local::standard_calodata
 lariat_calodata.CaloAlg:      @local::lariat_calorimetryalgdata
