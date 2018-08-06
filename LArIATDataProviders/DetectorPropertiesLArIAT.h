@@ -46,7 +46,10 @@ namespace ldp{
         fhicl::Sequence<double> Efield { Name("Efield"), Comment(
           "electric field in front of each wire plane (the last one is the big one!) [kV/cm]")
           };
-    
+        fhicl::Atom<double> SamplingRate { 
+          Name("SamplingRate"), 
+          Comment("time tick period of TPC readout (units of ns)")
+          };
         fhicl::Atom<double      > Electronlifetime         {
           Name("Electronlifetime"        ),
           Comment("electron lifetime in liquid argon [us]")
@@ -54,6 +57,10 @@ namespace ldp{
         fhicl::Atom<bool        > GetElectronlifetimeFromDB {
           Name("GetElectronlifetimeFromDB"),
           Comment("option to get electron lifetime from LArIAT conditions database")
+        };
+        fhicl::Atom<std::string        > ElectronlifetimeTag {
+          Name("ElectronlifetimeTag"),
+          Comment("tag of snapshot retrieved from conditions database")
         };
         fhicl::Atom<double      > Temperature              {
           Name("Temperature"             ),
@@ -237,7 +244,7 @@ namespace ldp{
        */
       virtual double ElossVar(double mom, double mass) const override;
 
-      virtual double       SamplingRate()      const override { return fTPCClock.TickPeriod() * 1.e3; }
+      virtual double       SamplingRate()      const override { return fSamplingRate; }
       virtual double       ElectronsToADC()    const override { return fElectronsToADC; }
       virtual unsigned int NumberTimeSamples() const override { return fNumberTimeSamples; }
       virtual unsigned int ReadOutWindowSize() const override { return fReadOutWindowSize; }
@@ -293,6 +300,7 @@ namespace ldp{
       const geo::GeometryCore* fGeo;
 
       bool  fGetElectronlifetimeFromDB;
+      std::string fElectronlifetimeTag;
 
       uint64_t fPrevRunNumber;
       std::vector<std::pair<uint64_t,float>> fCachedElectronLifetimes;
