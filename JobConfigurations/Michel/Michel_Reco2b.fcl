@@ -16,9 +16,6 @@ physics.producers.caldata.dQdxCalibFileName:                "LArIATChargeCorrect
 
 physics.producers.gaushit.MinSig:                                [ 10.0, 10.0 ] # thresholds for hit-finding
 
-physics.producers.trajcluster.TrajClusterAlg.CaloAlg: @local::lariat_calorimetryalgdata_run2
-physics.producers.pmtrack.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run2
-physics.producers.pmtracktc.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgdata_run2
 physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgdata_run2
 physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgdata_run2
 

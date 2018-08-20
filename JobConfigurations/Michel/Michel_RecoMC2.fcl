@@ -16,8 +16,5 @@ physics.producers.linecluster.ClusterCrawlerAlg.HitErrFac:  0.22  # Fraction of 
 
 physics.filters.opfilt.CaloAlg:                       @local::lariat_calorimetryalgmc_run2 
 
-physics.producers.trajcluster.TrajClusterAlg.CaloAlg: @local::lariat_calorimetryalgmc_run2
-physics.producers.pmtrack.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgmc_run2
-physics.producers.pmtracktc.PMAlgTracking.AdcImageAlg.CalorimetryAlg: @local::lariat_calorimetryalgmc_run2
 physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgmc_run2
 physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgmc_run2

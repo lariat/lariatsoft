@@ -138,6 +138,7 @@ bool MichelMCFilter::filter(art::Event & e)
   bool muonStopsInTPC = false;
   bool muonEntersTPC = false;
   bool isDecayElectron = false;
+  bool isPrimaryElectron = false;
   bool outFlag = false;
   int muID = -99;
   int muCharge = 0;
@@ -190,7 +191,8 @@ bool MichelMCFilter::filter(art::Event & e)
 	if( IsPointInFiducialVolume( particle.Position(ii), 0., 0., 0.) ) muonEntersTPC = true;
       
     }
-    
+   
+    // -------------------------------------------------------------------------- 
     // Look for decay electron
     if( abs(particle.PdgCode()) == 11 && particle.Mother() == muID && muonStopsInTPC ) {
       
@@ -203,6 +205,14 @@ bool MichelMCFilter::filter(art::Event & e)
         std::cout<<"--> Found decay electron\n";
       }
     }
+    
+    // -------------------------------------------------------------------------- 
+    // Look for a primary electron shower
+    if( particle.Process() == "primary" && abs(particle.PdgCode()) == 11 ) {
+      
+        isPrimaryElectron = true;
+        std::cout<<"--> Found primary electron shower\n";
+    }
 
   }
 
@@ -213,6 +223,8 @@ bool MichelMCFilter::filter(art::Event & e)
     && ( (!fRequireEnteringMuon) || (fRequireEnteringMuon && muonEntersTPC)  ) 
     && ( (!fRequireDecayElectron) || (fRequireDecayElectron && isDecayElectron)  ) )
     outFlag = true;
+
+  if( isPrimaryElectron ) outFlag = true;
 
   if(outFlag) {
     hEventCount->Fill(1);

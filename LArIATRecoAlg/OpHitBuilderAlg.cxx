@@ -170,7 +170,6 @@ void OpHitBuilderAlg::Reset() {
 std::vector<short> OpHitBuilderAlg::GetHits( raw::OpDetPulse &opdetpulse ) {
   std::vector<short> wfm = opdetpulse.Waveform();
   std::vector<float> wfm_float(wfm.begin(), wfm.end()); 
-//  size_t TriggerTime = (int)opdetpulse.FirstSample();
   size_t TriggerTime = (size_t)opdetpulse.FirstSample();
   return GetHits(wfm_float, TriggerTime);
 }
