@@ -62,6 +62,8 @@ lariat_disp:
  ChannelStatusService: @local::lariat_channel_filter
 }                                                                                  
 
+lariat_disp.DetectorPropertiesService.SamplingRate: 128
+
 lariat_disp_5mm:              @local::lariat_disp
 lariat_disp_5mm.Geometry:     @local::lariat_geo_5mm
 
