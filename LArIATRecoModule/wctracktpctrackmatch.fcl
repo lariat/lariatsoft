@@ -1,0 +1,14 @@
+lariat_wctracktpctrackmatch:
+{
+  module_type:                  "WCTrackTPCTrackMatch"
+  HitLabel:                     "gaushit"
+  ClusterLabel:                 "trajcluster"
+  TrackLabel:                   "pmtracktc"
+  TOFLabel:                     "tof"
+  WCTrackLabel:                 "wctrack"
+  AlphaCut:                     0.2
+  MaxUpstreamZ:                 10.0
+  CircularCutXCenter:           2.0
+  CircularCutYCenter:           0.0
+  CircularCutRadius:            7.0
+}

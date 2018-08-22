@@ -1,0 +1,10 @@
+
+
+lariat_wcqualityproducer:
+{
+  module_type:  WCQualityProducer
+
+  TOFModuleLabel: "tof"
+  WCTrackLabel:   "wctrack"
+  fNumberWCTrack: 1
+}

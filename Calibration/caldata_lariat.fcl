@@ -4,14 +4,15 @@ BEGIN_PROLOG
 
 lariat_calroi:
 {
- module_type:        "CalWireROIT1034"
- DigitModuleLabel:   "daq"
- PostsampleBins:     0	
- DoBaselineSub:   false # subtract baseline after deconvolution?
- DoROI: false
- PlaneROIPad: [ 50, 50 ] # number of bins to pad both ends of the ROIs
- DodQdxCalib:     false
- dQdxCalibFileName: "LArIATChargeCorrectionFactorsv1.txt"
+ module_type:           "CalWireROIT1034"
+ DigitModuleLabel:      "daq"
+ DoBaselineSub:         true        # subtract baseline on signal after de-convolution
+ PostsampleBins:        300         # use this many samples at end of signal to determine baseline
+ AdvancedBaselineSub:   false       # more advanced baseline subtraction (but much slower)
+ DoROI:                 false       # only process regions of interest to save time and space
+ PlaneROIPad:           [ 50, 50 ]  # number of bins to pad both ends of the ROIs
+ DodQdxCalib:           false
+ dQdxCalibFileName:     "LArIATChargeCorrectionFactorsv1.txt"
 }
 
 lariat_calwire:

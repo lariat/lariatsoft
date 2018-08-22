@@ -17,6 +17,7 @@
 #include "showerfindermodules.fcl"
 ##include "pandoramodules.fcl"
 #include "resourcetracking_services.fcl"
+#include "lariatfiltermodules.fcl"
  
 process_name: Reco2D
 
@@ -105,11 +106,16 @@ physics:
 
 
  }
+ 
+ filters:
+ {
+  tfilt:  @local::lariat_timestampfilter
+ }
+ 
  analyzers:
-{
- anatree: @local::lariat_anatree
-
-}
+ {
+  anatree: @local::lariat_anatree
+ }
 
  #define the producer and filter modules for this path, order matters, 
  #filters reject all following items.  see lines starting physics.producers below
@@ -145,7 +151,14 @@ outputs:
 }
 
 
-### Here, we overwrite ALL module labels with the ones defined above.
+# ========================================================================================
+# Timestamp filter passes events occurring between T1-T2 seconds within spill cycle
+#   beam events:    1.2 - 5.2
+#   cosmic events:  5.5 - 60.0
+#   (all events passed by default)
+physics.filters.tfilt.T1:                                       0.0
+physics.filters.tfilt.T2:                                       999.
+physics.filters.tfiltRequireRawDigits:                          true
 
 physics.producers.wctrack.PickyTracks: 	                        false
 
@@ -234,7 +247,7 @@ physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.025,0.052] # DocDB 2513
+physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run1
 #physics.producers.pandoracalo.TrackModuleLabel:                   "pandora"
 #physics.producers.pandoracalo.SpacePointModuleLabel:              "pandora"
 #physics.producers.pandoracalo.CaloAlg.CalAreaConstants: [0.0247,0.048]
@@ -249,7 +262,7 @@ physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
 physics.producers.blurredcluster.BlurredClusterAlg.BlurTick:            15
 physics.producers.blurredcluster.BlurredClusterAlg.ClusterTickDistance: 50
 #### Here we try to suppress known and pointless messages
-physics.producers.emshower.EMShowerAlg.CalorimetryAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.emshower.EMShowerAlg.CalorimetryAlg:    @local::lariat_calorimetryalgdata_run1
 
 #services.SignalShapingServiceT1034.DebugFieldShape: true
 #services.SignalShapingServiceT1034.ColFilter:       "(x>0.0)*gaus"
