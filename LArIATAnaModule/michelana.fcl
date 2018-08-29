@@ -77,7 +77,7 @@ lariat_michelana:
   # clustering/shower reco settings:
   CaloAlg:                        @local::lariat_calorimetryalgdata
   UseMaxDropAsBnd:                false
-  MaxHitSeparation:               2.5 # 2.5 
+  MaxHitSeparation:               2.0 # 2.5 
   TruncMeanWindow:                4
   TruncMeanP:                     0.20 
   MaxMatchDistance:               4 
@@ -120,10 +120,10 @@ lariat_michelana_run1.MinOpHitWidth:        [ 0.,   10.  ]
 lariat_michelana_run1.LibraryFile:          "PhotonLibrary_ToyMC_20180704_Run1_300kPerVoxel_24x_20y_45z.root"
 lariat_michelana_run1.SmearSigT:            [ 0., 0.0426 ]
 lariat_michelana_run1.SmearSigPE:           [ 0., 0.43  ]
-lariat_michelana_run1.QE_ScaleFactor:       [ 0., 0.9979 ]  #[0., 1.1148 ] #[0., 1.2266  ]   
-lariat_michelana_run1.TrigEff_P:            [ 0., 24.68 ] # [ 0., 25.9933 ]  #[0., 27.839 ] #[0., 27.8006 ]   
-lariat_michelana_run1.TrigEff_K:            [ 0., 8.862 ] 
-lariat_michelana_run1.SmearFactor:          [ 0., 1.705 ] #[ 0., 1.72992 ]   #[0., 1.8283 ] #[0., 1.67089 ]   
+lariat_michelana_run1.QE_ScaleFactor:       [ 0., 1.012 ]  #[0., 1.1148 ] #[0., 1.2266  ]   
+lariat_michelana_run1.TrigEff_P:            [ 0., 23.99 ] # [ 0., 25.9933 ]  #[0., 27.839 ] #[0., 27.8006 ]   
+lariat_michelana_run1.TrigEff_K:            [ 0., 9.177 ] 
+lariat_michelana_run1.SmearFactor:          [ 0., 1.750 ] #[ 0., 1.72992 ]   #[0., 1.8283 ] #[0., 1.67089 ]   
 #lariat_michelana_run1.MinHitAmp:            [ 0., 25. ]  
 
 # ===================================================================================
@@ -150,7 +150,7 @@ lariat_michelana_run2b.LibraryFile:         "PhotonLibrary_ToyMC_20180704_Run2_3
 lariat_michelana_run2b.SmearSigT:           [ 0.024,     0.024    ]
 lariat_michelana_run2b.SmearSigPE:          [ 0.32,     0.43    ]
 lariat_michelana_run2b.QE_ScaleFactor:      [ 1.087,   1.006  ]  #[ 1.0627,  0.9946 ]
-lariat_michelana_run2b.TrigEff_P:           [ 86.327,   23.258 ]  #[ 85.194, 19.448 ] 
+lariat_michelana_run2b.TrigEff_P:           [ 86.33,   23.26 ]  #[ 85.194, 19.448 ] 
 lariat_michelana_run2b.TrigEff_K:           [ 7.620,   3.939 ]  #[ 85.194, 19.448 ] 
 lariat_michelana_run2b.SmearFactor:         [ 2.610,   2.516 ] #[ 2.4696, 1.7066 ] 
 #lariat_michelana_run2b.MinHitAmp:           [ 0.,       25. ]  

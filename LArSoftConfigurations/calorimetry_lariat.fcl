@@ -2,24 +2,28 @@
 
 BEGIN_PROLOG
 
+lariat_calorimetryalgdata:    @local::standard_calorimetryalgdata
+lariat_calorimetryalgmc:      @local::standard_calorimetryalgmc
+lariat_calorimetryalgdata.CalAreaConstants: [ 0.0382, 0.0917 ]
+lariat_calorimetryalgmc.CalAreaConstants:   [ 0.0356, 0.0912 ]
+
+# Run-specific settings for scaled field response (from stopping muon dE/dx, DocDB 3484)
 lariat_calorimetryalgdata_run1:   @local::standard_calorimetryalgdata
-lariat_calorimetryalgdata_run1.CalAreaConstants:[ 0.0378, 0.0869 ] #[ 0.0378, 0.0869 ]
+lariat_calorimetryalgdata_run1.CalAreaConstants:[ 0.0352, 0.0875 ]
 lariat_calorimetryalgdata_run2:   @local::standard_calorimetryalgdata
-lariat_calorimetryalgdata_run2.CalAreaConstants:[ 0.0382, 0.0934 ] #[ 0.0382, 0.0917 ] 
+lariat_calorimetryalgdata_run2.CalAreaConstants:[ 0.0351, 0.0932 ]
 lariat_calorimetryalgmc_run1:     @local::standard_calorimetryalgmc
-lariat_calorimetryalgmc_run1.CalAreaConstants:  [ 0.0358, 0.0916 ]
+lariat_calorimetryalgmc_run1.CalAreaConstants:  [ 0.0356, 0.0911 ]
 lariat_calorimetryalgmc_run2:     @local::standard_calorimetryalgmc
-lariat_calorimetryalgmc_run2.CalAreaConstants:  [ 0.0356, 0.0911 ] 
+lariat_calorimetryalgmc_run2.CalAreaConstants:  [ 0.0357, 0.0911 ]
 
+# Settings for default field response (from beam momentum-based dE/dx tuning, DocDB 2513)
 lariat_calorimetryalgdata_run1_default:     @local::standard_calorimetryalgdata
-lariat_calorimetryalgdata_run1_default.CalAreaConstants:[ 0.025, 0.052 ] # from dE/dx: [ 0.025, 0.052 ]
+lariat_calorimetryalgdata_run1_default.CalAreaConstants: [ 0.025, 0.052 ]
 lariat_calorimetryalgdata_run2_default:     @local::standard_calorimetryalgdata
-lariat_calorimetryalgdata_run2_default.CalAreaConstants:[ 0.022, 0.0445 ] # from dE/dx: [ 0.022, 0.0445 ]
+lariat_calorimetryalgdata_run2_default.CalAreaConstants:[ 0.022, 0.0445 ]
 lariat_calorimetryalgmc_default:     @local::standard_calorimetryalgmc
-lariat_calorimetryalgmc_default.CalAreaConstants:  [ 0.084, 0.091  ] # from dE/dx: [ 0.084, 0.091 ]
-
-lariat_calorimetryalgdata:        @local::lariat_calorimetryalgdata_run1
-lariat_calorimetryalgmc:          @local::lariat_calorimetryalgmc_run1
+lariat_calorimetryalgmc_default.CalAreaConstants:  [ 0.084, 0.091  ]
 
 lariat_calodata:              @local::standard_calodata
 lariat_calodata.CaloAlg:      @local::lariat_calorimetryalgdata

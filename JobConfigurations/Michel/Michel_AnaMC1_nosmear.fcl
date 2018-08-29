@@ -1,4 +1,4 @@
 #include "Michel_AnaMC1.fcl"
 physics.filters.michelana.ApplyTrigEffCut:        false
 physics.filters.michelana.SmearFactor:            [ 0.,   0.  ]
-physics.filters.michelana.QE_ScaleFactor:         [ 1.,    1. ]
+#physics.filters.michelana.QE_ScaleFactor:         [ 1.,    1. ]
