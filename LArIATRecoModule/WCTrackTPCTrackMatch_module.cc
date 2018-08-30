@@ -116,6 +116,7 @@ class WCTrackTPCTrackMatch : public art::EDProducer
   std::string tof_producer_label_;
   std::string wctrack_producer_label_;
   double      alpha_cut_;
+  double      max_track_length_z_proj_;
   double      max_upstream_z_;
   double      circular_cut_x_center_;
   double      circular_cut_y_center_;
@@ -299,13 +300,14 @@ void WCTrackTPCTrackMatch::reconfigure(fhicl::ParameterSet const& pset)
   //hit_producer_label_        = pset.get< std::string >("HitLabel");
   //cluster_producer_label_    = pset.get< std::string >("ClusterLabel");
   track_producer_label_      = pset.get< std::string >("TrackLabel");
-  tof_producer_label_     = pset.get< std::string >("TOFLabel");
-  wctrack_producer_label_ = pset.get< std::string >("WCTrackLabel");
-  alpha_cut_              = pset.get< double >("AlphaCut",      0.3);
-  max_upstream_z_         = pset.get< double >("MaxUpstreamZ", 10.0);
-  circular_cut_x_center_  = pset.get< double >("CircularCutXCenter", 2.0);
-  circular_cut_y_center_  = pset.get< double >("CircularCutXCenter", 0.0);
-  circular_cut_radius_    = pset.get< double >("CircularCutRadius", 7.0);
+  tof_producer_label_      = pset.get< std::string >("TOFLabel");
+  wctrack_producer_label_  = pset.get< std::string >("WCTrackLabel");
+  alpha_cut_               = pset.get< double >("AlphaCut",      0.3);
+  max_track_length_z_proj_ = pset.get< double >("MaxTrackLengthZProj", 4.0);
+  max_upstream_z_          = pset.get< double >("MaxUpstreamZ", 10.0);
+  circular_cut_x_center_   = pset.get< double >("CircularCutXCenter", 2.0);
+  circular_cut_y_center_   = pset.get< double >("CircularCutXCenter", 0.0);
+  circular_cut_radius_     = pset.get< double >("CircularCutRadius", 7.0);
 }
 
 //-----------------------------------------------------------------------
@@ -454,10 +456,10 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
   {
     if (!wctrack_flag) break;
 
-    double wctrack_x     = wctrack->XYFace(0);  // cm
-    double wctrack_y     = wctrack->XYFace(1);  // cm
-    double wctrack_theta = wctrack->Theta();
-    double wctrack_phi   = wctrack->Phi();
+    double const wctrack_x     = wctrack->XYFace(0);  // cm
+    double const wctrack_y     = wctrack->XYFace(1);  // cm
+    double const wctrack_theta = wctrack->Theta();
+    double const wctrack_phi   = wctrack->Phi();
 
     TVector3 wctrack_dir(0, 0, 1);
     wctrack_dir.SetTheta(wctrack_theta);
@@ -473,6 +475,9 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
     {
       // get track
       art::Ptr< recob::Track > const& track = track_vector.at(trk_idx);
+
+      // get track length
+      //double const track_length = track->Length();
 
       // trajectory point indices
       int upstream_traj_pt_idx = -1;
@@ -518,6 +523,9 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
           upstream_traj_pt_dir.X(), upstream_traj_pt_dir.Y(),
           upstream_traj_pt_dir.Z());
 
+      double const track_length_z_proj
+          = downstream_traj_pt.position.Z() - upstream_traj_pt.position.Z();
+
       double delta_x = upstream_traj_pt.position.X() - wctrack_x;
       double delta_y = upstream_traj_pt.position.Y() - wctrack_y;
       double delta_z = upstream_traj_pt.position.Z();
@@ -553,6 +561,7 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
         preselected_downstream_z_.push_back(downstream_traj_pt.position.Z());
 
         if (delta_r < selected_delta_r and
+            track_length_z_proj < max_track_length_z_proj_ and
             delta_z < max_upstream_z_)
         {
           selected_delta_r = delta_r;
