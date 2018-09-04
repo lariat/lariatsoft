@@ -3,7 +3,7 @@ lariat_wctracktpctrackmatch:
   module_type:                  "WCTrackTPCTrackMatch"
   HitLabel:                     "gaushit"
   ClusterLabel:                 "trajcluster"
-  TrackLabel:                   "pmtracktc"
+  TrackLabel:                   "pmtrack"
   TOFLabel:                     "tof"
   WCTrackLabel:                 "wctrack"
   AlphaCut:                     0.2

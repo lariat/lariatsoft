@@ -37,7 +37,7 @@ source:
 }
 
 beamlinereco: [ tof, wctrack ]
-tpcreco: [ caldata, gaushit, trajcluster, pmtracktc, calo ]
+tpcreco: [ caldata, gaushit, trajcluster, pmtrack, calo ]
 
 # Define and configure some modules to do work on each event.
 # First modules are defined; they are scheduled later.
@@ -53,7 +53,7 @@ physics:
     caldata:              @local::lariat_calroi
     gaushit:              @local::gaus_hitfinder
     trajcluster:          @local::standard_trajcluster
-    pmtracktc:            @local::standard_pmalgtrackmaker
+    pmtrack:              @local::standard_pmalgtrackmaker
     calo:                 @local::standard_calodata
     wctracktpctrackmatch: @local::lariat_wctracktpctrackmatch
   }
@@ -164,7 +164,7 @@ physics.producers.wctrack.PickyTracks:      true
 
 physics.analyzers.anatreeuc.SelectEvents:            [ reco ]
 physics.analyzers.anatreeuc.HitsModuleLabel:         "gaushit"
-physics.analyzers.anatreeuc.TrackModuleLabel:        "pmtracktc"
+physics.analyzers.anatreeuc.TrackModuleLabel:        "pmtrack"
 physics.analyzers.anatreeuc.CalorimetryModuleLabel:  "calo"
 physics.analyzers.anatreeuc.ParticleIDModuleLabel:   "pid"
 physics.analyzers.anatreeuc.ClusterModuleLabel:      "trajcluster"
@@ -212,15 +212,15 @@ physics.producers.trajcluster.TrajClusterAlg.DebugWire:       0
 physics.producers.trajcluster.TrajClusterAlg.DebugTick:       0
 physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:     0
 
-physics.producers.pmtracktc.ClusterModuleLabel: "trajcluster"
-physics.producers.pmtracktc.HitModuleLabel:     "trajcluster"
-physics.producers.pmtracktc.PMAlgTracking.MinSeedSize2ndPass: 3
-physics.producers.pmtracktc.PMAlgTracking.FlipToBeam: true
-physics.producers.pmtracktc.PMAlgTracking.RunVertexing: true
+physics.producers.pmtrack.ClusterModuleLabel: "trajcluster"
+physics.producers.pmtrack.HitModuleLabel:     "trajcluster"
+physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
+physics.producers.pmtrack.PMAlgTracking.RunVertexing: true
 
 #physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgmc_run2   # MC
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run2  # data
-physics.producers.calo.TrackModuleLabel:      "pmtracktc"
-physics.producers.calo.SpacePointModuleLabel: "pmtracktc"
+physics.producers.calo.TrackModuleLabel:      "pmtrack"
+physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 
