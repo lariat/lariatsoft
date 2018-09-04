@@ -284,6 +284,7 @@ private:
  double wctrk_phi[kMaxWCTracks];
   
    
+  std::string fTreeName;
   std::string fClusterModuleLabel;
   std::string fHitsModuleLabel;
   std::string fTrackModuleLabel;
@@ -313,10 +314,12 @@ lariat::AnaTreeT1034UC::~AnaTreeT1034UC()
 
 void lariat::AnaTreeT1034UC::reconfigure(fhicl::ParameterSet const & pset)
 {
-  fHitsModuleLabel      	= pset.get< std::string >("HitsModuleLabel");
-  fTrackModuleLabel		    = pset.get< std::string >("TrackModuleLabel");
-  fCalorimetryModuleLabel 	= pset.get< std::string >("CalorimetryModuleLabel");
-  fParticleIDModuleLabel  	= pset.get< std::string >("ParticleIDModuleLabel");
+  fTreeName                 = pset.get< std::string >("TreeName", "anatreeuc");
+
+  fHitsModuleLabel          = pset.get< std::string >("HitsModuleLabel");
+  fTrackModuleLabel         = pset.get< std::string >("TrackModuleLabel");
+  fCalorimetryModuleLabel   = pset.get< std::string >("CalorimetryModuleLabel");
+  fParticleIDModuleLabel    = pset.get< std::string >("ParticleIDModuleLabel");
   fClusterModuleLabel       = pset.get< std::string >("ClusterModuleLabel");
   fG4ModuleLabel            = pset.get< std::string >("G4ModuleLabel");
 
@@ -1247,7 +1250,7 @@ void lariat::AnaTreeT1034UC::beginJob()
   //std::cout<<"Check-1"<<std::endl;
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
-  fTree = tfs->make<TTree>("anatreeuc","analysis tree");
+  fTree = tfs->make<TTree>(fTreeName.c_str(),  fTreeName.c_str());
   fTree->Branch("run",                         &run,"run/I");
   fTree->Branch("subrun",                      &subrun,"subrun/I");
   fTree->Branch("event",                       &event,"event/I");
