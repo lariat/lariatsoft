@@ -282,6 +282,8 @@ private:
  double wctrk_YFace[kMaxWCTracks];
  double wctrk_theta[kMaxWCTracks];
  double wctrk_phi[kMaxWCTracks];
+
+  double electron_lifetime;
   
    
   std::string fTreeName;
@@ -372,7 +374,10 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
   art::Timestamp ts = evt.time();
   TTimeStamp tts(ts.timeHigh(), ts.timeLow());
   evttime = tts.AsDouble();
-   
+
+  // === Electron lifetime ===
+  electron_lifetime = detprop->ElectronLifetime();
+
   // === Electric Field ===
   // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
   efield[0] = detprop->Efield(0);
@@ -1387,6 +1392,8 @@ void lariat::AnaTreeT1034UC::beginJob()
   fTree->Branch("wctrk_theta",                 wctrk_theta,"wctrk_theta[num_wctracks]/D");
   fTree->Branch("wctrk_phi",                   wctrk_phi,"wctrk_phi[num_wctracks]/D");
 
+  fTree->Branch("electron_lifetime",           &electron_lifetime, "electron_lifetime/D");
+
   // ### subdir for truth ###
   art::TFileDirectory truthDir = tfs->mkdir("truth");
   // ### histos! ###
@@ -1538,7 +1545,7 @@ void lariat::AnaTreeT1034UC::ResetVars()
     wctrk_phi[i] = -999999;
   }
   
-
+  electron_lifetime = -99999;
 
 }
 
