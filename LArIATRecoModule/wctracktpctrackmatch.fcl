@@ -7,7 +7,7 @@ lariat_wctracktpctrackmatch:
   TOFLabel:                     "tof"
   WCTrackLabel:                 "wctrack"
   AlphaCut:                     0.2
-  MaxTrackLengthZProj:          4.0
+  MinTrackLengthZProj:          4.0
   MaxUpstreamZ:                 10.0
   CircularCutXCenter:           2.0
   CircularCutYCenter:           0.0

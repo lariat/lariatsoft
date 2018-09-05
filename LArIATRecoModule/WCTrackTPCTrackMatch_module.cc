@@ -116,7 +116,7 @@ class WCTrackTPCTrackMatch : public art::EDProducer
   std::string tof_producer_label_;
   std::string wctrack_producer_label_;
   double      alpha_cut_;
-  double      max_track_length_z_proj_;
+  double      min_track_length_z_proj_;
   double      max_upstream_z_;
   double      circular_cut_x_center_;
   double      circular_cut_y_center_;
@@ -303,7 +303,7 @@ void WCTrackTPCTrackMatch::reconfigure(fhicl::ParameterSet const& pset)
   tof_producer_label_      = pset.get< std::string >("TOFLabel");
   wctrack_producer_label_  = pset.get< std::string >("WCTrackLabel");
   alpha_cut_               = pset.get< double >("AlphaCut",      0.3);
-  max_track_length_z_proj_ = pset.get< double >("MaxTrackLengthZProj", 4.0);
+  min_track_length_z_proj_ = pset.get< double >("MinTrackLengthZProj", 4.0);
   max_upstream_z_          = pset.get< double >("MaxUpstreamZ", 10.0);
   circular_cut_x_center_   = pset.get< double >("CircularCutXCenter", 2.0);
   circular_cut_y_center_   = pset.get< double >("CircularCutXCenter", 0.0);
@@ -561,7 +561,7 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
         preselected_downstream_z_.push_back(downstream_traj_pt.position.Z());
 
         if (delta_r < selected_delta_r and
-            track_length_z_proj < max_track_length_z_proj_ and
+            track_length_z_proj > min_track_length_z_proj_ and
             delta_z < max_upstream_z_)
         {
           selected_delta_r = delta_r;
