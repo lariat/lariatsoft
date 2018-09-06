@@ -196,7 +196,7 @@ void DistortedHitRemoval::produce(art::Event & event)
   subrun_ = event.subRun();
 
   //-------------------------------------------------------------------
-  // get hits, clusters, tracks, and vertices
+  // get hits and tracks
   //-------------------------------------------------------------------
 
   // get all the hits in the event
