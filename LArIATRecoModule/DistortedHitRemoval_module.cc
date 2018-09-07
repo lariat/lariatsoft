@@ -27,8 +27,9 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+//#include "art/Framework/Services/Optional/TFileService.h"
 #include "canvas/Persistency/Common/FindOneP.h"
+#include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "canvas/Utilities/Exception.h"
@@ -36,11 +37,11 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // LArSoft includes
-#include "larcore/Geometry/Geometry.h"
-#include "larcorealg/Geometry/GeometryCore.h"
+//#include "larcore/Geometry/Geometry.h"
+//#include "larcorealg/Geometry/GeometryCore.h"
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "lardata/ArtDataHelper/HitCreator.h"
-#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+//#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RecoBase/Hit.h"
@@ -101,10 +102,10 @@ class DistortedHitRemoval : public art::EDProducer
   double      z_high_;
 
   // pointer to geometry provider
-  geo::GeometryCore const* geometry_;
+  //geo::GeometryCore const* geometry_;
 
   // pointer to detector properties
-  detinfo::DetectorProperties const* detector_;
+  //detinfo::DetectorProperties const* detector_;
 
   // pointers to TTree object
   //TTree * ttree_;
@@ -126,10 +127,10 @@ DistortedHitRemoval::DistortedHitRemoval(fhicl::ParameterSet const& pset)
   this->reconfigure(pset);
 
   // get a pointer to the geometry service provider
-  geometry_ = &*(art::ServiceHandle<geo::Geometry>());
+  //geometry_ = &*(art::ServiceHandle<geo::Geometry>());
 
   // get a pointer to the detector properties provider
-  detector_ = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  //detector_ = lar::providerFrom<detinfo::DetectorPropertiesService>();
 
   // let HitCollectionCreator declare that we are going to produce
   // hits and associations with wires and raw digits
@@ -145,7 +146,7 @@ DistortedHitRemoval::~DistortedHitRemoval() {}
 void DistortedHitRemoval::beginJob()
 {
   // access art's TFileService
-  art::ServiceHandle< art::TFileService > tfs;
+  //art::ServiceHandle< art::TFileService > tfs;
 
   //ttree_ = tfs->make<TTree>("distortedhitremoval", "distortedhitremoval");
 }
@@ -210,11 +211,6 @@ void DistortedHitRemoval::produce(art::Event & event)
   std::vector< art::Ptr< recob::Hit > > hit_vector;
   art::fill_ptr_vector(hit_vector, hit_handle);
 
-  // get all the reconstructed tracks in the event
-  // art::ValidHandle< std::vector< recob::Track > >
-  auto const& track_handle = event.getValidHandle< std::vector< recob::Track > >
-      (track_producer_label_);
-
   // get all the reconstructed spacepoints in the event
   // art::ValidHandle< std::vector< recob::SpacePoint > >
   auto const& spacepoint_handle = event.getValidHandle< std::vector< recob::SpacePoint > >
@@ -252,9 +248,6 @@ void DistortedHitRemoval::produce(art::Event & event)
     {
       // store associated hit as a distorted hit
       distorted_hits.insert(*hit);
-
-      //std::cout << " hit.key(): " << hit.key() << std::endl;
-      //std::cout << " (w, t): " << hit->WireID().Wire << ", " << hit->PeakTime() << std::endl;
     } // end loop over associated hits
 
   } // end loop over spacepoints
