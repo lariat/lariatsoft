@@ -26,12 +26,12 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Registry/ServiceHandle.h"
+//#include "art/Framework/Services/Registry/ServiceHandle.h"
 //#include "art/Framework/Services/Optional/TFileService.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/Ptr.h" 
-#include "canvas/Persistency/Common/PtrVector.h" 
+//#include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Utilities/Exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -175,10 +175,10 @@ void DistortedHitRemoval::endSubRun(art::SubRun & /*subrun*/)
 void DistortedHitRemoval::reconfigure(fhicl::ParameterSet const& pset)
 {
   // read parameters from the .fcl file
-  hit_producer_label_    = pset.get< std::string >("HitLabel");
-  track_producer_label_  = pset.get< std::string >("TrackLabel");
-  z_low_                 = pset.get< double >("ZLow", 4.0);
-  z_high_                = pset.get< double >("ZHigh", 100.0);
+  hit_producer_label_   = pset.get< std::string >("HitLabel");
+  track_producer_label_ = pset.get< std::string >("TrackLabel");
+  z_low_                = pset.get< double >("ZLow", 4.0);
+  z_high_               = pset.get< double >("ZHigh", 100.0);
 }
 
 //-----------------------------------------------------------------------
