@@ -49,11 +49,9 @@
 #include "lardataobj/RecoBase/Wire.h"
 
 // ROOT includes
-#include "TTree.h"
+//#include "TTree.h"
 
 // C++ includes
-#include <cmath>
-#include <memory>
 #include <string>
 #include <vector>
 
@@ -99,6 +97,8 @@ class DistortedHitRemoval : public art::EDProducer
   // parameters read from FHiCL (.fcl) file
   std::string hit_producer_label_;
   std::string track_producer_label_;
+  double      z_low_;
+  double      z_high_;
 
   // pointer to geometry provider
   geo::GeometryCore const* geometry_;
@@ -107,15 +107,15 @@ class DistortedHitRemoval : public art::EDProducer
   detinfo::DetectorProperties const* detector_;
 
   // pointers to TTree object
-  TTree * ttree_;
+  //TTree * ttree_;
 
   // variables that will go into the TTree objects
-  int event_;     // number of the event being processed
-  int run_;       // number of the run being processed
-  int subrun_;    // number of the sub-run being processed
+  //int event_;     // number of the event being processed
+  //int run_;       // number of the run being processed
+  //int subrun_;    // number of the sub-run being processed
 
   // reset once per event
-  void reset_();
+  //void reset_();
 };
 
 //-----------------------------------------------------------------------
@@ -174,8 +174,10 @@ void DistortedHitRemoval::endSubRun(art::SubRun & /*subrun*/)
 void DistortedHitRemoval::reconfigure(fhicl::ParameterSet const& pset)
 {
   // read parameters from the .fcl file
-  hit_producer_label_     = pset.get< std::string >("HitLabel");
-  track_producer_label_   = pset.get< std::string >("TrackLabel");
+  hit_producer_label_    = pset.get< std::string >("HitLabel");
+  track_producer_label_  = pset.get< std::string >("TrackLabel");
+  z_low_                 = pset.get< double >("ZLow", 4.0);
+  z_high_                = pset.get< double >("ZHigh", 100.0);
 }
 
 //-----------------------------------------------------------------------
@@ -185,18 +187,18 @@ void DistortedHitRemoval::produce(art::Event & event)
   // reset once per event
   //-------------------------------------------------------------------
 
-  this->reset_();
+  //this->reset_();
 
   //-------------------------------------------------------------------
   // get event, run, and subrun numbers
   //-------------------------------------------------------------------
 
-  event_  = event.id().event();
-  run_    = event.run();
-  subrun_ = event.subRun();
+  //event_  = event.id().event();
+  //run_    = event.run();
+  //subrun_ = event.subRun();
 
   //-------------------------------------------------------------------
-  // get hits and tracks
+  // get hits and spacepoints
   //-------------------------------------------------------------------
 
   // get all the hits in the event
@@ -213,12 +215,52 @@ void DistortedHitRemoval::produce(art::Event & event)
   auto const& track_handle = event.getValidHandle< std::vector< recob::Track > >
       (track_producer_label_);
 
-  // fill vector of tracks
-  std::vector< art::Ptr< recob::Track > > track_vector;
-  art::fill_ptr_vector(track_vector, track_handle);
+  // get all the reconstructed spacepoints in the event
+  // art::ValidHandle< std::vector< recob::SpacePoint > >
+  auto const& spacepoint_handle = event.getValidHandle< std::vector< recob::SpacePoint > >
+      (track_producer_label_);
+
+  // fill vector of spacepoints
+  std::vector< art::Ptr< recob::SpacePoint > > spacepoint_vector;
+  art::fill_ptr_vector(spacepoint_vector, spacepoint_handle);
+
+  // find many hits from spacepoints
+  const art::FindManyP< recob::Hit >
+      find_many_hits_from_spacepoints(spacepoint_handle, event, track_producer_label_);
 
   //-------------------------------------------------------------------
-  // test
+  // find distorted hits
+  //-------------------------------------------------------------------
+
+  // initialize set for distorted hits
+  std::set< recob::Hit > distorted_hits;
+
+  // loop over spacepoints
+  for (auto const& spacepoint : spacepoint_vector)
+  {
+    // get z-coordinate of spacepoint
+    const double z = spacepoint->XYZ()[2];
+
+    // skip if the spacepoint is within the fiducial region
+    if (z > z_low_ and z < z_high_) continue;
+
+    // std::vector< art::Ptr< recob::Hit > >
+    auto const& hits = find_many_hits_from_spacepoints.at(spacepoint.key());
+
+    // loop over associated hits
+    for (auto const& hit : hits)
+    {
+      // store associated hit as a distorted hit
+      distorted_hits.insert(*hit);
+
+      //std::cout << " hit.key(): " << hit.key() << std::endl;
+      //std::cout << " (w, t): " << hit->WireID().Wire << ", " << hit->PeakTime() << std::endl;
+    } // end loop over associated hits
+
+  } // end loop over spacepoints
+
+  //-------------------------------------------------------------------
+  // copy over undistorted hits
   //-------------------------------------------------------------------
 
   // find wire from hits
@@ -233,22 +275,27 @@ void DistortedHitRemoval::produce(art::Event & event)
   recob::HitCollectionCreator hit_collection_creator(
       *this, event, wires.isValid(), raw_digits.isValid());
 
-  // copy all hits
+  // loop over hits
   for (auto const& hit : hit_vector)
   {
+    // skip if hit is distorted
+    if (distorted_hits.find(*hit) != distorted_hits.end()) continue;
+
+    // get associated wire and raw digit
     art::Ptr< recob::Wire >   const& wire      = wires.at(hit.key());
     art::Ptr< raw::RawDigit > const& raw_digit = raw_digits.at(hit.key());
 
+    // copy undistorted hit, and associated wire and raw digit
     hit_collection_creator.emplace_back(*hit, wire, raw_digit);
-  }
+  } // end loop over hits
 
   // put the hit collection and associations into the event
   hit_collection_creator.put_into(event);
 }
 
 //-----------------------------------------------------------------------
-void DistortedHitRemoval::reset_()
-{}
+//void DistortedHitRemoval::reset_()
+//{}
 
 DEFINE_ART_MODULE(DistortedHitRemoval)
 

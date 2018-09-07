@@ -3,4 +3,6 @@ lariat_distortedhitremoval:
   module_type:  "DistortedHitRemoval"
   HitLabel:     "gaushit"
   TrackLabel:   "pmtrack"
+  ZLow:         4.0
+  ZHigh:        100.0
 }
