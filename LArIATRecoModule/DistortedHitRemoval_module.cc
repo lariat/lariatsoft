@@ -177,8 +177,8 @@ void DistortedHitRemoval::reconfigure(fhicl::ParameterSet const& pset)
   // read parameters from the .fcl file
   hit_producer_label_   = pset.get< std::string >("HitLabel");
   track_producer_label_ = pset.get< std::string >("TrackLabel");
-  z_low_                = pset.get< double >("ZLow", 4.0);
-  z_high_               = pset.get< double >("ZHigh", 100.0);
+  z_low_                = pset.get< double >("ZLow", 3.0);
+  z_high_               = pset.get< double >("ZHigh", 87.0);
 }
 
 //-----------------------------------------------------------------------
