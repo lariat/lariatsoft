@@ -1395,6 +1395,8 @@ void lariat::AnaTreeT1034UC::beginJob()
   fTree->Branch("wctrk_YFace",                 wctrk_YFace,"wctrk_YFace[num_wctracks]/D");
   fTree->Branch("wctrk_theta",                 wctrk_theta,"wctrk_theta[num_wctracks]/D");
   fTree->Branch("wctrk_phi",                   wctrk_phi,"wctrk_phi[num_wctracks]/D");
+  fTree->Branch("wctrk_missed",                wctrk_missed, "wctrk_missed[num_wctracks]/I");
+  fTree->Branch("wctrk_picky",                 wctrk_picky, "wctrk_picky[num_wctracks]/I");
 
   fTree->Branch("electron_lifetime",           &electron_lifetime, "electron_lifetime/D");
 
