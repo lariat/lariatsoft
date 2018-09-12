@@ -282,6 +282,8 @@ private:
  double wctrk_YFace[kMaxWCTracks];
  double wctrk_theta[kMaxWCTracks];
  double wctrk_phi[kMaxWCTracks];
+ int wctrk_missed[kMaxWCTracks];
+ int wctrk_picky[kMaxWCTracks];
 
   double electron_lifetime;
   
@@ -920,6 +922,8 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
       wctrk_YFace[wct_count] = wctrack[wct_count]->XYFace(1);
       wctrk_theta[wct_count] = wctrack[wct_count]->Theta();
       wctrk_phi[wct_count] = wctrack[wct_count]->Phi();
+      wctrk_missed[wct_count] = wctrack[wct_count]->WCMissed();
+      wctrk_picky[wct_count] = static_cast< int > (wctrack[wct_count]->IsPicky());
     }
 
 
@@ -1543,6 +1547,8 @@ void lariat::AnaTreeT1034UC::ResetVars()
     wctrk_YFace[i] = -999999;
     wctrk_theta[i] = -999999;
     wctrk_phi[i] = -999999;
+    wctrk_missed[i] = -999999;
+    wctrk_picky[i] = -999999;
   }
   
   electron_lifetime = -99999;
