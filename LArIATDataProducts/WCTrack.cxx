@@ -45,8 +45,13 @@ namespace ldp{
 		   std::vector<float> hitWireVect,
 		   float hitPositionVect[4][3],
 		   int WCMissed,
-		   float residual)
-		   //std::vector<float> hitTimeVect )
+		   float residual,
+		   float WC1Mult,
+		   float WC2Mult,
+		   float WC3Mult,
+		   float WC4Mult,
+		   bool PickyTrackCheck)
+		   
   { 
     fMomentum = momentum;
     fYKink = yKink;
@@ -63,6 +68,11 @@ namespace ldp{
     }
     fWCMissed=WCMissed;
     fResidual=residual;
+    fWC1Mult=WC1Mult;
+    fWC2Mult=WC2Mult;
+    fWC3Mult=WC3Mult;
+    fWC4Mult=WC4Mult;
+    fPickyTrackCheck=PickyTrackCheck;    
     //fHitTime = hitTimeVect;
   }
 
@@ -80,8 +90,12 @@ namespace ldp{
 		   std::vector<float> hitWireVect,
 		   float hitPositionVect[4][3],
 		   int WCMissed,
-		   float residual)
-		   //std::vector<float> hitTimeVect )
+		   float residual,
+		   float WC1Mult,
+		   float WC2Mult,
+		   float WC3Mult,
+		   float WC4Mult,
+		   bool PickyTrackCheck)
   { 
     fMomentum = momentum;
     fMomentum2M = momentum2m;
@@ -99,6 +113,11 @@ namespace ldp{
     }
     fWCMissed=WCMissed;
     fResidual=residual;
+    fWC1Mult=WC1Mult;
+    fWC2Mult=WC2Mult;
+    fWC3Mult=WC3Mult;
+    fWC4Mult=WC4Mult;
+    fPickyTrackCheck=PickyTrackCheck;
     //fHitTime = hitTimeVect;
   }
 
