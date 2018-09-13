@@ -272,22 +272,24 @@ private:
   // === Storing additional Geant4 MC Truth Information for the daughter tracks ===  
    
 
- // === beamline info ===
- int num_tof_objects;
- double tofObject[kMaxTOF];
+  // === beamline info ===
+  int num_tof_objects;
+  double tofObject[kMaxTOF];
 
- int num_wctracks;
- double wctrk_momentum[kMaxWCTracks];
- double wctrk_XFace[kMaxWCTracks];
- double wctrk_YFace[kMaxWCTracks];
- double wctrk_theta[kMaxWCTracks];
- double wctrk_phi[kMaxWCTracks];
- int wctrk_missed[kMaxWCTracks];
- int wctrk_picky[kMaxWCTracks];
+  int num_wctracks;
+  double wctrk_momentum[kMaxWCTracks];
+  double wctrk_XFace[kMaxWCTracks];
+  double wctrk_YFace[kMaxWCTracks];
+  double wctrk_theta[kMaxWCTracks];
+  double wctrk_phi[kMaxWCTracks];
+  int wctrk_missed[kMaxWCTracks];
+  int wctrk_picky[kMaxWCTracks];
+  double wctrk_x_proj_3cm[kMaxWCTracks];
+  double wctrk_y_proj_3cm[kMaxWCTracks];
+  double wctrk_z_proj_3cm[kMaxWCTracks];
 
   double electron_lifetime;
-  
-   
+
   std::string fTreeName;
   std::string fClusterModuleLabel;
   std::string fHitsModuleLabel;
@@ -924,6 +926,10 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
       wctrk_phi[wct_count] = wctrack[wct_count]->Phi();
       wctrk_missed[wct_count] = wctrack[wct_count]->WCMissed();
       wctrk_picky[wct_count] = static_cast< int > (wctrack[wct_count]->IsPicky());
+
+      wctrk_x_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).X();
+      wctrk_y_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).Y();
+      wctrk_z_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).Z();
     }
 
 
@@ -1397,6 +1403,9 @@ void lariat::AnaTreeT1034UC::beginJob()
   fTree->Branch("wctrk_phi",                   wctrk_phi,"wctrk_phi[num_wctracks]/D");
   fTree->Branch("wctrk_missed",                wctrk_missed, "wctrk_missed[num_wctracks]/I");
   fTree->Branch("wctrk_picky",                 wctrk_picky, "wctrk_picky[num_wctracks]/I");
+  fTree->Branch("wctrk_x_proj_3cm",            wctrk_x_proj_3cm, "wctrk_x_proj_3cm[num_wctracks]/D");
+  fTree->Branch("wctrk_y_proj_3cm",            wctrk_y_proj_3cm, "wctrk_y_proj_3cm[num_wctracks]/D");
+  fTree->Branch("wctrk_z_proj_3cm",            wctrk_z_proj_3cm, "wctrk_z_proj_3cm[num_wctracks]/D");
 
   fTree->Branch("electron_lifetime",           &electron_lifetime, "electron_lifetime/D");
 
@@ -1551,8 +1560,11 @@ void lariat::AnaTreeT1034UC::ResetVars()
     wctrk_phi[i] = -999999;
     wctrk_missed[i] = -999999;
     wctrk_picky[i] = -999999;
+    wctrk_x_proj_3cm[i] = -999999;
+    wctrk_y_proj_3cm[i] = -999999;
+    wctrk_z_proj_3cm[i] = -999999;
   }
-  
+
   electron_lifetime = -99999;
 
 }
