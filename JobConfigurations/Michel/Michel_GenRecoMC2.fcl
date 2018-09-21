@@ -1,0 +1,22 @@
+#include "Michel_GenRecoMC1.fcl"
+
+services:
+{
+  TFileService: { fileName: "histos.root" }
+  RandomNumberGenerator: {}
+  @table::lariat_simulation_services_run2
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
+# ====================================================================
+# Calibration constants for different alg (centralized settings)
+# ====================================================================
+physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgmc_run2
+
+# ==================================================================
+# Reconstruction settings
+# ==================================================================
+physics.filters.tfilt.RequireRawDigits:                         true
+physics.filters.tfilt.MinWireRms:                               0.
+physics.filters.tfilt.MaxWireRms:                               999.
+physics.producers.daq.NoiseFact:                                0.135

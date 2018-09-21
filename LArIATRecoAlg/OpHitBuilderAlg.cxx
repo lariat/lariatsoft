@@ -277,7 +277,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<float>& wfm, size_t Tri
       // Calculate quick amplitude of pulse to use in discrimination
       float hit_amp   = (baseline-GetLocalMinimum(wfm,hits[i]))*fMvPerADC;
       
-      LOG_VERBATIM("OpHitBuilder")
+      LOG_DEBUG("OpHitBuilder")
       << "  - " << hits[i] << "(pre-pulse " << rms_window_start << "-" << rms_window_end << ")"
       << " gRMS " << g_rms << " (thresh " << g_rms*fGradRMSThresh
       << ", grad amp " << g_amp 
@@ -502,7 +502,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
   short x1,x1b,x2,x3;
   x1  = std::max(int(hit - fPrePulseBaselineFit),prev_hit+200);
   x1b = std::max(int(hit - fPrePulseDisplay),int(x1));
-  x2  = hit - 10;
+  x2  = hit - 5;
   x3  = std::min(int(hit + windows.at(windows.size()-1)),int(nSamples)-1);
   const int prepulse_bins = int(x2) - int(x1);
   const int total_bins    = int(x3) - int(x1);
@@ -624,7 +624,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
     }
 
     // Scan for amplitude when near the hit
-    if ( ((hit-xx > -5)||(hit-xx < 50)) && (yy > amplitude) ) {
+    if ( ((hit-xx > -5)||(hit-xx < 100)) && (yy > amplitude) ) {
       amplitude   = yy;
       iamp        = xx;
     }

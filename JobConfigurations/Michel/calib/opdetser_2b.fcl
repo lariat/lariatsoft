@@ -50,8 +50,8 @@ physics.analyzers.ser.ThreshPersistFactor:     0.5
 physics.analyzers.ser.SaveAvePhelWfm:	       true
 physics.analyzers.ser.PEWfm_preWindow:         [ 40., 40. ]
 physics.analyzers.ser.PEWfm_postWindow:        [ 100., 100. ]
-physics.analyzers.ser.SinglePE:                [ 38.0,  40.0] # ADC (for ave PE wfm selection)
-physics.analyzers.ser.SinglePE_tolerance:      [ .1,     0.1] # +/- % (for ave PE wfm selection)
+physics.analyzers.ser.SinglePE:                [ 38.,  41.0 ] # ADC (for ave PE wfm selection)
+physics.analyzers.ser.SinglePE_tolerance:      [ .05,   .05] # +/- % (for ave PE wfm selection)
 
 
 # SER histogram ranges (x1,x2) and initial guesses for fit

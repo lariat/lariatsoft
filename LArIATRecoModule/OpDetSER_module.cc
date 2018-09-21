@@ -153,6 +153,8 @@ private:
   std::vector<short>  fPostIntWindow;
   std::vector<float>  fSER_x1;
   std::vector<float>  fSER_x2;
+  int                 fMinRunNumber;
+  int                 fMaxRunNumber;
   bool		      fSaveAvePhelWfm;
   bool                fSaveAvePulses;
   bool                fDoSecondFit;
@@ -286,6 +288,8 @@ void OpDetSER::reconfigure(fhicl::ParameterSet const & p)
   fPreIntWindow              = p.get< std::vector<short> >   ("PreIntWindow",PreWindowDefault);
   fPostIntWindow             = p.get< std::vector<short> >   ("PostIntWindow",PostWindowDefault);
 
+  fMinRunNumber           = p.get< int >          ("MinRunNumber",-999);
+  fMaxRunNumber           = p.get< int >          ("MaxRunNumber",-999);
   fSaveAvePhelWfm	  = p.get< bool >	  ("SaveAvePhelWfm",true);
   fPEWfm_preWindow        = p.get< std::vector<short> >          ("PEWfm_preWindow",PEWfm_preWindowDefault);
   fPEWfm_postWindow       = p.get< std::vector<short> >          ("PEWfm_postWindow",PEWfm_postWindowDefault);
@@ -426,6 +430,10 @@ void OpDetSER::analyze(art::Event const & e)
   fEventNumber   = e.id().event();
   int runnr     = e.run();
   fSubRunNumber  = e.subRun();
+
+  if( 
+      (fMinRunNumber > 0 && runnr < fMinRunNumber)
+    ||(fMaxRunNumber > 0 && runnr > fMaxRunNumber) ) return;
 
   if( fVerbose ) std::cout<<"Analyzing run "<<runnr<<", subrun "<<fSubRunNumber<<", event "<<fEventNumber<<"\n";
  
@@ -1159,7 +1167,7 @@ std::vector<float> OpDetSER::FitSER(TH1F* h_SER, float x1, float x2, float meanS
 
     // N2 (ratio)
     SER_fit.SetParameter(6,0.001);
-    SER_fit.SetParLimits(6,0.,0.05);
+    SER_fit.SetParLimits(6,0.,0.10);
 
     // N3 (ratio)
     SER_fit.SetParameter(7,0.001);

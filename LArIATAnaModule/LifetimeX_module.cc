@@ -144,6 +144,7 @@ public:
   // fcl-configurable params
   std::string fHitsModuleLabel;
   std::string fTrackModuleLabel;
+  std::string fTrackCalModuleLabel;
   int         fNumDriftBins;
   float       fMarginX;
   float       fMindX;
@@ -170,8 +171,11 @@ private:
   float       fXTicksOffset[2];
   float       fSamplingPeriod;
   float       fElectronLifetimeFromDB;
+  float       fBinWidth;
 
   TH1D*               h_EventSelection;
+  TH1D*               h_runNumber;
+  TH1D*               h_electronLifetimeFromDB;
   TH1D*               h_trkNodeX;
   TH1D*                h_trkdX;
   TH1D*               h_hitAmplitude;
@@ -180,7 +184,6 @@ private:
   TH1D*               h_trkZenithAngle;
   std::vector<TH1D*>  h_dQdx;
   TH1D*               h_T_vs_dQdx;
-  TH1D*               h_ElectronLifetimeFromDB;
   std::vector<float>  fX1;
   std::vector<float>  fX2;
   std::vector<float>  fT1;
@@ -204,6 +207,7 @@ void LifetimeX::reconfigure(fhicl::ParameterSet const & pset)
 {
    fHitsModuleLabel      	= pset.get< std::string > ("HitsModuleLabel","trajcluster");
    fTrackModuleLabel		= pset.get< std::string > ("TrackModuleLabel","tracktc");
+   fTrackCalModuleLabel		= pset.get< std::string > ("TrackCalModuleLabel","calotc");
    fNumDriftBins                 = pset.get< int >         ("NumDriftBins",10);
    fMarginX                     = pset.get< float >       ("MarginX",3.75);
    fMindX                       = pset.get< float >       ("MindX",45.);
@@ -235,13 +239,14 @@ void LifetimeX::beginJob()
     h_EventSelection  ->GetXaxis()->SetBinLabel(2,"Run num"); 
     h_EventSelection  ->GetXaxis()->SetBinLabel(3,"ACP track"); 
     h_EventSelection  ->GetXaxis()->SetBinLabel(4,"Pitch cut"); 
+  h_runNumber         = tfs->make<TH1D>("RunNumber","Run numbers per event",10000,0,10000);
+  h_electronLifetimeFromDB = tfs->make<TH1D>("ElectLifetimeFromDB","Electron lifetimes stored in DB",125,0,2500.); 
   h_trkNodeX          = tfs->make<TH1D>("TrkNodeX","Track node X;X [cm]",120,-5.,55.);
   h_trkdX          = tfs->make<TH1D>("TrkdX","Track dx;dx [cm]",160,0.,80.);
   h_hitAmplitude      = tfs->make<TH1D>("HitAmplitude","Hit amplitude",100,0.,200.);
-  h_hitRMS            = tfs->make<TH1D>("HitRMS","Hit RMS",100,0.,20.);
+  h_hitRMS            = tfs->make<TH1D>("HitRMS","Hit RMS",100,0.,30.);
   h_trkPitch          = tfs->make<TH1D>("TrkPitch","Pitch in collection plane for crossing tracks;Pitch [cm]",200,0.,20.);
   h_trkZenithAngle    = tfs->make<TH1D>("TrkZenithAngle","Zenith angle of crossing tracks;Angle [deg]",180,0.,180.);
-  h_ElectronLifetimeFromDB = tfs->make<TH1D>("ElectLifetimeFromDB","Electron lifetimes stored in DB",125,0,2500.); 
 
   // Get a pointer to the geometry service provider
   fGeo          = &*(art::ServiceHandle<geo::Geometry>());
@@ -281,6 +286,8 @@ void LifetimeX::beginJob()
   std::cout<<" fT1["<<fNumDriftBins-1<<"] = "<<fT2[fNumDriftBins-1]<<"\n";
   h_T_vs_dQdx = tfs->make<TH1D>("T_vs_dQdx","Mean dQ/dx vs. drift time;Drift time [#mus];Mean dQ/dx [ADC/cm]",fNumDriftBins,fT1[0],fT2[fNumDriftBins-1]);
 
+  fBinWidth = dT;
+
   LOG_VERBATIM("LifetimeX")<<"\n"
   <<"================================================";
 }
@@ -300,7 +307,6 @@ void LifetimeX::analyze(art::Event const & evt)
   auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   fXTicksOffset[0]    = detprop->GetXTicksOffset(0,0,0);
   fXTicksOffset[1]    = detprop->GetXTicksOffset(1,0,0);
-  h_ElectronLifetimeFromDB->Fill( detprop->ElectronLifetime() );
 
   h_EventSelection->Fill(0);
 
@@ -309,6 +315,9 @@ void LifetimeX::analyze(art::Event const & evt)
       || detprop->ElectronLifetime() > fMaxElectronLifetimeFromDB ) {
     return;
   }
+  
+  h_runNumber->Fill(fRunNumber);
+  h_electronLifetimeFromDB->Fill( detprop->ElectronLifetime() );
   
   h_EventSelection->Fill(1);
 
@@ -353,6 +362,8 @@ void LifetimeX::analyze(art::Event const & evt)
   // Association between Tracks and Hits
   art::FindManyP<recob::Hit> fmth(trackListHandle, evt, fTrackModuleLabel);
   art::FindManyP<recob::Hit, recob::TrackHitMeta> fmthm(trackListHandle, evt, fTrackModuleLabel);
+    
+  // Get calo object
   
   LOG_VERBATIM("LifetimeX")
   <<"Found "<<tracklist.size()<<" tracks";
@@ -377,9 +388,9 @@ void LifetimeX::analyze(art::Event const & evt)
     // ----------------------------------------------------------------
     // Look for tracks that pass from cathode to anode
     if(
-//            (trkX1 < fGeoRangeX[0]+fMarginX || trkX2 < fGeoRangeX[0]+fMarginX)
-//        &&  (trkX1 > fGeoRangeX[1]-fMarginX || trkX2 > fGeoRangeX[1]-fMarginX) 
-        dX >= fMindX && dX <= fMaxdX &&  Trk.Length() > fMinTrkLength ){
+            (trkX1 < fGeoRangeX[0]+fMarginX || trkX2 < fGeoRangeX[0]+fMarginX)
+        &&  (trkX1 > fGeoRangeX[1]-fMarginX || trkX2 > fGeoRangeX[1]-fMarginX) ) {
+        //dX >= fMindX && dX <= fMaxdX &&  Trk.Length() > fMinTrkLength ){
       
       h_EventSelection->Fill(2);
       
@@ -424,6 +435,9 @@ void LifetimeX::analyze(art::Event const & evt)
         for (size_t h = 0; h < vhit.size(); ++h) trkHits.push_back(vhit[h].key());
       }
 
+      // -----------------------------------------------------------
+      
+
       // ------------------------------------------------------------
       // Loop through the hits associated with this track, and for each
       // hit, calculate its dQ/dx and save into the appropriate histogram
@@ -433,44 +447,37 @@ void LifetimeX::analyze(art::Event const & evt)
         int plane = hitlist[iHit]->WireID().Plane; 
 
         if( plane != 1 ) continue;
-        //if( std::find(trkHits.begin(), trkHits.end(), iHit) == trkHits.end() ) continue;
 
-        float hitTime     = fSamplingPeriod*(hitlist[iHit]->PeakTime()-fXTicksOffset[plane]);
-
+        if( hitlist[iHit]->PeakAmplitude() < 40 ) continue;
+    
         h_hitAmplitude->Fill( hitlist[iHit]->PeakAmplitude() );
         h_hitRMS      ->Fill( hitlist[iHit]->RMS() );
 
-//        if( hitlist[iHit]->PeakAmplitude() < 40 ) continue;
+        float hitTime     = fSamplingPeriod*(hitlist[iHit]->PeakTime()-fXTicksOffset[plane]);
+        float hitdQdx     = hitlist[iHit]->Integral() / trkPitch;
 
-          float hitdQdx     = hitlist[iHit]->Integral() / trkPitch;
-//          float hitdQdx     = hitlist[iHit]->SummedADC() / trkPitch;
-
-//        std::cout<<"  plane           = "<<plane<<"\n";
-//        std::cout<<"  sampling period = "<<fSamplingPeriod<<"\n";      
-//        std::cout<<"  peak time = "<<hitlist[iHit]->PeakTime()<<"\n";
-//        std::cout<<"  X offset  = "<<fXTicksOffset[1]<<"\n";
-
-          LOG_VERBATIM("LifetimeX")
-          <<"   peak T= "<<hitlist[iHit]->PeakTime()<<"   Xoffset= "<<fXTicksOffset[plane]<<"     hit T= "<<hitTime<<"    dQdx= "<<hitdQdx;
+        LOG_VERBATIM("LifetimeX")
+        <<"   peak T= "<<hitlist[iHit]->PeakTime()<<"   Xoffset= "<<fXTicksOffset[plane]<<"     hit T= "<<hitTime<<"    dQdx= "<<hitdQdx;
         
-          int driftBin       = -1;
-          for(int i=0; i<fNumDriftBins; i++){
-            if( hitTime >= fT1[i] && hitTime < fT2[i] ) {
-              driftBin = i;
-              break;
-            }
+        int driftBin       = -1;
+        for(int i=0; i<fNumDriftBins; i++){
+          if( hitTime >= fT1[i] && hitTime < fT2[i] ) {
+            driftBin = i;
+            break;
           }
-//          LOG_VERBATIM("LifetimeX")
-//          <<"   drift bin= "<<driftBin;
-          if( driftBin < 0 ) continue;
+        }
+        if( driftBin < 0 ) continue;
 
-          h_dQdx[driftBin]    ->Fill( hitdQdx );
-          
-        
-        
-        
+        h_dQdx[driftBin]    ->Fill( hitdQdx );
         
       } // end loop over track hits
+
+
+
+
+
+
+
       break;
     }// end ACP selection
 
@@ -516,10 +523,8 @@ void LifetimeX::endJob()
     float val = landau.GetParameter(1);
     float err = landau.GetParError(1);
   
-  // As long as neither the Landau width or Gaussian width
-  //  
     gr.SetPoint(gr.GetN(),fTc[i],val);
-    gr.SetPointError(gr.GetN()-1, 0., err);
+    gr.SetPointError(gr.GetN()-1, fBinWidth/sqrt(12), err);
     
     h_T_vs_dQdx->Fill( fTc[i], val );
     h_T_vs_dQdx->SetBinError(i+1, err );
@@ -533,6 +538,7 @@ void LifetimeX::endJob()
   expFit.SetParameter(0, h_T_vs_dQdx->GetBinContent(0));
   expFit.SetParameter(1, 1000 );
   h_T_vs_dQdx->Fit("expFit","R");
+ 
 
   LOG_VERBATIM("LifetimeX")
   <<"\n"

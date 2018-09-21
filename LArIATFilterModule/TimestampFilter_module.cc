@@ -68,15 +68,9 @@ private:
   bool  fRequireRawDigits;
   std::string fDAQModuleLabel;
   std::string fDAQModuleInstanceName;
-  float fMaxWireRms;
-  float fMinWireRms;
-  float fWireADCThresh;
 
   TH1F* hTimestamps;
   TH1F* hTimestamps_pass;
-  TH1F* hMaxSignalPulse[2];
-  TH1F* hAveWireRms[2];
-  TH1F* hAveWireRms_pass;
   TH1F* hEvtSelection;
 
 };
@@ -90,17 +84,11 @@ TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
   art::ServiceHandle<art::TFileService> tfs;
   hTimestamps       = tfs->make<TH1F>("Timestamps",";Time in spill [sec]",300,0,60.);
   hTimestamps_pass  = tfs->make<TH1F>("Timestamps_pass",";Time in spill [sec]",300,0.,60.);
-  hMaxSignalPulse[0]= tfs->make<TH1F>("MaxSignalPulse_0","Induction plane;Wire pulse amplitude [ADC]",200,0,1000);
-  hMaxSignalPulse[1]= tfs->make<TH1F>("MaxSignalPulse_1","Collection plane;Wire pulse amplitude [ADC]",200,0,1000);
-  hAveWireRms[0]    = tfs->make<TH1F>("AveWireRms_0","Induction plane;Wire RMS [ADC]",400,0.,20);
-  hAveWireRms[1]    = tfs->make<TH1F>("AveWireRms_1","Collection plane;Wire RMS [ADC]",400,0.,20);
-  hAveWireRms_pass  = tfs->make<TH1F>("AveWireRms_pass","Collection plane;Wire RMS [ADC]",400,0.,20);
-  hEvtSelection     = tfs->make<TH1F>("EvtSelection","",4,0,4);
+  hEvtSelection     = tfs->make<TH1F>("EvtSelection","",3,0,3);
   hEvtSelection->SetOption("HIST TEXT");
-  hEvtSelection->GetXaxis()->SetBinLabel(1,"Total evts");          // total events
-  hEvtSelection->GetXaxis()->SetBinLabel(2,"Raw dgts present");  // all opdets present
-  hEvtSelection->GetXaxis()->SetBinLabel(3,"Timestamp cut");             // wfms pass RMS cut
-  hEvtSelection->GetXaxis()->SetBinLabel(4,"Wire RMS cut");              // 2 hits in both PMTs
+  hEvtSelection->GetXaxis()->SetBinLabel(1,"Total evts");       
+  hEvtSelection->GetXaxis()->SetBinLabel(2,"Raw dgts present"); 
+  hEvtSelection->GetXaxis()->SetBinLabel(3,"Timestamp cut");  
 }
 
 bool TimestampFilter::filter(art::Event & e)
@@ -108,7 +96,6 @@ bool TimestampFilter::filter(art::Event & e)
   // Set flags
   bool timestampFlag  = true;
   bool rawDigitFlag   = true;
-  bool wireRmsFlag    = true;
 
   // ------------------------------------------------------------------------
   // First do timestamp filtering (this only applies to real data)
@@ -149,7 +136,8 @@ bool TimestampFilter::filter(art::Event & e)
   //std::cout<<"Number of rawDigits: "<<digit.size()<<"\n";
   if( fRequireRawDigits && digit.size() == 0 ) rawDigitFlag = false;
 
-
+  
+  /*
   // ----------------------------------------------------------------------
   // Check wire RMS
   if( timestampFlag && rawDigitFlag ) {
@@ -222,6 +210,7 @@ bool TimestampFilter::filter(art::Event & e)
     
 
   }
+  */
 
 
   bool passFlag = false;
@@ -230,10 +219,13 @@ bool TimestampFilter::filter(art::Event & e)
     hEvtSelection->Fill(1);
     if( timestampFlag ) {
       hEvtSelection->Fill(2);
+      passFlag = true;
+      /*
       if( wireRmsFlag ) {
         hEvtSelection->Fill(3);
         passFlag = true;
       }
+      */
     }
   }
   
@@ -258,9 +250,6 @@ void TimestampFilter::reconfigure(fhicl::ParameterSet const & p)
   fDAQModuleLabel               = p.get< std::string >  ("DAQModule","daq");
   fDAQModuleInstanceName        = p.get< std::string >  ("DAQInstanceName","");
   fRequireRawDigits             = p.get< bool >         ("RequireRawDigits",true);
-  fMinWireRms                   = p.get< float >        ("MinWireRms",-9.);
-  fMaxWireRms                   = p.get< float >        ("MaxWireRms",-9.);
-  fWireADCThresh                = p.get< float >        ("WireADCThresh",30);
 }
 
 

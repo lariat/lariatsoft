@@ -6,6 +6,6 @@ services:
   @table::lariat_simulation_services_run2
 }
 services.scheduler.SkipEvent: [ ProductNotFound ]
-physics.producers.daq.NoiseFact: 0.81
-physics.producers.gaushit.MinSig:   [ 40,40 ]
+physics.producers.daq.NoiseFact: 0.70 # 0.81
+physics.producers.gaushit.MinSig:   [ 35,35 ]
 
