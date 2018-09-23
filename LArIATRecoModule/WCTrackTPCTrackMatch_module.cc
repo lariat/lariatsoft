@@ -116,7 +116,8 @@ class WCTrackTPCTrackMatch : public art::EDProducer
   std::string tof_producer_label_;
   std::string wctrack_producer_label_;
   double      alpha_cut_;
-  double      min_track_length_z_proj_;
+  double      min_track_length_proj_z_;
+  double      min_upstream_z_;
   double      max_upstream_z_;
   double      circular_cut_x_center_;
   double      circular_cut_y_center_;
@@ -141,14 +142,19 @@ class WCTrackTPCTrackMatch : public art::EDProducer
 
   int number_tofs_;
   int number_wctracks_;
-  int number_matched_tracks_;
-  int number_matched_tracks_a_;
-  int number_matched_tracks_b_;
-  int number_reco_vertices_;
 
   std::vector< double > reco_tof_;
   std::vector< double > reco_wctrack_momentum_;
 
+  std::vector< int > wctrack_missed_;
+  std::vector< int > wctrack_picky_;
+
+  std::vector< double > wctrack_x_;
+  std::vector< double > wctrack_y_;
+  std::vector< double > wctrack_theta_;
+  std::vector< double > wctrack_phi_;
+
+  std::vector< int >    track_key_;
   std::vector< double > delta_x_;
   std::vector< double > delta_y_;
   std::vector< double > delta_z_;
@@ -179,10 +185,45 @@ class WCTrackTPCTrackMatch : public art::EDProducer
   std::vector< double > selected_downstream_y_;
   std::vector< double > selected_downstream_z_;
 
-  std::vector< double > wctrack_x_;
-  std::vector< double > wctrack_y_;
-  std::vector< double > wctrack_theta_;
-  std::vector< double > wctrack_phi_;
+  std::vector< int > wctrack_proj_missed_;
+  std::vector< int > wctrack_proj_picky_;
+
+  std::vector< double > wctrack_proj_x_;
+  std::vector< double > wctrack_proj_y_;
+  std::vector< double > wctrack_proj_z_;
+  std::vector< double > wctrack_proj_theta_;
+  std::vector< double > wctrack_proj_phi_;
+
+  std::vector< int >    track_proj_key_;
+  std::vector< double > delta_proj_x_;
+  std::vector< double > delta_proj_y_;
+  std::vector< double > delta_proj_z_;
+  std::vector< double > delta_proj_r_;
+  std::vector< double > alpha_proj_;
+
+  std::vector< double > preselected_delta_proj_x_;
+  std::vector< double > preselected_delta_proj_y_;
+  std::vector< double > preselected_delta_proj_z_;
+  std::vector< double > preselected_delta_proj_r_;
+  std::vector< double > preselected_alpha_proj_;
+  std::vector< double > preselected_upstream_proj_x_;
+  std::vector< double > preselected_upstream_proj_y_;
+  std::vector< double > preselected_upstream_proj_z_;
+  std::vector< double > preselected_downstream_proj_x_;
+  std::vector< double > preselected_downstream_proj_y_;
+  std::vector< double > preselected_downstream_proj_z_;
+
+  std::vector< double > selected_delta_proj_x_;
+  std::vector< double > selected_delta_proj_y_;
+  std::vector< double > selected_delta_proj_z_;
+  std::vector< double > selected_delta_proj_r_;
+  std::vector< double > selected_alpha_proj_;
+  std::vector< double > selected_upstream_proj_x_;
+  std::vector< double > selected_upstream_proj_y_;
+  std::vector< double > selected_upstream_proj_z_;
+  std::vector< double > selected_downstream_proj_x_;
+  std::vector< double > selected_downstream_proj_y_;
+  std::vector< double > selected_downstream_proj_z_;
 
   TVector3 tpc_face_intersection(TVector3 const& a, TVector3 const& b);
 
@@ -229,19 +270,19 @@ void WCTrackTPCTrackMatch::beginJob()
 
   ttree_->Branch("number_tofs", &number_tofs_, "number_tofs/I");
   ttree_->Branch("number_wctracks", &number_wctracks_, "number_wctracks/I");
-  ttree_->Branch("number_matched_tracks", &number_matched_tracks_, "number_matched_tracks/I");
-  ttree_->Branch("number_matched_tracks_a", &number_matched_tracks_a_, "number_matched_tracks_a/I");
-  ttree_->Branch("number_matched_tracks_b", &number_matched_tracks_b_, "number_matched_tracks_b/I");
-  ttree_->Branch("number_reco_vertices", &number_reco_vertices_, "number_reco_vertices/I");
 
   ttree_->Branch("reco_tof", &reco_tof_);
   ttree_->Branch("reco_wctrack_momentum", &reco_wctrack_momentum_);
 
+  ttree_->Branch("wctrack_missed", &wctrack_missed_);
+  ttree_->Branch("wctrack_picky", &wctrack_picky_);
+
   ttree_->Branch("wctrack_x", &wctrack_x_);
   ttree_->Branch("wctrack_y", &wctrack_y_);
-  ttree_->Branch("wctrack_theta",  &wctrack_theta_);
-  ttree_->Branch("wctrack_phi",    &wctrack_phi_);
+  ttree_->Branch("wctrack_theta", &wctrack_theta_);
+  ttree_->Branch("wctrack_phi", &wctrack_phi_);
 
+  ttree_->Branch("track_key", &track_key_);
   ttree_->Branch("delta_x", &delta_x_);
   ttree_->Branch("delta_y", &delta_y_);
   ttree_->Branch("delta_z", &delta_z_);
@@ -271,6 +312,46 @@ void WCTrackTPCTrackMatch::beginJob()
   ttree_->Branch("selected_downstream_x", &selected_downstream_x_);
   ttree_->Branch("selected_downstream_y", &selected_downstream_y_);
   ttree_->Branch("selected_downstream_z", &selected_downstream_z_);
+
+  ttree_->Branch("wctrack_proj_missed", &wctrack_proj_missed_);
+  ttree_->Branch("wctrack_proj_picky", &wctrack_proj_picky_);
+
+  ttree_->Branch("wctrack_proj_x", &wctrack_proj_x_);
+  ttree_->Branch("wctrack_proj_y", &wctrack_proj_y_);
+  ttree_->Branch("wctrack_proj_z", &wctrack_proj_z_);
+  ttree_->Branch("wctrack_proj_theta", &wctrack_proj_theta_);
+  ttree_->Branch("wctrack_proj_phi", &wctrack_proj_phi_);
+
+  ttree_->Branch("track_proj_key", &track_proj_key_);
+  ttree_->Branch("delta_proj_x", &delta_proj_x_);
+  ttree_->Branch("delta_proj_y", &delta_proj_y_);
+  ttree_->Branch("delta_proj_z", &delta_proj_z_);
+  ttree_->Branch("delta_proj_r", &delta_proj_r_);
+  ttree_->Branch("alpha_proj", &alpha_proj_);
+
+  ttree_->Branch("preselected_delta_proj_x", &preselected_delta_proj_x_);
+  ttree_->Branch("preselected_delta_proj_y", &preselected_delta_proj_y_);
+  ttree_->Branch("preselected_delta_proj_z", &preselected_delta_proj_z_);
+  ttree_->Branch("preselected_delta_proj_r", &preselected_delta_proj_r_);
+  ttree_->Branch("preselected_alpha_proj",   &preselected_alpha_proj_);
+  ttree_->Branch("preselected_upstream_proj_x", &preselected_upstream_proj_x_);
+  ttree_->Branch("preselected_upstream_proj_y", &preselected_upstream_proj_y_);
+  ttree_->Branch("preselected_upstream_proj_z", &preselected_upstream_proj_z_);
+  ttree_->Branch("preselected_downstream_proj_x", &preselected_downstream_proj_x_);
+  ttree_->Branch("preselected_downstream_proj_y", &preselected_downstream_proj_y_);
+  ttree_->Branch("preselected_downstream_proj_z", &preselected_downstream_proj_z_);
+
+  ttree_->Branch("selected_delta_proj_x", &selected_delta_proj_x_);
+  ttree_->Branch("selected_delta_proj_y", &selected_delta_proj_y_);
+  ttree_->Branch("selected_delta_proj_z", &selected_delta_proj_z_);
+  ttree_->Branch("selected_delta_proj_r", &selected_delta_proj_r_);
+  ttree_->Branch("selected_alpha_proj",   &selected_alpha_proj_);
+  ttree_->Branch("selected_upstream_proj_x", &selected_upstream_proj_x_);
+  ttree_->Branch("selected_upstream_proj_y", &selected_upstream_proj_y_);
+  ttree_->Branch("selected_upstream_proj_z", &selected_upstream_proj_z_);
+  ttree_->Branch("selected_downstream_proj_x", &selected_downstream_proj_x_);
+  ttree_->Branch("selected_downstream_proj_y", &selected_downstream_proj_y_);
+  ttree_->Branch("selected_downstream_proj_z", &selected_downstream_proj_z_);
 }
 
 //-----------------------------------------------------------------------
@@ -303,17 +384,17 @@ void WCTrackTPCTrackMatch::reconfigure(fhicl::ParameterSet const& pset)
   tof_producer_label_      = pset.get< std::string >("TOFLabel");
   wctrack_producer_label_  = pset.get< std::string >("WCTrackLabel");
   alpha_cut_               = pset.get< double >("AlphaCut",      0.3);
-  min_track_length_z_proj_ = pset.get< double >("MinTrackLengthZProj", 4.0);
-  max_upstream_z_          = pset.get< double >("MaxUpstreamZ", 10.0);
-  circular_cut_x_center_   = pset.get< double >("CircularCutXCenter", 2.0);
-  circular_cut_y_center_   = pset.get< double >("CircularCutXCenter", 0.0);
-  circular_cut_radius_     = pset.get< double >("CircularCutRadius", 7.0);
+  min_track_length_proj_z_ = pset.get< double >("MinTrackLengthZProj", 4.0);
+  min_upstream_z_          = pset.get< double >("MinUpstreamZ", 2.0);
+  max_upstream_z_          = pset.get< double >("MaxUpstreamZ", 6.0);
+  circular_cut_x_center_   = pset.get< double >("CircularCutXCenter", 1.6);
+  circular_cut_y_center_   = pset.get< double >("CircularCutYCenter", -0.17);
+  circular_cut_radius_     = pset.get< double >("CircularCutRadius", 3.5);
 }
 
 //-----------------------------------------------------------------------
 void WCTrackTPCTrackMatch::produce(art::Event & event)
 {
-
   //-------------------------------------------------------------------
   // point to a collection of PFParticle objects
   //-------------------------------------------------------------------
@@ -375,7 +456,8 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
       find_many_hits(track_handle, event, track_producer_label_);
 
   int selected_trk_idx = -1;
-  int selected_wctrk_idx = -1;
+  int selected_proj_trk_idx = -1;
+  ////int selected_wctrk_idx = -1;
 
   //---------------------------------------------------------------
   // get time of flight
@@ -435,8 +517,8 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
 
   bool wctrack_flag = false;
 
-  //if (wctrack_vector.size() > 0) wctrack_flag = true;
-  if (wctrack_vector.size() == 1) wctrack_flag = true;
+  if (wctrack_vector.size() > 0) wctrack_flag = true;
+  //if (wctrack_vector.size() == 1) wctrack_flag = true;
 
   // selected WC / TPC track parameters
   double selected_delta_r = 999.;
@@ -451,6 +533,18 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
   double selected_downstream_y = 999.;
   double selected_downstream_z = 999.;
 
+  double selected_delta_proj_r = 999.;
+  double selected_delta_proj_x = 999.;
+  double selected_delta_proj_y = 999.;
+  double selected_delta_proj_z = 999.;
+  double selected_alpha_proj   = 999.;
+  double selected_upstream_proj_x = 999.;
+  double selected_upstream_proj_y = 999.;
+  double selected_upstream_proj_z = 999.;
+  double selected_downstream_proj_x = 999.;
+  double selected_downstream_proj_y = 999.;
+  double selected_downstream_proj_z = 999.;
+
   // loop over WC tracks
   for (auto const& wctrack : wctrack_vector)
   {
@@ -461,9 +555,15 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
     double const wctrack_theta = wctrack->Theta();
     double const wctrack_phi   = wctrack->Phi();
 
+    int const wctrack_missed = wctrack->WCMissed();
+    int const wctrack_picky = static_cast< int > (wctrack->IsPicky());
+
     TVector3 wctrack_dir(0, 0, 1);
     wctrack_dir.SetTheta(wctrack_theta);
     wctrack_dir.SetPhi(wctrack_phi);
+
+    wctrack_missed_.push_back(wctrack_missed);
+    wctrack_picky_.push_back(wctrack_picky);
 
     wctrack_x_.push_back(wctrack_x);
     wctrack_y_.push_back(wctrack_y);
@@ -523,20 +623,22 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
           upstream_traj_pt_dir.X(), upstream_traj_pt_dir.Y(),
           upstream_traj_pt_dir.Z());
 
-      double const track_length_z_proj
+      double const track_length_proj_z
           = downstream_traj_pt.position.Z() - upstream_traj_pt.position.Z();
 
-      double delta_x = upstream_traj_pt.position.X() - wctrack_x;
-      double delta_y = upstream_traj_pt.position.Y() - wctrack_y;
-      double delta_z = upstream_traj_pt.position.Z();
+      double const delta_x = upstream_traj_pt.position.X() - wctrack_x;
+      double const delta_y = upstream_traj_pt.position.Y() - wctrack_y;
+      double const delta_z = upstream_traj_pt.position.Z();
 
-      double alpha = wctrack_dir.Angle(upstream_dir);
+      double const alpha = wctrack_dir.Angle(upstream_dir);
 
-      double delta_r = (delta_x - circular_cut_x_center_) *
-                       (delta_x - circular_cut_x_center_) +
-                       (delta_y - circular_cut_y_center_) *
-                       (delta_y - circular_cut_y_center_);
+      double const delta_r = std::sqrt(
+                                 (delta_x - circular_cut_x_center_) *
+                                 (delta_x - circular_cut_x_center_) +
+                                 (delta_y - circular_cut_y_center_) *
+                                 (delta_y - circular_cut_y_center_));
 
+      track_key_.push_back(trk_idx);
       delta_x_.push_back(delta_x);
       delta_y_.push_back(delta_y);
       delta_z_.push_back(delta_z);
@@ -544,6 +646,42 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
       alpha_.push_back(alpha);
 
       delta_r_.push_back(delta_r);
+
+      double const wctrack_proj_z = upstream_traj_pt.position.Z();
+      TVector3 const wctrack_proj = wctrack->ProjectionAtZ(wctrack_proj_z, false);
+      double const wctrack_proj_x = wctrack_proj.X();
+      double const wctrack_proj_y = wctrack_proj.Y();
+
+      double const wctrack_proj_theta = wctrack->DownstreamDir().Theta();
+      double const wctrack_proj_phi = wctrack->DownstreamDir().Phi();
+
+      double const delta_proj_x = upstream_traj_pt.position.X() - wctrack_proj_x;
+      double const delta_proj_y = upstream_traj_pt.position.Y() - wctrack_proj_y;
+      double const delta_proj_z = upstream_traj_pt.position.Z() - wctrack_proj_z;
+
+      double const alpha_proj = wctrack->DownstreamDir().Angle(upstream_dir);
+
+      double const delta_proj_r = std::sqrt(
+                                      (delta_proj_x - circular_cut_x_center_) *
+                                      (delta_proj_x - circular_cut_x_center_) +
+                                      (delta_proj_y - circular_cut_y_center_) *
+                                      (delta_proj_y - circular_cut_y_center_));
+
+      wctrack_proj_missed_.push_back(wctrack_missed);
+      wctrack_proj_picky_.push_back(wctrack_picky);
+
+      wctrack_proj_x_.push_back(wctrack_proj_x);
+      wctrack_proj_y_.push_back(wctrack_proj_y);
+      wctrack_proj_z_.push_back(wctrack_proj_z);
+      wctrack_proj_theta_.push_back(wctrack_theta);
+      wctrack_proj_phi_.push_back(wctrack_phi);
+
+      track_proj_key_.push_back(trk_idx);
+      delta_proj_x_.push_back(delta_proj_x);
+      delta_proj_y_.push_back(delta_proj_y);
+      delta_proj_z_.push_back(delta_proj_z);
+      delta_proj_r_.push_back(delta_proj_r);
+      alpha_proj_.push_back(alpha_proj);
 
       if (delta_r < circular_cut_radius_ and
           alpha < alpha_cut_)
@@ -561,8 +699,9 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
         preselected_downstream_z_.push_back(downstream_traj_pt.position.Z());
 
         if (delta_r < selected_delta_r and
-            track_length_z_proj > min_track_length_z_proj_ and
-            delta_z < max_upstream_z_)
+            track_length_proj_z > min_track_length_proj_z_ and
+            upstream_traj_pt.position.Z() > min_upstream_z_ and
+            upstream_traj_pt.position.Z() < max_upstream_z_)
         {
           selected_delta_r = delta_r;
           selected_delta_x = delta_x;
@@ -576,6 +715,41 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
           selected_downstream_x = downstream_traj_pt.position.X();
           selected_downstream_y = downstream_traj_pt.position.Y();
           selected_downstream_z = downstream_traj_pt.position.Z();
+        }
+      }
+
+      if (delta_proj_r < circular_cut_radius_ and
+          alpha_proj < alpha_cut_)
+      {
+        preselected_delta_proj_r_.push_back(delta_proj_r);
+        preselected_delta_proj_x_.push_back(delta_proj_x);
+        preselected_delta_proj_y_.push_back(delta_proj_y);
+        preselected_delta_proj_z_.push_back(delta_proj_z);
+        preselected_alpha_proj_.push_back(alpha_proj);
+        preselected_upstream_proj_x_.push_back(upstream_traj_pt.position.X());
+        preselected_upstream_proj_y_.push_back(upstream_traj_pt.position.Y());
+        preselected_upstream_proj_z_.push_back(upstream_traj_pt.position.Z());
+        preselected_downstream_proj_x_.push_back(downstream_traj_pt.position.X());
+        preselected_downstream_proj_y_.push_back(downstream_traj_pt.position.Y());
+        preselected_downstream_proj_z_.push_back(downstream_traj_pt.position.Z());
+
+        if (delta_proj_r < selected_delta_proj_r and
+            track_length_proj_z > min_track_length_proj_z_ and
+            upstream_traj_pt.position.Z() > min_upstream_z_ and
+            upstream_traj_pt.position.Z() < max_upstream_z_)
+        {
+          selected_delta_proj_r = delta_proj_r;
+          selected_delta_proj_x = delta_proj_x;
+          selected_delta_proj_y = delta_proj_y;
+          selected_delta_proj_z = delta_proj_z;
+          selected_alpha_proj   = alpha_proj;
+          selected_proj_trk_idx = trk_idx;
+          selected_upstream_proj_x = upstream_traj_pt.position.X();
+          selected_upstream_proj_y = upstream_traj_pt.position.Y();
+          selected_upstream_proj_z = upstream_traj_pt.position.Z();
+          selected_downstream_proj_x = downstream_traj_pt.position.X();
+          selected_downstream_proj_y = downstream_traj_pt.position.Y();
+          selected_downstream_proj_z = downstream_traj_pt.position.Z();
         }
       }
 
@@ -600,12 +774,48 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
       selected_downstream_z_.push_back(selected_downstream_z);
     }
 
+    if (selected_proj_trk_idx > -1)
+    {
+      selected_delta_proj_r_.push_back(selected_delta_proj_r);
+
+      selected_delta_proj_x_.push_back(selected_delta_proj_x);
+      selected_delta_proj_y_.push_back(selected_delta_proj_y);
+      selected_delta_proj_z_.push_back(selected_delta_proj_z);
+
+      selected_alpha_proj_.push_back(selected_alpha_proj);
+
+      selected_upstream_proj_x_.push_back(selected_upstream_proj_x);
+      selected_upstream_proj_y_.push_back(selected_upstream_proj_y);
+      selected_upstream_proj_z_.push_back(selected_upstream_proj_z);
+
+      selected_downstream_proj_x_.push_back(selected_downstream_proj_x);
+      selected_downstream_proj_y_.push_back(selected_downstream_proj_y);
+      selected_downstream_proj_z_.push_back(selected_downstream_proj_z);
+    }
+
   } // end loop over WC tracks
 
   // fill TTree object
   ttree_->Fill();
 
-  if (selected_trk_idx > -1)
+  //if (selected_trk_idx > -1)
+  //{
+  //  std::vector< size_t > pfparticle_daughter_indices;
+  //  pfparticle_vector.emplace_back(211, 0, 0, pfparticle_daughter_indices);
+
+  //  art::PtrMaker< recob::PFParticle > make_pfparticle_ptr(event, *this);
+
+  //  art::Ptr< recob::PFParticle > pfparticle_ptr
+  //      = make_pfparticle_ptr(pfparticle_vector.size() - 1);
+
+  //  pfparticle_track_assn->addSingle(
+  //      pfparticle_ptr, track_vector.at(selected_trk_idx));
+
+  //  wc_track_assn->addSingle(
+  //      track_vector.at(selected_trk_idx), wctrack_vector.front());
+  //}
+
+  if (selected_proj_trk_idx > -1)
   {
     std::vector< size_t > pfparticle_daughter_indices;
     pfparticle_vector.emplace_back(211, 0, 0, pfparticle_daughter_indices);
@@ -616,10 +826,10 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
         = make_pfparticle_ptr(pfparticle_vector.size() - 1);
 
     pfparticle_track_assn->addSingle(
-        pfparticle_ptr, track_vector.at(selected_trk_idx));
+        pfparticle_ptr, track_vector.at(selected_proj_trk_idx));
 
     wc_track_assn->addSingle(
-        track_vector.at(selected_trk_idx), wctrack_vector.front());
+        track_vector.at(selected_proj_trk_idx), wctrack_vector.front());
   }
 
   // convert vector to unique_ptr
@@ -663,9 +873,21 @@ TVector3 WCTrackTPCTrackMatch::tpc_face_intersection(
 //-----------------------------------------------------------------------
 void WCTrackTPCTrackMatch::reset_()
 {
+  number_tofs_ = 0;
+  number_wctracks_= 0;
+
   reco_tof_.clear();
   reco_wctrack_momentum_.clear();
 
+  wctrack_missed_.clear();
+  wctrack_picky_.clear();
+
+  wctrack_x_.clear();
+  wctrack_y_.clear();
+  wctrack_theta_.clear();
+  wctrack_phi_.clear();
+
+  track_key_.clear();
   delta_x_.clear();
   delta_y_.clear();
   delta_z_.clear();
@@ -696,10 +918,45 @@ void WCTrackTPCTrackMatch::reset_()
   selected_downstream_y_.clear();
   selected_downstream_z_.clear();
 
-  wctrack_x_.clear();
-  wctrack_y_.clear();
-  wctrack_theta_.clear();
-  wctrack_phi_.clear();
+  wctrack_proj_missed_.clear();
+  wctrack_proj_picky_.clear();
+
+  wctrack_proj_x_.clear();
+  wctrack_proj_y_.clear();
+  wctrack_proj_z_.clear();
+  wctrack_proj_theta_.clear();
+  wctrack_proj_phi_.clear();
+
+  track_proj_key_.clear();
+  delta_proj_x_.clear();
+  delta_proj_y_.clear();
+  delta_proj_z_.clear();
+  delta_proj_r_.clear();
+  alpha_proj_.clear();
+
+  preselected_delta_proj_x_.clear();
+  preselected_delta_proj_y_.clear();
+  preselected_delta_proj_z_.clear();
+  preselected_delta_proj_r_.clear();
+  preselected_alpha_proj_.clear();
+  preselected_upstream_proj_x_.clear();
+  preselected_upstream_proj_y_.clear();
+  preselected_upstream_proj_z_.clear();
+  preselected_downstream_proj_x_.clear();
+  preselected_downstream_proj_y_.clear();
+  preselected_downstream_proj_z_.clear();
+
+  selected_delta_proj_x_.clear();
+  selected_delta_proj_y_.clear();
+  selected_delta_proj_z_.clear();
+  selected_delta_proj_r_.clear();
+  selected_alpha_proj_.clear();
+  selected_upstream_proj_x_.clear();
+  selected_upstream_proj_y_.clear();
+  selected_upstream_proj_z_.clear();
+  selected_downstream_proj_x_.clear();
+  selected_downstream_proj_y_.clear();
+  selected_downstream_proj_z_.clear();
 }
 
 DEFINE_ART_MODULE(WCTrackTPCTrackMatch)
