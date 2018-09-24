@@ -39,6 +39,7 @@
 #include "lardataobj/RecoBase/TrackHitMeta.h"
 #include "lardataobj/RecoBase/Vertex.h"
 #include "lardataobj/RecoBase/SpacePoint.h"
+#include "lardataobj/RecoBase/PFParticle.h"
 //#include "lardata/RecoBaseArt/TrackUtils.h" // lar::util::TrackPitchInView()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
@@ -284,6 +285,7 @@ private:
   double wctrk_phi[kMaxWCTracks];
   int wctrk_missed[kMaxWCTracks];
   int wctrk_picky[kMaxWCTracks];
+  int wctrk_quality[kMaxWCTracks];
   double wctrk_x_proj_3cm[kMaxWCTracks];
   double wctrk_y_proj_3cm[kMaxWCTracks];
   double wctrk_z_proj_3cm[kMaxWCTracks];
@@ -300,6 +302,7 @@ private:
   std::string fTOFModuleLabel;
   std::string fWCTrackLabel;
   std::string fWC2TPCModuleLabel;
+  std::string fWCQualityProducerLabel;
 
   calo::CalorimetryAlg fCalorimetryAlg;
 
@@ -332,6 +335,7 @@ void lariat::AnaTreeT1034UC::reconfigure(fhicl::ParameterSet const & pset)
   fTOFModuleLabel           = pset.get< std::string >("TOFModuleLabel");
   fWCTrackLabel             = pset.get< std::string >("WCTrackLabel");
   fWC2TPCModuleLabel        = pset.get< std::string >("WC2TPCModuleLabel", "WC2TPCtrk");
+  fWCQualityProducerLabel   = pset.get< std::string >("WCQualityProducerLabel", "wcquality");
 
   return;
 }
@@ -425,6 +429,9 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
   if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
     {art::fill_ptr_vector(wctrack, wctrackHandle);}
 
+  // art::ValidHandle< std::vector< recob::PFParticle > >
+  auto wcquality_handle = evt.getValidHandle< std::vector< recob::PFParticle > >
+      (fWCQualityProducerLabel);
 
    
   // ##########################################################
@@ -926,6 +933,7 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
       wctrk_phi[wct_count] = wctrack[wct_count]->Phi();
       wctrk_missed[wct_count] = wctrack[wct_count]->WCMissed();
       wctrk_picky[wct_count] = static_cast< int > (wctrack[wct_count]->IsPicky());
+      wctrk_quality[wct_count] = wcquality_handle->size();
 
       wctrk_x_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).X();
       wctrk_y_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).Y();
@@ -1403,6 +1411,7 @@ void lariat::AnaTreeT1034UC::beginJob()
   fTree->Branch("wctrk_phi",                   wctrk_phi,"wctrk_phi[num_wctracks]/D");
   fTree->Branch("wctrk_missed",                wctrk_missed, "wctrk_missed[num_wctracks]/I");
   fTree->Branch("wctrk_picky",                 wctrk_picky, "wctrk_picky[num_wctracks]/I");
+  fTree->Branch("wctrk_quality",               wctrk_quality, "wctrk_quality[num_wctracks]/I");
   fTree->Branch("wctrk_x_proj_3cm",            wctrk_x_proj_3cm, "wctrk_x_proj_3cm[num_wctracks]/D");
   fTree->Branch("wctrk_y_proj_3cm",            wctrk_y_proj_3cm, "wctrk_y_proj_3cm[num_wctracks]/D");
   fTree->Branch("wctrk_z_proj_3cm",            wctrk_z_proj_3cm, "wctrk_z_proj_3cm[num_wctracks]/D");
@@ -1560,6 +1569,7 @@ void lariat::AnaTreeT1034UC::ResetVars()
     wctrk_phi[i] = -999999;
     wctrk_missed[i] = -999999;
     wctrk_picky[i] = -999999;
+    wctrk_quality[i] = -999999;
     wctrk_x_proj_3cm[i] = -999999;
     wctrk_y_proj_3cm[i] = -999999;
     wctrk_z_proj_3cm[i] = -999999;

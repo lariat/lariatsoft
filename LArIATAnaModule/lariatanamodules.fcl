@@ -41,6 +41,7 @@ lariat_anatreeuc:
     MCShowerModuleLabel:      "mcreco"
     CalorimetryAlg:           @local::standard_calorimetryalgmc
     WC2TPCModuleLabel:        "WC2TPCtrk"
+    WCQualityProducerLabel:   "wcquality"
 }
 
 lariat_mcanalysis:
