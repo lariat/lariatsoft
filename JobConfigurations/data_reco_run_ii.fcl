@@ -67,14 +67,14 @@ physics:
 
   analyzers:
   {
-    anatreeuc: @local::lariat_anatreeuc
+    anatree: @local::lariat_anatreeuc
   }
 
   #define the producer and filter modules for this path, order matters, 
   #filters reject all following items.  see lines starting physics.producers below
   reco: [ timestampfilter, @sequence::beamlinereco, toffilter, wctrackfilter, wcquality, @sequence::tpcreco, wctracktpctrackmatch ]
 
-  ana: [ anatreeuc ]
+  ana: [ anatree ]
 
   #define the output stream, there could be more than one if using filters 
   stream1:  [ out1 ]
@@ -160,19 +160,7 @@ physics.producers.tof.HitMatchThresholdUS:  3.0
 physics.producers.tof.HitMatchThresholdDS:  6.0
 physics.producers.tof.HitWait:              20.
 
-physics.producers.wctrack.PickyTracks:      true
-
-physics.analyzers.anatreeuc.SelectEvents:            [ reco ]
-physics.analyzers.anatreeuc.HitsModuleLabel:         "gaushit"
-physics.analyzers.anatreeuc.TrackModuleLabel:        "pmtrack"
-physics.analyzers.anatreeuc.CalorimetryModuleLabel:  "calo"
-physics.analyzers.anatreeuc.ParticleIDModuleLabel:   "pid"
-physics.analyzers.anatreeuc.ClusterModuleLabel:      "trajcluster"
-physics.analyzers.anatreeuc.WCTrackLabel:            "wctrack"
-physics.analyzers.anatreeuc.TOFModuleLabel:	         "tof"
-physics.analyzers.anatreeuc.G4ModuleLabel:           "largeant"
-physics.analyzers.anatreeuc.CalorimetryAlg:          @local::lariat_calorimetryalgdata_run2
-physics.analyzers.anatreeuc.WC2TPCModuleLabel:	     "wctracktpctrackmatch"
+physics.producers.wctrack.PickyTracks:      false
 
 services.DetectorPropertiesService.TimeOffsetU: -50.0
 services.DetectorPropertiesService.TimeOffsetV: -52.0
@@ -186,6 +174,7 @@ physics.producers.caldata.DodQdxCalib:      false
 physics.producers.gaushit.CalDataModuleLabel: "caldata"
 physics.producers.gaushit.Chi2NDFRetry:        1000.
 
+physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel: "gaushit"
 physics.producers.trajcluster.TrajClusterAlg.MakeNewHits: true
 physics.producers.trajcluster.TrajClusterAlg.AngleRanges: [30, 65, 80, 90]
 physics.producers.trajcluster.TrajClusterAlg.MinPtsFit:     [ 4,  4, 2]
@@ -223,4 +212,31 @@ physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
+
+physics.producers.wctracktpctrackmatch.HitLabel:            "trajcluster"
+physics.producers.wctracktpctrackmatch.ClusterLabel:        "trajcluster"
+physics.producers.wctracktpctrackmatch.TrackLabel:          "pmtrack"
+physics.producers.wctracktpctrackmatch.TOFLabel:            "tof"
+physics.producers.wctracktpctrackmatch.WCTrackLabel:        "wctrack"
+physics.producers.wctracktpctrackmatch.AlphaCut:            0.2
+physics.producers.wctracktpctrackmatch.MinTrackLengthZProj: 4.0
+physics.producers.wctracktpctrackmatch.MinUpstreamZ:        -2.0
+physics.producers.wctracktpctrackmatch.MaxUpstreamZ:        6.0
+physics.producers.wctracktpctrackmatch.CircularCutXCenter:  1.6
+physics.producers.wctracktpctrackmatch.CircularCutYCenter:  -0.17
+physics.producers.wctracktpctrackmatch.CircularCutRadius:   3.5
+
+physics.analyzers.anatree.SelectEvents:            [ reco ]
+physics.analyzers.anatree.TreeName:                "anatree"
+physics.analyzers.anatree.HitsModuleLabel:         "gaushit"
+physics.analyzers.anatree.TrackModuleLabel:        "pmtrack"
+physics.analyzers.anatree.CalorimetryModuleLabel:  "calo"
+physics.analyzers.anatree.ParticleIDModuleLabel:   "pid"
+physics.analyzers.anatree.ClusterModuleLabel:      "trajcluster"
+physics.analyzers.anatree.WCTrackLabel:            "wctrack"
+physics.analyzers.anatree.TOFModuleLabel:          "tof"
+physics.analyzers.anatree.G4ModuleLabel:           "largeant"
+physics.analyzers.anatree.CalorimetryAlg:          @local::lariat_calorimetryalgdata_run2
+physics.analyzers.anatree.WC2TPCModuleLabel:       "wctracktpctrackmatch"
+physics.analyzers.anatree.WCQualityProducerLabel:  "wcquality"
 
