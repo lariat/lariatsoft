@@ -154,7 +154,6 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
   fPickyTracks = pickytracks;
   fDiagnostics= diagnostics;
   
-  if(fB_field_tesla<.3){std::cout<<"Not 100A. Skip!"<<std::endl; return;}
 //  for(int i=0; i<4; ++i){
 //    for(int j=0; j<3; ++j){
 //      hit_position_vect_alg[i][j]=hit_position_vect[i][j];
