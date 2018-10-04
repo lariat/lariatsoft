@@ -180,7 +180,8 @@ namespace cluster {
       if(fHoughSeed != 0)
       {
 	art::ServiceHandle<art::RandomNumberGenerator> rng;
-	CLHEP::HepRandomEngine &engine = rng->getEngine();
+	CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+	                                                moduleDescription().moduleLabel());
 	engine.setSeed(fHoughSeed,0);
       } 
 
