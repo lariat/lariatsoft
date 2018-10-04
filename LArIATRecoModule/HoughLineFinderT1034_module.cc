@@ -176,16 +176,17 @@ namespace cluster {
       //Get clusters associated with this trigger
       clusIn = ClusterDigits.at(itrig); 
 
-      // If a nonzero random number seed has been provided, overwrite the seed already initialized
-      if(fHoughSeed != 0)
-      {
 	art::ServiceHandle<art::RandomNumberGenerator> rng;
 	CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
 	                                                moduleDescription().moduleLabel());
+
+      // If a nonzero random number seed has been provided, overwrite the seed already initialized
+      if(fHoughSeed != 0)
+      {
 	engine.setSeed(fHoughSeed,0);
       } 
 
-      numclus = fHLAlg.FastTransform(clusIn, *ccol, clusHitsOut, evt, fDBScanModuleLabel);
+      numclus = fHLAlg.FastTransform(clusIn, *ccol, clusHitsOut, engine, evt, fDBScanModuleLabel);
 
       LOG_DEBUG("HoughLineClusters") << "found " << numclus << "clusters with HoughBaseAlg"; 
 
