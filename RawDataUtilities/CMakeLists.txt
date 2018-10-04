@@ -30,7 +30,8 @@ art_make(LIBRARY_NAME     RawDataUtilities
                           ${FHICLCPP}
          DICT_LIBRARIES   lardataobj_RawData
                           larcoreobj_SummaryData
-         SOURCE_LIBRARIES lardataobj_RawData
+         SOURCE_LIBRARIES larcorealg_Geometry
+                          lardataobj_RawData
                           lardata_Utilities
                           LariatFragments
                           LArIATDataProducts
