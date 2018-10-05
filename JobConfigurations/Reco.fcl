@@ -202,7 +202,7 @@ physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  0
 physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
 #physics.producers.trajcluster.TrajClusterAlg.MinPts: [10,3,2]
-#physics.producers.trajcluster.TrajClusterAlg.Match3DCuts: [ 0.3, 0.1, 2, 0.5 ]
+#physics.producers.trajcluster.TrajClusterAlg.Match3DCuts: [ 0.3, -0.3, 4, 0.9, 2000, 10, 0.2]
 #physics.producers.trajcluster.TrajClusterAlg.SkipAlgs: [  "VtxHitsSwap", "SplitHiChgHits", "CTKink", "HED", "Split
 physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:     0
 physics.producers.trajcluster.TrajClusterAlg.DebugPlane: -1
