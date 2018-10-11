@@ -70,6 +70,8 @@ private:
   bool		      fRequireStoppingMuon;
   bool		      fRequireEnteringMuon;
   bool		      fRequireDecayElectron;
+  float               fMinDecayTime;
+  float               fMaxDecayTime;
 
   // Producer label from gen stage
   std::string         fSimProducerLabel;
@@ -144,6 +146,7 @@ bool MichelMCFilter::filter(art::Event & e)
   int muCharge = 0;
   float muStopTime = -999.;
   float muMomentum = -99.;
+  float decayTime = -999.;
 
   // Get MCParticles from event
   art::Handle< std::vector<simb::MCParticle> > particleHandle;
@@ -198,7 +201,9 @@ bool MichelMCFilter::filter(art::Event & e)
       
       // since the Geant4 "Process" param is useless in case of mu-, 
       // make some clever cuts to ensure we really have a Michel:
-      if( -1.*particle.PdgCode()/abs(particle.PdgCode()) == muCharge && (particle.T(0) - muStopTime) > 1.0 ) {
+      float dT = particle.T(0) - muStopTime; 
+      if( -1.*particle.PdgCode()/abs(particle.PdgCode()) == muCharge && dT > 1.0 ) {
+        decayTime  = dT;
         if( muCharge == 1 ) numMuPlusDecay++;
         if( muCharge == -1 ) numMuMinusDecay++;
         isDecayElectron = true;
@@ -221,9 +226,14 @@ bool MichelMCFilter::filter(art::Event & e)
 
   if(  ( (!fRequireStoppingMuon) || (fRequireStoppingMuon && muonStopsInTPC) )
     && ( (!fRequireEnteringMuon) || (fRequireEnteringMuon && muonEntersTPC)  ) 
-    && ( (!fRequireDecayElectron) || (fRequireDecayElectron && isDecayElectron)  ) )
+    && ( (!fRequireDecayElectron) || (fRequireDecayElectron && isDecayElectron)  ) 
+    && ( (fMinDecayTime <  0. || decayTime > fMinDecayTime ) )
+    && ( (fMaxDecayTime <  0. || decayTime < fMaxDecayTime ) )
+    )
     outFlag = true;
 
+  // If this is just an isolated electron that was simulated, 
+  // pass it no matter what!
   if( isPrimaryElectron ) outFlag = true;
 
   if(outFlag) {
@@ -274,6 +284,8 @@ void MichelMCFilter::reconfigure(fhicl::ParameterSet const & p)
   fRequireStoppingMuon	  = p.get< bool >	  ("RequireStoppingMuon",true);
   fRequireEnteringMuon	  = p.get< bool >	  ("RequireEnteringMuon",true);
   fRequireDecayElectron	  = p.get< bool >	  ("RequireDecayElectron",true);
+  fMinDecayTime           = p.get< float >        ("MinDecayTime",-9.);
+  fMaxDecayTime           = p.get< float >        ("MaxDecayTime",-9.);
 }
 
 // Function for determining if a point is inside or outside

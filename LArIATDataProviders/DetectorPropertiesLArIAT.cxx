@@ -612,7 +612,7 @@ namespace ldp{
 
           std::cout
           <<"Calculating XTicksOffset for plane "<<plane<<":\n"
-          <<"  T0 = "<<fXTicksOffsets[cstat][tpc][plane]<<" (minus trigger offset: "<<fXTicksOffsets[cstat][tpc][plane]-triggerOffset<<"\n";
+          <<"  T0 = "<<fXTicksOffsets[cstat][tpc][plane]<<" (minus trigger offset: "<<fXTicksOffsets[cstat][tpc][plane]-triggerOffset<<")\n";
 
 
 	  if (nplane==3){
@@ -651,8 +651,6 @@ For plane = 0, t offset is pitch/Coeff[1] - (pitch+xyz[0])/Coeff[0]
             <<"  - "<<tpcgeom.PlanePitch()*(1/fXTicksCoefficient-1/fXTicksCoefficientgap[1])<<"\n";
 	  }
 
-          std::cout<<"  final T = "<<fXTicksOffsets[cstat][tpc][plane]<<"\n";
-	
           std::cout<<"  Adding view-dependent offsets (TimeOffsetU/V/Z)\n";  
 	  // Add view dependent offset
 	  geo::View_t view = pgeom.View();
@@ -665,7 +663,9 @@ For plane = 0, t offset is pitch/Coeff[1] - (pitch+xyz[0])/Coeff[0]
 	  else
 	    throw cet::exception(__FUNCTION__) << "Bad view = "
 						       << view << "\n" ;
-	}	
+	
+        std::cout<<"  final XTicksOffset = "<<fXTicksOffsets[cstat][tpc][plane]<<"\n";
+        }	
       }
     }
 

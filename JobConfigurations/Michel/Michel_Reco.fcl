@@ -96,15 +96,15 @@ outputs:
    fileName:    "lariat_r%R_%tc_%#.root"
    dataTier:    "reconstructed-2d"
    SelectEvents: [ reco ]
-   outputCommands:  [   
-                    "keep *_*_*_*", 
-                    "drop raw::RawDigits_*_*_*", 
-                    "drop raw::AuxDetDigits_*_*_*",
-                    "drop recob::Wires_*_*_*",
-                    "drop raw::RawDigitrecob::Wirevoidart::Assns_*_*_*",
-                    "drop raw::RawDigitrecob::Hitvoidart::Assns_*_*_*",
-                    "drop recob::Hitrecob::Wirevoidart::Assns_*_*_*"
-                    ]
+#   outputCommands:  [   
+#                    "keep *_*_*_*", 
+#                    "drop raw::RawDigits_*_*_*", 
+#                    "drop raw::AuxDetDigits_*_*_*",
+#                    "drop recob::Wires_*_*_*",
+#                    "drop raw::RawDigitrecob::Wirevoidart::Assns_*_*_*",
+#                    "drop raw::RawDigitrecob::Hitvoidart::Assns_*_*_*",
+#                    "drop recob::Hitrecob::Wirevoidart::Assns_*_*_*"
+#                    ]
    compressionLevel: 1
  }
 }
@@ -173,6 +173,8 @@ physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:          [ "ChkStop", "Vt
 #                     TjHiVx3Score VtxHitsSwap SplitHiChgHits InShower ShowerTj ShwrParent MergeOverlap MergeSubShowers MergeNrShowers 
 #                     MergeShChain SplitTarjCV
 #    Or specify All to turn all algs off
+
+
 
 physics.producers.pmtrack.ClusterModuleLabel:               "linecluster"
 physics.producers.pmtrack.HitModuleLabel:                   "linecluster" # gaushit

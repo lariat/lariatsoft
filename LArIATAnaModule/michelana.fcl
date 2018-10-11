@@ -6,7 +6,7 @@ lariat_michelana:
 {
   # Optical reco/filter settings
   module_type:			  MichelAna
-  TruncateWfm:                    18000
+  TruncateWfm:                    16000
   SelectChannels:                 [ 1  ]
   OpDetChannels:                  [ 0,    1 ]
   MaxWfmRMS:                      [ 1.8, 1.8 ]
@@ -40,18 +40,18 @@ lariat_michelana:
     PrePulseDisplay:      500
     PrePulseTau1:         800
     PrePulseTau2:               1600
-    MskBaselineSubtr_waitprd:   50
-    MskBaselineSubtr_minseg:    100 #50
-    MskBaselineSubtr_range:     100
-    MskBaselineSubtr_P:         0.15
-    MskBaselineSubtr_grmsfac:   3
-    MskBaselineSubtr_adcthresh: 5
+    MskBaselineSubtr_waitprd:   50 # 50
+    MskBaselineSubtr_minseg:    100 #100
+    MskBaselineSubtr_range:     100 #100
+    MskBaselineSubtr_P:         0.15 #0.15
+    MskBaselineSubtr_grmsfac:   3   # 3
+    MskBaselineSubtr_adcthresh: 5   # 5
   
   }
 
   SmearFactor:                    [ 0, 0 ]
   TauT:                           1300. # Heindl 2010/2011
-  SingToTripRatio_Mu:             -0.36 # arxiv 1408 from data (< 1 == not used)
+  SingToTripRatio_Mu:             0.51 #-0.44 # arxiv 1408 from data (< 1 == not used)
   SingToTripRatio_El:             0.51 # 0.469 # 0.51 +/- 0.05 (Eur. Phys. J. C (2013) 73:2618)
   SingToTripRatio_Ph:             0.30 # arxiv 1408 from data (< 1 == not used)
   CollectionEff:                  [ 0.95, 0.80 ] 
@@ -59,14 +59,16 @@ lariat_michelana:
   MuContamCorr:                   true
   MuContamCorr_dTmin:             1800
   MuContamCorr_EffTau:            [0., 0.]
+  MuContamCorr_UseTauPrime:       true
+  MuContamCorr_TpbFrac:           [0.18, 0.18]
   Wph:                            19.5e-6 # 19.5 +/- 1.0 eV
   #ChargeSmearFactor:              0. # 10% from Justin's cosmic muon dE/dx study
 
   # Track reco and selection settings:
   HitsModule:                     "gaushit"
   HitsInstance:                   ""
-  TrackModule:                    "pmtracktc"
-  TrackCalModule:                 "calotc"
+  TrackModule:                    "pmtracktc" #"pmtracktc"
+  TrackCalModule:                 "calotc" #"calotc"
   LookAtTracks:                   true
   Req1StpTrk:                     true
   UseCrossingMuons:               true
@@ -78,20 +80,21 @@ lariat_michelana:
 
   # clustering/shower reco settings:
   CaloAlg:                        @local::lariat_calorimetryalgdata
-  UseMaxDropAsBnd:                false
+  AllowReclustering:              true
+  BndMode:                        "maxQ" # "maxQ, maxDrop, maxP"
   MaxHitSeparation:               2.5 # 2.5 
-  TruncMeanWindow:                4
-  TruncMeanP:                     0.20 
+  TruncMeanWindow:                3 #4
+  TruncMeanP:                     0.20 #0.20
   MaxMatchDistance:               4 
-  LocalLinearityWindow:           4
+  LocalLinearityWindow:           4 #4
   LinThresh:                      0.80
-  LinTol:                         -3 # 3
-  LinThreshMuFit:                 0.80
+  LinTol:                         3 # 3
+  LinThreshMuFit:                 0.90
   ShowerAcceptanceAngle:          30. # 60. 
   MaxHitTimeDiffFac:              1.0 # xfactor of RMS # microseconds 
  
   UseUniformRecomb:               true 
-  RecombFactor:                   0.696 # for dE/dx = 2.3 MeV/cm, R = 0.696 at 486.5 V/cm (for 2.5 MeV/cm, R = 0.688)
+  RecombFactor:                   0.69 # for dE/dx = 2.3 MeV/cm, R = 0.694 at 484 V/cm
   RecombFactorTrack:              0.679 # 0.676
   RecombFactorShower:             0.631 # 0.551
   
@@ -100,17 +103,17 @@ lariat_michelana:
   MinMuClusterSize:               8
   MinElClusterSize:               4
   MaxElClusterSize:               999 
-  MaxExtraHits:                   999 
-  MinMuLinearity:                 0.3
-  MinFracMuHitsLinear:            0.3
-  MinMuClusterHitsEndFit:         3 # 4
-  MinBraggSlope:                  1000
+  MinMuLinearity:                 0.6
+  MinFracMuHitsLinear:            0.0
+  MinMuClusterHitsEndFit:         4 # 4
+  MinBraggSlope:                  20.
   MinDecayAngle2D:                20.
   MaxDecayAngle2D:                160.
   MinElShowerFrac:                0.0
-  MinNumPts3D:                    1
+  MinNumPts3D:                    3
   MinFracHits3D:                  0.0
-   
+  
+  MaxSavedHitGraphs:              0
 }
 
 # ===============================================================================
@@ -118,13 +121,14 @@ lariat_michelana_run1:                      @local::lariat_michelana
 lariat_michelana_run1.CaloAlg:              @local::lariat_calorimetryalgdata_run1
 lariat_michelana_run1.SelectChannels:       [ 1 ]
 lariat_michelana_run1.MinOpHitWidth:        [ 0.,   10.  ]
-lariat_michelana_run1.LibraryFile:          "PhotonLibrary_ToyMC_20180704_Run1_300kPerVoxel_24x_20y_45z.root"
-lariat_michelana_run1.SmearSigT:            [ 0., 0.0426 ]
-lariat_michelana_run1.SmearSigPE:           [ 0., 0.43  ]
-lariat_michelana_run1.QE_ScaleFactor:       [ 0., 1.174 ]  
-lariat_michelana_run1.TrigEff_P:            [ 0., 28.64 ]    
-lariat_michelana_run1.TrigEff_K:            [ 0., 9.331 ] 
-lariat_michelana_run1.SmearFactor:          [ 0., 0.25  ] #[ 0., 1.842 ]    
+lariat_michelana_run1.LibraryFile:          "PhotonLibrary_ToyMC_20180927_Run1_300kPerVoxel_24x_20y_45z.root"
+lariat_michelana_run1.QE_ScaleFactor:       [ 0., 1.016 ]  
+lariat_michelana_run1.SmearSigT:            [ 0., 0.043 ]
+lariat_michelana_run1.SmearSigPE:           [ 0., 0.430 ]
+lariat_michelana_run1.TrigEff_P:            [ 0., 25.74 ]    
+lariat_michelana_run1.TrigEff_K:            [ 0., 9.098 ] 
+lariat_michelana_run1.SmearFactor:          [ 0., 0.152 ] 
+lariat_michelana_run1.MuContamCorr_TpbFrac: [ 0., 0.12  ]
 #lariat_michelana_run1.MinHitAmp:            [ 0., 25. ]  
 
 # ===============================================================================
@@ -134,21 +138,24 @@ lariat_michelana_run2b.SelectChannels:      [ 0, 1 ]
 lariat_michelana_run2b.MaxWfmRMS:           [ 1.5, 1.5 ]
 lariat_michelana_run2b.MinOpHitWidth:       [ 10.,  6. ]
 lariat_michelana_run2b.CorrectOvershootMode: "int"
-lariat_michelana_run2b.LibraryFile:         "PhotonLibrary_ToyMC_20180704_Run2_300kPerVoxel_24x_20y_45z.root"
+lariat_michelana_run2b.LibraryFile:         "PhotonLibrary_ToyMC_20180927_Run2_300kPerVoxel_24x_20y_45z.root"
 lariat_michelana_run2b.SmearSigT:           [ 0.024,  0.024 ]
-lariat_michelana_run2b.SmearSigPE:          [ 0.32,   0.43  ]
-lariat_michelana_run2b.QE_ScaleFactor:      [ 1.060,  0.979 ] 
-lariat_michelana_run2b.TrigEff_P:           [ 83.77,  22.41 ]   
-lariat_michelana_run2b.TrigEff_K:           [ 6.936,  4.419 ]   
-lariat_michelana_run2b.SmearFactor:         [ 0.10,   0.25  ] #[ 2.626,  2.548 ]  
-#lariat_michelana_run2b.MinHitAmp:           [ 20.,       25. ]  
+lariat_michelana_run2b.SmearSigPE:          [ 0.320,  0.430  ]
+lariat_michelana_run2b.QE_ScaleFactor:      [ 1.021,  0.957 ] 
+lariat_michelana_run2b.TrigEff_P:           [ 81.31,  22.72 ]   
+lariat_michelana_run2b.TrigEff_K:           [ 8.271,  4.506 ]   
+lariat_michelana_run2b.SmearFactor:         [ 0.002,  0.238 ]  
+lariat_michelana_run2b.MuContamCorr_TpbFrac:[ 0.08,   0.13  ]
+#lariat_michelana_run2b.MinHitAmp:           [ 20.,       25. ] 
+#lariat_michelana_run2b.MaxRun:              9563 
 
 # ===================================================================================
 lariat_michelana_mc1:                       @local::lariat_michelana_run1
 lariat_michelana_mc1.CaloAlg:               @local::lariat_calorimetryalgmc_run1
 lariat_michelana_mc1.LateLightTau:          1177. #1132.2 # 1108
 lariat_michelana_mc1.MuContamCorr_EffTau:   [0., 1262. ] #[ 0., 1265. ]
-lariat_michelana_mc1.MakeAveWfms:           false 
+lariat_michelana_mc1.MuContamCorr_TpbFrac: [ 0., 0.18 ]
+#lariat_michelana_mc1.MakeAveWfms:           false 
 #lariat_michelana_mc1.ElectronLifetimeErr:   0.065
 
 # ===================================================================================
@@ -156,7 +163,8 @@ lariat_michelana_mc2b:                      @local::lariat_michelana_run2b
 lariat_michelana_mc2b.CaloAlg:              @local::lariat_calorimetryalgmc_run2
 lariat_michelana_mc2b.LateLightTau:         1170. # average for first 3rd of Run2B dataset 
 lariat_michelana_mc2b.MuContamCorr_EffTau:  [ 1255., 1255. ]
-lariat_michelana_mc2b.MakeAveWfms:           false 
+lariat_michelana_mc2b.MuContamCorr_TpbFrac: [ 0.18, 0.18 ]
+#lariat_michelana_mc2b.MakeAveWfms:           false 
 #lariat_michelana_mc2b.ElectronLifetimeErr:  0.05
 
 END_PROLOG

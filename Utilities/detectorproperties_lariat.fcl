@@ -16,7 +16,7 @@ lariat_detproperties:
 
   ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
   NumberTimeSamples: 3072
-  TimeOffsetU:       -50. #-50. # -50 offset to have crossing trk endpts align with anode/cathode in X
+  TimeOffsetU:       -50. ##-50. # -50 offset to have crossing trk endpts align with anode/cathode in X
   TimeOffsetV:       -52. #-52. # -2 offset on collection to prevent curved trks (study by Tingjun)
   TimeOffsetZ:       0.
   ReadOutWindowSize: 3072
