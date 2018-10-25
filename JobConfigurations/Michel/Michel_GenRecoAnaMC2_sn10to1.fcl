@@ -1,7 +1,7 @@
 #include "Michel_GenRecoAnaMC2.fcl"
 services:
 {
-  TFileService: { fileName: "histos_sn10to1.root" }
+  TFileService: { fileName: "Ana_sn10to1.root" }
   RandomNumberGenerator: {}
   @table::lariat_simulation_services_run2
 }

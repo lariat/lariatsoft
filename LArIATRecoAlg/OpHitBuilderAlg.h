@@ -120,6 +120,7 @@ class OpHitBuilderAlg{
   int   fHitTimeCutoffLow;
   int   fHitTimeCutoffHigh;
   float fTau;
+  short fIntegrationOffset;
   std::vector<short> fIntegrationWindows;
   
   // Average waveform vector

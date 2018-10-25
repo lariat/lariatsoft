@@ -90,7 +90,6 @@ OpHitBuilderAlg::~OpHitBuilderAlg()
 void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
 
   fTau                  = pset.get<float> ("Tau",-1300.);
-
   fReturnRawIntegrals   = pset.get< bool > ("ReturnRawIntegrals", false);
   fDAQModule            = pset.get< std::string >("DAQModule","daq");
   fInstanceName         = pset.get< std::string >("InstanceName","");
@@ -105,6 +104,7 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
   fPrePulseDisplay      = pset.get< short >("PrePulseDisplay",500);
   fPrePulseTau1         = pset.get< float >("PrePulseTau1",800.);
   fPrePulseTau2         = pset.get< float >("PrePulseTau2",1600.);
+  fIntegrationOffset    = pset.get< float >("IntegrationOffset",5);
   fFullWindowLength     = pset.get< short >("FullWindowLength",7000);
   fIntegrationWindows   = pset.get< std::vector<short> >("IntegrationWindows",{100,7000});
   fMvPerADC             = pset.get< float >("MvPerADC",0.1953);
@@ -502,7 +502,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
   short x1,x1b,x2,x3;
   x1  = std::max(int(hit - fPrePulseBaselineFit),prev_hit+200);
   x1b = std::max(int(hit - fPrePulseDisplay),int(x1));
-  x2  = hit - 5;
+  x2  = hit - fIntegrationOffset;
   x3  = std::min(int(hit + windows.at(windows.size()-1)),int(nSamples)-1);
   const int prepulse_bins = int(x2) - int(x1);
   const int total_bins    = int(x3) - int(x1);
@@ -596,9 +596,8 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
   int   iwin      = 0;
   
   std::vector<float> wfm_corr(wfm.size(),0.);
-  for(size_t i=0; i<wfm.size(); i++){
+  for(size_t i=0; i<wfm.size(); i++)
     wfm_corr.at(i) = polarity*( wfm.at(i) - pfit.Eval(i) ); 
-  }
 
   LOG_DEBUG("OpHitBuilder") 
   << "  Starting integration from "<<x2<<" to "<<x3;
@@ -624,7 +623,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, s
     }
 
     // Scan for amplitude when near the hit
-    if ( ((hit-xx > -5)||(hit-xx < 100)) && (yy > amplitude) ) {
+    if( (xx-hit > -5) && (xx-hit < 100) && (yy > amplitude) ) { 
       amplitude   = yy;
       iamp        = xx;
     }

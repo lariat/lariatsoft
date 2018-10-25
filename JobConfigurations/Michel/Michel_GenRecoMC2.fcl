@@ -2,7 +2,7 @@
 
 services:
 {
-  TFileService: { fileName: "histos.root" }
+  TFileService: { fileName: "AnaMC2.root" }
   RandomNumberGenerator: {}
   @table::lariat_simulation_services_run2
 }

@@ -26,7 +26,7 @@ process_name: GenReco
 
 services:
 {
-  TFileService: { fileName: "histos.root" }
+  TFileService: { fileName: "AnaMC1.root" }
   RandomNumberGenerator: {}
   @table::lariat_simulation_services
 }

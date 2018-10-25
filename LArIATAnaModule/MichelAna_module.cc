@@ -321,6 +321,7 @@ private:
   float               fMaxDecayTime;        // max decay time allowed
   short               fPromptWindow;        // prompt light int. window (default 100ns)
   short               fFullWindow;          // total light int. window (default 7us)
+  short               fPulseIntegOffset;    
   
   float               fElectronLifetimeErr; // error on lifetime for MC
   std::vector<float>  fSmearSigT;           // integration time-dependent smearing on MC
@@ -366,9 +367,9 @@ private:
   float               fWion;                // energy to produce e-ion pair (23.6 eV)
   float               fExcRatio;            // excitation ratio ( N_ex / N_i ) = 0.21
   bool                fUseUniformRecomb;
-  float               fRecombFactor;        // recomb. survival frac for electron trk/shwr hits
-  float               fRecombFactorTrack;   // recomb. survival frac for track-like el. hits
-  float               fRecombFactorShower;  // recomb. survival frac for shwr-like el. hits
+  float               fRecomb;        // recomb. survival frac for electron trk/shwr hits
+  float               fRecombElec;   // recomb. survival frac for track-like el. hits
+  float               fRecombPhot;  // recomb. survival frac for shwr-like el. hits
 
   float               fdTcut;               // min decay time for energy histograms 
   std::vector<float>  fPromptPECut;         // min prompt PE for dT histogram 
@@ -473,6 +474,7 @@ private:
   float               fAmplitude[2];
   float               fMuWidth[2];
   float               fWidth[2];
+  float               fTotalPhelCh[2];
   
   // Hit times, trigger condition, saturation flag
   std::vector<short>  fvHitTimes0[2];
@@ -508,6 +510,7 @@ private:
   std::vector<float>  fvPrepulseSlowNorm[2];
   std::vector<float>  fvPrepulseSlowTau[2];
 
+
   // Derived quantities when dT is defined (2 hits)
   float               fMuContam_prompt[2];
   float               fMuContam_2us[2];
@@ -518,7 +521,10 @@ private:
   float               fPE_prompt[2];
   float               fPE_2us[2];
   float               fPE_total[2];
-  float               fPE_total_qc[2];
+  float               fPE_total_qc[2]; 
+  float               fElShowerPhel; 
+  float               fElShowerPhel_prompt; 
+  float               fElShowerPhel_qc; 
   float               fPromptFracRaw[2];
   float               fPromptFrac[2];
   float               fPromptFrac2us[2];
@@ -528,9 +534,6 @@ private:
   float               fMuPromptFrac2us[2];
   bool                fMuPulseSaturated[2];
   bool                fElPulseSaturated[2];
-  float               fPE_comb;
-  float               fPE_comb_qc;
-  float               fPE_prompt_comb;
   float               fDecayTime;
    
     
@@ -540,6 +543,7 @@ private:
   float               fAveDriftTime;
   int                 fNumPlaneHits[2];
   float               fTotalCharge[2];
+  float               fTotalChargeCol[2];
   float               fTotalIntegral[2];
   // ...collection plane
   float               fFracDropoffAtBnd;
@@ -665,6 +669,7 @@ private:
   bool                fTrue_IsElShwrContained;
   float               fTrue_ContainmentFrac;
   float               fTrue_TotalCharge;
+  float               fTrue_TotalChargeCol;
   float               fTrue_TotalEnergyDep;
   float               fTrue_dT;
   float               fTrue_Amplitude[2];
@@ -673,12 +678,14 @@ private:
   float               fTrue_MuContam_prompt[2];
   float               fTrue_MuContam_total[2];
   float               fTrue_MuPE;
-  float               fTrue_PE0;
-  float               fTrue_PE;
-  float               fTrue_PEPrompt;
+  float               fTrue_TotalPhel;
+  float               fTrue_TotalPhelCh[2]; 
+  float               fTrue_ElShowerPhel0;
+  float               fTrue_ElShowerPhel;
+  float               fTrue_ElShowerPhelPr;
+  float               fTrue_PE_total[2];
   float               fTrue_PE_prompt[2];
   float               fTrue_PE_2us[2];
-  float               fTrue_PE_total[2];
  
   // ..............................................................................
   // Histograms
@@ -855,6 +862,7 @@ private:
   TH1D*               hTrue_DriftStochasticity;
   
   TH1D*               hTrue_SingToTripRatio;
+  TH1D*               hTrue_PhotonPropTimes;
  
   TH1D*               hTrue_MuEnergy; 
   TH1D*               hTrue_MuAveMomentum;
@@ -1075,6 +1083,9 @@ MichelAna::MichelAna(fhicl::ParameterSet const & p)
   
   // Read fhicl parameters
   this->reconfigure(p);
+ 
+  fOpHitBuilderAlg.fIntegrationOffset = fPulseIntegOffset;
+  std::cout<<"Using front porch "<<fOpHitBuilderAlg.fIntegrationOffset<<"\n";
   
   // Initialize detprop pointer
   fDetProp = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -1143,12 +1154,14 @@ MichelAna::MichelAna(fhicl::ParameterSet const & p)
   */
 
   if( fUseUniformRecomb ) {
-    fRecombFactorTrack = fRecombFactor;
-    fRecombFactorShower = fRecombFactor; 
+    fRecombElec = fRecomb;
+    fRecombPhot = fRecomb;
   }
 
   fWion = 1000./util::kGeVToElectrons; // 23.6 eV, converted to MeV
   //fWph  = 19.5e-6;
+
+  std::cout<<"Using W_ion = "<<fWion<<"\n";
  
   // Reset counters
   fCachedRunNumber    = 0;
@@ -1269,9 +1282,11 @@ MichelAna::MichelAna(fhicl::ParameterSet const & p)
     fvPrepulseX1[i]     .reserve(kMaxOpHits);
     
     // Initialize simulated arrival time histograms
-    hPMT_phelTimes[i]           = new TH1D(Form("%i_phelTimes",i),Form("PE arrival times for PMT %i",i),28672,0.,28672.);
-    hPMT_phelTimes_electron[i]  = new TH1D(Form("%i_phelTimes_electron",i),Form("PE arrival times for PMT %i",i),28672,0.,28672.);
-    hPMT_phelTimes_muon[i]  = new TH1D(Form("%i_phelTimes_muon",i),Form("PE arrival times for PMT %i",i),28672,0.,28672.);
+    short N = 28672;
+    if( fTruncateWfm > 0 ) N = fTruncateWfm;
+    hPMT_phelTimes[i]           = new TH1D(Form("%i_phelTimes",i),Form("PE arrival times for PMT %i",i),N,0,N);
+    hPMT_phelTimes_electron[i]  = new TH1D(Form("%i_phelTimes_electron",i),Form("PE arrival times for PMT %i",i),N,0,N);
+    hPMT_phelTimes_muon[i]  = new TH1D(Form("%i_phelTimes_muon",i),Form("PE arrival times for PMT %i",i),N,0,N);
     fPMT_wfm[i]                 .reserve(28672);
     fPMT_wfm_raw[i]             .reserve(28672);
     fvbs[i]                     .reserve(28672);
@@ -1393,6 +1408,7 @@ void MichelAna::reconfigure(fhicl::ParameterSet const & p)
   fGradHitThresh            = p.get< std::vector< float >>  ("GradHitThresh",{-10.} );
   fMaxDiff_dT               = p.get< float >                ("MaxDiff_dT",15.);
   fdTcut                    = p.get< float >                ("dTcut",2000);
+  fPulseIntegOffset         = p.get< short >                ("PulseIntegOffset",5);
   fPromptWindow             = p.get< short >                ("PromptWindow",100);
   fFullWindow               = p.get< short >                ("FullWindow",7000);
   fBaselineWindowLength     = p.get< short >                ("BaselineWindowLength",1000); 
@@ -1421,7 +1437,7 @@ void MichelAna::reconfigure(fhicl::ParameterSet const & p)
   fSingToTripRatio_Ph       = p.get< float >                ("SingToTripRatio_Ph",0.30);
   fLateLightTau             = p.get< float >                ("LateLightTau",1200);
   fTauT                     = p.get< float >                ("TauT",1300);
-  fTauS                     = p.get< float >                ("TauS",6.5);
+  fTauS                     = p.get< float >                ("TauS",6.);
   //fCalAreaConstants         = p.get< std::vector< float >>  ("CalAreaConstants", {0.022, 0.050});
   fEdgeMarginX              = p.get< float >                ("EdgeMarginX",1.);
   fEdgeMarginY              = p.get< float >                ("EdgeMarginY",1.);
@@ -1447,9 +1463,9 @@ void MichelAna::reconfigure(fhicl::ParameterSet const & p)
   fShowerAcceptanceAngle    = p.get< float >                ("ShowerAcceptanceAngle",45.);
   fExcRatio                 = p.get< float >                ("ExcRatio", 0.21 ); // Aprile 
   fUseUniformRecomb         = p.get< bool >             ("UseUniformRecomb", false);
-  fRecombFactor             = p.get< float >                ("RecombFactor", 0.645);
-  fRecombFactorTrack        = p.get< float >                ("RecombFactorTrack", 0.688);
-  fRecombFactorShower       = p.get< float >                ("RecombFactorShower", 0.576);
+  fRecomb             = p.get< float >                ("Recomb", 0.645);
+  fRecombElec        = p.get< float >                ("RecombElec", 0.688);
+  fRecombPhot       = p.get< float >                ("RecombPhot", 0.576);
 //  fChargeSmearFactor        = p.get< float >                ("ChargeSmearFactor",0.);
   fMaxHitTimeDiffFac        = p.get< float >             ("MaxHitTimeDiffFac", 1.0 );
   fMinNumPts3D              = p.get< int >                  ("MinNumPts3D",2);
@@ -1481,7 +1497,7 @@ void MichelAna::beginJob()
   fTree->Branch("IsRealData",               &fIsRealData,             "IsRealData/O");
   fTree->Branch("RunNumber",                &fRunNumber,              "RunNumber/I");
   fTree->Branch("SubRunNumber",             &fSubRunNumber,           "SubRunNumber/I");
-//  fTree->Branch("EventNumber",              &fEventNumber,            "EventNumber/I");
+  fTree->Branch("EventNumber",              &fEventNumber,            "EventNumber/I");
   fTree->Branch("EventTime",                &fEventTime,              "EventTime/I");
   fTree->Branch("MichelOpticalID",          &fMichelOpticalID,        "MichelOpticalID/O");
   fTree->Branch("ElectronLifetime",         &fElectronLifetime,       "ElectronLifetime/F");
@@ -1510,17 +1526,19 @@ void MichelAna::beginJob()
   fTree->Branch("Amplitude",                &fAmplitude,              "Amplitude[2]/F");
   fTree->Branch("Width",                    &fWidth,                  "Width[2]/F");
   fTree->Branch("MuWidth",                  &fMuWidth,                "MuWidth[2]/F");
-  fTree->Branch("PE_comb",                &fPE_comb,              "PE_comb/F");
-  fTree->Branch("PE_comb_qc",                &fPE_comb_qc,              "PE_comb_qc/F");
+  fTree->Branch("ElShowerPhel",       &fElShowerPhel,     "ElShowerPhel/F");
+  fTree->Branch("ElShowerPhel_prompt",      &fElShowerPhel_prompt,           "ElShowerPhel_prompt/F");
+  fTree->Branch("ElShowerPhel_qc",             &fElShowerPhel_qc,           "ElShowerPhel_qc/F");
+  fTree->Branch("PE_total",             &fPE_total,           "PE_total[2]/F");
+  fTree->Branch("PE_total_qc",             &fPE_total_qc,           "PE_total_qc[2]/F");
+  fTree->Branch("PE_prompt",             &fPE_prompt,           "PE_prompt[2]/F");
+  fTree->Branch("PE_totalRaw",             &fPE_totalRaw,           "PE_totalRaw[2]/F");
+  fTree->Branch("PE_promptRaw",             &fPE_promptRaw,           "PE_promptRaw[2]/F");
+  //fTree->Branch("PE_comb_qc",                &fPE_comb_qc,              "PE_comb_qc/F");
   fTree->Branch("MuContam_prompt",                &fMuContam_prompt,              "MuContam_prompt[2]/F");
 //  fTree->Branch("MuContam_2us",                &fMuContam_2us,              "MuContam_2us[2]/F");
   fTree->Branch("MuContam_total",                &fMuContam_total,              "MuContam_total[2]/F");
-  fTree->Branch("PE_prompt",                &fPE_prompt,              "PE_prompt[2]/F");
 //  fTree->Branch("PE_2us",                &fPE_2us,              "PE_2us[2]/F");
-  fTree->Branch("PE_total",                 &fPE_total,               "PE_total[2]/F");
-  fTree->Branch("PE_total_qc",                 &fPE_total_qc,               "PE_total_qc[2]/F");
-  fTree->Branch("PE_promptRaw",             &fPE_promptRaw,           "PE_promptRaw[2]/F");
-  fTree->Branch("PE_totalRaw",              &fPE_totalRaw,            "PE_totalRaw[2]/F");
   fTree->Branch("PromptFrac",               &fPromptFrac,             "PromptFrac[2]/F");
 //  fTree->Branch("PromptFrac2us",               &fPromptFrac2us,             "PromptFrac2us[2]/F");
   fTree->Branch("MuAmplitude",              &fMuAmplitude,            "MuAmplitude[2]/F");
@@ -1554,13 +1572,16 @@ void MichelAna::beginJob()
   fTree->Branch("ProjPtOnWires_Y",          &fProjPtOnWires_Y,        "ProjPtOnWires_Y/F");
   fTree->Branch("ProjPtOnWires_Z",          &fProjPtOnWires_Z,        "ProjPtOnWires_Z/F");
   fTree->Branch("TotalCharge",              &fTotalCharge,            "TotalCharge[2]/F");
-  fTree->Branch("TotalIntegral",            &fTotalIntegral,       "TotalIntegral[2]/F");
-  fTree->Branch("ElShowerChargeCol",           &fElShowerChargeCol,         "ElShowerChargeCol/F");
+  fTree->Branch("TotalChargeCol",              &fTotalChargeCol,      "TotalChargeCol[2]/F");
+  fTree->Branch("TotalPhelCh",              &fTotalPhelCh,            "fTotalPhelCh[2]/F");
+//  fTree->Branch("TotalIntegral",            &fTotalIntegral,          "TotalIntegral[2]/F");
+  fTree->Branch("ElShowerChargeCol",           &fElShowerChargeCol,   "ElShowerChargeCol/F");
   fTree->Branch("ElShowerCharge",           &fElShowerCharge,         "ElShowerCharge/F");
   fTree->Branch("ElShowerEnergy",           &fElShowerEnergy,         "ElShowerEnergy/F");
-  fTree->Branch("ElTrackChargeCol",            &fElTrackChargeCol,          "ElTrackChargeCol/F");
+  fTree->Branch("ElTrackChargeCol",         &fElTrackChargeCol,    "ElTrackChargeCol/F");
+  fTree->Branch("ElTrackCharge",            &fElTrackCharge,          "ElTrackCharge/F");
   fTree->Branch("ElTrackEnergy",            &fElTrackEnergy,          "ElTrackEnergy/F");
-  fTree->Branch("MuCharge",           &fMuCharge,         "MuCharge/F");
+  fTree->Branch("MuCharge",                 &fMuCharge,                     "MuCharge/F");
   fTree->Branch("ElShowerSize_Pl0",         &fElShowerSize_Pl0,       "ElShowerSize_Pl0/I");
   /*
   //fTree->Branch("FracDropoffAtBnd_Pl0",              &fFracDropoffAtBnd_Pl0,            "FracDropoffAtBnd_Pl0/F"); 
@@ -1640,10 +1661,12 @@ void MichelAna::beginJob()
   fTree->Branch("True_ElShowerPhotonsPrompt",&fTrue_ElShowerPhotonsPrompt,"True_ElShowerPhotonsPrompt/F");
   fTree->Branch("True_ElShowerPhotonsLate", &fTrue_ElShowerPhotonsLate,"True_ElShowerPhotonsLate/F");
   fTree->Branch("True_dT",                  &fTrue_dT,                "True_dT/F");
-  fTree->Branch("True_PE",           &fTrue_PE,         "True_PE/F");
-  fTree->Branch("True_PE_prompt",           &fTrue_PE_prompt,         "True_PE_prompt[2]/F");
-  fTree->Branch("True_PE_total",            &fTrue_PE_total,          "True_PE_total[2]/F");
-
+  fTree->Branch("True_ElShowerPhel",        &fTrue_ElShowerPhel,         "True_ElShowerPhel/F");
+  fTree->Branch("True_PE_prompt", &fTrue_PE_prompt,   "True_PE_prompt[2]/F");
+  fTree->Branch("True_PE_total",            &fTrue_PE_total,          "True_ElShowerPhel_total[2]/F");
+  fTree->Branch("True_TotalChargeCol",      &fTrue_TotalChargeCol,    "True_TotalChargeCol/F");
+  fTree->Branch("True_TotalPhelCh",         &fTrue_TotalPhelCh,       "True_TotalPhelCh[2]/F");
+   
   // TTree dedicated to crossing muon calibration
   fTreeCrsMu = crsMuDir.make<TTree>("anatree_crsmu","anatree_crsmu");
   fTreeCrsMu->Branch("RunNumber",                &fRunNumber,              "RunNumber/I");
@@ -2248,6 +2271,7 @@ void MichelAna::beginJob()
    
   // ======================================================================
   // Truth plots
+  hTrue_PhotonPropTimes   = truthDir.make<TH1D>("True_PhotonPropTimes","Geometric propagation times for sim photons;Propagateion time [ns]",100,0.,50.);
   hTrue_SingToTripRatio   = truthDir.make<TH1D>("True_SingToTripRatio","Energy-deposit-weighted S/T used in simulation;S/T",60,0.,0.6);
     hTrue_SingToTripRatio   ->SetOption("hist"); 
   hTrue_ResQ_Mu           = truthDir.make<TH1D>("True_ResQ_Mu","Resolution of Q for stopping #mu;(Q_{reco}-Q_{true}) / Q_{true}",200,-1.0,1.0);
@@ -2361,9 +2385,9 @@ void MichelAna::ResetVariables()
   fEventNumber              = -99;
   fEventTime                = -99;
   fDecayTime                = -999.;
-  fPE_comb                  = -999.;
-  fPE_comb_qc               = -999.;
-  fPE_prompt_comb           = -999.;
+  fElShowerPhel      = -999.;
+  fElShowerPhel_prompt      = -999.;
+  fElShowerPhel_qc    = -999.;
   fTriggerTime              = -99.;
   for(size_t i=0; i<2; i++) {
     fWfmRMS[i]              = -99.; 
@@ -2373,13 +2397,14 @@ void MichelAna::ResetVariables()
     fWidth[i]               = -999.;
     fMuWidth[i]             = -999.;
     fAmplitude[i]           = -999.;
-    fPE_total[i]            = -999.;
-    fPE_total_qc[i]            = -999.;
-    fPE_totalRaw[i]         = -999.;
-    fPE_prompt[i]           = -999.;
-    fPE_promptRaw[i]        = -999.;
-    fPE_2us[i]              = -999.;
-    fPE_2usRaw[i]           = -999.;
+    fTotalPhelCh[i]           = -999.;
+    fPE_prompt[i] = -999.;
+    fPE_2us[i] = -999.;
+    fPE_total[i] = -999.;
+    fPE_promptRaw[i] = -999.;
+    fPE_2usRaw[i] = -999.;
+    fPE_totalRaw[i] = -999.;
+    fPE_total_qc[i] = -999.;
     fPromptFracRaw[i]       = -999.;
     fPromptFrac[i]          = -999.;
     fPromptFrac2us[i]       = -999.;
@@ -2420,14 +2445,13 @@ void MichelAna::ResetVariables()
     fvPrepulseX1[i]         .clear();
     fvIsHitAtTrigger[i]     .clear();
     fvIsHitSaturated[i]     .clear();
+    fTrue_PE_total[i]       = -999.;
     fTrue_PE_prompt[i]       = -999.;
-    fTrue_PE_2us[i]       = -999.;
     fTrue_Amplitude[i]       = -999.;
     fTrue_MuPE_prompt[i]       = -999.;
     fTrue_MuPE_total[i]       = -999.;
     fTrue_MuContam_prompt[i] = -999.;
     fTrue_MuContam_total[i] = -999.;
-    fTrue_PE_total[i]       = -999.;
     hPMT_phelTimes_electron[i]->Reset();
     hPMT_phelTimes_muon[i]->Reset();
     hPMT_phelTimes[i]       ->Reset();
@@ -2436,6 +2460,7 @@ void MichelAna::ResetVariables()
     fvbs[i]                 .clear();
     fT0[i]                  = 0;
     fMuT0[i]                = 0;
+    fTrue_TotalPhelCh[i]    = 0;
   }
   fNumTrack                = -9;
   fNumTrackStopping         = 0;
@@ -2541,8 +2566,9 @@ void MichelAna::ResetVariables()
   fReclustered          = false;
   for(size_t i=0; i<2; i++){
     fNumPlaneHits[i]          = 0;
-    fTotalIntegral[i]     = -9.;
+//    fTotalIntegral[i]     = -9.;
     fTotalCharge[i]       = -9.;
+    fTotalChargeCol[i]       = -9.;
     fvMuTrkXYZ[i]              .clear();
     fvMuTrkdEdx[i]             .clear();
     fvMuTrkdQdx[i]             .clear();
@@ -2607,9 +2633,9 @@ void MichelAna::ResetVariables()
   fElShowerEnergyQL         = -999.;
   
   // Truth information
-  fTrue_PE0                  = -999.;
-  fTrue_PE                  = -999.;
-  fTrue_PEPrompt                  = -999.;
+  fTrue_ElShowerPhel        = -999.;
+  fTrue_ElShowerPhel0        = -999.;
+  fTrue_ElShowerPhelPr      = -999.;
   fTrue_MuPE              = -999.;
   fTrue_ChargeSign          = 0;
   fTrue_MuEnergy          = -999.;
@@ -2660,6 +2686,7 @@ void MichelAna::ResetVariables()
   fTrue_ContainmentFrac = -9.;
   fTrue_TotalEnergyDep    = -999.;
   fTrue_TotalCharge    = -999.;
+  fTrue_TotalChargeCol    = -999.;
   fTrue_dT                = -999;
 }
 
@@ -3224,6 +3251,9 @@ bool MichelAna::filter(art::Event & e)
         hBaselinePE_100ns[ch]   -> Fill( Integrate(fPMT_wfm[ch],5,5+100) / fSPE[ch] );
         hBaselinePE_500ns[ch]   -> Fill( Integrate(fPMT_wfm[ch],5,5+500) / fSPE[ch] );
         hBaselinePE_1000ns[ch]  -> Fill( Integrate(fPMT_wfm[ch],5,5+1000) / fSPE[ch] );
+        
+        // Integrate the whole waveform to get total PEs (will include muon + electron)
+        fTotalPhelCh[ch] = -1.*Integrate(fPMT_wfm[ch],0,fPMT_wfm[ch].size()-1) / fSPE[ch] ;
 
         // Perform a "first-pass" hit-finding/filtering
         std::vector<short> hitTimes = fOpHitBuilderAlg.GetHits(fPMT_wfm[ch], (size_t)fPulses[ipmt].FirstSample() );
@@ -3426,7 +3456,7 @@ bool MichelAna::filter(art::Event & e)
               
       // Define "raw" PE quantities
       fPE_promptRaw[ch] = fvHitADC_100ns[ch].at(elPulseIndex) / fSPE[ch];
-      fPE_2usRaw[ch]    = fvHitADC_2000ns[ch].at(elPulseIndex) / fSPE[ch];
+      fPE_2usRaw[ch] = fvHitADC_2000ns[ch].at(elPulseIndex) / fSPE[ch];
       fPE_totalRaw[ch]  = fvHitADC_total[ch].at(elPulseIndex) / fSPE[ch];
 
       // Initialize prompt/total light with raw quantities
@@ -3439,7 +3469,7 @@ bool MichelAna::filter(art::Event & e)
       // If dT > dTmin, do a fit to the muon late-light and subtract 
       // off the added PEs to the Michel pulse. Otherwise just use 
       // the integrals that used the pre-pulse fits from before.
-      if( fMuContamCorr ) CorrectMuonContamination(ch); //<-- this function defines fPE_prompt, fPE_total
+      if( fMuContamCorr ) CorrectMuonContamination(ch); //<-- this function defines fElShowerPhel_prompt, fPE_total
     
       if( !fIsRealData ) 
         hTrue_dT_vs_MuContamRes[ch]->Fill( fdT[ch], fMuContam_total[ch]/fTrue_MuContam_total[ch] );
@@ -3604,10 +3634,10 @@ bool MichelAna::filter(art::Event & e)
     }
   }
   if( sum_pe > 0 && maxdiff >= 0 ) hDiff_dT->Fill(maxdiff);
-        
-  fPE_comb         = sum_pe;
-  fPE_comb_qc      = sum_pe_qc;
-  fPE_prompt_comb   = sum_pe_pr;
+  
+  fElShowerPhel_prompt  = sum_pe_pr;
+  fElShowerPhel   = sum_pe;      
+  fElShowerPhel_qc   = sum_pe_qc;      
   float decayTime = -999.;
   if( N > 0 ) decayTime = sum_dT / N;
 
@@ -3820,6 +3850,7 @@ bool MichelAna::filter(art::Event & e)
     for(size_t i=0; i<2; i++){ 
       fTotalIntegral[i]     = 0.; 
       fTotalCharge[i]       = 0.;
+      fTotalChargeCol[i]    = 0.;
     }
   
     // Get recob::Hit information
@@ -3876,6 +3907,7 @@ bool MichelAna::filter(art::Event & e)
       */
       fTotalIntegral[hitPlane]      += (float)fHitlist[i]->Integral()*ltCorFac;
       fTotalCharge[hitPlane]        += fHitCharge.at(i);
+      fTotalChargeCol[hitPlane]     += fHitChargeCol.at(i);
       fNumPlaneHits[hitPlane]       ++;
       hHitCharge[hitPlane]          ->Fill( fHitChargeCol.at(i));
       hHitTick[hitPlane]            ->Fill( fHitlist[i]->PeakTime() );
@@ -4101,7 +4133,7 @@ bool MichelAna::filter(art::Event & e)
   // If this is bare electron MC shower event, do simple clustering which groups all
   // reconstructed hits into the shower
   if( fTrue_IsBareElShower ) {
-    
+   
     ClusteringSimple( cl_pl0 );
     ClusteringSimple( cl_pl1 );
     
@@ -4417,8 +4449,8 @@ bool MichelAna::filter(art::Event & e)
     //   E = (N_i + N_ex) * W_ph
     //   N_i + N_ex = N_e + N_ph 
     if( fElShowerVis > 0 ) {
-      fElShowerPhotons        = fPE_comb_qc / fElShowerVis;
-      fElShowerPhotonsPrompt  = fPE_prompt_comb / fElShowerVis;
+      fElShowerPhotons        = fElShowerPhel_qc / fElShowerVis;
+      fElShowerPhotonsPrompt  = fElShowerPhel_prompt / fElShowerVis;
       fElShowerEnergyQL       = ( fElShowerPhotons + fElShowerCharge )*fWph;
     }
      
@@ -4761,7 +4793,7 @@ bool MichelAna::filter(art::Event & e)
       hTrue_EnergyVsEnergyRes       ->Fill( fTrue_ElShowerEnergyDep, resE_shw );
       hTrue_EnergyResTrk            ->Fill( resE_trk );
       hTrue_ResQ                    ->Fill( resQ_shw );
-      hTrue_ResQCol                 ->Fill( (fElShowerChargeCol - fTrue_ElShowerChargeCol)/fTrue_ElShowerChargeCol);
+      hTrue_ResQCol                 ->Fill( (fTotalChargeCol[1] - fTrue_TotalChargeCol)/fTrue_TotalChargeCol);
       hTrue_ResQ_Mu                 ->Fill( ( fMuCharge - fTrue_MuCharge ) / fTrue_MuCharge );
     }
     
@@ -4801,9 +4833,9 @@ bool MichelAna::filter(art::Event & e)
         hTrue_EnergyResTrk_Shwr3D   ->Fill( resE_trk );
         hTrue_ResL                  ->Fill( (fElShowerPhotons - fTrue_ElShowerPhotons) / fTrue_ElShowerPhotons );
         hTrue_ResVis                ->Fill( (fElShowerVis - fTrue_ElShowerVis) / fTrue_ElShowerVis );
-        hTrue_ResPE                 ->Fill( (fPE_comb - fTrue_PE) / fTrue_PE );
-        hTrue_ResPEPrompt           ->Fill( (fPE_prompt_comb - fTrue_PEPrompt) / fTrue_PEPrompt );
-        hTrue_ResPE0                ->Fill( (fTrue_PE - fTrue_PE0) / fTrue_PE0 );
+        hTrue_ResPE                 ->Fill( (fElShowerPhel - fTrue_ElShowerPhel) / fTrue_ElShowerPhel );
+        hTrue_ResPEPrompt           ->Fill( (fElShowerPhel_prompt - fTrue_ElShowerPhelPr ) / fTrue_ElShowerPhelPr );
+        hTrue_ResPE0                ->Fill( (fTrue_ElShowerPhel - fTrue_ElShowerPhel0 ) / fTrue_ElShowerPhel0 );
       }
       
       float R = ( 1.+fExcRatio ) / (1. + fElShowerPhotons/fElShowerCharge);
@@ -4928,9 +4960,9 @@ void MichelAna::endJob()
   <<"  MinElShowerFrac                        : "<<fMinElShowerFrac<<"\n"
   <<"  MinFracMuHitsLinear                    : "<<fMinFracMuHitsLinear<<"\n"
   <<"\n"
-  <<"  RFactor                                : "<<fRecombFactor<<"\n"
-  <<"  RFactorTrack                           : "<<fRecombFactorTrack<<"\n"
-  <<"  RFactorShower                          : "<<fRecombFactorShower<<"\n"
+  <<"  R                                      : "<<fRecomb<<"\n"
+  <<"  RTrack                                 : "<<fRecombElec<<"\n"
+  <<"  RShower                                : "<<fRecombPhot<<"\n"
   <<"\n";
   
   
@@ -5250,22 +5282,23 @@ void MichelAna::PerfectWfmReco(raw::OpDetPulse &pulse)
   fNumOpHits[ch] = fvHitTimes[ch].size();
   
   for(int i=0; i<fNumOpHits[ch]; i++){
-         
-        float T = fvHitTimes[ch].at(i) - 5;
-        if( T < 0 ) T = 0;
-        float PE_100 = Integrate(hPMT_phelTimes[ch],T,T+100);
-        float PE_200 = Integrate(hPMT_phelTimes[ch],T,T+200);
-        float PE_300 = Integrate(hPMT_phelTimes[ch],T,T+300);
-        float PE_400 = Integrate(hPMT_phelTimes[ch],T,T+400);
-        float PE_500 = Integrate(hPMT_phelTimes[ch],T,T+500);
-        float PE_600 = Integrate(hPMT_phelTimes[ch],T,T+600);
-        float PE_700 = Integrate(hPMT_phelTimes[ch],T,T+700);
-        float PE_900 = Integrate(hPMT_phelTimes[ch],T,T+900);
-        float PE_1200 = Integrate(hPMT_phelTimes[ch],T,T+1200);
-        float PE_1500 = Integrate(hPMT_phelTimes[ch],T,T+1500);
-        float PE_1800 = Integrate(hPMT_phelTimes[ch],T,T+1800);
-        float PE_2000 = Integrate(hPMT_phelTimes[ch],T,T+2000);
-        float PE_total = Integrate(hPMT_phelTimes[ch],T,T+fFullWindow);
+        
+        float T  = fvHitTimes[ch].at(i);
+        float T0 = fvHitTimes[ch].at(i)-fPulseIntegOffset;
+        if( T < 0 ) { T = 0; T0 = 0; }
+        float PE_100 = Integrate(hPMT_phelTimes[ch],T0,T+100);
+        float PE_200 = Integrate(hPMT_phelTimes[ch],T0,T+200);
+        float PE_300 = Integrate(hPMT_phelTimes[ch],T0,T+300);
+        float PE_400 = Integrate(hPMT_phelTimes[ch],T0,T+400);
+        float PE_500 = Integrate(hPMT_phelTimes[ch],T0,T+500);
+        float PE_600 = Integrate(hPMT_phelTimes[ch],T0,T+600);
+        float PE_700 = Integrate(hPMT_phelTimes[ch],T0,T+700);
+        float PE_900 = Integrate(hPMT_phelTimes[ch],T0,T+900);
+        float PE_1200 = Integrate(hPMT_phelTimes[ch],T0,T+1200);
+        float PE_1500 = Integrate(hPMT_phelTimes[ch],T0,T+1500);
+        float PE_1800 = Integrate(hPMT_phelTimes[ch],T0,T+1800);
+        float PE_2000 = Integrate(hPMT_phelTimes[ch],T0,T+2000);
+        float PE_total = Integrate(hPMT_phelTimes[ch],T0,T+fFullWindow);
 
         fvIsHitAtTrigger[ch]          .push_back(true);
 //        if( i==1) fvIsHitAtTrigger[ch]    .push_back( true );
@@ -5299,6 +5332,7 @@ void MichelAna::PerfectWfmReco(raw::OpDetPulse &pulse)
           float pe_2000 = pe_1800 + tmp + fRand->Gaus(0, CalcSigma( ch,tmp, 200. ));
           tmp = PE_total-PE_2000;  
           float pe_total = pe_2000 + tmp + fRand->Gaus(0, CalcSigma( ch,tmp, fFullWindow-2000. ));
+          float totalPhel = fTrue_TotalPhelCh[ch];
 
           fvHitADC_100ns[ch]      .push_back( pe_100    *fSPE[ch] );
           fvHitADC_200ns[ch]      .push_back( pe_200    *fSPE[ch] );
@@ -5313,6 +5347,8 @@ void MichelAna::PerfectWfmReco(raw::OpDetPulse &pulse)
           fvHitADC_1800ns[ch]     .push_back( pe_1800   *fSPE[ch] );
           fvHitADC_2000ns[ch]     .push_back( pe_2000   *fSPE[ch] );
           fvHitADC_total[ch]      .push_back( pe_total   *fSPE[ch] );
+          fTotalPhelCh[ch]        = totalPhel + fRand->Gaus(0,CalcSigma(ch,totalPhel,fTruncateWfm));
+
         
         fvPrepulseBaseline[ch]  .push_back(0);
         fvPrepulseRMS[ch]       .push_back(0);
@@ -5321,6 +5357,8 @@ void MichelAna::PerfectWfmReco(raw::OpDetPulse &pulse)
         fvPrepulseX1[ch]        .push_back(0);  
         fvPrepulseZeroPoint[ch] .push_back(0);
         
+        // Get total
+
         // The prefit integrals are only really sensical in data;
         // in MC, we will just assign them as truth for now
         if( fMuT0[ch] > 0.  ) {
@@ -5338,6 +5376,7 @@ void MichelAna::PerfectWfmReco(raw::OpDetPulse &pulse)
           
         fvHitWidth[ch]          .push_back(fMinOpHitWidth[ch]);
         fvHitAmplitudes[ch]     .push_back(0.); // convert PEs to amplitude
+
   
   }
     
@@ -5642,32 +5681,34 @@ void MichelAna::GetTruthInfo(art::Event &e){
   ParticleTracker(e, fMuonID, fElectronID, hPMT_phelTimes, hPMT_phelTimes_muon, hPMT_phelTimes_electron); 
   
   fTrue_MuPE = 0;
-  fTrue_PE = 0.; 
-  fTrue_PEPrompt = 0.;
+  fTrue_ElShowerPhel = 0.; 
+  fTrue_ElShowerPhelPr = 0.;
+  fTrue_TotalPhel = 0;
 
   // Loop over PMTs
   for( auto & i : fSelectChannels ) {
 
     float muX1 = 0.;
     float elX1 = 0.;
-    // Approximate the "hit time" T0 as the time of arrival of the first photon
+    // Approximate the "hit time" T0 as the time of arrival of the first photon,
+    // + add "front porch" based on average waveforms in data
     if( fMuonID > 0 ) {
-      fMuT0[i] = (float)hPMT_phelTimes[i]->FindFirstBinAbove(0,1);
-      muX1 = fMuT0[i]-1;
+      fMuT0[i] = (float)hPMT_phelTimes[i]->FindFirstBinAbove(0,1)-1.+fPulseIntegOffset;
+      muX1 = fMuT0[i]-fPulseIntegOffset;
     }
     if( fElectronID > 0 ) {
-      fT0[i]   = (float)hPMT_phelTimes_electron[i]->FindFirstBinAbove(0,1);
-      elX1 = fT0[i]-1;
+      fT0[i]   = (float)hPMT_phelTimes_electron[i]->FindFirstBinAbove(0,1)-1.+fPulseIntegOffset;
+      elX1 = fT0[i]-fPulseIntegOffset;
     }
 
     // Save prompt, total PEs by integrating the photon arrival 
     // time histograms
     if( fElectronID > 0 ) {
-      fTrue_PE_prompt[i]      = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+fPromptWindow);
-      fTrue_PE_2us[i]         = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+2000);
-      fTrue_PE_total[i]       = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+fFullWindow);
-      fTrue_PE                += fTrue_PE_total[i];
-      fTrue_PEPrompt          += fTrue_PE_prompt[i];
+      fTrue_PE_prompt[i]  = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+fPromptWindow);
+      fTrue_PE_2us[i]     = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+2000);
+      fTrue_PE_total[i]   = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+fFullWindow);
+      fTrue_ElShowerPhel              += fTrue_PE_total[i];
+      fTrue_ElShowerPhelPr            += fTrue_PE_prompt[i];
       hTrue_PE_preTrig[i]     ->Fill( fTrue_PE_total[i] );
     }
     if( fMuonID > 0 ) {
@@ -5680,6 +5721,10 @@ void MichelAna::GetTruthInfo(art::Event &e){
       }
     }
     hTrue_LightYield[i]     ->Fill( hPMT_phelTimes[i]->GetEntries() / fTrue_TotalEnergyDep );
+
+    // Record all photons
+    fTrue_TotalPhelCh[i] = Integrate(hPMT_phelTimes[i],-1,-1);
+    fTrue_TotalPhel       += fTrue_TotalPhelCh[i];
   }
 
   LOG_VERBATIM("MichelAna")
@@ -5811,19 +5856,20 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
 
   fTrue_NumBremmPhotons = 0;
   fTrue_TotalCharge     =0.;
+  fTrue_TotalChargeCol  =0.;
   fTrue_TotalEnergyDep  =0.;
-  fTrue_PE0             =0.;
+  fTrue_ElShowerPhel0   = 0.;
   
   // Keep track of total charge (electrons escaping recomb.) 
   // for Michel electrons and their shower products, and
   // total number of electron-ion pairs. These are used to 
   // calculate recombination factors.
-  int   Ni_trk  = 0;
-  int   Ni_shwr = 0;
-  float Q_trk   = 0.;
-  float Q_shwr  = 0.;
-  float Qc_trk   = 0.;
-  float Qc_shwr  = 0.;
+  float Ni_elec  = 0;
+  float Ni_phot = 0;
+  float Q_elec   = 0.;
+  float Q_phot  = 0.;
+  float Qc_elec   = 0.;
+  float Qc_phot  = 0.;
 
   // for calculating shower centroid
   float wsum_x = 0.;
@@ -5893,7 +5939,8 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
     //float displacementMu = -9.;
     bool isElectron     = ( particle.TrackId() == elID || (abs(particle.PdgCode())==11 && particle.Mother() == elID));// || (displacementEl > 0 && displacementEl < minDisplacement ));
     bool isFromElectron = IsParticleDescendedFrom(particleHandle,particle.TrackId(),elID);
-    bool isElectronShwr = (isFromElectron || isElectron );
+    bool isPhot         = ( isFromElectron && !isElectron );
+    bool isElectronShwr = ( isFromElectron || isElectron );
     bool isMuon         = (particle.TrackId() == muID ); //|| (!isElectron && !isFromElectron ) ); // && displacementMu > 0 && displacementMu < minDisplacement ) );
     bool isFromMuon     = ( IsParticleDescendedFrom(particleHandle,particle.TrackId(),muID) && !isFromElectron );
     
@@ -5931,11 +5978,16 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
           TVector3   loc(x,y,z);
 //          hTrue_IDE_NumElectrons->Fill( it->second.at(i).numElectrons );
           
-          // Correct numElectrons for drift attenuation. Account for the
-          // transit times between the shield and induction plane.
-          // Assuming induction plane is at X = -0.2, shield at X = 0.2
-          float T = T_from_X(x,0);
-          int numElectrons = it->second.at(i).numElectrons * TMath::Exp( T / fElectronLifetimeFromDB );
+          // Correct numElectrons for drift attenuation. In the MC, each electron
+          // cluster is "drifted" from its location of origin to the induction plane
+          // at X = -0.2 cm. The drift time is computed as:
+          //    TDrift = (XDrift - 0.4) * RecipDriftVel[0] + (0.4) * RecipDriftVel[1]
+//          float T = T_from_X(x,0);
+          float xd = x+0.2;
+          float T = (xd-0.4)/fDriftVelocity[0] + 0.4/fDriftVelocity[1];
+          if (xd < 0.4 ) T = xd/fDriftVelocity[1];           
+          float numElectronsCol = (float)it->second.at(i).numElectrons;
+          float numElectrons    = numElectronsCol * TMath::Exp( T / fElectronLifetimeFromDB );
           
           // Use deposited energy to back-calculate scintillation.
           int numIon      = dE/fWion;
@@ -5943,6 +5995,7 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
 
           // add up the energy
           fTrue_TotalCharge           += numElectrons; 
+          fTrue_TotalChargeCol        += numElectronsCol; 
           fTrue_TotalEnergyDep        += dE;
           particleDepCharge           += numElectrons;
           particleDepEnergy           += dE;
@@ -5970,9 +6023,9 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
             //}
           }
           if( isElectron ){
-            Ni_trk  += numIon; 
-            Q_trk   += numElectrons;
-            Qc_trk  += it->second.at(i).numElectrons;
+            Ni_elec  += numIon; 
+            Q_elec   += numElectrons;
+            Qc_elec  += numElectronsCol;
             fTrue_ElTrackEnergyDep    += dE;
           }
           if( isElectronShwr ){
@@ -5983,10 +6036,10 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
             wsum_y += loc.Y()*numElectrons;
             wsum_z += loc.Z()*numElectrons;
           }
-          if( !isElectron && isFromElectron ) {
-              Ni_shwr += numIon;
-              Q_shwr  += numElectrons;
-              Qc_shwr  += it->second.at(i).numElectrons;
+          if( isPhot ) {
+            Ni_phot += numIon;
+            Q_phot  += numElectrons;
+            Qc_phot += numElectronsCol;
           }
 
           // Divide photons into singlet- and triplet-produced populations
@@ -6016,7 +6069,7 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
           if( fLateLightTau > 0 && fLateLightTau < tauLate ) {
             double tauQuench = pow( 1./fLateLightTau - 1./tauLate , -1.);
             double tauLateEff = fLateLightTau;
-            double tauFastEff = pow( 1./tauQuench + 1/tauFast , -1);
+            double tauFastEff = pow( 1./tauQuench + 1./tauFast , -1.);
             quenchFacFast = tauFastEff/tauFast;
             quenchFacLate = tauLateEff/tauLate;
             std::binomial_distribution<int> fastQuenched( numPhotons_fast, quenchFacFast );
@@ -6026,6 +6079,7 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
             tauFast = tauFastEff;
             tauLate = tauLateEff;
           }
+          
           // update num photons after quenching
           float numPhotons0 = numPhotons; 
           numPhotons = numPhotons_fast + numPhotons_late;
@@ -6058,8 +6112,7 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
             int Ndet_late = nDetDistLate(generator); 
             Ndet[ch] = Ndet_fast + Ndet_late;
             if( isElectronShwr ){ 
-              fTrue_PE0 += Ndet[ch];
-              // weighted vis
+              fTrue_ElShowerPhel0        += Ndet[ch];
               fTrue_ElShowerVisCh[ch] += total_vis_ch * float(numPhotons0);
               fTrue_ElShowerVis       +=  total_vis_ch * float(numPhotons0); 
             }
@@ -6150,14 +6203,14 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
   // from these histograms will be the scale factors we use for charge deposits
   // in data when calculating Q-based energy. (NOTE: this is for Michel electrons
   // and their shower products only.)
-  fTrue_ElTrackChargeCol    = Qc_trk;
-  fTrue_ElTrackCharge       = Q_trk;
-  fTrue_ElShowerChargeCol   = Qc_trk + Qc_shwr;
-  fTrue_ElShowerCharge      = Q_trk + Q_shwr;
-  fTrue_ElShowerIons        = float(Ni_trk + Ni_shwr);
-  hTrue_RecombFactor_ElTrk  ->Fill( Q_trk / float(Ni_trk) );
-  hTrue_RecombFactor_ElShw  ->Fill( Q_shwr / float(Ni_shwr) );
-      
+  fTrue_ElTrackChargeCol    = Qc_elec;
+  fTrue_ElTrackCharge       = Q_elec;
+  fTrue_ElShowerChargeCol   = Qc_elec + Qc_phot;
+  fTrue_ElShowerCharge      = Q_elec + Q_phot;
+  fTrue_ElShowerIons        = Ni_elec + Ni_phot;
+  hTrue_RecombFactor_ElTrk  ->Fill( Q_elec / Ni_elec); //fTrue_ElShowerIons );
+  hTrue_RecombFactor_ElShw  ->Fill( Q_phot / Ni_phot); //fTrue_ElShowerIons );
+     
   // Calculate shower centroid
   fTrue_ElShowerCentroid_X = wsum_x / fTrue_ElShowerCharge;
   fTrue_ElShowerCentroid_Y = wsum_y / fTrue_ElShowerCharge;
@@ -6200,8 +6253,20 @@ void MichelAna::PropagatePhoton(float t0, float tlar, float tmin, float tmean, f
     
   // add physical propagation time
   double dt = 0.;
-  while( dt <= tmin ) dt = fRand->Gaus(tmean,trms);
+
+  while( dt < tmin ) dt = fRand->Gaus(tmean,trms);
+  //while( dt <= tmin ) dt = fRand->Exp(tmean);
+  
+  // on second thought, don't try and model the propagation,
+  // just add the minimum propagation time and call it a day
+  //dt = tmin;
+  
   time += dt;
+  hTrue_PhotonPropTimes->Fill(dt);
+  
+
+  //std::cout<<"t_mean from library: "<<tmean<<"  rms = "<<trms<<"  (tmin = "<<tmin<<")\n";
+  //std::cout<<"photon prop time += "<<dt<<"\n";
 
   // add TPB timing based on results from E. Segreto (arxiv:1411.4524)
   //   60% of emission has (5 +/- 5)ns lifetime
@@ -6266,7 +6331,7 @@ void MichelAna::ClusteringSimple( MichelCluster& cl){
   LOG_VERBATIM("MichelAna")
   <<"Begin simple clustering on plane "<<plane;
 
-  MakeProximityCluster( cl, fTrue_ElShowerVertex_X, fMaxHitSeparation );// fMaxHitSeparation );
+  MakeProximityCluster( cl, fTrue_ElShowerVertex_X, fMaxHitSeparation );
   cl.cluster_el = cl.cluster;
       
   int elHits = cl.cluster_el.size();
@@ -6860,8 +6925,9 @@ void MichelAna::CalcMichelShowerEnergy( MichelCluster& cl ) {
     bool    isInTrack   = cl.isInTrk.at(i);
     float   q           = fHitCharge.at(hitID);
     float   qcol        = fHitChargeCol.at(hitID);
-    float   rfac        = fRecombFactorShower;
-    if(isInTrack) rfac  = fRecombFactorTrack;
+    float   rfac        = fRecomb;
+    if(isInTrack) rfac  = fRecombElec;
+    else          rfac  = fRecombPhot;
 
     // Add to Michel charge
     cl.elShowerCharge         += q;
@@ -6989,8 +7055,7 @@ void MichelAna::ProximityCluster(std::vector<int>& cluster, int plane, int seedH
 }
 
 void MichelAna::MakeProximityCluster(MichelCluster& cl, float startX, float distThresh ) {
-  std::vector<int> hits;
-  MakeProximityCluster(cl,startX,distThresh,hits);
+  MakeProximityCluster(cl,startX,distThresh,fHitKey);
 }
 
 void MichelAna::MakeProximityCluster(MichelCluster& cl, float startX, float distThresh, std::vector<int>& hits ){
@@ -7430,10 +7495,12 @@ void MichelAna::ReadPhotonLibrary(TVector3 &loc, int ch, int isVis, float& vis, 
 // ########################################################################################
 float MichelAna::Integrate(const TH1D* h, float x1, float x2){
   int Nbins = h->GetNbinsX();
+  if( x1 < 0 ) x1 = h->GetBinLowEdge(1);
+  if( x2 < 0 ) x2 = h->GetBinLowEdge(Nbins)+h->GetBinWidth(Nbins);
   double integral = 0.;
-  for(int i=1; i<Nbins; i++ ){
+  for(int i=1; i<=Nbins; i++ ){
     double x = h->GetBinLowEdge(i);
-    if( x >= x1 and x <= x2 ) integral += h->GetBinContent(i);
+    if( x >= x1 and x < x2 ) integral += h->GetBinContent(i);
   }
   return integral;
 }

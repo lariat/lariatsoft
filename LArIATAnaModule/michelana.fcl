@@ -10,6 +10,7 @@ lariat_michelana:
   SelectChannels:                 [ 1  ]
   OpDetChannels:                  [ 0,    1 ]
   MaxWfmRMS:                      [ 1.8, 1.8 ]
+  PulseIntegOffset:               3 
   BaselineWindowLength:           1000  
   FullWindow:                     7000
   WfmSmoothingRange:              1
@@ -24,7 +25,6 @@ lariat_michelana:
   MaxDecayTime:                   7200.
   dTcut:                          1800. # 2000
   CorrectQuenching:               true
-  
   
   OpHitBuilderAlg:
   {
@@ -46,7 +46,7 @@ lariat_michelana:
     MskBaselineSubtr_P:         0.15 #0.15
     MskBaselineSubtr_grmsfac:   3   # 3
     MskBaselineSubtr_adcthresh: 5   # 5
-  
+     
   }
 
   SmearFactor:                    [ 0, 0 ]
@@ -94,9 +94,9 @@ lariat_michelana:
   MaxHitTimeDiffFac:              1.0 # xfactor of RMS # microseconds 
  
   UseUniformRecomb:               true 
-  RecombFactor:                   0.69 # for dE/dx = 2.3 MeV/cm, R = 0.694 at 484 V/cm
-  RecombFactorTrack:              0.679 # 0.676
-  RecombFactorShower:             0.631 # 0.551
+  Recomb:                         0.69 #0.69 for dE/dx = 2.3 MeV/cm, R = 0.694 at 484 V/cm
+  RecombElec:                     0.67 # 0.676
+  RecombPhot:                     0.59 # 0.551
   
   # event cut params:
   MinClusterSize:                 12

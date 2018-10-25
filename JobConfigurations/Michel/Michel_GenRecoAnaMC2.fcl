@@ -26,7 +26,7 @@ process_name: GenRecoAna
 
 services:
 {
-  TFileService: { fileName: "histos.root" }
+  TFileService: { fileName: "Ana.root" }
   RandomNumberGenerator: {}
   @table::lariat_simulation_services_run2
 }
