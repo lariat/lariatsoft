@@ -1,0 +1,300 @@
+#include "services_lariat.fcl"
+#include "caldata_lariat.fcl"
+#include "hitfindermodules.fcl"
+#include "trackfindermodules.fcl"
+#include "calorimetry.fcl"
+#include "calorimetry_lariat.fcl"
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "services_lariat.fcl"
+#include "lariatanamodules.fcl"
+#include "lariatfiltermodules.fcl"
+#include "cluster_lariat.fcl"
+#include "distortedhitremoval.fcl"
+#include "wcqualityproducer.fcl"
+#include "wctracktpctrackmatch.fcl"
+
+process_name: reco
+
+services:
+{
+  # Load the service that manages root files for histograms.
+  TFileService: { fileName: "reco_histo.root" }
+  # @table::standard_resourcetrackers
+  RandomNumberGenerator: {} # ART native random number generator
+  # message:      @local::lariat_message_services
+  @table::lariat_services
+}
+
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
+services.SignalShapingServiceT1034.IndFieldRespAmp: 0.66
+services.SignalShapingServiceT1034.ColFieldRespAmp: 0.50
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+beamlinereco: [ tof, wctrack ]
+tpcrecoOrigin: [ gaushitOrigin, trajclusterOrigin, pmtrackOrigin, caloOrigin ]
+tpcreco: [ gaushit, trajcluster, pmtrack, calo ]
+
+# Define and configure some modules to do work on each event.
+# First modules are defined; they are scheduled later.
+# Modules are grouped by type.
+physics:
+{
+
+  producers:
+  {
+    # beamline producers
+    tof:                   @local::lariat_tof
+    wctrack:               @local::lariat_wctrackbuilder
+    wcquality:             @local::lariat_wcqualityproducer
+
+    # tpc producers
+    caldata:               @local::lariat_calroi
+
+    gaushitOrigin:         @local::gaus_hitfinder
+    trajclusterOrigin:     @local::standard_trajcluster
+    pmtrackOrigin:         @local::standard_pmalgtrackmaker
+    caloOrigin:            @local::standard_calodata
+
+    gaushit:               @local::lariat_distortedhitremoval
+    trajcluster:           @local::standard_trajcluster
+    pmtrack:               @local::standard_pmalgtrackmaker
+    calo:                  @local::standard_calodata
+
+    wctracktpctrackmatch:  @local::lariat_wctracktpctrackmatch
+  }
+
+  filters:
+  {
+    timestampfilter: @local::lariat_timestampfilter
+    toffilter:       @local::lariat_toffilter
+    wctrackfilter:   @local::lariat_wctrackfilter
+  }
+
+  analyzers:
+  {
+    anatree: @local::lariat_anatreeuc
+  }
+
+  #define the producer and filter modules for this path, order matters, 
+  #filters reject all following items.  see lines starting physics.producers below
+  reco: [ timestampfilter, @sequence::beamlinereco, toffilter, wctrackfilter, wcquality, caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctracktpctrackmatch ]
+
+  ana: [ anatree ]
+
+  #define the output stream, there could be more than one if using filters 
+  stream1:  [ out1 ]
+
+  #trigger_paths is a keyword and contains the paths that modify the art::event, 
+  #ie filters and producers
+  trigger_paths: [ reco ] 
+
+  #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+  #ie analyzers and output streams.  these all run simultaneously
+  end_paths:     [ ana, stream1 ]
+}
+
+#block to define where the output goes.  if you defined a filter in the physics
+#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
+outputs:
+{
+  out1:
+  {
+    module_type: RootOutput
+    #fileName:    "%ifb_%tc_reco.root"
+    fileName:    "%ifb_reco.root"
+    dataTier:    "reconstructed"
+    compressionLevel: 1
+  }
+}
+
+outputs.out1.SelectEvents: [ reco ]
+
+#services.message.destinations:
+#{
+#  STDCOUT: 
+#  {
+#    type:      "cout"      #tells the message service to output this destination to cout
+#    threshold: "WARNING"   #tells the message service that this destination applies to WARNING and higher level messages
+#    append:     true       #says to append all messages to the output
+#    categories:
+#    {
+#      ChannelFilter:
+#      {
+#        limit: 0
+#        reportEvery: 0
+#      }
+#      TrackStitcher:
+#      {
+#        limit: 0
+#        reportEvery: 0
+#      }
+#      CRHitRemoval:
+#      {
+#        limit: 0
+#        reportEvery: 0
+#      }
+#      default:
+#      {
+#        limit: -1  #don't print anything at the infomsg level except the explicitly named categories
+#        reportEvery: 1
+#      }
+#    }
+#  }
+#}
+
+#physics.reco: [ @sequence::tpcreco ]
+
+### Here, we overwrite ALL module labels with the ones defined above.
+
+physics.filters.timestampfilter.T1:                1.2
+physics.filters.timestampfilter.T2:                5.2
+physics.filters.timestampfilter.RequireRawDigits:  true
+
+physics.filters.toffilter.nTOFObjects:    1   # number of TOF objects in the event to pass the filter
+physics.filters.toffilter.TOFLowerBound:  0   # minimum time for the TOF object (ns)
+physics.filters.toffilter.TOFUpperBound:  100 # maximum time for the TOF object (ns)
+
+physics.filters.wctrackfilter.IsData:            true
+physics.filters.wctrackfilter.minNumberWCTrack:  1       
+
+physics.producers.tof.HitThreshold:         -3.  # -10.0 for Run I, -3.0 for Run II
+physics.producers.tof.HitDiffMeanUS:        0.5  # 0.6 for Run I, 0.5 for Run II
+physics.producers.tof.HitDiffMeanDS:        0.4  # 1.0 for Run I, 0.4 for Run II
+physics.producers.tof.HitMatchThresholdUS:  3.0
+physics.producers.tof.HitMatchThresholdDS:  6.0
+physics.producers.tof.HitWait:              20.
+
+physics.producers.wctrack.PickyTracks:      false
+
+services.DetectorPropertiesService.TimeOffsetU: -50.0
+services.DetectorPropertiesService.TimeOffsetV: -52.0
+#services.DetectorPropertiesService.TimeOffsetV: -2.0
+services.DetectorPropertiesService.Electronlifetime: 1600
+services.DetectorPropertiesService.SamplingRate: 128
+
+physics.producers.caldata.DigitModuleLabel: "daq"
+physics.producers.caldata.DodQdxCalib:      false
+
+physics.producers.gaushitOrigin.CalDataModuleLabel: "caldata"
+physics.producers.gaushitOrigin.Chi2NDFRetry:        1000.
+
+physics.producers.trajclusterOrigin.TrajClusterAlg.HitFinderModuleLabel: "gaushitOrigin"
+physics.producers.trajclusterOrigin.TrajClusterAlg.MakeNewHits: true
+physics.producers.trajclusterOrigin.TrajClusterAlg.AngleRanges: [30, 65, 80, 90]
+physics.producers.trajclusterOrigin.TrajClusterAlg.MinPtsFit:     [ 4,  4, 2]
+physics.producers.trajclusterOrigin.TrajClusterAlg.MinPts:        [10, 10, 3]
+physics.producers.trajclusterOrigin.TrajClusterAlg.MaxAngleCode:  [0, 2, 3]
+physics.producers.trajclusterOrigin.TrajClusterAlg.MaxWireSkipNoSignal: 2
+physics.producers.trajclusterOrigin.TrajClusterAlg.MaxWireSkipWithSignal: 20
+physics.producers.trajclusterOrigin.TrajClusterAlg.HitErrFac: 0.4
+physics.producers.trajclusterOrigin.TrajClusterAlg.KinkAngCut: 0.6
+#physics.producers.trajclusterOrigin.TrajClusterAlg.SkipAlgs:   [ "RefineVtx" ]
+physics.producers.trajclusterOrigin.TrajClusterAlg.ProjectionErrFactor: 3
+physics.producers.trajclusterOrigin.TrajClusterAlg.ChgPullCut: 5   # Use trajectory points/hits if (Chg/AveChg - 1) / ChgRMS < cut
+physics.producers.trajclusterOrigin.TrajClusterAlg.KinkAngCut: 0.3 # was 0.2
+physics.producers.trajclusterOrigin.TrajClusterAlg.MaxChi: 3
+physics.producers.trajclusterOrigin.TrajClusterAlg.MuonTag: [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
+#physics.producers.trajclusterOrigin.TrajClusterAlg.ShowerTag: [50, 5, 1]    # max MCSMom for a shower tag, max separation, min #traj < separation
+physics.producers.trajclusterOrigin.TrajClusterAlg.ShowerTag: [ -1, 150, 20, 0.5, 3, 2, 100, 5, 2] # default settings that turn shower tagging off
+physics.producers.trajclusterOrigin.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5, 100, 0.6, 0, 0.8, 0.8] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr, min MCSMom, min Pt/Wire fraction, min score, min ChgFrac, max MCSMom asymmetry]
+physics.producers.trajclusterOrigin.TrajClusterAlg.MaxVertexTrajSep: [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
+physics.producers.trajclusterOrigin.TrajClusterAlg.FillTruth: 0
+physics.producers.trajclusterOrigin.TrajClusterAlg.StudyMode: false
+physics.producers.trajclusterOrigin.TrajClusterAlg.DebugPlane:     -1
+physics.producers.trajclusterOrigin.TrajClusterAlg.DebugWire:       0
+physics.producers.trajclusterOrigin.TrajClusterAlg.DebugTick:       0
+physics.producers.trajclusterOrigin.TrajClusterAlg.DebugWorkID:     0
+
+physics.producers.pmtrackOrigin.ClusterModuleLabel: "trajclusterOrigin"
+physics.producers.pmtrackOrigin.HitModuleLabel:     "trajclusterOrigin"
+physics.producers.pmtrackOrigin.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtrackOrigin.PMAlgTracking.FlipToBeam: true
+physics.producers.pmtrackOrigin.PMAlgTracking.RunVertexing: true
+
+#physics.producers.caloOrigin.CaloAlg:               @local::lariat_calorimetryalgmc_run2   # MC
+physics.producers.caloOrigin.CaloAlg:               @local::lariat_calorimetryalgdata_run2  # data
+physics.producers.caloOrigin.TrackModuleLabel:      "pmtrackOrigin"
+physics.producers.caloOrigin.SpacePointModuleLabel: "pmtrackOrigin"
+physics.producers.caloOrigin.UseArea:               "true"
+
+# second pass of TPC-based reconstruction
+
+physics.producers.gaushit.HitLabel:    "gaushitOrigin"
+physics.producers.gaushit.TrackLabel:  "pmtrackOrigin"
+physics.producers.gaushit.ZLow:        3.0
+physics.producers.gaushit.ZHigh:       87.0
+
+physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel: "gaushit"
+physics.producers.trajcluster.TrajClusterAlg.MakeNewHits: true
+physics.producers.trajcluster.TrajClusterAlg.AngleRanges: [30, 65, 80, 90]
+physics.producers.trajcluster.TrajClusterAlg.MinPtsFit:     [ 4,  4, 2]
+physics.producers.trajcluster.TrajClusterAlg.MinPts:        [10, 10, 3]
+physics.producers.trajcluster.TrajClusterAlg.MaxAngleCode:  [0, 2, 3]
+physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipNoSignal: 2
+physics.producers.trajcluster.TrajClusterAlg.MaxWireSkipWithSignal: 20
+physics.producers.trajcluster.TrajClusterAlg.HitErrFac: 0.4
+physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.6
+#physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:   [ "RefineVtx" ]
+physics.producers.trajcluster.TrajClusterAlg.ProjectionErrFactor: 3
+physics.producers.trajcluster.TrajClusterAlg.ChgPullCut: 5   # Use trajectory points/hits if (Chg/AveChg - 1) / ChgRMS < cut
+physics.producers.trajcluster.TrajClusterAlg.KinkAngCut: 0.3 # was 0.2
+physics.producers.trajcluster.TrajClusterAlg.MaxChi: 3
+physics.producers.trajcluster.TrajClusterAlg.MuonTag: [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
+#physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [50, 5, 1]    # max MCSMom for a shower tag, max separation, min #traj < separation
+physics.producers.trajcluster.TrajClusterAlg.ShowerTag: [ -1, 150, 20, 0.5, 3, 2, 100, 5, 2] # default settings that turn shower tagging off
+physics.producers.trajcluster.TrajClusterAlg.Vertex2DCuts:  [10, 2, 30, 3, 5, 100, 0.6, 0, 0.8, 0.8] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr, min MCSMom, min Pt/Wire fraction, min score, min ChgFrac, max MCSMom asymmetry]
+physics.producers.trajcluster.TrajClusterAlg.MaxVertexTrajSep: [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
+physics.producers.trajcluster.TrajClusterAlg.FillTruth: 0
+physics.producers.trajcluster.TrajClusterAlg.StudyMode: false
+physics.producers.trajcluster.TrajClusterAlg.DebugPlane:     -1
+physics.producers.trajcluster.TrajClusterAlg.DebugWire:       0
+physics.producers.trajcluster.TrajClusterAlg.DebugTick:       0
+physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:     0
+
+physics.producers.pmtrack.ClusterModuleLabel: "trajcluster"
+physics.producers.pmtrack.HitModuleLabel:     "trajcluster"
+physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
+physics.producers.pmtrack.PMAlgTracking.RunVertexing: true
+
+#physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgmc_run2   # MC
+physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run2  # data
+physics.producers.calo.TrackModuleLabel:      "pmtrack"
+physics.producers.calo.SpacePointModuleLabel: "pmtrack"
+physics.producers.calo.UseArea:               "true"
+
+physics.producers.wctracktpctrackmatch.HitLabel:            "trajcluster"
+physics.producers.wctracktpctrackmatch.ClusterLabel:        "trajcluster"
+physics.producers.wctracktpctrackmatch.TrackLabel:          "pmtrack"
+physics.producers.wctracktpctrackmatch.TOFLabel:            "tof"
+physics.producers.wctracktpctrackmatch.WCTrackLabel:        "wctrack"
+physics.producers.wctracktpctrackmatch.AlphaCut:            0.2
+physics.producers.wctracktpctrackmatch.MinTrackLengthZProj: 4.0
+physics.producers.wctracktpctrackmatch.MinUpstreamZ:        2.0
+physics.producers.wctracktpctrackmatch.MaxUpstreamZ:        6.0
+physics.producers.wctracktpctrackmatch.CircularCutXCenter:  1.6
+physics.producers.wctracktpctrackmatch.CircularCutYCenter:  -0.17
+physics.producers.wctracktpctrackmatch.CircularCutRadius:   3.5
+
+physics.analyzers.anatree.SelectEvents:            [ reco ]
+physics.analyzers.anatree.TreeName:                "anatree"
+physics.analyzers.anatree.HitsModuleLabel:         "gaushit"
+physics.analyzers.anatree.TrackModuleLabel:        "pmtrack"
+physics.analyzers.anatree.CalorimetryModuleLabel:  "calo"
+physics.analyzers.anatree.ParticleIDModuleLabel:   "pid"
+physics.analyzers.anatree.ClusterModuleLabel:      "trajcluster"
+physics.analyzers.anatree.WCTrackLabel:            "wctrack"
+physics.analyzers.anatree.TOFModuleLabel:          "tof"
+physics.analyzers.anatree.G4ModuleLabel:           "largeant"
+physics.analyzers.anatree.CalorimetryAlg:          @local::lariat_calorimetryalgdata_run2
+physics.analyzers.anatree.WC2TPCModuleLabel:       "wctracktpctrackmatch"
+physics.analyzers.anatree.WCQualityProducerLabel:  "wcquality"
+

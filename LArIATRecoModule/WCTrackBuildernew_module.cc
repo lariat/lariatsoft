@@ -101,6 +101,7 @@ public:
 				
 				
   void MakeSomePlotsFromHits(std::vector<std::vector<WCHitList> > good_hits);
+  void PlotHitsBeforeClustering(std::vector<int> tdcs, std::vector<float> channels, std::vector<float> times);
 private:
 
   // Declare member data here.
@@ -132,13 +133,22 @@ private:
     TH1F* fTrack_Type;
     std::vector<TH2F*> fRecodiff;
     TH1F* fWCDist;
-    TTree* fTree;      
+    TTree* fTree; 
+    
+    int nevt=0;     
     //Misc
     bool fVerbose;
     bool fPickyTracks;
     bool fCheckTracks;
-    int WCx1[100],WCx2[100],WCx3[100],WCx4[100],WCy1[100],WCy2[100],WCy3[100],WCy4[100]; //Arrays for the wires hit in each WC
-    
+    int WCx1[1000][100],WCx2[1000][100],WCx3[1000][100],WCx4[1000][100],WCy1[1000][100],WCy2[1000][100],WCy3[1000][100],WCy4[1000][100]; //Arrays for the wires hit in each WC
+
+    //Hits and Times before clustering. I want to see the noise hits.
+    float WC1Xhit[1000][100],WC2Xhit[1000][100],WC3Xhit[1000][100],WC4Xhit[1000][100];
+    float WC1Yhit[1000][100],WC2Yhit[1000][100],WC3Yhit[1000][100],WC4Yhit[1000][100];
+    float WC1Xtime[1000][100],WC2Xtime[1000][100],WC3Xtime[1000][100],WC4Xtime[1000][100];
+    float WC1Ytime[1000][100],WC2Ytime[1000][100],WC3Ytime[1000][100],WC4Ytime[1000][100];   
+    float WC1Mult,WC2Mult,WC3Mult,WC4Mult;
+    bool PickyTrackCheck;
 };
 
 
@@ -155,6 +165,7 @@ WCTrackBuildernew::WCTrackBuildernew(fhicl::ParameterSet const & p)
 
 void WCTrackBuildernew::produce(art::Event & e)
 {
+    //std::cout<<"Event start"<<std::endl;
     ResetTree();
     //Creating the WCTrack Collection
     std::unique_ptr<std::vector<ldp::WCTrack> > WCTrackCol(new std::vector<ldp::WCTrack> );  
@@ -220,16 +231,20 @@ void WCTrackBuildernew::produce(art::Event & e)
        hit_position_vect[i][j]=99999;
        }
      }
-    
+    if(nevt<1000){PlotHitsBeforeClustering(tdc_number_vect,hit_channel_vect,hit_time_bin_vect);}
     //int good_trigger_counter = 0;
     fWCHitFinderAlg.createHits(tdc_number_vect,
     			       hit_channel_vect,
 			       hit_time_bin_vect,
 			       good_hits,
 			       fVerbose);
-    MakeSomePlotsFromHits(good_hits);		
+			       
+    if(nevt<1000){MakeSomePlotsFromHits(good_hits);} //limit events contributing to tree		
     
-    	       
+  WC1Mult=(float)(good_hits[0][0].hits.size()+good_hits[0][1].hits.size())/2;
+  WC2Mult=(float)(good_hits[1][0].hits.size()+good_hits[1][1].hits.size())/2;
+  WC3Mult=(float)(good_hits[2][0].hits.size()+good_hits[2][1].hits.size())/2;
+  WC4Mult=(float)(good_hits[3][0].hits.size()+good_hits[3][1].hits.size())/2;	       
   fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 //std::cout<<"Hit Finding done, going to Track Building"<<std::endl;
   fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
@@ -282,7 +297,10 @@ void WCTrackBuildernew::produce(art::Event & e)
       createAuxDetStyleVectorsFromHitLists(final_track,
 					   WC_vect,
 					   hit_wire_vect);
-      
+ 					   
+ if(WC1Mult==1 && WC2Mult==1 && WC3Mult==1 && WC4Mult==1) { PickyTrackCheck=true;} //We probably already know from .fcl params, but we're gonna check if this is a picky track to add to the WCTrack Object
+ else{PickyTrackCheck=false;}      
+ std::cout<<"WCMult check: "<<WC1Mult<<", "<<WC2Mult<<", "<<WC3Mult<<", "<<WC4Mult<<". Picky Track is : "<<PickyTrackCheck<<std::endl;
       //WCTrack object creation and association with trigger created
 if(reco_pz2M_list.size() > 0){      ldp::WCTrack the_track(reco_pz_list[iNewTrack],
 	                     reco_pz2M_list[iNewTrack],
@@ -298,7 +316,12 @@ if(reco_pz2M_list.size() > 0){      ldp::WCTrack the_track(reco_pz_list[iNewTrac
 			     hit_wire_vect,
 			     hit_position_vect,
 			     WCMissed,
-			     residual);
+			     residual,			     
+			     WC1Mult,
+			     WC2Mult,
+			     WC3Mult,
+			     WC4Mult,
+			     PickyTrackCheck);
       (*WCTrackCol).push_back( the_track );}
 else{
 ldp::WCTrack the_track(reco_pz_list[iNewTrack],
@@ -314,7 +337,12 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
 			     hit_wire_vect,
 			     hit_position_vect,
 			     WCMissed,
-			     residual);
+			     residual,
+			     WC1Mult,
+			     WC2Mult,
+			     WC3Mult,
+			     WC4Mult,
+			     PickyTrackCheck);
       (*WCTrackCol).push_back( the_track );
 
 }
@@ -334,58 +362,88 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
     
     //Put objects into event (root file)
     e.put(std::move(WCTrackCol)); 
+    //std::cout<<"Event Number "<<nevt<<std::endl;
+    ++nevt;
+   
+    fTree->Fill();
+   // std::cout<<"Event Done"<<std::endl;
     //hit_position_vect.clear();//clear the position vector for the next event.				
 }
 //==================================================================================================
 void WCTrackBuildernew::ResetTree()
 {
   for(int i=0; i<100; ++i)
+    for(int j=0; j<1000;j++)
   {
-    WCx1[i]=-99999;
-    WCx2[i]=-99999;
-    WCx3[i]=-99999;
-    WCx4[i]=-99999;
-    WCy1[i]=-99999;
-    WCy2[i]=-99999;
-    WCy3[i]=-99999;
-    WCy4[i]=-99999;
+    WCx1[j][i]=-99999;
+    WCx2[j][i]=-99999;
+    WCx3[j][i]=-99999;
+    WCx4[j][i]=-99999;
+    WCy1[j][i]=-99999;
+    WCy2[j][i]=-99999;
+    WCy3[j][i]=-99999;
+    WCy4[j][i]=-99999;
+    WC1Xhit[j][i]=-99999;
+    WC2Xhit[j][i]=-99999;
+    WC3Xhit[j][i]=-99999;
+    WC4Xhit[j][i]=-99999;
+    WC1Yhit[j][i]=-99999;
+    WC2Yhit[j][i]=-99999;
+    WC3Yhit[j][i]=-99999;
+    WC4Yhit[j][i]=-99999;
+    WC1Xtime[j][i]=-99999;
+    WC2Xtime[j][i]=-99999;
+    WC3Xtime[j][i]=-99999;
+    WC4Xtime[j][i]=-99999;
+    WC1Ytime[j][i]=-99999;
+    WC2Ytime[j][i]=-99999;
+    WC3Ytime[j][i]=-99999;
+    WC4Ytime[j][i]=-99999;
+    WC1Mult=-99999;
+    WC2Mult=-99999;
+    WC3Mult=-99999;
+    WC4Mult=-99999;
+    
+    
   }
+PickyTrackCheck=false;  
 }
 //==================================================================================================
 void WCTrackBuildernew::MakeSomePlotsFromHits(std::vector<std::vector<WCHitList> > good_hits)
 {  
   for(size_t iHit=0; iHit<good_hits[0][0].hits.size(); ++iHit)
   {
-    WCx1[iHit]=good_hits[0][0].hits[iHit].wire;
+    WCx1[nevt][iHit]=good_hits[0][0].hits[iHit].wire;
   }
     for(size_t iHit=0; iHit<good_hits[1][0].hits.size(); ++iHit)
   {
-    WCx2[iHit]=good_hits[1][0].hits[iHit].wire;
+    WCx2[nevt][iHit]=good_hits[1][0].hits[iHit].wire;
   }
     for(size_t iHit=0; iHit<good_hits[2][0].hits.size(); ++iHit)
   {
-    WCx3[iHit]=good_hits[2][0].hits[iHit].wire;
+    WCx3[nevt][iHit]=good_hits[2][0].hits[iHit].wire;
   }
     for(size_t iHit=0; iHit<good_hits[3][0].hits.size(); ++iHit)
   {
-    WCx4[iHit]=good_hits[3][0].hits[iHit].wire;
+    WCx4[nevt][iHit]=good_hits[3][0].hits[iHit].wire;
   }
     for(size_t iHit=0; iHit<good_hits[0][1].hits.size(); ++iHit)
   {
-    WCy1[iHit]=good_hits[0][1].hits[iHit].wire;
+    WCy1[nevt][iHit]=good_hits[0][1].hits[iHit].wire;
   }
     for(size_t iHit=0; iHit<good_hits[1][1].hits.size(); ++iHit)
   {
-    WCy2[iHit]=good_hits[1][1].hits[iHit].wire;
+    WCy2[nevt][iHit]=good_hits[1][1].hits[iHit].wire;
   }
     for(size_t iHit=0; iHit<good_hits[2][1].hits.size(); ++iHit)
   {
-    WCy3[iHit]=good_hits[2][1].hits[iHit].wire;
+    WCy3[nevt][iHit]=good_hits[2][1].hits[iHit].wire;
   }
     for(size_t iHit=0; iHit<good_hits[3][1].hits.size(); ++iHit)
   {
-    WCy4[iHit]=good_hits[3][1].hits[iHit].wire;
+    WCy4[nevt][iHit]=good_hits[3][1].hits[iHit].wire;
   }
+
 }
 //==================================================================================================
 void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_track,
@@ -436,14 +494,34 @@ void WCTrackBuildernew::beginJob()//fhicl::ParameterSet const & p)
 art::ServiceHandle<art::TFileService> tfs;
 fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7); 
 fTree=tfs->make<TTree>("WCTree","WCTree");
-fTree->Branch("WCx1",&WCx1,"WCx1[100]/I");
-fTree->Branch("WCx2",&WCx2,"WCx2[100]/I");
-fTree->Branch("WCx3",&WCx3,"WCx3[100]/I");
-fTree->Branch("WCx4",&WCx4,"WCx4[100]/I");
-fTree->Branch("WCy1",&WCy1,"WCy1[100]/I");
-fTree->Branch("WCy2",&WCy2,"WCy2[100]/I");
-fTree->Branch("WCy3",&WCy3,"WCy3[100]/I");
-fTree->Branch("WCy4",&WCy4,"WCy4[100]/I");
+fTree->Branch("WCx1",&WCx1,"WCx1[1000][100]/I");
+fTree->Branch("WCx2",&WCx2,"WCx2[1000][100]/I");
+fTree->Branch("WCx3",&WCx3,"WCx3[1000][100]/I");
+fTree->Branch("WCx4",&WCx4,"WCx4[1000][100]/I");
+fTree->Branch("WCy1",&WCy1,"WCy1[1000][100]/I");
+fTree->Branch("WCy2",&WCy2,"WCy2[1000][100]/I");
+fTree->Branch("WCy3",&WCy3,"WCy3[1000][100]/I");
+fTree->Branch("WCy4",&WCy4,"WCy4[1000][100]/I");
+fTree->Branch("WC1Xhit",&WC1Xhit,"WC1Xhit[1000][100]/F");
+fTree->Branch("WC1Yhit",&WC1Yhit,"WC1Yhit[1000][100]/F");
+fTree->Branch("WC2Xhit",&WC2Xhit,"WC2Xhit[1000][100]/F");
+fTree->Branch("WC2Yhit",&WC2Yhit,"WC2Yhit[1000][100]/F");
+fTree->Branch("WC3Xhit",&WC3Xhit,"WC3Xhit[1000][100]/F");
+fTree->Branch("WC3Yhit",&WC3Yhit,"WC3Yhit[1000][100]/F");
+fTree->Branch("WC4Xhit",&WC4Xhit,"WC4Xhit[1000][100]/F");
+fTree->Branch("WC4Yhit",&WC4Yhit,"WC4Yhit[1000][100]/F");
+fTree->Branch("WC1Xtime",&WC1Xtime,"WC1Xtime[1000][100]/F");
+fTree->Branch("WC1Ytime",&WC1Ytime,"WC1Ytime[1000][100]/F");
+fTree->Branch("WC2Xtime",&WC2Xtime,"WC2Xtime[1000][100]/F");
+fTree->Branch("WC2Ytime",&WC2Ytime,"WC2Ytime[1000][100]/F");
+fTree->Branch("WC3Xtime",&WC3Xtime,"WC3Xtime[1000][100]/F");
+fTree->Branch("WC3Ytime",&WC3Ytime,"WC3Ytime[1000][100]/F");
+fTree->Branch("WC4Xtime",&WC4Xtime,"WC4Xtime[1000][100]/F");
+fTree->Branch("WC4Ytime",&WC4Ytime,"WC4Ytime[1000][100]/F");
+fTree->Branch("WC1Mult",&WC1Mult,"WC1Mult/D");
+fTree->Branch("WC2Mult",&WC2Mult,"WC2Mult/D");
+fTree->Branch("WC3Mult",&WC3Mult,"WC3Mult/D");
+fTree->Branch("WC4Mult",&WC4Mult,"WC4Mult/D");
 //Hists that should be used for diagnostics and deleted before production
 if(fCheckTracks){
   for(int i=0; i<99; ++i){
@@ -680,7 +758,55 @@ fRecodiff[98]=tfs->make<TH2F>("dist","Distance of Closest Approach", 100,0,100,1
    //outfile<<"Number of Hits for event: "<<hitcounter<<std::endl;
    //outfile.close();
   }
-
+void WCTrackBuildernew::PlotHitsBeforeClustering(std::vector<int> tdcs, std::vector<float> channels, std::vector<float> times)
+{
+  int size=tdcs.size();
+  for(int itdc=0; itdc<size;++itdc)
+  {
+    int WCax=int((tdcs.at(itdc)-1)/2); //TDCs run from 1-16, two per WC axis. Shifts to 0-7. WC1x, WC1y, WC2x, etc.
+    float wire=(((tdcs.at(itdc))%2)*64-channels.at(itdc));  // Wires will iterate from -64 to 64.
+    if(WCax==0)
+    {
+      WC1Xhit[nevt][itdc]=wire;
+      WC1Xtime[nevt][itdc]=times.at(itdc);
+    }    
+    if(WCax==1)
+    {
+      WC1Yhit[nevt][itdc]=wire;
+      WC1Ytime[nevt][itdc]=times.at(itdc);
+    }
+    if(WCax==2)
+    {
+      WC2Xhit[nevt][itdc]=wire;
+      WC2Xtime[nevt][itdc]=times.at(itdc);
+    }
+    if(WCax==3)
+    {
+      WC2Yhit[nevt][itdc]=wire;
+      WC2Ytime[nevt][itdc]=times.at(itdc);
+    }
+    if(WCax==4)
+    {
+      WC3Xhit[nevt][itdc]=wire;
+      WC3Xtime[nevt][itdc]=times.at(itdc);
+    }
+    if(WCax==5)
+    {
+      WC3Yhit[nevt][itdc]=wire;
+      WC3Ytime[nevt][itdc]=times.at(itdc);
+    }
+    if(WCax==6)
+    {
+      WC4Xhit[nevt][itdc]=wire;
+      WC4Xtime[nevt][itdc]=times.at(itdc);
+    }
+    if(WCax==7)
+    {
+      WC4Yhit[nevt][itdc]=wire;
+      WC4Ytime[nevt][itdc]=times.at(itdc);
+    }                        
+  }
+}
 void WCTrackBuildernew::beginRun(art::Run & r)
 {
   // Implementation of optional member function here.

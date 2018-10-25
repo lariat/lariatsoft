@@ -651,7 +651,6 @@ For plane = 0, t offset is pitch/Coeff[1] - (pitch+xyz[0])/Coeff[0]
             <<"  - "<<tpcgeom.PlanePitch()*(1/fXTicksCoefficient-1/fXTicksCoefficientgap[1])<<"\n";
 	  }
 
-          std::cout<<"  Adding view-dependent offsets (TimeOffsetU/V/Z)\n";  
 	  // Add view dependent offset
 	  geo::View_t view = pgeom.View();
 	  if(view == geo::kU)

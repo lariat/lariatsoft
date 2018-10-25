@@ -15,7 +15,7 @@
 #include "signalservices_lariat.fcl"
 #include "seedservice.fcl"
 #include "channelstatus_lariat.fcl"
-#include "spacecharge.fcl" 
+#include "spacecharge.fcl"
 # #include "pmtconfig_lariat.fcl"
 # #include "opticaldetectorservices_lariat.fcl"
 
@@ -23,10 +23,10 @@ BEGIN_PROLOG
 
 lariat_services:
 {
- ExptGeoHelperInterface:       @local::lariat_geometry_helper 
- Geometry:                     @local::lariat_geo 	        
- AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
- AuxDetGeometry:               @local::lariat_auxdetgeo            
+ ExptGeoHelperInterface:       @local::lariat_geometry_helper
+ Geometry:                     @local::lariat_geo
+ AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper
+ AuxDetGeometry:               @local::lariat_auxdetgeo
  DetectorPropertiesService:    @local::lariat_detproperties
  LArPropertiesService:         @local::lariat_properties
  LArFFT:                       @local::lariat_larfft
@@ -48,9 +48,6 @@ lariat_services_run2:                           @local::lariat_services
 lariat_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
 lariat_services_run2.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run2
 
-#lariat_services.SignalShapingServiceT1034.ASICGainInMVPerFC:      [ 18.6 , 15.5 ] # reduced gain for better data-MC agreement
-#lariat_services_run2.SignalShapingServiceT1034.ASICGainInMVPerFC: [ 16.6 , 12.6 ] # reduced gain for better data-MC agreement
-
 lariat_services_4mm:                @local::lariat_services
 
 lariat_services_5mm:                @local::lariat_services
@@ -68,8 +65,8 @@ lariat_simulation_services:
  MagneticField:                @local::no_mag_larsoft
  ExptGeoHelperInterface:       @local::lariat_geometry_helper
  Geometry:                     @local::lariat_geo
- AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper 
- AuxDetGeometry:               @local::lariat_auxdetgeo            
+ AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper
+ AuxDetGeometry:               @local::lariat_auxdetgeo
  DetectorPropertiesService:    @local::lariat_detproperties
  LArPropertiesService:         @local::lariat_properties
  LArFFT:                       @local::lariat_larfft
@@ -86,6 +83,7 @@ lariat_simulation_services:
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
 lariat_simulation_services.DetectorPropertiesService.GetElectronlifetimeFromDB: false
+
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetU: 0.
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetV: 0.
 lariat_simulation_services.DetectorPropertiesService.Electronlifetime: 1500 # 1470
@@ -99,12 +97,5 @@ lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetU: 0.
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetV: 0.
 lariat_simulation_services_run2.DetectorPropertiesService.Electronlifetime: 800 # 830
 lariat_simulation_services_run2.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run2
-
-lariat_simulation_services_run2_elifetime400: @local::lariat_simulation_services_run2
-lariat_simulation_services_run2_elifetime400.DetectorPropertiesService.Electronlifetime: 400.
-
-lariat_simulation_services_run2_elifetime2000: @local::lariat_simulation_services_run2
-lariat_simulation_services_run2_elifetime2000.DetectorPropertiesService.Electronlifetime: 2000.
-
 
 END_PROLOG

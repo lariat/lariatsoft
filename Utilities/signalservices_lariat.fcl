@@ -96,8 +96,5 @@ lariat_signalshapingservice_run1.IndFieldRespAmp:     0.74
 lariat_signalshapingservice_run1.ColFieldRespAmp:     0.62 
 lariat_signalshapingservice_run2.IndFieldRespAmp:     0.66
 lariat_signalshapingservice_run2.ColFieldRespAmp:     0.50 
-#lariat_signalshapingservice_run1.ADCPerPCAtLowestASICGain: 6950 # default 9300
-#lariat_signalshapingservice_run2.ADCPerPCAtLowestASICGain: 6140 # default 9300
-
 
 END_PROLOG

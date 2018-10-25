@@ -112,14 +112,21 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
 {
   fRun = run;
   fSubRun = subrun;
-  current=fabs(std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an",fRun,fSubRun)));
+  try
+  {
+    current=(double)fabs(std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an", fRun,fSubRun)));
+  }
+  catch(...){std::cout<<"Current is probably null. Setting to 0"<<std::endl; current=0;}
+  //double sc1=fabs(std::stod(fDatabaseUtility->GetIFBeamValue("end_f_mc7sc1",fRun,fSubRun)));
 //if(fabs(current)>90){fB_field_tesla= .003375*current;}
 //if(fabs(current)<90 && fabs(current)>70){fB_field_tesla= .0034875*current;}	
 //if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}	
 //if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  	
 //if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
   fB_field_tesla= (-.1538*pow(10,-4)*pow(current,3)+.2245*pow(10,-2)*pow(current,2)-.1012*current+36.59)*current/10000; // Doug Jensen's cubic equation for magnetic field as a function of current.
-  std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla << std::endl;
+  std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla <<std::endl;
+  
+  //return sc1;
 }
 //--------------------------------------------------------------
 //Main function called for each trigger
@@ -146,6 +153,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,
 {					   
   fPickyTracks = pickytracks;
   fDiagnostics= diagnostics;
+  
 //  for(int i=0; i<4; ++i){
 //    for(int j=0; j<3; ++j){
 //      hit_position_vect_alg[i][j]=hit_position_vect[i][j];

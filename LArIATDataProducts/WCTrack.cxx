@@ -45,8 +45,13 @@ namespace ldp{
 		   std::vector<float> hitWireVect,
 		   float hitPositionVect[4][3],
 		   int WCMissed,
-		   float residual)
-		   //std::vector<float> hitTimeVect )
+		   float residual,
+		   float WC1Mult,
+		   float WC2Mult,
+		   float WC3Mult,
+		   float WC4Mult,
+		   bool PickyTrackCheck)
+		   
   { 
     fMomentum = momentum;
     fYKink = yKink;
@@ -63,7 +68,15 @@ namespace ldp{
     }
     fWCMissed=WCMissed;
     fResidual=residual;
+    fWC1Mult=WC1Mult;
+    fWC2Mult=WC2Mult;
+    fWC3Mult=WC3Mult;
+    fWC4Mult=WC4Mult;
+    fPickyTrackCheck=PickyTrackCheck;    
     //fHitTime = hitTimeVect;
+    fDownstreamDir.SetXYZ(hitPositionVect[3][0] - hitPositionVect[2][0],
+                          hitPositionVect[3][1] - hitPositionVect[2][1],
+                          hitPositionVect[3][2] - hitPositionVect[2][2]);
   }
 
   WCTrack::WCTrack(float momentum,
@@ -80,8 +93,12 @@ namespace ldp{
 		   std::vector<float> hitWireVect,
 		   float hitPositionVect[4][3],
 		   int WCMissed,
-		   float residual)
-		   //std::vector<float> hitTimeVect )
+		   float residual,
+		   float WC1Mult,
+		   float WC2Mult,
+		   float WC3Mult,
+		   float WC4Mult,
+		   bool PickyTrackCheck)
   { 
     fMomentum = momentum;
     fMomentum2M = momentum2m;
@@ -99,7 +116,15 @@ namespace ldp{
     }
     fWCMissed=WCMissed;
     fResidual=residual;
+    fWC1Mult=WC1Mult;
+    fWC2Mult=WC2Mult;
+    fWC3Mult=WC3Mult;
+    fWC4Mult=WC4Mult;
+    fPickyTrackCheck=PickyTrackCheck;
     //fHitTime = hitTimeVect;
+    fDownstreamDir.SetXYZ(hitPositionVect[3][0] - hitPositionVect[2][0],
+                          hitPositionVect[3][1] - hitPositionVect[2][1],
+                          hitPositionVect[3][2] - hitPositionVect[2][2]);
   }
 
   //--------------------------------------------------
@@ -165,6 +190,52 @@ return fDeltaDist[i];
   //  return fHitTime[iHit];
   //}
 
+  //---------------------------------------------------------------------------
+  TVector3 WCTrack::ProjectionAtZ(float z, bool useXYFace) const
+  {
+    /*--------------------------------------------------------
+
+    Return the projected position of the downstream WCTrack
+    at a given z (cm).
+
+    --------------------------------------------------------*/
+
+    // get position of the hit on WC4
+    float const wc4x = fHitPosition[3][0];
+    float const wc4y = fHitPosition[3][1];
+    float const wc4z = fHitPosition[3][2];
+
+    if (useXYFace)
+    {
+      // projected position at the front face of the TPC
+      float const x0 = fXYFace[0];
+      float const y0 = fXYFace[1];
+
+      // get direction vector from WC4 to front face of TPC
+      float const x2 = x0 - wc4x;
+      float const y2 = y0 - wc4y;
+      float const z2 =  0 - wc4z;
+
+      // project to z
+      float const slope = (z - wc4z) / z2;
+      float const x = wc4x + slope * x2;
+      float const y = wc4y + slope * y2;
+
+      return TVector3(x, y, z);
+    }
+
+    // get direction of downstream WCTrack
+    float const x1 = fDownstreamDir.X();
+    float const y1 = fDownstreamDir.Y();
+    float const z1 = fDownstreamDir.Z();
+
+    // project to z
+    float const slope = (z - wc4z) / z1;
+    float const x = wc4x + slope * x1;
+    float const y = wc4y + slope * y1;
+
+    return TVector3(x, y, z);
+  }
 
 }
 ////////////////////////////////////////////////////////////////////////

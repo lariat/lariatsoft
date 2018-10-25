@@ -63,23 +63,24 @@ namespace caldata {
     
   private:
     
-    int          fDataSize;          ///< size of raw data on one wire
-    int          fPostsample;        ///< number of postsample bins
-    int          fDoBaselineSub;        ///< number of postsample bins
-    bool         fDoROI;             ///< make ROIs
-    std::string  fDigitModuleLabel;  ///< module that made digits
-                                                       ///< constants
-    std::string  fSpillName;  ///< nominal spill is an empty string
-                              ///< it is set by the DigitModuleLabel
-                              ///< ex.:  "daq:preSpill" for prespill data
-    unsigned short fPreROIPad; ///< ROI padding
-    unsigned short fPostROIPad; ///< ROI padding
+    int          fDataSize;           ///< size of raw data on one wire
+    int          fPostsample;         ///< number of postsample bins
+    bool         fDoBaselineSub;      ///< option to perform baseline subtraction using postsample bins
+    bool         fAdvancedBaselineSub;///< more sophisticated baseline subtraction (but slower)
+    bool         fDoROI;              ///< make ROIs
+    std::string  fDigitModuleLabel;   ///< module that made digits
+    std::string  fSpillName;          ///< nominal spill is an empty string
+                                      ///< it is set by the DigitModuleLabel
+                                      ///< ex.:  "daq:preSpill" for prespill data
+    unsigned short fPreROIPad;        ///< ROI padding
+    unsigned short fPostROIPad;       ///< ROI padding
 
     bool                        fDodQdxCalib;          ///< Do we apply wire-by-wire calibration?
     std::string                 fdQdxCalibFileName;    ///< Text file for constants to do wire-by-wire calibration
     std::map<unsigned int, float> fdQdxCalib;          ///< Map to do wire-by-wire calibration, key is channel number, content is correction factor
 
-    void SubtractBaseline(std::vector<float>& holder);
+    void SubtractBaseline(std::vector<float>& holder);    ///< basic baseline subraction function (using postsample bins)
+    void SubtractBaselineAdv(std::vector<float>& holder); ///< advanced baseline subtraction function
 
   protected: 
     
@@ -110,14 +111,13 @@ namespace caldata {
     std::vector<unsigned short> zin;
 
 
-    fDigitModuleLabel = p.get< std::string >("DigitModuleLabel", "daq");
-    fPostsample       = p.get< int >        ("PostsampleBins");
-    fDoBaselineSub    = p.get< bool >       ("DoBaselineSub");
-    fDoROI            = p.get< bool >       ("DoROI");
-    uin               = p.get< std::vector<unsigned short> >   ("PlaneROIPad");
+    fDigitModuleLabel       = p.get< std::string >("DigitModuleLabel",    "daq");
+    fPostsample             = p.get< int >        ("PostsampleBins",      300);
+    fDoBaselineSub          = p.get< bool >       ("DoBaselineSub",       true);
+    fAdvancedBaselineSub    = p.get< bool >       ("AdvancedBaselineSub", false);
+    fDoROI                  = p.get< bool >       ("DoROI",               false);
+    uin                     = p.get< std::vector<unsigned short> >   ("PlaneROIPad");
     
-    
-   
     
     // put the ROI pad sizes into more convenient vectors
     fPreROIPad  = uin[0];
@@ -211,9 +211,8 @@ namespace caldata {
     raw::ChannelID_t channel = raw::InvalidChannelID; // channel number
     unsigned int bin(0);     // time bin loop variable
     
-//    filter::ChannelFilter *chanFilt = new filter::ChannelFilter();  
     filter::ChannelFilter chanFilt;
-
+    
     std::vector<float> holder;                // holds signal data
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
     std::vector<TComplex> freqHolder(transformSize+1); // temporary frequency data
@@ -246,23 +245,10 @@ namespace caldata {
       } // end if not a bad channel
       
       //This restores the DC component to signal removed by the deconvolution.
-      if(fPostsample) {
-        double average=0.0;
-        double sum=0.0;
-        int n=0;
-        for(bin=0; bin < (unsigned int)fPostsample; ++bin){
-          double val = holder[holder.size()-1-bin];
-          if( fabs(val) < 20 ){ // avoid outliers
-            sum+=holder[holder.size()-1-bin];
-            n++;
-          }
-        }
-        if(n) average=sum/n;
-        for(bin=0; bin < holder.size(); ++bin) holder[bin]-=average;
-      }
-
-      // adaptive baseline subtraction
-      if(fDoBaselineSub) SubtractBaseline(holder);
+      if( fDoBaselineSub ){
+        SubtractBaseline(holder);
+        if( fAdvancedBaselineSub ) SubtractBaselineAdv(holder);
+      } 
 
       // apply wire-by-wire calibration
       if (fDodQdxCalib){
@@ -376,13 +362,36 @@ namespace caldata {
     evt.put(std::move(wirecol), fSpillName);
     std::cout<<"Saving associations to event...\n";   
     evt.put(std::move(WireDigitAssn), fSpillName);
-  
-    std::cout<<"Done with CalWireROI\n";  
-    //delete chanFilt;
+    
     return;
   }
 
+
+
+  //========================================================================
+  // Basic baseline subtraction using postsample bins 
   void CalWireROIT1034::SubtractBaseline(std::vector<float>& holder)
+  {
+    if( fPostsample > 0 ) {
+      double average=0.0;
+      double sum=0.0;
+      int n=0;
+      for(size_t bin = 0; bin < (size_t)fPostsample; bin++){
+        double val = holder[holder.size()-1-bin];
+        if( fabs(val) < 20 ){ // avoid outliers
+          sum+=holder[holder.size()-1-bin];
+          n++;
+        }
+      }
+      if(n) average=sum/n;
+      for(size_t bin=0; bin < holder.size(); ++bin) holder[bin]-=average;
+    }
+  }
+  
+  //========================================================================
+  // Advanced baseline subtraction using the whole waveform. A histogram
+  // of all ADC values is created and a Gaussian fit is used to find the mean.
+  void CalWireROIT1034::SubtractBaselineAdv(std::vector<float>& holder)
   {
     float min = 0,max=0;
     for (unsigned int bin = 0; bin < holder.size(); bin++){

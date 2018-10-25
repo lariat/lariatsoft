@@ -1,0 +1,8 @@
+lariat_distortedhitremoval:
+{
+  module_type:  "DistortedHitRemoval"
+  HitLabel:     "gaushit"
+  TrackLabel:   "pmtrack"
+  ZLow:         3.0
+  ZHigh:        87.0
+}
