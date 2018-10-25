@@ -1318,8 +1318,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     // ----------------------------------------------------------------------------------------------------------------------------
 
     // ### Calling the track momentum calculator ###
-    trkf::TrackMomentumCalculator trkm;
-    trkm.SetMinLength(10); //change the minimal track length requirement to 10 cm
+    // - change the minimal track length requirement to 10 cm
+    trkf::TrackMomentumCalculator trkm{10.0};
 
     // === Saving the number of tracks per event ===
     ntracks_reco=tracklist.size();
