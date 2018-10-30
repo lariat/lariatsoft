@@ -649,6 +649,9 @@ private:
   float               fTrue_ElShowerPhotons;
   float               fTrue_ElShowerPhotonsPrompt;
   float               fTrue_ElShowerPhotonsLate;
+  float               fTrue_ElShowerPhotonsQuenched;
+  float               fTrue_ElShowerPhotonsPromptQuenched;
+  float               fTrue_ElShowerPhotonsLateQuenched;
   float               fTrue_ElTrackEnergyDep;
   float               fTrue_ElTrackCharge;
   float               fTrue_ElTrackChargeCol;
@@ -1660,6 +1663,9 @@ void MichelAna::beginJob()
   fTree->Branch("True_ElShowerPhotons",     &fTrue_ElShowerPhotons,   "True_ElShowerPhotons/F");
   fTree->Branch("True_ElShowerPhotonsPrompt",&fTrue_ElShowerPhotonsPrompt,"True_ElShowerPhotonsPrompt/F");
   fTree->Branch("True_ElShowerPhotonsLate", &fTrue_ElShowerPhotonsLate,"True_ElShowerPhotonsLate/F");
+  fTree->Branch("True_ElShowerPhotonsQuenched",     &fTrue_ElShowerPhotonsQuenched,   "True_ElShowerPhotonsQuenched/F");
+  fTree->Branch("True_ElShowerPhotonsPromptQuenched",&fTrue_ElShowerPhotonsPromptQuenched,"True_ElShowerPhotonsPromptQuenched/F");
+  fTree->Branch("True_ElShowerPhotonsLateQuenched", &fTrue_ElShowerPhotonsLateQuenched,"True_ElShowerPhotonsLateQuenched/F");
   fTree->Branch("True_dT",                  &fTrue_dT,                "True_dT/F");
   fTree->Branch("True_ElShowerPhel",        &fTrue_ElShowerPhel,         "True_ElShowerPhel/F");
   fTree->Branch("True_PE_prompt", &fTrue_PE_prompt,   "True_PE_prompt[2]/F");
@@ -2673,6 +2679,9 @@ void MichelAna::ResetVariables()
   fTrue_ElShowerPhotons   = -999;
   fTrue_ElShowerPhotonsPrompt   = -999;
   fTrue_ElShowerPhotonsLate   = -999;
+  fTrue_ElShowerPhotonsQuenched   = -999;
+  fTrue_ElShowerPhotonsPromptQuenched   = -999;
+  fTrue_ElShowerPhotonsLateQuenched   = -999;
   fTrue_ElTrackEnergyDep  = -999.;
   fTrue_ElTrackCharge  = -999.;
   fTrue_ElTrackChargeCol  = -999.;
@@ -5889,6 +5898,9 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
     fTrue_ElShowerPhotons   = 0;
     fTrue_ElShowerPhotonsPrompt   = 0;
     fTrue_ElShowerPhotonsLate   = 0;
+    fTrue_ElShowerPhotonsQuenched   = 0;
+    fTrue_ElShowerPhotonsPromptQuenched   = 0;
+    fTrue_ElShowerPhotonsLateQuenched   = 0;
     //fTrue_PE[0] = 0;
     //fTrue_PE[1] = 0;
     fTrue_ElTrackCharge  = 0.;
@@ -6079,10 +6091,13 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
             tauFast = tauFastEff;
             tauLate = tauLateEff;
           }
-          
+
           // update num photons after quenching
           float numPhotons0 = numPhotons; 
           numPhotons = numPhotons_fast + numPhotons_late;
+          fTrue_ElShowerPhotonsPromptQuenched   = numPhotons_fast;
+          fTrue_ElShowerPhotonsLateQuenched     = numPhotons_late;
+          fTrue_ElShowerPhotonsQuenched         = numPhotons;
 
           // Loop over the PMTs and for each, run through the list of photons
           // (after quenching) and draw a random variable to determine detection.
