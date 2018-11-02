@@ -10,11 +10,10 @@
 #include "lariatanamodules.fcl"
 #include "lariatfiltermodules.fcl"
 #include "cluster_lariat.fcl"
+#include "mcreco.fcl"
 #include "distortedhitremoval.fcl"
 #include "wcqualityproducer.fcl"
 #include "wctracktpctrackmatch.fcl"
-
-#include "mcreco.fcl"
 
 process_name: reco
 
