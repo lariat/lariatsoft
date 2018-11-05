@@ -3,6 +3,7 @@
 \#*
 *.root
 *.swp
+*.tmp
 
 # don't ignore these
 !LArIATDataProviders/PhotonLibrary*.root

@@ -6095,9 +6095,11 @@ void MichelAna::ParticleTracker(const art::Event& e, int muID, int elID, TH1D* h
           // update num photons after quenching
           float numPhotons0 = numPhotons; 
           numPhotons = numPhotons_fast + numPhotons_late;
-          fTrue_ElShowerPhotonsPromptQuenched   = numPhotons_fast;
-          fTrue_ElShowerPhotonsLateQuenched     = numPhotons_late;
-          fTrue_ElShowerPhotonsQuenched         = numPhotons;
+          if( isElectronShwr ) {
+            fTrue_ElShowerPhotonsPromptQuenched   += numPhotons_fast;
+            fTrue_ElShowerPhotonsLateQuenched     += numPhotons_late;
+            fTrue_ElShowerPhotonsQuenched         += numPhotons;
+          }
 
           // Loop over the PMTs and for each, run through the list of photons
           // (after quenching) and draw a random variable to determine detection.
@@ -6802,10 +6804,9 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
 
       }//<-- endif enough muon points for directional fit
 
-     // // Before we start the showering, bifurcate the electron cluster 
-     // // to better separate track and shower-like components by cutting
-     // // the cluster where the separation exceeds 1.5 cm.
-     /*
+     // Before we start the showering, bifurcate the electron cluster 
+     // to better separate track and shower-like components by cutting
+     // the cluster where the separation exceeds 1.5 cm.
      std::cout<<"Trimming the electron cluster... bnd2= "<<bnd2<<"   nprof= "<<nprof<<"\n";
      std::vector<int> tmp_vec;
      //for(size_t i=bnd2+1; i< nprof; i++){
@@ -6819,7 +6820,6 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
        }
      }
      cl.cluster_el = tmp_vec;
-    */
 
 
     }//<-- endif a boundary point was determined

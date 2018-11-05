@@ -146,14 +146,14 @@ lariat_michelana_run2b.TrigEff_P:           [ 81.31,  22.72 ]
 lariat_michelana_run2b.TrigEff_K:           [ 8.271,  4.506 ]   
 lariat_michelana_run2b.SmearFactor:         [ 0.002,  0.238 ]  
 lariat_michelana_run2b.MuContamCorr_TpbFrac:[ 0.08,   0.13  ]
-#lariat_michelana_run2b.MinHitAmp:           [ 20.,       25. ] 
-#lariat_michelana_run2b.MaxRun:              9563 
 
 # ===================================================================================
 lariat_michelana_mc1:                       @local::lariat_michelana_run1
 lariat_michelana_mc1.CaloAlg:               @local::lariat_calorimetryalgmc_run1
-lariat_michelana_mc1.LateLightTau:          1177. #1132.2 # 1108
-lariat_michelana_mc1.MuContamCorr_EffTau:   [0., 1262. ] #[ 0., 1265. ]
+#lariat_michelana_mc1.LateLightTau:          1177. #1132.2 # 1108
+#lariat_michelana_mc1.MuContamCorr_EffTau:   [0., 1262. ] #[ 0., 1265. ]
+lariat_michelana_mc1.LateLightTau:          1174.2 #1132.2 # 1108
+lariat_michelana_mc1.MuContamCorr_EffTau:   [0., 1260. ] #[ 0., 1265. ]
 lariat_michelana_mc1.MuContamCorr_TpbFrac: [ 0., 0.18 ]
 #lariat_michelana_mc1.MakeAveWfms:           false 
 #lariat_michelana_mc1.ElectronLifetimeErr:   0.065
@@ -161,8 +161,10 @@ lariat_michelana_mc1.MuContamCorr_TpbFrac: [ 0., 0.18 ]
 # ===================================================================================
 lariat_michelana_mc2b:                      @local::lariat_michelana_run2b
 lariat_michelana_mc2b.CaloAlg:              @local::lariat_calorimetryalgmc_run2
-lariat_michelana_mc2b.LateLightTau:         1170. # average for first 3rd of Run2B dataset 
-lariat_michelana_mc2b.MuContamCorr_EffTau:  [ 1255., 1255. ]
+#lariat_michelana_mc2b.LateLightTau:         1170. # average for first 3rd of Run2B dataset 
+#lariat_michelana_mc2b.MuContamCorr_EffTau:  [ 1255., 1255. ]
+lariat_michelana_mc2b.LateLightTau:         1174.2 # average for first 3rd of Run2B dataset 
+lariat_michelana_mc2b.MuContamCorr_EffTau:  [ 1260., 1260. ]
 lariat_michelana_mc2b.MuContamCorr_TpbFrac: [ 0.18, 0.18 ]
 #lariat_michelana_mc2b.MakeAveWfms:           false 
 #lariat_michelana_mc2b.ElectronLifetimeErr:  0.05

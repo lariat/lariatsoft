@@ -157,23 +157,20 @@ physics.producers.trajcluster.TrajClusterAlg.NPTsAve:           10
 physics.producers.trajcluster.TrajClusterAlg.MaxChi:            3
 physics.producers.trajcluster.TrajClusterAlg.HitErrFac:         0.5
 physics.producers.trajcluster.TrajClusterAlg.ChargeCuts:        [5, 0.15, 0.25]
-physics.producers.trajcluster.TrajClusterAlg.KinkCuts:          [ 0.45, 4, 3 ] # kink angle, MCS kink significance, nPts fit
+physics.producers.trajcluster.TrajClusterAlg.KinkCuts:          [0.45, 4, 3] # kink angle, MCS kink significance, nPts fit
 physics.producers.trajcluster.TrajClusterAlg.ChkStopCuts:       [1.3, 5, 2.5] # [Min chg ratio, Chg slope pull cut, Chg fit Chi cut]
-# configure on each pass...
-physics.producers.trajcluster.TrajClusterAlg.MinPtsFit:         [ 4,  3, 2]
-physics.producers.trajcluster.TrajClusterAlg.MinPts:            [10, 3, 3]        # Min number of points in the trajectory required on each pass
+physics.producers.trajcluster.TrajClusterAlg.MinPtsFit:         [4,  3, 2]
+physics.producers.trajcluster.TrajClusterAlg.MinPts:            [10, 3, 3]  # Min number of points in the trajectory required on each pass
 physics.producers.trajcluster.TrajClusterAlg.MaxAngleCode:      [0, 2, 3]
-physics.producers.trajcluster.TrajClusterAlg.MaxVertexTrajSep:  [ 6, 6, 4]
+physics.producers.trajcluster.TrajClusterAlg.MaxVertexTrajSep:  [6, 6, 4]
 physics.producers.trajcluster.TrajClusterAlg.AngleRanges:       [30, 65, 85, 90]
-physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:          [ "ChkStop", "VtxHitsSwap", "SplitHiChgHits", "CTKink","HED","Split" ] # ["FillGap" ]
-#physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:          [ "All" ]
+physics.producers.trajcluster.TrajClusterAlg.SkipAlgs:          [ "ChkStop", "CTKink", "VtxHitsSwap","SplitHiChgHits","CTKink","HED","Split" ]
 #    Valid AlgNames:  MaskHits MaskBadTPs Michel DeltaRay CTKink CTStepChk TryNextPass RvPrp CHMH Split Comp3DVx Comp3DVxIG HED 
 #                     HamVx HamVx2 JunkTj Killed Merge TEP CHMEH FillGap Ghost ChkInTraj StopBadFits FixBegin BeginChg FixEnd UUH 
 #                     MisdVxTj VtxTj ChkVxTj RefVtx VxMerge NoKinkChk SoftKink ChkStop ChkStopEP FTBRvProp StopAtTj M3D Mat3DMerge 
 #                     TjHiVx3Score VtxHitsSwap SplitHiChgHits InShower ShowerTj ShwrParent MergeOverlap MergeSubShowers MergeNrShowers 
 #                     MergeShChain SplitTarjCV
 #    Or specify All to turn all algs off
-
 
 
 physics.producers.pmtrack.ClusterModuleLabel:               "linecluster"

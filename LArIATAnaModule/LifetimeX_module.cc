@@ -300,6 +300,8 @@ void LifetimeX::analyze(art::Event const & evt)
   // ====================================
   // Get run, subrun and event number
   fRunNumber    = (int)evt.run();
+  if( fRunNumber < fMinRun || fRunNumber > fMaxRun ) return;
+  
   fSubRunNumber = (int)evt.subRun();
   fEventNumber  = (int)evt.event();
   fEventTime    = (int)evt.getSubRun().beginTime().value();
@@ -310,7 +312,6 @@ void LifetimeX::analyze(art::Event const & evt)
 
   h_EventSelection->Fill(0);
 
-  if( fRunNumber < fMinRun || fRunNumber > fMaxRun ) return;
   if( detprop->ElectronLifetime() < fMinElectronLifetimeFromDB
       || detprop->ElectronLifetime() > fMaxElectronLifetimeFromDB ) {
     return;
