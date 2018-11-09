@@ -376,15 +376,17 @@ namespace caldata {
       double average=0.0;
       double sum=0.0;
       int n=0;
-      for(size_t bin = 0; bin < (size_t)fPostsample; bin++){
-        double val = holder[holder.size()-1-bin];
+      for(size_t i = 0; i < (size_t)fPostsample; i++){
+        // start 20 samples from end to avoid edge effects from deconvolution
+        size_t bin = holder.size()-20-i; 
+        double val = holder[bin];
         if( fabs(val) < 20 ){ // avoid outliers
-          sum+=holder[holder.size()-1-bin];
+          sum+=val;
           n++;
         }
       }
       if(n) average=sum/n;
-      for(size_t bin=0; bin < holder.size(); ++bin) holder[bin]-=average;
+      for(size_t i=0; i < holder.size(); ++i) holder[i]-=average;
     }
   }
   
