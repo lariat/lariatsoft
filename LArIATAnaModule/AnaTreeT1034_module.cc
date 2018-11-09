@@ -1556,7 +1556,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	nTrajPoint[i] = tracklist[i]->NumberTrajectoryPoints();
 	
 	// ### Storing the trajectory points in a similar way to PionXS ###
-	TVector3 p_hat_0;
+	recob::Track::Vector_t p_hat_0;
 	// ##############################################
 	// ### Looping over all the trajectory points ###
 	// ##############################################

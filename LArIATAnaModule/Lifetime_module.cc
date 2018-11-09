@@ -600,8 +600,8 @@ void lariat::Lifetime::analyze(art::Event const & evt)
    if(fVerbose) std::cout << "Tracklist size " << tracklist.size() << std::endl;
 
    ntracks_reco=tracklist.size();
-   TVector3 larStart;
-   TVector3 larEnd;
+   recob::Track::Vector_t larStart;
+   recob::Track::Vector_t larEnd;
    std::vector<double> trackStart;
    std::vector<double> trackEnd;
    double    sampling    = 0.128;
