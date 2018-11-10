@@ -243,9 +243,8 @@ void bo::AnaTree::analyze(art::Event const & evt)
     cluendtick[i] = clusterlist[i]->EndTick();
     cluplane[i] = clusterlist[i]->Plane().Plane;
   }
-  //track information
-  trkf::TrackMomentumCalculator trkm;
-  trkm.SetMinLength(10); //change the minimal track length requirement to 10 cm
+  //track information (change the minimal track length requirement to 10 cm)
+  trkf::TrackMomentumCalculator trkm{10.0};
   ntracks_reco=tracklist.size();
   for(size_t i=0; i<tracklist.size();++i){
     //-------------------------------------------------------------------------

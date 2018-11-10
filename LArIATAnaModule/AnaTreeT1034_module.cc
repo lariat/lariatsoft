@@ -11,20 +11,20 @@
 // ### Framework includes ###
 // ##########################
 #include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h" 
-#include "art/Framework/Principal/Event.h" 
-#include "fhiclcpp/ParameterSet.h" 
+#include "art/Framework/Core/ModuleMacros.h"
+#include "art/Framework/Principal/Event.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Principal/Handle.h" 
-#include "canvas/Persistency/Common/Ptr.h" 
-#include "canvas/Persistency/Common/PtrVector.h" 
-#include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
+#include "art/Framework/Principal/Handle.h"
+#include "canvas/Persistency/Common/Ptr.h"
+#include "canvas/Persistency/Common/PtrVector.h"
+#include "art/Framework/Services/Registry/ServiceHandle.h"
+#include "art/Framework/Services/Optional/TFileService.h"
 #include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "canvas/Persistency/Common/FindOneP.h" 
+#include "canvas/Persistency/Common/FindOneP.h"
 #include "canvas/Persistency/Common/FindManyP.h"
-#include "messagefacility/MessageLogger/MessageLogger.h" 
+#include "messagefacility/MessageLogger/MessageLogger.h"
 //#include "cetlib/maybe_ref.h"
 
 // ########################
@@ -88,19 +88,19 @@ const int kMaxCluster    = 1000;     //maximum number of clusters
 const int kMaxWCTracks   = 1000;     //maximum number of wire chamber tracks
 const int kMaxTOF        = 100;      //maximum number of TOF objects
 const int kMaxAG         = 100;      //maximum number of AG objects
-const int kMaxPrimaryPart = 10;	    //maximum number of true primary particles
+const int kMaxPrimaryPart = 10;     //maximum number of true primary particles
 const int kMaxPrimaries  = 20000;    //maximum number of true particles tracked
 const int kMaxShower     = 100;      //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000;     //maximum number of MCShower Object
-const int kMaxTruePrimaryPts = 5000; //maximum number of points in the true primary trajectory 
-const int kMaxIDE = 5000; //maximum number of points in the true primary trajectory 
+const int kMaxTruePrimaryPts = 5000; //maximum number of points in the true primary trajectory
+const int kMaxIDE = 5000; //maximum number of points in the true primary trajectory
 
-namespace lariat 
+namespace lariat
 {
   class AnaTreeT1034;
 }
 
-class lariat::AnaTreeT1034 : public art::EDAnalyzer 
+class lariat::AnaTreeT1034 : public art::EDAnalyzer
 {
 public:
   explicit AnaTreeT1034(fhicl::ParameterSet const & p);
@@ -116,19 +116,19 @@ public:
 private:
   // === Function used to reset all the variables  ===
   void ResetVars();
-  
+
   // === Storing information into TTree ====
   TTree* fTree;
-   
+
   //=== Storing Run Information ===
   int run;			//<---Run Number
   int subrun;			//<---SubRun Number
   int event;			//<---Event Number
   double evttime;		//<---Event Time Stamp
-  double efield[3];		//<---Electric Field 
+  double efield[3];		//<---Electric Field
   int t0;
   //int trigtime[16];		//<---Trigger time
-   
+
   // === Storing Track Information ===
   int ntracks_reco;		//<---Number of reconstructed tracks
   double trkvtxx[kMaxTrack];	//<---Track Start X Position (in cm)
@@ -137,7 +137,7 @@ private:
   double trkendx[kMaxTrack];	//<---Track End X Position (in cm)
   double trkendy[kMaxTrack];	//<---Track End Y Position (in cm)
   double trkendz[kMaxTrack];	//<---Track End Z Position (in cm)
-   
+
   double trkstartdcosx[kMaxTrack];	//<---Direction of the track in the x coordinate at its start point
   double trkstartdcosy[kMaxTrack];	//<---Direction of the track in the y coordinate at its start point
   double trkstartdcosz[kMaxTrack];	//<---Direction of the track in the z coordinate at its start point
@@ -149,16 +149,16 @@ private:
   double trkmommschi2[kMaxTrack];	//<---Calculated track momentum from multiple scattering using Chi2
   double trkmommsllhd[kMaxTrack];	//<---Calculated track momentum from multiple scattering
   int    trkWCtoTPCMatch[kMaxTrack];	//<---Using an association to see if there was a match between WC and TPC
-  					//    0 = match, 1 = no match
-   
-   
+                                        //    0 = match, 1 = no match
+
+
   // === Storing the tracks SpacePoints (Individual 3D points)
-  int    ntrkhits[kMaxTrack];			//<---Number of SpacePoints associated with track	
+  int    ntrkhits[kMaxTrack];			//<---Number of SpacePoints associated with track
   double trkx[kMaxTrack][kMaxTrackHits];	//<---X position of the spacepoint
   double trky[kMaxTrack][kMaxTrackHits];	//<---Y position of the spacepoint
   double trkz[kMaxTrack][kMaxTrackHits];	//<---Z position of the spacepoint
   double trkpitch[kMaxTrack][3];		//<---The track pitch in a given view (0 == Induction, 1 == Collection)
-   
+
   // === Storing the tracks Calorimetry Information
   int    trkhits[kMaxTrack][2];
   double trkpida[kMaxTrack][2];
@@ -166,7 +166,7 @@ private:
   double trkdedx[kMaxTrack][2][1000];
   double trkdqdx[kMaxTrack][2][1000];
   double trkrr[kMaxTrack][2][1000];
-  double trkpitchhit[kMaxTrack][2][1000]; 
+  double trkpitchhit[kMaxTrack][2][1000];
   double trkxyz[kMaxTrack][2][1000][3];
 
   // === Storing trajectory information for the track ===
@@ -209,7 +209,7 @@ private:
   float  hit_x[kMaxHits];        //<---hit x coordinate
   float  hit_y[kMaxHits];        //<---hit y coordinate
   float  hit_z[kMaxHits];        //<---hit z coordinate
-   
+
   // === Storing 2-d Cluster Information ===
   int    nclus;
   double clustertwire[kMaxCluster];
@@ -217,8 +217,8 @@ private:
   double cluendwire[kMaxCluster];
   double cluendtick[kMaxCluster];
   int    cluplane[kMaxCluster];
-   
-   
+
+
   // === Storing Wire Chamber Track Information ===
   int nwctrks;
   double wctrk_XFaceCoor[kMaxWCTracks];	//<---The projected X position of the wctrack at the front face of the TPC
@@ -226,14 +226,14 @@ private:
   double wctrk_momentum[kMaxWCTracks];		//<---Reconstructed moomentum
   double wctrk_theta[kMaxWCTracks];		//<---angle of track w.r.t. z axis
   double wctrk_phi[kMaxWCTracks];		//<---angle of track w.r.t. x axis
-  double wctrk_XDist[kMaxWCTracks];     	//<---X distance between upstream and downstream tracks
-  double wctrk_YDist[kMaxWCTracks];     	//<---Y distance between upstream and downstream tracks
-  double wctrk_ZDist[kMaxWCTracks];     	//<---Z distance between upstream and downstream tracks
+  double wctrk_XDist[kMaxWCTracks];             //<---X distance between upstream and downstream tracks
+  double wctrk_YDist[kMaxWCTracks];             //<---Y distance between upstream and downstream tracks
+  double wctrk_ZDist[kMaxWCTracks];             //<---Z distance between upstream and downstream tracks
   double XWireHist[kMaxWCTracks][1000];		//<---Coord in terms of wire number
   double YWireHist[kMaxWCTracks][1000];		//<---Coord in terms of wire number
   double XAxisHist[kMaxWCTracks][1000];		//<---coord in terms of units.
   double YAxisHist[kMaxWCTracks][1000];		//<---coord in terms of units.
-  double Y_Kink[kMaxWCTracks];     		//<---angle in Y between upstream and downstream tracks.
+  double Y_Kink[kMaxWCTracks];                  //<---angle in Y between upstream and downstream tracks.
   float  WC1xPos[kMaxWCTracks];
   float  WC1yPos[kMaxWCTracks];
   float  WC1zPos[kMaxWCTracks];
@@ -253,15 +253,15 @@ private:
   float  wcPx[kMaxWCTracks];
   float  wcPy[kMaxWCTracks];
   float  wcPz[kMaxWCTracks];
-   
+
   // === Storing Time of Flight information ===
   int ntof;
   double tofObject[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
   double tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
   float cTOF[kMaxTOF];	//<---Time Stamp for this TOF object*C
   // === Storing Mass  information ===
-  float massObj;	//<---Beamline Mass object   
- 
+  float massObj;	//<---Beamline Mass object
+
   // === Storing Aerogel Counter Information ===
 
   int               nAG;
@@ -279,10 +279,10 @@ private:
   bool              HitExist1p10_2[kMaxAG];
   bool              HitExist1p06_1[kMaxAG];
   bool              HitExist1p06_2[kMaxAG];
-   
+
   // === Storing SimChannel Stuff ===
   int maxTrackIDE;
-  double IDEEnergy[kMaxIDE]; 
+  double IDEEnergy[kMaxIDE];
   double IDEPos[kMaxIDE][3];
 
   // === Storing Geant4 MC Truth Information ===
@@ -305,21 +305,21 @@ private:
   double EndPy[kMaxPrimaries];			//<---End Py momentum of the particle
   double EndPz[kMaxPrimaries];			//<---End Pz momentum of the particle
 
-  int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
+  int Process[kMaxPrimaries];                   //<---Geant 4 process ID number
   // ### Recording the process as a integer ###
-	  // 0 = primary
-	  // 1 = PionMinusInelastic
-	  // 2 = NeutronInelastic
-	  // 3 = hadElastic
-	  // 4 = nCapture
-	  // 5 = CHIPSNuclearCaptureAtRest
-	  // 6 = Decay
-	  // 7 = KaonZeroLInelastic
-	  // 8 = CoulombScat
-	  // 9 = muMinusCaptureAtRest
-	  //10 = ProtonInelastic
-	  //11 = KaonPlusInelastic
-	  //12 = hBertiniCaptureAtRest
+  // 0 = primary
+  // 1 = PionMinusInelastic
+  // 2 = NeutronInelastic
+  // 3 = hadElastic
+  // 4 = nCapture
+  // 5 = CHIPSNuclearCaptureAtRest
+  // 6 = Decay
+  // 7 = KaonZeroLInelastic
+  // 8 = CoulombScat
+  // 9 = muMinusCaptureAtRest
+  //10 = ProtonInelastic
+  //11 = KaonPlusInelastic
+  //12 = hBertiniCaptureAtRest
   int NumberDaughters[kMaxPrimaries];		//<---Number of Daughters this particle has
   int TrackId[kMaxPrimaries];			//<---Geant4 TrackID number
   int Mother[kMaxPrimaries];			//<---TrackID of the mother of this particle
@@ -327,61 +327,61 @@ private:
   std::vector<std::string> G4Process;         //<---The process which created this particle
   std::vector<std::string> G4FinalProcess;    //<---The last process which this particle went under
 
-  // === Storing additionnal Geant4 MC Truth Information for the primary track only ===	   
-  int NTrTrajPts[kMaxPrimaryPart];							 //<--Nb. of true points in the true primary trajectories
+  // === Storing additionnal Geant4 MC Truth Information for the primary track only ===
+  int NTrTrajPts[kMaxPrimaryPart];                                                       //<--Nb. of true points in the true primary trajectories
   double MidPosX[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--X position of a point in the true primary trajectory
-  double MidPosY[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Y position of a point in the true primary trajectory  
-  double MidPosZ[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Z position of a point in the true primary trajectory    
+  double MidPosY[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Y position of a point in the true primary trajectory
+  double MidPosZ[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Z position of a point in the true primary trajectory
   double MidPx[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<- Px momentum of a point in the true primary trajectory
   double MidPy[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Py momentum of a point in the true primary trajectory
   double MidPz[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Pz momentum of a point in the true primary trajectory
- 
+
   // ==== Storing MCShower MCTruth Information ===
-   
-  int     no_mcshowers;                         	//number of MC Showers in this event.
-  int       mcshwr_origin[kMaxMCShower];            	//MC Shower origin information. 
-  int       mcshwr_pdg[kMaxMCShower];            	//MC Shower particle PDG code.   
-  int       mcshwr_TrackId[kMaxMCShower];        	//MC Shower particle G4 track ID.
-  double    mcshwr_startX[kMaxMCShower];            	//MC Shower particle G4 startX 
-  double    mcshwr_startY[kMaxMCShower];          	//MC Shower particle G4 startY 
-  double    mcshwr_startZ[kMaxMCShower];          	//MC Shower particle G4 startZ
-  double    mcshwr_endX[kMaxMCShower];            	//MC Shower particle G4 endX 
-  double    mcshwr_endY[kMaxMCShower];            	//MC Shower particle G4 endY 
-  double    mcshwr_endZ[kMaxMCShower];            	//MC Shower particle G4 endZ
-  double    mcshwr_CombEngX[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point X Position. 
-  double    mcshwr_CombEngY[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point Y Position.
-  double    mcshwr_CombEngZ[kMaxMCShower];            	//MC Shower Combined energy deposition information, Start Point Z Position.
+
+  int     no_mcshowers;                                 //number of MC Showers in this event.
+  int       mcshwr_origin[kMaxMCShower];                //MC Shower origin information.
+  int       mcshwr_pdg[kMaxMCShower];                   //MC Shower particle PDG code.
+  int       mcshwr_TrackId[kMaxMCShower];               //MC Shower particle G4 track ID.
+  double    mcshwr_startX[kMaxMCShower];                //MC Shower particle G4 startX
+  double    mcshwr_startY[kMaxMCShower];                //MC Shower particle G4 startY
+  double    mcshwr_startZ[kMaxMCShower];                //MC Shower particle G4 startZ
+  double    mcshwr_endX[kMaxMCShower];                  //MC Shower particle G4 endX
+  double    mcshwr_endY[kMaxMCShower];                  //MC Shower particle G4 endY
+  double    mcshwr_endZ[kMaxMCShower];                  //MC Shower particle G4 endZ
+  double    mcshwr_CombEngX[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point X Position.
+  double    mcshwr_CombEngY[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point Y Position.
+  double    mcshwr_CombEngZ[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point Z Position.
   double    mcshwr_CombEngPx[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
   double    mcshwr_CombEngPy[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
   double    mcshwr_CombEngPz[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
   double    mcshwr_CombEngE[kMaxMCShower];            //MC Shower Combined energy deposition information, Energy
-  double    mcshwr_dEdx[kMaxMCShower];           	//MC Shower dEdx, MeV/cm
-  double    mcshwr_StartDirX[kMaxMCShower];      	//MC Shower Direction of begining of shower, X direction 
-  double    mcshwr_StartDirY[kMaxMCShower];      	//MC Shower Direction of begining of shower, Y direction 
-  double    mcshwr_StartDirZ[kMaxMCShower];      	//MC Shower Direction of begining of shower, Z direction 
-  int       mcshwr_isEngDeposited[kMaxMCShower];  	//tells whether if this shower deposited energy in the detector or not.
+  double    mcshwr_dEdx[kMaxMCShower];                  //MC Shower dEdx, MeV/cm
+  double    mcshwr_StartDirX[kMaxMCShower];             //MC Shower Direction of begining of shower, X direction
+  double    mcshwr_StartDirY[kMaxMCShower];             //MC Shower Direction of begining of shower, Y direction
+  double    mcshwr_StartDirZ[kMaxMCShower];             //MC Shower Direction of begining of shower, Z direction
+  int       mcshwr_isEngDeposited[kMaxMCShower];        //tells whether if this shower deposited energy in the detector or not.
 
-   							//yes = 1; no =0;
+                                                        //yes = 1; no =0;
   //MC Shower mother information
-  int        mcshwr_Motherpdg[kMaxMCShower];       	//MC Shower's mother PDG code.
-  int        mcshwr_MotherTrkId[kMaxMCShower];     	//MC Shower's mother G4 track ID.
-  double     mcshwr_MotherstartX[kMaxMCShower];    	//MC Shower's mother  G4 startX .
-  double     mcshwr_MotherstartY[kMaxMCShower];    	//MC Shower's mother  G4 startY .
-  double     mcshwr_MotherstartZ[kMaxMCShower];    	//MC Shower's mother  G4 startZ .
+  int        mcshwr_Motherpdg[kMaxMCShower];            //MC Shower's mother PDG code.
+  int        mcshwr_MotherTrkId[kMaxMCShower];          //MC Shower's mother G4 track ID.
+  double     mcshwr_MotherstartX[kMaxMCShower];         //MC Shower's mother  G4 startX .
+  double     mcshwr_MotherstartY[kMaxMCShower];         //MC Shower's mother  G4 startY .
+  double     mcshwr_MotherstartZ[kMaxMCShower];         //MC Shower's mother  G4 startZ .
   double     mcshwr_MotherendX[kMaxMCShower];          //MC Shower's mother  G4 endX   .
   double     mcshwr_MotherendY[kMaxMCShower];          //MC Shower's mother  G4 endY   .
   double     mcshwr_MotherendZ[kMaxMCShower];          //MC Shower's mother  G4 endZ   .
-   
+
   //MC Shower ancestor information
-  int        mcshwr_Ancestorpdg[kMaxMCShower];       	//MC Shower's ancestor PDG code.
-  int        mcshwr_AncestorTrkId[kMaxMCShower];     	//MC Shower's ancestor G4 track ID.
-  double     mcshwr_AncestorstartX[kMaxMCShower];   	//MC Shower's ancestor  G4 startX
-  double     mcshwr_AncestorstartY[kMaxMCShower];   	//MC Shower's ancestor  G4 startY
-  double     mcshwr_AncestorstartZ[kMaxMCShower];   	//MC Shower's ancestor  G4 startZ
-  double     mcshwr_AncestorendX[kMaxMCShower];     	//MC Shower's ancestor  G4 endX 
-  double     mcshwr_AncestorendY[kMaxMCShower];     	//MC Shower's ancestor  G4 endY
-  double     mcshwr_AncestorendZ[kMaxMCShower];      	//MC Shower's ancestor  G4 endZ    
-   
+  int        mcshwr_Ancestorpdg[kMaxMCShower];          //MC Shower's ancestor PDG code.
+  int        mcshwr_AncestorTrkId[kMaxMCShower];        //MC Shower's ancestor G4 track ID.
+  double     mcshwr_AncestorstartX[kMaxMCShower];       //MC Shower's ancestor  G4 startX
+  double     mcshwr_AncestorstartY[kMaxMCShower];       //MC Shower's ancestor  G4 startY
+  double     mcshwr_AncestorstartZ[kMaxMCShower];       //MC Shower's ancestor  G4 startZ
+  double     mcshwr_AncestorendX[kMaxMCShower];         //MC Shower's ancestor  G4 endX
+  double     mcshwr_AncestorendY[kMaxMCShower];         //MC Shower's ancestor  G4 endY
+  double     mcshwr_AncestorendZ[kMaxMCShower];         //MC Shower's ancestor  G4 endZ
+
   // === Storing Shower Reco Information using ShowerReco3D ===
 
   int nshowers; ///number of showers per event
@@ -396,26 +396,26 @@ private:
   //double dEdxSigmaPerPlaneShw[2][kMaxShower];//not working
   double TotalMIPEShw[2][kMaxShower];
   //double TotalMIPESigmaShw[2][kMaxShower];//not working
-  int BestPlaneShw[kMaxShower];	
+  int BestPlaneShw[kMaxShower];
   double LengthShw[kMaxShower];
-   
-   
-   
+
+
+
   // ==== NEED TO FIX THESE VARIABLES....FILLED WITH DUMMY VALUES FOR NOW ===
   double hit_rms[kMaxHits];
   double hit_nelec[kMaxHits];
   double hit_energy[kMaxHits];
   //int    hit_trkkey[kMaxHits];
   int    hit_clukey[kMaxHits];
-  
-   
+
+
   //std::string fTrigModuleLabel;
   std::string fClusterModuleLabel;
   std::string fHitsModuleLabel;
   std::string fTrackModuleLabel;
   std::string fCalorimetryModuleLabel;
   std::string fParticleIDModuleLabel;
-  std::string fWCTrackLabel; 		// The name of the producer that made tracks through the MWPCs
+  std::string fWCTrackLabel;            // The name of the producer that made tracks through the MWPCs
   std::string fTOFModuleLabel;		// Name of the producer that made the TOF objects
   std::string fAGModuleLabel;         // Name of the producer that made the aerogel objects
   std::string fG4ModuleLabel;
@@ -429,7 +429,7 @@ private:
 };
 
 
-lariat::AnaTreeT1034::AnaTreeT1034(fhicl::ParameterSet const & pset) 
+lariat::AnaTreeT1034::AnaTreeT1034(fhicl::ParameterSet const & pset)
   : EDAnalyzer(pset)
   , fCalorimetryAlg(pset.get<fhicl::ParameterSet>("CalorimetryAlg"))
 {
@@ -443,20 +443,20 @@ lariat::AnaTreeT1034::~AnaTreeT1034()
 
 void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
 {
-  //fTrigModuleLabel	 	= pset.get< std::string >("TriggerUtility");
-  fHitsModuleLabel      	= pset.get< std::string >("HitsModuleLabel");
+  //fTrigModuleLabel            = pset.get< std::string >("TriggerUtility");
+  fHitsModuleLabel              = pset.get< std::string >("HitsModuleLabel");
   fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel");
-  fCalorimetryModuleLabel 	= pset.get< std::string >("CalorimetryModuleLabel");
-  fParticleIDModuleLabel  	= pset.get< std::string >("ParticleIDModuleLabel");
-  fClusterModuleLabel          	= pset.get< std::string >("ClusterModuleLabel");
-  fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel");
-  fTOFModuleLabel 		= pset.get< std::string >("TOFModuleLabel");
-  fAGModuleLabel               	= pset.get< std::string >("AGModuleLabel");
-  fG4ModuleLabel               	= pset.get< std::string >("G4ModuleLabel");
-  fShowerModuleLabel           	= pset.get< std::string >("ShowerModuleLabel");
-  fSimChanModuleLabel	        = pset.get< std::string >("SimChanModuleLabel");
+  fCalorimetryModuleLabel       = pset.get< std::string >("CalorimetryModuleLabel");
+  fParticleIDModuleLabel        = pset.get< std::string >("ParticleIDModuleLabel");
+  fClusterModuleLabel           = pset.get< std::string >("ClusterModuleLabel");
+  fWCTrackLabel                 = pset.get< std::string >("WCTrackLabel");
+  fTOFModuleLabel               = pset.get< std::string >("TOFModuleLabel");
+  fAGModuleLabel                = pset.get< std::string >("AGModuleLabel");
+  fG4ModuleLabel                = pset.get< std::string >("G4ModuleLabel");
+  fShowerModuleLabel            = pset.get< std::string >("ShowerModuleLabel");
+  fSimChanModuleLabel           = pset.get< std::string >("SimChanModuleLabel");
   fMCShowerModuleLabel		= pset.get< std::string >("MCShowerModuleLabel");
-  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
+  fWC2TPCModuleLabel            = pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
   return;
 }
 
@@ -466,7 +466,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ### Reset variables before we get started ###
   // #############################################
   ResetVars();
-  
+
 
   // #######################################
   // ### Get potentially useful services ###
@@ -481,45 +481,45 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   art::ServiceHandle<cheat::BackTrackerService> bt_serv;
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
   const sim::ParticleList& plist = pi_serv->ParticleList();
-   
-   
+
+
   // === Run Number ===
   run = evt.run();
   // === Sub-Run Number ===
   subrun = evt.subRun();
   // === Event Number ===
   event = evt.id().event();
-   
+
   std::cout<<std::endl;
   std::cout<<"========================================="<<std::endl;
   std::cout<<"Run = "<<run<<", SubRun = "<<subrun<<", Evt = "<<event<<std::endl;
   std::cout<<"========================================="<<std::endl;
   std::cout<<std::endl;
-   
+
   // === Event Time ===
   art::Timestamp ts = evt.time();
   TTimeStamp tts(ts.timeHigh(), ts.timeLow());
   evttime = tts.AsDouble();
-   
+
   // === Electric Field ===
   // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
   efield[0] = detprop->Efield(0);
   efield[1] = detprop->Efield(1);
   efield[2] = detprop->Efield(2);
-   
+
   // === Trigger Offset ====
   t0 = detprop->TriggerOffset();
-   
+
   /*
   // ###################################
   // ### Getting Trigger Information ###
   // ###################################
   art::Handle< std::vector<raw::ExternalTrigger> > trigListHandle;
   std::vector<art::Ptr<raw::ExternalTrigger> > triglist;
-   
+
   if (evt.getByLabel(fTrigModuleLabel,trigListHandle))
   {art::fill_ptr_vector(triglist, trigListHandle);}
-   
+
   // #################################
   // ### Looping over the Triggers ###
   // #################################
@@ -535,7 +535,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   art::Handle< std::vector<recob::Track> > trackListHandle; //<---Define trackListHandle as a vector of recob::Track objects
   std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
-   
+
   // === Filling the tracklist from the tracklistHandle ===
   if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
     {art::fill_ptr_vector(tracklist, trackListHandle);}
@@ -546,22 +546,22 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   art::Handle< std::vector<recob::Hit> > hitListHandle; //<---Define hitListHandle as a vector of recob::Track objects
   std::vector<art::Ptr<recob::Hit> > hitlist; //<---Define tracklist as a pointer to recob::tracks
-   
+
   // === Filling the hitlist from the hitlistHandle ===
   if (evt.getByLabel(fHitsModuleLabel,hitListHandle))
     {art::fill_ptr_vector(hitlist, hitListHandle);}
-   
+
   // ##########################################
   // ### Getting the 2D Cluster Information ###
   // ##########################################
 
   art::Handle< std::vector<recob::Cluster> > clusterListHandle; //<---Define clusterListHandle as a vector of recob::Track objects
   std::vector<art::Ptr<recob::Cluster> > clusterlist; //<---Define cluster as a pointer to recob::cluster
-   
+
   // === Filling the clusterlist from the clusterlistHandle ===
   if (evt.getByLabel(fClusterModuleLabel,clusterListHandle))
     {art::fill_ptr_vector(clusterlist, clusterListHandle);}
-      
+
   // ###################################################
   // ### Getting the Wire Chamber Track  Information ###
   // ###################################################
@@ -569,17 +569,17 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
   std::vector<art::Ptr<ldp::WCTrack> > wctrack;
-   
+
   if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
     {art::fill_ptr_vector(wctrack, wctrackHandle);}
-      
+
   // ####################################################
   // ### Getting the Time of Flight (TOF) Information ###
   // ####################################################
 
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   std::vector<art::Ptr<ldp::TOF> > tof;
-   
+
   if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
     {art::fill_ptr_vector(tof, TOFColHandle);}
 
@@ -592,35 +592,35 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   if(evt.getByLabel(fAGModuleLabel,AGColHandle))
     {art::fill_ptr_vector(agc, AGColHandle);}
-      
+
   // #####################################
   // ### Getting the Shower Information ###
   // #####################################
 
-  art::Handle< std::vector<recob::Shower> > shwListHandle; 
+  art::Handle< std::vector<recob::Shower> > shwListHandle;
   std::vector<art::Ptr<recob::Shower> > shwlist;
-   
+
   // === Filling the shwlist from the shwlistHandle ===
   if (evt.getByLabel(fShowerModuleLabel,shwListHandle))
     {art::fill_ptr_vector(shwlist, shwListHandle);}
 
-   
-   
+
+
   // ### Something to do with SimChannels...need to come back to ###
   std::vector<const sim::SimChannel*> fSimChannels;
   try
     {evt.getView("largeant", fSimChannels);}
   catch (art::Exception const&e){ }
-   
+
   // ###################################################################
   // ### Setting a boolian to only output MC info if this is MC-info ###
   // ###################################################################
   bool isdata = false;
   if (evt.isRealData())
     {isdata = true;}
-	
+
   else isdata = false;
-   
+
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   //							FILLING THE Sim Channel INFORMATION
@@ -629,11 +629,11 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   if(!isdata) {
 
-    art::Handle< std::vector<sim::SimChannel> > SimListHandle; 
-    std::vector<art::Ptr<sim::SimChannel> > Simlist;    
+    art::Handle< std::vector<sim::SimChannel> > SimListHandle;
+    std::vector<art::Ptr<sim::SimChannel> > Simlist;
     if(evt.getByLabel(fSimChanModuleLabel, SimListHandle))
       { art::fill_ptr_vector(Simlist, SimListHandle); }
-  
+
     maxTrackIDE = 0;
 
     // Loop over the channels, the wires
@@ -641,35 +641,35 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
       // Only getting one plane
       if(Simlist.at(nChan)->Channel() > 240) { break; }
-      
+
       // Get the information of each wire
-     const auto & wire = Simlist.at(nChan)->TDCIDEMap();
+      const auto & wire = Simlist.at(nChan)->TDCIDEMap();
 
       // Looping over the IDEs in a wire, or looping over time
       //typedef std::map<unsigned short, std::vector< sim::IDE > >::iterator it_type;
       for(auto it = wire.begin(); it != wire.end(); it++) {
 
-	// Looping over the IDEs in a given time tick
-	for(size_t i = 0; i < it->second.size(); i++) {
+        // Looping over the IDEs in a given time tick
+        for(size_t i = 0; i < it->second.size(); i++) {
 
-	  // Only non-showering (nonnegative) primary track IDEs
-	  if(it->second.at(i).trackID != 1) { continue; } 
- 
-	  IDEEnergy[maxTrackIDE] = it->second.at(i).energy; 
-	    
-	  IDEPos[maxTrackIDE][0] = it->second.at(i).x; 
-	  IDEPos[maxTrackIDE][1] = it->second.at(i).y;
-	  IDEPos[maxTrackIDE][2] = it->second.at(i).z;
+          // Only non-showering (nonnegative) primary track IDEs
+          if(it->second.at(i).trackID != 1) { continue; }
 
-	  maxTrackIDE += 1;
-	  
-	} // Loop over IDE
+          IDEEnergy[maxTrackIDE] = it->second.at(i).energy;
+
+          IDEPos[maxTrackIDE][0] = it->second.at(i).x;
+          IDEPos[maxTrackIDE][1] = it->second.at(i).y;
+          IDEPos[maxTrackIDE][2] = it->second.at(i).z;
+
+          maxTrackIDE += 1;
+
+        } // Loop over IDE
       } // Loop over Time
     } // Loop over Wire
   } // End of isdata
 
 
-   
+
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   //							FILLING THE MCTruth Geant4 INFORMATION
@@ -680,81 +680,81 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     {
       art::Handle< std::vector<sim::MCShower> > mcshowerh;
       evt.getByLabel(fMCShowerModuleLabel, mcshowerh);
-      
+
       // #######################################################
       // ### Check to make sure the MCShower Handle is valid ###
       // #######################################################
       if (mcshowerh.isValid())
-	{
-	  
-	  no_mcshowers = mcshowerh->size();
-	  size_t shwr = 0;
-	  // ############################################################
-	  // ### Looping over all MC Showers (using uBooNEAna method) ###
-	  // ############################################################
-	  for(std::vector<sim::MCShower>::const_iterator imcshwr = mcshowerh->begin(); imcshwr != mcshowerh->end(); ++imcshwr)
-	    {
-	    
-	      const sim::MCShower& mcshwr = *imcshwr;
-	    
-	      mcshwr_origin[shwr]          = mcshwr.Origin();
-	      mcshwr_pdg[shwr]             = mcshwr.PdgCode();
-	      mcshwr_TrackId[shwr]         = mcshwr.TrackID();
-	      mcshwr_startX[shwr]          = mcshwr.Start().X();
-	      mcshwr_startY[shwr]          = mcshwr.Start().Y();
-	      mcshwr_startZ[shwr]          = mcshwr.Start().Z();
-	      mcshwr_endX[shwr]            = mcshwr.End().X();
-	      mcshwr_endY[shwr]            = mcshwr.End().Y(); 
-	      mcshwr_endZ[shwr]            = mcshwr.End().Z();
-	    
-	      // ### Recording Energy inside the detector ###
-	      if (mcshwr.DetProfile().E()!= 0)
-		{
-		  mcshwr_isEngDeposited[shwr] = 1;
-		  mcshwr_CombEngX[shwr]        = mcshwr.DetProfile().X(); 
-		  mcshwr_CombEngY[shwr]        = mcshwr.DetProfile().Y();
-		  mcshwr_CombEngZ[shwr]        = mcshwr.DetProfile().Z();
-		  mcshwr_CombEngPx[shwr]       = mcshwr.DetProfile().Px();
-		  mcshwr_CombEngPy[shwr]       = mcshwr.DetProfile().Py();
-		  mcshwr_CombEngPz[shwr]       = mcshwr.DetProfile().Pz(); 
-		  mcshwr_CombEngE[shwr]        = mcshwr.DetProfile().E();
-		  mcshwr_dEdx[shwr]            = mcshwr.dEdx();
-		  mcshwr_StartDirX[shwr]       = mcshwr.StartDir().X();
-		  mcshwr_StartDirY[shwr]       = mcshwr.StartDir().Y();
-		  mcshwr_StartDirZ[shwr]       = mcshwr.StartDir().Z();
-		}//<---End recording info inside the detector
-	      else
-		{mcshwr_isEngDeposited[shwr] = 0;}
-	    
-	      mcshwr_Motherpdg[shwr]       = mcshwr.MotherPdgCode();
-	      mcshwr_MotherTrkId[shwr]     = mcshwr.MotherTrackID();
-	      mcshwr_MotherstartX[shwr]    = mcshwr.MotherStart().X();
-	      mcshwr_MotherstartY[shwr]    = mcshwr.MotherStart().Y();
-	      mcshwr_MotherstartZ[shwr]    = mcshwr.MotherStart().Z();
-	      mcshwr_MotherendX[shwr]      = mcshwr.MotherEnd().X();
-	      mcshwr_MotherendY[shwr]      = mcshwr.MotherEnd().Y();
-	      mcshwr_MotherendZ[shwr]      = mcshwr.MotherEnd().Z();
-	      mcshwr_Ancestorpdg[shwr]     = mcshwr.AncestorPdgCode();
-	      mcshwr_AncestorTrkId[shwr]   = mcshwr.AncestorTrackID();
-	      mcshwr_AncestorstartX[shwr]  = mcshwr.AncestorStart().X();
-	      mcshwr_AncestorstartY[shwr]  = mcshwr.AncestorStart().Y();
-	      mcshwr_AncestorstartZ[shwr]  = mcshwr.AncestorStart().Z();
-	      mcshwr_AncestorendX[shwr]    = mcshwr.AncestorEnd().X();
-	      mcshwr_AncestorendY[shwr]    = mcshwr.AncestorEnd().Y();
-	      mcshwr_AncestorendZ[shwr]    = mcshwr.AncestorEnd().Z();
+        {
 
-      
-	      shwr++;
+          no_mcshowers = mcshowerh->size();
+          size_t shwr = 0;
+          // ############################################################
+          // ### Looping over all MC Showers (using uBooNEAna method) ###
+          // ############################################################
+          for(std::vector<sim::MCShower>::const_iterator imcshwr = mcshowerh->begin(); imcshwr != mcshowerh->end(); ++imcshwr)
+            {
+
+              const sim::MCShower& mcshwr = *imcshwr;
+
+              mcshwr_origin[shwr]          = mcshwr.Origin();
+              mcshwr_pdg[shwr]             = mcshwr.PdgCode();
+              mcshwr_TrackId[shwr]         = mcshwr.TrackID();
+              mcshwr_startX[shwr]          = mcshwr.Start().X();
+              mcshwr_startY[shwr]          = mcshwr.Start().Y();
+              mcshwr_startZ[shwr]          = mcshwr.Start().Z();
+              mcshwr_endX[shwr]            = mcshwr.End().X();
+              mcshwr_endY[shwr]            = mcshwr.End().Y();
+              mcshwr_endZ[shwr]            = mcshwr.End().Z();
+
+              // ### Recording Energy inside the detector ###
+              if (mcshwr.DetProfile().E()!= 0)
+                {
+                  mcshwr_isEngDeposited[shwr] = 1;
+                  mcshwr_CombEngX[shwr]        = mcshwr.DetProfile().X();
+                  mcshwr_CombEngY[shwr]        = mcshwr.DetProfile().Y();
+                  mcshwr_CombEngZ[shwr]        = mcshwr.DetProfile().Z();
+                  mcshwr_CombEngPx[shwr]       = mcshwr.DetProfile().Px();
+                  mcshwr_CombEngPy[shwr]       = mcshwr.DetProfile().Py();
+                  mcshwr_CombEngPz[shwr]       = mcshwr.DetProfile().Pz();
+                  mcshwr_CombEngE[shwr]        = mcshwr.DetProfile().E();
+                  mcshwr_dEdx[shwr]            = mcshwr.dEdx();
+                  mcshwr_StartDirX[shwr]       = mcshwr.StartDir().X();
+                  mcshwr_StartDirY[shwr]       = mcshwr.StartDir().Y();
+                  mcshwr_StartDirZ[shwr]       = mcshwr.StartDir().Z();
+                }//<---End recording info inside the detector
+              else
+                {mcshwr_isEngDeposited[shwr] = 0;}
+
+              mcshwr_Motherpdg[shwr]       = mcshwr.MotherPdgCode();
+              mcshwr_MotherTrkId[shwr]     = mcshwr.MotherTrackID();
+              mcshwr_MotherstartX[shwr]    = mcshwr.MotherStart().X();
+              mcshwr_MotherstartY[shwr]    = mcshwr.MotherStart().Y();
+              mcshwr_MotherstartZ[shwr]    = mcshwr.MotherStart().Z();
+              mcshwr_MotherendX[shwr]      = mcshwr.MotherEnd().X();
+              mcshwr_MotherendY[shwr]      = mcshwr.MotherEnd().Y();
+              mcshwr_MotherendZ[shwr]      = mcshwr.MotherEnd().Z();
+              mcshwr_Ancestorpdg[shwr]     = mcshwr.AncestorPdgCode();
+              mcshwr_AncestorTrkId[shwr]   = mcshwr.AncestorTrackID();
+              mcshwr_AncestorstartX[shwr]  = mcshwr.AncestorStart().X();
+              mcshwr_AncestorstartY[shwr]  = mcshwr.AncestorStart().Y();
+              mcshwr_AncestorstartZ[shwr]  = mcshwr.AncestorStart().Z();
+              mcshwr_AncestorendX[shwr]    = mcshwr.AncestorEnd().X();
+              mcshwr_AncestorendY[shwr]    = mcshwr.AncestorEnd().Y();
+              mcshwr_AncestorendZ[shwr]    = mcshwr.AncestorEnd().Z();
+
+
+              shwr++;
             }//<---End imcshwr iterator loop
-	    
-	    
-	}//<---Only going in if the handle is valid
+
+
+        }//<---Only going in if the handle is valid
     }//<---End only looking at MC information
-   
-   
-   
-   
-   
+
+
+
+
+
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   //							FILLING THE MCTruth Geant4 INFORMATION
@@ -765,313 +765,313 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     {
       // ######################################
       // ### Making a vector of MCParticles ###
-      // ######################################   
+      // ######################################
       std::vector<const simb::MCParticle* > geant_part;
-      
+
       // ### Looping over all the Geant4 particles from the BackTracker ###
-      for(size_t p = 0; p < plist.size(); ++p) 
-		{
-	  		// ### Filling the vector with MC Particles ###
-	  		geant_part.push_back(plist.Particle(p)); 
-		}
-	
-     
-      
+      for(size_t p = 0; p < plist.size(); ++p)
+        {
+          // ### Filling the vector with MC Particles ###
+          geant_part.push_back(plist.Particle(p));
+        }
+
+
+
       // ### Setting a string for primary ###
       std::string pri("primary");
-      
+
       // ### Setting a string for PionMinusInelastic ###
       std::string PionMinusInelastic("pi-Inelastic");
-      
+
       // ### Setting a string for NeutronInelastic ###
       std::string NeutronInelastic("neutronInelastic");
-      
-       // ### Setting a string for hadElastic ###
+
+      // ### Setting a string for hadElastic ###
       std::string hadElastic("hadElastic");
-      
+
       // ### Setting a string for nCapture ###
       std::string nCapture("nCapture");
-      
+
       // This may not be called hBertiniCaptureAtRest ?
       // ### Setting a string for CHIPSNuclearCaptureAtRest ###
       std::string CHIPSNuclearCaptureAtRest("CHIPSNuclearCaptureAtRest");
-      
+
       // ### Setting a string for Decay ###
       std::string Decay("Decay");
-      
+
       // ### Setting a string for KaonZeroLInelastic ###
       std::string KaonZeroLInelastic("KaonZeroLInelastic");
-      
+
       // ### Setting a string for CoulombScat ###
       std::string CoulombScat("CoulombScat");
-      
+
       // ### Setting a string for muMinusCaptureAtRest ###
       std::string muMinusCaptureAtRest("muMinusCaptureAtRest");
-      
+
       // ### Setting a string for ProtonInelastic ###
       std::string ProtonInelastic("protonInelastic");
-      
+
       // ### Setting a string for Kaon Inelastic ###
       std::string KaonPlusInelastic("kaon+Inelastic");
-      
+
       // ### Setting a string for BertiniCaptureAtRest
       std::string hBertiniCaptureAtRest("hBertiniCaptureAtRest");
-      
-      
+
+
       int primary=0;
       int geant_particle=0;
-      
+
       // ############################################################
       // ### Determine the number of primary particles from geant ###
       // ############################################################
       for( unsigned int i = 0; i < geant_part.size(); ++i )
-		{
-	  		geant_particle++;
-	  		// ### Counting the number of primary particles ###
-	  		if(geant_part[i]->Process()==pri)
-	    		{ primary++;}
-		}//<---End i loop
-	 
-	
+        {
+          geant_particle++;
+          // ### Counting the number of primary particles ###
+          if(geant_part[i]->Process()==pri)
+            { primary++;}
+        }//<---End i loop
+
+
       // ### Saving the number of primary particles ###
       no_primaries=primary;
       // ### Saving the number of Geant4 particles ###
       geant_list_size=geant_particle;
-       
+
       // ### Looping over all the Geant4 particles ###
       int iPrim = 0;
       for( unsigned int i = 0; i < geant_part.size(); ++i )
-         {
-   
-      	 // ### If this particle is primary, set = 1 ###
-	 if(geant_part[i]->Process()==pri)
-	    {process_primary[i]=1;}
-         // ### If this particle is not-primary, set = 0 ###
-	 else
-	    {process_primary[i]=0;}
-          
-	 // ### Recording the process as a integer ###
-	 // 0 = primary
-	 // 1 = PionMinusInelastic
-   	 // 2 = NeutronInelastic
-	 // 3 = hadElastic
-	 // 4 = nCapture
-	 // 5 = CHIPSNuclearCaptureAtRest
-	 // 6 = Decay
-	 // 7 = KaonZeroLInelastic
-	 // 8 = CoulombScat
-	 // 9 = muMinusCaptureAtRest
-	 //10 = ProtonInelastic
-	  
-	 if(geant_part[i]->Process() == pri)
-	    {Process[i] = 0;}
-	     
-	 if(geant_part[i]->Process() == PionMinusInelastic)
-	    {Process[i] = 1;}
-	     
-	 if(geant_part[i]->Process() == NeutronInelastic)
-	    {Process[i] = 2;}
-	     
-	 if(geant_part[i]->Process() == hadElastic)
-	    {Process[i] = 3;}
-	  
-	 if(geant_part[i]->Process() == nCapture)
-	    {Process[i] = 4;}
-	     
-	 if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
-	    {Process[i] = 5;}
-	  
-	 if(geant_part[i]->Process() == Decay)
-	    {Process[i] = 6;}
-	  
-	 if(geant_part[i]->Process() == KaonZeroLInelastic)
-	    {Process[i] = 7;}
-	     
-	 if(geant_part[i]->Process() == CoulombScat)
-	    {Process[i] = 8;}
-	     
-	 if(geant_part[i]->Process() == muMinusCaptureAtRest)
-	    {Process[i] = 9;}
-	     
-	 if(geant_part[i]->Process() == ProtonInelastic)
-	    {Process[i] = 10;}
-			
-	 if(geant_part[i]->Process() == KaonPlusInelastic)
-	    {Process[i] = 11;}
-			
-	 if(geant_part[i]->Process() == hBertiniCaptureAtRest)
-	    {Process[i] = 12;}
-	     
-	
+        {
 
-	 // ### Saving the particles mother TrackID ###
-	 Mother[i]=geant_part[i]->Mother();
-	 // ### Saving the particles TrackID ###
-	 TrackId[i]=geant_part[i]->TrackId();
-	 // ### Saving the PDG Code ###
-	 pdg[i]=geant_part[i]->PdgCode();
-	 // ### Saving the particles start and end Energy ###
-	 Eng[i]=geant_part[i]->E();
-	 EndEng[i]=geant_part[i]->EndE();
-	  
-	 // ### Saving the start and end Px, Py, Pz info ###
-	 Px[i]=geant_part[i]->Px();
-	 Py[i]=geant_part[i]->Py();
-	 Pz[i]=geant_part[i]->Pz();
-	 EndPx[i]=geant_part[i]->EndPx();
-	 EndPy[i]=geant_part[i]->EndPy();
-	 EndPz[i]=geant_part[i]->EndPz();
-	  
-	 // ### Saving the Start and End Point for this particle ###
-	 StartPointx[i]=geant_part[i]->Vx();
-	 StartPointy[i]=geant_part[i]->Vy();
-	 StartPointz[i]=geant_part[i]->Vz();
-	 EndPointx[i]=geant_part[i]->EndPosition()[0];
-	 EndPointy[i]=geant_part[i]->EndPosition()[1];
-	 EndPointz[i]=geant_part[i]->EndPosition()[2];
+          // ### If this particle is primary, set = 1 ###
+          if(geant_part[i]->Process()==pri)
+            {process_primary[i]=1;}
+          // ### If this particle is not-primary, set = 0 ###
+          else
+            {process_primary[i]=0;}
 
-	 // ### Saving the processes for this particle ###
-	 G4Process.push_back( geant_part[i]->Process() );
-	 G4FinalProcess.push_back( geant_part[i]->EndProcess() );
- 	  
-	 // ### Saving the number of Daughters for this particle ###
-	 NumberDaughters[i]=geant_part[i]->NumberDaughters();
+          // ### Recording the process as a integer ###
+          // 0 = primary
+          // 1 = PionMinusInelastic
+          // 2 = NeutronInelastic
+          // 3 = hadElastic
+          // 4 = nCapture
+          // 5 = CHIPSNuclearCaptureAtRest
+          // 6 = Decay
+          // 7 = KaonZeroLInelastic
+          // 8 = CoulombScat
+          // 9 = muMinusCaptureAtRest
+          //10 = ProtonInelastic
 
-	 // ### Save intermediary information for the primary track
-	 if(geant_part[i]->Process()==pri){
-	 NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();
-	 simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
-				
-	 int iPrimPt = 0;	
-	 for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj)
-	    {
-	    MidPosX[iPrim][iPrimPt] = truetraj.X(iPrimPt);
-	    MidPosY[iPrim][iPrimPt] = truetraj.Y(iPrimPt);
-	    MidPosZ[iPrim][iPrimPt] = truetraj.Z(iPrimPt);
-	    MidPx[iPrim][iPrimPt] = truetraj.Px(iPrimPt);
-	    MidPy[iPrim][iPrimPt] = truetraj.Py(iPrimPt);
-	    MidPz[iPrim][iPrimPt] = truetraj.Pz(iPrimPt);
-	    iPrimPt++;
-	    }//<--End loop on true trajectory points
-	 
+          if(geant_part[i]->Process() == pri)
+            {Process[i] = 0;}
 
-	 	   // Yet an other scheme for interaction type
-	             
-	   // ### Recording the process as a integer ###
-	   // 0 = NoInteractionNodaughters, thought going
-	   // 1 = PionMinusInelastic
-	   // 2 = NeutronInelastic
-	   // 3 = hadElastic
-	   // 4 = nCapture
-	   // 5 = CHIPSNuclearCaptureAtRest
-	   // 6 = Decay
-	   // 7 = KaonZeroLInelastic
-	   // 8 = CoulombScat
-	   // 9 = muMinusCaptureAtRest
-	   //10 = ProtonInelastic
-	   //11 = Kaon+Inelastic
-	   //12 = Kaon-Inelastic 
-	   //13 = protonInelastic
-	   //14 = Pi+Inelastic 
+          if(geant_part[i]->Process() == PionMinusInelastic)
+            {Process[i] = 1;}
+
+          if(geant_part[i]->Process() == NeutronInelastic)
+            {Process[i] = 2;}
+
+          if(geant_part[i]->Process() == hadElastic)
+            {Process[i] = 3;}
+
+          if(geant_part[i]->Process() == nCapture)
+            {Process[i] = 4;}
+
+          if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
+            {Process[i] = 5;}
+
+          if(geant_part[i]->Process() == Decay)
+            {Process[i] = 6;}
+
+          if(geant_part[i]->Process() == KaonZeroLInelastic)
+            {Process[i] = 7;}
+
+          if(geant_part[i]->Process() == CoulombScat)
+            {Process[i] = 8;}
+
+          if(geant_part[i]->Process() == muMinusCaptureAtRest)
+            {Process[i] = 9;}
+
+          if(geant_part[i]->Process() == ProtonInelastic)
+            {Process[i] = 10;}
+
+          if(geant_part[i]->Process() == KaonPlusInelastic)
+            {Process[i] = 11;}
+
+          if(geant_part[i]->Process() == hBertiniCaptureAtRest)
+            {Process[i] = 12;}
 
 
-	   auto thisTracjectoryProcessMap =  truetraj.TrajectoryProcesses();
-	   
-	   // Ok, if the size of the map is 0, all the action might happen at the end of the track
-	   // So we check the daugthers:
-	   //    - Case 1. There are daugthers:
-	   //               * The interesting point is the last one
-	   //               * The interaction type is the one that created the first daugther (this might be improved)
-	   //    - Case 2. There are NO daugthers:
-	   //              * We assign the interaction type to be 0: nothing happens, thought going particle
-	   //              * The interesting point is the last one (might not be in the TPC)
-	   if (!thisTracjectoryProcessMap.size())
-	     {
-	       int interestingPoint = (int) (NTrTrajPts[i] - 1);
-	       InteractionPoint.push_back(interestingPoint);
 
-	       if (NumberDaughters[i])
-		 {		 
-		   auto thePrimaryDaughterID = geant_part[i]-> Daughter(0); 
-		   for( unsigned int iD = 0; iD < geant_part.size(); ++iD )
-		     {
-		       if (geant_part[iD]->TrackId() == thePrimaryDaughterID) 
-			 {		      
-			   if(geant_part[iD]->Process() == PionMinusInelastic)
-			     {InteractionPointType.push_back(1);}
-			   
-			   if(geant_part[iD]->Process() == NeutronInelastic)
-			     {InteractionPointType.push_back(2);}
-			   
-			   if(geant_part[iD]->Process() == hadElastic)
-			     {InteractionPointType.push_back(3);}
-			   
-			   if(geant_part[iD]->Process() == nCapture)
-			     {InteractionPointType.push_back(4);}
-			   
-			   if(geant_part[iD]->Process() == CHIPSNuclearCaptureAtRest)
-			     {InteractionPointType.push_back(5);}
-			   
-			   if(geant_part[iD]->Process() == Decay)
-			     {InteractionPointType.push_back(6);}
-			   
-			   if(geant_part[iD]->Process() == KaonZeroLInelastic)
-			     {InteractionPointType.push_back(7);}
-			   
-			   if(geant_part[iD]->Process() == CoulombScat)
-			     {InteractionPointType.push_back(8);}
-			   
-			   if(geant_part[iD]->Process() == muMinusCaptureAtRest)
-			     {InteractionPointType.push_back(9);}
-			   
-			   if(geant_part[iD]->Process() == ProtonInelastic)
-			     {InteractionPointType.push_back(10);}
-			   
-			   if(geant_part[iD]->Process() == KaonPlusInelastic)
-			     {InteractionPointType.push_back(11);}
-			   
-			   if(geant_part[iD]->Process() == hBertiniCaptureAtRest)
-			     {InteractionPointType.push_back(12);}
-			 }
-		     }
-		 }else
-		 {
-		   InteractionPointType.push_back(0);              
-		 }
-	     }else
-	     {
-	       // The map is not zero: somthing interesting might happen in the middle of the track!!
-	       for(auto const& couple: thisTracjectoryProcessMap) 
-		 {
-		   int interestingPoint = (int) couple.first;
-		   InteractionPoint.push_back(interestingPoint);         	   
-		   if ((truetraj.KeyToProcess(couple.second)).find("hadElastic")!= std::string::npos) InteractionPointType.push_back(3);           
-		   if ((truetraj.KeyToProcess(couple.second)).find("pi-Inelastic")    != std::string::npos) InteractionPointType.push_back(1);           
-		   if ((truetraj.KeyToProcess(couple.second)).find("pi+Inelastic")    != std::string::npos) InteractionPointType.push_back(14);           
-		   if ((truetraj.KeyToProcess(couple.second)).find("kaon-Inelastic")  != std::string::npos) InteractionPointType.push_back(12);           
-		   if ((truetraj.KeyToProcess(couple.second)).find("kaon+Inelastic")  != std::string::npos) InteractionPointType.push_back(11);           
-		   if ((truetraj.KeyToProcess(couple.second)).find("protonInelastic") != std::string::npos) InteractionPointType.push_back(13);           
-		   if ((truetraj.KeyToProcess(couple.second)).find("neutronInelastic")!= std::string::npos) InteractionPointType.push_back(2);           
+          // ### Saving the particles mother TrackID ###
+          Mother[i]=geant_part[i]->Mother();
+          // ### Saving the particles TrackID ###
+          TrackId[i]=geant_part[i]->TrackId();
+          // ### Saving the PDG Code ###
+          pdg[i]=geant_part[i]->PdgCode();
+          // ### Saving the particles start and end Energy ###
+          Eng[i]=geant_part[i]->E();
+          EndEng[i]=geant_part[i]->EndE();
 
-		 }
-	     }	
-   
-	 iPrim++;
-	}//<--End if primary
-     }//<--End loop on geant particles
-	  
- }//<---End checking if this is MC 
-   
-    
+          // ### Saving the start and end Px, Py, Pz info ###
+          Px[i]=geant_part[i]->Px();
+          Py[i]=geant_part[i]->Py();
+          Pz[i]=geant_part[i]->Pz();
+          EndPx[i]=geant_part[i]->EndPx();
+          EndPy[i]=geant_part[i]->EndPy();
+          EndPz[i]=geant_part[i]->EndPz();
+
+          // ### Saving the Start and End Point for this particle ###
+          StartPointx[i]=geant_part[i]->Vx();
+          StartPointy[i]=geant_part[i]->Vy();
+          StartPointz[i]=geant_part[i]->Vz();
+          EndPointx[i]=geant_part[i]->EndPosition()[0];
+          EndPointy[i]=geant_part[i]->EndPosition()[1];
+          EndPointz[i]=geant_part[i]->EndPosition()[2];
+
+          // ### Saving the processes for this particle ###
+          G4Process.push_back( geant_part[i]->Process() );
+          G4FinalProcess.push_back( geant_part[i]->EndProcess() );
+
+          // ### Saving the number of Daughters for this particle ###
+          NumberDaughters[i]=geant_part[i]->NumberDaughters();
+
+          // ### Save intermediary information for the primary track
+          if(geant_part[i]->Process()==pri){
+            NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();
+            simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
+
+            int iPrimPt = 0;
+            for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj)
+              {
+                MidPosX[iPrim][iPrimPt] = truetraj.X(iPrimPt);
+                MidPosY[iPrim][iPrimPt] = truetraj.Y(iPrimPt);
+                MidPosZ[iPrim][iPrimPt] = truetraj.Z(iPrimPt);
+                MidPx[iPrim][iPrimPt] = truetraj.Px(iPrimPt);
+                MidPy[iPrim][iPrimPt] = truetraj.Py(iPrimPt);
+                MidPz[iPrim][iPrimPt] = truetraj.Pz(iPrimPt);
+                iPrimPt++;
+              }//<--End loop on true trajectory points
+
+
+            // Yet an other scheme for interaction type
+
+            // ### Recording the process as a integer ###
+            // 0 = NoInteractionNodaughters, thought going
+            // 1 = PionMinusInelastic
+            // 2 = NeutronInelastic
+            // 3 = hadElastic
+            // 4 = nCapture
+            // 5 = CHIPSNuclearCaptureAtRest
+            // 6 = Decay
+            // 7 = KaonZeroLInelastic
+            // 8 = CoulombScat
+            // 9 = muMinusCaptureAtRest
+            //10 = ProtonInelastic
+            //11 = Kaon+Inelastic
+            //12 = Kaon-Inelastic
+            //13 = protonInelastic
+            //14 = Pi+Inelastic
+
+
+            auto thisTracjectoryProcessMap =  truetraj.TrajectoryProcesses();
+
+            // Ok, if the size of the map is 0, all the action might happen at the end of the track
+            // So we check the daugthers:
+            //    - Case 1. There are daugthers:
+            //               * The interesting point is the last one
+            //               * The interaction type is the one that created the first daugther (this might be improved)
+            //    - Case 2. There are NO daugthers:
+            //              * We assign the interaction type to be 0: nothing happens, thought going particle
+            //              * The interesting point is the last one (might not be in the TPC)
+            if (!thisTracjectoryProcessMap.size())
+              {
+                int interestingPoint = (int) (NTrTrajPts[i] - 1);
+                InteractionPoint.push_back(interestingPoint);
+
+                if (NumberDaughters[i])
+                  {
+                    auto thePrimaryDaughterID = geant_part[i]-> Daughter(0);
+                    for( unsigned int iD = 0; iD < geant_part.size(); ++iD )
+                      {
+                        if (geant_part[iD]->TrackId() == thePrimaryDaughterID)
+                          {
+                            if(geant_part[iD]->Process() == PionMinusInelastic)
+                              {InteractionPointType.push_back(1);}
+
+                            if(geant_part[iD]->Process() == NeutronInelastic)
+                              {InteractionPointType.push_back(2);}
+
+                            if(geant_part[iD]->Process() == hadElastic)
+                              {InteractionPointType.push_back(3);}
+
+                            if(geant_part[iD]->Process() == nCapture)
+                              {InteractionPointType.push_back(4);}
+
+                            if(geant_part[iD]->Process() == CHIPSNuclearCaptureAtRest)
+                              {InteractionPointType.push_back(5);}
+
+                            if(geant_part[iD]->Process() == Decay)
+                              {InteractionPointType.push_back(6);}
+
+                            if(geant_part[iD]->Process() == KaonZeroLInelastic)
+                              {InteractionPointType.push_back(7);}
+
+                            if(geant_part[iD]->Process() == CoulombScat)
+                              {InteractionPointType.push_back(8);}
+
+                            if(geant_part[iD]->Process() == muMinusCaptureAtRest)
+                              {InteractionPointType.push_back(9);}
+
+                            if(geant_part[iD]->Process() == ProtonInelastic)
+                              {InteractionPointType.push_back(10);}
+
+                            if(geant_part[iD]->Process() == KaonPlusInelastic)
+                              {InteractionPointType.push_back(11);}
+
+                            if(geant_part[iD]->Process() == hBertiniCaptureAtRest)
+                              {InteractionPointType.push_back(12);}
+                          }
+                      }
+                  }else
+                  {
+                    InteractionPointType.push_back(0);
+                  }
+              }else
+              {
+                // The map is not zero: somthing interesting might happen in the middle of the track!!
+                for(auto const& couple: thisTracjectoryProcessMap)
+                  {
+                    int interestingPoint = (int) couple.first;
+                    InteractionPoint.push_back(interestingPoint);
+                    if ((truetraj.KeyToProcess(couple.second)).find("hadElastic")!= std::string::npos) InteractionPointType.push_back(3);
+                    if ((truetraj.KeyToProcess(couple.second)).find("pi-Inelastic")    != std::string::npos) InteractionPointType.push_back(1);
+                    if ((truetraj.KeyToProcess(couple.second)).find("pi+Inelastic")    != std::string::npos) InteractionPointType.push_back(14);
+                    if ((truetraj.KeyToProcess(couple.second)).find("kaon-Inelastic")  != std::string::npos) InteractionPointType.push_back(12);
+                    if ((truetraj.KeyToProcess(couple.second)).find("kaon+Inelastic")  != std::string::npos) InteractionPointType.push_back(11);
+                    if ((truetraj.KeyToProcess(couple.second)).find("protonInelastic") != std::string::npos) InteractionPointType.push_back(13);
+                    if ((truetraj.KeyToProcess(couple.second)).find("neutronInelastic")!= std::string::npos) InteractionPointType.push_back(2);
+
+                  }
+              }
+
+            iPrim++;
+          }//<--End if primary
+        }//<--End loop on geant particles
+
+    }//<---End checking if this is MC
+
+
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   //							FILLING THE WIRE CHAMBER TRACK INFORMATION
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   nwctrks = wctrack.size();
-   
+
   //int wct_count = 0;
-  
+
   // ########################################
   // ### Looping over Wire Chamber Tracks ###
   // ########################################
@@ -1079,14 +1079,14 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     //for(const auto& wctrack : (*wctrackHandle)) //trackHandle works somewhat like a pointer to a vector of tracks, so dereference the handle to loop over
     //the vector, then use each "track" as a ldp::WCTrack
     {
-      
-      
+
+
       // ##############################################
       // ### Filling Wire Chamber Track information ###
       // ##############################################
       wctrk_XFaceCoor[wct_count] = wctrack[wct_count]->XYFace(0); //indices are 0 for x and 1 for y according to header for WCTrack
       wctrk_YFaceCoor[wct_count] = wctrack[wct_count]->XYFace(1); //indices are 0 for x and 1 for y according to header for WCTrack
-      
+
       wctrk_momentum[wct_count] = wctrack[wct_count]->Momentum();
       wctrk_theta[wct_count] = wctrack[wct_count]->Theta();
       wctrk_phi[wct_count] = wctrack[wct_count]->Phi();
@@ -1111,36 +1111,36 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
 
       // Compute wcP, wcPx and wcPy
-      if (TMath::Cos(wctrk_theta[wct_count])) 
-	{ 
-	  float PT = wctrk_momentum[wct_count];
-	  float tanThetaCosPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Cos(wctrk_phi[wct_count]);
-	  float tanThetaSinPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Sin(wctrk_phi[wct_count]);
-	  float den = TMath::Sqrt(1+tanThetaCosPhi*tanThetaCosPhi);
-	  wcPz[wct_count] = PT/den;
-	  wcPy[wct_count] = wcPz[wct_count]*tanThetaSinPhi;
-	  wcPx[wct_count] = wcPz[wct_count]*tanThetaCosPhi;
-	  wcP [wct_count] = wcPz[wct_count]* TMath::Sqrt(1+TMath::Tan(wctrk_theta[wct_count])*TMath::Tan(wctrk_theta[wct_count]));
+      if (TMath::Cos(wctrk_theta[wct_count]))
+        {
+          float PT = wctrk_momentum[wct_count];
+          float tanThetaCosPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Cos(wctrk_phi[wct_count]);
+          float tanThetaSinPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Sin(wctrk_phi[wct_count]);
+          float den = TMath::Sqrt(1+tanThetaCosPhi*tanThetaCosPhi);
+          wcPz[wct_count] = PT/den;
+          wcPy[wct_count] = wcPz[wct_count]*tanThetaSinPhi;
+          wcPx[wct_count] = wcPz[wct_count]*tanThetaCosPhi;
+          wcP [wct_count] = wcPz[wct_count]* TMath::Sqrt(1+TMath::Tan(wctrk_theta[wct_count])*TMath::Tan(wctrk_theta[wct_count]));
 
 
-	}
-      
+        }
+
       // === Getting individual channel information ===
       for(size_t chIt = 0; 2*chIt+1 < wctrack[wct_count]->NHits(); ++chIt)
-	{
-	  if(float(chIt)!=wctrack[wct_count]->WCMissed()){  
-	    XWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt);
-	    YWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt+1);
-	 
-	    XAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt);
-	    YAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt+1);
-	  }//<-- end if chIt != WCMissed  
-	}//<---End chIt loop
-      
+        {
+          if(float(chIt)!=wctrack[wct_count]->WCMissed()){
+            XWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt);
+            YWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt+1);
+
+            XAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt);
+            YAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt+1);
+          }//<-- end if chIt != WCMissed
+        }//<---End chIt loop
+
     }//<---end wctrack auto loop
-      
-	 
-   
+
+
+
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   //							FILLING THE TIME OF FLIGHT INFORMATION
@@ -1152,7 +1152,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ################################
   size_t tof_counter = 0; // book-keeping
   for(size_t i = 0; i < tof.size(); i++) {
-    
+
     size_t number_tof = tof[i]->NTOF();
 
     for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
@@ -1160,7 +1160,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       tof_timestamp[tof_counter] = tof[i]->TimeStamp(tof_idx);
       cTOF[tof_counter] = tof_timestamp[tof_counter]*0.299792 ;
       ++tof_counter;
-     } // loop over TOF
+    } // loop over TOF
 
   }//<---End tof_count loop
 
@@ -1174,17 +1174,17 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       //float fMass = pow(pow((fSpeedOfLight*(reco_tof)*(1E-9)/fDistanceTraveled)*reco_momo, 2.0) - pow(reco_momo,2.0),0.5);
       float fMass = -99999.;
       float radical = reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1;
-      
+
       if (reco_tof>0)
-	{
-	  if (radical < 0)
-	    {
-	      fMass = -reco_momo*pow(-radical ,0.5);
-	    }else
-	    {  fMass = reco_momo*pow(radical ,0.5); }
-	  
-	  massObj = fMass;
-	}
+        {
+          if (radical < 0)
+            {
+              fMass = -reco_momo*pow(-radical ,0.5);
+            }else
+            {  fMass = reco_momo*pow(radical ,0.5); }
+
+          massObj = fMass;
+        }
     }
 
 
@@ -1195,7 +1195,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ----------------------------------------------------------------------------------------------------------------------------
 
   //   ldp::AGCounter counter;
-  
+
   nAG = agc.size();
   // ################################
   // ### Looping over aerogel counter objects ###
@@ -1205,36 +1205,36 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     {
 
       size_t number_agc = agc[i]->GetNHits();
-    
-      
-     
+
+
+
 
       for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
-	//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
-	HitTimeStamp1p10_1[agc_counter]=agc[i]->GetHitTimeStamp1p10_1(agc_idx);
-	HitTimeStamp1p10_2[agc_counter]=agc[i]->GetHitTimeStamp1p10_2(agc_idx);
-	HitTimeStamp1p06_1[agc_counter]=agc[i]->GetHitTimeStamp1p06_1(agc_idx);
-	HitTimeStamp1p06_2[agc_counter]=agc[i]->GetHitTimeStamp1p06_2(agc_idx);
+        //        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
+        HitTimeStamp1p10_1[agc_counter]=agc[i]->GetHitTimeStamp1p10_1(agc_idx);
+        HitTimeStamp1p10_2[agc_counter]=agc[i]->GetHitTimeStamp1p10_2(agc_idx);
+        HitTimeStamp1p06_1[agc_counter]=agc[i]->GetHitTimeStamp1p06_1(agc_idx);
+        HitTimeStamp1p06_2[agc_counter]=agc[i]->GetHitTimeStamp1p06_2(agc_idx);
 
-	HitPulseArea1p10_1[agc_counter]=agc[i]->GetHitPulseArea1p10_1(agc_idx);
-	HitPulseArea1p10_2[agc_counter]=agc[i]->GetHitPulseArea1p10_2(agc_idx);
-	HitPulseArea1p06_1[agc_counter]=agc[i]->GetHitPulseArea1p06_1(agc_idx);
-	HitPulseArea1p06_2[agc_counter]=agc[i]->GetHitPulseArea1p06_2(agc_idx);
+        HitPulseArea1p10_1[agc_counter]=agc[i]->GetHitPulseArea1p10_1(agc_idx);
+        HitPulseArea1p10_2[agc_counter]=agc[i]->GetHitPulseArea1p10_2(agc_idx);
+        HitPulseArea1p06_1[agc_counter]=agc[i]->GetHitPulseArea1p06_1(agc_idx);
+        HitPulseArea1p06_2[agc_counter]=agc[i]->GetHitPulseArea1p06_2(agc_idx);
 
-	HitExist1p10_1[agc_counter]=agc[i]->GetHitExist1p10_1(agc_idx);
-	HitExist1p10_2[agc_counter]=agc[i]->GetHitExist1p10_2(agc_idx);
-	HitExist1p06_1[agc_counter]=agc[i]->GetHitExist1p06_1(agc_idx);
-	HitExist1p06_2[agc_counter]=agc[i]->GetHitExist1p06_2(agc_idx);
+        HitExist1p10_1[agc_counter]=agc[i]->GetHitExist1p10_1(agc_idx);
+        HitExist1p10_2[agc_counter]=agc[i]->GetHitExist1p10_2(agc_idx);
+        HitExist1p06_1[agc_counter]=agc[i]->GetHitExist1p06_1(agc_idx);
+        HitExist1p06_2[agc_counter]=agc[i]->GetHitExist1p06_2(agc_idx);
 
-	++agc_counter;
+        ++agc_counter;
       } // loop over aerogel pulses
 
     }//<---End aerogel counters
-     
+
 
   //        short unsigned int number_agc = agc[i]->GetNHits();
 
- // ##########################################################
+  // ##########################################################
   // ### Grabbing associations for use later in the AnaTool ###
   // ##########################################################
   try{
@@ -1254,7 +1254,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     // ==== Association between Tracks and Hits
     art::FindManyP<recob::Hit> fmth(trackListHandle, evt, fTrackModuleLabel);
     art::FindManyP<recob::Hit, recob::TrackHitMeta> fmthm(trackListHandle, evt, fTrackModuleLabel);
-    
+
 
 
     // ----------------------------------------------------------------------------------------------------------------------------
@@ -1262,8 +1262,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     //							FILLING THE 2-D CLUSTER INFORMATION
     // ----------------------------------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------------------------------
-    
-    
+
+
 
     // ### Saving the number of clusters in this event ###
     nclus = clusterlist.size();
@@ -1272,13 +1272,13 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     // ######################################################
     for (size_t i = 0; i<clusterlist.size(); ++i)
       {
-	clustertwire[i] = clusterlist[i]->StartWire();
-	clusterttick[i] = clusterlist[i]->StartTick();
-	cluendwire[i] = clusterlist[i]->EndWire();
-	cluendtick[i] = clusterlist[i]->EndTick();
-	cluplane[i] = clusterlist[i]->Plane().Plane;
+        clustertwire[i] = clusterlist[i]->StartWire();
+        clusterttick[i] = clusterlist[i]->StartTick();
+        cluendwire[i] = clusterlist[i]->EndWire();
+        cluendtick[i] = clusterlist[i]->EndTick();
+        cluplane[i] = clusterlist[i]->Plane().Plane;
       }
-    
+
     // ----------------------------------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------------------------------
     //							FILLING THE SHOWER RECO INFORMATION
@@ -1286,46 +1286,46 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     // ----------------------------------------------------------------------------------------------------------------------------
 
     nshowers = shwlist.size();
-    
+
     for (size_t i = 0; i<shwlist.size(); ++i)  // loop over showers
       {
-	shwID[i] = shwlist[i]->ID();
-	BestPlaneShw[i] = shwlist[i]->best_plane();
-	LengthShw[i] = shwlist[i]->Length();
-	
-	for (size_t j = 0; j<3; ++j)
-	  {
-	    CosStartShw[j][i] = shwlist[i]->Direction()[j];
-	    // CosStartSigmaShw[j][i] = shwlist[i]->DirectionErr()[j];
-	    CosStartXYZShw[j][i] = shwlist[i]->ShowerStart()[j];
-	    //CosStartXYZSigmaShw[j][i] =  shwlist[i]->ShowerStartErr()[j];
-	  }
-	
-	for (int j = 0; j<2; ++j)/// looping over the 2 planes
-	  {
-	    TotalEShw[j][i] = shwlist[i]->Energy()[j];
-	    //TotalESigmaShw[j][i] = shwlist[i]->EnergyErr()[j];
-	    dEdxPerPlaneShw[j][i] = shwlist[i]->dEdx()[j];
-	    TotalMIPEShw[j][i] = shwlist[i]->MIPEnergy()[j];
-	  } 
+        shwID[i] = shwlist[i]->ID();
+        BestPlaneShw[i] = shwlist[i]->best_plane();
+        LengthShw[i] = shwlist[i]->Length();
+
+        for (size_t j = 0; j<3; ++j)
+          {
+            CosStartShw[j][i] = shwlist[i]->Direction()[j];
+            // CosStartSigmaShw[j][i] = shwlist[i]->DirectionErr()[j];
+            CosStartXYZShw[j][i] = shwlist[i]->ShowerStart()[j];
+            //CosStartXYZSigmaShw[j][i] =  shwlist[i]->ShowerStartErr()[j];
+          }
+
+        for (int j = 0; j<2; ++j)/// looping over the 2 planes
+          {
+            TotalEShw[j][i] = shwlist[i]->Energy()[j];
+            //TotalESigmaShw[j][i] = shwlist[i]->EnergyErr()[j];
+            dEdxPerPlaneShw[j][i] = shwlist[i]->dEdx()[j];
+            TotalMIPEShw[j][i] = shwlist[i]->MIPEnergy()[j];
+          }
       }    // end loop over showers
-    
-    
+
+
     // ----------------------------------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------------------------------
     //							FILLING THE 3-D TRACK INFORMATION
     // ----------------------------------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------------------------------
-    
+
     // ### Calling the track momentum calculator ###
-    trkf::TrackMomentumCalculator trkm;
-    trkm.SetMinLength(10); //change the minimal track length requirement to 10 cm
-    
+    // - change the minimal track length requirement to 10 cm
+    trkf::TrackMomentumCalculator trkm{10.0};
+
     // === Saving the number of tracks per event ===
     ntracks_reco=tracklist.size();
-    
+
     // === Association between WC Tracks and TPC Tracks ===
-    //int TempTrackMatchedID = -1;                                                                                                                               
+    //int TempTrackMatchedID = -1;
     /*
     // ### Storing an integer for the match of a WC to TPC track ###
     int trackMatch = -1;
@@ -1333,408 +1333,408 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     {
     trackMatch = 0;
     }//<---End match
-    
+
     // ### Setting the WC to TPC match ###
     trkWCtoTPCMatch = trackMatch;
     */
-    
-    
-    
+
+
+
     // === Association between WC Tracks and TPC Tracks ===
-    
-    int TempTrackMatchedID = -1; 
-    
+
+    int TempTrackMatchedID = -1;
+
     if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
       {
-	art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
-	
-	if (fWC2TPC.isValid())
-	  {
-	    // === Loop on all the Assn WC-TPC tracks === 
-	    for (unsigned int indexAssn = 0; indexAssn < fWC2TPC.size(); ++indexAssn ) 
-	      {
-		// =========================                                                                                       
-		// === Get the TPC track ===
-		// =========================                                                                      
-		cet::maybe_ref<recob::Track const> trackWC2TPC(*fWC2TPC.at(indexAssn));
-		
-		if (!trackWC2TPC) continue;
-		recob::Track const& aTrack(trackWC2TPC.ref()); 
-		TempTrackMatchedID = aTrack.ID();
-		
-	      }//<----End indexAssn loop                                                                                                                       
-	  }//<---End checking that the WC2TPC   
-	
+        art::FindOneP<recob::Track> fWC2TPC(wctrackHandle, evt, fWC2TPCModuleLabel);
+
+        if (fWC2TPC.isValid())
+          {
+            // === Loop on all the Assn WC-TPC tracks ===
+            for (unsigned int indexAssn = 0; indexAssn < fWC2TPC.size(); ++indexAssn )
+              {
+                // =========================
+                // === Get the TPC track ===
+                // =========================
+                cet::maybe_ref<recob::Track const> trackWC2TPC(*fWC2TPC.at(indexAssn));
+
+                if (!trackWC2TPC) continue;
+                recob::Track const& aTrack(trackWC2TPC.ref());
+                TempTrackMatchedID = aTrack.ID();
+
+              }//<----End indexAssn loop
+          }//<---End checking that the WC2TPC
+
       }
-    
-    
+
+
     // ### Looping over tracks ###
     double maxtrackenergy = -1;
     for(size_t i=0; i<tracklist.size();++i)
       {
-	
-	//-----------------------------------------------------------------------
-	// get track information
-	//-----------------------------------------------------------------------
-	// returns type std::pair<recob::Track::Point_t, recob::Track::Point_t>
-	auto trackStartEnd = tracklist[i]->Extent();
-	// returns type std::pair<recob::Track::Vector_t, recob::Track::Vector_t>
-	auto larStartEnd = tracklist[i]->Direction();
-	
-	// ### Storing an integer for the match of a WC to TPC track ###
-	int trackMatch = 0;
-	if(TempTrackMatchedID == tracklist[i]->ID() )
-	  {
-	    
-	    trackMatch = 1;
-	    
-	  }//<---End match
-	
-	trkWCtoTPCMatch[i] = trackMatch;
-	// ### Setting the WC to TPC match ###
-	
-	// ### Recording the track vertex x, y, z location ###
-	trkvtxx[i]        = trackStartEnd.first.X();
-	trkvtxy[i]        = trackStartEnd.first.Y();
-	trkvtxz[i]        = trackStartEnd.first.Z();
-	
-	// ### Recording the track end point x, y, z location ###
-	trkendx[i]        = trackStartEnd.second.X();
-	trkendy[i]        = trackStartEnd.second.Y();
-	trkendz[i]        = trackStartEnd.second.Z();
-	
-	// ### Recording the directional cosine at the start of the track ###
-	trkstartdcosx[i]  = larStartEnd.first.X();
-	trkstartdcosy[i]  = larStartEnd.first.Y();
-	trkstartdcosz[i]  = larStartEnd.first.Z();
-	
-	// ### Recording the directional cosine at the end of the track ###
-	trkenddcosx[i]    = larStartEnd.second.X();
-	trkenddcosy[i]    = larStartEnd.second.Y();
-	trkenddcosz[i]    = larStartEnd.second.Z();
-	
-	// ### Recording the track length as calculated by the tracking module ###
-	// ####                (each one may do it differently                 ###
-	trklength[i]         = tracklist[i]->Length();
-	
-	// ### Calculating the track momentum using the momentum calculator ###
-	trkmomrange[i]    = trkm.GetTrackMomentum(trklength[i],13);
-	trkmommschi2[i]   = trkm.GetMomentumMultiScatterChi2(tracklist[i]);
-	trkmommsllhd[i]   = trkm.GetMomentumMultiScatterLLHD(tracklist[i]);
-	
-	// ### Grabbing the SpacePoints associated with this track ###
-	ntrkhits[i] = fmsp.at(i).size();
-	std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(i);
-	
-	// ########################################
-	// ### Looping over all the SpacePoints ###
-	// ########################################
-	for (size_t j = 0; j<spts.size(); ++j)
-	  {
-	    // ### Recording the x, y, z location of every spacepoint in the track ###
-	    trkx[i][j] = spts[j]->XYZ()[0];
-	    trky[i][j] = spts[j]->XYZ()[1];
-	    trkz[i][j] = spts[j]->XYZ()[2];
-	  }//<----End SpacePoint loop (j)
-	
-	
-	// ###########################################
-	// ### Calculating the pitch for the track ###
-	// ###########################################
-	// === Looping over our two planes (0 == Induction, 1 == Collection) ===
-	for (int j = 0; j<2; ++j)
-	  {
-	    // ### Putting in a protective try in case we can't set the pitch ###
-	    try
-	      {
-		// ### If we are in the induction plane calculate the tracks pitch in that view ###
-		if (j==0)
-		  trkpitch[i][j] = lar::util::TrackPitchInView(*tracklist[i], geo::kU);
-		// ### If we are in the collection plane calculate the tracks pitch in that view ###
-		else if (j==1)
-		  trkpitch[i][j] = lar::util::TrackPitchInView(*(tracklist[i]), geo::kV);
-	      }//<---End Try statement
-	    catch( cet::exception &e)
-	      {mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
-		trkpitch[i][j] = 0;
-	      }//<---End catch statement
-	  }// <---End looping over planes (j)
-	
-	
-	// ----------------------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------------------------------------------------
-	//							CALORIMERTY FROM THIS TRACK INFORMATION
-	// ----------------------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------------------------------------------------      
-	
-      // ########################################################## 
-      // ### Looping over Calorimetry information for the track ###
-      // ########################################################## 
-	if (fmcal.isValid())
-	  {
-	    // ### Putting calo information for this track (i) into pointer vector ###
-	    std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(i);
-	    
-	    // ### Looping over each calorimetry point (similar to SpacePoint) ###
-	    for (size_t j = 0; j<calos.size(); ++j)
-	      {
-		// ### If we don't have calorimetry information for this plane skip ###
-		if (!calos[j]->PlaneID().isValid) continue;
-		
-		// ### Grabbing this calorimetry points plane number (0 == induction, 1 == collection) ###
-		int pl = calos[j]->PlaneID().Plane;
-	
-		// ### Skipping this point if the plane number doesn't make sense ###
-		if (pl<0||pl>1) continue;
-		
-		// ### Recording the number of calorimetry points for this track in this plane ####
-		trkhits[i][pl] = calos[j]->dEdx().size();
-		
-		// #### Recording the kinetic energy for this track in this plane ###
-		trkke[i][pl] = calos[j]->KineticEnergy();
-		
-		// ###############################################
-		// ### Looping over all the calorimetry points ###
-		// ###############################################
-		for (size_t k = 0; k<calos[j]->dEdx().size(); ++k)
-		  {
-		    // ### If we go over 1000 points just skip them ###
-		    if (k>=1000) continue;
-		    
-		    // ### Recording the dE/dX information for this calo point along the track in this plane ###
-		    trkdedx[i][pl][k] = calos[j]->dEdx()[k];
-		    trkdqdx[i][pl][k] = calos[j]->dQdx()[k];
-		    
-		    // ### Recording the residual range for this calo point along the track in this plane ###
-		    trkrr[i][pl][k] = calos[j]->ResidualRange()[k];
-		    
-		    // ### Recording the pitch of this calo point along the track in this plane ###
-		    trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
-		    trkxyz[i][pl][k][0] = calos[j]->XYZ()[k].X();
-		    trkxyz[i][pl][k][1] = calos[j]->XYZ()[k].Y();
-		    trkxyz[i][pl][k][2] = calos[j]->XYZ()[k].Z();
-		  }//<---End calo points (k)
-		
-	      }//<---End looping over calo points (j)
-	    
-	  }//<---End checking Calo info is valid  
-	
-	
-	// ----------------------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------------------------------------------------
-	//						PARTICLE ID INFOR FROM THIS TRACK INFORMATION
-	// ----------------------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------------------------------------------------      
-	
-	
-	// ################################################## 
-	// ### Looping over PID information for the track ###
-	// ################################################## 
-	if (fmpid.isValid())
-	  {
-	    // ### Putting PID information for this track (i) into pointer vector ###
-	    std::vector<art::Ptr<anab::ParticleID> > pids = fmpid.at(i);
-	    for (size_t j = 0; j<pids.size(); ++j)
-	      {
-		// ### Skip this PID info if not valid for this plane ###
-		if (!pids[j]->PlaneID().isValid) continue;
-		int pl = pids[j]->PlaneID().Plane;
-		// ### Skipping this point if the plane number doesn't make sense ###
-		if (pl<0||pl>1) continue;
-		trkpida[i][pl] = pids[j]->PIDA();
-		
-	      }//<---End PID loop (j)
-	    
-	  }//<---End checking PID info
-	
-	// ----------------------------------------------------------------------------------------------------------------------------
-	// ----------------------------------------------------------------------------------------------------------------------------
-	//						RECORDING THE TRAJECTORY POINTS FOR THIS TRACK
-	// ----------------------------------------------------------------------------------------------------------------------------
-	// ---------------------------------------------------------------------------------------------------------------------------- 
-	
-	nTrajPoint[i] = tracklist[i]->NumberTrajectoryPoints();
-	
-	// ### Storing the trajectory points in a similar way to PionXS ###
-	TVector3 p_hat_0;
-	// ##############################################
-	// ### Looping over all the trajectory points ###
-	// ##############################################
-	for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
-	  {
-	    p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
-	    
-	    //Strange directionality convention - I'm reversing the direction vector
-	    //if it's pointing in the negative X direction
-	    if( p_hat_0.Z() < 0 )
-	      {
-		p_hat_0.SetX(p_hat_0.X()*-1);
-		p_hat_0.SetY(p_hat_0.Y()*-1);
-		p_hat_0.SetZ(p_hat_0.Z()*-1);
-	      }
-      
-      
-	    pHat0_X[i][iTrajPt] = p_hat_0.X();
-	    pHat0_Y[i][iTrajPt] = p_hat_0.Y();
-	    pHat0_Z[i][iTrajPt] = p_hat_0.Z();
-	    
-	    trjPt_X[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).X();
-	    trjPt_Y[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Y();
-	    trjPt_Z[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Z();
-	    
-	  }//<---End iTrajPt
-	
-	if (fmthm.isValid()){
-	  auto vhit = fmthm.at(i);
-	  auto vmeta = fmthm.data(i);
-	  for (size_t h = 0; h < vhit.size(); ++h){
-	    if (vhit[h].key()<kMaxHits){
-	      //hit_trkkey[vhit[h].key()] = tracklist[i].key();
-	      if (vmeta[h]->Dx()){
-		hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCalorimetryAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
-		hit_dEds[vhit[h].key()] = fCalorimetryAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
-	      }
-	      hit_ds[vhit[h].key()] = vmeta[h]->Dx();
-	      hit_resrange[vhit[h].key()] = tracklist[i]->Length(vmeta[h]->Index());
-	      hit_x[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).X();
-	      hit_y[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Y();
-	      hit_z[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Z();
-	    }
-	  }//loop over all hits
-	}//fmthm is valid   
-	
-	if (!isdata&&fmth.isValid()){
-	  // Find true track for each reconstructed track
-	  int TrackID = 0;
-	 
-	  std::vector< art::Ptr<recob::Hit> > allHits = fmth.at(i);
-	  
-	  std::map<int,double> trkide;
-	  for(size_t h = 0; h < allHits.size(); ++h){
-	    art::Ptr<recob::Hit> hit = allHits[h];
-	    std::vector<sim::TrackIDE> TrackIDs = bt_serv->HitToTrackIDEs(hit);
-	    for(size_t e = 0; e < TrackIDs.size(); ++e){
-	      trkide[TrackIDs[e].trackID] += TrackIDs[e].energy;
-	    }	    
-	  }
-	  // Work out which IDE despoited the most charge in the hit if there was more than one.
-	  double maxe = -1;
-	  double tote = 0;
-	  for (std::map<int,double>::iterator ii = trkide.begin(); ii!=trkide.end(); ++ii){
-	    tote += ii->second;
-	    if ((ii->second)>maxe){
-	      maxe = ii->second;
-	      TrackID = ii->first;
-	    }
-	    if ((ii->first) == 1){
-	      if ((ii->second)>maxtrackenergy){
-		maxtrackenergy = ii->second;
-		primarytrkkey = tracklist[i].key();
-	      }
-	    }
-	  }
-	  // Now have trackID, so get PdG code and T0 etc.
-	  const simb::MCParticle *particle = pi_serv->TrackIdToParticle_P(TrackID);
-	  if (particle){
-	    trkg4id[i] = TrackID;
-	  }
-	}   
-	
+
+        //-----------------------------------------------------------------------
+        // get track information
+        //-----------------------------------------------------------------------
+        // returns type std::pair<recob::Track::Point_t, recob::Track::Point_t>
+        auto trackStartEnd = tracklist[i]->Extent();
+        // returns type std::pair<recob::Track::Vector_t, recob::Track::Vector_t>
+        auto larStartEnd = tracklist[i]->Direction();
+
+        // ### Storing an integer for the match of a WC to TPC track ###
+        int trackMatch = 0;
+        if(TempTrackMatchedID == tracklist[i]->ID() )
+          {
+
+            trackMatch = 1;
+
+          }//<---End match
+
+        trkWCtoTPCMatch[i] = trackMatch;
+        // ### Setting the WC to TPC match ###
+
+        // ### Recording the track vertex x, y, z location ###
+        trkvtxx[i]        = trackStartEnd.first.X();
+        trkvtxy[i]        = trackStartEnd.first.Y();
+        trkvtxz[i]        = trackStartEnd.first.Z();
+
+        // ### Recording the track end point x, y, z location ###
+        trkendx[i]        = trackStartEnd.second.X();
+        trkendy[i]        = trackStartEnd.second.Y();
+        trkendz[i]        = trackStartEnd.second.Z();
+
+        // ### Recording the directional cosine at the start of the track ###
+        trkstartdcosx[i]  = larStartEnd.first.X();
+        trkstartdcosy[i]  = larStartEnd.first.Y();
+        trkstartdcosz[i]  = larStartEnd.first.Z();
+
+        // ### Recording the directional cosine at the end of the track ###
+        trkenddcosx[i]    = larStartEnd.second.X();
+        trkenddcosy[i]    = larStartEnd.second.Y();
+        trkenddcosz[i]    = larStartEnd.second.Z();
+
+        // ### Recording the track length as calculated by the tracking module ###
+        // ####                (each one may do it differently                 ###
+        trklength[i]         = tracklist[i]->Length();
+
+        // ### Calculating the track momentum using the momentum calculator ###
+        trkmomrange[i]    = trkm.GetTrackMomentum(trklength[i],13);
+        trkmommschi2[i]   = trkm.GetMomentumMultiScatterChi2(tracklist[i]);
+        trkmommsllhd[i]   = trkm.GetMomentumMultiScatterLLHD(tracklist[i]);
+
+        // ### Grabbing the SpacePoints associated with this track ###
+        ntrkhits[i] = fmsp.at(i).size();
+        std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(i);
+
+        // ########################################
+        // ### Looping over all the SpacePoints ###
+        // ########################################
+        for (size_t j = 0; j<spts.size(); ++j)
+          {
+            // ### Recording the x, y, z location of every spacepoint in the track ###
+            trkx[i][j] = spts[j]->XYZ()[0];
+            trky[i][j] = spts[j]->XYZ()[1];
+            trkz[i][j] = spts[j]->XYZ()[2];
+          }//<----End SpacePoint loop (j)
+
+
+        // ###########################################
+        // ### Calculating the pitch for the track ###
+        // ###########################################
+        // === Looping over our two planes (0 == Induction, 1 == Collection) ===
+        for (int j = 0; j<2; ++j)
+          {
+            // ### Putting in a protective try in case we can't set the pitch ###
+            try
+              {
+                // ### If we are in the induction plane calculate the tracks pitch in that view ###
+                if (j==0)
+                  trkpitch[i][j] = lar::util::TrackPitchInView(*tracklist[i], geo::kU);
+                // ### If we are in the collection plane calculate the tracks pitch in that view ###
+                else if (j==1)
+                  trkpitch[i][j] = lar::util::TrackPitchInView(*(tracklist[i]), geo::kV);
+              }//<---End Try statement
+            catch( cet::exception &e)
+              {mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
+                trkpitch[i][j] = 0;
+              }//<---End catch statement
+          }// <---End looping over planes (j)
+
+
+        // ----------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------------------------------
+        //							CALORIMERTY FROM THIS TRACK INFORMATION
+        // ----------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------------------------------
+
+        // ##########################################################
+        // ### Looping over Calorimetry information for the track ###
+        // ##########################################################
+        if (fmcal.isValid())
+          {
+            // ### Putting calo information for this track (i) into pointer vector ###
+            std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(i);
+
+            // ### Looping over each calorimetry point (similar to SpacePoint) ###
+            for (size_t j = 0; j<calos.size(); ++j)
+              {
+                // ### If we don't have calorimetry information for this plane skip ###
+                if (!calos[j]->PlaneID().isValid) continue;
+
+                // ### Grabbing this calorimetry points plane number (0 == induction, 1 == collection) ###
+                int pl = calos[j]->PlaneID().Plane;
+
+                // ### Skipping this point if the plane number doesn't make sense ###
+                if (pl<0||pl>1) continue;
+
+                // ### Recording the number of calorimetry points for this track in this plane ####
+                trkhits[i][pl] = calos[j]->dEdx().size();
+
+                // #### Recording the kinetic energy for this track in this plane ###
+                trkke[i][pl] = calos[j]->KineticEnergy();
+
+                // ###############################################
+                // ### Looping over all the calorimetry points ###
+                // ###############################################
+                for (size_t k = 0; k<calos[j]->dEdx().size(); ++k)
+                  {
+                    // ### If we go over 1000 points just skip them ###
+                    if (k>=1000) continue;
+
+                    // ### Recording the dE/dX information for this calo point along the track in this plane ###
+                    trkdedx[i][pl][k] = calos[j]->dEdx()[k];
+                    trkdqdx[i][pl][k] = calos[j]->dQdx()[k];
+
+                    // ### Recording the residual range for this calo point along the track in this plane ###
+                    trkrr[i][pl][k] = calos[j]->ResidualRange()[k];
+
+                    // ### Recording the pitch of this calo point along the track in this plane ###
+                    trkpitchhit[i][pl][k] = calos[j]->TrkPitchVec()[k];
+                    trkxyz[i][pl][k][0] = calos[j]->XYZ()[k].X();
+                    trkxyz[i][pl][k][1] = calos[j]->XYZ()[k].Y();
+                    trkxyz[i][pl][k][2] = calos[j]->XYZ()[k].Z();
+                  }//<---End calo points (k)
+
+              }//<---End looping over calo points (j)
+
+          }//<---End checking Calo info is valid
+
+
+        // ----------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------------------------------
+        //						PARTICLE ID INFOR FROM THIS TRACK INFORMATION
+        // ----------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------------------------------
+
+
+        // ##################################################
+        // ### Looping over PID information for the track ###
+        // ##################################################
+        if (fmpid.isValid())
+          {
+            // ### Putting PID information for this track (i) into pointer vector ###
+            std::vector<art::Ptr<anab::ParticleID> > pids = fmpid.at(i);
+            for (size_t j = 0; j<pids.size(); ++j)
+              {
+                // ### Skip this PID info if not valid for this plane ###
+                if (!pids[j]->PlaneID().isValid) continue;
+                int pl = pids[j]->PlaneID().Plane;
+                // ### Skipping this point if the plane number doesn't make sense ###
+                if (pl<0||pl>1) continue;
+                trkpida[i][pl] = pids[j]->PIDA();
+
+              }//<---End PID loop (j)
+
+          }//<---End checking PID info
+
+        // ----------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------------------------------
+        //						RECORDING THE TRAJECTORY POINTS FOR THIS TRACK
+        // ----------------------------------------------------------------------------------------------------------------------------
+        // ----------------------------------------------------------------------------------------------------------------------------
+
+        nTrajPoint[i] = tracklist[i]->NumberTrajectoryPoints();
+
+        // ### Storing the trajectory points in a similar way to PionXS ###
+        TVector3 p_hat_0;
+        // ##############################################
+        // ### Looping over all the trajectory points ###
+        // ##############################################
+        for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
+          {
+            p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
+
+            //Strange directionality convention - I'm reversing the direction vector
+            //if it's pointing in the negative X direction
+            if( p_hat_0.Z() < 0 )
+              {
+                p_hat_0.SetX(p_hat_0.X()*-1);
+                p_hat_0.SetY(p_hat_0.Y()*-1);
+                p_hat_0.SetZ(p_hat_0.Z()*-1);
+              }
+
+
+            pHat0_X[i][iTrajPt] = p_hat_0.X();
+            pHat0_Y[i][iTrajPt] = p_hat_0.Y();
+            pHat0_Z[i][iTrajPt] = p_hat_0.Z();
+
+            trjPt_X[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).X();
+            trjPt_Y[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Y();
+            trjPt_Z[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Z();
+
+          }//<---End iTrajPt
+
+        if (fmthm.isValid()){
+          auto vhit = fmthm.at(i);
+          auto vmeta = fmthm.data(i);
+          for (size_t h = 0; h < vhit.size(); ++h){
+            if (vhit[h].key()<kMaxHits){
+              //hit_trkkey[vhit[h].key()] = tracklist[i].key();
+              if (vmeta[h]->Dx()){
+                hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCalorimetryAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
+                hit_dEds[vhit[h].key()] = fCalorimetryAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
+              }
+              hit_ds[vhit[h].key()] = vmeta[h]->Dx();
+              hit_resrange[vhit[h].key()] = tracklist[i]->Length(vmeta[h]->Index());
+              hit_x[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).X();
+              hit_y[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Y();
+              hit_z[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Z();
+            }
+          }//loop over all hits
+        }//fmthm is valid
+
+        if (!isdata&&fmth.isValid()){
+          // Find true track for each reconstructed track
+          int TrackID = 0;
+
+          std::vector< art::Ptr<recob::Hit> > allHits = fmth.at(i);
+
+          std::map<int,double> trkide;
+          for(size_t h = 0; h < allHits.size(); ++h){
+            art::Ptr<recob::Hit> hit = allHits[h];
+            std::vector<sim::TrackIDE> TrackIDs = bt_serv->HitToTrackIDEs(hit);
+            for(size_t e = 0; e < TrackIDs.size(); ++e){
+              trkide[TrackIDs[e].trackID] += TrackIDs[e].energy;
+            }
+          }
+          // Work out which IDE despoited the most charge in the hit if there was more than one.
+          double maxe = -1;
+          double tote = 0;
+          for (std::map<int,double>::iterator ii = trkide.begin(); ii!=trkide.end(); ++ii){
+            tote += ii->second;
+            if ((ii->second)>maxe){
+              maxe = ii->second;
+              TrackID = ii->first;
+            }
+            if ((ii->first) == 1){
+              if ((ii->second)>maxtrackenergy){
+                maxtrackenergy = ii->second;
+                primarytrkkey = tracklist[i].key();
+              }
+            }
+          }
+          // Now have trackID, so get PdG code and T0 etc.
+          const simb::MCParticle *particle = pi_serv->TrackIdToParticle_P(TrackID);
+          if (particle){
+            trkg4id[i] = TrackID;
+          }
+        }
+
       }//<---End track loop (i)
 
-      art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
-      nhits = hitlist.size();
-      for (size_t i = 0; i<hitlist.size() && int(i)< kMaxHits; ++i){
-	cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
-	unsigned int channel = hitlist[i]->Channel();
-	geo::WireID wireid = hitlist[i]->WireID();
-	hit_plane[i]   = wireid.Plane;
-	hit_wire[i]    = wireid.Wire;
-	hit_channel[i] = channel;
-	hit_peakT[i]   = hitlist[i]->PeakTime();
-	hit_charge[i]  = hitlist[i]->Integral();
-	hit_ph[i]      = hitlist[i]->PeakAmplitude();
-	hit_tstart[i]  = hitlist[i]->StartTick();
-	hit_tend[i]    = hitlist[i]->EndTick();
-	if (fmtk.isValid()){
-	  if (fmtk.at(i).size()!=0){
-	    hit_trkid[i] = fmtk.at(i)[0]->ID();
-	    hit_trkkey[i] = fmtk.at(i)[0].key();
-	  }
-	}
-	if (fmc.isValid()){
-	  if (fmc.at(i).size()!=0){
-	    hit_clukey[i] = fmc.at(i)[0].key();
-	  }
-	}
-	if (hit_plane[i]==1){//collection plane
-	  if( rdref.isValid() ){
-	    raw::RawDigit const& rd(rdref.ref());
-	    int dataSize = rd.Samples();
-	    short ped = rd.GetPedestal();
-	    std::vector<short> rawadc(dataSize);
-	    raw::Uncompress(rd.ADCs(),rawadc,rd.Compression());
-	    int t0 = hit_peakT[i] - 3*(hit_peakT[i]-hit_tstart[i]);
-	    if (t0<0) t0 = 0;
-	    int t1 = hit_peakT[i] + 3*(hit_peakT[i]-hit_tstart[i]);
-	    if (t1>=dataSize) t1 = dataSize-1;
-	    hit_pk[i] = -1;
-	    hit_t[i] = -1;
-	    for (int j = t0; j<=t1; ++j){
-	      if (rawadc[j]-ped>hit_pk[i]){
-		hit_pk[i] = rawadc[j]-ped;
-		hit_t[i] = j;
-	      }
-	    }
-	    hit_ch[i] = 0;
-	    hit_fwhh[i] = 0;
-	    double mean_t = 0;
-	    double mean_t2 = 0;
-	    for (int j = t0; j<=t1; ++j){
-	      if (rawadc[j]-ped>=0.5*hit_pk[i]){
-		++hit_fwhh[i];
-	      }
-	      if (rawadc[j]-ped>=0.1*hit_pk[i]){
-		hit_ch[i] += rawadc[j]-ped;
-		mean_t += j*(rawadc[j]-ped);
-		mean_t2 += j*j*(rawadc[j]-ped);
-	      }
-	    }
-	    mean_t/=hit_ch[i];
-	    mean_t2/=hit_ch[i];
-	    hit_rms[i] = sqrt(mean_t2-mean_t*mean_t);
-	    if (!evt.isRealData()){
-	      //	std::vector<sim::IDE> ides;	
-	      //	bt_serv->HitToSimIDEs(hitlist[i], ides);
-	      hit_nelec[i] = 0;
-	      hit_energy[i] = 0;
-	      //	for (size_t j = 0; j<ides.size(); ++j){
-	      //	  hit_nelec[i] += ides[j].numElectrons;
-	      //	  hit_energy[i] += ides[j].energy;
-	      //	}
-	      const sim::SimChannel* chan = 0;
-	      for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
-		if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) chan = fSimChannels[sc];
-	      }
-	      if (chan){
-		const auto & tdcidemap = chan->TDCIDEMap();
-		for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
-		  // loop over the vector of IDE objects.
-		  
-		  const std::vector<sim::IDE> & idevec = (*mapitr).second;
-		  
-		  for(size_t iv = 0; iv < idevec.size(); ++iv){ 
-		    
-		    hit_nelec[i] += idevec[iv].numElectrons;
-		    hit_energy[i] += idevec[iv].energy;
-		  }
-		}
-	      }
-	    }
-	  } // if cet::maybe_ref is valid
-	}
+    art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
+    nhits = hitlist.size();
+    for (size_t i = 0; i<hitlist.size() && int(i)< kMaxHits; ++i){
+      cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
+      unsigned int channel = hitlist[i]->Channel();
+      geo::WireID wireid = hitlist[i]->WireID();
+      hit_plane[i]   = wireid.Plane;
+      hit_wire[i]    = wireid.Wire;
+      hit_channel[i] = channel;
+      hit_peakT[i]   = hitlist[i]->PeakTime();
+      hit_charge[i]  = hitlist[i]->Integral();
+      hit_ph[i]      = hitlist[i]->PeakAmplitude();
+      hit_tstart[i]  = hitlist[i]->StartTick();
+      hit_tend[i]    = hitlist[i]->EndTick();
+      if (fmtk.isValid()){
+        if (fmtk.at(i).size()!=0){
+          hit_trkid[i] = fmtk.at(i)[0]->ID();
+          hit_trkkey[i] = fmtk.at(i)[0].key();
+        }
+      }
+      if (fmc.isValid()){
+        if (fmc.at(i).size()!=0){
+          hit_clukey[i] = fmc.at(i)[0].key();
+        }
+      }
+      if (hit_plane[i]==1){//collection plane
+        if( rdref.isValid() ){
+          raw::RawDigit const& rd(rdref.ref());
+          int dataSize = rd.Samples();
+          short ped = rd.GetPedestal();
+          std::vector<short> rawadc(dataSize);
+          raw::Uncompress(rd.ADCs(),rawadc,rd.Compression());
+          int t0 = hit_peakT[i] - 3*(hit_peakT[i]-hit_tstart[i]);
+          if (t0<0) t0 = 0;
+          int t1 = hit_peakT[i] + 3*(hit_peakT[i]-hit_tstart[i]);
+          if (t1>=dataSize) t1 = dataSize-1;
+          hit_pk[i] = -1;
+          hit_t[i] = -1;
+          for (int j = t0; j<=t1; ++j){
+            if (rawadc[j]-ped>hit_pk[i]){
+              hit_pk[i] = rawadc[j]-ped;
+              hit_t[i] = j;
+            }
+          }
+          hit_ch[i] = 0;
+          hit_fwhh[i] = 0;
+          double mean_t = 0;
+          double mean_t2 = 0;
+          for (int j = t0; j<=t1; ++j){
+            if (rawadc[j]-ped>=0.5*hit_pk[i]){
+              ++hit_fwhh[i];
+            }
+            if (rawadc[j]-ped>=0.1*hit_pk[i]){
+              hit_ch[i] += rawadc[j]-ped;
+              mean_t += j*(rawadc[j]-ped);
+              mean_t2 += j*j*(rawadc[j]-ped);
+            }
+          }
+          mean_t/=hit_ch[i];
+          mean_t2/=hit_ch[i];
+          hit_rms[i] = sqrt(mean_t2-mean_t*mean_t);
+          if (!evt.isRealData()){
+            //	std::vector<sim::IDE> ides;
+            //	bt_serv->HitToSimIDEs(hitlist[i], ides);
+            hit_nelec[i] = 0;
+            hit_energy[i] = 0;
+            //	for (size_t j = 0; j<ides.size(); ++j){
+            //    hit_nelec[i] += ides[j].numElectrons;
+            //    hit_energy[i] += ides[j].energy;
+            //	}
+            const sim::SimChannel* chan = 0;
+            for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
+              if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) chan = fSimChannels[sc];
+            }
+            if (chan){
+              const auto & tdcidemap = chan->TDCIDEMap();
+              for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
+                // loop over the vector of IDE objects.
+
+                const std::vector<sim::IDE> & idevec = (*mapitr).second;
+
+                for(size_t iv = 0; iv < idevec.size(); ++iv){
+
+                  hit_nelec[i] += idevec[iv].numElectrons;
+                  hit_energy[i] += idevec[iv].energy;
+                }
+              }
+            }
+          }
+        } // if cet::maybe_ref is valid
       }
     }
+  }
   catch (art::Exception const&e){ }
 
   fTree->Fill();
@@ -1790,7 +1790,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][1000][3]/D");
   fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
-  
+
   fTree->Branch("nTrajPoint", &nTrajPoint, "nTrajPoint[ntracks_reco]/I");
   fTree->Branch("pHat0_X", pHat0_X, "pHat0_X[ntracks_reco][1000]/D");
   fTree->Branch("pHat0_Y", pHat0_Y, "pHat0_Y[ntracks_reco][1000]/D");
@@ -1854,7 +1854,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("WC4yPos",WC4yPos,"WC4yPos[nwctrks]/F");
   fTree->Branch("WC4zPos",WC4zPos,"WC4zPos[nwctrks]/F");
   fTree->Branch("WCTrackResidual", WCTrackResidual,"WCTrackResidual[nwctrks]/F");
-  fTree->Branch("WCTrackWCMissed", WCTrackWCMissed,"WCTrackWCMissed[nwctrks]/I");  
+  fTree->Branch("WCTrackWCMissed", WCTrackWCMissed,"WCTrackWCMissed[nwctrks]/I");
 
   fTree->Branch("ntof", &ntof, "ntof/I");
   fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
@@ -1862,9 +1862,9 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("wcP" ,wcP ,"wcP[nwctrks]/F");
   fTree->Branch("wcPx",wcPx,"wcPx[nwctrks]/F");
   fTree->Branch("wcPy",wcPy,"wcPy[nwctrks]/F");
-  fTree->Branch("wcPz",wcPz,"wcPz[nwctrks]/F");  
-  fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
-  fTree->Branch("cTOF", cTOF, "cTOF[ntof]/F"); 
+  fTree->Branch("wcPz",wcPz,"wcPz[nwctrks]/F");
+  fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D");
+  fTree->Branch("cTOF", cTOF, "cTOF[ntof]/F");
   fTree->Branch("mass", &massObj, "massObj/F");
 
   fTree->Branch("nAG", &nAG, "nAG/I");
@@ -1887,7 +1887,7 @@ void lariat::AnaTreeT1034::beginJob()
 
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
-  
+
   fTree->Branch("pdg",pdg,"pdg[geant_list_size]/I");
   fTree->Branch("Eng",Eng,"Eng[geant_list_size]/D");
   fTree->Branch("Px",Px,"Px[geant_list_size]/D");
@@ -1909,7 +1909,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("TrackId",TrackId,"TrackId[geant_list_size]/I");
   fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
   fTree->Branch("G4Process",&G4Process);//,"G4Process[geant_list_size]");
-  fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");  
+  fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");
   fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/I");
   fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][5000]/D");
   fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][5000]/D");
@@ -1951,7 +1951,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("mcshwr_MotherendX", mcshwr_MotherendX, "mcshwr_MotherendX[no_mcshowers]/I");
   fTree->Branch("mcshwr_MotherendY", mcshwr_MotherendY, "mcshwr_MotherendY[no_mcshowers]/I");
   fTree->Branch("mcshwr_MotherendZ", mcshwr_MotherendZ, "mcshwr_MotherendZ[no_mcshowers]/I");
-  
+
   fTree->Branch("mcshwr_Ancestorpdg", mcshwr_Ancestorpdg, "mcshwr_Ancestorpdg[no_mcshowers]/I");
   fTree->Branch("mcshwr_AncestorTrkId", mcshwr_AncestorTrkId, "mcshwr_AncestorTrkId[no_mcshowers]/I");
   fTree->Branch("mcshwr_AncestorstartX", mcshwr_AncestorstartX, "mcshwr_AncestorstartX[no_mcshowers]/I");
@@ -1960,7 +1960,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("mcshwr_AncestorendX", mcshwr_AncestorendX, "mcshwr_AncestorendX[no_mcshowers]/I");
   fTree->Branch("mcshwr_AncestorendY", mcshwr_AncestorendY, "mcshwr_AncestorendY[no_mcshowers]/I");
   fTree->Branch("mcshwr_AncestorendZ", mcshwr_AncestorendZ, "mcshwr_AncestorendZ[no_mcshowers]/I");
-      
+
   fTree->Branch("nshowers",&nshowers,"nshowers/I");
   fTree->Branch("shwID",shwID,"shwI[nshowers]/I");
   fTree->Branch("BestPlaneShw",BestPlaneShw,"BestPlaneShw[nshowers]/I");
@@ -2038,17 +2038,17 @@ void lariat::AnaTreeT1034::ResetVars()
     }
     for (int j = 0; j<2; ++j){
       trkpitch[i][j] = -99999;
-      trkhits[i][j] = -99999; 
+      trkhits[i][j] = -99999;
       trkke[i][j] = -99999;
       trkpida[i][j] = -99999;
       for (int k = 0; k<1000; ++k){
-			trkdedx[i][j][k] = -99999;
-			trkdqdx[i][j][k] = -99999;
-			trkrr[i][j][k] = -99999;
-			trkpitchhit[i][j][k] = -99999;
-			trkxyz[i][j][k][0] = -99999;
-			trkxyz[i][j][k][1] = -99999;
-			trkxyz[i][j][k][2] = -99999;
+        trkdedx[i][j][k] = -99999;
+        trkdqdx[i][j][k] = -99999;
+        trkrr[i][j][k] = -99999;
+        trkpitchhit[i][j][k] = -99999;
+        trkxyz[i][j][k][0] = -99999;
+        trkxyz[i][j][k][1] = -99999;
+        trkxyz[i][j][k][2] = -99999;
       }
     }
     trkg4id[i] = -9999;
@@ -2082,7 +2082,7 @@ void lariat::AnaTreeT1034::ResetVars()
     hit_y[i] = -99999;
     hit_z[i] = -99999;
   }
-  
+
   nwctrks = -99999;
 
   for (int i = 0; i < kMaxWCTracks; i++)
@@ -2092,17 +2092,17 @@ void lariat::AnaTreeT1034::ResetVars()
       wctrk_momentum[i] = -99999;		//<---Reconstructed moomentum
       wctrk_theta[i] = -99999;		//<---angle of track w.r.t. z axis
       wctrk_phi[i] = -99999;		//<---angle of track w.r.t. x axis
-      wctrk_XDist[i] = -99999;     	//<---X distance between upstream and downstream tracks
-      wctrk_YDist[i] = -99999;     	//<---Y distance between upstream and downstream tracks
+      wctrk_XDist[i] = -99999;          //<---X distance between upstream and downstream tracks
+      wctrk_YDist[i] = -99999;          //<---Y distance between upstream and downstream tracks
       wctrk_ZDist[i] = -99999;
-	
+
       for(int j = 0; j < 1000; j++)
-	{
-	  XWireHist[i][j] = -99999;		//<---Coord in terms of wire number
-	  YWireHist[i][j] = -99999;		//<---Coord in terms of wire number
-	  XAxisHist[i][j] = -99999;		//<---coord in terms of units.
-	  YAxisHist[i][j] = -99999;		//<---coord in terms of units.
-	}//<---End j loop
+        {
+          XWireHist[i][j] = -99999;		//<---Coord in terms of wire number
+          YWireHist[i][j] = -99999;		//<---Coord in terms of wire number
+          XAxisHist[i][j] = -99999;		//<---coord in terms of units.
+          YAxisHist[i][j] = -99999;		//<---coord in terms of units.
+        }//<---End j loop
       Y_Kink[i] = -99999;
       WC1xPos[i] = -99999;
       WC1yPos[i] = -99999;
@@ -2121,18 +2121,18 @@ void lariat::AnaTreeT1034::ResetVars()
       wcPy[i] = -99999;
       wcPz[i] = -99999;
     }//<---End I loop
-  
+
   ntof = -99999;
-  massObj = -99999; 
+  massObj = -99999;
   for (int i = 0; i < kMaxTOF; i++)
     {
       tofObject[i] = -99999;
       tof_timestamp[i] = -99999;
       cTOF[i] = -99999;
-	
-	
+
+
     }//<---End i loop
-  
+
   nAG = -99999;
   for (int i = 0; i < kMaxAG; i++)
     {
@@ -2154,7 +2154,7 @@ void lariat::AnaTreeT1034::ResetVars()
     }//<---End i loop
 
   maxTrackIDE = -999;
-  
+
   for(size_t i = 0; i < kMaxIDE; ++i) {
     IDEEnergy[i] = -999;
 
@@ -2190,44 +2190,44 @@ void lariat::AnaTreeT1034::ResetVars()
 
   }
 
-	for(int i = 0; i<kMaxPrimaryPart; i++){
-		NTrTrajPts[i] = -99999;
-		for(int j = 0; j<kMaxTruePrimaryPts; j++){	
-			MidPosX[i][j] = -99999;
-			MidPosY[i][j] = -99999;
-			MidPosZ[i][j] = -99999;
-   		MidPx[i][j] = -99999; 
-   		MidPy[i][j] = -99999; 
-   		MidPz[i][j] = -99999;
-		}
-	}
+  for(int i = 0; i<kMaxPrimaryPart; i++){
+    NTrTrajPts[i] = -99999;
+    for(int j = 0; j<kMaxTruePrimaryPts; j++){
+      MidPosX[i][j] = -99999;
+      MidPosY[i][j] = -99999;
+      MidPosZ[i][j] = -99999;
+      MidPx[i][j] = -99999;
+      MidPy[i][j] = -99999;
+      MidPz[i][j] = -99999;
+    }
+  }
 
   nshowers = -99999;
-  for (int i = 0; i<kMaxShower; ++i) 
+  for (int i = 0; i<kMaxShower; ++i)
     {
       shwID[i] = -99999;
       BestPlaneShw[i] = -99999;
       LengthShw[i] = -99999;
-      for (int j = 0; j<3; ++j) 
-	{
-	  CosStartShw[j][i] = -99999;
-	  //CosStartSigmaShw[j][i] = -99999;
-	  CosStartXYZShw[j][i] = -99999;
-	  // 	 CosStartXYZSigmaShw[j][i] = -99999;
-	  // CosStartXYZSigmaShw[j][i] = -99999;
-	}
-      for (int j = 0; j<2; ++j) 
-	{
-	  TotalEShw[j][i] = -99999;
-	  //TotalESigmaShw[j][i] = -99999;
-	  //TotalESigmaShw[j][i] = -99999;
-	  dEdxPerPlaneShw[j][i] = -99999;
-	  //dEdxSigmaPerPlaneShw[j][i] = -99999;
-	  TotalMIPEShw[j][i] = -99999;
-	  //TotalMIPESigmaShw[j][i] = -99999;
-	}
+      for (int j = 0; j<3; ++j)
+        {
+          CosStartShw[j][i] = -99999;
+          //CosStartSigmaShw[j][i] = -99999;
+          CosStartXYZShw[j][i] = -99999;
+          //     CosStartXYZSigmaShw[j][i] = -99999;
+          // CosStartXYZSigmaShw[j][i] = -99999;
+        }
+      for (int j = 0; j<2; ++j)
+        {
+          TotalEShw[j][i] = -99999;
+          //TotalESigmaShw[j][i] = -99999;
+          //TotalESigmaShw[j][i] = -99999;
+          dEdxPerPlaneShw[j][i] = -99999;
+          //dEdxSigmaPerPlaneShw[j][i] = -99999;
+          TotalMIPEShw[j][i] = -99999;
+          //TotalMIPESigmaShw[j][i] = -99999;
+        }
     }
-  
+
 }
 
 DEFINE_ART_MODULE(lariat::AnaTreeT1034)
