@@ -69,46 +69,48 @@ lariat_blurredcluster.GlobalTPCRecon: false
 lariat_blurredcluster.BlurredClusterAlg.BlurTick: 15
 lariat_blurredcluster.BlurredClusterAlg.BlurWire: 15
 
-lariat_trajclusteralg:             @local::standard_trajclusteralg
-lariat_trajclusteralg.MakeNewHits: true
-lariat_trajclusteralg.Mode:   -1 # step from DS to US
-lariat_trajclusteralg.MinAmp:  0.1
-lariat_trajclusteralg.NPTsAve:  10
-lariat_trajclusteralg.MaxChi: 3
-lariat_trajclusteralg.HitErrFac: 0.5
-lariat_trajclusteralg.ChargeCuts: [5, 0.15, 0.25]
-lariat_trajclusteralg.MaxWireSkipNoSignal: 5
-lariat_trajclusteralg.MaxWireSkipWithSignal: 20
-lariat_trajclusteralg.KinkCuts: [ 0.45, 4, 3 ] # kink angle, MCS kink significance, nPts fit
-lariat_trajclusteralg.ProjectionErrFactor: 1
-lariat_trajclusteralg.ChkStopCuts: [1.3, 5, 2.5] # [Min chg ratio, Chg slope pull cut, Chg fit Chi cut]
-lariat_trajclusteralg.JTMaxHitSep: -3
- 
-# configuration on each pass
-lariat_trajclusteralg.MinPtsFit:   [ 4,  3, 2]
-lariat_trajclusteralg.MinPts:      [10, 3, 3]        # Min number of points in the trajectory required on each pass
-lariat_trajclusteralg.MaxAngleCode: [0, 2, 3]
-lariat_trajclusteralg.MaxVertexTrajSep: [ 6, 6, 4]
- 
-lariat_trajclusteralg.AngleRanges: [30, 65, 85, 90]
- 
-lariat_trajclusteralg.MuonTag: [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
-lariat_trajclusteralg.MaxVertexTrajSep: [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
-#lariat_trajclusteralg.SkipAlgs: [ "ChkStop", "ChkAllStop", "CTKink", "HiEndDelta" ]
-#lariat_trajclusteralg.Vertex2DCuts:  [6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0.8]
-# 0 User definition of a short Tj => max number of Tj points
-# 1 max separation between a vertex and the start of a trajectory for a user-defined short Tj
-# 2 max separation for a user-defined long Tj
-# 3 max position pull when attaching a Tj to a vertex
-# 4 max position error for creating a Tj or attaching Tjs to an existing vertex
-# 5 Min MCSMom of Tjs that can be used to create a vertex
-# 6 min frac of Points/Wire between a vtx and a Tj. Ideally one if the efficiency is good
-# 7 min Score
-# 8 Min charge fraction near a merge point (not a vertex)
-# 9 max MCSmom asymmetry for a merge
 
-#lariat_trajclusteralg.Vertex3DChiCut: 3
-#                                  0    1   2   3    4  5   6  7  8  9 10  11   12
+########################################################################
+# Trajcluster alg settings tuned for LArIAT
+# #####################################################################
+lariat_trajclusteralg:                      @local::standard_trajclusteralg
+lariat_trajclusteralg.HitFinderModuleLabel: "gaushit"
+lariat_trajclusteralg.MakeNewHits:          true
+lariat_trajclusteralg.Mode:                 -1 # step from DS to US
+lariat_trajclusteralg.MinAmp:               0.1
+lariat_trajclusteralg.NPTsAve:              10
+lariat_trajclusteralg.MaxChi:               3
+lariat_trajclusteralg.HitErrFac:            0.5
+lariat_trajclusteralg.ProjectionErrFactor:  1
+lariat_trajclusteralg.ChargeCuts:           [5, 0.15, 0.25]
+lariat_trajclusteralg.MaxWireSkipNoSignal:  5
+lariat_trajclusteralg.MaxWireSkipWithSignal:20
+lariat_trajclusteralg.KinkCuts:             [0.45, 4, 3] # kink angle, MCS kink significance, nPts fit
+lariat_trajclusteralg.ChkStopCuts:          [1.3, 5, 2.5] # [Min chg ratio, Chg slope pull cut, Chg fit Chi cut]
+lariat_trajclusteralg.JTMaxHitSep:          -3
+# configuration on each pass
+lariat_trajclusteralg.MinPtsFit:            [4,  3, 2]
+lariat_trajclusteralg.MinPts:               [10, 3, 3]  # Min number of points in the trajectory required on each pass
+lariat_trajclusteralg.MaxAngleCode:         [0, 2, 3]
+lariat_trajclusteralg.MaxVertexTrajSep:     [6, 6, 4]
+lariat_trajclusteralg.AngleRanges:          [30, 65, 85, 90]
+lariat_trajclusteralg.MuonTag:              [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
+lariat_trajclusteralg.FillTruth:            0
+lariat_trajclusteralg.StudyMode:            false
+lariat_trajclusteralg.SaveShowerTree:       false
+lariat_trajclusteralg.SaveCRTree:           false
+lariat_trajclusteralg.DebugPlane:           -1
+lariat_trajclusteralg.DebugWire:            0
+lariat_trajclusteralg.DebugTick:            0
+lariat_trajclusteralg.DebugWorkID:          0
+#lariat_trajclusteralg.SkipAlgs:             [ "ChkStop", "CTKink", "VtxHitsSwap","SplitHiChgHits","CTKink","HED","Split" ]
+#    Valid AlgNames:  MaskHits MaskBadTPs Michel DeltaRay CTKink CTStepChk TryNextPass RvPrp CHMH Split Comp3DVx Comp3DVxIG HED 
+#                     HamVx HamVx2 JunkTj Killed Merge TEP CHMEH FillGap Ghost ChkInTraj StopBadFits FixBegin BeginChg FixEnd UUH 
+#                     MisdVxTj VtxTj ChkVxTj RefVtx VxMerge NoKinkChk SoftKink ChkStop ChkStopEP FTBRvProp StopAtTj M3D Mat3DMerge 
+#                     TjHiVx3Score VtxHitsSwap SplitHiChgHits InShower ShowerTj ShwrParent MergeOverlap MergeSubShowers MergeNrShowers 
+#                     MergeShChain SplitTarjCV
+#    Or specify All to turn all algs off
+
 lariat_trajclusteralg.ShowerTag: [ 0, 100, 10, 50, 2.5, 1, 15, 3, 5, 1, 1, 10, -13 ]
 # 0 Mode (<= 0 OFF, 1 = Tag InShower tjs before 3D match, > 1 Find showers)
 # 1 Max Tj MCSMom for a shower tag
@@ -123,6 +125,19 @@ lariat_trajclusteralg.ShowerTag: [ 0, 100, 10, 50, 2.5, 1, 15, 3, 5, 1, 1, 10, -
 # 10 max aspect ratio
 # 11 Max length for making a short Tj separation cut
 # 12 Print 2D showers in plane (0,1,2) or all planes (3) or just 3D matching (4)
+
+lariat_trajclusteralg.Vertex2DCuts:  [6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0.8]
+# 0 User definition of a short Tj => max number of Tj points
+# 1 max separation between a vertex and the start of a trajectory for a user-defined short Tj
+# 2 max separation for a user-defined long Tj
+# 3 max position pull when attaching a Tj to a vertex
+# 4 max position error for creating a Tj or attaching Tjs to an existing vertex
+# 5 Min MCSMom of Tjs that can be used to create a vertex
+# 6 min frac of Points/Wire between a vtx and a Tj. Ideally one if the efficiency is good
+# 7 min Score
+# 8 Min charge fraction near a merge point (not a vertex)
+# 9 max MCSmom asymmetry for a merge
+
 lariat_trajclusteralg.CaloAlg:                           @local::lariat_calorimetryalgdata
 
 lariat_trajcluster_data:                                 @local::standard_trajcluster
