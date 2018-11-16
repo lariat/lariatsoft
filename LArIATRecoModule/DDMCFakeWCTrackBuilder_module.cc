@@ -320,12 +320,12 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
       //auto mcPart = plist.Particle(p);
       std::string proc = MCParticle[i]->Process();*/
       if ( !(proc.find("primary") != std::string::npos) ) continue;
-      std::cout<<"\n\nPrimary \n";
+      if (fVerbose) std::cout<<"\n\nPrimary \n";
       // Get the True Trajectory point
       simb::MCTrajectory truetraj = pPart->Trajectory();
       auto firstTrjPtInTPC = truetraj.begin();
       
-      std::cout<<"Trajectory size "<<truetraj.size()<<" firstTrjPtInTPC->first.Z() = "<<(firstTrjPtInTPC->first).Z()<<std::endl;
+      if (fVerbose) std::cout<<"Trajectory size "<<truetraj.size()<<" firstTrjPtInTPC->first.Z() = "<<(firstTrjPtInTPC->first).Z()<<std::endl;
       if ( (firstTrjPtInTPC->first).Z() >  -50. ) continue; 
       for ( auto t = truetraj.begin(); t!= std::prev(truetraj.end()); t++)
 	{
@@ -381,11 +381,12 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
       fDeltaY_Face->Fill(truePositionAtFF.Y() - YProj);
     } 
 
-  
-  std::cout<<"X "<<position.X()<<" Y "<<position.Y() << " Z "<<position.Z()<<std::endl;
-  std::cout<<"XProj "<<XProj<<" YProj "<<YProj<<" d "<<d <<std::endl;
-  std::cout<<"trueTheta "<<trueTheta*57.2958<<" truePhi "<<truePhi*57.2958 <<std::endl;
-  
+  if (fVerbose) 
+    {
+      std::cout<<"X "<<position.X()<<" Y "<<position.Y() << " Z "<<position.Z()<<std::endl;
+      std::cout<<"XProj "<<XProj<<" YProj "<<YProj<<" d "<<d <<std::endl;
+      std::cout<<"trueTheta "<<trueTheta*57.2958<<" truePhi "<<truePhi*57.2958 <<std::endl;
+    }
   //Fill the meaningful quantities
   reco_pz_list  .push_back(1000*momentum.Z());   // Put momentum here
   reco_pz2M_list.push_back(1000*momentum.Z());   // Put momentum here
@@ -457,7 +458,7 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
   //Put objects into event (root file)
   e.put(std::move(WCTrackCol)); 
   fTree->Fill(); 
-  std::cout<<"\n\n"; 
+  if (fVerbose) std::cout<<"\n\n"; 
 }
 //==================================================================================================
 void DDMCFakeWCTrackBuilder::ResetTree()
