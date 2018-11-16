@@ -22,13 +22,10 @@ services:
   # @table::standard_resourcetrackers
   RandomNumberGenerator: {} # ART native random number generator
   # message:      @local::lariat_message_services
-  @table::lariat_services
+  @table::lariat_services_run2
 }
 
 services.scheduler.SkipEvent: [ ProductNotFound ]
-
-services.SignalShapingServiceT1034.IndFieldRespAmp: 0.66
-services.SignalShapingServiceT1034.ColFieldRespAmp: 0.50
 
 source:
 {
@@ -161,12 +158,6 @@ physics.producers.tof.HitMatchThresholdDS:  6.0
 physics.producers.tof.HitWait:              20.
 
 physics.producers.wctrack.PickyTracks:      false
-
-services.DetectorPropertiesService.TimeOffsetU: -50.0
-services.DetectorPropertiesService.TimeOffsetV: -52.0
-#services.DetectorPropertiesService.TimeOffsetV: -2.0
-services.DetectorPropertiesService.Electronlifetime: 1600
-services.DetectorPropertiesService.SamplingRate: 128
 
 physics.producers.caldata.DigitModuleLabel: "daq"
 physics.producers.caldata.DodQdxCalib:      false
