@@ -172,7 +172,8 @@ physics.producers.tof.HitWait:              20.
 physics.producers.wctrack.PickyTracks:      false
 
 physics.producers.caldata.DigitModuleLabel: "daq"
-physics.producers.caldata.DodQdxCalib:      false
+physics.producers.caldata.DodQdxCalib:      true
+physics.producers.caldata.dQdxCalibFileName:"LArIATChargeCorrectionFactors_Run2.txt"
 
 physics.producers.gaushitOrigin.CalDataModuleLabel: "caldata"
 physics.producers.gaushitOrigin.Chi2NDFRetry:        1000.
