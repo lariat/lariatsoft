@@ -107,10 +107,8 @@ bool HitNumberFilter::filter(art::Event & e)
   for(size_t i=0; i<2; i++){
   LOG_VERBATIM("HitNumberFilter")
   <<"#hits on plane "<<i<<": "<<nHits[i];
-    if( fMaxNumHits[i] > 0 && nHits[i] > fMaxNumHits[i] ) {
+    if( fMaxNumHits[i] > 0 && nHits[i] > fMaxNumHits[i] )
       pass = false;
-      break;
-    }
   }
   
   LOG_VERBATIM("HitNumberFilter")
