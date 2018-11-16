@@ -11,7 +11,7 @@ services:
 }
 
 # Remove the timestamp filter and any beamline reco
-physics.reco: [ caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco ]
+physics.reco: [ caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctrack, wctracktpctrackmatch ]
 
 physics.producers.caldata.DigitModuleLabel: "daq"
 physics.producers.caldata.DodQdxCalib:      false
@@ -19,3 +19,5 @@ physics.producers.caldata.DodQdxCalib:      false
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgmc_run1
 physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgmc_run1 
 
+physics.producers.wctrack.module_type: DDMCFakeWCTrackBuilder
+physics.producers.wctracktpctrackmatch.IsThisMC: true
