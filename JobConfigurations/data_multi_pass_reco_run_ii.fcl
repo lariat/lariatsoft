@@ -35,7 +35,7 @@ source:
 }
 
 beamlinereco: [ tof, wctrack ]
-tpcrecoOrigin: [ gaushitOrigin, trajclusterOrigin, pmtrackOrigin, caloOrigin ]
+tpcrecoOrigin: [ gaushitOrigin, trajclusterOrigin, pmtrackOrigin ]
 tpcreco: [ gaushit, trajcluster, pmtrack, calo ]
 
 # Define and configure some modules to do work on each event.
@@ -57,7 +57,6 @@ physics:
     gaushitOrigin:         @local::gaus_hitfinder
     trajclusterOrigin:     @local::standard_trajcluster
     pmtrackOrigin:         @local::standard_pmalgtrackmaker
-    caloOrigin:            @local::standard_calodata
 
     gaushit:               @local::lariat_distortedhitremoval
     trajcluster:           @local::standard_trajcluster
@@ -209,12 +208,6 @@ physics.producers.pmtrackOrigin.HitModuleLabel:     "trajclusterOrigin"
 physics.producers.pmtrackOrigin.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtrackOrigin.PMAlgTracking.FlipToBeam: true
 physics.producers.pmtrackOrigin.PMAlgTracking.RunVertexing: true
-
-#physics.producers.caloOrigin.CaloAlg:               @local::lariat_calorimetryalgmc_run2   # MC
-physics.producers.caloOrigin.CaloAlg:               @local::lariat_calorimetryalgdata_run2  # data
-physics.producers.caloOrigin.TrackModuleLabel:      "pmtrackOrigin"
-physics.producers.caloOrigin.SpacePointModuleLabel: "pmtrackOrigin"
-physics.producers.caloOrigin.UseArea:               "true"
 
 # second pass of TPC-based reconstruction
 
