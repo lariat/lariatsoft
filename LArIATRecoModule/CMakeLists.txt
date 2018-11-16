@@ -16,6 +16,8 @@ art_make(LIB_LIBRARIES    larcorealg_Geometry
 			                    lardataobj_RecoBase
 			                    lardata_ArtDataHelper
 			                    lardata_Utilities
+					    larsim_MCCheater_BackTrackerService_service
+					    larsim_MCCheater_ParticleInventoryService_service
 			                    larcore_Geometry_AuxDetGeometry_service
 			                    nutools_RandomUtils_NuRandomService_service
 			                    nusimdata_SimulationBase
