@@ -109,10 +109,9 @@ outputs:
     fileName:    "%ifb_reco.root"
     dataTier:    "reconstructed"
     compressionLevel: 1
+    SelectEvents: [reco]
   }
 }
-
-outputs.out1.SelectEvents: [ reco ]
 
 #services.message.destinations:
 #{
