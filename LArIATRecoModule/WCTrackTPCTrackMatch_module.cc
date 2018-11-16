@@ -122,6 +122,7 @@ class WCTrackTPCTrackMatch : public art::EDProducer
   double      circular_cut_x_center_;
   double      circular_cut_y_center_;
   double      circular_cut_radius_;
+  bool        isThisMC_;
 
   // vector for primary vtx
   TVector3 primary_vtx_;
@@ -390,6 +391,7 @@ void WCTrackTPCTrackMatch::reconfigure(fhicl::ParameterSet const& pset)
   circular_cut_x_center_   = pset.get< double >("CircularCutXCenter", 1.6);
   circular_cut_y_center_   = pset.get< double >("CircularCutYCenter", -0.17);
   circular_cut_radius_     = pset.get< double >("CircularCutRadius", 3.5);
+  isThisMC_                = pset.get< bool   >("IsThisMC", false);
 }
 
 //-----------------------------------------------------------------------
@@ -648,7 +650,7 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
       delta_r_.push_back(delta_r);
 
       double const wctrack_proj_z = upstream_traj_pt.position.Z();
-      TVector3 const wctrack_proj = wctrack->ProjectionAtZ(wctrack_proj_z, false);
+      TVector3 const wctrack_proj = wctrack->ProjectionAtZ(wctrack_proj_z, isThisMC_);
       double const wctrack_proj_x = wctrack_proj.X();
       double const wctrack_proj_y = wctrack_proj.Y();
 
