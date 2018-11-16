@@ -170,9 +170,9 @@ physics.producers.tof.HitWait:              20.
 
 physics.producers.wctrack.PickyTracks:      false
 
-physics.producers.caldata.DigitModuleLabel: "daq"
-physics.producers.caldata.DodQdxCalib:      true
-physics.producers.caldata.dQdxCalibFileName:"LArIATChargeCorrectionFactors_Run2.txt"
+physics.producers.caldata.DigitModuleLabel:   "daq"
+physics.producers.caldata.DodQdxCalib:        true
+physics.producers.caldata.dQdxCalibFileName:  "LArIATChargeCorrectionFactors_Run2.txt"
 
 physics.producers.gaushitOrigin.CalDataModuleLabel: "caldata"
 physics.producers.gaushitOrigin.Chi2NDFRetry:        1000.
@@ -210,12 +210,17 @@ physics.producers.pmtrackOrigin.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtrackOrigin.PMAlgTracking.FlipToBeam: true
 physics.producers.pmtrackOrigin.PMAlgTracking.RunVertexing: true
 
+#//////////////////////////////////////////////////////////////////////
 # second pass of TPC-based reconstruction
+#//////////////////////////////////////////////////////////////////////
 
+# this is NOT @local::gaus_hitfinder; this is @local::lariat_distortedhitremoval
+# this is used to remove the distorted hits that result from the fringe E field
+# near the edges of the TPC
 physics.producers.gaushit.HitLabel:    "gaushitOrigin"
 physics.producers.gaushit.TrackLabel:  "pmtrackOrigin"
-physics.producers.gaushit.ZLow:        3.0
-physics.producers.gaushit.ZHigh:       87.0
+physics.producers.gaushit.ZLow:        3.0   # remove hits that are within 3 cm of the front face of the TPC
+physics.producers.gaushit.ZHigh:       87.0  # remove hits that are within 3 cm of the back face of the TPC
 
 physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel: "gaushit"
 physics.producers.trajcluster.TrajClusterAlg.MakeNewHits: true
