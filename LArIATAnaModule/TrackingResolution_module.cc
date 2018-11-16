@@ -317,7 +317,7 @@ void lariat::TrackingResolution::reconfigure(fhicl::ParameterSet const & pset)
 
   fTrackModuleLabel = pset.get< std::string >("TrackModuleLabel"      , "pmtrack");
   fWCTrackLabel     = pset.get< std::string >("WCTrackLabel"          , "wctrack"  );
-  fWC2TPCModuleLabel= pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
+  fWC2TPCModuleLabel= pset.get< std::string >("WC2TPCModuleLabel"     , "wctracktpctrackmatch");
 
   return;
   
