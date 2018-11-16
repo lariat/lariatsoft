@@ -36,7 +36,7 @@ source:
 
 beamlinereco: [ tof, wctrack ]
 tpcrecoOrigin: [ gaushitOrigin, trajclusterOrigin, pmtrackOrigin ]
-tpcreco: [ gaushit, trajcluster, pmtrack, calo ]
+tpcreco: [ gaushit, hitnumfilter, trajcluster, pmtrack, calo ]
 
 # Define and configure some modules to do work on each event.
 # First modules are defined; they are scheduled later.
@@ -71,6 +71,7 @@ physics:
     timestampfilter: @local::lariat_timestampfilter
     toffilter:       @local::lariat_toffilter
     wctrackfilter:   @local::lariat_wctrackfilter
+    hitnumfilter:    @local::lariat_hitnumberfilter
   }
 
   analyzers:
@@ -198,6 +199,13 @@ physics.producers.gaushit.HitLabel:    "gaushitOrigin"
 physics.producers.gaushit.TrackLabel:  "pmtrackOrigin"
 physics.producers.gaushit.ZLow:        3.0   # remove hits that are within 3 cm of the front face of the TPC
 physics.producers.gaushit.ZHigh:       87.0  # remove hits that are within 3 cm of the back face of the TPC
+
+# This module will count the number of reconstructed hits on each plane and 
+# write histograms to the output histogram file. Can also be used to filter 
+# out events with a high number of hits.
+physics.filters.hitnumfilter.HitsModuleLabel:                     "gaushit"
+physics.filters.hitnumfilter.HitsInstance:                        ""
+physics.filters.hitnumfilter.MaxNumHits:                          [ -999, -999 ] # neg. = filter not used
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
 physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg
