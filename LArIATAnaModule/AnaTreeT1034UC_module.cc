@@ -289,6 +289,18 @@ private:
   double wctrk_x_proj_3cm[kMaxWCTracks];
   double wctrk_y_proj_3cm[kMaxWCTracks];
   double wctrk_z_proj_3cm[kMaxWCTracks];
+  double wctrk_wc1_x[kMaxWCTracks];
+  double wctrk_wc1_y[kMaxWCTracks];
+  double wctrk_wc1_z[kMaxWCTracks];
+  double wctrk_wc2_x[kMaxWCTracks];
+  double wctrk_wc2_y[kMaxWCTracks];
+  double wctrk_wc2_z[kMaxWCTracks];
+  double wctrk_wc3_x[kMaxWCTracks];
+  double wctrk_wc3_y[kMaxWCTracks];
+  double wctrk_wc3_z[kMaxWCTracks];
+  double wctrk_wc4_x[kMaxWCTracks];
+  double wctrk_wc4_y[kMaxWCTracks];
+  double wctrk_wc4_z[kMaxWCTracks];
 
   double electron_lifetime;
 
@@ -938,6 +950,19 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
       wctrk_x_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).X();
       wctrk_y_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).Y();
       wctrk_z_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).Z();
+
+      wctrk_wc1_x[wct_count] = wctrack[wct_count]->HitPosition(0, 0);
+      wctrk_wc1_y[wct_count] = wctrack[wct_count]->HitPosition(0, 1);
+      wctrk_wc1_z[wct_count] = wctrack[wct_count]->HitPosition(0, 2);
+      wctrk_wc2_x[wct_count] = wctrack[wct_count]->HitPosition(1, 0);
+      wctrk_wc2_y[wct_count] = wctrack[wct_count]->HitPosition(1, 1);
+      wctrk_wc2_z[wct_count] = wctrack[wct_count]->HitPosition(1, 2);
+      wctrk_wc3_x[wct_count] = wctrack[wct_count]->HitPosition(2, 0);
+      wctrk_wc3_y[wct_count] = wctrack[wct_count]->HitPosition(2, 1);
+      wctrk_wc3_z[wct_count] = wctrack[wct_count]->HitPosition(2, 2);
+      wctrk_wc4_x[wct_count] = wctrack[wct_count]->HitPosition(3, 0);
+      wctrk_wc4_y[wct_count] = wctrack[wct_count]->HitPosition(3, 1);
+      wctrk_wc4_z[wct_count] = wctrack[wct_count]->HitPosition(3, 2);
     }
 
 
@@ -1415,6 +1440,19 @@ void lariat::AnaTreeT1034UC::beginJob()
   fTree->Branch("wctrk_x_proj_3cm",            wctrk_x_proj_3cm, "wctrk_x_proj_3cm[num_wctracks]/D");
   fTree->Branch("wctrk_y_proj_3cm",            wctrk_y_proj_3cm, "wctrk_y_proj_3cm[num_wctracks]/D");
   fTree->Branch("wctrk_z_proj_3cm",            wctrk_z_proj_3cm, "wctrk_z_proj_3cm[num_wctracks]/D");
+
+  fTree->Branch("wctrk_wc1_x", wctrk_wc1_x, "wctrk_wc1_x[num_wctracks]/D");
+  fTree->Branch("wctrk_wc1_y", wctrk_wc1_y, "wctrk_wc1_y[num_wctracks]/D");
+  fTree->Branch("wctrk_wc1_z", wctrk_wc1_z, "wctrk_wc1_z[num_wctracks]/D");
+  fTree->Branch("wctrk_wc2_x", wctrk_wc2_x, "wctrk_wc2_x[num_wctracks]/D");
+  fTree->Branch("wctrk_wc2_y", wctrk_wc2_y, "wctrk_wc2_y[num_wctracks]/D");
+  fTree->Branch("wctrk_wc2_z", wctrk_wc2_z, "wctrk_wc2_z[num_wctracks]/D");
+  fTree->Branch("wctrk_wc3_x", wctrk_wc3_x, "wctrk_wc3_x[num_wctracks]/D");
+  fTree->Branch("wctrk_wc3_y", wctrk_wc3_y, "wctrk_wc3_y[num_wctracks]/D");
+  fTree->Branch("wctrk_wc3_z", wctrk_wc3_z, "wctrk_wc3_z[num_wctracks]/D");
+  fTree->Branch("wctrk_wc4_x", wctrk_wc4_x, "wctrk_wc4_x[num_wctracks]/D");
+  fTree->Branch("wctrk_wc4_y", wctrk_wc4_y, "wctrk_wc4_y[num_wctracks]/D");
+  fTree->Branch("wctrk_wc4_z", wctrk_wc4_z, "wctrk_wc4_z[num_wctracks]/D");
 
   fTree->Branch("electron_lifetime",           &electron_lifetime, "electron_lifetime/D");
 
