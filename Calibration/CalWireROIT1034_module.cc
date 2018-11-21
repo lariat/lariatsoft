@@ -377,8 +377,7 @@ namespace caldata {
       double sum=0.0;
       int n=0;
       for(size_t i = 0; i < (size_t)fPostsample; i++){
-        // start 20 samples from end to avoid edge effects from deconvolution
-        size_t bin = holder.size()-20-i; 
+        size_t bin = holder.size()-i; 
         double val = holder[bin];
         if( fabs(val) < 20 ){ // avoid outliers
           sum+=val;
