@@ -328,7 +328,10 @@ void lariat::SmearingMatrix::analyze(art::Event const & evt)
 
       // Get the True Trajectory point
       simb::MCTrajectory truetraj = mcPart->Trajectory();
+      // Make Sure we get the beamline primary                                                                                                                                                     
+      if ( ( (truetraj.begin())->first).Z() >  -50. ) continue;
       
+
       //Get simIDE associated to the primary
       geo::View_t view = geom->View(0); 
       auto simIDE_Prim  = bt->TrackIdToSimIDEs_Ps(mcPart->TrackId(),view);
@@ -342,7 +345,7 @@ void lariat::SmearingMatrix::analyze(art::Event const & evt)
       
       // Get the mass (in GeV)
       double mass = mcPart->Mass() ;
-      if (mass > 0.140 || mass < 0.130 ) {std::cout<<mass<<"These are not pions \n"; return;} // 
+      if (mass > 0.140 || mass < 0.130 ) {std::cout<<"process"<<proc<<" mass: "<<mass<<"Z ini "<<( (truetraj.begin())->first).Z()   <<" These are not pions \n"; return;} // 
 
       
       //Store the kinetic energy and momentum on z at WC4. Just for cross check 
@@ -817,6 +820,8 @@ void lariat::SmearingMatrix::analyze(art::Event const & evt)
 	  std::string proc = mcPart->Process();
 	  if ( !(proc.find("primary") != std::string::npos) ) continue;
 	  simb::MCTrajectory truetraj = mcPart->Trajectory();
+	  // Make Sure we get the beamline primary                                                                                                                                                
+	  if ( ( (truetraj.begin())->first).Z() >  -50. ) continue;
 	  auto inTPCPoint  = truetraj.begin();
 	  auto Momentum0   = inTPCPoint->second;
 	  double onTheFlyPx = 1000*Momentum0.X(); // the Momentum Needs To be in MeV

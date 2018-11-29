@@ -262,7 +262,9 @@ void lariat::TrueXSAngleCut::analyze(art::Event const & evt)
 
       // Get the True Trajectory point
       simb::MCTrajectory truetraj = mcPart->Trajectory();
-      
+      // Make Sure we get the beamline primary                                                                              
+      if ( ( (truetraj.begin())->first).Z() >  -50. ) continue;
+
       //Get simIDE associated to the primary
       geo::View_t view = geom->View(0); 
       auto simIDE_Prim  = bt->TrackIdToSimIDEs_Ps(mcPart->TrackId(),view);

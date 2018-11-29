@@ -266,7 +266,9 @@ void lariat::ELossBeforeTPC::analyze(art::Event const & evt)
 
       // Get the True Trajectory point
       simb::MCTrajectory truetraj = mcPart->Trajectory();
-      
+      // Make Sure we get the beamline primary                                                                                                                       
+      if ( ( (truetraj.begin())->first).Z() >  -50. ) continue;
+
       // Get the mass (in GeV)
       double mass = mcPart->Mass() ;
       if (verbose)  std::cout<<"mass "<<mass<<"\n";
