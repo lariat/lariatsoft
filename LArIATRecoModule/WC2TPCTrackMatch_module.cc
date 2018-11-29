@@ -247,7 +247,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       
       // ### Storing the trajectory points in a similar way to PionXS ###
       
-      TVector3 z_hat(0,0,1);
+      recob::Track::Vector_t z_hat(0,0,1);
       
       // #######################################
       // ### Looping over all the tpcTracks ###
@@ -258,7 +258,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  //trackStart.clear();
 	  //trackEnd.clear();
 	  
-	  TVector3 p_hat_0;
+	  recob::Track::Vector_t p_hat_0;
 	  
 	  // ### Setting the track information into memory ###
 	  //memset(larStart, 0, 3);
@@ -312,7 +312,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 		}//<---End only storing points if they are the lowest Z point
 	    }//<---End iTrajPt loop
 	  // ### Calculating the Theta for the TPC Track ###
-	  tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());
+	  tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.R());
 	  
 	  // ###################################################
 	  // ### Saving for looping later the upstream point ###

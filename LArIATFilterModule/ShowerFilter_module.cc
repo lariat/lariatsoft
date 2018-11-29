@@ -177,7 +177,7 @@ TruthMom.SetZ(0.0);
 	if (trackWC2TPC)
 	{
 	  recob::Track MatchedTrack=*WCTrackAssn.at(indexAssn);
-	  MatchedTrkStartDir=MatchedTrack.DirectionAtPoint(0);
+	  MatchedTrkStartDir=MatchedTrack.DirectionAtPoint<TVector3>(0);
 // The Z component of the direction is negative sometimes, indicating the track is in reverse. If it's extremely backgoing (Z<-.95), flip the tracjectory to make it point forward. Also keep a count of how often this happens.
           if(MatchedTrkStartDir[2]<-0.95)
 	  {
@@ -185,8 +185,8 @@ TruthMom.SetZ(0.0);
 	  }
 //also, I bet that means the track start and end position are reversed, so we'll make sure the track starts upstream by flipping the start and end point if the end point is upstream.
 //Again keep a counter and hope it increases when the direction counter increases.
-	 MatchedTrkStartPos=MatchedTrack.Vertex();
-	 MatchedTrkEndPos=MatchedTrack.End();
+	 MatchedTrkStartPos=MatchedTrack.Vertex<TVector3>();
+	 MatchedTrkEndPos=MatchedTrack.End<TVector3>();
 	  if(MatchedTrkEndPos[2]<MatchedTrkStartPos[2]){MatchedTrkStartPos=MatchedTrkEndPos;  ++reversetrackcount;}
  std::cout<<"For this event, the Matched Track Starts at: ("<<MatchedTrkStartPos[0]<<", "<<MatchedTrkStartPos[1]<<", "<<MatchedTrkStartPos[2]<<")."<<std::endl;
 	} //if trackWC2TPC
@@ -315,7 +315,7 @@ if(!bData){
     nMatched += 1;
     
     //Get the vectors necessary for the cone cut.
-    MatchedTrkStartDir=Tracklist[i]->DirectionAtPoint(0);
+    MatchedTrkStartDir=Tracklist[i]->DirectionAtPoint<TVector3>(0);
 // The Z component of the direction is negative sometimes, indicating the track is in reverse. If it's extremely backgoing (Z<-.95), flip the tracjectory to make it point forward. Also keep a count of how often this happens.
     if(MatchedTrkStartDir[2]<-0.95)
     {
@@ -323,8 +323,8 @@ if(!bData){
     }
 //also, I bet that means the track start and end position are reversed, so we'll make sure the track starts upstream by flipping the start and end point if the end point is upstream.
 //Again keep a counter and hope it increases when the direction counter increases.
-    MatchedTrkStartPos=Tracklist[i]->Vertex();
-    MatchedTrkEndPos=Tracklist[i]->End();
+    MatchedTrkStartPos=Tracklist[i]->Vertex<TVector3>();
+    MatchedTrkEndPos=Tracklist[i]->End<TVector3>();
     if(MatchedTrkEndPos[2]<MatchedTrkStartPos[2]){MatchedTrkStartPos=MatchedTrkEndPos;  ++reversetrackcount;}
   }
   
@@ -344,8 +344,8 @@ if(!bData){
      trkLengthvect.push_back(Tracklist[p]->Length()); //Get the length of the track   
 //Time to use the cone method to find whether this track should matter or not.  First get the start and end position of this track, just in case the track is in reverse.
 
-     TVector3 TrkStart=Tracklist[p]->Vertex();
-     TVector3 TrkEnd=Tracklist[p]->End();
+     TVector3 TrkStart=Tracklist[p]->Vertex<TVector3>();
+     TVector3 TrkEnd=Tracklist[p]->End<TVector3>();
      
 //Though the cone doesn't have to start at its geometric vertex , finding where that vertex would be is helpful for some trig. As the axis of the cone is along the wc2tpc track, the vertex is found projecting backwards along the wc2tpc track, using cone
 //parameters to define how far back to project.

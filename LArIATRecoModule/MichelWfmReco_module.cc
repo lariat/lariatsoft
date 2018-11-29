@@ -710,8 +710,8 @@ void MichelWfmReco::produce(art::Event & e)
       // Get the recob::Track object and record its endpoint/vertex
       art::Ptr< recob::Track > TheTrackPtr(TrackHandle,track_index);
       recob::Track TheTrack = *TheTrackPtr;
-      vTrackEnd       .push_back(TheTrack.End());
-      vTrackVertex    .push_back(TheTrack.Vertex());
+      vTrackEnd       .push_back(TheTrack.End<TVector3>());
+      vTrackVertex    .push_back(TheTrack.Vertex<TVector3>());
       vTrackLength    .push_back(TheTrack.Length());
       vTrackVertex_x  .push_back(TheTrack.Vertex().X());
       vTrackVertex_y  .push_back(TheTrack.Vertex().Y());
@@ -721,8 +721,8 @@ void MichelWfmReco::produce(art::Event & e)
       vTrackEnd_z     .push_back(TheTrack.End().Z()); 
 
       // Is track stopping, passing, or contained?
-      bool endIsInFid     = IsPointInFiducialVolume(TheTrack.End());
-      bool vertexIsInFid  = IsPointInFiducialVolume(TheTrack.Vertex());
+      bool endIsInFid     = IsPointInFiducialVolume(TheTrack.End<TVector3>());
+      bool vertexIsInFid  = IsPointInFiducialVolume(TheTrack.Vertex<TVector3>());
       bool temp_flag      = ((!endIsInFid && vertexIsInFid)||(endIsInFid && !vertexIsInFid));
       vIsTrackStopping    .push_back( temp_flag );
       vIsTrackPassing     .push_back( !endIsInFid && !vertexIsInFid);
