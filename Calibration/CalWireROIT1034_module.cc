@@ -378,14 +378,14 @@ namespace caldata {
       int n=0;
       for(size_t i = 0; i < (size_t)fPostsample; i++){
         size_t bin = holder.size()-i; 
-        double val = holder[bin];
+        int val = holder[bin];
         if( fabs(val) < 20 ){ // avoid outliers
           sum+=val;
           n++;
         }
       }
       if(n) average=sum/n;
-      for(size_t i=0; i < holder.size(); ++i) holder[i]-=average;
+      for(size_t i=0; i < holder.size(); ++i) holder[i] = int( holder[i] - average + 0.5 );
     }
   }
   
