@@ -1,0 +1,3 @@
+#include "mc_gen_run2.fcl"
+
+services.DetectorPropertiesService.Electronlifetime: 1256
