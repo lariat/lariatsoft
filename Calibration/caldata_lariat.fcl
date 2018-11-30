@@ -11,6 +11,7 @@ lariat_calroi:
  AdvancedBaselineSub:   false       # more advanced baseline subtraction (but much slower)
  DoROI:                 false       # only process regions of interest to save time and space
  PlaneROIPad:           [ 50, 50 ]  # number of bins to pad both ends of the ROIs
+ SampPrecision:         1           # number of decimal places saved for each sample
  DodQdxCalib:           false
  dQdxCalibFileName:     "LArIATChargeCorrectionFactorsv1.txt"
 }
