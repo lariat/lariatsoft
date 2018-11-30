@@ -48,6 +48,7 @@ lariat_services_run2:                           @local::lariat_services
 lariat_services_run2.DetectorPropertiesService: @local::lariat_detproperties_run2
 lariat_services_run2.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run2
 
+
 lariat_services_4mm:                @local::lariat_services
 
 lariat_services_5mm:                @local::lariat_services
@@ -94,5 +95,15 @@ lariat_simulation_services_run2.DetectorPropertiesService: @local::lariat_detpro
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetV: 0.0
 lariat_simulation_services_run2.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run2
+
+# Magnet-specific service settings for MC
+lariat_simulation_services_run2_negative_100A:    @local::lariat_simulation_services_run2
+lariat_simulation_services_run2_negative_100A.DetectorPropertiesServices.Electronlifetime:  1130
+lariat_simulation_services_run2_negative_60A:     @local::lariat_simulation_services_run2
+lariat_simulation_services_run2_negative_60A.DetectorPropertiesServices.Electronlifetime:   347
+lariat_simulation_services_run2_positive_100A:    @local::lariat_simulation_services_run2
+lariat_simulation_services_run2_positive_100A.DetectorPropertiesServices.Electronlifetime:  1256
+lariat_simulation_services_run2_positive_60A:     @local::lariat_simulation_services_run2
+lariat_simulation_services_run2_positive_60A.DetectorPropertiesServices.Electronlifetime:   1047
 
 END_PROLOG
