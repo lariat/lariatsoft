@@ -2,12 +2,10 @@
 
 services:
 {
-  TFileService: { fileName: "reco_histo.root" }
+  TFileService: { fileName: "reco_hist.root" }
   RandomNumberGenerator: {} # ART native random number generator
   @table::lariat_simulation_services
 }
-
-services.scheduler.SkipEvent: [ ProductNotFound ]
 
 # Remove the timestamp filter and any beamline reco
 
