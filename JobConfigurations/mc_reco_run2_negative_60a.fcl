@@ -1,0 +1,3 @@
+#include "mc_multi_pass_reco_run2.fcl"
+
+services.DetectorPropertiesService.Electronlifetime: 347
