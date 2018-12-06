@@ -60,7 +60,6 @@
 #include "larevt/Filters/ChannelFilter.h"
 //#include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
-#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AGCounter.h"
@@ -600,8 +599,8 @@ void lariat::Lifetime::analyze(art::Event const & evt)
    if(fVerbose) std::cout << "Tracklist size " << tracklist.size() << std::endl;
 
    ntracks_reco=tracklist.size();
-   TVector3 larStart;
-   TVector3 larEnd;
+   recob::Track::Vector_t larStart;
+   recob::Track::Vector_t larEnd;
    std::vector<double> trackStart;
    std::vector<double> trackEnd;
    double    sampling    = 0.128;
@@ -942,10 +941,9 @@ void lariat::Lifetime::analyze(art::Event const & evt)
 void lariat::Lifetime::endJob()
 {
 
-cout << "***************************************************************"<< endl
-     << "                      Histograms created!                      "<< endl
-     << "***************************************************************"<< endl;
+std::cout << "***************************************************************\n"
+          << "                      Histograms created!                      \n"
+          << "***************************************************************"<< std::endl;
 }
 
 DEFINE_ART_MODULE(lariat::Lifetime)
-

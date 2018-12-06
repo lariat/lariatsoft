@@ -58,7 +58,6 @@
 #include "larevt/Filters/ChannelFilter.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
-#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AGCounter.h"
@@ -96,6 +95,8 @@
 
 #include <fstream>
 #include <iostream>
+
+using namespace std;
 
 double likely(const double *par)
 {

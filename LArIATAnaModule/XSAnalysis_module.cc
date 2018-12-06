@@ -82,12 +82,8 @@
 #include "larevt/Filters/ChannelFilter.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
-#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
-
-
-
 
 // #####################
 // ### ROOT includes ###

@@ -57,7 +57,6 @@
 #include "larevt/Filters/ChannelFilter.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
-#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AGCounter.h"
@@ -741,7 +740,7 @@ int nUpStreamTrk = 0;
 // ##################################################
 for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    {
-   TVector3 p_hat_dm0;
+   recob::Track::Vector_t p_hat_dm0;
    // ### Resetting the variables for each track ###
    dummyXpoint = 999, dummyYpoint = 999, dummyZpoint = 999;
    // ########################################################
@@ -967,8 +966,8 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    // ################################################
    // ### Calculating the angles for the Geant4 MC ###
    // ################################################
-   TVector3 z_hat_MC(0,0,1);
-   TVector3 p_hat_0_MC;
+   recob::Track::Vector_t z_hat_MC(0,0,1);
+   recob::Track::Vector_t p_hat_0_MC;
 
    // ### Setting the vector for the MC using the ###
    // ###  extrapolated Momentum vector   ###
@@ -982,7 +981,7 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    float mcTheta = 0;
 
    // === Calculating Theta for MC ===
-   mcTheta = acos(z_hat_MC.Dot(p_hat_0_MC)/p_hat_0_MC.Mag());
+   mcTheta = acos(z_hat_MC.Dot(p_hat_0_MC)/p_hat_0_MC.R());
  // std::cout<<"Truth Theta"<<mcTheta<<std::endl;
    // === Calculating Phi for MC ===
    if( p_hat_0_MC.Y() > 0 && p_hat_0_MC.X() > 0 ){ mcPhi = atan(p_hat_0_MC.Y()/p_hat_0_MC.X()); }
@@ -1009,8 +1008,8 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    // ### Calculating the angles for the Upstream Tracks ###
    // ######################################################
 
-   TVector3 z_hat_TPC(0,0,1);
-   TVector3 p_hat_0_TPC;
+   recob::Track::Vector_t z_hat_TPC(0,0,1);
+   recob::Track::Vector_t p_hat_0_TPC;
    std::cout<<"nUpStreamTrk"<<nUpStreamTrk<<std::endl;
    for(int aa = 0; aa < nUpStreamTrk; aa++)
       {
@@ -1021,7 +1020,7 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
       
       
       // ### Calculating TPC track theta ###
-      dummyTrk_Theta[aa] = acos(z_hat_TPC.Dot(p_hat_0_TPC)/p_hat_0_TPC.Mag());
+      dummyTrk_Theta[aa] = acos(z_hat_TPC.Dot(p_hat_0_TPC)/p_hat_0_TPC.R());
       
       // ### Calculating TPC track phi ###
       if( p_hat_0_TPC.Y() > 0 && p_hat_0_TPC.X() > 0 ){ dummyTrk_Phi[aa] = atan(p_hat_0_TPC.Y()/p_hat_0_TPC.X()); }
