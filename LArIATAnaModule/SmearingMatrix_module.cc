@@ -267,10 +267,10 @@ lariat::SmearingMatrix::~SmearingMatrix()
 
 void lariat::SmearingMatrix::reconfigure(fhicl::ParameterSet const & pset)
 {
-  fTrackModuleLabel             = pset.get< std::string >("TrackModuleLabel"      , "pmtracktc");
+  fTrackModuleLabel             = pset.get< std::string >("TrackModuleLabel"      , "pmtrack");
   fCalorimetryModuleLabel       = pset.get< std::string >("CalorimetryModuleLabel", "calo"     );
   fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel"          , "wctrack"  );
-  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
+  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "wctracktpctrackmatch");
   fisData                	= pset.get<  bool  >("isData"    , false);
   rMass                         = pset.get< double >("fmass"     , 139.57018);
 }
@@ -347,7 +347,7 @@ void lariat::SmearingMatrix::analyze(art::Event const & evt)
       double mass = mcPart->Mass() ;
       if (mass > 0.140 || mass < 0.130 ) {std::cout<<"process"<<proc<<" mass: "<<mass<<"Z ini "<<( (truetraj.begin())->first).Z()   <<" These are not pions \n"; return;} // 
 
-      
+
       //Store the kinetic energy and momentum on z at WC4. Just for cross check 
       auto inTPCPoint  = truetraj.begin(); 
             
@@ -626,13 +626,14 @@ void lariat::SmearingMatrix::analyze(art::Event const & evt)
   std::vector<art::Ptr<ldp::WCTrack> >     wctrack;         // Vector of wc tracks  
   art::Handle< std::vector<recob::Track> > trackListHandle; // Container of reco tracks
   std::vector<art::Ptr<recob::Track> >     tracklist;       // Vector of wc tracks  
-  
+
   // Find which recontructed track is associated with the WC
   int matchedRecoTrkKey = -99999;
   if(!evt.getByLabel(fWCTrackLabel, wctrackHandle)) return;
+
   if(!evt.getByLabel(fTrackModuleLabel,trackListHandle)) return;
   //nevts++;
-  
+
   // Fill the container of reco tracks
   art::fill_ptr_vector(wctrack, wctrackHandle);
   art::fill_ptr_vector(tracklist, trackListHandle);
@@ -649,7 +650,6 @@ void lariat::SmearingMatrix::analyze(art::Event const & evt)
 	}
     }// if there's an associated track
   // Now we know what ID identifies the reco track we're interested in.
-
 
 
   if (matchedRecoTrkKey == -99999) return;
