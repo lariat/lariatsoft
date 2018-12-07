@@ -882,39 +882,50 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
       //  } 
       if(SlabN.size())
         {
-        if(InteractionPointType[InteractionPoint.size()-1] == 13)
+          try
           {
-          double int_x = MidPosX[0][InteractionPoint[InteractionPoint.size()-1]];
-          double int_y = MidPosY[0][InteractionPoint[InteractionPoint.size()-1]];
-          double int_z = MidPosZ[0][InteractionPoint[InteractionPoint.size()-1]];
-          std::cout << "inelastic int: " << int_x << ", " << int_y << ", " << int_z << std::endl;
-          std::cout << "slab loop" << std::endl;
-          for(unsigned int slab = 0; slab < SlabN.size(); slab++)
-            {
-            double dist_slab = sqrt( pow(int_x - SlabX[slab], 2) +
-                                     pow(int_y - SlabY[slab], 2) +
-                                     pow(int_z - SlabZ[slab], 2) );
-            std::cout<<"\tslab x,y,z: "<<SlabX[slab]<<", "<<SlabY[slab]<<", "<<SlabZ[slab]<<std::endl;
-            std::cout << "\t\tdist to int: " << dist_slab << std::endl; 
-            }
+            if(InteractionPointType.at(InteractionPoint.size()-1) == 13)
+              {
+              double int_x = MidPosX[0][InteractionPoint[InteractionPoint.size()-1]];
+              double int_y = MidPosY[0][InteractionPoint[InteractionPoint.size()-1]];
+              double int_z = MidPosZ[0][InteractionPoint[InteractionPoint.size()-1]];
+              std::cout << "inelastic int: " << int_x << ", " << int_y << ", " << int_z << std::endl;
+              std::cout << "slab loop" << std::endl;
+              for(unsigned int slab = 0; slab < SlabN.size(); slab++)
+                {
+                double dist_slab = sqrt( pow(int_x - SlabX[slab], 2) +
+                                         pow(int_y - SlabY[slab], 2) +
+                                         pow(int_z - SlabZ[slab], 2) );
+                std::cout<<"\tslab x,y,z: "<<SlabX[slab]<<", "<<SlabY[slab]<<", "<<SlabZ[slab]<<std::endl;
+                std::cout << "\t\tdist to int: " << dist_slab << std::endl;
+                }
+              }
+            else
+              {
+              double lastx = MidPosX[0][numTrue_inTPC];
+              double lasty = MidPosY[0][numTrue_inTPC];
+              double lastz = MidPosZ[0][numTrue_inTPC];
+              std::cout << "didn't interact..." << std::endl;
+              std::cout << "last pt: " << lastx << ", " << lasty << ", " << lastz << std::endl;
+              std::cout << "slab loop" << std::endl;
+              for(unsigned int slab = 0; slab < SlabN.size(); slab++)
+                {
+                double dist_slab = sqrt( pow(lastx - SlabX[slab], 2) +
+                                         pow(lasty - SlabY[slab], 2) +
+                                         pow(lastz - SlabZ[slab], 2) );
+                std::cout<<"\tslab x,y,z: "<<SlabX[slab]<<", "<<SlabY[slab]<<", "<<SlabZ[slab]<<std::endl;
+                std::cout << "\t\tdist to last: " << dist_slab << std::endl;
+                }
+
+              }
           }
-        else
+          catch (const std::out_of_range& e)
           {
-          double lastx = MidPosX[0][numTrue_inTPC];
-          double lasty = MidPosY[0][numTrue_inTPC];
-          double lastz = MidPosZ[0][numTrue_inTPC];
-          std::cout << "didn't interact..." << std::endl;
-          std::cout << "last pt: " << lastx << ", " << lasty << ", " << lastz << std::endl;
-          std::cout << "slab loop" << std::endl;
-          for(unsigned int slab = 0; slab < SlabN.size(); slab++)
-            {
-            double dist_slab = sqrt( pow(lastx - SlabX[slab], 2) +
-                                     pow(lasty - SlabY[slab], 2) +
-                                     pow(lastz - SlabZ[slab], 2) );
-            std::cout<<"\tslab x,y,z: "<<SlabX[slab]<<", "<<SlabY[slab]<<", "<<SlabZ[slab]<<std::endl;
-            std::cout << "\t\tdist to last: " << dist_slab << std::endl; 
-            }
-          
+            std::cout << "Size of InteractionPoint and InteractionPointType are not equal.  Skipping..."
+                      << "\nSlabN.size(): "                << SlabN.size()
+                      << "\nInteractionPointType.size(): " << InteractionPointType.size()
+                      << "\nInteractionPoint.size(): "     << InteractionPoint.size()
+                      << std::endl;
           }
         }
     std::cout<<std::endl;

@@ -75,6 +75,13 @@ namespace caldata {
     unsigned short fPreROIPad;        ///< ROI padding
     unsigned short fPostROIPad;       ///< ROI padding
 
+    int          fSampPrecision;      ///< Limit on number of decimal places for each sample in deconvoluted
+                                      ///  signals (recob::Wires) to save disk space post-compression. For example,
+                                      ///    = -1 --> 1.35718291... (floating point precision)
+                                      ///    = 0  --> 1.
+                                      ///    = 1  --> 1.4 (default)
+                                      ///    = 2  --> 1.36
+
     bool                        fDodQdxCalib;          ///< Do we apply wire-by-wire calibration?
     std::string                 fdQdxCalibFileName;    ///< Text file for constants to do wire-by-wire calibration
     std::map<unsigned int, float> fdQdxCalib;          ///< Map to do wire-by-wire calibration, key is channel number, content is correction factor
@@ -115,8 +122,9 @@ namespace caldata {
     fDoBaselineSub          = p.get< bool >       ("DoBaselineSub",       true);
     fAdvancedBaselineSub    = p.get< bool >       ("AdvancedBaselineSub", false);
     fDoROI                  = p.get< bool >       ("DoROI",               false);
+    fSampPrecision          = p.get< int >        ("SampPrecision",       1);
     uin                     = p.get< std::vector<unsigned short> >   ("PlaneROIPad");
-    
+     
     
     // put the ROI pad sizes into more convenient vectors
     fPreROIPad  = uin[0];
@@ -251,15 +259,23 @@ namespace caldata {
       } 
 
 
-      // apply wire-by-wire calibration
-      if (fDodQdxCalib){
-	if(fdQdxCalib.find(channel) != fdQdxCalib.end()){
-	  float constant = fdQdxCalib[channel];
-	  //std::cout<<channel<<" "<<constant<<std::endl;
-	  for (size_t iholder = 0; iholder < holder.size(); ++iholder){
-	    holder[iholder] *= constant;
-	  }
-	}
+      // retrieve the wire-by-wire correction factor for this channel
+      float constant = 1.0;
+      if( fDodQdxCalib ) {
+        if( fdQdxCalib.find(channel) != fdQdxCalib.end() )
+	  constant = fdQdxCalib[channel];
+      }
+
+      // loop over the samples after deconvolution
+      for(size_t iholder = 0; iholder < holder.size(); ++iholder) {
+        
+        // apply wire-by-wire calibration correction
+	holder[iholder] *= constant;
+        
+        // limit precision by truncating digits to save disk space
+        if( fSampPrecision >= 0 )
+          holder[iholder] = roundf( holder[iholder] * pow(10,fSampPrecision) ) / pow(10,fSampPrecision);
+      
       }
 
 
@@ -378,9 +394,8 @@ namespace caldata {
       int n=0;
       for(size_t i = 0; i < (size_t)fPostsample; i++){
         size_t bin = holder.size()-i; 
-        double val = holder[bin];
-        if( fabs(val) < 20 ){ // avoid outliers
-          sum+=val;
+        if( fabs(holder[bin]) < 20 ){ // avoid outliers
+          sum+=holder[bin];
           n++;
         }
       }
