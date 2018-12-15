@@ -20,7 +20,6 @@
 #include "art/Framework/Core/ProductRegistryHelper.h"
 #include "art/Framework/IO/Sources/Source.h"
 #include "art/Framework/IO/Sources/SourceHelper.h"
-#include "art/Persistency/Provenance/MasterProductRegistry.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // C++ includes
