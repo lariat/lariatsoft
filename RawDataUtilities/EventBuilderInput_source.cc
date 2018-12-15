@@ -20,7 +20,6 @@
 #include "art/Framework/Principal/RunPrincipal.h"
 #include "art/Framework/Principal/SubRunPrincipal.h"
 #include "canvas/Persistency/Provenance/EventID.h"
-#include "art/Persistency/Provenance/MasterProductRegistry.h"
 #include "canvas/Persistency/Provenance/RunID.h"
 #include "canvas/Persistency/Provenance/SubRunID.h"
 #include "canvas/Utilities/InputTag.h"

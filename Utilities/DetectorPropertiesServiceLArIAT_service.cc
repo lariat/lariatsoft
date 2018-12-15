@@ -75,7 +75,7 @@ namespace ldp{
   }
 
   //-------------------------------------------------------------
-  void DetectorPropertiesServiceLArIAT::preProcessEvent(const art::Event& evt)
+  void DetectorPropertiesServiceLArIAT::preProcessEvent(const art::Event& evt, art::ScheduleContext)
   {
     // Make sure TPC Clock is updated with TimeService (though in principle it shouldn't change
     fProp->UpdateClocks(lar::providerFrom<detinfo::DetectorClocksService>());

@@ -215,7 +215,8 @@ namespace detsim {
     // it requires a specific implementation of DetectorClocksService.
     art::ServiceHandle<detinfo::DetectorClocksServiceStandard> tss;
     // In case trigger simulation is run in the same job...
-    tss->preProcessEvent(evt);
+    //FIXME: you should never call preProcessEvent
+    tss->preProcessEvent(evt, art::ScheduleContext::invalid());
 
     auto const* ts = lar::providerFrom<detinfo::DetectorClocksService>();
 
@@ -304,7 +305,8 @@ namespace detsim {
         ped_mean = fCollectionPed;
       //slight variation on ped on order of RMS of baselien variation
       art::ServiceHandle<art::RandomNumberGenerator> rng;
-      CLHEP::HepRandomEngine &engine = rng->getEngine();
+      CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+	                                              moduleDescription().moduleLabel());
       CLHEP::RandGaussQ rGaussPed(engine, 0.0, fBaselineRMS);
       ped_mean += rGaussPed.fire();
       
@@ -360,7 +362,8 @@ namespace detsim {
   {
     //ART random number service                                                                                                                       
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+	                                            moduleDescription().moduleLabel());
     CLHEP::RandGaussQ rGauss(engine, 0.0, fNoiseFact);
 
     //In this case fNoiseFact is a value in ADC counts
@@ -376,7 +379,8 @@ namespace detsim {
   void SimWireT1034::GenNoiseInFreq(std::vector<float> &noise)
   {
     art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
+    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
+	                                            moduleDescription().moduleLabel());
     CLHEP::RandFlat flat(engine,-1,1);
 
     if(noise.size() != fNTicks)
