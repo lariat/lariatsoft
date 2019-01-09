@@ -1,0 +1,74 @@
+#include "services_lariat.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatanamodules.fcl"
+
+process_name: WC2TPCAna
+
+services:
+{
+  TFileService: { fileName: "WC2TPCAna_histo.root" }
+ #@table::standard_resourcetrackers
+  RandomNumberGenerator: {}
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+
+  # Number of events to analyze; "-1" means all of the events in the input
+  # file. You can override this value with the "-n" option on the command line. 
+  maxEvents:  -1 
+}
+
+# This is empty, because we're not writing any art::Events to an output file. 
+outputs: {}
+
+physics:
+{
+  analyzers:
+  {
+    WC2TPCAna:
+    {
+      # The "module_type" tells us which module to run. The name here
+      # matches the name supplied to DEFINE_ART_MODULE near the end of
+      # DataQuality_module.cc.
+      module_type:      "WC2TPCAna"
+    }
+  }
+
+  filt: [  ]
+  ana: [ WC2TPCAna ]
+
+#define the output stream, there could be more than one if using filters 
+ stream1:  [  ]
+
+ #trigger_paths is a keyword and contains the paths that modify the art::event, 
+ #ie filters and producers
+ trigger_paths: [ ] 
+
+ #end_paths is a keyword and contains the paths that do not modify the art::Event, 
+ #ie analyzers and output streams.  these all run simultaneously
+ end_paths:     [ stream1,ana]  
+}
+
+#block to define where the output goes.  if you defined a filter in the physics
+#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   #fileName:    "%ifb_%tc_reco2D.root"
+   SelectEvents: []
+#   fileName:    "%ifb_RunFilter.root"
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
+ }
+}
+
+
+
+
+

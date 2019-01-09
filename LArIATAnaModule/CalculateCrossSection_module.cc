@@ -206,10 +206,10 @@ lariat::CalculateCrossSection::~CalculateCrossSection()
 
 void lariat::CalculateCrossSection::reconfigure(fhicl::ParameterSet const & pset)
 {
-  fTrackModuleLabel             = pset.get< std::string >("TrackModuleLabel"      , "pmtracktc");
+  fTrackModuleLabel             = pset.get< std::string >("TrackModuleLabel"      , "pmtrack");
   fCalorimetryModuleLabel       = pset.get< std::string >("CalorimetryModuleLabel", "calo"     );
   fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel"          , "wctrack"  );
-  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
+  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "wctracktpctrackmatch");
   fisData      	= pset.get<  bool  >("isData"    , true);
   mass      	= pset.get< double >("fmass"     , 139.57018);
 }

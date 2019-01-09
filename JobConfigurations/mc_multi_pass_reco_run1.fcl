@@ -1,11 +1,8 @@
 #include "data_multi_pass_reco_run1.fcl"
 
-# TODO: add mc_reco to generation stage (this puts
-#       MCTracks and MCShowers onto the event)
-
 services:
 {
-  TFileService: { fileName: "reco_histo.root" }
+  TFileService: { fileName: "reco_hist.root" }
   RandomNumberGenerator: {} # ART native random number generator
   @table::lariat_simulation_services
 }
@@ -13,7 +10,6 @@ services:
 # Remove the timestamp filter and any beamline reco
 
 physics.reco: [ caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctrack, wctracktpctrackmatch ]
-
 
 physics.producers.caldata.DigitModuleLabel: "daq"
 physics.producers.caldata.DodQdxCalib:      false

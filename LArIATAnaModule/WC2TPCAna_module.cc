@@ -165,7 +165,7 @@ lariat::WC2TPCAna::~WC2TPCAna()
 
 void lariat::WC2TPCAna::reconfigure(fhicl::ParameterSet const & pset)
 {
-  fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel");
+  fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel","pmtrack");
   fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel","wctrack");
 }
 
@@ -204,6 +204,8 @@ void lariat::WC2TPCAna::analyze(art::Event const & evt)
       if ( !(proc.find("primary") != std::string::npos) ) continue;
       // Get the True Trajectory point
       simb::MCTrajectory truetraj = mcPart->Trajectory();
+      // Make Sure we get the beamline primary                                                                                                                          
+      if ( ( (truetraj.begin())->first).Z() >  -50. ) continue;
 
       //--------------------------------------------------------
       // Identify the first trajectory point in TPC

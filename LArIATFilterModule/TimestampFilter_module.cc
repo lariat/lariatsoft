@@ -94,6 +94,9 @@ bool TimestampFilter::filter(art::Event & e)
     {art::fill_ptr_vector(digit, DigitHandle);} 
   //std::cout<<"Number of rawDigits: "<<digit.size()<<"\n";
   if( fRequireRawDigits && digit.size() == 0 ) return false;
+
+  // if MC, then timestamp is meaningless
+  if( !e.isRealData() ) return true;
   
   //std::cout<<"TimestampFilter: run "<<e.run()<<", subrun "<<e.subRun()<<", event "<<e.id().event()<<"\n";
   // Get the timestamp (within the spill cycle) from the opdetpulse

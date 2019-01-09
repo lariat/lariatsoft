@@ -141,7 +141,6 @@ struct SumDistance2 {
     double distanceAvg = 0;
     double distanceStd = 0;
     
-    std::cout<<"Hello world"<<std::endl;
     
     for (int i  = 0; i < npoints; ++i) {
       double d = distance2(x[i],y[i],z[i],par);

@@ -1,0 +1,7 @@
+#include "mc_gen_run2.fcl"
+services:
+{
+  TFileService: { fileName: "text_hist.root" }
+  RandomNumberGenerator: {} #ART native random number generator
+  @table::lariat_simulation_services_run2_negative_60A
+}
