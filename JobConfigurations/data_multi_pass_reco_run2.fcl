@@ -179,7 +179,7 @@ physics.producers.gaushitOrigin.CalDataModuleLabel: "caldata"
 physics.producers.gaushitOrigin.Chi2NDFRetry:        1000.
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
-physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteralg
+physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteralg_run2
 physics.producers.trajclusterOrigin.TrajClusterAlg.HitFinderModuleLabel: "gaushitOrigin"
 
 physics.producers.pmtrackOrigin.ClusterModuleLabel: "trajclusterOrigin"
@@ -208,7 +208,7 @@ physics.filters.hitnumfilter.HitsInstance:                        ""
 physics.filters.hitnumfilter.MaxNumHits:                          [ -999, -999 ] # neg. = filter not used
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
-physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg
+physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg_run2
 physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel: "gaushit"
 
 physics.producers.pmtrack.ClusterModuleLabel: "trajcluster"

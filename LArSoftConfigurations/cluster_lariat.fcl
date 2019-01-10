@@ -138,6 +138,33 @@ lariat_trajclusteralg.Vertex2DCuts:  [6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0.8]
 # 8 Min charge fraction near a merge point (not a vertex)
 # 9 max MCSmom asymmetry for a merge
 
+lariat_trajclusteralg_run2:                       @local::standard_trajclusteralg
+
+lariat_trajclusteralg_run2.HitFinderModuleLabel:  "gaushit"
+lariat_trajclusteralg_run2.MakeNewHits:           true
+lariat_trajclusteralg_run2.AngleRanges:           [30, 65, 80, 90]
+lariat_trajclusteralg_run2.MinPtsFit:             [ 4,  4, 2]
+lariat_trajclusteralg_run2.MinPts:                [10, 10, 3]
+lariat_trajclusteralg_run2.MaxAngleCode:          [0, 2, 3]
+lariat_trajclusteralg_run2.MaxWireSkipNoSignal:   2
+lariat_trajclusteralg_run2.MaxWireSkipWithSignal: 20
+lariat_trajclusteralg_run2.HitErrFac:             0.4
+lariat_trajclusteralg_run2.KinkAngCut:            0.6
+lariat_trajclusteralg_run2.ProjectionErrFactor:   3
+lariat_trajclusteralg_run2.ChgPullCut:            5   # Use trajectory points/hits if (Chg/AveChg - 1) / ChgRMS < cut
+lariat_trajclusteralg_run2.KinkAngCut:            0.3 # was 0.2
+lariat_trajclusteralg_run2.MaxChi:                3
+lariat_trajclusteralg_run2.MuonTag:               [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
+lariat_trajclusteralg_run2.ShowerTag:             [ -1, 100, 10, 50, 2.5, 1, 15, 3, 5, 1, 1, 10, -13 ]
+lariat_trajclusteralg_run2.Vertex2DCuts:          [10, 2, 30, 3, 5, 100, 0.6, 0, 0.8, 0.8] # [maxLenShortTj, ShortTjLen, MaxVtxTjSepShort, MaxVtxTjSepLong, MaxPull, MaxPosErr, min MCSMom, min Pt/Wire fraction, min score, min ChgFrac, max MCSMom asymmetry]
+lariat_trajclusteralg_run2.MaxVertexTrajSep:      [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
+lariat_trajclusteralg_run2.FillTruth:             0
+lariat_trajclusteralg_run2.StudyMode:             false
+lariat_trajclusteralg_run2.DebugPlane:            -1
+lariat_trajclusteralg_run2.DebugWire:             0
+lariat_trajclusteralg_run2.DebugTick:             0
+lariat_trajclusteralg_run2.DebugWorkID:           0
+
 lariat_trajclusteralg.CaloAlg:                           @local::lariat_calorimetryalgdata
 
 lariat_trajcluster_data:                                 @local::standard_trajcluster
