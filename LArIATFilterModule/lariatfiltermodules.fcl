@@ -202,6 +202,32 @@ WC2TPCModuleLabel: WC2TPCtrk
 WCTrackLabel: wctrack
   
 }
-
-
+lariat_pidfilt:
+{
+  module_type: PIDAFilter  
+}
+lariat_ddmcparticlefilter:
+{
+  module_type: DDMCPrimaryPicker
+}
+lariat_ROIshowerfilt:
+{
+  module_type: ShowerFilter
+}
+lariat_wc2tpcmatchexistence:
+{ 
+  module_type: WC2TPCMatchExistenceFilter
+}
+lariat_massfilter:
+{
+  module_type: MassSelectionFilter
+}
+lariat_wcqualityexistence:
+{
+  module_type: WCQualityExistenceFilter
+}
+lariat_wccondition:
+{
+  module_type: WCTrackConditionFilter
+}
 END_PROLOG
