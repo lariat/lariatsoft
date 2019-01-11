@@ -79,8 +79,18 @@ bool WCTrackConditionFilter::filter(art::Event & e)
   bool isthisfourpoint=false;
   bool keepthisevent=false;
   if (wctrack[0]->WCMissed()<0){isthisfourpoint=true;}
-  if (bKeepPicky && isthisfourpoint==bOnlyFourPoint && isthispicky){hPassFail->Fill(1);keepthisevent=true;}
-  if(!bKeepPicky && isthisfourpoint==bOnlyFourPoint){hPassFail->Fill(1);keepthisevent=true;}
+  
+  //Only one of the following four bools can be true, if any.
+  //Allowable conditions:
+  //bKeepPicky && bOnlyFourPoint = Only 4 point picky tracks (purest sample)
+  //bKeepPicky && !bOnlyFourPoint = 3 and 4 point tracks that are picky (Never used, but why not allow you the option)
+  //!bKeepPicky && bOnlyFourPoint = All 4 point tracks (pi+ analysis uses this)
+  //!bKeepPicky && !bOnlyFourPoint = All 3 and 4 point tracks (high stats, poor purity)
+  if (bKeepPicky && bOnlyFourPoint && isthispicky && isthisfourpoint){hPassFail->Fill(1);keepthisevent=true;}
+  if(!bKeepPicky && bOnlyFourPoint && isthisfourpoint){hPassFail->Fill(1);keepthisevent=true;}
+  if(!bOnlyFourPoint && bKeepPicky && isthispicky){hPassFail->Fill(1);keepthisevent=true;}
+  if(!bOnlyFourPoint && !bKeepPicky){hPassFail->Fill(1);keepthisevent=true;}
+  
   if(!keepthisevent){hPassFail->Fill(0); hFailReason->Fill(2);}
   return keepthisevent;
 
