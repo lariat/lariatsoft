@@ -69,8 +69,6 @@ outputs:
  }
 }
 
-services.LArG4Parameters.KeepEMShowerDaughters:  true
-
 physics.producers.generator.InputFileName: "hepevt.txt"
 
 services.MagneticField.FieldDescriptions: [{UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet1"}, 
