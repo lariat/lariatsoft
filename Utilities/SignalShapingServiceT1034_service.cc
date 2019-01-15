@@ -513,7 +513,7 @@ void util::SignalShapingServiceT1034::SetElectResponse(double shapingtime, doubl
   //auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   art::ServiceHandle<util::LArFFT> fft;
 
-  LOG_DEBUG("SignalShapingT1034") << "Setting T1034 electronics response function...";
+  MF_LOG_DEBUG("SignalShapingT1034") << "Setting T1034 electronics response function...";
 
   int nticks = fft->FFTSize();
   fElectResponse.resize(nticks, 0.);
@@ -562,7 +562,7 @@ void util::SignalShapingServiceT1034::SetElectResponse(double shapingtime, doubl
   }// end loop over time buckets
     
 
-  LOG_DEBUG("SignalShapingT1034") << " Done.";
+  MF_LOG_DEBUG("SignalShapingT1034") << " Done.";
 
  //normalize fElectResponse[i], before the convolution   
   

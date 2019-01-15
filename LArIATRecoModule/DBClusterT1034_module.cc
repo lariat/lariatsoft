@@ -248,7 +248,7 @@ void DBClusterT1034::produce(art::Event & evt)
 	 // #######################################
 	 std::cout<<"Loop over fps.size"<<std::endl;
 	 for(unsigned int j = 0; j < fDBScan.fps.size(); ++j){
-	   LOG_VERBATIM("DBClusterT1034") << "j = " << j 
+	   MF_LOG_VERBATIM("DBClusterT1034") << "j = " << j 
 					  << "\nallhits.size() = " << allhits.size()
 					  << " , fDBScan.fps.size() = " << fDBScan.fps.size();
 	   if(allhits.size() != fDBScan.fps.size()) break;
