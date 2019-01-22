@@ -122,6 +122,7 @@ class WCTrackTPCTrackMatch : public art::EDProducer
   double      circular_cut_x_center_;
   double      circular_cut_y_center_;
   double      circular_cut_radius_;
+  bool        unique_match_mode_;
   bool        isThisMC_;
 
   // vector for primary vtx
@@ -143,6 +144,8 @@ class WCTrackTPCTrackMatch : public art::EDProducer
 
   int number_tofs_;
   int number_wctracks_;
+
+  int number_matches_;
 
   std::vector< double > reco_tof_;
   std::vector< double > reco_wctrack_momentum_;
@@ -272,6 +275,8 @@ void WCTrackTPCTrackMatch::beginJob()
   ttree_->Branch("number_tofs", &number_tofs_, "number_tofs/I");
   ttree_->Branch("number_wctracks", &number_wctracks_, "number_wctracks/I");
 
+  ttree_->Branch("number_matches_", &number_matches_, "number_matches/I");
+
   ttree_->Branch("reco_tof", &reco_tof_);
   ttree_->Branch("reco_wctrack_momentum", &reco_wctrack_momentum_);
 
@@ -391,6 +396,7 @@ void WCTrackTPCTrackMatch::reconfigure(fhicl::ParameterSet const& pset)
   circular_cut_x_center_   = pset.get< double >("CircularCutXCenter", 1.6);
   circular_cut_y_center_   = pset.get< double >("CircularCutYCenter", -0.17);
   circular_cut_radius_     = pset.get< double >("CircularCutRadius", 3.5);
+  unique_match_mode_       = pset.get< bool   >("UniqueMatchMode", true);
   isThisMC_                = pset.get< bool   >("IsThisMC", false);
 }
 
@@ -752,10 +758,18 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
           selected_downstream_proj_x = downstream_traj_pt.position.X();
           selected_downstream_proj_y = downstream_traj_pt.position.Y();
           selected_downstream_proj_z = downstream_traj_pt.position.Z();
+
+          number_matches_ += 1;
         }
       }
 
     } // end loop over TPC tracks
+
+    if (unique_match_mode_ and number_matches_ > 1)
+    {
+      selected_trk_idx = -1;
+      selected_proj_trk_idx = -1;
+    }
 
     if (selected_trk_idx > -1)
     {
@@ -817,6 +831,12 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
   //      track_vector.at(selected_trk_idx), wctrack_vector.front());
   //}
 
+  if (unique_match_mode_ and number_matches_ > 1)
+  {
+    selected_trk_idx = -1;
+    selected_proj_trk_idx = -1;
+  }
+
   if (selected_proj_trk_idx > -1)
   {
     std::vector< size_t > pfparticle_daughter_indices;
@@ -877,6 +897,8 @@ void WCTrackTPCTrackMatch::reset_()
 {
   number_tofs_ = 0;
   number_wctracks_= 0;
+
+  number_matches_ = 0;
 
   reco_tof_.clear();
   reco_wctrack_momentum_.clear();

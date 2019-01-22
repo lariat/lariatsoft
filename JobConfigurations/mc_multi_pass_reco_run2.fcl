@@ -9,7 +9,7 @@ services:
 }
 
 # Remove the timestamp filter and any beamline reco
-physics.reco: [ caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctrack, wcquality, wctracktpctrackmatch ]
+physics.reco: [ caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctrack, wcquality, wctracktpctrackmatch, wctracktpctrackuniquematch ]
 
 physics.producers.caldata.DigitModuleLabel: "daq"
 physics.producers.caldata.DodQdxCalib:      false
@@ -21,3 +21,4 @@ physics.producers.wctrack: { module_type: DDMCFakeWCTrackBuilder }
 physics.producers.wctrack.module_type: DDMCFakeWCTrackBuilder
 physics.producers.wcquality.IsThisMc: true
 physics.producers.wctracktpctrackmatch.IsThisMC: true
+physics.producers.wctracktpctrackuniquematch.IsThisMC: true

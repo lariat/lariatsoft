@@ -65,6 +65,7 @@ physics:
     calo:                  @local::standard_calodata
 
     wctracktpctrackmatch:  @local::lariat_wctracktpctrackmatch
+    wctracktpctrackuniquematch:  @local::lariat_wctracktpctrackmatch
   }
 
   filters:
@@ -82,7 +83,7 @@ physics:
 
   #define the producer and filter modules for this path, order matters, 
   #filters reject all following items.  see lines starting physics.producers below
-  reco: [ timestampfilter, @sequence::beamlinereco, toffilter, wctrackfilter, wcquality, caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctracktpctrackmatch ]
+  reco: [ timestampfilter, @sequence::beamlinereco, toffilter, wctrackfilter, wcquality, caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctracktpctrackmatch, wctracktpctrackuniquematch ]
 
   ana: [ anatree ]
 
@@ -235,6 +236,21 @@ physics.producers.wctracktpctrackmatch.MaxUpstreamZ:        6.0
 physics.producers.wctracktpctrackmatch.CircularCutXCenter:  1.6
 physics.producers.wctracktpctrackmatch.CircularCutYCenter:  -0.17
 physics.producers.wctracktpctrackmatch.CircularCutRadius:   3.5
+physics.producers.wctracktpctrackmatch.UniqueMatchMode:     false
+
+physics.producers.wctracktpctrackuniquematch.HitLabel:            "trajcluster"
+physics.producers.wctracktpctrackuniquematch.ClusterLabel:        "trajcluster"
+physics.producers.wctracktpctrackuniquematch.TrackLabel:          "pmtrack"
+physics.producers.wctracktpctrackuniquematch.TOFLabel:            "tof"
+physics.producers.wctracktpctrackuniquematch.WCTrackLabel:        "wctrack"
+physics.producers.wctracktpctrackuniquematch.AlphaCut:            0.2
+physics.producers.wctracktpctrackuniquematch.MinTrackLengthZProj: 4.0
+physics.producers.wctracktpctrackuniquematch.MinUpstreamZ:        2.0
+physics.producers.wctracktpctrackuniquematch.MaxUpstreamZ:        6.0
+physics.producers.wctracktpctrackuniquematch.CircularCutXCenter:  1.6
+physics.producers.wctracktpctrackuniquematch.CircularCutYCenter:  -0.17
+physics.producers.wctracktpctrackuniquematch.CircularCutRadius:   3.5
+physics.producers.wctracktpctrackuniquematch.UniqueMatchMode:     true
 
 physics.analyzers.anatree.SelectEvents:            [ reco ]
 physics.analyzers.anatree.TreeName:                "anatree"
