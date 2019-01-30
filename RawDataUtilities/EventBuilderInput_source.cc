@@ -395,7 +395,7 @@ namespace rdu
 
     fEventAuxBranch->GetEntry(fTreeIndex);
 
-    LOG_VERBATIM("EventBuilderInput")
+    MF_LOG_VERBATIM("EventBuilderInput")
         << "\n////////////////////////////////////"
         << "\nfEventAux.run():    " << fEventAux.run()
         << "\nfEventAux.subRun(): " << fEventAux.subRun()
@@ -410,7 +410,7 @@ namespace rdu
     fCachedRunNumber    = -1;
     fCachedSubRunNumber = -1; 
 
-    LOG_VERBATIM("EventBuilderInput")
+    MF_LOG_VERBATIM("EventBuilderInput")
         << "\n////////////////////////////////////"
         << "\nfRunNumber:       " << fRunNumber
         << "\nfSubRunNumber:    " << fSubRunNumber
@@ -671,7 +671,7 @@ namespace rdu
 
     size_t const& NumberTPCReadouts = Collection.numberTPCReadouts;
 
-    LOG_VERBATIM("EventBuilderInput")
+    MF_LOG_VERBATIM("EventBuilderInput")
       << "fCollectionIndex: " << fCollectionIndex
       << "\nNumberTPCReadouts: " << NumberTPCReadouts
       << "\nCollection.numberTPCReadouts: " << Collection.numberTPCReadouts
@@ -733,7 +733,7 @@ namespace rdu
     fConfigValues = fDatabaseUtility->GetConfigValues(fConfigParams,
                                                       static_cast <int> (RunNumber));
 
-    LOG_VERBATIM("EventBuilderInput")
+    MF_LOG_VERBATIM("EventBuilderInput")
       << "//////////////////////////////////////////////"
       << "\nRun start time [sec]:  " << fConfigValues["runstarttimesec"]
       << "\nV1495DelayTicks:       " << fConfigValues["v1495_config_v1495_delay_ticks"]           
@@ -797,7 +797,7 @@ namespace rdu
     if (fTDCPostAcquisitionWindow    < 0) fTDCPostAcquisitionWindow    = 0;
     if (fTDCAcquisitionWindow        < 0) fTDCAcquisitionWindow        = fTDCReadoutWindow;
 
-    LOG_VERBATIM("EventBuilderInput")
+    MF_LOG_VERBATIM("EventBuilderInput")
       << "//////////////////////////////////////////////"
       << "\nV1495DelayTicks:             " << fV1495DelayTicks
       << "\nV1495Delay:                  " << fV1495Delay
@@ -913,10 +913,10 @@ namespace rdu
                                                           static_cast <int> (fSubRunNumber));
 
 //    for(auto itr : runValues) 
-//      LOG_VERBATIM("EventBuilderInput") << itr.first << " " << itr.second;
+//      MF_LOG_VERBATIM("EventBuilderInput") << itr.first << " " << itr.second;
 //
 //    for(auto itr : subrunValues) 
-//      LOG_VERBATIM("EventBuilderInput") << itr.first << " " << itr.second;
+//      MF_LOG_VERBATIM("EventBuilderInput") << itr.first << " " << itr.second;
 
     // create the ConditionsSummary object and put it into the subrun
     // for the time being, several parameters are accessible from the
@@ -953,7 +953,7 @@ namespace rdu
 //    size_t              punchThrough           = 0;
 //    bool                correctFileFormat      = false;
 
-    LOG_VERBATIM("EventBuilderInput") << subrunValues["end_f_mc7sc1"];
+    MF_LOG_VERBATIM("EventBuilderInput") << subrunValues["end_f_mc7sc1"];
 
     size_t              endMC7SC1              = this->castToSizeT_(subrunValues["end_f_mc7sc1"]);
     bool                v1751CaenEnableReadout = this->castToSizeT_(fConfigValues["v1751_config_caen_enablereadout"]);

@@ -229,7 +229,7 @@ namespace caldata {
       //std::cout<<"rdvec.size() = "<<rdvec.size()<<std::endl;
       
       // === Put in protection in case ther is no TPC raw digits ===
-      if(!rdvec.size()){LOG_INFO("CalWireT1034") << "Problem CalWireT1034:: RawDigiVec size is " << rdvec.size(); continue;}
+      if(!rdvec.size()){MF_LOG_INFO("CalWireT1034") << "Problem CalWireT1034:: RawDigiVec size is " << rdvec.size(); continue;}
       
       // === Using the zeroth element to get the number of samples ===
       dataSize = rdvec[0]->Samples();
@@ -241,7 +241,7 @@ namespace caldata {
       // =======================================================================================
       if ( (unsigned int)transformSize < dataSize /*&& trig < 1*/)
       {
-        LOG_WARNING("CalWireT1034")<<"FFT size (" << transformSize << ") "
+        MF_LOG_WARNING("CalWireT1034")<<"FFT size (" << transformSize << ") "
         << "is smaller than the data size (" << dataSize << ") "
         << "\nResizing the FFT now...";
         
@@ -251,16 +251,16 @@ namespace caldata {
         // === Resetting the transform size ===
         transformSize = fFFT->FFTSize();
         
-        LOG_WARNING("CalWireT1034")<<"FFT size is now (" << transformSize << ") "
+        MF_LOG_WARNING("CalWireT1034")<<"FFT size is now (" << transformSize << ") "
         << "and should be larger than the data size (" << dataSize << ")";
         
       }//<-end protection
       
       
-      LOG_INFO("CalWireT1034") << "Data size is " << dataSize << " and transform size is " << transformSize;
+      MF_LOG_INFO("CalWireT1034") << "Data size is " << dataSize << " and transform size is " << transformSize;
       
       // === Protection in case sample size is not some multiple of the number of sample bins ===
-      if(fBaseSampleBins > 0 && dataSize % fBaseSampleBins != 0) {LOG_ERROR("CalWireT1034")<<"Set BaseSampleBins modulo dataSize= "<<dataSize;}
+      if(fBaseSampleBins > 0 && dataSize % fBaseSampleBins != 0) {MF_LOG_ERROR("CalWireT1034")<<"Set BaseSampleBins modulo dataSize= "<<dataSize;}
       
       // === Reserve the right amount of data in the vector ===
       wirecol->reserve(rdvec.size());
@@ -361,7 +361,7 @@ namespace caldata {
       // ###########################################################
       // ### Send a warning if no wires were made for this event ###
       // ###########################################################
-      if(wirecol->size() == 0){LOG_WARNING("CalWireT1034") << "No wires made for this event.";}
+      if(wirecol->size() == 0){MF_LOG_WARNING("CalWireT1034") << "No wires made for this event.";}
       
       
     }//<---End trig loop

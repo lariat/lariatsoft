@@ -157,13 +157,13 @@ uint32_t FragmentToDigitAlg::triggerBits(std::vector<CAENFragment> const& caenFr
           if( fTrigger1740Pedestal - frag.waveForms[chan].data[fTriggerDecisionTick+i] > fTrigger1740Threshold ){
             
             triggerBits.set(chan - minChan);
-            LOG_VERBATIM("FragmentToDigitAlg")<<"*** FOUND TRIGGER BIT: "<<chan-minChan;
+            MF_LOG_VERBATIM("FragmentToDigitAlg")<<"*** FOUND TRIGGER BIT: "<<chan-minChan;
             
             // For Run 2 (Run > 8013), BEAMON was not being fed into any V1740 boards.  But it's input #16 on the 
             // V1495 so we'll just hack it by checking if any WC or TOF trigger bits were fired.
             if( (fRunNumber >= 8013) && ( (chan-minChan)==3 || (chan-minChan)==5 || (chan-minChan)==6 ) && !isBeamon) {
               triggerBits.set(16);
-              LOG_VERBATIM("FragmentToDigitAlg")<<"*** FOUND TRIGGER BIT: 16";
+              MF_LOG_VERBATIM("FragmentToDigitAlg")<<"*** FOUND TRIGGER BIT: 16";
               isBeamon = true;
             }
             
@@ -392,7 +392,7 @@ void FragmentToDigitAlg::makeOpDetPulses(std::vector<CAENFragment>    const& cae
         
           // calculate first sample
           firstSample = (int)((100.-fV1751PostPercent) * 0.01 * waveForm.size());
-          LOG_VERBATIM("FragmentToDigitAlg")
+          MF_LOG_VERBATIM("FragmentToDigitAlg")
           << " Found optical detector "
           << " boardID: " << boardId 
           << " channel: " << chanOff 
@@ -537,7 +537,7 @@ void FragmentToDigitAlg::makeMuonRangeDigits(std::vector<CAENFragment>     const
         
         boardId = std::stoi(strboardId); 								//convert string boardID to uint32
         chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
-        LOG_VERBATIM("FragmentToDigitAlg")
+        MF_LOG_VERBATIM("FragmentToDigitAlg")
         <<" Found MURS"
         <<" Column: "<< hardwareIter.first
         <<" Value: "<<hardwareIter.second
@@ -595,7 +595,7 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
            
         boardId = std::stoi(strboardId);								//convert string boardID to uint32
         chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
-        LOG_VERBATIM("FragmentToDigitAlg")
+        MF_LOG_VERBATIM("FragmentToDigitAlg")
         <<" Found TOF"
         <<" Column: "   << hardwareIter.first
         <<" Value: "    << hardwareIter.second
@@ -612,7 +612,7 @@ void FragmentToDigitAlg::makeTOFDigits(std::vector<CAENFragment>     const& caen
     }//end find TOFNames
   }//end loop over hardwareDatabase
 
-  LOG_VERBATIM("FragmentToDigitAlg")
+  MF_LOG_VERBATIM("FragmentToDigitAlg")
   << "ChannelOffset: " << *(boardChansUS.begin())
   << " ChannelOffset: " << *(boardChansDS.begin());
 
@@ -675,7 +675,7 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
 	 else if(hardwareIter.second == "AG1p06_2") boardId1p06_2 = boardId;
 
          chanOff = std::stoi(strchannelId);
-         LOG_VERBATIM("FragmentToDigitAlg")<< " Found AeroGel"
+         MF_LOG_VERBATIM("FragmentToDigitAlg")<< " Found AeroGel"
          << " Column: "  << hardwareIter.first
          << " Value: "   << hardwareIter.second
          << " BoardId: " << boardId
@@ -693,7 +693,7 @@ void FragmentToDigitAlg::makeAeroGelDigits(std::vector<CAENFragment>     const& 
      }//end find AGNAMES
   }//end loop over hardwareDatabase
 
-  LOG_VERBATIM("FragmentToDigitAlg")
+  MF_LOG_VERBATIM("FragmentToDigitAlg")
   << "ChannelOffset: " <<  *(chanAG1p10_1.begin())
   << " ChannelOffset: " <<  *(chanAG1p10_2.begin())
   << " ChannelOffset: " <<  *(chanAG1p06_1.begin())
@@ -744,7 +744,7 @@ void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& cae
         boardId = std::stoi(strboardId); 								//convert string boardID to uint32
         chanOff = std::stoi(strchannelId); 							//convert string channel to uint32
        
-        LOG_VERBATIM("FragmentToDigitAlg")
+        MF_LOG_VERBATIM("FragmentToDigitAlg")
         <<" Found HALO"
         <<" Column: "   << hardwareIter.first
         <<" Value: "    << hardwareIter.second
@@ -760,7 +760,7 @@ void FragmentToDigitAlg::makeHaloDigits(std::vector<CAENFragment>     const& cae
     }//end find HALONames
   }//end loop over HardwareConnections
 
-  LOG_VERBATIM("FragmentToDigitAlg") << "ChannelOffset: " << *(boardChans.begin());
+  MF_LOG_VERBATIM("FragmentToDigitAlg") << "ChannelOffset: " << *(boardChans.begin());
   
   this->caenFragmentToAuxDetDigits(caenFrags, hAuxDigits, boardId, boardChans, *(boardChans.begin()), "Halo");
   boardChans.clear();
@@ -813,7 +813,7 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
         
         boardId = std::stoi(strboardId);
         chanOff = std::stoi(strchannelId);
-        LOG_VERBATIM("FragmentToDigitAlg") <<" Found Triggers"
+        MF_LOG_VERBATIM("FragmentToDigitAlg") <<" Found Triggers"
         <<" Column: "    << hardwareIter.first
         <<" Value: "     << hardwareIter.second
         <<" BoardId: "   << boardId
@@ -826,7 +826,7 @@ void FragmentToDigitAlg::makeTriggerDigits(std::vector<CAENFragment>     const& 
       // channels from the auxdet all satisfy the range of 0-N.
       boardChans.insert(chanOff);
       
-      //LOG_VERBATIM("FragmentToDigitAlg") << "ChannelOffset: " << *(boardChans.begin());
+      //MF_LOG_VERBATIM("FragmentToDigitAlg") << "ChannelOffset: " << *(boardChans.begin());
       
       this->caenFragmentToAuxDetDigits(caenFrags, trAuxDigits, boardId, boardChans, *(boardChans.begin()), hardwareIter.second);
       boardChans.clear();
@@ -945,7 +945,7 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
   // vector to hold the timeStamps for each channel in the MWPC
   std::vector<unsigned long long> chamberTimeStamps(TDCFragment::MAX_CHAMBERS * channelsPerChamber, 0);
 
-  // LOG_VERBATIM("FragmentToDigitAlg") << "there are " << tdcEventData.size() << " tdcEventData objects in the vector";
+  // MF_LOG_VERBATIM("FragmentToDigitAlg") << "there are " << tdcEventData.size() << " tdcEventData objects in the vector";
 
   for(auto const& tdced : tdcEventData){ 
 
@@ -965,7 +965,7 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
       << "TDC number " << tdcNumber
       << " is not present in map to chamber number or start wire";
 
-    // LOG_VERBATIM("FragmentToDigitAlg") << "there are " << tdced.tdcHits.size() << " tdc hit objects in the vector for chamber "
+    // MF_LOG_VERBATIM("FragmentToDigitAlg") << "there are " << tdced.tdcHits.size() << " tdc hit objects in the vector for chamber "
     // 				    << chitr->second << " on tdc " << chitr->first << " start wire " << switr->second;
     
     for(auto const& hit : tdced.tdcHits){
@@ -981,7 +981,7 @@ void FragmentToDigitAlg::makeMWPCDigits(std::vector<TDCFragment::TdcEventData> c
       chamberHits      [chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)].push_back(hit.timeBin);
       chamberTimeStamps[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)] = tdced.tdcEventHeader.tdcTimeStamp;
 
-      // LOG_VERBATIM("FragmentToDigitAlg") << chamberHits[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)].size() << " " 
+      // MF_LOG_VERBATIM("FragmentToDigitAlg") << chamberHits[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)].size() << " " 
       // 				      << (size_t)hit.channel << " " << switr->second << " " << (size_t)hit.timeBin << "\t" 
       // 				      << chamberTimeStamps[chitr->second * channelsPerChamber + switr->second + size_t (hit.channel)] << " " 
       // 				      << tdced.tdcEventHeader.tdcTimeStamp;
@@ -1028,7 +1028,7 @@ std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t
     caenDataPresent = true;
   }
   else
-    LOG_WARNING("FragmentToDigit")
+    MF_LOG_WARNING("FragmentToDigit")
     << "There are no CAEN Fragments for event " << EventNumber
     << " that may be OK, so continue";
 
@@ -1041,7 +1041,7 @@ std::vector<raw::Trigger> FragmentToDigitAlg::makeTheTriggers(art::EventNumber_t
     }
   }
   else
-    LOG_WARNING("FragmentToDigit")
+    MF_LOG_WARNING("FragmentToDigit")
     << "There are no TDC Fragments for event " << EventNumber
     << " that may be OK, so continue";
 
@@ -1088,7 +1088,7 @@ void FragmentToDigitAlg::InitializeRun(art::RunNumber_t runNumber, uint64_t time
     fPreviousRunNumber = fRunNumber;
   }
   
-  LOG_VERBATIM("FragmentToDigitAlg") << "Initializing Run"
+  MF_LOG_VERBATIM("FragmentToDigitAlg") << "Initializing Run"
                                      << " RunNumber: "     << fRunNumber
                                      <<  "; Date/Time: "   << fRunDateTime
                                      << "; RunTimestamp: " << timestamp;

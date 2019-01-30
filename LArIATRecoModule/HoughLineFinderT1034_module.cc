@@ -188,7 +188,7 @@ namespace cluster {
 
       numclus = fHLAlg.FastTransform(clusIn, *ccol, clusHitsOut, engine, evt, fDBScanModuleLabel);
 
-      LOG_DEBUG("HoughLineClusters") << "found " << numclus << "clusters with HoughBaseAlg"; 
+      MF_LOG_DEBUG("HoughLineClusters") << "found " << numclus << "clusters with HoughBaseAlg"; 
 
     
       for(size_t i = 0; i < ccol->size(); ++i) {
