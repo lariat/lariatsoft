@@ -67,7 +67,7 @@ void MURSAlg::makeTheMuRSTracks( std::map<int, std::vector<int> > MuonRangeStack
                                 std::vector<ldp::MuRSTrack> & finalMuRSTrackVect,
                                 std::vector<size_t> const punchHits )
 {
-  LOG_DEBUG("MURSAlg")
+  MF_LOG_DEBUG("MURSAlg")
   << "makeTheMuRSTracks called.";
 
   //Filling some histos about plane multiplicity per event

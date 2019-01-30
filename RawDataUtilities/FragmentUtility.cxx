@@ -43,14 +43,14 @@ namespace rdu{
 
   const char * bytePtr = reinterpret_cast<const char *> (&*frag.dataBegin());
   fLariatFragment = new LariatFragment((char *) bytePtr, frag.dataSize() * sizeof(unsigned long long));
-  LOG_VERBATIM("FragmentToDigit") << "Have data fragment "
+  MF_LOG_VERBATIM("FragmentToDigit") << "Have data fragment "
 				  << frag.dataSize() * sizeof(unsigned long long);
   fLariatFragment->print();
   fLariatFragment->printSpillTrailer();
 
   LariatFragment::SpillTrailer const& spillTrailer = fLariatFragment->spillTrailer;
 
-  LOG_VERBATIM("FragmentUtility")
+  MF_LOG_VERBATIM("FragmentUtility")
     << "evt.run(): "               << evt.run()
     << "; evt.subRun(): " 	 << evt.subRun()
     << "; evt.event(): "  	 << evt.event()

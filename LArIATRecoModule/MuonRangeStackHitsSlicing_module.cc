@@ -223,7 +223,7 @@ void MuonRangeStackHitsSlicing::makeTheMuRSTracks( std::map<int, std::vector<int
 						   std::vector<ldp::MuRSTrack> & finalMuRSTrackVect,
 						   std::vector<size_t> const punchHits )
 {
-  LOG_DEBUG("MuonRangeStackHitsSlicing")
+  MF_LOG_DEBUG("MuonRangeStackHitsSlicing")
   << "makeTheMuRSTracks called.";
 
   //Filling some histos about plane multiplicity per event
@@ -240,11 +240,11 @@ void MuonRangeStackHitsSlicing::makeTheMuRSTracks( std::map<int, std::vector<int
 
   //Filling histos to show some events' hits' spatial vs. temporal locations
   if( fEventCounter < fNumberEventsToPlotWFs ){
-    LOG_DEBUG("MuonRangeStackHitsSlicing")
+    MF_LOG_DEBUG("MuonRangeStackHitsSlicing")
     << "fEventCounter is small enough to fill histos.";
     for( size_t iPaddle = 0; iPaddle < fNPaddles; ++iPaddle ){
       for( size_t iHit = 0; iHit < MuonRangeStackMap.at(iPaddle).size(); ++iHit ){
-        LOG_VERBATIM("MuonRangeStackHitsSlicing")
+        MF_LOG_VERBATIM("MuonRangeStackHitsSlicing")
         << "Filling with paddle: "
         << iPaddle
         << ", time: "
@@ -316,12 +316,12 @@ void MuonRangeStackHitsSlicing::makeTheMuRSTracks( std::map<int, std::vector<int
 
   //Print out the rest
   for( size_t iTrack = 0; iTrack < finalMuRSTrackVect.size() ; ++iTrack ){
-    LOG_VERBATIM("MuonRangeStackSlicing")
+    MF_LOG_VERBATIM("MuonRangeStackSlicing")
     << "************** MuRS TRACK "
     << iTrack
     << " ****************";
     for( size_t iHit = 0; iHit < finalMuRSTrackVect[iTrack].HitVect.size() ; ++iHit ){
-      LOG_VERBATIM("MuonRangeStackSlicing")
+      MF_LOG_VERBATIM("MuonRangeStackSlicing")
       << "Plane: " << finalMuRSTrackVect[iTrack].HitVect[iHit].at(0)
       << ", Paddle: " << finalMuRSTrackVect[iTrack].HitVect[iHit].at(1)
       << ", Time: " << finalMuRSTrackVect[iTrack].HitVect[iHit].at(2);

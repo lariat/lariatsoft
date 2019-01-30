@@ -355,35 +355,35 @@ namespace geo{
     unsigned int nErrors = 0; // currently unused
     
     // change the printed version number when changing the "GeometryTest" output
-    LOG_VERBATIM("AuxDetGeometryTest") << "AuxDetGeometryTest version 1.0";
+    MF_LOG_VERBATIM("AuxDetGeometryTest") << "AuxDetGeometryTest version 1.0";
     
-    LOG_VERBATIM("AuxDetGeometryTestInfo") << "Running on detector: '" << geom->DetectorName() << "'";
+    MF_LOG_VERBATIM("AuxDetGeometryTestInfo") << "Running on detector: '" << geom->DetectorName() << "'";
     
     try{
 
       if (shouldRunTests("CheckOverlaps")) {
-        LOG_INFO("AuxDetGeometryTest") << "test for overlaps ...";
+        MF_LOG_INFO("AuxDetGeometryTest") << "test for overlaps ...";
         gGeoManager->CheckOverlaps(1e-5);
         gGeoManager->PrintOverlaps();
-        LOG_INFO("AuxDetGeometryTest") << "complete.";
+        MF_LOG_INFO("AuxDetGeometryTest") << "complete.";
       }
 
       if(shouldRunTests("PrintSummary") ){
-	LOG_VERBATIM("AuxDetGeometryTest") << "AuxDet Summary ...";
+	MF_LOG_VERBATIM("AuxDetGeometryTest") << "AuxDet Summary ...";
 	this->printAuxDetSummary();
-	LOG_VERBATIM("AuxDetGeometryTest") << "finished";
+	MF_LOG_VERBATIM("AuxDetGeometryTest") << "finished";
       }
 
       if(shouldRunTests("FindAtPosition") ){
-	LOG_VERBATIM("AuxDetGeometryTest") << "test find at position methods ...";
+	MF_LOG_VERBATIM("AuxDetGeometryTest") << "test find at position methods ...";
 	this->testFindAtPosition();
-	LOG_VERBATIM("AuxDetGeometryTest") << "finished";
+	MF_LOG_VERBATIM("AuxDetGeometryTest") << "finished";
       }
 
       if(shouldRunTests("ChannelMethods") ){
-	LOG_VERBATIM("AuxDetGeometryTest") << "test channel mapping methods ...";
+	MF_LOG_VERBATIM("AuxDetGeometryTest") << "test channel mapping methods ...";
 	this->testChannelMethods();
-	LOG_VERBATIM("AuxDetGeometryTest") << "finished";
+	MF_LOG_VERBATIM("AuxDetGeometryTest") << "finished";
       }
 
     }
@@ -407,14 +407,14 @@ namespace geo{
     auto adGeoVec = geom->AuxDetGeoVec();
 
     for(auto ad : adGeoVec){
-      LOG_VERBATIM("AuxDetGeometryTestAlg") << "AuxDetGeo: "                  << ad->TotalVolume()->GetName()  
+      MF_LOG_VERBATIM("AuxDetGeometryTestAlg") << "AuxDetGeo: "                  << ad->TotalVolume()->GetName()  
 					    << "\n\t length: "       	      << ad->Length()		      
 					    << "\n\t half width 1: " 	      << ad->HalfWidth1()	      
 					    << "\n\t half width 2: " 	      << ad->HalfWidth2()	      
 					    << "\n\t half height: "  	      << ad->HalfHeight()              
 					    << "\n\t num sensitive volumes: " << ad->NSensitiveVolume();
       for(size_t sv = 0; sv < ad->NSensitiveVolume(); ++sv){
-	LOG_VERBATIM("AuxDetGeometryTestAlg") << "\t\t Sensitive volume: " << sv
+	MF_LOG_VERBATIM("AuxDetGeometryTestAlg") << "\t\t Sensitive volume: " << sv
 					      << "\t\t\t length: "         << ad->SensitiveVolume(sv).Length()		      
 					      << "\t\t\t half width 1: "   << ad->SensitiveVolume(sv).HalfWidth1()	      
 					      << "\t\t\t half width 2: "   << ad->SensitiveVolume(sv).HalfWidth2()	      
@@ -443,7 +443,7 @@ namespace geo{
       
       adGeoVec[ad]->LocalToWorld(origin, world);
 
-      LOG_VERBATIM("AuxDetGeometryTestAlg") << "AuxDetGeometryCore::FindAuxDetAtPosition for "
+      MF_LOG_VERBATIM("AuxDetGeometryTestAlg") << "AuxDetGeometryCore::FindAuxDetAtPosition for "
 					    << "AuxDetGeo " << ad << " with center ("
 					    << world[0] << ", " << world[1] << ", " << world[2] << ")";
 
@@ -455,7 +455,7 @@ namespace geo{
 
 	adGeoVec[ad]->SensitiveVolume(s).LocalToWorld(origin, world);
 	
-	LOG_VERBATIM("AuxDetGeometryTestAlg") << "AuxDetGeometryCore::FindAuxDetSensitiveAtPosition for "
+	MF_LOG_VERBATIM("AuxDetGeometryTestAlg") << "AuxDetGeometryCore::FindAuxDetSensitiveAtPosition for "
 					      << "AuxDetSensitiveGeo " << s << " with center ("
 					      << world[0] << ", " << world[1] << ", " << world[2] << ")";
 	
@@ -492,7 +492,7 @@ namespace geo{
 
 	adGeoVec[ad]->SensitiveVolume(s).LocalToWorld(origin, world);
 	
-	LOG_VERBATIM("AuxDetGeometryTestAlg") << "AuxDetGeo " << ad  
+	MF_LOG_VERBATIM("AuxDetGeometryTestAlg") << "AuxDetGeo " << ad  
 					      << " AuxDetSensitiveGeo " << s << " with center ("
 					      << world[0] << ", " << world[1] << ", " << world[2] << ")";
 	
