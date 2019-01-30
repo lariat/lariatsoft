@@ -243,11 +243,11 @@ namespace trkf {
     double driftvelocity = detprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
     double timepitch = driftvelocity*timetick;                         //time sample (cm) 
 
-    LOG_VERBATIM("CosmicTrackerT1034") << " ";       
-    LOG_VERBATIM("CosmicTrackerT1034") << " ";    
-    LOG_VERBATIM("CosmicTrackerT1034") << "Cosmic Tracker Section starts here";
-    LOG_VERBATIM("CosmicTrackerT1034") << "TimeTick (in mus): " << timetick;       
-    LOG_VERBATIM("CosmicTrackerT1034") << "TimePitch (in cm): " << timepitch;      
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";       
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";    
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << "Cosmic Tracker Section starts here";
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << "TimeTick (in mus): " << timetick;       
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << "TimePitch (in cm): " << timepitch;      
                   
     art::FindManyP<recob::Cluster> fc(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);                   
   
@@ -259,11 +259,11 @@ namespace trkf {
        // Skip trigger if empty
        art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(t);
 
-       LOG_VERBATIM("CosmicTrackerT1034") << " ";       
-       LOG_VERBATIM("CosmicTrackerT1034") << " ";
-       LOG_VERBATIM("CosmicTrackerT1034") << "Trigger Number: " << t << "   Raw Digit vector size: "<< rdvec.size();
+       MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";       
+       MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";
+       MF_LOG_VERBATIM("CosmicTrackerT1034") << "Trigger Number: " << t << "   Raw Digit vector size: "<< rdvec.size();
        if(!rdvec.size()){mf::LogInfo("CosmicTrackerT1034") << " Raw Digit vector is empty. Skipping the trigger"; continue;}                              
-       LOG_VERBATIM("CosmicTrackerT1034") << " ";
+       MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";
 
        // get input Cluster object(s).
        clusterlist.clear();

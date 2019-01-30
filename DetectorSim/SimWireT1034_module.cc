@@ -193,7 +193,7 @@ namespace detsim {
     fNTicks = fFFT->FFTSize();
 
    if ( fNTicks%2 != 0 ) 
-      LOG_DEBUG("SimWireT1034") << "Warning: FFTSize not a power of 2. "
+      MF_LOG_DEBUG("SimWireT1034") << "Warning: FFTSize not a power of 2. "
 				     << "May cause issues in (de)convolution.\n";
 
     if ( fNTimeSamples > fNTicks ) 

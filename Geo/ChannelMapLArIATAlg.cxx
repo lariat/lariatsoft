@@ -42,7 +42,7 @@ namespace geo{
     
     fNcryostat = cgeo.size();
     
-    LOG_DEBUG("ChannelMapLArIATAlg")
+    MF_LOG_DEBUG("ChannelMapLArIATAlg")
     << "Initializing LArIAT ChannelMap..."
     << "\t There are "
     << fNcryostat
@@ -68,7 +68,7 @@ namespace geo{
       
       fNTPC[cs] = cryo.NTPC();
       
-      LOG_DEBUG("ChannelMapLArIATAlg")
+      MF_LOG_DEBUG("ChannelMapLArIATAlg")
       << "\t Cryostat "
       << cs
       << " has "
@@ -91,7 +91,7 @@ namespace geo{
         
         unsigned int PlanesThisTPC = TPC.Nplanes();
         
-        LOG_DEBUG("ChannelMapLArIATAlg")
+        MF_LOG_DEBUG("ChannelMapLArIATAlg")
         << "\t TPC "
         << TPCCount
         << " has "
@@ -119,7 +119,7 @@ namespace geo{
 //            wire1.GetCenter(xyz);
 //            
 //            if(std::abs(pitch - 0.5) > 1.e-3)
-//              LOG_VERBATIM("ChannelMapLArIATAlg")
+//              MF_LOG_VERBATIM("ChannelMapLArIATAlg")
 //              << "\t\t wire: "
 //              << w
 //              << " pitch: "
@@ -137,7 +137,7 @@ namespace geo{
           
           fWireCounts[cs][TPCCount][PlaneCount] = plane.Nwires();
 
-          LOG_DEBUG("ChannelMapLArIATAlg")
+          MF_LOG_DEBUG("ChannelMapLArIATAlg")
           << "\t Plane "
           << PlaneCount
           << " has "
@@ -197,7 +197,7 @@ namespace geo{
     // calculate the total number of channels in the detector
     fNchannels = fTopChannel;
 
-    LOG_DEBUG("ChannelMapLArIAT") << "# of channels is " << fNchannels;
+    MF_LOG_DEBUG("ChannelMapLArIAT") << "# of channels is " << fNchannels;
 
     return;
   }
@@ -323,7 +323,7 @@ namespace geo{
     }
     
     // made it here, that shouldn't happen, return raw::InvalidChannelID
-    LOG_WARNING("ChannelMapLArIATAlg")
+    MF_LOG_WARNING("ChannelMapLArIATAlg")
     << "should not be at the point in the function, returning "
     << "invalid channel";
   
@@ -348,7 +348,7 @@ namespace geo{
     else if( (channel >= fFirstChannelInThisPlane[0][tpc][PlanesThisTPC-1]) &&
              (channel <  fFirstChannelInNextPlane[0][tpc][PlanesThisTPC-1])    ){ sigt = geo::kCollection; }
     else
-      LOG_WARNING("BadChannelSignalType")
+      MF_LOG_WARNING("BadChannelSignalType")
       << "Channel " << channel
       << " not given signal type." << std::endl;
     
@@ -374,7 +374,7 @@ namespace geo{
     else if( (channel >= fFirstChannelInThisPlane[0][tpc][2]) &&
              (channel <  fFirstChannelInNextPlane[0][tpc][2])    ){ view = geo::kZ; }
     else
-      LOG_WARNING("BadChannelSignalType")
+      MF_LOG_WARNING("BadChannelSignalType")
       << "Channel " << channel
       << " not given view type.";
 

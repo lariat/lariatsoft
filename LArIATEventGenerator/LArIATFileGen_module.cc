@@ -744,7 +744,7 @@ namespace evgen{
 	    }
 	  countFile++;
 	  
-	  LOG_DEBUG("LArIATFileGen: countFile is ") << countFile <<std::endl;
+	  MF_LOG_DEBUG("LArIATFileGen: countFile is ") << countFile <<std::endl;
 	  char * cstr, *ptok;
 	  
       // Split this line into tokens

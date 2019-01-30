@@ -527,7 +527,7 @@ void MichelWfmReco::produce(art::Event & e)
   art::Handle< std::vector< raw::OpDetPulse >> WaveformHandle;
   e.getByLabel(fDAQModule,fInstanceName,WaveformHandle);
   if( (int)WaveformHandle->size() == 0 ) {
-    LOG_VERBATIM("MichelWfmReco") << "No optical detector data found, skipping the event.";
+    MF_LOG_VERBATIM("MichelWfmReco") << "No optical detector data found, skipping the event.";
     return;
   } else {
     // If not empty, store ETL waveform
@@ -543,7 +543,7 @@ void MichelWfmReco::produce(art::Event & e)
         PostPercentMark = short(ThePulse.FirstSample()); 
         GotETL = true;
     
-        LOG_VERBATIM("MichelWfmReco")
+        MF_LOG_VERBATIM("MichelWfmReco")
         << "PMT pulse recorded (" << NSamples << " samples, trigger at " << PostPercentMark << ")\n"
         << "Timestamp " << Timestamp << " sec";
 
@@ -581,7 +581,7 @@ void MichelWfmReco::produce(art::Event & e)
    
     // Skip if prompt PE doesn't pass threshold
     if( hit_info[1]/fSinglePE < fHitPromptPEThreshLow ) {
-      LOG_VERBATIM("MichelWfmReco") << "!! Hit doesn't pass promptPE cut, skipping.";
+      MF_LOG_VERBATIM("MichelWfmReco") << "!! Hit doesn't pass promptPE cut, skipping.";
       continue;
     }
 
@@ -668,7 +668,7 @@ void MichelWfmReco::produce(art::Event & e)
   // If exactly 2 hits, measure their time difference
   if(NumHits == 2){
     dT = float(vHitTimes[1] - vHitTimes[0]);
-    LOG_VERBATIM("MichelWfmReco") << "Exactly 2 hits.  dT = " << dT << " ns.";
+    MF_LOG_VERBATIM("MichelWfmReco") << "Exactly 2 hits.  dT = " << dT << " ns.";
     if( !IsBeamEvent ) {
       h_dT_vs_MuPE_100ns->Fill(dT,vHitPE_100ns[0]);
       if( dT > 500. ) h_Pf_100_500_vs_PE_500ns_Mu->Fill(vHitADC_100ns[0]/vHitADC_500ns[0],vHitPE_500ns[0]);
@@ -697,7 +697,7 @@ void MichelWfmReco::produce(art::Event & e)
 
     NumTracks = (int)TrackHandle->size();
 
-    LOG_VERBATIM("MichelWfmReco") << "Number of tracks: "<<NumTracks;
+    MF_LOG_VERBATIM("MichelWfmReco") << "Number of tracks: "<<NumTracks;
   
     // === Association between Calorimetry objects and Tracks ===
     art::FindManyP<anab::Calorimetry> fmcal(TrackHandle, e, fTrackCalModule);
@@ -728,7 +728,7 @@ void MichelWfmReco::produce(art::Event & e)
       vIsTrackPassing     .push_back( !endIsInFid && !vertexIsInFid);
       vIsTrackContained   .push_back( endIsInFid && vertexIsInFid );
       
-      LOG_VERBATIM("MichelWfmReco")
+      MF_LOG_VERBATIM("MichelWfmReco")
         <<"  track "<<track_index<<", length "<<TheTrack.Length()<<"  vertex("
         << TheTrack.Vertex().X() <<"," 
         << TheTrack.Vertex().Y() << "," 
@@ -754,9 +754,9 @@ void MichelWfmReco::produce(art::Event & e)
       if( fmcal.isValid() ){
         std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(track_index);
         vTrackEnergy.push_back(calos[1]->KineticEnergy());
-        LOG_VERBATIM("MichelWfmReco") << "  KE = " << calos[1] -> KineticEnergy();
+        MF_LOG_VERBATIM("MichelWfmReco") << "  KE = " << calos[1] -> KineticEnergy();
       } else {
-        LOG_VERBATIM("MichelWfmReco") << "  KE = undefined";
+        MF_LOG_VERBATIM("MichelWfmReco") << "  KE = undefined";
         vTrackEnergy          .push_back(-99.);
       }
    
@@ -766,16 +766,16 @@ void MichelWfmReco::produce(art::Event & e)
       if (fmpid.isValid()){
         std::vector<art::Ptr<anab::ParticleID> > pids = fmpid.at(track_index);
         if (!pids[1]->PlaneID().isValid) {
-          LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: undefined";
+          MF_LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: undefined";
           vTrackPID.push_back(-99); 
           vTrackPIDA.push_back(-99);
           continue;
         }
         vTrackPID.push_back(pids[1]->Pdg());
         vTrackPIDA.push_back(pids[1]->PIDA());
-        LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: "<<pids[1]->Pdg();
+        MF_LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: "<<pids[1]->Pdg();
       } else {
-        LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: undefined";
+        MF_LOG_VERBATIM("MichelWfmReco") << "  pid["<<track_index<<"]: undefined";
         vTrackPID.push_back(-99);
         vTrackPIDA.push_back(-99);
       }
@@ -925,7 +925,7 @@ void MichelWfmReco::produce(art::Event & e)
         
         std::vector<art::Ptr<anab::Calorimetry> > calos_Mu = fmcal.at(MuTrackIndex);
         size_t              N_dEdx = calos_Mu[1]->dEdx().size();
-        LOG_VERBATIM("MichelWfmReco") 
+        MF_LOG_VERBATIM("MichelWfmReco") 
         <<"Beginning dE/dx scan of the mu-candidate track, dEdx().size() = "<<N_dEdx;
        
         // If we correctly assigned vertex/endpoint above,
@@ -944,7 +944,7 @@ void MichelWfmReco::produce(art::Event & e)
         {
           std::vector<art::Ptr<anab::Calorimetry> > calos_Michel = fmcal.at(closest_track_i);
           size_t            N_dEdx = calos_Michel[1]->dEdx().size();
-          LOG_VERBATIM("MichelWfmReco") 
+          MF_LOG_VERBATIM("MichelWfmReco") 
           << "Beginning dE/dx scan of the secondary track, dEdx().size() = "<<N_dEdx;
           
           // In this case, we need to call the "vertex" whichever endpoint is
@@ -1019,7 +1019,7 @@ void MichelWfmReco::produce(art::Event & e)
   // Require 2 hits (one before PostPercent, one within 1% of PostPercent) 
   if( (dT > 0.)  && (vHitTimes[0] < vHitTimes[1]-fGateDelay) && (vHitIsAtTrigger[1]) && (!IsBeamEvent)){
     
-    LOG_VERBATIM("MichelWfmReco") << "--> passes Michel trigger cut (off-beam)";
+    MF_LOG_VERBATIM("MichelWfmReco") << "--> passes Michel trigger cut (off-beam)";
     N_MichelCandidates++;
     h_EventTypeCount->Fill(1);
     h_Michel_IsInSignal->Fill((int)vIsInSignalPopulation[1]);
@@ -1105,7 +1105,7 @@ void MichelWfmReco::produce(art::Event & e)
   MichelDataTree->Fill();
   
   // Add space in printout to separate events (for easier debugging)
-  LOG_VERBATIM("MichelWfmReco") << "\n";
+  MF_LOG_VERBATIM("MichelWfmReco") << "\n";
 
 }
 
@@ -1520,7 +1520,7 @@ void MichelWfmReco::endJob()
   //float min = h_AverageWaveform1->GetMinimum() - 0.001;
   h_AverageWaveform_Michel->Add(&ones,-1.*ave_baseline+0.1);
   
-  LOG_VERBATIM("MichelWfmReco") 
+  MF_LOG_VERBATIM("MichelWfmReco") 
   <<"=================================\n"
   <<"Michel hits (1)\n"
   <<"Average of "<<N_entries<<" waveforms.\n"
