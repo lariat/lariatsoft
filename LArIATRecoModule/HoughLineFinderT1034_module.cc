@@ -42,9 +42,6 @@
 #include "lardata/Utilities/AssociationUtil.h"
 #include "larreco/RecoAlg/HoughBaseAlg.h"
 
-// ROOT Includes
-
-
 //LArIAT Includes
 #include "RawDataUtilities/TriggerDigitUtility.h"
 
@@ -53,7 +50,6 @@ class HoughLineFinderT1034;
 namespace cluster {
   
   class HoughLineFinderT1034 : public art::EDProducer {
-  
   public:
     explicit HoughLineFinderT1034(fhicl::ParameterSet const & p);
     
@@ -62,23 +58,9 @@ namespace cluster {
     HoughLineFinderT1034 & operator = (HoughLineFinderT1034 const &) = delete;
     HoughLineFinderT1034 & operator = (HoughLineFinderT1034 &&) = delete;
 
-    // Required functions.
-    void produce(art::Event & e) override;
-
-    // Selected optional functions.
-    void beginJob() override;
-    void beginRun(art::Run & r) override;
-    void beginSubRun(art::SubRun & sr) override;
-    void endJob() override;
-    void endRun(art::Run & r) override;
-    void endSubRun(art::SubRun & sr) override;
-    void reconfigure(fhicl::ParameterSet const & p) ;
-    void respondToCloseInputFile(art::FileBlock const & fb) override;
-    void respondToCloseOutputFiles(art::FileBlock const & fb) override;
-    void respondToOpenInputFile(art::FileBlock const & fb) override;
-    void respondToOpenOutputFiles(art::FileBlock const & fb) override;
 
   private:
+    void produce(art::Event & e) override;
 
     //Trigger module here, needed to get the triggers
     std::string fTriggerUtility;
@@ -91,6 +73,7 @@ namespace cluster {
     //Hough transform algorithm    
     HoughBaseAlg fHLAlg;  
     
+    CLHEP::HepRandomEngine& fEngine;
 
   };//Class HoughLineFinderT1034
 
@@ -102,33 +85,16 @@ namespace cluster {
   // Get parameters
   //****************************************************************************
   HoughLineFinderT1034::HoughLineFinderT1034(fhicl::ParameterSet const & pset)
-  : fHLAlg(pset.get< fhicl::ParameterSet >("HoughBaseAlg"))
+    : fTriggerUtility{pset.get< std::string >("TriggerUtility")}
+      //Get the clustering module label
+    , fDBScanModuleLabel{pset.get< std::string >("DBScanModuleLabel")}
+    , fHoughSeed{pset.get< unsigned int >("HoughSeed", 0)}
+    , fHLAlg(pset.get< fhicl::ParameterSet >("HoughBaseAlg"))
+    , fEngine{art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, pset, "Seed")}
   {
-    this->reconfigure(pset);
-    
-    //What this module produces
     produces< std::vector<recob::Cluster> >();
     produces< art::Assns<recob::Cluster, recob::Hit> >();
     produces< art::Assns<raw::Trigger, recob::Cluster > >();
-    
-    //Create random number engine
-    art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, pset, "Seed");
-  }
-  
-  //****************************************************************************
-  // Reconfigure
-  //****************************************************************************
-  void HoughLineFinderT1034::reconfigure(fhicl::ParameterSet const & p)
-  {
-    //Get the clustering module label
-    fDBScanModuleLabel = p.get< std::string >("DBScanModuleLabel");
-    
-    //Get trigger utility
-    fTriggerUtility = p.get< std::string >("TriggerUtility");
-    
-    //Configure Hough 
-    fHoughSeed = p.get< unsigned int >("HoughSeed", 0);
-    fHLAlg.reconfigure(p.get< fhicl::ParameterSet >("HoughBaseAlg"));
   }
   
   //****************************************************************************
@@ -136,7 +102,6 @@ namespace cluster {
   //****************************************************************************
   void HoughLineFinderT1034::produce(art::Event & evt)
   {
-    
     //Get the trigger data utility (tdu)
     rdu::TriggerDigitUtility tdu(evt, fTriggerUtility);
 
@@ -153,11 +118,11 @@ namespace cluster {
 	}*/
 
     //Output collection of clusters
-    std::unique_ptr< std::vector<recob::Cluster> > ccol(new std::vector<recob::Cluster>);
+    auto ccol = std::make_unique<std::vector<recob::Cluster>>();
     //Association between clusters and hits
-    std::unique_ptr< art::Assns<recob::Cluster, recob::Hit> > assn(new art::Assns<recob::Cluster, recob::Hit>);
+    auto assn = std::make_unique<art::Assns<recob::Cluster, recob::Hit>>();
     //Association between clusters and triggers
-    std::unique_ptr< art::Assns<raw::Trigger, recob::Cluster> > trigclusassn(new art::Assns< raw::Trigger, recob::Cluster > );
+    auto trigclusassn = std::make_unique<art::Assns<raw::Trigger, recob::Cluster>>();
 
     //Vector of hits associated with the Hough Transform
     std::vector< art::PtrVector<recob::Hit> > clusHitsOut;   
@@ -176,17 +141,13 @@ namespace cluster {
       //Get clusters associated with this trigger
       clusIn = ClusterDigits.at(itrig); 
 
-	art::ServiceHandle<art::RandomNumberGenerator> rng;
-	CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-	                                                moduleDescription().moduleLabel());
-
       // If a nonzero random number seed has been provided, overwrite the seed already initialized
       if(fHoughSeed != 0)
       {
-	engine.setSeed(fHoughSeed,0);
+        fEngine.setSeed(fHoughSeed,0);
       } 
 
-      numclus = fHLAlg.FastTransform(clusIn, *ccol, clusHitsOut, engine, evt, fDBScanModuleLabel);
+      numclus = fHLAlg.FastTransform(clusIn, *ccol, clusHitsOut, fEngine, evt, fDBScanModuleLabel);
 
       MF_LOG_DEBUG("HoughLineClusters") << "found " << numclus << "clusters with HoughBaseAlg"; 
 
@@ -215,67 +176,9 @@ namespace cluster {
     evt.put(std::move(ccol));
     evt.put(std::move(assn));
     evt.put(std::move(trigclusassn));
-    
-    //return;    
-    
   }//End event loop
   
 
-  //****************************************************************************
-  //Other methods
-  //****************************************************************************
-  void HoughLineFinderT1034::beginJob()
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::beginRun(art::Run & r)
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::beginSubRun(art::SubRun & sr)
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::endJob()
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::endRun(art::Run & r)
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::endSubRun(art::SubRun & sr)
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::respondToCloseInputFile(art::FileBlock const & fb)
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::respondToCloseOutputFiles(art::FileBlock const & fb)
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::respondToOpenInputFile(art::FileBlock const & fb)
-  {
-    // Implementation of optional member function here.
-  }
-  
-  void HoughLineFinderT1034::respondToOpenOutputFiles(art::FileBlock const & fb)
-  {
-    // Implementation of optional member function here.
-  }
-
 }//End namespace cluster
 
-namespace cluster{  
-  DEFINE_ART_MODULE(HoughLineFinderT1034)
-}
+DEFINE_ART_MODULE(cluster::HoughLineFinderT1034)
