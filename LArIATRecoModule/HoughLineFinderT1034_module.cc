@@ -90,7 +90,7 @@ namespace cluster {
     , fDBScanModuleLabel{pset.get< std::string >("DBScanModuleLabel")}
     , fHoughSeed{pset.get< unsigned int >("HoughSeed", 0)}
     , fHLAlg(pset.get< fhicl::ParameterSet >("HoughBaseAlg"))
-    , fEngine{art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, pset, "Seed")}
+    , fEngine(art::ServiceHandle<rndm::NuRandomService>()->createEngine(*this, pset, "Seed"))
   {
     produces< std::vector<recob::Cluster> >();
     produces< art::Assns<recob::Cluster, recob::Hit> >();
