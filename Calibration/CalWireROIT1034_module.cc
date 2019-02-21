@@ -75,6 +75,13 @@ namespace caldata {
     unsigned short fPreROIPad;        ///< ROI padding
     unsigned short fPostROIPad;       ///< ROI padding
 
+    int          fSampPrecision;      ///< Limit on number of decimal places for each sample in deconvoluted
+                                      ///  signals (recob::Wires) to save disk space post-compression. For example,
+                                      ///    = -1 --> 1.35718291... (floating point precision)
+                                      ///    = 0  --> 1.
+                                      ///    = 1  --> 1.4 (default)
+                                      ///    = 2  --> 1.36
+
     bool                        fDodQdxCalib;          ///< Do we apply wire-by-wire calibration?
     std::string                 fdQdxCalibFileName;    ///< Text file for constants to do wire-by-wire calibration
     std::map<unsigned int, float> fdQdxCalib;          ///< Map to do wire-by-wire calibration, key is channel number, content is correction factor
@@ -82,6 +89,7 @@ namespace caldata {
     void SubtractBaseline(std::vector<float>& holder);    ///< basic baseline subraction function (using postsample bins)
     void SubtractBaselineAdv(std::vector<float>& holder); ///< advanced baseline subtraction function
 
+    
   protected: 
     
   }; // class CalWireROIT1034
@@ -95,7 +103,6 @@ namespace caldata {
 
     produces< std::vector<recob::Wire> >(fSpillName);
     produces<art::Assns<raw::RawDigit, recob::Wire>>(fSpillName);
-  
   }
   
   //-------------------------------------------------
@@ -106,7 +113,6 @@ namespace caldata {
   //////////////////////////////////////////////////////
   void CalWireROIT1034::reconfigure(fhicl::ParameterSet const& p)
   {
-
     std::vector<unsigned short> uin;    std::vector<unsigned short> vin;
     std::vector<unsigned short> zin;
 
@@ -116,8 +122,9 @@ namespace caldata {
     fDoBaselineSub          = p.get< bool >       ("DoBaselineSub",       true);
     fAdvancedBaselineSub    = p.get< bool >       ("AdvancedBaselineSub", false);
     fDoROI                  = p.get< bool >       ("DoROI",               false);
+    fSampPrecision          = p.get< int >        ("SampPrecision",       1);
     uin                     = p.get< std::vector<unsigned short> >   ("PlaneROIPad");
-    
+     
     
     // put the ROI pad sizes into more convenient vectors
     fPreROIPad  = uin[0];
@@ -217,6 +224,7 @@ namespace caldata {
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
     std::vector<TComplex> freqHolder(transformSize+1); // temporary frequency data
     
+
     // loop over all wires
     wirecol->reserve(digitVecHandle->size());
     for(size_t rdIter = 0; rdIter < digitVecHandle->size(); ++rdIter){ // ++ move
@@ -250,16 +258,26 @@ namespace caldata {
         if( fAdvancedBaselineSub ) SubtractBaselineAdv(holder);
       } 
 
-      // apply wire-by-wire calibration
-      if (fDodQdxCalib){
-	if(fdQdxCalib.find(channel) != fdQdxCalib.end()){
-	  float constant = fdQdxCalib[channel];
-	  //std::cout<<channel<<" "<<constant<<std::endl;
-	  for (size_t iholder = 0; iholder < holder.size(); ++iholder){
-	    holder[iholder] *= constant;
-	  }
-	}
+
+      // retrieve the wire-by-wire correction factor for this channel
+      float constant = 1.0;
+      if( fDodQdxCalib ) {
+        if( fdQdxCalib.find(channel) != fdQdxCalib.end() )
+	  constant = fdQdxCalib[channel];
       }
+
+      // loop over the samples after deconvolution
+      for(size_t iholder = 0; iholder < holder.size(); ++iholder) {
+        
+        // apply wire-by-wire calibration correction
+	holder[iholder] *= constant;
+        
+        // limit precision by truncating digits to save disk space
+        if( fSampPrecision >= 0 )
+          holder[iholder] = roundf( holder[iholder] * pow(10,fSampPrecision) ) / pow(10,fSampPrecision);
+      
+      }
+
 
       if (fDoROI){
         // work out the ROI
@@ -357,10 +375,8 @@ namespace caldata {
     
     if(wirecol->size() == 0)
       mf::LogWarning("CalWireROIT1034") << "No wires made for this event.";
- 
-    std::cout<<"Saving wires to event...\n";   
+    
     evt.put(std::move(wirecol), fSpillName);
-    std::cout<<"Saving associations to event...\n";   
     evt.put(std::move(WireDigitAssn), fSpillName);
     
     return;
@@ -376,15 +392,15 @@ namespace caldata {
       double average=0.0;
       double sum=0.0;
       int n=0;
-      for(size_t bin = 0; bin < (size_t)fPostsample; bin++){
-        double val = holder[holder.size()-1-bin];
-        if( fabs(val) < 20 ){ // avoid outliers
-          sum+=holder[holder.size()-1-bin];
+      for(size_t i = 0; i < (size_t)fPostsample; i++){
+        size_t bin = holder.size()-i; 
+        if( fabs(holder[bin]) < 20 ){ // avoid outliers
+          sum+=holder[bin];
           n++;
         }
       }
       if(n) average=sum/n;
-      for(size_t bin=0; bin < holder.size(); ++bin) holder[bin]-=average;
+      for(size_t i=0; i < holder.size(); ++i) holder[i]-=average;
     }
   }
   

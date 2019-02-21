@@ -9,13 +9,13 @@ lariat_calorimetryalgmc.CalAreaConstants:   [ 0.0356, 0.0912 ]
 
 # Run-specific settings for scaled field response (from stopping muon dE/dx, DocDB 3484)
 lariat_calorimetryalgdata_run1:   @local::standard_calorimetryalgdata
-lariat_calorimetryalgdata_run1.CalAreaConstants:[ 0.0352, 0.0875 ]
+lariat_calorimetryalgdata_run1.CalAreaConstants:[ 0.0352, 0.0875 ] # 0.0892(3)
 lariat_calorimetryalgdata_run2:   @local::standard_calorimetryalgdata
-lariat_calorimetryalgdata_run2.CalAreaConstants:[ 0.0351, 0.0932 ]
+lariat_calorimetryalgdata_run2.CalAreaConstants:[ 0.0351, 0.0932 ] # 0.0944
 lariat_calorimetryalgmc_run1:     @local::standard_calorimetryalgmc
-lariat_calorimetryalgmc_run1.CalAreaConstants:  [ 0.0356, 0.0911 ]
+lariat_calorimetryalgmc_run1.CalAreaConstants:  [ 0.0356, 0.0911 ] # 0.0931(2)
 lariat_calorimetryalgmc_run2:     @local::standard_calorimetryalgmc
-lariat_calorimetryalgmc_run2.CalAreaConstants:  [ 0.0357, 0.0911 ]
+lariat_calorimetryalgmc_run2.CalAreaConstants:  [ 0.0357, 0.0911 ] # 0.0928
 
 # Settings for default field response (from beam momentum-based dE/dx tuning, DocDB 2513)
 lariat_calorimetryalgdata_run1_default:     @local::standard_calorimetryalgdata

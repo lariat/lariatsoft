@@ -113,7 +113,8 @@ lariat_michelana:
   MinNumPts3D:                    3
   MinFracHits3D:                  0.0
   
-  MaxSavedHitGraphs:              0
+  MaxSavedHitGraphs:              1000
+  MaxSavedWfmGraphs:              1000 
 }
 
 # ===============================================================================

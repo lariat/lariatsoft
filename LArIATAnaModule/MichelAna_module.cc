@@ -277,12 +277,11 @@ private:
   int                 fMaxRun; 
   
   int                 fRandSeed;                // random seed for reproducibility
-  
-  bool                fFilter_PassAllEvents;    // pass all events through filter
+ 
+  bool                fFilterEvents;            // turn on/off filter 
   bool                fFilter_OpticalMode;      // only pass evts w/ optical Michel ID 
-  bool                fFilter_Req3DShower;      // require 3D shower reco'd
+  int                 fFilter_MinNumPts3D;
   std::vector<float>  fFilter_DecayTime;        // acceptance range of decay times
-  std::vector<int>    fFilter_NumTrackStopping; // acceptance range of num. stp trks
   std::vector<float>  fFilter_ElShowerEnergy;   // acceptance range of 2D shwr energy
   
   std::string         fHitsModule;          // producer of input recob::Hits
@@ -1399,11 +1398,10 @@ void MichelAna::reconfigure(fhicl::ParameterSet const & p)
   fUseCrossingMuons         = p.get< bool >                 ("UseCrossingMuons",true);
   fLookAtTracks             = p.get< bool >                 ("LookAtTracks",true);
   fReq1StpTrk               = p.get< bool >                 ("Req1StpTrk",true);
-  fFilter_PassAllEvents     = p.get< bool >                 ("Filter_PassAllEvents", true);
+  fFilterEvents             = p.get< bool >                 ("FilterEvents",false);
   fFilter_OpticalMode       = p.get< bool >                 ("Filter_OpticalMode", false); 
   fFilter_DecayTime         = p.get< std::vector<float >>   ("Filter_DecayTime",{0.,10000.});
-  fFilter_Req3DShower       = p.get< bool >                 ("Filter_Req3DShower",false);
-  fFilter_NumTrackStopping  = p.get< std::vector< int >>    ("Filter_NumTrackStopping",{1,1});
+  fFilter_MinNumPts3D       = p.get< int >                  ("Filter_MinNumPts3D",0);
   fFilter_ElShowerEnergy    = p.get< std::vector< float >>  ("Filter_ElShowerEnergy",{-9999.,9999.});
   fSelectChannels           = p.get< std::vector< size_t >> ("SelectChannels", {1} );
   fPromptPECut              = p.get< std::vector< float >>  ("PromptPECut", {30.} );
@@ -4850,6 +4848,10 @@ bool MichelAna::filter(art::Event & e)
       float R = ( 1.+fExcRatio ) / (1. + fElShowerPhotons/fElShowerCharge);
       hQoverL   ->Fill( fElShowerCharge/fElShowerPhotons );
       hRecomb   ->Fill( R ); 
+  
+      // If good shower, make clustering and waveform graphs
+      MakeClusteringGraphs(cl_pl1);
+      MakeWfmGraphs(e); 
     
     } // endif goodShower3D
   }// endif goodShower3d
@@ -4865,7 +4867,7 @@ bool MichelAna::filter(art::Event & e)
   if( isCalibrationEvent ) fTreeCrsMu->Fill();
 
   // Make waveform graphs
-  if( fElShowerEnergy > 0 && fMichelOpticalID ) MakeWfmGraphs(e);
+  //if( fElShowerEnergy > 0 && fMichelOpticalID ) MakeWfmGraphs(e);
 
   LOG_VERBATIM("MichelAna")
   <<"Event summary: \n"
@@ -4879,17 +4881,16 @@ bool MichelAna::filter(art::Event & e)
   // *******************************************************
   // Filter functionality
   // *******************************************************
-  if( fFilter_PassAllEvents ) {
+  if( !fFilterEvents ) {
     return true;
   } else {
     return (
-      fMichelOpticalID 
+      fMichelOpticalID
       && fDecayTime         >= fFilter_DecayTime[0]
       && fDecayTime         <= fFilter_DecayTime[1]
-      && fNumTrackStopping  >= fFilter_NumTrackStopping[0] 
-      && fNumTrackStopping  <= fFilter_NumTrackStopping[1] 
       && fElShowerEnergy    >= fFilter_ElShowerEnergy[0]
       && fElShowerEnergy    <= fFilter_ElShowerEnergy[1]
+      && (fNumPts3D         >= fFilter_MinNumPts3D || fFilter_MinNumPts3D <= 0 )
       );
   }
 }
@@ -4954,9 +4955,7 @@ void MichelAna::endJob()
   <<"    * Prompt PE cut                      : "<<fPromptPECut[ch]<<" PE\n";
   }
   std::cout
-  <<"\n";
-
-  std::cout
+  <<"\n"
   <<"  MaxHitSeparation                       : "<<fMaxHitSeparation<<"\n"
   <<"  TruncMeanWindow                        : "<<fTruncMeanWindow<<"\n"
   <<"  TruncMeanP                             : "<<fTruncMeanP<<"\n"
@@ -6807,6 +6806,7 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
      // Before we start the showering, bifurcate the electron cluster 
      // to better separate track and shower-like components by cutting
      // the cluster where the separation exceeds 1.5 cm.
+     /*
      std::cout<<"Trimming the electron cluster... bnd2= "<<bnd2<<"   nprof= "<<nprof<<"\n";
      std::vector<int> tmp_vec;
      //for(size_t i=bnd2+1; i< nprof; i++){
@@ -6820,6 +6820,7 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
        }
      }
      cl.cluster_el = tmp_vec;
+     */
 
 
     }//<-- endif a boundary point was determined
@@ -6913,9 +6914,11 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
   
   } // end Michel shower 2D clustering (if decay angle found)
 
-  if( cl.bnd_i && cl.plane == 1 && cl.prof_X.size() > 10 )  
+  /*
+  if( cl.bnd_i && cl.plane == 1 && cl.prof_X.size() > 10 
+    )  
     MakeClusteringGraphs(cl);
-
+  */
 
 }
 
@@ -7610,15 +7613,17 @@ void MichelAna::MakeWfmGraphs(art::Event& e){
         //if(g_bs.GetN() > 0 ) mg.Add(&g_bs,"L");
         mg.Draw("a");
         mg.SetTitle(histName);
-        mg.GetYaxis()->SetTitle("Inverted PMT Signal [ADC]");
-        mg.GetXaxis()->SetTitle("Time Tick [ns]");
+        mg.GetYaxis()->SetTitle("Inverted signal [ADC]");
+        mg.GetXaxis()->SetTitle("Time [ns]");
         mg.GetXaxis()->SetLimits(x1,x2);
         mg.GetYaxis()->CenterTitle();
-        mg.GetXaxis()->SetTitleSize(0.05);
-        mg.GetYaxis()->SetTitleSize(0.05);
+        mg.GetXaxis()->SetTitleSize(0.06);
+        mg.GetYaxis()->SetTitleSize(0.06);
         mg.GetXaxis()->SetLabelSize(0.05);
         mg.GetYaxis()->SetLabelSize(0.05);
-        mg.GetYaxis()->SetTitleOffset(0.8);
+        mg.GetYaxis()->SetTitleOffset(0.7);
+        gPad->SetBottomMargin(0.15);
+        gPad->SetTopMargin(0.10);
         gPad->SetGridx(1);
         gPad->SetGridy(1);
         gPad->Update();
@@ -7652,23 +7657,25 @@ void MichelAna::MakeWfmGraphs(art::Event& e){
           pfit.SetParameter(1,-1.*fvPrepulseSlowNorm[ch].at(1));
           pfit.SetParameter(2,fvPrepulseZeroPoint[ch].at(1));
           pfit.SetParameter(3,fvPrepulseSlowTau[ch].at(1));
-          pfit.Draw("same");
+          //pfit.Draw("same");
           sprintf(buffer,"#DeltaT =  %f", fdT[ch]); pt.AddText(buffer);
           sprintf(buffer,"Prompt = %f PE", fPE_prompt[ch]); pt.AddText(buffer);
           sprintf(buffer,"Full = %f PE", fPE_total[ch]); pt.AddText(buffer);
-          pt.Draw();
+          //pt.Draw();
 
         c1.cd(2);
         g_grad.Draw("AL"); 
-        g_grad.GetYaxis()->SetTitle("Signal Gradient");
-        g_grad.GetXaxis()->SetTitle("Time Tick [ns]");
+        g_grad.GetYaxis()->SetTitle("Signal gradient");
+        g_grad.GetXaxis()->SetTitle("Time [ns]");
         g_grad.GetXaxis()->SetLimits(x1,x2);
         g_grad.GetYaxis()->CenterTitle();
-        g_grad.GetXaxis()->SetTitleSize(0.05);
-        g_grad.GetYaxis()->SetTitleSize(0.05);
+        g_grad.GetXaxis()->SetTitleSize(0.06);
+        g_grad.GetYaxis()->SetTitleSize(0.06);
         g_grad.GetXaxis()->SetLabelSize(0.05);
         g_grad.GetYaxis()->SetLabelSize(0.05);
-        g_grad.GetYaxis()->SetTitleOffset(0.8);
+        g_grad.GetYaxis()->SetTitleOffset(0.7);
+        gPad->SetTopMargin(0.05);
+        gPad->SetBottomMargin(0.15);
         gPad->SetGridx(1);
         gPad->SetGridy(1);
         gPad->Update();
@@ -7801,18 +7808,19 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   if(g_bnd.GetN() > 0 )     g.Add(&g_bnd,"P");
   g.Draw("a");
   g.SetTitle(buffer);
-  g.GetXaxis()->SetTitle("Wire coordinate [cm]");
-  g.GetYaxis()->SetTitle("Drift coordinate [cm]");
-  g.GetXaxis()->SetTitleSize(0.05);
-  g.GetYaxis()->SetTitleSize(0.05);
+  g.GetXaxis()->SetTitle("Wire coordinate, #it{W} [cm]");
+  g.GetYaxis()->SetTitle("Drift coordinate, #it{X} [cm]");
+  g.GetXaxis()->SetTitleSize(0.06);
+  g.GetYaxis()->SetTitleSize(0.06);
   g.GetXaxis()->SetLabelSize(0.05);
   g.GetYaxis()->SetLabelSize(0.05);
-  g.GetYaxis()->SetTitleOffset(0.8);
-  gPad->SetGridx(1);
-  gPad->SetGridy(1);
+  g.GetYaxis()->SetTitleOffset(0.6);
+  gPad->SetBottomMargin(0.15);
+  //gPad->SetGridx(1);
+  //gPad->SetGridy(1);
         
-  double ts = 0.07;
-  double ls = 0.06;
+  double ts = 0.08;
+  double ls = 0.07;
   
   TMultiGraph g2;
 //  if( g_dQ.GetN() > 0 ) {
@@ -7827,13 +7835,13 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   g2.GetYaxis()->SetNoExponent(false);
   g2.GetYaxis()->CenterTitle();
   g2.GetXaxis()->SetTitleSize(ts);
-  g2.GetXaxis()->SetLabelSize(ls);
+  g2.GetXaxis()->SetLabelSize(0);
   g2.GetYaxis()->SetTitleSize(ts);
   g2.GetYaxis()->SetLabelSize(ls);
-  g2.GetYaxis()->SetTitleOffset(0.7);
-  gPad->SetBottomMargin(0.01);
-  gPad->SetGridx(1);
-  gPad->SetGridy(1);
+  g2.GetYaxis()->SetTitleOffset(0.6);
+  gPad->SetBottomMargin(0.02);
+  //gPad->SetGridx(1);
+  //gPad->SetGridy(1);
   gPad->Update();
   TLine maxQLineA(cl.maxQ_s,gPad->GetUymin(),cl.maxQ_s,gPad->GetUymax());
   maxQLineA.SetLineColor(kRed);
@@ -7853,17 +7861,17 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   if(g_lin.GetN() > 0 )  g3.Add(&g_lin,"APL");
   g3.Draw("a");
   g3.GetXaxis()->SetTitle("Projected 2D distance [cm]");
-  g3.GetYaxis()->SetTitle("Local linearity #chi^{2}");
+  g3.GetYaxis()->SetTitle("Local linearity");
   g3.GetYaxis()->CenterTitle();
   g3.GetXaxis()->SetTitleSize(ts);
   g3.GetXaxis()->SetLabelSize(ls);
   g3.GetYaxis()->SetTitleSize(ts);
   g3.GetYaxis()->SetLabelSize(ls);
-  g3.GetYaxis()->SetTitleOffset(0.7);
+  g3.GetYaxis()->SetTitleOffset(0.6);
   gPad->SetTopMargin(0.01);
-  gPad->SetBottomMargin(0.15);
-  gPad->SetGridx(1);
-  gPad->SetGridy(1);
+  gPad->SetBottomMargin(0.18);
+  //gPad->SetGridx(1);
+  //gPad->SetGridy(1);
   gPad->Update();
   TLine maxQLineB(cl.maxQ_s,gPad->GetUymin(),cl.maxQ_s,gPad->GetUymax());
   maxQLineB.SetLineColor(kRed);

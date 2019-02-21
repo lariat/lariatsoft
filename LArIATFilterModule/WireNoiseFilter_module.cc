@@ -66,6 +66,8 @@ private:
   int         fBaselineSamples;
   
   TH1F*       hMaxSignalPulse[2];
+  TH1F*       hWireAdc[2];
+  TH1F*       hWireRms[2];
   TH1F*       hAveWireRms[2];
   TH1F*       hAveWireRms_pass[2];
   TH1F*       hEvtPass;
@@ -80,8 +82,12 @@ WireNoiseFilter::WireNoiseFilter(fhicl::ParameterSet const & p)
   art::ServiceHandle<art::TFileService> tfs;
   hMaxSignalPulse[0]= tfs->make<TH1F>("MaxSignalPulse_0","Induction plane;Wire pulse amplitude [ADC]",200,0,1000);
   hMaxSignalPulse[1]= tfs->make<TH1F>("MaxSignalPulse_1","Collection plane;Wire pulse amplitude [ADC]",200,0,1000);
-  hAveWireRms[0]    = tfs->make<TH1F>("AveWireRms_0","Induction plane;Wire RMS [ADC]",200,0.,20);
-  hAveWireRms[1]    = tfs->make<TH1F>("AveWireRms_1","Collection plane;Wire RMS [ADC]",200,0.,20);
+  hWireAdc[0]    = tfs->make<TH1F>("WireAdc_0","Induction plane;Wire baseline [ADC]",200,-10,10);
+  hWireAdc[1]    = tfs->make<TH1F>("WireAdc_1","Collection plane;Wire baseline [ADC]",200,-10,10);
+  hWireRms[0]    = tfs->make<TH1F>("WireRms_0","Induction plane;Wire RMS [ADC]",200,0.,20);
+  hWireRms[1]    = tfs->make<TH1F>("WireRms_1","Collection plane;Wire RMS [ADC]",200,0.,20);
+  hAveWireRms[0]    = tfs->make<TH1F>("AveWireRms_0","Induction plane;Average Wire RMS [ADC]",200,0.,20);
+  hAveWireRms[1]    = tfs->make<TH1F>("AveWireRms_1","Collection plane;Average Wire RMS [ADC]",200,0.,20);
   hAveWireRms_pass[0] = tfs->make<TH1F>("AveWireRms_pass_0","Induction plane;Wire RMS [ADC]",200,0.,20);
   hAveWireRms_pass[1] = tfs->make<TH1F>("AveWireRms_pass_1","Collection plane;Wire RMS [ADC]",200,0.,20);
   hEvtPass            = tfs->make<TH1F>("EvtPass","0 = fail, 1 = pass",2,0,2);
@@ -90,9 +96,12 @@ WireNoiseFilter::WireNoiseFilter(fhicl::ParameterSet const & p)
 bool WireNoiseFilter::filter(art::Event & e)
 {
 
+  LOG_VERBATIM("WireNoiseFilter")
+  <<"---- WireNoiseFilter -----\n";
+
   // Average wire RMS for each plane (initialize to dummy values)
   float aveRms[2]={-9.,-9.};
-
+  
   // ----------------------------------------------------------------------
   // Check that raw digits exist
   art::Handle< std::vector<raw::RawDigit> > DigitHandle;;
@@ -133,21 +142,26 @@ bool WireNoiseFilter::filter(art::Event & e)
         // uncompress the data
         raw::Uncompress(digitVec->ADCs(), rawadc, digitVec->Compression());
         
+        
         // calculate RMS assuming pedestal already subtracted off.
         // avoid outliers > [thresh] ADC
         int k = (int)rawadc.size();
         if( fBaselineSamples > 0 && k > fBaselineSamples ) k = fBaselineSamples;
         int nn = 0;
         float sum_sq = 0.;
+        float sum_adc = 0.;
         for(int bin = 0; bin < k; ++bin) {
           if( fabs(rawadc[bin]) > maxpulse ) maxpulse = fabs(rawadc[bin]);
           if( fabs(rawadc[bin]) > fWireAdcThresh[plane] ) continue;
-          sum_sq += pow(rawadc[bin],2);
+          sum_sq  += pow(rawadc[bin],2);
+          sum_adc += rawadc[bin];
           nn++;  
         }
         if( nn ) {
-          sum_rms[plane] += sqrt(sum_sq / nn );
           nchan[plane] ++;
+          sum_rms[plane] += sqrt( sum_sq / nn );
+          hWireAdc[plane] -> Fill( sum_adc / nn );
+          hWireRms[plane] -> Fill( sum_sq / nn );
         }
         if( maxpulse > 0 ) hMaxSignalPulse[plane]->Fill(maxpulse);
       }
@@ -155,6 +169,8 @@ bool WireNoiseFilter::filter(art::Event & e)
    
     for(int plane=0; plane<2; plane++){
       if( nchan[plane] > 0 ) aveRms[plane] = sum_rms[plane] / nchan[plane];
+      LOG_VERBATIM("WireNoiseFilter")
+      <<"   Plane "<<plane<<": "<<aveRms[plane]<<" ADC\n (acceptance range: "<<fMinWireRms[plane]<<"-"<<fMaxWireRms[plane]<<")";
     }// done loop over planes
 
   }// endif digits.size() > 0
@@ -178,6 +194,8 @@ bool WireNoiseFilter::filter(art::Event & e)
     }
   }
   
+  LOG_VERBATIM("WireNoiseFilter")
+  <<"--------------------------\n";
   
   hEvtPass->Fill(int(pass));
   return pass;

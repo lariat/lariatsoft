@@ -26,7 +26,7 @@ process_name: GenRecoAna
 
 services:
 {
-  TFileService: { fileName: "Ana.root" }
+  TFileService: { fileName: "GenRecoAna.root" }
   RandomNumberGenerator: {}
   @table::lariat_simulation_services_run2
 }
@@ -62,10 +62,10 @@ physics:
   daq:                  @local::lariat_simwire  	  
   rns:                  { module_type: "RandomNumberSaver" }
   caldata:              @local::lariat_calroi
-  gaushit:             @local::lariat_gaushitfinder
+  gaushit:              @local::lariat_gaushitfinder
   trajcluster:          @local::lariat_trajcluster_data
-  pmtracktc:              @local::standard_pmalgtrackmaker
-  calotc:                 @local::standard_calodata
+  pmtracktc:            @local::standard_pmalgtrackmaker
+  calotc:               @local::standard_calodata
  }
 
  filters:
@@ -77,6 +77,7 @@ physics:
      RequireDecayElectron: true
   }
   tfilt:                @local::lariat_timestampfilter  
+  noisefilt:            @local::lariat_wirenoisefilter
   hitnumfilt:           @local::lariat_hitnumberfilter
   michelana:            @local::lariat_michelana
  }
@@ -85,7 +86,7 @@ physics:
  {
  }
 
- reco:          [ @sequence::simseq, tfilt, @sequence::tpcreco, michelana ]
+ reco:          [ @sequence::simseq, noisefilt, @sequence::tpcreco, michelana ]
  stream1:       [ out1 ]
  trigger_paths: [ reco ] 
  end_paths:     [ ]  
@@ -132,6 +133,9 @@ services.LArG4Parameters.StoreTrajectories:                     true
 physics.filters.tfilt.RequireRawDigits:                         true
 physics.filters.tfilt.MinWireRms:                               0.
 physics.filters.tfilt.MaxWireRms:                               999.
+
+physics.filters.noisefilt.MinWireRmsCol:                        0.
+physics.filters.noisefilt.MaxWireRmsCol:                        999.
 
 physics.producers.caldata.DigitModuleLabel:                     "daq"
 physics.producers.caldata.DodQdxCalib:                          false
@@ -186,6 +190,7 @@ physics.producers.calotc.UseArea:               "true"
 # ==================================================================
 physics.filters.michelana:                    @local::lariat_michelana_mc2b
 physics.filters.michelana.ApplyTrigEffCut:    false
+physics.filters.michelana.MuContamCorr:       false
 physics.filters.michelana.SmearFactor:        [ 0.,   0.  ]
 physics.filters.michelana.QE_ScaleFactor:     [ 1.,    1. ]
 
