@@ -7,4 +7,5 @@ lariat_wcqualityproducer:
   TOFModuleLabel: "tof"
   WCTrackLabel:   "wctrack"
   fNumberWCTrack: 1
+  IsThisMC:       false
 }

@@ -119,6 +119,11 @@ lariat_LifetimeX:
     Verbose:                  false                   #####   Set how much I want to print on screen
 }
 
+lariat_CalcXS:
+{
+  module_type: "CalculateCrossSection"
+}
+
 lariat_anatree.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
 lariat_mcanalysis.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
 END_PROLOG

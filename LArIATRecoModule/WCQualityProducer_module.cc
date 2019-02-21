@@ -83,6 +83,7 @@ private:
   double fWC4ProjCut; 
   double fMassLowerLimit;
   double fMassUpperLimit;      
+  bool IsThisMC;
 
 
   art::ServiceHandle<geo::Geometry> fGeo;  
@@ -385,6 +386,9 @@ void WCQualityProducer::produce(art::Event & evt)
     hMomRejected->Fill(reco_momo);
   }
 
+  // apply WC quality flag if this is MC
+  if (IsThisMC) KeepTheEvent = true;
+
   // If the event makes it all the way here, congrats you get to graduate now
 
   //return KeepTheEvent;
@@ -431,6 +435,7 @@ void WCQualityProducer::reconfigure(fhicl::ParameterSet const & p)
   ApplyMassCut=p.get<bool>("ApplyMassCut",false);
   fMassLowerLimit=p.get<double>("LowerMassLimit",0);
   fMassUpperLimit=p.get<double>("UpperMassLimit",2000);
+  IsThisMC = p.get< bool >("IsThisMC", false);
 
 
 }

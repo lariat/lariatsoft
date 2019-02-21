@@ -247,7 +247,7 @@ private:
   float  WC4yPos[kMaxWCTracks];
   float  WC4zPos[kMaxWCTracks];
   float  WCTrackResidual[kMaxWCTracks]; //How far off a straight line in YZ plane was the the WCTrack?
-  float  WCTrackWCMissed[kMaxWCTracks]; //If this was made with 3 points, was it WC2 or WC3 missed?
+  int  WCTrackWCMissed[kMaxWCTracks]; //If this was made with 3 points, was it WC2 or WC3 missed?
 
   float  wcP [kMaxWCTracks];
   float  wcPx[kMaxWCTracks];

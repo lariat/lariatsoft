@@ -28,10 +28,10 @@
 #include "larcoreobj/SimpleTypesAndConstants/geo_types.h"
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "larcore/Geometry/Geometry.h"
-//#include "larcore/Geometry/CryostatGeo.h"
-//#include "larcore/Geometry/TPCGeo.h"
-//#include "larcore/Geometry/PlaneGeo.h"
-//#include "larcore/Geometry/WireGeo.h"
+//#include "larcorealg/Geometry/CryostatGeo.h"
+//#include "larcorealg/Geometry/TPCGeo.h"
+//#include "larcorealg/Geometry/PlaneGeo.h"
+//#include "larcorealg/Geometry/WireGeo.h"
 #include "lardataobj/RecoBase/Wire.h"
 #include "lardataobj/RecoBase/Hit.h"
 #include "lardataobj/RecoBase/Cluster.h"
@@ -289,6 +289,18 @@ private:
   double wctrk_x_proj_3cm[kMaxWCTracks];
   double wctrk_y_proj_3cm[kMaxWCTracks];
   double wctrk_z_proj_3cm[kMaxWCTracks];
+  double wctrk_wc1_x[kMaxWCTracks];
+  double wctrk_wc1_y[kMaxWCTracks];
+  double wctrk_wc1_z[kMaxWCTracks];
+  double wctrk_wc2_x[kMaxWCTracks];
+  double wctrk_wc2_y[kMaxWCTracks];
+  double wctrk_wc2_z[kMaxWCTracks];
+  double wctrk_wc3_x[kMaxWCTracks];
+  double wctrk_wc3_y[kMaxWCTracks];
+  double wctrk_wc3_z[kMaxWCTracks];
+  double wctrk_wc4_x[kMaxWCTracks];
+  double wctrk_wc4_y[kMaxWCTracks];
+  double wctrk_wc4_z[kMaxWCTracks];
 
   double electron_lifetime;
 
@@ -870,39 +882,50 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
       //  } 
       if(SlabN.size())
         {
-        if(InteractionPointType[InteractionPoint.size()-1] == 13)
+          try
           {
-          double int_x = MidPosX[0][InteractionPoint[InteractionPoint.size()-1]];
-          double int_y = MidPosY[0][InteractionPoint[InteractionPoint.size()-1]];
-          double int_z = MidPosZ[0][InteractionPoint[InteractionPoint.size()-1]];
-          std::cout << "inelastic int: " << int_x << ", " << int_y << ", " << int_z << std::endl;
-          std::cout << "slab loop" << std::endl;
-          for(unsigned int slab = 0; slab < SlabN.size(); slab++)
-            {
-            double dist_slab = sqrt( pow(int_x - SlabX[slab], 2) +
-                                     pow(int_y - SlabY[slab], 2) +
-                                     pow(int_z - SlabZ[slab], 2) );
-            std::cout<<"\tslab x,y,z: "<<SlabX[slab]<<", "<<SlabY[slab]<<", "<<SlabZ[slab]<<std::endl;
-            std::cout << "\t\tdist to int: " << dist_slab << std::endl; 
-            }
+            if(InteractionPointType.at(InteractionPoint.size()-1) == 13)
+              {
+              double int_x = MidPosX[0][InteractionPoint[InteractionPoint.size()-1]];
+              double int_y = MidPosY[0][InteractionPoint[InteractionPoint.size()-1]];
+              double int_z = MidPosZ[0][InteractionPoint[InteractionPoint.size()-1]];
+              std::cout << "inelastic int: " << int_x << ", " << int_y << ", " << int_z << std::endl;
+              std::cout << "slab loop" << std::endl;
+              for(unsigned int slab = 0; slab < SlabN.size(); slab++)
+                {
+                double dist_slab = sqrt( pow(int_x - SlabX[slab], 2) +
+                                         pow(int_y - SlabY[slab], 2) +
+                                         pow(int_z - SlabZ[slab], 2) );
+                std::cout<<"\tslab x,y,z: "<<SlabX[slab]<<", "<<SlabY[slab]<<", "<<SlabZ[slab]<<std::endl;
+                std::cout << "\t\tdist to int: " << dist_slab << std::endl;
+                }
+              }
+            else
+              {
+              double lastx = MidPosX[0][numTrue_inTPC];
+              double lasty = MidPosY[0][numTrue_inTPC];
+              double lastz = MidPosZ[0][numTrue_inTPC];
+              std::cout << "didn't interact..." << std::endl;
+              std::cout << "last pt: " << lastx << ", " << lasty << ", " << lastz << std::endl;
+              std::cout << "slab loop" << std::endl;
+              for(unsigned int slab = 0; slab < SlabN.size(); slab++)
+                {
+                double dist_slab = sqrt( pow(lastx - SlabX[slab], 2) +
+                                         pow(lasty - SlabY[slab], 2) +
+                                         pow(lastz - SlabZ[slab], 2) );
+                std::cout<<"\tslab x,y,z: "<<SlabX[slab]<<", "<<SlabY[slab]<<", "<<SlabZ[slab]<<std::endl;
+                std::cout << "\t\tdist to last: " << dist_slab << std::endl;
+                }
+
+              }
           }
-        else
+          catch (const std::out_of_range& e)
           {
-          double lastx = MidPosX[0][numTrue_inTPC];
-          double lasty = MidPosY[0][numTrue_inTPC];
-          double lastz = MidPosZ[0][numTrue_inTPC];
-          std::cout << "didn't interact..." << std::endl;
-          std::cout << "last pt: " << lastx << ", " << lasty << ", " << lastz << std::endl;
-          std::cout << "slab loop" << std::endl;
-          for(unsigned int slab = 0; slab < SlabN.size(); slab++)
-            {
-            double dist_slab = sqrt( pow(lastx - SlabX[slab], 2) +
-                                     pow(lasty - SlabY[slab], 2) +
-                                     pow(lastz - SlabZ[slab], 2) );
-            std::cout<<"\tslab x,y,z: "<<SlabX[slab]<<", "<<SlabY[slab]<<", "<<SlabZ[slab]<<std::endl;
-            std::cout << "\t\tdist to last: " << dist_slab << std::endl; 
-            }
-          
+            std::cout << "Size of InteractionPoint and InteractionPointType are not equal.  Skipping..."
+                      << "\nSlabN.size(): "                << SlabN.size()
+                      << "\nInteractionPointType.size(): " << InteractionPointType.size()
+                      << "\nInteractionPoint.size(): "     << InteractionPoint.size()
+                      << std::endl;
           }
         }
     std::cout<<std::endl;
@@ -938,6 +961,19 @@ void lariat::AnaTreeT1034UC::analyze(art::Event const & evt)
       wctrk_x_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).X();
       wctrk_y_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).Y();
       wctrk_z_proj_3cm[wct_count] = wctrack[wct_count]->ProjectionAtZ(3, false).Z();
+
+      wctrk_wc1_x[wct_count] = wctrack[wct_count]->HitPosition(0, 0);
+      wctrk_wc1_y[wct_count] = wctrack[wct_count]->HitPosition(0, 1);
+      wctrk_wc1_z[wct_count] = wctrack[wct_count]->HitPosition(0, 2);
+      wctrk_wc2_x[wct_count] = wctrack[wct_count]->HitPosition(1, 0);
+      wctrk_wc2_y[wct_count] = wctrack[wct_count]->HitPosition(1, 1);
+      wctrk_wc2_z[wct_count] = wctrack[wct_count]->HitPosition(1, 2);
+      wctrk_wc3_x[wct_count] = wctrack[wct_count]->HitPosition(2, 0);
+      wctrk_wc3_y[wct_count] = wctrack[wct_count]->HitPosition(2, 1);
+      wctrk_wc3_z[wct_count] = wctrack[wct_count]->HitPosition(2, 2);
+      wctrk_wc4_x[wct_count] = wctrack[wct_count]->HitPosition(3, 0);
+      wctrk_wc4_y[wct_count] = wctrack[wct_count]->HitPosition(3, 1);
+      wctrk_wc4_z[wct_count] = wctrack[wct_count]->HitPosition(3, 2);
     }
 
 
@@ -1415,6 +1451,19 @@ void lariat::AnaTreeT1034UC::beginJob()
   fTree->Branch("wctrk_x_proj_3cm",            wctrk_x_proj_3cm, "wctrk_x_proj_3cm[num_wctracks]/D");
   fTree->Branch("wctrk_y_proj_3cm",            wctrk_y_proj_3cm, "wctrk_y_proj_3cm[num_wctracks]/D");
   fTree->Branch("wctrk_z_proj_3cm",            wctrk_z_proj_3cm, "wctrk_z_proj_3cm[num_wctracks]/D");
+
+  fTree->Branch("wctrk_wc1_x", wctrk_wc1_x, "wctrk_wc1_x[num_wctracks]/D");
+  fTree->Branch("wctrk_wc1_y", wctrk_wc1_y, "wctrk_wc1_y[num_wctracks]/D");
+  fTree->Branch("wctrk_wc1_z", wctrk_wc1_z, "wctrk_wc1_z[num_wctracks]/D");
+  fTree->Branch("wctrk_wc2_x", wctrk_wc2_x, "wctrk_wc2_x[num_wctracks]/D");
+  fTree->Branch("wctrk_wc2_y", wctrk_wc2_y, "wctrk_wc2_y[num_wctracks]/D");
+  fTree->Branch("wctrk_wc2_z", wctrk_wc2_z, "wctrk_wc2_z[num_wctracks]/D");
+  fTree->Branch("wctrk_wc3_x", wctrk_wc3_x, "wctrk_wc3_x[num_wctracks]/D");
+  fTree->Branch("wctrk_wc3_y", wctrk_wc3_y, "wctrk_wc3_y[num_wctracks]/D");
+  fTree->Branch("wctrk_wc3_z", wctrk_wc3_z, "wctrk_wc3_z[num_wctracks]/D");
+  fTree->Branch("wctrk_wc4_x", wctrk_wc4_x, "wctrk_wc4_x[num_wctracks]/D");
+  fTree->Branch("wctrk_wc4_y", wctrk_wc4_y, "wctrk_wc4_y[num_wctracks]/D");
+  fTree->Branch("wctrk_wc4_z", wctrk_wc4_z, "wctrk_wc4_z[num_wctracks]/D");
 
   fTree->Branch("electron_lifetime",           &electron_lifetime, "electron_lifetime/D");
 

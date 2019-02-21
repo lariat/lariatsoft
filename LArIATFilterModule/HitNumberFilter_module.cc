@@ -139,7 +139,7 @@ void HitNumberFilter::endJob()
 
 void HitNumberFilter::reconfigure(fhicl::ParameterSet const & p)
 {
-  fMaxNumHits	      = p.get< std::vector<int> > ("MaxNumHits",{1000,1000});
+  fMaxNumHits	      = p.get< std::vector<int> > ("MaxNumHits",{-999,-999});
   fHitsModuleLabel    = p.get< std::string >      ("HitsModuleLabel","gaushit");
   fHitsInstance       = p.get< std::string >      ("HitsInstance","");
 }

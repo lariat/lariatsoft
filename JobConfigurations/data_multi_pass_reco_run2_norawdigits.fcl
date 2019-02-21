@@ -1,0 +1,11 @@
+#include "data_multi_pass_reco_run2.fcl"
+
+outputs.out1.outputCommands:  [
+   "keep *_*_*_*",
+   "drop raw::RawDigits_*_*_*",
+   "drop raw::AuxDetDigits_*_*_*",
+   "drop recob::Wires_*_*_*",
+   "drop raw::RawDigitrecob::Wirevoidart::Assns_*_*_*",
+   "drop raw::RawDigitrecob::Hitvoidart::Assns_*_*_*",
+   "drop recob::Hitrecob::Wirevoidart::Assns_*_*_*"
+   ]

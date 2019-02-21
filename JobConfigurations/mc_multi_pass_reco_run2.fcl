@@ -1,0 +1,24 @@
+#include "data_multi_pass_reco_run2.fcl"
+
+services:
+{
+  TFileService: { fileName: "reco_hist.root" }
+  RandomNumberGenerator: {} # ART native random number generator
+  TimeTracker: {}
+  @table::lariat_simulation_services_run2
+}
+
+# Remove the timestamp filter and any beamline reco
+physics.reco: [ caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctrack, wcquality, wctracktpctrackmatch, wctracktpctrackuniquematch ]
+
+physics.producers.caldata.DigitModuleLabel: "daq"
+physics.producers.caldata.DodQdxCalib:      false
+
+physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgmc_run2
+physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgmc_run2 
+
+physics.producers.wctrack: { module_type: DDMCFakeWCTrackBuilder }
+physics.producers.wctrack.module_type: DDMCFakeWCTrackBuilder
+physics.producers.wcquality.IsThisMc: true
+physics.producers.wctracktpctrackmatch.IsThisMC: true
+physics.producers.wctracktpctrackuniquematch.IsThisMC: true

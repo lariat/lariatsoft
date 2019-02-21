@@ -1,0 +1,14 @@
+#include "data_multi_pass_reco_run2.fcl"
+
+services:
+{
+  TFileService: { fileName: "reco_hist.root" }
+  RandomNumberGenerator: {} # ART native random number generator
+  @table::lariat_services
+}
+
+physics.producers.caldata.dQdxCalibFileName: "LArIATChargeCorrectionFactors_Run1.txt"
+
+physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run1
+physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgdata_run1 
+

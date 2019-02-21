@@ -13,4 +13,5 @@ lariat_wctracktpctrackmatch:
   CircularCutXCenter:   1.6
   CircularCutYCenter:   -0.17
   CircularCutRadius:    3.5
+  UniqueMatchMode:      true
 }

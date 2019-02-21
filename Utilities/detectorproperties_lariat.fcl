@@ -20,6 +20,7 @@ lariat_detproperties:
   TimeOffsetZ:       0.
   ReadOutWindowSize: 3072
   InheritNumberTimeSamples: false
+  SamplingRate:      -1.  # Set neg. to get value from TPCClock.TimeTick() (prev. default behavior)
 
   SternheimerA:     0.1956  # Ar Sternheimer parameter a.
   SternheimerK:     3.0000  # Ar Sternheimer parameter k.
@@ -54,4 +55,5 @@ lariat_detproperties_400Vcm:              @local::lariat_detproperties_run2_fiel
 lariat_detproperties_400Vcm.Efield:       [ 0.386,  0.559,  0.710 ]
 lariat_detproperties_450Vcm:              @local::lariat_detproperties_run2_fieldscan
 lariat_detproperties_450Vcm.Efield:       [ 0.434,  0.630,  0.800 ]
+
 END_PROLOG
