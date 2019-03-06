@@ -8,6 +8,7 @@ art_make(
           LIB_LIBRARIES    larsim_PhotonPropagation
                            larsim_PhotonPropagation_PhotonVisibilityService_service
                            lardata_Utilities
+                           larsim_LArG4
                            larsim_Simulation 
                            nutools_ParticleNavigation
                            lardataobj_Simulation
@@ -40,6 +41,7 @@ art_make(
                            ${ROOT_GEOM}
                            ${CLHEP}
                            ${G4_LIB_LIST}
+                           ${Boost_SYSTEM_LIBRARY}
           MODULE_LIBRARIES larsim_LArG4
                            larsim_MCCheater_ParticleInventoryService_service
                            larsim_Simulation

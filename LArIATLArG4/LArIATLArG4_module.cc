@@ -51,19 +51,19 @@
 #include "nutools/RandomUtils/NuRandomService.h"
 
 // LArSoft Includes
-#include "larsim/LArG4/LArVoxelReadoutGeometry.h"
+//#include "larsim/LArG4/LArVoxelReadoutGeometry.h"
 #include "larsim/LArG4/PhysicsList.h"
-#include "larsim/LArG4/ParticleListAction.h"
+//#include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/G4BadIdeaAction.h"
 #include "larsim/LArG4/IonizationAndScintillationAction.h"
 #include "larsim/LArG4/OpDetSensitiveDetector.h"
 #include "larsim/LArG4/OpDetReadoutGeometry.h"
 #include "larsim/LArG4/LArStackingAction.h"
-#include "larsim/LArG4/LArVoxelReadout.h"
+//#include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/MaterialPropertyLoader.h"
 #include "larsim/LArG4/OpDetPhotonTable.h"
-#include "larsim/LArG4/AuxDetReadoutGeometry.h"
-#include "larsim/LArG4/AuxDetReadout.h"
+//#include "larsim/LArG4/AuxDetReadoutGeometry.h"
+//#include "larsim/LArG4/AuxDetReadout.h"
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
@@ -75,6 +75,13 @@
 #include "larcore/Geometry/Geometry.h"
 #include "nutools/G4Base/DetectorConstruction.h"
 #include "nutools/G4Base/UserActionManager.h"
+
+// LArIATSoft includes
+#include "LArIATLArG4/AuxDetReadout.h"
+#include "LArIATLArG4/AuxDetReadoutGeometry.h"
+#include "LArIATLArG4/LArVoxelReadout.h"
+#include "LArIATLArG4/LArVoxelReadoutGeometry.h"
+#include "LArIATLArG4/ParticleListAction.h"
 
 // G4 Includes
 #include "Geant4/G4RunManager.hh"
