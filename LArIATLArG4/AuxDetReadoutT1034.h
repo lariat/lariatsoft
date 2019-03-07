@@ -1,11 +1,11 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file   AuxDetReadout.h
+/// \file   AuxDetReadoutT1034.h
 /// \brief  A Geant4 sensitive detector that accumulates information.
 /// \author miceli@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef LARG4_AUXDETREADOUT_H
-#define LARG4_AUXDETREADOUT_H
+#ifndef LARIATLARG4_AUXDETREADOUTT1034_H
+#define LARIATLARG4_AUXDETREADOUTT1034_H
 
 #include "Geant4/G4VSensitiveDetector.hh"
 #include "Geant4/globals.hh"
@@ -24,16 +24,16 @@ class G4Step;
 
 namespace larg4 {
   
-  class AuxDetReadout : public G4VSensitiveDetector
+  class AuxDetReadoutT1034 : public G4VSensitiveDetector
   {
   public:
     // Constructor.
-    AuxDetReadout(std::string const& name, 
+    AuxDetReadoutT1034(std::string const& name, 
 		  unsigned int       adNum,
 		  unsigned int       svNum);
     
     // Destructor
-    virtual ~AuxDetReadout();
+    virtual ~AuxDetReadoutT1034();
     
     // Required for classes that inherit from G4VSensitiveDetector.
     //
@@ -74,11 +74,11 @@ namespace larg4 {
     
   private:
     art::ServiceHandle<geo::Geometry> fGeoHandle;        ///< Handle to the Geometry service
-    uint32_t                          fAuxDet;           ///< which AuxDet this AuxDetReadout corresponds to
-    uint32_t                          fAuxDetSensitive;  ///< which sensitive volume of the AuxDet this AuxDetReadout corresponds to
+    uint32_t                          fAuxDet;           ///< which AuxDet this AuxDetReadoutT1034 corresponds to
+    uint32_t                          fAuxDetSensitive;  ///< which sensitive volume of the AuxDet this AuxDetReadoutT1034 corresponds to
     sim::AuxDetSimChannel             fAuxDetSimChannel; ///< Contains the sim::AuxDetSimChannel for this AuxDet
     std::vector<sim::AuxDetIDE>       fAuxDetIDEs;       ///< list of IDEs in one channel
 };
 }
 
-#endif // LARG4_AUXDETREADOUT_H
+#endif // LARIATLARG4_AUXDETREADOUTT1034_H

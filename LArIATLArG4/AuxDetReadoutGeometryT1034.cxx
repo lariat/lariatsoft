@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  AuxDetReadoutGeometry.cxx
+/// \file  AuxDetReadoutGeometryT1034.cxx
 /// \brief Define the "parallel" geometry that's seen by the LAr Voxels.
 /// \author miceli@fnal.gov, talion@fnal.gov
 ////////////////////////////////////////////////////////////////////////
@@ -15,8 +15,8 @@
 //#include "larsim/LArG4/AuxDetReadout.h"
 
 // LArIATSoft includes
-#include "LArIATLArG4/AuxDetReadoutGeometry.h"
-#include "LArIATLArG4/AuxDetReadout.h"
+#include "LArIATLArG4/AuxDetReadoutGeometryT1034.h"
+#include "LArIATLArG4/AuxDetReadoutT1034.h"
 
 // G4 includes
 #include "Geant4/G4PVPlacement.hh"
@@ -40,15 +40,15 @@
 namespace larg4 {
 
   // Constructor and destructor.
-  AuxDetReadoutGeometry::AuxDetReadoutGeometry(const G4String name)
+  AuxDetReadoutGeometryT1034::AuxDetReadoutGeometryT1034(const G4String name)
     : G4VUserParallelWorld(name)
     , fNumSensitiveVol(0)
   {}
-  AuxDetReadoutGeometry::~AuxDetReadoutGeometry() 
+  AuxDetReadoutGeometryT1034::~AuxDetReadoutGeometryT1034() 
   {}
 
   ////////////////////////////////////////////////////////////////////
-  void AuxDetReadoutGeometry::Construct()
+  void AuxDetReadoutGeometryT1034::Construct()
   {
 
     // We want to find all of the AuxDets that the Geometry service would
@@ -75,7 +75,7 @@ namespace larg4 {
   }// end Construct
   
   //---------------------------------------------------------------
-  void AuxDetReadoutGeometry::FindAndMakeAuxDetSensitive(std::vector<const G4VPhysicalVolume*>& path,
+  void AuxDetReadoutGeometryT1034::FindAndMakeAuxDetSensitive(std::vector<const G4VPhysicalVolume*>& path,
 							 unsigned int depth,
 							 G4Transform3D DepthToWorld)
   {
@@ -96,12 +96,12 @@ namespace larg4 {
       fGeo->FindAuxDetSensitiveAtPosition(worldPos, adNum, svNum);
       //  N.B. This name is expected by code in LArG4:
       std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_" + std::to_string(svNum); 
-      AuxDetReadout* adReadout = new larg4::AuxDetReadout(SDName, adNum, svNum);
+      AuxDetReadoutT1034* adReadout = new larg4::AuxDetReadoutT1034(SDName, adNum, svNum);
 
-      LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
+      LOG_DEBUG("AuxDetReadoutGeometryT1034") << "found" << path[depth]->GetName() 
 					 << ", number " << adNum << ":" << svNum;
 
-      // Tell Geant4's sensitive-detector manager about the AuxDetReadout class
+      // Tell Geant4's sensitive-detector manager about the AuxDetReadoutT1034 class
       (G4SDManager::GetSDMpointer())->AddNewDetector(adReadout);
       LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);      
       return;
@@ -111,7 +111,7 @@ namespace larg4 {
     // recursion should end before exception is thrown.
     unsigned int deeper = depth+1;
     if(deeper >= path.size()){
-      throw cet::exception("AuxDetReadoutGeometry") << "exceeded maximum TGeoNode depth\n";
+      throw cet::exception("AuxDetReadoutGeometryT1034") << "exceeded maximum TGeoNode depth\n";
     }
 
     // Note that there will be nd different branches off of path[depth] 
@@ -131,7 +131,7 @@ namespace larg4 {
   }
 
   //---------------------------------------------------------------
-  void AuxDetReadoutGeometry::FindAndMakeAuxDet(std::vector<const G4VPhysicalVolume*>& path,
+  void AuxDetReadoutGeometryT1034::FindAndMakeAuxDet(std::vector<const G4VPhysicalVolume*>& path,
 						unsigned int depth,
 						G4Transform3D DepthToWorld)
   {
@@ -150,12 +150,12 @@ namespace larg4 {
       fGeo->PositionToAuxDet(worldPos, adNum);
       //  N.B. This name is expected by code in LArG4:
       std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_0"; 
-      AuxDetReadout* adReadout = new larg4::AuxDetReadout(SDName, adNum, 0);
+      AuxDetReadoutT1034* adReadout = new larg4::AuxDetReadoutT1034(SDName, adNum, 0);
 
-      LOG_DEBUG("AuxDetReadoutGeometry") << "found" << path[depth]->GetName() 
+      LOG_DEBUG("AuxDetReadoutGeometryT1034") << "found" << path[depth]->GetName() 
 					 << ", number " << adNum << ":0";
 
-      // Tell Geant4's sensitive-detector manager about the AuxDetReadout class
+      // Tell Geant4's sensitive-detector manager about the AuxDetReadoutT1034 class
       (G4SDManager::GetSDMpointer())->AddNewDetector(adReadout);
       LogicalVolumeAtDepth->SetSensitiveDetector(adReadout);      
       return;
@@ -165,7 +165,7 @@ namespace larg4 {
     // recursion should end before exception is thrown.
     unsigned int deeper = depth+1;
     if(deeper >= path.size()){
-      throw cet::exception("AuxDetReadoutGeometry") << "exceeded maximum TGeoNode depth\n";
+      throw cet::exception("AuxDetReadoutGeometryT1034") << "exceeded maximum TGeoNode depth\n";
     }
 
     // Note that there will be nd different branches off of path[depth] 

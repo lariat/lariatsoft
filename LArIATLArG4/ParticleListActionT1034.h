@@ -13,8 +13,8 @@
 /// inherits from cfg::Observer, because it accesses a parameter from
 /// an XML configuration file.
 
-#ifndef LArG4_ParticleListAction_h
-#define LArG4_ParticleListAction_h
+#ifndef LArIATLArG4_ParticleListActionT1034_h
+#define LArIATLArG4_ParticleListActionT1034_h
 
 #include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
 #include "nutools/ParticleNavigation/ParticleList.h" // larg4::PositionInVolumeFilter
@@ -36,7 +36,7 @@ namespace sim {
 
 namespace larg4 {
 
-  class ParticleListAction : public g4b::UserAction
+  class ParticleListActionT1034 : public g4b::UserAction
   {
   public:
     struct ParticleInfo_t {
@@ -56,8 +56,8 @@ namespace larg4 {
     }; // ParticleInfo_t
 
     // Standard constructors and destructors;
-    ParticleListAction(double energyCut, bool storeTrajectories=false, bool keepEMShowerDaughters=false);
-    virtual ~ParticleListAction();
+    ParticleListActionT1034(double energyCut, bool storeTrajectories=false, bool keepEMShowerDaughters=false);
+    virtual ~ParticleListActionT1034();
 
     // UserActions method that we'll override, to obtain access to
     // Geant4's particle tracks and trajectories.
@@ -117,4 +117,4 @@ namespace larg4 {
 
 } // namespace LArG4
 
-#endif // LArG4_ParticleListAction_h
+#endif // LArIATLArG4_ParticleListActionT1034_h

@@ -5,13 +5,13 @@
 ///
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef LARG4_IONIZATIONANDSCINTILLATION_H
-#define LARG4_IONIZATIONANDSCINTILLATION_H
+#ifndef LARIATLARG4_IONIZATIONANDSCINTILLATIONT1034_H
+#define LARIATLARG4_IONIZATIONANDSCINTILLATIONT1034_H
 
 #include <cstring>
 
 //#include "larsim/LArG4/ISCalculation.h"
-#include "LArIATLArG4/ISCalculation.h"
+#include "LArIATLArG4/ISCalculationT1034.h"
 
 #include "Geant4/G4Step.hh"
 
@@ -23,14 +23,14 @@ namespace CLHEP { class HepRandomEngine; }
 namespace larg4 {
 
   // The Ionization and Scintillation singleton
-  class IonizationAndScintillation
+  class IonizationAndScintillationT1034
   {
   public:
 
-    static IonizationAndScintillation* CreateInstance(CLHEP::HepRandomEngine& engine);
-    static IonizationAndScintillation* Instance();
+    static IonizationAndScintillationT1034* CreateInstance(CLHEP::HepRandomEngine& engine);
+    static IonizationAndScintillationT1034* Instance();
 
-    // Method to reset the internal variables held in the ISCalculation
+    // Method to reset the internal variables held in the ISCalculationT1034
     // This method should be called at the start of any G4Step
     void Reset(const G4Step* step); 
 
@@ -41,10 +41,10 @@ namespace larg4 {
 
   private:
 
-    IonizationAndScintillation(CLHEP::HepRandomEngine& engine);
-    ~IonizationAndScintillation();
+    IonizationAndScintillationT1034(CLHEP::HepRandomEngine& engine);
+    ~IonizationAndScintillationT1034();
 
-    larg4::ISCalculation* fISCalc;             ///< object to calculate ionization and scintillation
+    larg4::ISCalculationT1034* fISCalc;             ///< object to calculate ionization and scintillation
                                                ///< produced by an energy deposition
     std::string           fISCalculator;       ///< name of calculator to use, NEST or Separate
     G4Step const*         fStep;               ///< pointer to the current G4 step
@@ -66,4 +66,4 @@ namespace larg4 {
 } // namespace larg4
 
 
-#endif // LARG4_IONIZATIONANDSCINTILLATION
+#endif // LARIATLARG4_IONIZATIONANDSCINTILLATIONT1034

@@ -5,6 +5,7 @@ include_directories ( $ENV{GEANT4_FQ_DIR}/include )
 include_directories ( $ENV{XERCES_C_INC} )
 
 art_make( 
+          LIBRARY_NAME     LArIATLArG4
           LIB_LIBRARIES    larsim_PhotonPropagation
                            larsim_PhotonPropagation_PhotonVisibilityService_service
                            lardata_Utilities
@@ -42,7 +43,8 @@ art_make(
                            ${CLHEP}
                            ${G4_LIB_LIST}
                            ${Boost_SYSTEM_LIBRARY}
-          MODULE_LIBRARIES larsim_LArG4
+          MODULE_LIBRARIES LArIATLArG4
+                           larsim_LArG4
                            larsim_MCCheater_ParticleInventoryService_service
                            larsim_Simulation
                            nutools_ParticleNavigation

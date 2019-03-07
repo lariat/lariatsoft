@@ -56,7 +56,7 @@
 // Scintillation Light Class Implementation
 ////////////////////////////////////////////////////////////////////////
 //
-// File:        OpFastScintillation.cc
+// File:        OpFastScintillationT1034.cc
 // Description: RestDiscrete Process - Generation of Scintillation Photons
 // Version:     1.0
 // Created:     1998-11-07
@@ -117,9 +117,9 @@
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
-#include "LArIATLArG4/ParticleListAction.h"
-#include "LArIATLArG4/IonizationAndScintillation.h"
-#include "LArIATLArG4/OpFastScintillation.hh"
+#include "LArIATLArG4/ParticleListActionT1034.h"
+#include "LArIATLArG4/IonizationAndScintillationT1034.h"
+#include "LArIATLArG4/OpFastScintillationT1034.hh"
 
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
@@ -139,7 +139,7 @@ namespace larg4{
   // Operators
   //////////////
   
-  // OpFastScintillation::operator=(const OpFastScintillation &right)
+  // OpFastScintillationT1034::operator=(const OpFastScintillationT1034 &right)
   // {
   // }
   
@@ -147,7 +147,7 @@ namespace larg4{
   // Constructors
   /////////////////
   
-  OpFastScintillation::OpFastScintillation(const G4String& processName, G4ProcessType type)      
+  OpFastScintillationT1034::OpFastScintillationT1034(const G4String& processName, G4ProcessType type)      
   : G4VRestDiscreteProcess(processName, type)
   {
         SetProcessSubType(25);
@@ -183,7 +183,7 @@ namespace larg4{
 
 }
 
-  OpFastScintillation::OpFastScintillation(const OpFastScintillation& rhs)
+  OpFastScintillationT1034::OpFastScintillationT1034(const OpFastScintillationT1034& rhs)
     :  G4VRestDiscreteProcess(rhs.GetProcessName(), rhs.GetProcessType())
   {
     theSlowIntegralTable        = rhs.GetSlowIntegralTable();
@@ -204,7 +204,7 @@ namespace larg4{
         // Destructors
         ////////////////
 
-OpFastScintillation::~OpFastScintillation()
+OpFastScintillationT1034::~OpFastScintillationT1034()
 {
 	if (theFastIntegralTable != NULL) {
            theFastIntegralTable->clearAndDestroy();
@@ -225,20 +225,20 @@ OpFastScintillation::~OpFastScintillation()
 // ----------
 //
 G4VParticleChange*
-OpFastScintillation::AtRestDoIt(const G4Track& aTrack, const G4Step& aStep)
+OpFastScintillationT1034::AtRestDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 // This routine simply calls the equivalent PostStepDoIt since all the
 // necessary information resides in aStep.GetTotalEnergyDeposit()
 
 {
-        return OpFastScintillation::PostStepDoIt(aTrack, aStep);
+        return OpFastScintillationT1034::PostStepDoIt(aTrack, aStep);
 }
 
 // PostStepDoIt
 // -------------
 //
 G4VParticleChange*
-OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
+OpFastScintillationT1034::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 // This routine is called for each tracking step of a charged particle
 // in a scintillator. A Poisson/Gauss-distributed number of photons is 
 // generated according to the scintillation yield formula, distributed 
@@ -332,12 +332,12 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 	
 	// get the number of photons produced from the IonizationAndScintillation
 	// singleton
-	larg4::IonizationAndScintillation::Instance()->Reset(&aStep);
-	double MeanNumberOfPhotons = larg4::IonizationAndScintillation::Instance()->NumberScintillationPhotons();
+	larg4::IonizationAndScintillationT1034::Instance()->Reset(&aStep);
+	double MeanNumberOfPhotons = larg4::IonizationAndScintillationT1034::Instance()->NumberScintillationPhotons();
         RecordPhotonsProduced(aStep, MeanNumberOfPhotons);
 	
 	if (verboseLevel>0) {
-	  G4cout << "\n Exiting from OpFastScintillation::DoIt -- NumberOfSecondaries = " 
+	  G4cout << "\n Exiting from OpFastScintillationT1034::DoIt -- NumberOfSecondaries = " 
 		 << aParticleChange.GetNumberOfSecondaries() << G4endl;
 	}
 	
@@ -348,7 +348,7 @@ OpFastScintillation::PostStepDoIt(const G4Track& aTrack, const G4Step& aStep)
 
 //-------------------------------------------------------------
 
-bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)
+bool OpFastScintillationT1034::RecordPhotonsProduced(const G4Step& aStep, double MeanNumberOfPhotons)
 {
 
   // Get the pointer to the fast scintillation table
@@ -608,7 +608,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
     		if(DetThisPMT>0) 
         {
 		      DetectedNum[OpDet]=DetThisPMT;
-		      //   mf::LogInfo("OpFastScintillation") << "FastScint: " <<
+		      //   mf::LogInfo("OpFastScintillationT1034") << "FastScint: " <<
 		      //   //   it->second<<" " << Num << " " << DetThisPMT;  
 
 		      //det_photon_ctr += DetThisPMT; // CASE-DEBUG DO NOT REMOVE THIS COMMENT
@@ -655,7 +655,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 
          sim::OpDetBacktrackerRecord tmpOpDetBTRecord(itdetphot->first);
          //int thisG4TrackID = (aStep.GetTrack())->GetTrackID();
-         int thisG4TrackID = ParticleListAction::GetCurrentTrackID();
+         int thisG4TrackID = ParticleListActionT1034::GetCurrentTrackID();
          CLHEP::Hep3Vector prePoint  = (aStep.GetPreStepPoint())->GetPosition();
          CLHEP::Hep3Vector postPoint = (aStep.GetPostStepPoint())->GetPosition();
          //Note the use of xO (letter O) instead of x0. This is to differentiate the positions here with the earlier declared double* x0
@@ -829,7 +829,7 @@ bool OpFastScintillation::RecordPhotonsProduced(const G4Step& aStep, double Mean
 // --------------------------------------------------
 //
 
-void OpFastScintillation::BuildThePhysicsTable()
+void OpFastScintillationT1034::BuildThePhysicsTable()
 {
         if (theFastIntegralTable && theSlowIntegralTable) return;
 
@@ -983,10 +983,10 @@ void OpFastScintillation::BuildThePhysicsTable()
 // Called by the user to set the scintillation yield as a function
 // of energy deposited by particle type
 
-void OpFastScintillation::SetScintillationByParticleType(const G4bool scintType)
+void OpFastScintillationT1034::SetScintillationByParticleType(const G4bool scintType)
 {
         if (emSaturation) {
-           G4Exception("OpFastScintillation::SetScintillationByParticleType", "Scint02",
+           G4Exception("OpFastScintillationT1034::SetScintillationByParticleType", "Scint02",
                        JustWarning, "Redefinition: Birks Saturation is replaced by ScintillationByParticleType!");
            RemoveSaturation();
         }
@@ -997,9 +997,9 @@ void OpFastScintillation::SetScintillationByParticleType(const G4bool scintType)
 // ---------------
 //
 
-G4double OpFastScintillation::GetMeanFreePath(const G4Track&,
-                                          G4double ,
-                                          G4ForceCondition* condition)
+G4double OpFastScintillationT1034::GetMeanFreePath(const G4Track&,
+                                                   G4double ,
+                                                   G4ForceCondition* condition)
 {
         *condition = StronglyForced;
 
@@ -1011,8 +1011,8 @@ G4double OpFastScintillation::GetMeanFreePath(const G4Track&,
 // ---------------
 //
 
-G4double OpFastScintillation::GetMeanLifeTime(const G4Track&,
-                                          G4ForceCondition* condition)
+G4double OpFastScintillationT1034::GetMeanLifeTime(const G4Track&,
+                                                   G4ForceCondition* condition)
 {
         *condition = Forced;
 
@@ -1020,7 +1020,7 @@ G4double OpFastScintillation::GetMeanLifeTime(const G4Track&,
 
 }
 
-G4double OpFastScintillation::sample_time(G4double tau1, G4double tau2)
+G4double OpFastScintillationT1034::sample_time(G4double tau1, G4double tau2)
 {
 // tau1: rise time and tau2: decay time
 
@@ -1046,7 +1046,7 @@ G4double OpFastScintillation::sample_time(G4double tau1, G4double tau2)
 // Parametrization of the VUV light timing (result from direct transport + Rayleigh scattering ONLY)
 // using a landau + expo function.The function below returns the arrival time distribution given the
 // distance IN CENTIMETERS between the scintillation/ionization point and the optical detectotr.
-std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_photons) {
+std::vector<double> OpFastScintillationT1034::GetVUVTime(double distance, int number_photons) {
 
   //-----Distances in cm and times in ns-----// 
   //gRandom->SetSeed(0);
@@ -1116,7 +1116,7 @@ std::vector<double> OpFastScintillation::GetVUVTime(double distance, int number_
 // Parametrization of the Visible light timing (result from direct transport + Rayleigh scattering ONLY) 
 // using a landau + exponential function. The function below returns the arrival time distribution given the 
 // time of the first visible photon in the PMT. The light generated has been reflected by the cathode ONLY.
-std::vector<double> OpFastScintillation::GetVisibleTimeOnlyCathode(double t0, int number_photons){
+std::vector<double> OpFastScintillationT1034::GetVisibleTimeOnlyCathode(double t0, int number_photons){
   //-----Distances in cm and times in ns-----//  
   //gRandom->SetSeed(0);  
                

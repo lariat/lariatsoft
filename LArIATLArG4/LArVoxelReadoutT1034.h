@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArVoxelReadout.h
+/// \file  LArVoxelReadoutT1034.h
 /// \brief A Geant4 sensitive detector that accumulates voxel information.
 ///
 /// \author  seligman@nevis.columbia.edu
@@ -7,8 +7,8 @@
 ///
 /// One way to implement voxels in Geant4 is to create a parallel
 /// "read-out" geometry along with the real, physical geometry.  The
-/// read-out geometry is implemented in LArVoxelReadoutGeometry; this
-/// class is the sensitive detector for that geometry.  That is,
+/// read-out geometry is implemented in LArVoxelReadoutGeometryT1034;
+/// this class is the sensitive detector for that geometry.  That is,
 /// Geant4 will call this routine every time there is a step within a
 /// volume of the read-out geometry; this routine then accumulates
 /// information from that step.
@@ -39,8 +39,8 @@
 ///   readouts, so this mechanism is relatively easy to extend for
 ///   each type of readout.
 
-#ifndef LArG4_LArVoxelReadout_h
-#define LArG4_LArVoxelReadout_h
+#ifndef LArIATLArG4_LArVoxelReadoutT1034_h
+#define LArIATLArG4_LArVoxelReadoutT1034_h
 
 #include <stdint.h>
 #include <vector>
@@ -59,7 +59,7 @@
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
-#include "LArIATLArG4/IonizationAndScintillation.h"
+#include "LArIATLArG4/IonizationAndScintillationT1034.h"
 
 // Forward declarations
 class G4HCofThisEvent;
@@ -156,32 +156,32 @@ namespace larg4 {
    *   is lost (with a warning)
    * 
    */
-  class LArVoxelReadout : public G4VSensitiveDetector
+  class LArVoxelReadoutT1034 : public G4VSensitiveDetector
   {
   public:
     /// Type of map channel -> sim::SimChannel
     typedef std::map<unsigned int, sim::SimChannel> ChannelMap_t;
     
-    /// Collection of what it takes to set a `LArVoxelReadout` up.
+    /// Collection of what it takes to set a `LArVoxelReadoutT1034` up.
     struct Setup_t {
       
       /// Random engine for charge propagation.
       CLHEP::HepRandomEngine* propGen = nullptr;
       
-      /// Margin for charge recovery (see `LArVoxelReadout`).
+      /// Margin for charge recovery (see `LArVoxelReadoutT1034`).
       double offPlaneMargin = 0.0;
     }; // struct Setup_t
     
     
     /// Constructor. Can detect which TPC to cover by the name
-    LArVoxelReadout(std::string const& name);
+    LArVoxelReadoutT1034(std::string const& name);
     
     /// Constructor. Sets which TPC to work on
-    LArVoxelReadout
+    LArVoxelReadoutT1034
       (std::string const& name, unsigned int cryostat, unsigned int tpc);
 
     // Destructor
-    virtual ~LArVoxelReadout();
+    virtual ~LArVoxelReadoutT1034();
     
     /// Reads all the configuration elements from `setupData`
     void Setup(Setup_t const& setupData);
@@ -247,7 +247,7 @@ namespace larg4 {
      * This method sets the margin for the recovery of off-plane ionization
      * charge. See `RecoverOffPlaneDeposit()` for a description of that feature.
      * 
-     * This method is used by `LArVoxelReadout::Setup()`.
+     * This method is used by `LArVoxelReadoutT1034::Setup()`.
      */
     void SetOffPlaneChargeRecoveryMargin(double margin)
       { fOffPlaneMargin = std::max(margin, 0.0); }
@@ -327,7 +327,7 @@ namespace larg4 {
     std::vector<std::vector<ChannelMap_t>>    fChannelMaps; ///< Maps of cryostat, tpc to channel data
     art::ServiceHandle<geo::Geometry>         fGeoHandle;  ///< Handle to the Geometry service
     art::ServiceHandle<sim::LArG4Parameters>  fLgpHandle;  ///< Handle to the LArG4 parameters service
-    unsigned int                              fTPC;        ///< which TPC this LArVoxelReadout corresponds to
+    unsigned int                              fTPC;        ///< which TPC this LArVoxelReadoutT1034 corresponds to
     unsigned int                              fCstat;      ///< and in which cryostat (if bSingleTPC is true)
     bool                                      bSingleTPC;  ///< true if this readout is associated with a single TPC
     
@@ -338,4 +338,4 @@ namespace larg4 {
 
 }
 
-#endif // LArG4_LArVoxelReadout_h
+#endif // LArIATLArG4_LArVoxelReadoutT1034_h

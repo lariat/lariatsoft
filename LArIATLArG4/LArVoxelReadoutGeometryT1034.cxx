@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArVoxelReadoutGeometry.cxx
+/// \file  LArVoxelReadoutGeometryT1034.cxx
 /// \brief Define the "parallel" geometry that's seen by the LAr Voxels.
 ///
 /// \author  seligman@nevis.columbia.edu
@@ -25,8 +25,8 @@
 #include "larsim/Simulation/LArVoxelCalculator.h"
 
 // LArIATSoft includes
-#include "LArIATLArG4/LArVoxelReadoutGeometry.h"
-#include "LArIATLArG4/LArVoxelReadout.h"
+#include "LArIATLArG4/LArVoxelReadoutGeometryT1034.h"
+#include "LArIATLArG4/LArVoxelReadoutT1034.h"
 
 // G4 includes
 #include "Geant4/G4PVPlacement.hh"
@@ -127,17 +127,17 @@ int DumpPhysicalVolume
 namespace larg4 {
 
   // Constructor and destructor.
-  LArVoxelReadoutGeometry::LArVoxelReadoutGeometry
+  LArVoxelReadoutGeometryT1034::LArVoxelReadoutGeometryT1034
     (const G4String name, Setup_t const& setupData)
     : G4VUserParallelWorld(name)
     , fReadoutSetupData(setupData.readoutSetup)
   {
-    larg4::IonizationAndScintillation *ios = larg4::IonizationAndScintillation::Instance();
+    larg4::IonizationAndScintillationT1034 *ios = larg4::IonizationAndScintillationT1034::Instance();
     std::unique_ptr<G4UserLimits> fStepLimit(new G4UserLimits(ios->StepSizeLimit()));
   }
 
   ////////////////////////////////////////////////////////////////////
-  void LArVoxelReadoutGeometry::Construct()
+  void LArVoxelReadoutGeometryT1034::Construct()
 
   {
     // With a "parallel geometry", Geant4 has already created a clone
@@ -203,7 +203,7 @@ namespace larg4 {
     // Define the sensitive detector for the voxel readout.  This class
     // routines will be called every time a particle deposits energy in
     // a voxel that overlaps the LAr TPC.
-    LArVoxelReadout* larVoxelReadout = new LArVoxelReadout("LArVoxelSD");
+    LArVoxelReadoutT1034* larVoxelReadout = new LArVoxelReadoutT1034("LArVoxelSD");
     larVoxelReadout->Setup(fReadoutSetupData);
     if ((fGeo->Ncryostats() == 1) && (fGeo->Cryostat(0).NTPC() == 1))
       larVoxelReadout->SetSingleTPC(0, 0); // just one TPC in the detector...
@@ -281,15 +281,15 @@ namespace larg4 {
             larTPCHalfZLength = tube->GetZHalfLength();
           }
           else{
-            throw cet::exception("LArVoxelReadoutGeometry") << "Unknown shape in readout geometry"
-                                                            << "The LAr TPC volume is not a box or a tube. "
-                                                            << "This routine can't convert any other shapes.\n";
+            throw cet::exception("LArVoxelReadoutGeometryT1034") << "Unknown shape in readout geometry"
+                                                                 << "The LAr TPC volume is not a box or a tube. "
+                                                                 << "This routine can't convert any other shapes.\n";
           }
         }
 
-        LOG_DEBUG("LArVoxelReadoutGeometry") << ": larTPCHalfXLength=" << larTPCHalfXLength
-                                             << ": larTPCHalfYLength=" << larTPCHalfYLength
-                                             << ": larTPCHalfZLength=" << larTPCHalfZLength;
+        LOG_DEBUG("LArVoxelReadoutGeometryT1034") << ": larTPCHalfXLength=" << larTPCHalfXLength
+                                                  << ": larTPCHalfYLength=" << larTPCHalfYLength
+                                                  << ": larTPCHalfZLength=" << larTPCHalfZLength;
 
         // Get some constants from the LAr voxel information object.
         // Remember, ROOT uses cm.
@@ -301,13 +301,13 @@ namespace larg4 {
         G4double voxelOffsetY = lvc->VoxelOffsetY() * CLHEP::cm;
         G4double voxelOffsetZ = lvc->VoxelOffsetZ() * CLHEP::cm;
 
-        LOG_DEBUG("LArVoxelReadoutGeometry") << ": voxelSizeX=" << voxelSizeX
-                                             << ", voxelSizeY=" << voxelSizeY
-                                             << ", voxelSizeZ=" << voxelSizeZ;
+        LOG_DEBUG("LArVoxelReadoutGeometryT1034") << ": voxelSizeX=" << voxelSizeX
+                                                  << ", voxelSizeY=" << voxelSizeY
+                                                  << ", voxelSizeZ=" << voxelSizeZ;
 
-        LOG_DEBUG("LArVoxelReadoutGeometry") << ": voxelOffsetX=" << voxelOffsetX
-                                             << ", voxelOffsetY=" << voxelOffsetY
-                                             << ", voxelOffsetZ=" << voxelOffsetZ;
+        LOG_DEBUG("LArVoxelReadoutGeometryT1034") << ": voxelOffsetX=" << voxelOffsetX
+                                                  << ", voxelOffsetY=" << voxelOffsetY
+                                                  << ", voxelOffsetZ=" << voxelOffsetZ;
         
         // We want our voxelization region to be an integer multiple of
         // the voxel sizes in all directions; if we didn't do this, we
@@ -323,7 +323,7 @@ namespace larg4 {
         numberYvoxels = trunc(numberYvoxels) + 1.;
         numberZvoxels = trunc(numberZvoxels) + 1.;
         
-        LOG_DEBUG("LArVoxelReadoutGeometry") << "Active volume of cryo #" << c << " TPC #" << t
+        LOG_DEBUG("LArVoxelReadoutGeometryT1034") << "Active volume of cryo #" << c << " TPC #" << t
           << " will be split in " << numberXvoxels << " x " << numberYvoxels << " x " << numberZvoxels
           << " = " << (numberXvoxels * numberYvoxels * numberZvoxels)
           << " voxels of size " << voxelSizeX << " x " << voxelSizeY << " x " << voxelSizeZ << " cm"
@@ -341,7 +341,7 @@ namespace larg4 {
         VoxelCache_t::iterator iVoxelVol = DisableVoxelCaching?
           VoxelCache.end(): VoxelCache.find(VoxelSpecs);
         if (iVoxelVol == VoxelCache.end()) {
-          LOG_DEBUG("LArVoxelReadoutGeometry") << "Creating a new voxel volume "
+          LOG_DEBUG("LArVoxelReadoutGeometryT1034") << "Creating a new voxel volume "
             << VoxelSpecs.w << " x " << VoxelSpecs.h << " x " << VoxelSpecs.d
             << " cm, "
             << VoxelSpecs.nw << " x " << VoxelSpecs.nh << " x " << VoxelSpecs.nd
@@ -351,7 +351,7 @@ namespace larg4 {
           G4double voxelBoxHalfY = numberYvoxels * voxelSizeY / 2.;
           G4double voxelBoxHalfZ = numberZvoxels * voxelSizeZ / 2.;
 
-          LOG_DEBUG("LArVoxelReadoutGeometry") << ": voxelBoxHalfX=" << voxelBoxHalfX
+          LOG_DEBUG("LArVoxelReadoutGeometryT1034") << ": voxelBoxHalfX=" << voxelBoxHalfX
                                                << ", voxelBoxHalfY=" << voxelBoxHalfY
                                                << ", voxelBoxHalfZ=" << voxelBoxHalfZ;
           
@@ -369,12 +369,12 @@ namespace larg4 {
           invisible->SetVisibility(false);
           voxelBoxLogical->SetVisAttributes(invisible);
           
-          //LOG_DEBUG("LArVoxelReadoutGeometry") << ": transform = \n";
+          //LOG_DEBUG("LArVoxelReadoutGeometryT1034") << ": transform = \n";
           //for ( G4int i = 0; i < 3; ++i ){
           //  for ( G4int j = 0; j < 4; ++j ){ 
-          //    LOG_DEBUG("LArVoxelReadoutGeometry") << transform[i][j] << " ";
+          //    LOG_DEBUG("LArVoxelReadoutGeometryT1034") << transform[i][j] << " ";
           //  }
-          //  LOG_DEBUG("LArVoxelReadoutGeometry") << "\n";
+          //  LOG_DEBUG("LArVoxelReadoutGeometryT1034") << "\n";
           //}
           
           // Now we've fill our "box of voxels" with the voxels themselves.
@@ -449,9 +449,9 @@ namespace larg4 {
         // volume to LAr TPC volume.
         transform = G4Translate3D( offsetX, offsetY, offsetZ ) * transform;
         
-        LOG_DEBUG("LArVoxelReadoutGeometry") << ": offsetX=" << offsetX
-                                             << ", offsetY=" << offsetY
-                                             << ", offsetZ=" << offsetZ;
+        LOG_DEBUG("LArVoxelReadoutGeometryT1034") << ": offsetX=" << offsetX
+                                                  << ", offsetY=" << offsetY
+                                                  << ", offsetZ=" << offsetZ;
         
         // suffix representing this TPC
         std::ostringstream nums;
@@ -473,12 +473,12 @@ namespace larg4 {
     } // end loop over cryostats
 
     if (mf::isDebugEnabled()) {
-      LOG_DEBUG("LArVoxelReadoutGeometryDump") << "Dump of voxelized volume";
+      LOG_DEBUG("LArVoxelReadoutGeometryT1034Dump") << "Dump of voxelized volume";
       {
-        mf::LogDebug log("LArVoxelReadoutGeometryDump");
+        mf::LogDebug log("LArVoxelReadoutGeometryT1034Dump");
         DumpPhysicalVolume(log, *parallelPhysical);
       }
-      LOG_DEBUG("LArVoxelReadoutGeometryDump")
+      LOG_DEBUG("LArVoxelReadoutGeometryT1034Dump")
         << "End of dump of voxelized volume";
     }
     return;
@@ -491,18 +491,18 @@ namespace larg4 {
   // Make use of that knowledge to efficiently get the desired volumes and 
   // their total transforms.  
   // the daughterTransform is the total transform to the world coordinate system
-  G4VPhysicalVolume* LArVoxelReadoutGeometry::FindNestedVolume(G4VPhysicalVolume* mother,
-                                                               G4Transform3D&     motherTransform,
-                                                               G4Transform3D&     daughterTransform,
-                                                               std::string&       daughterName,
-                                                               unsigned int       expectedNum)
+  G4VPhysicalVolume* LArVoxelReadoutGeometryT1034::FindNestedVolume(G4VPhysicalVolume* mother,
+                                                                    G4Transform3D&     motherTransform,
+                                                                    G4Transform3D&     daughterTransform,
+                                                                    std::string&       daughterName,
+                                                                    unsigned int       expectedNum)
   {
     G4LogicalVolume* logicalVolume = mother->GetLogicalVolume();
     G4int numberDaughters = logicalVolume->GetNoDaughters();
     for ( G4int i = 0; i != numberDaughters; ++i ){
       G4VPhysicalVolume* d = logicalVolume->GetDaughter(i);
 
-    //  LOG_DEBUG("LArVoxelReadoutGeometry") << d->GetName() << ":" << mother->GetName();
+    //  LOG_DEBUG("LArVoxelReadoutGeometryT1034") << d->GetName() << ":" << mother->GetName();
 
       if(d->GetName().contains(daughterName)){
 
@@ -519,11 +519,11 @@ namespace larg4 {
         G4Point3D world = daughterTransform * local;
 
 
-        LOG_DEBUG("LArVoxelReadoutGeometry") << "current " << daughterName 
-                                             << " origin is at (" 
-                                             << world.x() / CLHEP::cm << ","
-                                             << world.y() / CLHEP::cm << ","
-                                             << world.z() / CLHEP::cm << ")";
+        LOG_DEBUG("LArVoxelReadoutGeometryT1034") << "current " << daughterName 
+                                                  << " origin is at (" 
+                                                  << world.x() / CLHEP::cm << ","
+                                                  << world.y() / CLHEP::cm << ","
+                                                  << world.z() / CLHEP::cm << ")";
 
         // we don't bother with the cryostat number when calling Geometry::PositionToTPC
         // because we know we have already started off with the correct cryostat volume
@@ -538,21 +538,21 @@ namespace larg4 {
         else if(daughterName.compare("volTPCActive") == 0 || 
                 daughterName.compare("volDetEnclosure") == 0){
           // for either of these volumes, we know there is only 1 in the mother volume
-          LOG_DEBUG("LArVoxelReadoutGeometry") << "found the desired " << daughterName;
+          LOG_DEBUG("LArVoxelReadoutGeometryT1034") << "found the desired " << daughterName;
           return d;
         }
 
         // if we found the desired volume, stop looking
         if(daughterNum == expectedNum){
-          LOG_DEBUG("LArVoxelReadoutGeometry") << "found the desired " << daughterName;
+          LOG_DEBUG("LArVoxelReadoutGeometryT1034") << "found the desired " << daughterName;
           return d;
         }
       }// end if the volume has the right name
     }// end loop over volumes
 
-    throw cet::exception("LArVoxelReadoutGeometry") << "could not find the desired "
-                                                    << daughterName
-                                                    << " to make LArVoxelReadoutGeometry\n";
+    throw cet::exception("LArVoxelReadoutGeometryT1034") << "could not find the desired "
+                                                         << daughterName
+                                                         << " to make LArVoxelReadoutGeometryT1034\n";
     
     return 0;
   }

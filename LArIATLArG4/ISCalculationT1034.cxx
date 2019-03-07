@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalculation.cxx
+/// \file  ISCalculationT1034.cxx
 /// \brief Interface to algorithm class for a specific detector channel mapping
 ///
 /// \author  brebel@fnal.gov
@@ -9,7 +9,7 @@
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larevt/SpaceChargeServices/SpaceChargeService.h"
 
-#include "LArIATLArG4/ISCalculation.h"
+#include "LArIATLArG4/ISCalculationT1034.h"
 
 // Framework includes                                                                                                         
 #include "cetlib/exception.h"
@@ -19,17 +19,17 @@
 namespace larg4 {
 
   //----------------------------------------------------------------------                                                    
-  ISCalculation::ISCalculation()
+  ISCalculationT1034::ISCalculationT1034()
   {
   }
 
   //----------------------------------------------------------------------                                                    
-  ISCalculation::~ISCalculation()
+  ISCalculationT1034::~ISCalculationT1034()
   {
   }
 
   //......................................................................                                                    
-  double ISCalculation::EFieldAtStep(double fEfield, const G4Step* step) const
+  double ISCalculationT1034::EFieldAtStep(double fEfield, const G4Step* step) const
   {
     auto const* SCE = lar::providerFrom<spacecharge::SpaceChargeService>();
     if (!SCE->EnableSimEfieldSCE()) return fEfield;

@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file   AuxDetReadout.cxx
+/// \file   AuxDetReadoutT1034.cxx
 /// \brief  A Geant4 sensitive detector that accumulates information.
 /// \author miceli@fnal.gov
 ////////////////////////////////////////////////////////////////////////
@@ -7,8 +7,8 @@
 //#include "larsim/LArG4/AuxDetReadout.h"
 //#include "larsim/LArG4/ParticleListAction.h"
 
-#include "LArIATLArG4/AuxDetReadout.h"
-#include "LArIATLArG4/ParticleListAction.h"
+#include "LArIATLArG4/AuxDetReadoutT1034.h"
+#include "LArIATLArG4/ParticleListActionT1034.h"
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -26,7 +26,7 @@
 
 namespace larg4 {
   
-  AuxDetReadout::AuxDetReadout(std::string const& name, 
+  AuxDetReadoutT1034::AuxDetReadoutT1034(std::string const& name, 
 			       unsigned int       adNum,
 			       unsigned int       svNum)
   : G4VSensitiveDetector(name)
@@ -36,20 +36,20 @@ namespace larg4 {
   }
   
   //----------------------------------------------------------------------
-  AuxDetReadout::~AuxDetReadout() {}
+  AuxDetReadoutT1034::~AuxDetReadoutT1034() {}
   
   //---------------------------------------------------------------------------------------
   // Called at the start of each event.
-  void AuxDetReadout::Initialize(G4HCofThisEvent*)
+  void AuxDetReadoutT1034::Initialize(G4HCofThisEvent*)
   {}
   //---------------------------------------------------------------------------------------
   // Called at the end of each event.
-  void AuxDetReadout::EndOfEvent(G4HCofThisEvent*)
+  void AuxDetReadoutT1034::EndOfEvent(G4HCofThisEvent*)
   {
     fAuxDetSimChannel = sim::AuxDetSimChannel(fAuxDet, std::move(fAuxDetIDEs), fAuxDetSensitive);
   }
   //---------------------------------------------------------------------------------------
-  void AuxDetReadout::clear()
+  void AuxDetReadoutT1034::clear()
   {
     fAuxDetIDEs.clear();
   }
@@ -57,11 +57,11 @@ namespace larg4 {
   //---------------------------------------------------------------------------------------
   // Called for each step. Create a vector of AuxDetSimTrack objects. One for each new TrackID.
   // update the exit position points if this TrackID is already on the vector.
-  G4bool AuxDetReadout::ProcessHits( G4Step* step, G4TouchableHistory* )
+  G4bool AuxDetReadoutT1034::ProcessHits( G4Step* step, G4TouchableHistory* )
   {
 		// collect the info for this step
 
-    const int trackID = ParticleListAction::GetCurrentTrackID();
+    const int trackID = ParticleListActionT1034::GetCurrentTrackID();
     
     G4double energyDeposited = step->GetTotalEnergyDeposit()/CLHEP::GeV;
     
@@ -103,7 +103,7 @@ namespace larg4 {
   }
 
   // Moved here from AuxDetSimChannel.cxx
-  void AuxDetReadout::AddParticleStep(
+  void AuxDetReadoutT1034::AddParticleStep(
   			int	inputTrackID,
 			float	inputEnergyDeposited,
 			float	inputEntryX,
@@ -154,7 +154,7 @@ namespace larg4 {
   
   //---------------------------------------------------------------------------------------
   // Never used but still have to be defined for G4
-  void AuxDetReadout::DrawAll()  {}
-  void AuxDetReadout::PrintAll() {}
+  void AuxDetReadoutT1034::DrawAll()  {}
+  void AuxDetReadoutT1034::PrintAll() {}
   
 } // namespace larg4

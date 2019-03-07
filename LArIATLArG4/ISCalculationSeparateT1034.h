@@ -1,32 +1,32 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalculationSeparate.h
+/// \file  ISCalculationSeparateT1034.h
 /// \brief Interface to algorithm class for a specific calculation of 
 ///        ionization electrons and scintillation photons assuming there
 ///        is no correlation between the two
 ///
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef LARG4_ISCALCULATIONSEPARATE_H
-#define LARG4_ISCALCULATIONSEPARATE_H
+#ifndef LARIATLARG4_ISCALCULATIONSEPARATET1034_H
+#define LARIATLARG4_ISCALCULATIONSEPARATET1034_H
 
 #include <map>
 
 #include "Geant4/G4EmSaturation.hh"
 
 //#include "larsim/LArG4/ISCalculation.h"
-#include "LArIATLArG4/ISCalculation.h"
+#include "LArIATLArG4/ISCalculationT1034.h"
 
 // forward declaration
 namespace CLHEP { class HepRandomEngine; }
 
 namespace larg4 {
 
- class ISCalculationSeparate : public ISCalculation {
+ class ISCalculationSeparateT1034 : public ISCalculationT1034 {
 
  public:
 
-   ISCalculationSeparate(CLHEP::HepRandomEngine&);
-   virtual ~ISCalculationSeparate();
+   ISCalculationSeparateT1034(CLHEP::HepRandomEngine&);
+   virtual ~ISCalculationSeparateT1034();
 
    void   Initialize();
    void   Reset();
@@ -49,5 +49,5 @@ namespace larg4 {
 
  };
 }
-#endif // LARG4_ISCALCULATIONSEPARATE_H
+#endif // LARIATLARG4_ISCALCULATIONSEPARATET1034_H
 

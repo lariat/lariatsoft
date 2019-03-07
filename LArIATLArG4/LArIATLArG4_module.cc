@@ -77,11 +77,11 @@
 #include "nutools/G4Base/UserActionManager.h"
 
 // LArIATSoft includes
-#include "LArIATLArG4/AuxDetReadout.h"
-#include "LArIATLArG4/AuxDetReadoutGeometry.h"
-#include "LArIATLArG4/LArVoxelReadout.h"
-#include "LArIATLArG4/LArVoxelReadoutGeometry.h"
-#include "LArIATLArG4/ParticleListAction.h"
+#include "LArIATLArG4/AuxDetReadoutT1034.h"
+#include "LArIATLArG4/AuxDetReadoutGeometryT1034.h"
+#include "LArIATLArG4/LArVoxelReadoutT1034.h"
+#include "LArIATLArG4/LArVoxelReadoutGeometryT1034.h"
+#include "LArIATLArG4/ParticleListActionT1034.h"
 
 // G4 Includes
 #include "Geant4/G4RunManager.hh"
@@ -117,7 +117,7 @@ namespace larg4 {
  
   // Forward declarations within namespace.
   class LArVoxelListAction;
-  class ParticleListAction;
+  class ParticleListActionT1034;
   
   /**
    * @brief Runs Geant4 simulation and propagation of electrons and photons to readout
@@ -231,7 +231,7 @@ namespace larg4 {
   private:
     g4b::G4Helper*             fG4Help;             ///< G4 interface object                                           
     larg4::LArVoxelListAction* flarVoxelListAction; ///< Geant4 user action to accumulate LAr voxel information.
-    larg4::ParticleListAction* fparticleListAction; ///< Geant4 user action to particle information.                   
+    larg4::ParticleListActionT1034* fparticleListAction; ///< Geant4 user action to particle information.
 
     std::string                fG4PhysListName;     ///< predefined physics list to use if not making a custom one
     std::string                fG4MacroPath;        ///< directory path for Geant4 macro file to be 
@@ -350,19 +350,19 @@ namespace larg4 {
 
     // create the ionization and scintillation calculator;
     // this is a singleton (!) so it does not make sense
-    // to create it in LArVoxelReadoutGeometry
-    IonizationAndScintillation::CreateInstance(rng->getEngine("propagation"));
+    // to create it in LArVoxelReadoutGeometryT1034
+    IonizationAndScintillationT1034::CreateInstance(rng->getEngine("propagation"));
 
     // make a parallel world for each TPC in the detector
-    LArVoxelReadoutGeometry::Setup_t readoutGeomSetupData;
+    LArVoxelReadoutGeometryT1034::Setup_t readoutGeomSetupData;
     readoutGeomSetupData.readoutSetup.offPlaneMargin = fOffPlaneMargin;
     readoutGeomSetupData.readoutSetup.propGen
       = &(rng->getEngine("propagation"));
-    pworlds.push_back(new LArVoxelReadoutGeometry
+    pworlds.push_back(new LArVoxelReadoutGeometryT1034
       ("LArVoxelReadoutGeometry", readoutGeomSetupData)
       );
     pworlds.push_back( new OpDetReadoutGeometry( geom->OpDetGeoName() ));
-    pworlds.push_back( new AuxDetReadoutGeometry("AuxDetReadoutGeometry") );
+    pworlds.push_back( new AuxDetReadoutGeometryT1034("AuxDetReadoutGeometry") );
 
     fG4Help->SetParallelWorlds(pworlds);
 
@@ -393,9 +393,9 @@ namespace larg4 {
 
     // User-action class for accumulating particles and trajectories
     // produced in the detector.
-    fparticleListAction = new larg4::ParticleListAction(lgp->ParticleKineticEnergyCut(),
-                                                        lgp->StoreTrajectories(),
-                                                        lgp->KeepEMShowerDaughters());
+    fparticleListAction = new larg4::ParticleListActionT1034(lgp->ParticleKineticEnergyCut(),
+                                                             lgp->StoreTrajectories(),
+                                                             lgp->KeepEMShowerDaughters());
     uaManager->AddAndAdoptAction(fparticleListAction);
 
     // UserActionManager is now configured so continue G4 initialization
@@ -536,8 +536,8 @@ namespace larg4 {
           
           // if the particle has been marked as dropped, we don't save it
           // (as of LArSoft ~v5.6 this does not ever happen because
-          // ParticleListAction has already taken care of deleting them)
-          if (ParticleListAction::isDropped(&p)) {
+          // ParticleListActionT1034 has already taken care of deleting them)
+          if (ParticleListActionT1034::isDropped(&p)) {
             ++iPartPair;
             continue;
           }
@@ -564,7 +564,7 @@ namespace larg4 {
 
     }// end loop over interactions
    
-    // get the electrons from the LArVoxelReadout sensitive detector
+    // get the electrons from the LArVoxelReadoutT1034 sensitive detector
     // Get the sensitive-detector manager.
     G4SDManager* sdManager = G4SDManager::GetSDMpointer();
     
@@ -602,7 +602,7 @@ namespace larg4 {
     // only put the sim::SimChannels into the event once, not once for every
     // MCTruth in the event
 
-    std::set<LArVoxelReadout*> ReadoutList; // to be cleared later on
+    std::set<LArVoxelReadoutT1034*> ReadoutList; // to be cleared later on
     
     for(unsigned int c = 0; c < geom->Ncryostats(); ++c){
 
@@ -632,18 +632,18 @@ namespace larg4 {
             << sstr.str() << "' nor '" << name  << "' exist)\n";
         }
 
-        // Convert the G4VSensitiveDetector* to a LArVoxelReadout*.
-        LArVoxelReadout* larVoxelReadout = dynamic_cast<LArVoxelReadout*>(sd);
+        // Convert the G4VSensitiveDetector* to a LArVoxelReadoutT1034*.
+        LArVoxelReadoutT1034* larVoxelReadout = dynamic_cast<LArVoxelReadoutT1034*>(sd);
 
         // If this didn't work, there is a "LArVoxelSD" detector, but
-        // it's not a LArVoxelReadout object.
+        // it's not a LArVoxelReadoutT1034 object.
         if ( !larVoxelReadout ){
           throw cet::exception("LArIATLArG4") << "Sensitive detector '"
                                         << sd->GetName()
-                                        << "' is not a LArVoxelReadout object\n";
+                                        << "' is not a LArVoxelReadoutT1034 object\n";
         }
 
-        LArVoxelReadout::ChannelMap_t& channels = larVoxelReadout->GetSimChannelMap(c, t);
+        LArVoxelReadoutT1034::ChannelMap_t& channels = larVoxelReadout->GetSimChannelMap(c, t);
         if (!channels.empty()) {
           LOG_DEBUG("LArIATLArG4") << "now put " << channels.size() << " SimChannels"
             " from C=" << c << " T=" << t << " into the event";
@@ -682,11 +682,11 @@ namespace larg4 {
           } // end of check if we only have one TPC (skips check for multiple simchannels if we have just one TPC)
         } // end loop over simchannels for this TPC
         // mark it for clearing
-        ReadoutList.insert(const_cast<LArVoxelReadout*>(larVoxelReadout));
+        ReadoutList.insert(const_cast<LArVoxelReadoutT1034*>(larVoxelReadout));
       } // end loop over tpcs
     }// end loop over cryostats
 
-    for (LArVoxelReadout* larVoxelReadout: ReadoutList)
+    for (LArVoxelReadoutT1034* larVoxelReadout: ReadoutList)
       larVoxelReadout->ClearSimChannels();
     
     
@@ -702,7 +702,7 @@ namespace larg4 {
       for(size_t sv = 0; sv < geom->AuxDet(a).NSensitiveVolume(); ++sv){
 
           // N.B. this name convention is used when creating the
-          //      AuxDetReadout SD in AuxDetReadoutGeometry
+          //      AuxDetReadout SD in AuxDetReadoutGeometryT1034
         std::stringstream name;
         name << "AuxDetSD_AuxDet" << a << "_" << sv;
         G4VSensitiveDetector* sd = sdManager->FindSensitiveDetector(name.str().c_str());
@@ -712,8 +712,8 @@ namespace larg4 {
           << "' does not exist\n";
         }
         
-          // Convert the G4VSensitiveDetector* to a AuxDetReadout*.
-        larg4::AuxDetReadout *auxDetReadout = dynamic_cast<larg4::AuxDetReadout*>(sd);
+          // Convert the G4VSensitiveDetector* to a AuxDetReadoutT1034*.
+        larg4::AuxDetReadoutT1034 *auxDetReadout = dynamic_cast<larg4::AuxDetReadoutT1034*>(sd);
         
         LOG_DEBUG("LArIATLArG4") << "now put the AuxDetSimTracks in the event";
         

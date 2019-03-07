@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArVoxelReadout.cxx
+/// \file  LArVoxelReadoutT1034.cxx
 /// \brief A Geant4 sensitive detector that accumulates voxel information.
 ///
 /// \author  seligman@nevis.columbia.edu
@@ -32,10 +32,10 @@
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 
 // LArIATSoft includes
-#include "LArIATLArG4/ParticleListAction.h"
+#include "LArIATLArG4/ParticleListActionT1034.h"
 
 // LArIATSoft includes
-#include "LArIATLArG4/LArVoxelReadout.h"
+#include "LArIATLArG4/LArVoxelReadoutT1034.h"
 
 // CLHEP
 #include "CLHEP/Random/RandGauss.h"
@@ -48,7 +48,7 @@ namespace larg4 {
   //---------------------------------------------------------------------------------------
   // Constructor.  Note that we force the name of this sensitive
   // detector to be the value expected by LArVoxelListAction.
-  LArVoxelReadout::LArVoxelReadout(std::string const& name)
+  LArVoxelReadoutT1034::LArVoxelReadoutT1034(std::string const& name)
     : G4VSensitiveDetector(name)
   {
     // Initialize values for the electron-cluster calculation.
@@ -65,49 +65,49 @@ namespace larg4 {
     else
       SetDiscoverTPC();
     
-  } // LArVoxelReadout::LArVoxelReadout()
+  } // LArVoxelReadoutT1034::LArVoxelReadoutT1034()
 
   //---------------------------------------------------------------------------------------
   // Constructor.  Note that we force the name of this sensitive
   // detector to be the value expected by LArVoxelListAction.
-  LArVoxelReadout::LArVoxelReadout
+  LArVoxelReadoutT1034::LArVoxelReadoutT1034
     (std::string const& name, unsigned int cryostat, unsigned int tpc)
-    : LArVoxelReadout(name)
+    : LArVoxelReadoutT1034(name)
     { SetSingleTPC(cryostat, tpc); }
 
   
   //---------------------------------------------------------------------------------------
-  void LArVoxelReadout::Setup(Setup_t const& setupData) {
+  void LArVoxelReadoutT1034::Setup(Setup_t const& setupData) {
     
     SetOffPlaneChargeRecoveryMargin(setupData.offPlaneMargin);
     SetRandomEngines(setupData.propGen);
     
-  } // LArVoxelReadout::Setup()
+  } // LArVoxelReadoutT1034::Setup()
   
   
   //---------------------------------------------------------------------------------------
-  void LArVoxelReadout::SetSingleTPC(unsigned int cryostat, unsigned int tpc) {
+  void LArVoxelReadoutT1034::SetSingleTPC(unsigned int cryostat, unsigned int tpc) {
     bSingleTPC = true;
     fCstat = cryostat;
     fTPC = tpc;
-    LOG_DEBUG("LArVoxelReadout")
+    LOG_DEBUG("LArVoxelReadoutT1034")
       << GetName() << "covers C=" << fCstat << " T=" << fTPC;
-  } // LArVoxelReadout::SetSingleTPC()
+  } // LArVoxelReadoutT1034::SetSingleTPC()
 
-  void LArVoxelReadout::SetDiscoverTPC() {
+  void LArVoxelReadoutT1034::SetDiscoverTPC() {
     bSingleTPC = false;
     fCstat = 0;
     fTPC = 0;
-    LOG_DEBUG("LArVoxelReadout") << GetName() << " autodetects TPC";
-  } // LArVoxelReadout::SetDiscoverTPC()
+    LOG_DEBUG("LArVoxelReadoutT1034") << GetName() << " autodetects TPC";
+  } // LArVoxelReadoutT1034::SetDiscoverTPC()
   
   
   //---------------------------------------------------------------------------------------
-  LArVoxelReadout::~LArVoxelReadout() {}
+  LArVoxelReadoutT1034::~LArVoxelReadoutT1034() {}
 
   //---------------------------------------------------------------------------------------
   // Called at the start of each event.
-  void LArVoxelReadout::Initialize(G4HCofThisEvent*)
+  void LArVoxelReadoutT1034::Initialize(G4HCofThisEvent*)
   {
     auto const * larp = lar::providerFrom<detinfo::LArPropertiesService>();
     auto const * detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
@@ -123,7 +123,7 @@ namespace larg4 {
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
     fSkipWireSignalInTPCs  = fLgpHandle->SkipWireSignalInTPCs();
 
-    LOG_DEBUG("LArVoxelReadout")  << " e lifetime: "        << fElectronLifetime
+    LOG_DEBUG("LArVoxelReadoutT1034")  << " e lifetime: "        << fElectronLifetime
                                   << "\n Temperature: "     << detprop->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2];
@@ -131,53 +131,53 @@ namespace larg4 {
 
   //---------------------------------------------------------------------------------------
   // Called at the end of each event.
-  void LArVoxelReadout::EndOfEvent(G4HCofThisEvent*)
+  void LArVoxelReadoutT1034::EndOfEvent(G4HCofThisEvent*)
   {
-  } // LArVoxelReadout::EndOfEvent()
+  } // LArVoxelReadoutT1034::EndOfEvent()
 
   //---------------------------------------------------------------------------------------
-  void LArVoxelReadout::clear()
+  void LArVoxelReadoutT1034::clear()
   {
   }
 
   //--------------------------------------------------------------------------------------
-  void LArVoxelReadout::ClearSimChannels() {
+  void LArVoxelReadoutT1034::ClearSimChannels() {
     fChannelMaps.resize(fGeoHandle->Ncryostats());
     size_t cryo = 0;
     for (auto& cryoData: fChannelMaps) { // each, a vector of maps
       cryoData.resize(fGeoHandle->NTPC(cryo++));
       for (auto& channelsMap: cryoData) channelsMap.clear(); // each, a map
     } // for cryostats
-  } // LArVoxelReadout::ClearSimChannels()
+  } // LArVoxelReadoutT1034::ClearSimChannels()
 
   
-  const LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap() const
+  const LArVoxelReadoutT1034::ChannelMap_t& LArVoxelReadoutT1034::GetSimChannelMap() const
   {
     if (bSingleTPC) return GetSimChannelMap(fCstat, fTPC);
-    throw cet::exception("LArVoxelReadout") << "TPC not specified";
-  } // LArVoxelReadout::GetSimChannelMap() const
+    throw cet::exception("LArVoxelReadoutT1034") << "TPC not specified";
+  } // LArVoxelReadoutT1034::GetSimChannelMap() const
   
-  LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap() {
+  LArVoxelReadoutT1034::ChannelMap_t& LArVoxelReadoutT1034::GetSimChannelMap() {
     if (bSingleTPC) return GetSimChannelMap(fCstat, fTPC);
-    throw cet::exception("LArVoxelReadout") << "TPC not specified";
-  } // LArVoxelReadout::GetSimChannelMap()
+    throw cet::exception("LArVoxelReadoutT1034") << "TPC not specified";
+  } // LArVoxelReadoutT1034::GetSimChannelMap()
   
   
-  const LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap
+  const LArVoxelReadoutT1034::ChannelMap_t& LArVoxelReadoutT1034::GetSimChannelMap
     (unsigned short cryo, unsigned short tpc) const
     { return fChannelMaps.at(cryo).at(tpc); }
   
-  LArVoxelReadout::ChannelMap_t& LArVoxelReadout::GetSimChannelMap
+  LArVoxelReadoutT1034::ChannelMap_t& LArVoxelReadoutT1034::GetSimChannelMap
     (unsigned short cryo, unsigned short tpc)
     { return fChannelMaps.at(cryo).at(tpc); }
   
   
-  std::vector<sim::SimChannel> LArVoxelReadout::GetSimChannels() const {
+  std::vector<sim::SimChannel> LArVoxelReadoutT1034::GetSimChannels() const {
     if (bSingleTPC) return GetSimChannels(fCstat, fTPC);
-    throw cet::exception("LArVoxelReadout") << "TPC not specified";
-  } // LArVoxelReadout::GetSimChannels()
+    throw cet::exception("LArVoxelReadoutT1034") << "TPC not specified";
+  } // LArVoxelReadoutT1034::GetSimChannels()
   
-  std::vector<sim::SimChannel> LArVoxelReadout::GetSimChannels
+  std::vector<sim::SimChannel> LArVoxelReadoutT1034::GetSimChannels
     (unsigned short cryo, unsigned short tpc) const
   { 
     std::vector<sim::SimChannel> channels;
@@ -185,21 +185,21 @@ namespace larg4 {
     channels.reserve(chmap.size());
     for(const auto& chpair: chmap) channels.push_back(chpair.second);
     return channels;
-  } // LArVoxelReadout::GetSimChannels(short, short)
+  } // LArVoxelReadoutT1034::GetSimChannels(short, short)
   
   
   
   //---------------------------------------------------------------------------------------
   // Called for each step.
-  G4bool LArVoxelReadout::ProcessHits( G4Step* step, G4TouchableHistory* pHistory)
+  G4bool LArVoxelReadoutT1034::ProcessHits( G4Step* step, G4TouchableHistory* pHistory)
   {
     // All work done for the "parallel world" "box of voxels" in
-    // LArVoxelReadoutGeometry makes this a fairly simple routine.
+    // LArVoxelReadoutGeometryT1034 makes this a fairly simple routine.
     // First, the usual check for non-zero energy:
 
     // Only process the hit if the step is inside the active volume and
     // it has deposited energy.  The hit being inside the active volume
-    // is virtually sure to happen because the LArVoxelReadoutGeometry
+    // is virtually sure to happen because the LArVoxelReadoutGeometryT1034
     // that this class makes use of only has voxels for inside the TPC.
 
     // The step can be no bigger than the size of the voxel,
@@ -209,9 +209,9 @@ namespace larg4 {
 
     if ( step->GetTotalEnergyDeposit() > 0 ){
       
-      // Make sure we have the IonizationAndScintillation singleton
+      // Make sure we have the IonizationAndScintillationT1034 singleton
       // reset to this step
-      larg4::IonizationAndScintillation::Instance()->Reset(step);
+      larg4::IonizationAndScintillationT1034::Instance()->Reset(step);
 
       if( !fDontDriftThem ){
 
@@ -222,7 +222,7 @@ namespace larg4 {
         // Find the Geant4 track ID for the particle responsible for depositing the
         // energy.  if we are only storing primary EM shower particles, and this energy
         // is from a secondary etc EM shower particle, the ID returned is the primary
-        const int trackID = ParticleListAction::GetCurrentTrackID();
+        const int trackID = ParticleListActionT1034::GetCurrentTrackID();
         
         // Find out which TPC we are in.
         // If this readout object covers just one, we already know it.
@@ -237,7 +237,7 @@ namespace larg4 {
           const G4VTouchable* pTouchable = step->GetPreStepPoint()->GetTouchable();
           if (!pTouchable) {
             throw cet::exception
-              ("LArG4") << "Untouchable step in LArVoxelReadout::ProcessHits()";
+              ("LArIATLArG4") << "Untouchable step in LArVoxelReadoutT1034::ProcessHits()";
           }
           
           // one of the ancestors of the touched volume is supposed to be
@@ -262,9 +262,9 @@ namespace larg4 {
             // this is a fundamental error where the step does not happen in
             // any TPC; this should not happen in the readout geometry!
             throw cet::exception
-              ("LArG4") << "No TPC ID found in LArVoxelReadout::ProcessHits()";
+              ("LArIATLArG4") << "No TPC ID found in LArVoxelReadoutT1034::ProcessHits()";
           } // if
-          LOG_DEBUG("LArVoxelReadoutHit") << " hit in C=" << cryostat << " T=" << tpc;
+          LOG_DEBUG("LArVoxelReadoutT1034Hit") << " hit in C=" << cryostat << " T=" << tpc;
         } // if more than one TPC
         
         // Note that if there is no particle ID for this energy deposit, the
@@ -279,14 +279,14 @@ namespace larg4 {
   
   
   //----------------------------------------------------------------------------
-  void LArVoxelReadout::SetRandomEngines(CLHEP::HepRandomEngine* pPropGen) {
+  void LArVoxelReadoutT1034::SetRandomEngines(CLHEP::HepRandomEngine* pPropGen) {
     assert(pPropGen); // random engine must be present
     fPropGen = pPropGen;
-  } // LArVoxelReadout::SetRandomEngines()
+  } // LArVoxelReadoutT1034::SetRandomEngines()
   
   
   //----------------------------------------------------------------------------
-  geo::Point_t LArVoxelReadout::RecoverOffPlaneDeposit
+  geo::Point_t LArVoxelReadoutT1034::RecoverOffPlaneDeposit
     (geo::Point_t const& pos, geo::PlaneGeo const& plane) const
   {
     //
@@ -321,12 +321,12 @@ namespace larg4 {
     
     return plane.ComposePoint<geo::Point_t>(distance, landingPos + offPlane);
     
-  } // LArVoxelReadout::RecoverOffPlaneDeposit()
+  } // LArVoxelReadoutT1034::RecoverOffPlaneDeposit()
   
   
   //----------------------------------------------------------------------------
   // energy is passed in with units of MeV, dx has units of cm
-  void LArVoxelReadout::DriftIonizationElectrons(G4ThreeVector stepMidPoint,
+  void LArVoxelReadoutT1034::DriftIonizationElectrons(G4ThreeVector stepMidPoint,
                                                  const double simTime,
                                                  int trackID,
                                                  unsigned short int cryostat, unsigned short int tpc)
@@ -410,13 +410,13 @@ namespace larg4 {
       }
           
       const double lifetimecorrection = TMath::Exp(TDrift / LifetimeCorr_const);
-      const int    nIonizedElectrons  = larg4::IonizationAndScintillation::Instance()->NumberIonizationElectrons();
-      const double energy             = larg4::IonizationAndScintillation::Instance()->EnergyDeposit();
+      const int    nIonizedElectrons  = larg4::IonizationAndScintillationT1034::Instance()->NumberIonizationElectrons();
+      const double energy             = larg4::IonizationAndScintillationT1034::Instance()->EnergyDeposit();
       
       // if we have no electrons (too small energy or too large recombination)
       // we are done already here
       if (nIonizedElectrons <= 0) {
-        LOG_DEBUG("LArVoxelReadout")
+        LOG_DEBUG("LArVoxelReadoutT1034")
           << "No electrons drifted to readout, " << energy << " MeV lost.";
         return;
       }
@@ -528,9 +528,9 @@ namespace larg4 {
             DepositsToStore[channel][tdc].add(nEnDiff[k], nElDiff[k]);
           }
           catch(cet::exception &e){
-            mf::LogWarning("LArVoxelReadout") << "unable to drift electrons from point ("
-                                              << xyz[0] << "," << xyz[1] << "," << xyz[2]
-                                              << ") with exception " << e;
+            mf::LogWarning("LArVoxelReadoutT1034") << "unable to drift electrons from point ("
+                                                   << xyz[0] << "," << xyz[1] << "," << xyz[2]
+                                                   << ") with exception " << e;
           }
         } // end loop over clusters
       } // end loop over planes
@@ -568,8 +568,8 @@ namespace larg4 {
 
     } // end try intended to catch points where TPC can't be found
     catch(cet::exception &e){
-      mf::LogWarning("LArVoxelReadout") << "step cannot be found in a TPC\n"
-                                        << e;
+      mf::LogWarning("LArVoxelReadoutT1034") << "step cannot be found in a TPC\n"
+                                             << e;
     }
 
     return;
@@ -577,7 +577,7 @@ namespace larg4 {
 
   //---------------------------------------------------------------------------------------
   // Never used but still have to be defined for G4
-  void LArVoxelReadout::DrawAll()  {}
-  void LArVoxelReadout::PrintAll() {}
+  void LArVoxelReadoutT1034::DrawAll()  {}
+  void LArVoxelReadoutT1034::PrintAll() {}
 
 } // namespace larg4

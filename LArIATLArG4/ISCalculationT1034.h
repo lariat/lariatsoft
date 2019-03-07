@@ -1,26 +1,26 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalculation.h
+/// \file  ISCalculationT1034.h
 /// \brief Interface to algorithm class for a specific detector channel mapping
 ///
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef LARG4_ISCALCULATION_H
-#define LARG4_ISCALCULATION_H
+#ifndef LARG4_ISCALCULATION1034_H
+#define LARG4_ISCALCULATION1034_H
 
 #include "Geant4/G4Step.hh"
 #include "Geant4/G4UserLimits.hh"
 
 //#include "larsim/LArG4/OpFastScintillation.hh"
-#include "LArIATLArG4/OpFastScintillation.hh"
+#include "LArIATLArG4/OpFastScintillationT1034.hh"
 
 namespace larg4{
 
- class ISCalculation{
+ class ISCalculationT1034{
 
  public:
 
-   ISCalculation();
-   virtual ~ISCalculation();
+   ISCalculationT1034();
+   virtual ~ISCalculationT1034();
 
    virtual void                 Initialize()                                            = 0;
    virtual void                 Reset()                            		        = 0;

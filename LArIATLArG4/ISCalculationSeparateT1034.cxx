@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalculationSeparate.cxx
+/// \file  ISCalculationSeparateT1034.cxx
 /// \brief Interface to algorithm class for calculating ionization electrons
 ///        and scintillation photons using separate algorithms for each
 ///
@@ -17,7 +17,7 @@
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "larsim/Simulation/LArVoxelCalculator.h"
 
-#include "LArIATLArG4/ISCalculationSeparate.h"
+#include "LArIATLArG4/ISCalculationSeparateT1034.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "cetlib/exception.h"
@@ -25,17 +25,17 @@
 namespace larg4{
 
   //----------------------------------------------------------------------------
-  ISCalculationSeparate::ISCalculationSeparate(CLHEP::HepRandomEngine&)
+  ISCalculationSeparateT1034::ISCalculationSeparateT1034(CLHEP::HepRandomEngine&)
   {
   }
 
   //----------------------------------------------------------------------------
-  ISCalculationSeparate::~ISCalculationSeparate()
+  ISCalculationSeparateT1034::~ISCalculationSeparateT1034()
   {
   }
 
   //----------------------------------------------------------------------------
-  void ISCalculationSeparate::Initialize()
+  void ISCalculationSeparateT1034::Initialize()
   {
     art::ServiceHandle<sim::LArG4Parameters> lgpHandle;
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
@@ -73,7 +73,7 @@ namespace larg4{
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void ISCalculationSeparate::Reset()
+  void ISCalculationSeparateT1034::Reset()
   {
     fEnergyDeposit   = 0.;
     fNumScintPhotons = 0.;
@@ -84,7 +84,7 @@ namespace larg4{
 
   //----------------------------------------------------------------------------
   // fNumIonElectrons returns a value that is not corrected for life time effects
-  void ISCalculationSeparate::CalculateIonizationAndScintillation(const G4Step* step)
+  void ISCalculationSeparateT1034::CalculateIonizationAndScintillation(const G4Step* step)
   {
 
     fEnergyDeposit = step->GetTotalEnergyDeposit()/CLHEP::MeV;
@@ -127,14 +127,14 @@ namespace larg4{
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * fEnergyDeposit * recomb;
 
-    LOG_DEBUG("ISCalculationSeparate") << " Electrons produced for " << fEnergyDeposit 
+    LOG_DEBUG("ISCalculationSeparateT1034") << " Electrons produced for " << fEnergyDeposit 
 				       << " MeV deposited with "     << recomb 
 				       << " recombination: "         << fNumIonElectrons;
 
     // Now do the scintillation
     G4MaterialPropertiesTable* mpt = step->GetTrack()->GetMaterial()->GetMaterialPropertiesTable();
     if( !mpt) 
-      throw cet::exception("ISCalculationSeparate") << "Cannot find materials property table"
+      throw cet::exception("ISCalculationSeparateT1034") << "Cannot find materials property table"
 						    << " for this step! "
 						    << step->GetTrack()->GetMaterial() << "\n";
 
@@ -143,7 +143,7 @@ namespace larg4{
 
     if(fScintByParticleType){
 
-      LOG_DEBUG("ISCalculationSeparate") << "scintillating by particle type";
+      LOG_DEBUG("ISCalculationSeparateT1034") << "scintillating by particle type";
 
       // Get the definition of the current particle
       G4ParticleDefinition *pDef = step->GetTrack()->GetDynamicParticle()->GetDefinition();
@@ -199,7 +199,7 @@ namespace larg4{
 	   
       // Throw an exception if no scintillation yield is found
       if (!scintYield) 
-	throw cet::exception("ISCalculationSeparate") << "Request for scintillation yield for energy "
+	throw cet::exception("ISCalculationSeparateT1034") << "Request for scintillation yield for energy "
 						      << "deposit and particle type without correct "
 						      << "entry in MaterialPropertiesTable\n"
 						      << "ScintillationByParticleType requires at "
@@ -216,7 +216,7 @@ namespace larg4{
       fNumScintPhotons = fScintYieldFactor * scintYield * fEnergyDeposit;
     }
 
-    LOG_DEBUG("ISCalculationSeparate") << "number photons: " << fNumScintPhotons 
+    LOG_DEBUG("ISCalculationSeparateT1034") << "number photons: " << fNumScintPhotons 
 				       << " energy: "        << fEnergyDeposit/CLHEP::MeV
 				       << " saturation: " 
 				       << fEMSaturation->VisibleEnergyDepositionAtAStep(step)

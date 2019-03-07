@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file AuxDetReadoutGeometry.h
+/// \file AuxDetReadoutGeometryT1034.h
 /// \brief Define the "parallel" geometry that's seen by the AuxDet.
 /// \author miceli@fnal.gov, talion@fnal.gov
 ////////////////////////////////////////////////////////////////////////
@@ -22,8 +22,8 @@
 ///   readouts, so this mechanism is relatively easy to extend for
 ///   each type of readout.
 
-#ifndef LArG4_AuxDetReadoutGeometry_h
-#define LArG4_AuxDetReadoutGeometry_h
+#ifndef LArIATLArG4_AuxDetReadoutGeometryT1034_h
+#define LArIATLArG4_AuxDetReadoutGeometryT1034_h
 
 #include "larcore/Geometry/Geometry.h"
 #include "Geant4/G4VUserParallelWorld.hh"
@@ -33,12 +33,12 @@
 
 namespace larg4 {
 
-  class AuxDetReadoutGeometry : public G4VUserParallelWorld
+  class AuxDetReadoutGeometryT1034 : public G4VUserParallelWorld
   {
   public:
     /// Constructor and destructor.
-    AuxDetReadoutGeometry( const G4String name = "AuxDetReadoutGeometry" );
-    virtual ~AuxDetReadoutGeometry();
+    AuxDetReadoutGeometryT1034( const G4String name = "AuxDetReadoutGeometry" );
+    virtual ~AuxDetReadoutGeometryT1034();
 
     /// The key method in this class; creates a parallel world view of
     /// those volumes relevant to the auxiliary detector readout.
@@ -62,4 +62,4 @@ namespace larg4 {
 
 } // namespace larg4
 
-#endif // LArG4_AuxDetReadoutGeometry_h
+#endif // LArIATLArG4_AuxDetReadoutGeometryT1034_h

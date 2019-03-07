@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file IonizationAndScintillation.cxx
+/// \file IonizationAndScintillationT1034.cxx
 ///
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
@@ -11,9 +11,9 @@
 #include "larsim/Simulation/LArG4Parameters.h"
 
 // LArIATSoft includes
-#include "LArIATLArG4/IonizationAndScintillation.h"
-#include "LArIATLArG4/ISCalculationNEST.h"
-#include "LArIATLArG4/ISCalculationSeparate.h"
+#include "LArIATLArG4/IonizationAndScintillationT1034.h"
+#include "LArIATLArG4/ISCalculationNESTT1034.h"
+#include "LArIATLArG4/ISCalculationSeparateT1034.h"
 
 // ROOT includes
 
@@ -29,18 +29,18 @@
 
 namespace larg4 {
 
-  static IonizationAndScintillation* gInstance = 0;
+  static IonizationAndScintillationT1034* gInstance = 0;
 
   //......................................................................
-  IonizationAndScintillation* IonizationAndScintillation::CreateInstance
+  IonizationAndScintillationT1034* IonizationAndScintillationT1034::CreateInstance
     (CLHEP::HepRandomEngine& engine)
   {
-    if(!gInstance) gInstance = new IonizationAndScintillation(engine);
+    if(!gInstance) gInstance = new IonizationAndScintillationT1034(engine);
     return gInstance;
   }
 
   //......................................................................
-  IonizationAndScintillation* IonizationAndScintillation::Instance()
+  IonizationAndScintillationT1034* IonizationAndScintillationT1034::Instance()
   {
     // the instance must have been created already by CreateInstance()
     assert(gInstance);
@@ -49,7 +49,7 @@ namespace larg4 {
 
   //......................................................................
   // Constructor.
-  IonizationAndScintillation::IonizationAndScintillation
+  IonizationAndScintillationT1034::IonizationAndScintillationT1034
     (CLHEP::HepRandomEngine& engine)
     : fISCalc(0)
     , fStep(0)
@@ -64,11 +64,11 @@ namespace larg4 {
     fISCalculator = lgp->IonAndScintCalculator();
 
     if(fISCalculator.compare("NEST") == 0)
-      fISCalc = new larg4::ISCalculationNEST(fEngine);
+      fISCalc = new larg4::ISCalculationNESTT1034(fEngine);
     else if(fISCalculator.compare("Separate") == 0)
-      fISCalc = new larg4::ISCalculationSeparate(fEngine);
+      fISCalc = new larg4::ISCalculationSeparateT1034(fEngine);
     else
-      mf::LogWarning("IonizationAndScintillation") << "No ISCalculation set, this can't be good.";
+      mf::LogWarning("IonizationAndScintillationT1034") << "No ISCalculation set, this can't be good.";
 
     // Reset the values for the electrons, photons, and energy to 0
     // in the calculator
@@ -107,14 +107,14 @@ namespace larg4 {
   }
 
   //......................................................................
-  IonizationAndScintillation::~IonizationAndScintillation() 
+  IonizationAndScintillationT1034::~IonizationAndScintillationT1034() 
   {
     if(fISCalc) delete fISCalc;
   }
 
 
   //......................................................................
-  void IonizationAndScintillation::Reset(const G4Step* step)
+  void IonizationAndScintillationT1034::Reset(const G4Step* step)
   {
 
     if(fStepNumber==step->GetTrack()->GetCurrentStepNumber() && fTrkID==step->GetTrack()->GetTrackID())
@@ -137,7 +137,7 @@ namespace larg4 {
  
       fISCalc->CalculateIonizationAndScintillation(fStep);
     
-      LOG_DEBUG("IonizationAndScintillation") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
+      LOG_DEBUG("IonizationAndScintillationT1034") << "Step Size: "   << fStep->GetStepLength()/CLHEP::cm
 					      << "\nEnergy: "    << fISCalc->EnergyDeposit()
 					      << "\nElectrons: " << fISCalc->NumberIonizationElectrons()
 					      << "\nPhotons: "   << fISCalc->NumberScintillationPhotons();

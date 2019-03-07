@@ -55,7 +55,7 @@
 // Scintillation Light Class Definition 
 ////////////////////////////////////////////////////////////////////////
 //
-// File:        OpFastScintillation.hh  
+// File:        OpFastScintillationT1034.hh  
 // Description:	Discrete Process - Generation of Scintillation Photons
 // Version:     1.0
 // Created:     1998-11-07
@@ -76,8 +76,8 @@
 //
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef OpFastScintillation_h
-#define OpFastScintillation_h 1
+#ifndef OpFastScintillationT1034_h
+#define OpFastScintillationT1034_h 1
 
 /////////////
 // Includes
@@ -111,7 +111,7 @@
 
 namespace larg4{
 
-class OpFastScintillation : public G4VRestDiscreteProcess
+class OpFastScintillationT1034 : public G4VRestDiscreteProcess
 {
 
 private:
@@ -120,7 +120,7 @@ private:
         // Operators
         //////////////
   
-        // OpFastScintillation& operator=(const OpFastScintillation &right);
+        // OpFastScintillationT1034& operator=(const OpFastScintillationT1034 &right);
   
 public: // Without description
   
@@ -128,10 +128,10 @@ public: // Without description
 	// Constructors and Destructor
 	////////////////////////////////
 
-        OpFastScintillation(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);  
-        OpFastScintillation(const OpFastScintillation &right);
+        OpFastScintillationT1034(const G4String& processName = "Scintillation", G4ProcessType type = fElectromagnetic);  
+        OpFastScintillationT1034(const OpFastScintillationT1034 &right);
 
-	~OpFastScintillation();	
+	~OpFastScintillationT1034();	
 
         ////////////
         // Methods
@@ -139,7 +139,7 @@ public: // Without description
 
 public: // With description
 
-        // OpFastScintillation Process has both PostStepDoIt (for energy 
+        // OpFastScintillationT1034 Process has both PostStepDoIt (for energy 
         // deposition of particles in flight) and AtRestDoIt (for energy
         // given to the medium by particles at rest)
 
@@ -174,7 +174,7 @@ public: // With description
         // have been tracked, the tracking of the primary resumes.
 
         void SetFiniteRiseTime(const G4bool state);
-        // If set, the OpFastScintillation process expects the user to have
+        // If set, the OpFastScintillationT1034 process expects the user to have
         // set the constant material property FAST/SLOWSCINTILLATIONRISETIME.
 
         G4bool GetTrackSecondariesFirst() const;
@@ -288,7 +288,7 @@ private:
 ////////////////////
 
 inline 
-G4bool OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleType)
+G4bool OpFastScintillationT1034::IsApplicable(const G4ParticleDefinition& aParticleType)
 {
        if (aParticleType.GetParticleName() == "opticalphoton") return false;
        if (aParticleType.IsShortLived()) return false;
@@ -297,67 +297,67 @@ G4bool OpFastScintillation::IsApplicable(const G4ParticleDefinition& aParticleTy
 }
 
 inline 
-void OpFastScintillation::SetTrackSecondariesFirst(const G4bool state) 
+void OpFastScintillationT1034::SetTrackSecondariesFirst(const G4bool state) 
 {
 	fTrackSecondariesFirst = state;
 }
 
 inline
-void OpFastScintillation::SetFiniteRiseTime(const G4bool state)
+void OpFastScintillationT1034::SetFiniteRiseTime(const G4bool state)
 {
         fFiniteRiseTime = state;
 }
 
 inline
-G4bool OpFastScintillation::GetTrackSecondariesFirst() const
+G4bool OpFastScintillationT1034::GetTrackSecondariesFirst() const
 {
         return fTrackSecondariesFirst;
 }
 
 inline 
-G4bool OpFastScintillation::GetFiniteRiseTime() const
+G4bool OpFastScintillationT1034::GetFiniteRiseTime() const
 {
         return fFiniteRiseTime;
 }
 
 inline
-void OpFastScintillation::SetScintillationYieldFactor(const G4double yieldfactor)
+void OpFastScintillationT1034::SetScintillationYieldFactor(const G4double yieldfactor)
 {
         YieldFactor = yieldfactor;
 }
 
 inline
-G4double OpFastScintillation::GetScintillationYieldFactor() const
+G4double OpFastScintillationT1034::GetScintillationYieldFactor() const
 {
         return YieldFactor;
 }
 
 inline
-void OpFastScintillation::SetScintillationExcitationRatio(const G4double excitationratio)
+void OpFastScintillationT1034::SetScintillationExcitationRatio(const G4double excitationratio)
 {
         ExcitationRatio = excitationratio;
 }
 
 inline
-G4double OpFastScintillation::GetScintillationExcitationRatio() const
+G4double OpFastScintillationT1034::GetScintillationExcitationRatio() const
 {
         return ExcitationRatio;
 }
 
 inline
-G4PhysicsTable* OpFastScintillation::GetSlowIntegralTable() const
+G4PhysicsTable* OpFastScintillationT1034::GetSlowIntegralTable() const
 {
         return theSlowIntegralTable;
 }
 
 inline
-G4PhysicsTable* OpFastScintillation::GetFastIntegralTable() const
+G4PhysicsTable* OpFastScintillationT1034::GetFastIntegralTable() const
 {
         return theFastIntegralTable;
 }
 
 inline
-void OpFastScintillation::DumpPhysicsTable() const
+void OpFastScintillationT1034::DumpPhysicsTable() const
 {
         if (theFastIntegralTable) {
            G4int PhysicsTableSize = theFastIntegralTable->entries();
@@ -383,17 +383,17 @@ void OpFastScintillation::DumpPhysicsTable() const
 }
 
 inline
-G4double OpFastScintillation::single_exp(G4double t, G4double tau2)
+G4double OpFastScintillationT1034::single_exp(G4double t, G4double tau2)
 {
          return std::exp(-1.0*t/tau2)/tau2;
 }
 
 inline
-G4double OpFastScintillation::bi_exp(G4double t, G4double tau1, G4double tau2)
+G4double OpFastScintillationT1034::bi_exp(G4double t, G4double tau1, G4double tau2)
 {
          return std::exp(-1.0*t/tau2)*(1-std::exp(-1.0*t/tau1))/tau2/tau2*(tau1+tau2);
 }
 
 } //namespace
 
-#endif /* OpFastScintillation_h */
+#endif /* OpFastScintillationT1034_h */

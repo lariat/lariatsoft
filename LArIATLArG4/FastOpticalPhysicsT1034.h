@@ -44,7 +44,7 @@
 //
 //---------------------------------------------------------------------------
 //
-// ClassName:   FastOpticalPhysics
+// ClassName:   FastOpticalPhysicsT1034
 //
 // Author:      V.Ivanchenko 09.11.2005
 //
@@ -57,12 +57,14 @@
 // This class provides construction of default EM standard physics
 //
 
-#ifndef FastOpticalPhysics_h
-#define FastOpticalPhysics_h 1
+#ifndef FastOpticalPhysicsT1034_h
+#define FastOpticalPhysicsT1034_h 1
 
 
 #include "Geant4/G4VPhysicsConstructor.hh"
 #include "Geant4/globals.hh"
+
+#include "OpFastScintillationT1034.hh"
 
 
 
@@ -76,11 +78,11 @@ namespace larg4 {
   class OpFastScintillation;
   class OpBoundaryProcessSimple;
 
-  class FastOpticalPhysics : public G4VPhysicsConstructor
+  class FastOpticalPhysicsT1034 : public G4VPhysicsConstructor
   {
   public:
-    FastOpticalPhysics(G4int ver = 0, const G4String& name = "FastOptical");
-    virtual ~FastOpticalPhysics();
+    FastOpticalPhysicsT1034(G4int ver = 0, const G4String& name = "FastOptical");
+    virtual ~FastOpticalPhysicsT1034();
     
     virtual void ConstructParticle();
     virtual void ConstructProcess();
@@ -88,7 +90,7 @@ namespace larg4 {
   private:
     G4int  verbose;
     G4Cerenkov*              fTheCerenkovProcess;
-    OpFastScintillation*     fTheScintillationProcess;
+    OpFastScintillationT1034*     fTheScintillationProcess;
     G4OpAbsorption*          fTheAbsorptionProcess;
     G4OpRayleigh*            fTheRayleighScatteringProcess;
     OpBoundaryProcessSimple* fTheBoundaryProcess;

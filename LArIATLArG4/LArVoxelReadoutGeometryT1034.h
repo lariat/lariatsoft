@@ -1,5 +1,5 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  LArVoxelReadoutGeometry.h
+/// \file  LArVoxelReadoutGeometryT1034.h
 /// \brief Define the "parallel" geometry that's seen by the LAr Voxels.
 ///
 /// \author  seligman@nevis.columbia.edu
@@ -23,8 +23,8 @@
 ///   readouts, so this mechanism is relatively easy to extend for
 ///   each type of readout.
 
-#ifndef LArG4_LArVoxelReadoutGeometry_h
-#define LArG4_LArVoxelReadoutGeometry_h
+#ifndef LArIATLArG4_LArVoxelReadoutGeometryT1034_h
+#define LArIATLArG4_LArVoxelReadoutGeometryT1034_h
 
 //#include "larsim/LArG4/LArVoxelReadout.h"
 #include "larcore/Geometry/Geometry.h"
@@ -34,28 +34,28 @@
 #include "Geant4/G4VPhysicalVolume.hh"
 #include "Geant4/G4UserLimits.hh"
 
-#include "LArIATLArG4/LArVoxelReadout.h"
+#include "LArIATLArG4/LArVoxelReadoutT1034.h"
 
 // Forward declarations
 namespace CLHEP { class HepRandomEngine; }
 
 namespace larg4 {
 
-  class LArVoxelReadoutGeometry : public G4VUserParallelWorld
+  class LArVoxelReadoutGeometryT1034 : public G4VUserParallelWorld
   {
   public:
     
     /// Collection of all it takes to set up this object.
     struct Setup_t {
       
-      /// Set up data for `LArVoxelReadout`.
-      larg4::LArVoxelReadout::Setup_t readoutSetup;
+      /// Set up data for `LArVoxelReadoutT1034`.
+      larg4::LArVoxelReadoutT1034::Setup_t readoutSetup;
       
     }; // struct Setup_t
     
     
-    /// Constructor: sets up all its LArVoxelReadout instances.
-    LArVoxelReadoutGeometry(const G4String name, Setup_t const& setupData);
+    /// Constructor: sets up all its LArVoxelReadoutT1034 instances.
+    LArVoxelReadoutGeometryT1034(const G4String name, Setup_t const& setupData);
 
     /// The key method in this class; creates a parallel world view of
     /// those volumes relevant to the LAr voxel readout.  Required of
@@ -74,11 +74,11 @@ namespace larg4 {
     std::unique_ptr<G4UserLimits>     fStepLimit; ///< G4 doesn't handle memory management, 
                                                   ///< so we have to
     
-    /// Data for `LArVoxelReadout` setup.
-    larg4::LArVoxelReadout::Setup_t fReadoutSetupData;
+    /// Data for `LArVoxelReadoutT1034` setup.
+    larg4::LArVoxelReadoutT1034::Setup_t fReadoutSetupData;
     
   };
 
 } // namespace larg4
 
-#endif // LArG4_LArVoxelReadoutGeometry_h
+#endif // LArIATLArG4_LArVoxelReadoutGeometryT1034_h

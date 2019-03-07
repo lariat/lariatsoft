@@ -1,29 +1,29 @@
 ////////////////////////////////////////////////////////////////////////
-/// \file  ISCalculationNEST.h
+/// \file  ISCalculationNESTT1034.h
 /// \brief Interface to algorithm class for a specific calculation of 
 ///        ionization electrons and scintillation photons using NEST
 ///
 /// \author  brebel@fnal.gov
 ////////////////////////////////////////////////////////////////////////
-#ifndef LARG4_ISCALCULATIONNEST_H
-#define LARG4_ISCALCULATIONNEST_H
+#ifndef LARG4_ISCALCULATIONNESTT1034_H
+#define LARG4_ISCALCULATIONNESTT1034_H
 
 //#include "larsim/LArG4/ISCalculation.h"
 #include "larsim/LArG4/NestAlg.h"
 
-#include "LArIATLArG4/ISCalculation.h"
+#include "LArIATLArG4/ISCalculationT1034.h"
 
 // forward declaration
 namespace CLHEP { class HepRandomEngine; } 
 
 namespace larg4 {
 
-  class ISCalculationNEST : public ISCalculation {
+  class ISCalculationNESTT1034 : public ISCalculationT1034 {
 
  public:
 
-   ISCalculationNEST(CLHEP::HepRandomEngine& engine);
-   virtual ~ISCalculationNEST();
+   ISCalculationNESTT1034(CLHEP::HepRandomEngine& engine);
+   virtual ~ISCalculationNESTT1034();
 
    void   Initialize();
    void   Reset();

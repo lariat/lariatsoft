@@ -49,9 +49,9 @@
 //#include "larsim/LArG4/IonizationAndScintillation.h"
 //#include "larsim/LArG4/OpFastScintillation.hh"
 
-#include "LArIATLArG4/FastOpticalPhysics.h"
-#include "LArIATLArG4/IonizationAndScintillation.h"
-#include "LArIATLArG4/OpFastScintillation.hh"
+#include "LArIATLArG4/FastOpticalPhysicsT1034.h"
+#include "LArIATLArG4/IonizationAndScintillationT1034.h"
+#include "LArIATLArG4/OpFastScintillationT1034.hh"
 
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 
@@ -119,25 +119,25 @@
 
 namespace larg4 {
 
-  CustomPhysicsFactory<FastOpticalPhysics> fastoptical_factory("FastOptical"); 
+  CustomPhysicsFactory<FastOpticalPhysicsT1034> fastoptical_factory("FastOptical"); 
 
   //-----------------------------------------------------------
-  FastOpticalPhysics::FastOpticalPhysics(G4int ver, const G4String& name)
+  FastOpticalPhysicsT1034::FastOpticalPhysicsT1034(G4int ver, const G4String& name)
     : G4VPhysicsConstructor(name), verbose(ver)
   {
     G4LossTableManager::Instance();
-    mf::LogInfo("FastOpticalPhysics") << "OBJECT BEING CONSTRUCTED IN OPTICAL PHYSICS";
+    mf::LogInfo("FastOpticalPhysicsT1034") << "OBJECT BEING CONSTRUCTED IN OPTICAL PHYSICS";
   }
   
    
   //-----------------------------------------------------------
-  FastOpticalPhysics::~FastOpticalPhysics()
+  FastOpticalPhysicsT1034::~FastOpticalPhysicsT1034()
   {}
   
   //-----------------------------------------------------------  
-  void FastOpticalPhysics::ConstructParticle()
+  void FastOpticalPhysicsT1034::ConstructParticle()
   {
-    LOG_DEBUG("FastOpticalPhysics") << "PARTICLES BEING CONSTRUCTED IN FAST OPTICAL PHYSICS";
+    LOG_DEBUG("FastOpticalPhysicsT1034") << "PARTICLES BEING CONSTRUCTED IN FAST OPTICAL PHYSICS";
     // optical photon
     G4OpticalPhoton::OpticalPhotonDefinition();
     
@@ -169,17 +169,17 @@ namespace larg4 {
   }
     
    //-----------------------------------------------------------  
-  void FastOpticalPhysics::ConstructProcess()
+  void FastOpticalPhysicsT1034::ConstructProcess()
     {
     // Add standard EM Processes
-    LOG_DEBUG("FastOpticalPhysics") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
+    LOG_DEBUG("FastOpticalPhysicsT1034") << "PROCESSES BEING CONSTRUCTED IN OPTICAL PHYSICS";
     
     fTheCerenkovProcess            = new G4Cerenkov("Cerenkov");
     fTheAbsorptionProcess          = new G4OpAbsorption();
     fTheRayleighScatteringProcess  = new G4OpRayleigh();
     fTheBoundaryProcess            = new OpBoundaryProcessSimple();
     fTheWLSProcess                 = new G4OpWLS();
-    fTheScintillationProcess       = new OpFastScintillation("FastScintillation");
+    fTheScintillationProcess       = new OpFastScintillationT1034("FastScintillation");
     
     fTheCerenkovProcess->SetMaxNumPhotonsPerStep(700);
     fTheCerenkovProcess->SetMaxBetaChangePerStep(10.0);
@@ -188,7 +188,7 @@ namespace larg4 {
     const detinfo::LArProperties* larp = lar::providerFrom<detinfo::LArPropertiesService>();
     bool CerenkovEnabled = larp->CerenkovLightEnabled();
     
-    mf::LogInfo("FastOpticalPhysics") << "Cerenkov enabled : " << CerenkovEnabled;
+    mf::LogInfo("FastOpticalPhysicsT1034") << "Cerenkov enabled : " << CerenkovEnabled;
     static G4ParticleTable* fParticleTable = G4ParticleTable::GetParticleTable();
     G4ParticleTable::G4PTblDicIterator*  aParticleIterator;
     aParticleIterator=fParticleTable->GetIterator();
