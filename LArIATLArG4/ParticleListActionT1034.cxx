@@ -57,11 +57,13 @@ namespace larg4 {
   // Constructor.
   ParticleListActionT1034::ParticleListActionT1034(double energyCut,
                                                    bool   storeTrajectories,
-                                                   bool   keepEMShowerDaughters)
+                                                   bool   keepEMShowerDaughters,
+                                                   double stepSizeLimit)
   : fenergyCut(energyCut * CLHEP::GeV)
   , fparticleList(0)
   , fstoreTrajectories(storeTrajectories)
   , fKeepEMShowerDaughters(keepEMShowerDaughters)
+  , fStepSizeLimit(stepSizeLimit)
   {
     // Create the particle list that we'll (re-)use during the course
     // of the Geant4 simulation.
@@ -291,7 +293,7 @@ namespace larg4 {
   // With every step, add to the particle's trajectory.
   void ParticleListActionT1034::SteppingAction(const G4Step* step)
   {
-    
+
     if ( !fCurrentParticle.hasParticle() ) {
       return;
     }
@@ -308,6 +310,8 @@ namespace larg4 {
       step->GetPostStepPoint()->SetGlobalTime(globalTime - step->GetDeltaTime() + step->GetStepLength()/velocity_G4);
     }
 
+    // Flag for point added to particle
+    bool pointAdded = false;
 
     // For the most part, we just want to add the post-step
     // information to the particle's trajectory.  There's one
@@ -315,29 +319,32 @@ namespace larg4 {
     // is not available.  So add the correct vertex information here.
 
     if ( fCurrentParticle.particle->NumberTrajectoryPoints() == 0 ){
-      
+
       // Get the pre/along-step information from the G4Step.
       const G4StepPoint* preStepPoint = step->GetPreStepPoint();
-      
+
       const G4ThreeVector position = preStepPoint->GetPosition();
       G4double time = preStepPoint->GetGlobalTime();
-      
+
       // Remember that LArSoft uses cm, ns, GeV.
       TLorentzVector fourPos(position.x() / CLHEP::cm,
                              position.y() / CLHEP::cm,
                              position.z() / CLHEP::cm,
                              time / CLHEP::ns);
-      
+
       const G4ThreeVector momentum = preStepPoint->GetMomentum();
       const G4double energy = preStepPoint->GetTotalEnergy();
       TLorentzVector fourMom(momentum.x() / CLHEP::GeV,
                              momentum.y() / CLHEP::GeV,
                              momentum.z() / CLHEP::GeV,
                              energy / CLHEP::GeV);
-      
+
       // Add the first point in the trajectory.
       AddPointToCurrentParticle( fourPos, fourMom, "Start" );
-      
+
+      // Set last position
+      fLastPosition = fourPos;
+
     } // end if this is the first step
 
     // At this point, the particle is being transported through the
@@ -355,7 +362,7 @@ namespace larg4 {
     << " ignoreProcess=" << ignoreProcess
     << " fstoreTrajectories="
     << fstoreTrajectories;
-    
+
     // We store the initial creation point of the particle
     // and its final position (ie where it has no more energy, or at least < 1 eV) no matter
     // what, but whether we store the rest of the trajectory depends
@@ -363,27 +370,70 @@ namespace larg4 {
     if ( fstoreTrajectories  &&  !ignoreProcess ){
       // Get the post-step information from the G4Step.
       const G4StepPoint* postStepPoint = step->GetPostStepPoint();
-      
+
       const G4ThreeVector position = postStepPoint->GetPosition();
       G4double time = postStepPoint->GetGlobalTime();
-      
+
       // Remember that LArSoft uses cm, ns, GeV.
       TLorentzVector fourPos( position.x() / CLHEP::cm,
                              position.y() / CLHEP::cm,
                              position.z() / CLHEP::cm,
                              time / CLHEP::ns );
-      
+
       const G4ThreeVector momentum = postStepPoint->GetMomentum();
       const G4double energy = postStepPoint->GetTotalEnergy();
       TLorentzVector fourMom( momentum.x() / CLHEP::GeV,
                              momentum.y() / CLHEP::GeV,
                              momentum.z() / CLHEP::GeV,
                              energy / CLHEP::GeV );
-      
+
       // Add another point in the trajectory.
       AddPointToCurrentParticle( fourPos, fourMom, std::string(process) );
-      
+
+      // Set to true after point is added to particle
+      pointAdded = true;
     }
+
+    // Store the trajectory point if the step size limit is set positive
+    if (fStepSizeLimit > 0.)
+    {
+      // Get the post-step information from the G4Step.
+      const G4StepPoint* postStepPoint = step->GetPostStepPoint();
+
+      const G4ThreeVector position = postStepPoint->GetPosition();
+      G4double time = postStepPoint->GetGlobalTime();
+
+      // Remember that LArSoft uses cm, ns, GeV.
+      TLorentzVector fourPos( position.x() / CLHEP::cm,
+                             position.y() / CLHEP::cm,
+                             position.z() / CLHEP::cm,
+                             time / CLHEP::ns );
+
+      const G4ThreeVector momentum = postStepPoint->GetMomentum();
+      const G4double energy = postStepPoint->GetTotalEnergy();
+      TLorentzVector fourMom( momentum.x() / CLHEP::GeV,
+                             momentum.y() / CLHEP::GeV,
+                             momentum.z() / CLHEP::GeV,
+                             energy / CLHEP::GeV );
+
+      // Get distance between current point and the last point added
+      double deltaPosition = (fourPos.Vect() - fLastPosition.Vect()).Mag();
+
+      // Store trajectory point if step size limit condition is satisfied and
+      // point has not already been added
+      if (deltaPosition >= fStepSizeLimit and !pointAdded)
+      {
+        // Set last position
+        fLastPosition = fourPos;
+
+        // Add another point in the trajectory.
+        AddPointToCurrentParticle( fourPos, fourMom, std::string(process) );
+
+        // Set to true after point is added to particle
+        pointAdded = true;
+      }
+    } // end if step size limit is set positive
+
   }
 
   //----------------------------------------------------------------------------

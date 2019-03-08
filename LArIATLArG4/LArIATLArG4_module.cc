@@ -245,7 +245,9 @@ namespace larg4 {
                                                     ///< dictate how tracks are put on stack.        
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
-    
+
+    double                     fStepSizeLimit;      ///< lower limit for G4 step size [cm]
+
     /// Configures and returns a particle filter
     std::unique_ptr<PositionInVolumeFilter> CreateParticleVolumeFilter
       (std::set<std::string> const& vol_names) const;
@@ -269,6 +271,7 @@ namespace larg4 {
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
     , fOffPlaneMargin        (pset.get< double      >("ChargeRecoveryMargin",0.0)           )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
+    , fStepSizeLimit         (pset.get< double      >("StepSizeLimit", -1.)                 )
 
   {
     LOG_DEBUG("LArIATLArG4") << "Debug: LArIATLArG4()";
@@ -395,7 +398,8 @@ namespace larg4 {
     // produced in the detector.
     fparticleListAction = new larg4::ParticleListActionT1034(lgp->ParticleKineticEnergyCut(),
                                                              lgp->StoreTrajectories(),
-                                                             lgp->KeepEMShowerDaughters());
+                                                             lgp->KeepEMShowerDaughters(),
+                                                             fStepSizeLimit);
     uaManager->AddAndAdoptAction(fparticleListAction);
 
     // UserActionManager is now configured so continue G4 initialization
