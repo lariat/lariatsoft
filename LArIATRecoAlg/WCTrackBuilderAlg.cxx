@@ -99,7 +99,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fMP_M                 = pset.get<float> ("MidplaneSlopeFactor", 1);
   fMidplane_intercept   = pset.get<float> ("MidplaneIntercept", 31067.4); 
   fMidplane_slope       = pset.get<float> ("MidplaneSlope", 8.0);
-
+  fMomentumScalingCalibrationFromSim = pset.get<float> ("MomentumScaleCalibration", -0.026);
 // Where the midplane was before allowing 3 point tracks.  For 3 pt tracks, the intercept and slope will be multiplied by a factor, depending on current setting and WC missed. 
 // Don't change these values unless you plan to recalibrate for all current (A) runs. -G Pulliam.
   
@@ -318,7 +318,7 @@ float WCTrackBuilderAlg::calculateRecoPz(float theta_x_us, float theta_x_ds, flo
 {
   float num   = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV );
   float denom = (3.3*(sin(theta_x_ds) - sin(theta_x_us)))*cos(atan(bestTrackSlope));
-  return num / denom;
+  return num / denom * (1+fMomentumScalingCalibrationFromSim);
 }
 
 //===================================================================================

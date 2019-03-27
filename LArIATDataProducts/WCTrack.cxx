@@ -46,10 +46,14 @@ namespace ldp{
 		   float hitPositionVect[4][3],
 		   int WCMissed,
 		   float residual,
-		   float WC1Mult,
-		   float WC2Mult,
-		   float WC3Mult,
-		   float WC4Mult,
+		   float WC1XMult,
+		   float WC2XMult,
+		   float WC3XMult,
+		   float WC4XMult,
+		   float WC1YMult,
+		   float WC2YMult,
+		   float WC3YMult,
+		   float WC4YMult,		   
 		   bool PickyTrackCheck)
 		   
   { 
@@ -68,10 +72,14 @@ namespace ldp{
     }
     fWCMissed=WCMissed;
     fResidual=residual;
-    fWC1Mult=WC1Mult;
-    fWC2Mult=WC2Mult;
-    fWC3Mult=WC3Mult;
-    fWC4Mult=WC4Mult;
+    fWC1XMult=WC1XMult;
+    fWC2XMult=WC2XMult;
+    fWC3XMult=WC3XMult;
+    fWC4XMult=WC4XMult;
+    fWC1YMult=WC1YMult;
+    fWC2YMult=WC2YMult;
+    fWC3YMult=WC3YMult;
+    fWC4YMult=WC4YMult;    
     fPickyTrackCheck=PickyTrackCheck;    
     //fHitTime = hitTimeVect;
     fDownstreamDir.SetXYZ(hitPositionVect[3][0] - hitPositionVect[2][0],
@@ -94,10 +102,14 @@ namespace ldp{
 		   float hitPositionVect[4][3],
 		   int WCMissed,
 		   float residual,
-		   float WC1Mult,
-		   float WC2Mult,
-		   float WC3Mult,
-		   float WC4Mult,
+		   float WC1XMult,
+		   float WC2XMult,
+		   float WC3XMult,
+		   float WC4XMult,
+		   float WC1YMult,
+		   float WC2YMult,
+		   float WC3YMult,
+		   float WC4YMult,
 		   bool PickyTrackCheck)
   { 
     fMomentum = momentum;
@@ -116,10 +128,14 @@ namespace ldp{
     }
     fWCMissed=WCMissed;
     fResidual=residual;
-    fWC1Mult=WC1Mult;
-    fWC2Mult=WC2Mult;
-    fWC3Mult=WC3Mult;
-    fWC4Mult=WC4Mult;
+    fWC1XMult=WC1XMult;
+    fWC2XMult=WC2XMult;
+    fWC3XMult=WC3XMult;
+    fWC4XMult=WC4XMult;
+    fWC1YMult=WC1YMult;
+    fWC2YMult=WC2YMult;
+    fWC3YMult=WC3YMult;
+    fWC4YMult=WC4YMult; 
     fPickyTrackCheck=PickyTrackCheck;
     //fHitTime = hitTimeVect;
     fDownstreamDir.SetXYZ(hitPositionVect[3][0] - hitPositionVect[2][0],

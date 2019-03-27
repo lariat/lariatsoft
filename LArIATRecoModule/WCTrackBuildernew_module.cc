@@ -140,14 +140,14 @@ private:
     bool fVerbose;
     bool fPickyTracks;
     bool fCheckTracks;
-    int WCx1[1000][100],WCx2[1000][100],WCx3[1000][100],WCx4[1000][100],WCy1[1000][100],WCy2[1000][100],WCy3[1000][100],WCy4[1000][100]; //Arrays for the wires hit in each WC
+    int WCx1[200][100],WCx2[200][100],WCx3[200][100],WCx4[200][100],WCy1[200][100],WCy2[200][100],WCy3[200][100],WCy4[200][100]; //Arrays for the wires hit in each WC
 
     //Hits and Times before clustering. I want to see the noise hits.
-    float WC1Xhit[1000][100],WC2Xhit[1000][100],WC3Xhit[1000][100],WC4Xhit[1000][100];
-    float WC1Yhit[1000][100],WC2Yhit[1000][100],WC3Yhit[1000][100],WC4Yhit[1000][100];
-    float WC1Xtime[1000][100],WC2Xtime[1000][100],WC3Xtime[1000][100],WC4Xtime[1000][100];
-    float WC1Ytime[1000][100],WC2Ytime[1000][100],WC3Ytime[1000][100],WC4Ytime[1000][100];   
-    float WC1Mult,WC2Mult,WC3Mult,WC4Mult;
+    float WC1Xhit[200][100],WC2Xhit[200][100],WC3Xhit[200][100],WC4Xhit[200][100];
+    float WC1Yhit[200][100],WC2Yhit[200][100],WC3Yhit[200][100],WC4Yhit[200][100];
+    float WC1Xtime[200][100],WC2Xtime[200][100],WC3Xtime[200][100],WC4Xtime[200][100];
+    float WC1Ytime[200][100],WC2Ytime[200][100],WC3Ytime[200][100],WC4Ytime[200][100];   
+    float WC1XMult,WC2XMult,WC3XMult,WC4XMult, WC1YMult,WC2YMult,WC3YMult,WC4YMult;
     bool PickyTrackCheck;
 };
 
@@ -231,7 +231,7 @@ void WCTrackBuildernew::produce(art::Event & e)
        hit_position_vect[i][j]=99999;
        }
      }
-    if(nevt<1000){PlotHitsBeforeClustering(tdc_number_vect,hit_channel_vect,hit_time_bin_vect);}
+    if(nevt<200){PlotHitsBeforeClustering(tdc_number_vect,hit_channel_vect,hit_time_bin_vect);}
     //int good_trigger_counter = 0;
     fWCHitFinderAlg.createHits(tdc_number_vect,
     			       hit_channel_vect,
@@ -239,12 +239,16 @@ void WCTrackBuildernew::produce(art::Event & e)
 			       good_hits,
 			       fVerbose);
 			       
-    if(nevt<1000){MakeSomePlotsFromHits(good_hits);} //limit events contributing to tree		
-    
-  WC1Mult=(float)(good_hits[0][0].hits.size()+good_hits[0][1].hits.size())/2;
-  WC2Mult=(float)(good_hits[1][0].hits.size()+good_hits[1][1].hits.size())/2;
-  WC3Mult=(float)(good_hits[2][0].hits.size()+good_hits[2][1].hits.size())/2;
-  WC4Mult=(float)(good_hits[3][0].hits.size()+good_hits[3][1].hits.size())/2;	       
+    if(nevt<200){MakeSomePlotsFromHits(good_hits);} //limit events contributing to tree		
+  WC1XMult=(float)(good_hits[0][0].hits.size());
+  WC2XMult=(float)(good_hits[1][0].hits.size());
+  WC3XMult=(float)(good_hits[2][0].hits.size());
+  WC4XMult=(float)(good_hits[3][0].hits.size());
+  
+  WC1YMult=(float)(good_hits[0][1].hits.size());
+  WC2YMult=(float)(good_hits[1][1].hits.size());
+  WC3YMult=(float)(good_hits[2][1].hits.size());
+  WC4YMult=(float)(good_hits[3][1].hits.size());        
   fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
 //std::cout<<"Hit Finding done, going to Track Building"<<std::endl;
   fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
@@ -281,8 +285,8 @@ void WCTrackBuildernew::produce(art::Event & e)
         hit_position_vect[i][j] *= 0.1;
     }
   }
-  std::cout<<" reco_pz: "<<reco_pz_list.size()<<std::endl;
-  if(reco_pz2M_list.size())  std::cout<<"Checking the filling up of reco_pz2m: "<<reco_pz2M_list.size()<<" "<<reco_pz2M_list[0]<<" "<<reco_pz_list[0]<<std::endl;
+  //std::cout<<" reco_pz : "<<reco_pz_list.size()<<std::endl;
+  //if(reco_pz2M_list.size())  std::cout<<"Checking the filling up of reco_pz2m: "<<reco_pz2M_list.size()<<" "<<reco_pz2M_list[0]<<" "<<reco_pz_list[0]<<std::endl;
      //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
     int tracknumber=final_tracks.size();
@@ -298,9 +302,9 @@ void WCTrackBuildernew::produce(art::Event & e)
 					   WC_vect,
 					   hit_wire_vect);
  					   
- if(WC1Mult==1 && WC2Mult==1 && WC3Mult==1 && WC4Mult==1) { PickyTrackCheck=true;} //We probably already know from .fcl params, but we're gonna check if this is a picky track to add to the WCTrack Object
+  if(WC1XMult==1 && WC2XMult==1 && WC3XMult==1 && WC4XMult==1 && WC1YMult==1 && WC2YMult==1 && WC3YMult==1 && WC4YMult==1) { PickyTrackCheck=true;} //We probably already know from .fcl params, but we're gonna check if this is a picky track to add to the WCTrack Object
  else{PickyTrackCheck=false;}      
- std::cout<<"WCMult check: "<<WC1Mult<<", "<<WC2Mult<<", "<<WC3Mult<<", "<<WC4Mult<<". Picky Track is : "<<PickyTrackCheck<<std::endl;
+
       //WCTrack object creation and association with trigger created
 if(reco_pz2M_list.size() > 0){      ldp::WCTrack the_track(reco_pz_list[iNewTrack],
 	                     reco_pz2M_list[iNewTrack],
@@ -317,12 +321,16 @@ if(reco_pz2M_list.size() > 0){      ldp::WCTrack the_track(reco_pz_list[iNewTrac
 			     hit_position_vect,
 			     WCMissed,
 			     residual,			     
-			     WC1Mult,
-			     WC2Mult,
-			     WC3Mult,
-			     WC4Mult,
+			     WC1XMult,
+			     WC2XMult,
+			     WC3XMult,
+			     WC4XMult,
+			     WC1YMult,
+			     WC2YMult,
+			     WC3YMult,
+			     WC4YMult,			     
 			     PickyTrackCheck);
-      (*WCTrackCol).push_back( the_track );}
+      (*WCTrackCol).push_back( the_track );}   
 else{
 ldp::WCTrack the_track(reco_pz_list[iNewTrack],
                              y_kink_list[iNewTrack],
@@ -338,10 +346,14 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
 			     hit_position_vect,
 			     WCMissed,
 			     residual,
-			     WC1Mult,
-			     WC2Mult,
-			     WC3Mult,
-			     WC4Mult,
+			     WC1XMult,
+			     WC2XMult,
+			     WC3XMult,
+			     WC4XMult,
+			     WC1YMult,
+			     WC2YMult,
+			     WC3YMult,
+			     WC4YMult,	
 			     PickyTrackCheck);
       (*WCTrackCol).push_back( the_track );
 
@@ -373,7 +385,7 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
 void WCTrackBuildernew::ResetTree()
 {
   for(int i=0; i<100; ++i)
-    for(int j=0; j<1000;j++)
+    for(int j=0; j<200;j++)
   {
     WCx1[j][i]=-99999;
     WCx2[j][i]=-99999;
@@ -399,10 +411,14 @@ void WCTrackBuildernew::ResetTree()
     WC2Ytime[j][i]=-99999;
     WC3Ytime[j][i]=-99999;
     WC4Ytime[j][i]=-99999;
-    WC1Mult=-99999;
-    WC2Mult=-99999;
-    WC3Mult=-99999;
-    WC4Mult=-99999;
+    WC1XMult=-99999;
+    WC2XMult=-99999;
+    WC3XMult=-99999;
+    WC4XMult=-99999;
+    WC1YMult=-99999;
+    WC2YMult=-99999;
+    WC3YMult=-99999;
+    WC4YMult=-99999;  
     
     
   }
@@ -494,34 +510,38 @@ void WCTrackBuildernew::beginJob()//fhicl::ParameterSet const & p)
 art::ServiceHandle<art::TFileService> tfs;
 fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7); 
 fTree=tfs->make<TTree>("WCTree","WCTree");
-fTree->Branch("WCx1",&WCx1,"WCx1[1000][100]/I");
-fTree->Branch("WCx2",&WCx2,"WCx2[1000][100]/I");
-fTree->Branch("WCx3",&WCx3,"WCx3[1000][100]/I");
-fTree->Branch("WCx4",&WCx4,"WCx4[1000][100]/I");
-fTree->Branch("WCy1",&WCy1,"WCy1[1000][100]/I");
-fTree->Branch("WCy2",&WCy2,"WCy2[1000][100]/I");
-fTree->Branch("WCy3",&WCy3,"WCy3[1000][100]/I");
-fTree->Branch("WCy4",&WCy4,"WCy4[1000][100]/I");
-fTree->Branch("WC1Xhit",&WC1Xhit,"WC1Xhit[1000][100]/F");
-fTree->Branch("WC1Yhit",&WC1Yhit,"WC1Yhit[1000][100]/F");
-fTree->Branch("WC2Xhit",&WC2Xhit,"WC2Xhit[1000][100]/F");
-fTree->Branch("WC2Yhit",&WC2Yhit,"WC2Yhit[1000][100]/F");
-fTree->Branch("WC3Xhit",&WC3Xhit,"WC3Xhit[1000][100]/F");
-fTree->Branch("WC3Yhit",&WC3Yhit,"WC3Yhit[1000][100]/F");
-fTree->Branch("WC4Xhit",&WC4Xhit,"WC4Xhit[1000][100]/F");
-fTree->Branch("WC4Yhit",&WC4Yhit,"WC4Yhit[1000][100]/F");
-fTree->Branch("WC1Xtime",&WC1Xtime,"WC1Xtime[1000][100]/F");
-fTree->Branch("WC1Ytime",&WC1Ytime,"WC1Ytime[1000][100]/F");
-fTree->Branch("WC2Xtime",&WC2Xtime,"WC2Xtime[1000][100]/F");
-fTree->Branch("WC2Ytime",&WC2Ytime,"WC2Ytime[1000][100]/F");
-fTree->Branch("WC3Xtime",&WC3Xtime,"WC3Xtime[1000][100]/F");
-fTree->Branch("WC3Ytime",&WC3Ytime,"WC3Ytime[1000][100]/F");
-fTree->Branch("WC4Xtime",&WC4Xtime,"WC4Xtime[1000][100]/F");
-fTree->Branch("WC4Ytime",&WC4Ytime,"WC4Ytime[1000][100]/F");
-fTree->Branch("WC1Mult",&WC1Mult,"WC1Mult/D");
-fTree->Branch("WC2Mult",&WC2Mult,"WC2Mult/D");
-fTree->Branch("WC3Mult",&WC3Mult,"WC3Mult/D");
-fTree->Branch("WC4Mult",&WC4Mult,"WC4Mult/D");
+fTree->Branch("WCx1",&WCx1,"WCx1[200][100]/I");
+fTree->Branch("WCx2",&WCx2,"WCx2[200][100]/I");
+fTree->Branch("WCx3",&WCx3,"WCx3[200][100]/I");
+fTree->Branch("WCx4",&WCx4,"WCx4[200][100]/I");
+fTree->Branch("WCy1",&WCy1,"WCy1[200][100]/I");
+fTree->Branch("WCy2",&WCy2,"WCy2[200][100]/I");
+fTree->Branch("WCy3",&WCy3,"WCy3[200][100]/I");
+fTree->Branch("WCy4",&WCy4,"WCy4[200][100]/I");
+fTree->Branch("WC1Xhit",&WC1Xhit,"WC1Xhit[200][100]/F");
+fTree->Branch("WC1Yhit",&WC1Yhit,"WC1Yhit[200][100]/F");
+fTree->Branch("WC2Xhit",&WC2Xhit,"WC2Xhit[200][100]/F");
+fTree->Branch("WC2Yhit",&WC2Yhit,"WC2Yhit[200][100]/F");
+fTree->Branch("WC3Xhit",&WC3Xhit,"WC3Xhit[200][100]/F");
+fTree->Branch("WC3Yhit",&WC3Yhit,"WC3Yhit[200][100]/F");
+fTree->Branch("WC4Xhit",&WC4Xhit,"WC4Xhit[200][100]/F");
+fTree->Branch("WC4Yhit",&WC4Yhit,"WC4Yhit[200][100]/F");
+fTree->Branch("WC1Xtime",&WC1Xtime,"WC1Xtime[200][100]/F");
+fTree->Branch("WC1Ytime",&WC1Ytime,"WC1Ytime[200][100]/F");
+fTree->Branch("WC2Xtime",&WC2Xtime,"WC2Xtime[200][100]/F");
+fTree->Branch("WC2Ytime",&WC2Ytime,"WC2Ytime[200][100]/F");
+fTree->Branch("WC3Xtime",&WC3Xtime,"WC3Xtime[200][100]/F");
+fTree->Branch("WC3Ytime",&WC3Ytime,"WC3Ytime[200][100]/F");
+fTree->Branch("WC4Xtime",&WC4Xtime,"WC4Xtime[200][100]/F");
+fTree->Branch("WC4Ytime",&WC4Ytime,"WC4Ytime[200][100]/F");
+fTree->Branch("WC1XMult",&WC1XMult,"WC1XMult/F");
+fTree->Branch("WC2XMult",&WC2XMult,"WC2XMult/F");
+fTree->Branch("WC3XMult",&WC3XMult,"WC3XMult/F");
+fTree->Branch("WC4XMult",&WC4XMult,"WC4XMult/F");
+fTree->Branch("WC1YMult",&WC1YMult,"WC1YMult/F");
+fTree->Branch("WC2YMult",&WC2YMult,"WC2YMult/F");
+fTree->Branch("WC3YMult",&WC3YMult,"WC3YMult/F");
+fTree->Branch("WC4YMult",&WC4YMult,"WC4YMult/F");
 //Hists that should be used for diagnostics and deleted before production
 if(fCheckTracks){
   for(int i=0; i<99; ++i){

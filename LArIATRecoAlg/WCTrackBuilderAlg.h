@@ -206,6 +206,7 @@ class WCTrackBuilderAlg{
  					    
   float fMCMagneticField;
   float fB_field_tesla;	
+   float fMomentumScalingCalibrationFromSim;
   private:
   
   bool  fPickyTracks;

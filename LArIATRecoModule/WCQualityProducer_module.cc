@@ -57,12 +57,13 @@ public:
 
   void reconfigure(fhicl::ParameterSet const & p) override;
 
-  bool insideImagPipe(std::vector<double> pos);
   bool CheckUpstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2);
   bool CheckDownstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2);
   bool CheckDownstreamCollimatorAperture(std::vector<double> hit1, std::vector<double> hit2);
-  std::vector<double> projToZ(std::vector<double> hit0, std::vector<double> hit1, double zpos);
-
+  void projToZ(double hit0[3], double hit1[3], double (&result)[3] , double zpos);
+  std::vector<bool> CheckUSMagApertures(double hit0[3], double hit1[3]);
+  std::vector<bool> CheckDSMagApertures(double hit0[3], double hit1[3]);
+  std::vector<bool> CheckDSColApertures(double hit0[3], double hit1[3]);
   void beginJob() override;
   void endJob() override;
   // Required functions.
@@ -76,16 +77,16 @@ private:
   std::string fWCTrackLabel;
 
   bool UseMidplaneCut;
-  bool UseWC4MatchCut;
   bool UseCollimatorCut;
   bool ApplyMassCut;
   double fMidPlaneCut;
-  double fWC4ProjCut; 
   double fMassLowerLimit;
   double fMassUpperLimit;      
   bool IsThisMC;
 
-
+  double fDataMidDiffXOffset, fDataMidDiffYOffset, fDataXCut, fDataYCut;
+  double mid1Hit[3]={-9999,-9999,-9999};
+  double mid2Hit[3]={-9999,-9999,-9999};
   art::ServiceHandle<geo::Geometry> fGeo;  
 
   //---------- Histos ----------
@@ -107,10 +108,12 @@ private:
   TH2F* hMidPlane;
   TH1F* hRadDistMidPlane;
 
+  TH2F* hMidPlaneAfterQuality;
+  TH1F* hRadDistMidPlaneAfterQuality;
   TH3F* hMomoVsProjXVsZ;
   TH3F* hMomoVsProjYVsZ;
   
-  bool MPToWC4;  //Using WC1, WC2, project to midplane. Use that point with WC3 to project to WC4. The boolean that said that passed. Used with fWC4ProjCut
+  
   bool ExtrapolateToMP;  //Using WC1, WC2 project to midplane. Use WC3, WC4, project to Midplane. Are those points close? Used with fMidplaneCut.
 
   //Bools that track hit apertures.
@@ -119,8 +122,78 @@ private:
   bool DSColApertureCheck;
   
   bool KeepTheEvent; //Depending on which Checks you want to use, the final boolean that combines these checks to decide if the event is good.
+  bool Mag1USPassX, Mag1USPassY, Mag1DSPassY, Mag1Pass, Mag2USPassY, Mag2DSPassX, Mag2DSPassY, Mag2Pass, DSColPassX, DSColPassY, DSColPass, AperturePass;  //All the aperture check booleans.
+  // === Storing Time of Flight information === 
   
-  //For each "collimator", the bounds of the face of both aperatures [xlow_frontface, xhigh_frontface, xlow_backface, xhigh_backface], similarly for y. In cm, in TPC coordinates. Taken from survey.
+    
+  // I HATE TO DO THIS: I'M HARDCODING THE POSITIONS OF THE MAGNET CENTERS 
+  // CAUSE I DON'T KNOW HOW TO FETCH non-AuxDet pieces in the gdml
+  double NDB1_Center[3] = { 55.801, 5.048, -472.218};
+  double NDB2_Center[3] = { 47.114, 4.726, -403.146};
+  double Magnets_Mid[3] = { (NDB1_Center[0]+NDB2_Center[0])/2., (NDB1_Center[1]+NDB2_Center[1])/2., (NDB1_Center[2]+NDB2_Center[2])/2.};
+  
+  
+  //I hate to do this too, but I have to hard code the corners of the magnetic aperatures and the center of the aperature faces.
+  double NDB1_FFace_center[3]={61.186,    5.048,    -501.273};  //XYZ of mag1 upstream face
+  double NDB1_BFace_center[3]={50.416,    5.048,    -443.163};  //XYZ of mag1 downstream face
+  
+  double NDB1_FFace_XZ_slope=5.3955; //using the center and the expected rotation around the Y axis (-10.5deg, nominally), find the equation of the line of the face, in the XZ plane
+  double NDB1_FFace_XZ_intercept=2765.814;
+
+  double NDB1_BFace_XZ_slope=5.3955;
+  double NDB1_BFace_XZ_intercept=2441.509;  
+  
+ 
+    //magnet 2
+  double NDB2_FFace_center[3]={49.946,    4.726,    -432.56};  //XYZ of mag2 upstream face
+  double NDB2_BFace_center[3]={44.282,    4.726,    -373.732};  //XYZ of mag2 downstream face
+  
+  double NDB2_FFace_XZ_slope=10.3854;  //Same logic as Magnet 1, but with a -5.5deg rotation.
+  double NDB2_FFace_XZ_intercept=4542.253;
+  
+  double NDB2_BFace_XZ_slope=10.3854;
+  double NDB2_BFace_XZ_intercept=3925.637;
+  
+  
+    //DS Collimator
+  // Because we expect WC3/4 to be at the same rotation as the DSCol, the planes defining the WCs and the faces of the col are all parallel. 
+  //we only need to check at one face, so I use the front face. Yay simplified geometry!
+  double DSCol_FFace_center[3]={38.404,    3.323,    -293.256};
+  
+  double DSCol_FFace_XZ_slope=19.0811;  //Same logic, but with a 3deg rotation.
+  double DSCol_FFace_XZ_intercept=5634.062;  
+  
+   //The position of each corner of the aperture. F or B for Front or Back face. top or bottom (relative to gravity), left or right relative to beam (left = TPC cathode side)
+  double NDB1_F_top_left[3]=     {71.879,    12.158,    -449.291};
+  double NDB1_F_top_right[3]=    {50.493,    12.158,    -503.255};
+  double NDB1_F_bottom_left[3]=  {71.879,    -2.062,    -499.291};
+  double NDB1_F_bottom_right[3]= {50.493,    -2.062,    -503.255};
+  
+  double NDB1_B_top_left[3]=     {61.109,    12.158,    -441.181};    
+  double NDB1_B_top_right[3]=    {39.723,    12.158,    -445.145};
+  double NDB1_B_bottom_left[3]=  {61.109,    -2.062,    -441.181};
+  double NDB1_B_bottom_right[3]= {39.723,    -2.062,    -445.145};
+  
+
+  double NDB2_F_top_left[3]=     {60.771,    11.836,    -431.518};
+  double NDB2_F_top_right[3]=    {39.121,    11.836,    -433.602};
+  double NDB2_F_bottom_left[3]=  {60.771,    -2.384,    -431.518};
+  double NDB2_F_bottom_right[3]= {39.121,    -2.384,    -433.602};
+  
+  double NDB2_B_top_left[3]=     {55.107,    11.836,    -372.690};   
+  double NDB2_B_top_right[3]=    {33.457,    11.833,    -374.774};
+  double NDB2_B_bottom_left[3]=  {55.107,    -2.384,    -372.690};
+  double NDB2_B_bottom_right[3]= {33.457,    -2.384,    -374.774};
+  //DS Collimator
+  // Because we expect WC3/4 to be at the same rotation as the DSCol, the planes defining the WCs and the faces of the col are all parallel. 
+  //we only need to check at one face, so I only need the front face. Yay simplified geometry!
+
+  
+  double DSCol_F_top_left[3]=     {45.096,    11.273,    -292.905};
+  double DSCol_F_top_right[3]=    {31.712,    11.273,    -293.607};
+  double DSCol_F_bottom_left[3]=  {45.096,    -4.627,    -292.905};
+  double DSCol_F_bottom_right[3]= {31.712,    -4.627,    -293.607}; 
+/*   //For each "collimator", the bounds of the face of both aperatures [xlow_frontface, xhigh_frontface, xlow_backface, xhigh_backface], similarly for y. In cm, in TPC coordinates. Taken from survey.
   double xboundMagnet1[4]={45.74, 75.52, 35.09, 64.87};
   double yboundMagnet1[4]={-13.12, 13.59, -13.16, 13.55};
   
@@ -133,7 +206,7 @@ private:
   double zcentMagnet1[2] = { (-501.95-494.98)/2, (-449.49-456.46)/2};
   double zcentMagnet2[2] = { (-432.04-427.50)/2, (-381.27-385.81)/2};
   double zcentDSCol[2]   = { (-296.67-297.36)/2, (-205.94-206.63)/2};
-  double Keepcount=0;
+  double Keepcount=0; */
 };
 
 // ---------------------- Begin Job ---------------------------
@@ -154,9 +227,9 @@ void WCQualityProducer::beginJob()
     hTOFVsMomAfterQuality     = tfs->make<TH2F>("hTOFvsMomAfterQualitys"    , "hTOFvsMomAfterQualitys;WC Momentum [MeV/c];TOF [ns];", 1000, 0, 2000, 500, 0, 100); 
     hTOFVsMomRejected = tfs->make<TH2F>("hTOFvsMomRejected"    , "hTOFvsMomRejected;WC Momentum [MeV/c];TOF [ns];", 1000, 0, 2000, 500, 0, 100); 
 
-    hBeamlineMassOriginal = tfs->make<TH1F>("BeamlineMassOriginal" ,"Original BeamLine Mass" ,400,0,2000);  
-    hBeamlineMassAfterQuality = tfs->make<TH1F>("BeamlineMassAfterQuality","BeamLine Mass After Quality Cuts",400,0,2000);  
-    hBeamlineMassRejected = tfs->make<TH1F>("BeamlineMassRejected","BeamLine Mass Rejected Events",400,0,2000);  
+    hBeamlineMassOriginal = tfs->make<TH1F>("BeamlineMassOriginal" ,"Original BeamLine Mass" ,800,-2000,2000);  
+    hBeamlineMassAfterQuality = tfs->make<TH1F>("BeamlineMassAfterQuality","BeamLine Mass After Quality Cuts",800,-2000,2000);  
+    hBeamlineMassRejected = tfs->make<TH1F>("BeamlineMassRejected","BeamLine Mass Rejected Events",800,-2000,2000);  
   }
 
   hMomOriginal = tfs->make<TH1F>("MomOriginal" ,"Original Beamline Momentum" ,400,0,2000);  
@@ -166,9 +239,10 @@ void WCQualityProducer::beginJob()
   hProjVsRealWC = tfs->make<TH2F>("hProjVsRealWC","hProjVsRealWC", 100, -40.0, 40.0, 200, -40.0, 40.0);  
   hRadDist = tfs->make<TH1F>("hRadDist","hRadDist", 200, 0.0, 100.0);  
 
-  hMidPlane = tfs->make<TH2F>("hMidPlaneDiff","hMidPlaneDiff", 100, -10.0, 10.0, 200, -10.0, 10.0);  
-  hRadDistMidPlane  = tfs->make<TH1F>("hRadDistMid","hRadDistmid", 200, 0.0, 10.0);  
-
+  hMidPlane = tfs->make<TH2F>("hMidPlaneDiff","hMidPlaneDiff", 200, -50.0, 50.0, 200, -50.0, 50.0);  
+  hRadDistMidPlane  = tfs->make<TH1F>("hRadDistMid","hRadDistmid", 200, 0.0, 100.0);  
+  hMidPlaneAfterQuality = tfs->make<TH2F>("hMidPlaneDiffAfterQuality","hMidPlaneDiff", 200, -50.0, 50.0, 200, -50.0, 50.0);  
+  hRadDistMidPlaneAfterQuality  = tfs->make<TH1F>("hRadDistMidAfterQuality","hRadDistmid", 200, 0.0, 100.0); 
   hMomoVsProjXVsZ = tfs->make<TH3F>("hMomoVsProjXVsZ","hMomoVsProjXVsZ", 400, 0.0, 2000.0, 200, 0.0, 80.0, 80, -800.0, 0.0);
   hMomoVsProjYVsZ = tfs->make<TH3F>("hMomoVsProjYVsZ","hMomoVsProjYVsZ", 400, 0.0, 2000.0, 200, -20.0, 40.0, 80, -800.0, 0.0);
 
@@ -190,7 +264,32 @@ WCQualityProducer::WCQualityProducer(fhicl::ParameterSet const & p)
 void WCQualityProducer::produce(art::Event & evt)
 {
 
-  MPToWC4 =true;  
+  
+  // This I can fetch from the Geo: much better!
+  double USTOF_Center[3];
+  double WC1_Center[3];
+  double WC2_Center[3];
+  double WC3_Center[3];
+  double WC4_Center[3];
+  double DSTOF_Center[3];
+    
+
+  for( size_t iDet = 0; iDet < fGeo->NAuxDets() ; ++iDet ){
+    geo::AuxDetGeo const& anAuxDetGeo = fGeo->AuxDet(iDet);
+    std::string detName = anAuxDetGeo.Name();
+    if( detName == "volAuxDetTOFUS")        anAuxDetGeo.GetCenter(USTOF_Center); 
+    if( detName == "volAuxDetSensitiveWC1") anAuxDetGeo.GetCenter(WC1_Center); 
+    if( detName == "volAuxDetSensitiveWC2") anAuxDetGeo.GetCenter(WC2_Center); 
+    if( detName == "volAuxDetSensitiveWC3") anAuxDetGeo.GetCenter(WC3_Center); 
+    if( detName == "volAuxDetSensitiveWC4") anAuxDetGeo.GetCenter(WC4_Center); 
+    if( detName == "volAuxDetTOFDS")        anAuxDetGeo.GetCenter(DSTOF_Center); 
+  }
+
+ double  centerTOFsGeoDist = TMath::Sqrt((USTOF_Center[0] - DSTOF_Center[0])*(USTOF_Center[0] - DSTOF_Center[0]) + 
+				  (USTOF_Center[1] - DSTOF_Center[1])*(USTOF_Center[1] - DSTOF_Center[1]) + 
+				  (USTOF_Center[2] - DSTOF_Center[2])*(USTOF_Center[2] - DSTOF_Center[2]) ) ;
+				  
+				    
   ExtrapolateToMP=true;  
   
 
@@ -229,7 +328,7 @@ void WCQualityProducer::produce(art::Event & evt)
     // Calculating the mass
     //
    
-    float fDistanceTraveled = 6.652; 
+    
     reco_momo = wctrack[iWC]->Momentum();
     hMomOriginal->Fill(reco_momo);
     if(KeepTheEvent && ApplyMassCut){    //Cant check TOF until I know it exists. So breaking into two if statements.
@@ -238,142 +337,86 @@ void WCQualityProducer::produce(art::Event & evt)
         tofObject[0] =  tof[0]->SingleTOF(0);
 
         reco_tof = tofObject[0];  
-        mass = reco_momo*pow(reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1 ,0.5);
-        if(KeepTheEvent && ApplyMassCut && !(mass>=fMassLowerLimit && mass<=fMassUpperLimit)){KeepTheEvent=false;} //have to !(positive condition) because "nan" gets by if(negative condition). Damn tachyons. 
-        if(KeepTheEvent && ApplyMassCut) {
+	
+	double fDistanceTraveled = centerTOFsGeoDist/100; //Convert from cm to m.
+	double radical = reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1;
+	if (radical<0)
+	{
+        mass = -reco_momo*pow(-radical,0.5);
+	}
+	
+	if (radical>0)
+	{
+        mass = reco_momo*pow(radical,0.5);
+	}
+	if(KeepTheEvent && ApplyMassCut) {
           hTOFVsMomOriginal->Fill(reco_momo,reco_tof);
           hBeamlineMassOriginal->Fill(mass);
         }
+        if(KeepTheEvent && ApplyMassCut && (mass<=fMassLowerLimit || mass>=fMassUpperLimit)){KeepTheEvent=false;}  
       }
     }
     // 
     // Here starts my own code
     // 
     // First, I create an downstream beamline track 
-    //   project it to WC4, and make sure that it matches the real hit
-    // Then, I project the upstream and downstream beamline tracks to the midplane to make sure they match
-    // Lastly, I check every 10 cm alone the entire beamline if the particle passes through matter
-    //   calls up the function insideImagPipe(hit) which checks, using some geometry, if the hit passes into matter
-
-    std::vector<double> wcHit0 {wctrack[iWC]->HitPosition(0, 0), wctrack[iWC]->HitPosition(0, 1), wctrack[iWC]->HitPosition(0, 2)};
-    std::vector<double> wcHit1 {wctrack[iWC]->HitPosition(1, 0), wctrack[iWC]->HitPosition(1, 1), wctrack[iWC]->HitPosition(1, 2)};
-    std::vector<double> wcHit2 {wctrack[iWC]->HitPosition(2, 0), wctrack[iWC]->HitPosition(2, 1), wctrack[iWC]->HitPosition(2, 2)};
-    std::vector<double> wcHit3 {wctrack[iWC]->HitPosition(3, 0), wctrack[iWC]->HitPosition(3, 1), wctrack[iWC]->HitPosition(3, 2)};
-      
-    // 
-    // Project to WC4 and check that it matches well
-    // 
-
-    // First, project downstream to midplane @ -437.97 (not using any angular corrections)
-    std::vector<double> midUp = projToZ(wcHit0, wcHit1, -437.97);
-    // Then use this point and WC3 to project up to WC4
-    std::vector<double> ProjDown = projToZ(midUp, wcHit2, -95.0);
-    // Requires some corrections because magnets are not the same
-    ProjDown[0] -= tan(1.32 * TMath::Pi() / 180.0) * (-95.0 - -437.97);   // Corrections for the magnet irregularity 
-
-    hProjVsRealWC->Fill(ProjDown[0] - wctrack[iWC]->HitPosition(3, 0), ProjDown[1] - wctrack[iWC]->HitPosition(3, 1));
-    hRadDist->Fill(TMath::Sqrt(pow(ProjDown[0] - wctrack[iWC]->HitPosition(3, 0), 2.0) + 
-			       pow(ProjDown[1] - wctrack[iWC]->HitPosition(3, 1), 2.0)));
-  
-    // The actual cut - make sure that hits match within 8 cm, decided from the hRadDist plot
-    if(TMath::Sqrt(pow(ProjDown[0] - wctrack[iWC]->HitPosition(3, 0), 2.0) + 
-		   pow(ProjDown[1] - wctrack[iWC]->HitPosition(3, 1), 2.0)) > fWC4ProjCut) { 
-
-      MPToWC4 =false;
-      //continue;
-      
-    }
 
 
-    // 
-    // Project to midplane and check that upstream and downstream match well
-    // 
+    double WC1Hits[3]= {wctrack[iWC]->HitPosition(0, 0), wctrack[iWC]->HitPosition(0, 1), wctrack[iWC]->HitPosition(0, 2)};
+    double WC2Hits[3]= {wctrack[iWC]->HitPosition(1, 0), wctrack[iWC]->HitPosition(1, 1), wctrack[iWC]->HitPosition(1, 2)};
+    double WC3Hits[3]= {wctrack[iWC]->HitPosition(2, 0), wctrack[iWC]->HitPosition(2, 1), wctrack[iWC]->HitPosition(2, 2)};
+    double WC4Hits[3]= {wctrack[iWC]->HitPosition(3, 0), wctrack[iWC]->HitPosition(3, 1), wctrack[iWC]->HitPosition(3, 2)};
+     
+     
 
-    // upstream to midplane
-    std::vector<double> resultUp = projToZ(wcHit0, wcHit1, -437.97);
-    // downstream to midplane
-    std::vector<double> resultDown = projToZ(wcHit2, wcHit3, -437.97);
-    // Small (probably meaningless) correction
-    resultDown[0] -= tan(1.32 * TMath::Pi() / 180.0) * (-339.57 - -437.97);   // Corrections for the magnet irregularity 
 
-    hMidPlane->Fill(resultUp[0] - resultDown[0], resultUp[1] - resultDown[1]);
-    hRadDistMidPlane->Fill(TMath::Sqrt(pow(resultUp[0] - resultDown[0] + 0.75, 2.0) + pow(resultUp[1] - resultDown[1], 2.0)));
+    projToZ(WC1Hits, WC2Hits, mid1Hit      , Magnets_Mid [2]);
+    projToZ(WC3Hits, WC4Hits, mid2Hit      , Magnets_Mid [2]);
 
-    // The actual cut - make sure that tracks match within 3 cm, decided from the hRadDistMidPlane plot
-    // NOTE : 0.75 added to the X coordinates to make sure that the 2D guassian is centered at (0, 0). 
-    //   the reason it is off origin is because of 1) Magnets aren't identical or 2) Something else?
-    if(TMath::Sqrt(pow(resultUp[0] - resultDown[0]  + 0.75, 2.0) + pow(resultUp[1] - resultDown[1], 2.0)) > fMidPlaneCut) { 
+
+    hMidPlane->Fill(10*(mid1Hit[0] - mid2Hit[0]), 10*(mid1Hit[1] - mid2Hit[1])); //Fill this in mm, because I expect an offset of 3mm and 0mm respectively
+    hRadDistMidPlane->Fill(TMath::Sqrt(pow(10*(mid1Hit[0] - mid2Hit[0]), 2.0) + pow(10*(mid1Hit[1] -    mid2Hit[1]), 2.0)));
+
+    if((fabs((mid1Hit[0] - mid2Hit[0])-fDataMidDiffXOffset))>fDataXCut || (fabs((mid1Hit[1] - mid2Hit[1])-fDataMidDiffYOffset))>fDataYCut)
       ExtrapolateToMP=false;
 
-
-    }
     
-    // For each of the "collimator" like object, check that the projection of the WCtrack intersects the aperature of each face of the collimator. For x-direction, doesn't check the DS end of Magnet 1 or the US end of Magnet 2, as a bend has happened.
-    Magnet1ApertureCheck = CheckUpstreamMagnetAperture(wcHit0,wcHit1);
-    Magnet2ApertureCheck = CheckDownstreamMagnetAperture(wcHit2,wcHit3);
-    DSColApertureCheck   = CheckDownstreamCollimatorAperture(wcHit2,wcHit3);
+  
+  
+  std::vector<bool> Mag1Bools=CheckUSMagApertures(WC1Hits, WC2Hits);  //{USX, USY, DSY, Total}
+  std::vector<bool> Mag2Bools=CheckDSMagApertures(WC3Hits, WC4Hits);  //{USY, DSX, DSY, Total}
+  std::vector<bool> DSColBools=CheckDSColApertures(WC3Hits, WC4Hits); //{X,Y,total}
    
    
-/* 
-    // 
-    // Check every 10 cm if particle passed through matter
-    // 
-
-    bool bad = false;
-
-    for(float iZ = -800.0; iZ < 0.0; iZ += 10.0) {
-      std::vector<double> hito;
-
-      // For every 10cm, project the beamline track to that point
-      if(iZ < -437.97) {
-	hito = projToZ(wcHit0, wcHit1, iZ);  // upstream
-      } else { 
-	// Assuming I can trust this point now that it has passed quality controls
-	//std::vector<double> midUp = projToZ(wcHit0, wcHit1, -437.97);
-	//hito = projToZ(midUp, wcHit2, iZ);
-	//hito[0] -= tan(1.32 * TMath::Pi() / 180.0) * (iZ - -437.97);   // Corrections for the magnet irregularity 
-
-	hito = projToZ(wcHit2, wcHit3, iZ); // downstream      
-      }
-
-      // Then, run it through the function that checks if it passed through any matter in the beamline
-      //   if it did, reject the event
-      if(!insideImagPipe(hito)) { 
-
-	if(bCreateMassPlots) {
-	  hTOFVsMomRejected->Fill(reco_momo,reco_tof);
-	  hBeamlineMassRejected->Fill(mass);     
-	}
-
-	hMomRejected->Fill(reco_momo);
-
-	bad = true;
-	break;
-      }
-
-      hMomoVsProjXVsZ->Fill(wctrack[iWC]->Momentum(), hito[0], iZ);
-      hMomoVsProjYVsZ->Fill(wctrack[iWC]->Momentum(), hito[1], iZ); 
-    }
-
-    if(bad) { continue; }
-    nGoodWC += 1; */
+  
+   
+  Mag1USPassX=Mag1Bools[0];
+  Mag1USPassY=Mag1Bools[1]; 
+  Mag1DSPassY=Mag1Bools[2]; 
+  Mag1Pass=Mag1Bools[3]; 
+  
+  Mag2USPassY=Mag2Bools[0]; 
+  Mag2DSPassX=Mag2Bools[1]; 
+  Mag2DSPassY=Mag2Bools[2]; 
+  Mag2Pass=Mag2Bools[3]; 
+  
+  DSColPassX=DSColBools[0]; 
+  DSColPassY=DSColBools[1]; 
+  DSColPass=DSColBools[2]; 
   }
+  if (Mag1Pass && Mag2Pass && DSColPass){AperturePass=true;}
+  else {AperturePass=false;}
 
 }
-  //if(nGoodWC != 1) { return false; } // if we didn't find a single good WC, eject that stuff
-
-
-  // 
-  // This is the end of WC quality control. Thank you for visiting.
-  //
   if(UseMidplaneCut && !ExtrapolateToMP){KeepTheEvent=false;}
-  if(UseWC4MatchCut && !MPToWC4){KeepTheEvent=false;}
-  if(UseCollimatorCut && (!Magnet1ApertureCheck || !Magnet2ApertureCheck || !DSColApertureCheck)){KeepTheEvent=false;}
+  if(UseCollimatorCut && !AperturePass ){KeepTheEvent=false;}
   if(KeepTheEvent){
     if(ApplyMassCut) {
       hTOFVsMomAfterQuality->Fill(reco_momo,reco_tof);
-      hBeamlineMassAfterQuality->Fill(mass);      
+      hBeamlineMassAfterQuality->Fill(mass);    
     }
+          hMidPlaneAfterQuality->Fill(10*(mid1Hit[0] - mid2Hit[0]), 10*(mid1Hit[1] - mid2Hit[1]));
+      hRadDistMidPlaneAfterQuality->Fill(TMath::Sqrt(pow(10*(mid1Hit[0] - mid2Hit[0]), 2.0) + pow(10*(mid1Hit[1] -    mid2Hit[1]), 2.0)));  
     hMomAfterQuality->Fill(reco_momo);
   }  
   if(!KeepTheEvent)
@@ -428,9 +471,11 @@ void WCQualityProducer::reconfigure(fhicl::ParameterSet const & p)
   fWCTrackLabel   = p.get< std::string >("WCTrackLabel");
 
   fMidPlaneCut = p.get<double>("MidPlaneCut", 3.0);
-  fWC4ProjCut = p.get<double>("WC4ProjCut", 8.0);
+  fDataXCut = p.get<double>("DataMPXCut", 1.5);
+  fDataYCut = p.get<double>("DataMPYCut", 1.5);
+  fDataMidDiffXOffset = p.get<double>("DataMPXOffset", 0.3);
+  fDataMidDiffYOffset = p.get<double>("DataMPYOffset", 0);
   UseMidplaneCut = p.get<bool>("ApplyMidplaneCut", true);
-  UseWC4MatchCut = p.get<bool>("ApplyWC4MatchCut", true);
   UseCollimatorCut = p.get<bool>("ApplyCollimatorCut", true);
   ApplyMassCut=p.get<bool>("ApplyMassCut",false);
   fMassLowerLimit=p.get<double>("LowerMassLimit",0);
@@ -440,161 +485,142 @@ void WCQualityProducer::reconfigure(fhicl::ParameterSet const & p)
 
 }
 
-//COLLIMATOR CHECKS! MAGNET 1
-//===================================================================================================
-bool WCQualityProducer::CheckUpstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2)
+std::vector<bool> WCQualityProducer::CheckUSMagApertures(double hit0[3], double hit1[3])
 {
-   std::vector<double> USHit=projToZ(hit1,hit2,zcentMagnet1[0]);
-   std::vector<double> DSHit=projToZ(hit1,hit2,zcentMagnet1[1]);
-   
-   if ( USHit[0] < xboundMagnet1[0] || USHit[0] > xboundMagnet1[1] ){return false;}  //Upstream Aperture X Check
-   else if ( USHit[1] < yboundMagnet1[0] || USHit[1] > yboundMagnet1[1] ){return false;}  //Upstream Aperture Y Check
-   
-   else if ( DSHit[1] < yboundMagnet1[2] || DSHit[1] > yboundMagnet1[3] ){return false;}  //Downstream Aperture Y Check
-   else {return true;} //If all checks pass, then we're good for this collimator.
+
+bool Mag1USPassX, Mag1USPassY, Mag1DSPassY, Mag1Pass;
+//Front face checks
+//Get slope-intercept form of track
+double XZ_slope=(hit1[0]-hit0[0])/(hit1[2]-hit0[2]);
+double XZ_intercept= hit0[0]-XZ_slope*hit0[2];
+
+double z_intersect_us=(XZ_intercept-NDB1_FFace_XZ_intercept)/(NDB1_FFace_XZ_slope-XZ_slope);
+
+//We now have the z coordinate where the track intersects the infinite plane of the US aperture. Get the 3D intersection point.
+double USFFHit[3];
+projToZ(hit0, hit1, USFFHit, z_intersect_us);
+
+//And check whether this intersection point is in the finite bounds of the magnet
+
+//US X Bound check
+if(USFFHit[0]<NDB1_F_top_left[0] && USFFHit[0]>NDB1_F_top_right[0]) {Mag1USPassX=true;}
+else{Mag1USPassX=false;}
+
+//US Y Bound Check
+if(USFFHit[1]<NDB1_F_top_left[1] && USFFHit[1]>NDB1_F_bottom_left[1]) {Mag1USPassY=true;}
+else{Mag1USPassY=false;}  
+
+
+//Same process for the DS aperture  
+double z_intersect_ds=(XZ_intercept-NDB1_BFace_XZ_intercept)/(NDB1_BFace_XZ_slope-XZ_slope);
+double USBFHit[3];
+projToZ(hit0, hit1, USBFHit, z_intersect_ds); 
+
+//We only check Y here, as there is a bend in X.
+if(USBFHit[1]<NDB1_B_top_left[1] && USBFHit[1]>NDB1_B_bottom_left[1]) {Mag1DSPassY=true;}
+else{Mag1DSPassY=false;} 
+
+//lastly, get the overall boolean that for this magnet
+
+if(Mag1USPassX && Mag1USPassY && Mag1DSPassY){Mag1Pass=true;}
+else{Mag1Pass=false;}
+
+std::vector<bool> result;
+result.push_back(Mag1USPassX);
+result.push_back(Mag1USPassY);
+result.push_back(Mag1DSPassY);
+result.push_back(Mag1Pass);
+return result;
 }
 
-//MAGNET 2
-//===================================================================================================
-bool WCQualityProducer::CheckDownstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2)
+std::vector<bool> WCQualityProducer::CheckDSMagApertures(double hit0[3], double hit1[3])
 {
-   std::vector<double> USHit=projToZ(hit1,hit2,zcentMagnet2[0]);
-   std::vector<double> DSHit=projToZ(hit1,hit2,zcentMagnet2[1]);
-   
-   if ( USHit[1] < yboundMagnet2[0] || USHit[1] > yboundMagnet2[1] ){return false;}  //Upstream Aperture Y Check
-   
-   else if ( DSHit[0] < xboundMagnet2[2] || DSHit[0] > xboundMagnet2[3] ){return false;}  //Downstream Aperture X Check   
-   else if ( DSHit[1] < yboundMagnet2[2] || DSHit[1] > yboundMagnet2[3] ){return false;}  //Downstream Aperture Y Check
+bool Mag2DSPassX, Mag2DSPassY, Mag2USPassY, Mag2Pass;
+//Back face checks
+//Get slope-intercept form of track
+double XZ_slope=(hit1[0]-hit0[0])/(hit1[2]-hit0[2]);
+double XZ_intercept= hit0[0]-XZ_slope*hit0[2];
 
-   else {return true;} //If all checks pass, then we're good for this collimator.
-}
-//DS Collimator
-//===================================================================================================
-bool WCQualityProducer::CheckDownstreamCollimatorAperture(std::vector<double> hit1, std::vector<double> hit2)
-{
-   std::vector<double> USHit=projToZ(hit1,hit2,zcentDSCol[0]);
-   std::vector<double> DSHit=projToZ(hit1,hit2,zcentDSCol[1]);
-   
-   if ( USHit[0] < xboundDSCol[0] || USHit[0] > xboundDSCol[1] ){return false;}  //Upstream Aperture X Check
-   else if ( USHit[1] < yboundDSCol[0] || USHit[1] > yboundDSCol[1] ){return false;}  //Upstream Aperture Y Check
-   
-   else if ( DSHit[0] < xboundDSCol[2] || DSHit[0] > xboundDSCol[3] ){return false;}  //Downstream Aperture X Check   
-   else if ( DSHit[1] < yboundDSCol[2] || DSHit[1] > yboundDSCol[3] ){return false;}  //Downstream Aperture Y Check
+double z_intersect_ds=(XZ_intercept-NDB2_BFace_XZ_intercept)/(NDB2_BFace_XZ_slope-XZ_slope);
 
-   else {return true;} //If all checks pass, then we're good for this collimator.
+//We now have the z coordinate where the track intersects the infinite plane of the DS aperture. Get the 3D intersection point.
+double DSBFHit[3];
+projToZ(hit0, hit1, DSBFHit, z_intersect_ds);
+
+//And check whether this intersection point is in the finite bounds of the magnet
+
+//DS X Bound check
+if(DSBFHit[0]<NDB2_B_top_left[0] && DSBFHit[0]>NDB2_B_top_right[0]) {Mag2DSPassX=true;}
+else{Mag2DSPassX=false;}
+
+//US Y Bound Check
+if(DSBFHit[1]<NDB2_B_top_left[1] && DSBFHit[1]>NDB2_B_bottom_left[1]) {Mag2DSPassY=true;}
+else{Mag2DSPassY=false;}  
+
+
+//Same process for the US aperture  
+double z_intersect_us=(XZ_intercept-NDB2_FFace_XZ_intercept)/(NDB2_FFace_XZ_slope-XZ_slope);
+double DSFFHit[3];
+projToZ(hit0, hit1, DSFFHit, z_intersect_us); 
+
+//We only check Y here, as there is a bend in X.
+if(DSFFHit[1]<NDB2_F_top_left[1] && DSFFHit[1]>NDB2_F_bottom_left[1]) {Mag2USPassY=true;}
+else{Mag2USPassY=false;} 
+
+//lastly, get the overall boolean that for this magnet
+
+if(Mag2DSPassX && Mag2DSPassY && Mag2USPassY){Mag2Pass=true;}
+else{Mag2Pass=false;}
+
+std::vector<bool> result;
+result.push_back(Mag2DSPassX);
+result.push_back(Mag2DSPassY);
+result.push_back(Mag2USPassY);
+result.push_back(Mag2Pass);
+return result;
 }
-//===================================================================================================
-bool WCQualityProducer::insideImagPipe(std::vector<double> pos)
+
+
+std::vector<bool> WCQualityProducer::CheckDSColApertures(double hit0[3], double hit1[3])
 {
- 
-  // 
-  // This function uses the hit passed in (pos) and checks if it within
-  //   the matter of 1) Magnet 1 2) Magnet or 3) the Downstream collimator
-  // It does this using some complicated vector geometry. A description of the math involved can be found here: 
-  // https://math.stackexchange.com/questions/1472049/check-if-a-point-is-inside-a-rectangular-shaped-area-3d
+bool DSColPassX, DSColPassY, DSColPass;
+//Front face checks
+//Get slope-intercept form of track
+double XZ_slope=(hit1[0]-hit0[0])/(hit1[2]-hit0[2]);
+double XZ_intercept= hit0[0]-XZ_slope*hit0[2];
+
+double z_intersect_us=(XZ_intercept-DSCol_FFace_XZ_intercept)/(DSCol_FFace_XZ_slope-XZ_slope);
+
+//We now have the z coordinate where the track intersects the infinite plane of the US aperture. Get the 3D intersection point.
+double DSColFFHit[3];
+projToZ(hit0, hit1, DSColFFHit, z_intersect_us);
+
+//And check whether this intersection point is in the finite bounds of the DSCol
+
+//US X Bound check
+if(DSColFFHit[0]<DSCol_F_top_left[0] && DSColFFHit[0]>DSCol_F_top_right[0]) {DSColPassX=true;}
+else{DSColPassX=false;}
+
+//US Y Bound Check
+if(DSColFFHit[1]<DSCol_F_top_left[1] && DSColFFHit[1]>DSCol_F_bottom_left[1]) {DSColPassY=true;}
+else{DSColPassY=false;}  
+
+if(DSColPassX && DSColPassY){DSColPass=true;}
+else{DSColPass=false;}
+std::vector<bool> result;
+result.push_back(DSColPassX);
+result.push_back(DSColPassY);
+result.push_back(DSColPass);
+
+return result;
+}
+
+
+
+void  WCQualityProducer::projToZ(double hit0[3], double hit1[3], double (&result)[3] , double zpos){
   //
-
-  // Sanity check
-  if(pos.size() != 3) { return false; }
-
-  // All WC size {19.1, 19.1, 2.5}
-  // WC1: center {107.95, 2.30, -686.13}, 13deg
-  // WC2: center {71.47, 2.34, -536.36}, 13deg  
-  // WC3: center {40.87, 2.043, -339.57}, 3deg
-  // WC4: center {28.10, 0.30, -95.76}, 3 deg
-
-  std::vector<double> c; // Center of box
-  std::vector<double> vol; // volume of box
-  double rot; // rotation of box
-
-  // All numbers found in various gdml files. Sure there is a better way of doing this
-  // If the particle is in the z-location of a given object, 
-  //   that object's center point, volume and rotation are loaded up
-  // These numbers should represent the Apeture of each of the objects (volume of apeture).
-  //   if they don't, then my bad and better numbers are always welcome!
-
-  if(-504.08 < pos[2]  and pos[2] < -444.98) { // Magnet 1
-    c = {55.44, 2.29, -474.54};
-    vol = {31.75, 14.22, 59.10};
-    rot = 10.5 * TMath::Pi() / 180.0;
-
-  } else if(-434.97 < pos[2] and pos[2] < -375.87) { // Magnet 2
-   c = {46.51, 2.33, -405.42};
-   vol = {31.75, 14.22, 59.10};
-   rot = 5.5 * TMath::Pi() / 180.0;
-
-  } else if(-260.0 < pos[2] and pos[2] < -170.0) { // Downstream collimator
-
-    c = {34.49, 1.17, -217.67};
-
-    // NOTE It was really hard to get an idea of where the apeture of the collimator was
-    // More percise numbers are welcome if you can find them! 
-    vol = {15.0, 15.0, 100.0}; //16.0, 243.81}; 
-
-    rot = 3.0 * TMath::Pi() / 180.0;
-
-  } else {
-    return true; // Default true
-  }  
-
-  // From the center, volume and rotation loaded up, the fancy vector geomtry comes
-  //  into play to make sure that our point z is within this rotated rectangular prism
-
-  // Box corners 
-  // {c0 + v0 / 2, TMath::Cos(10.5) (c1 + v1 / 2), c2 - v2 / 2}
-  // {c0 + v0 / 2, TMath::Cos(10.5) (c1 - v1 / 2), c2 - v2 / 2}
-  // {c0 - v0 / 2, TMath::Cos(10.5) (c1 + v1 / 2), c2 - v2 / 2}
-  // {c0 - v0 / 2, TMath::Cos(10.5) (c1 - v1 / 2), c2 - v2 / 2}
-
-  // {c0 + v0 / 2, TMath::Cos(10.5) (c1 + v1 / 2), c2 + v2 / 2}
-  // {c0 + v0 / 2, TMath::Cos(10.5) (c1 - v1 / 2), c2 + v2 / 2}
-  // {c0 - v0 / 2, TMath::Cos(10.5) (c1 + v1 / 2), c2 + v2 / 2}
-  // {c0 - v0 / 2, TMath::Cos(10.5) (c1 - v1 / 2), c2 + v2 / 2}
-
-  TVector3 P1, P2, P4, P5; // Points needed to find if a third point is within the box
-  P1.SetXYZ(TMath::Cos(rot)*(c[0] + vol[0] / 2.0), (c[1] + vol[1] / 2.0), c[2] - vol[2] / 2.0);
-  P2.SetXYZ(TMath::Cos(rot)*(c[0] + vol[0] / 2.0), (c[1] + vol[1] / 2.0), c[2] + vol[2] / 2.0);
-  P4.SetXYZ(TMath::Cos(rot)*(c[0] - vol[0] / 2.0), (c[1] + vol[1] / 2.0), c[2] - vol[2] / 2.0);
-  P5.SetXYZ(TMath::Cos(rot)*(c[0] + vol[0] / 2.0), (c[1] - vol[1] / 2.0), c[2] - vol[2] / 2.0);
-
-  TVector3 u = (P1 - P4).Cross(P1 - P5);
-  TVector3 v = (P1 - P2).Cross(P1 - P5);
-  TVector3 w = (P1 - P2).Cross(P1 - P4);
-
-  TVector3 x(pos[0], pos[1], pos[2]);
-
-  bool verbose = false; // My super cheap verbose variable 
-
-  if(verbose) {
-    std::cout << 
-      "u.x " << u.Dot(x) << " " << 
-      "v.x " << v.Dot(x) << " " << 
-      "w.x " << w.Dot(x) << " " << std::endl;
-    std::cout << 
-      "u.p1 " << u.Dot(P1) << " " << 
-      "v.p1 " << v.Dot(P1) << " " << 
-      "w.p1 " << w.Dot(P1) << " " << std::endl;
-    std::cout << 
-      "u.p2 " << u.Dot(P2) << " " << 
-      "v.p4 " << v.Dot(P4) << " " << 
-      "w.p5 " << w.Dot(P5) << " " << std::endl;
-  }
-
-  // If this long statement is true, then the point is within the prism. 
-  // if this long statement is false, then the point is Outside of the prism
-
-  return (((u.Dot(P1) < u.Dot(x) and u.Dot(x) < u.Dot(P2)) or (u.Dot(P1) > u.Dot(x) and u.Dot(x) > u.Dot(P2))) and
-  	  ((v.Dot(P1) < v.Dot(x) and v.Dot(x) < v.Dot(P4)) or (v.Dot(P1) > v.Dot(x) and v.Dot(x) > v.Dot(P4))) and
-  	  ((w.Dot(P1) < w.Dot(x) and w.Dot(x) < w.Dot(P5)) or (w.Dot(P1) > w.Dot(x) and w.Dot(x) > w.Dot(P5))));
-
-}
-
-
-std::vector<double> WCQualityProducer::projToZ(std::vector<double> hit0, std::vector<double> hit1, double zpos) {
-
-  //
-  // This powerful little piece of code is what is used to find the point at z = zpos along 
-  //   the line created by hit0 and hit1. Uses the parameterized vector form of a line
+  // This code is used to find the point at z = zpos along 
+  // the line created by hit0 and hit1. Uses the parameterized vector form of a line
   //
   // <x, y, z> = <sx, sy, sz> * t + <startx, starty, startz>
   // sx, sy, sz are all slopes
@@ -610,9 +636,9 @@ std::vector<double> WCQualityProducer::projToZ(std::vector<double> hit0, std::ve
 
   double t = (zpos - hit0[2]) / sz;
 
-  std::vector<double> resulto {sx * t + hit0[0], sy * t + hit0[1], zpos};
-
-  return resulto;
+  result[0] = sx * t + hit0[0]; 
+  result[1] = sy * t + hit0[1]; 
+  result[2] = zpos;
 
 }
 

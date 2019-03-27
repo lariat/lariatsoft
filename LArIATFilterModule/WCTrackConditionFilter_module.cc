@@ -68,7 +68,7 @@ WCTrackConditionFilter::WCTrackConditionFilter(fhicl::ParameterSet const & p)
 
 bool WCTrackConditionFilter::filter(art::Event & e)
 { 
-  std::cout<<"picky "<<bKeepPicky<<", fourpt: "<<bOnlyFourPoint<<std::endl;
+ // std::cout<<"picky "<<bKeepPicky<<", fourpt: "<<bOnlyFourPoint<<std::endl;
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
   std::vector<art::Ptr<ldp::WCTrack> > wctrack;
   if(!e.getByLabel(fWCModuleLabel, wctrackHandle)){hPassFail->Fill(0); hFailReason->Fill(0); return false; } 

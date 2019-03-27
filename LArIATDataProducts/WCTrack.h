@@ -37,10 +37,14 @@ namespace ldp {
     float fPhi;                         //Phi defined counterclockwise from the X axis of the TPC
     int fWCMissed;                      //Which WC was missed.  Currently can be 2 or 3, or 0 if no WC was missed.
     float fResidual;                    //Returns the goodness of fit to a linear regression for points used in track.
-    float fWC1Mult;
-    float fWC2Mult;
-    float fWC3Mult;
-    float fWC4Mult;
+    float fWC1XMult;
+    float fWC2XMult;
+    float fWC3XMult;
+    float fWC4XMult;
+    float fWC1YMult;
+    float fWC2YMult;
+    float fWC3YMult;
+    float fWC4YMult;    
     bool fPickyTrackCheck;
     //These are indexed by hit: each
     //hit is represented by the same
@@ -69,10 +73,14 @@ namespace ldp {
 	     float hitPositionVect[4][3],
 	     int WCMissed,
 	     float residual,
-	     float WC1Mult,
-	     float WC2Mult,
-	     float WC3Mult,
-	     float WC4Mult,
+	     float WC1XMult,
+	     float WC2XMult,
+	     float WC3XMult,
+	     float WC4XMult,
+	     float WC1YMult,
+	     float WC2YMult,
+	     float WC3YMult,
+	     float WC4YMult,	     
 	     bool PickyTrackCheck);
 
 
@@ -91,10 +99,14 @@ namespace ldp {
 	     float hitPositionVect[4][3],
 	     int WCMissed,
 	     float residual,
-	     float WC1Mult,
-	     float WC2Mult,
-	     float WC3Mult,
-	     float WC4Mult,
+	     float WC1XMult,
+	     float WC2XMult,
+	     float WC3XMult,
+	     float WC4XMult,
+	     float WC1YMult,
+	     float WC2YMult,
+	     float WC3YMult,
+	     float WC4YMult,
 	     bool PickyTrackCheck);
 
     // Get Methods
@@ -113,10 +125,14 @@ namespace ldp {
     size_t              NHits()                                      const;
     int                 WCMissed()                                   const;
     float               Residual()                                   const;
-    float               WC1Mult()                                    const;
-    float               WC2Mult()                                    const;
-    float               WC3Mult()                                    const;
-    float               WC4Mult()                                    const;
+    float               WC1XMult()                                    const;
+    float               WC2XMult()                                    const;
+    float               WC3XMult()                                    const;
+    float               WC4XMult()                                    const;
+    float               WC1YMult()                                    const;
+    float               WC2YMult()                                    const;
+    float               WC3YMult()                                    const;
+    float               WC4YMult()                                    const;    
     bool                IsPicky()                                    const;
     TVector3            DownstreamDir()                              const;
     TVector3            ProjectionAtZ(float z, bool useXYFace=false) const;
@@ -136,10 +152,14 @@ inline float    ldp::WCTrack::Phi()           const { return fPhi;             }
 inline int      ldp::WCTrack::WCMissed()      const { return fWCMissed;        }
 inline size_t   ldp::WCTrack::NHits()         const { return  fWC.size();      }
 inline float    ldp::WCTrack::Residual()      const { return fResidual;        }
-inline float    ldp::WCTrack::WC1Mult()       const { return fWC1Mult;         }
-inline float    ldp::WCTrack::WC2Mult()       const { return fWC2Mult;         }
-inline float    ldp::WCTrack::WC3Mult()       const { return fWC3Mult;         }
-inline float    ldp::WCTrack::WC4Mult()       const { return fWC4Mult;         }
+inline float    ldp::WCTrack::WC1XMult()       const { return fWC1XMult;         }
+inline float    ldp::WCTrack::WC2XMult()       const { return fWC2XMult;         }
+inline float    ldp::WCTrack::WC3XMult()       const { return fWC3XMult;         }
+inline float    ldp::WCTrack::WC4XMult()       const { return fWC4XMult;         }
+inline float    ldp::WCTrack::WC1YMult()       const { return fWC1YMult;         }
+inline float    ldp::WCTrack::WC2YMult()       const { return fWC2YMult;         }
+inline float    ldp::WCTrack::WC3YMult()       const { return fWC3YMult;         }
+inline float    ldp::WCTrack::WC4YMult()       const { return fWC4YMult;         }
 inline bool     ldp::WCTrack::IsPicky()       const { return fPickyTrackCheck; }
 inline TVector3 ldp::WCTrack::DownstreamDir() const { return fDownstreamDir;   }
 

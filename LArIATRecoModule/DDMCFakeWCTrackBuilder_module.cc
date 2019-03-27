@@ -437,6 +437,10 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
                              WC2Mult,
                              WC3Mult,
                              WC4Mult,
+                             WC1Mult,
+                             WC2Mult,
+                             WC3Mult,
+                             WC4Mult,			     
                              PickyTrackCheck);
 
   (*WCTrackCol).push_back( the_track );
