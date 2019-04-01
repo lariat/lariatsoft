@@ -232,9 +232,9 @@ void WCQualityProducer::beginJob()
     hBeamlineMassRejected = tfs->make<TH1F>("BeamlineMassRejected","BeamLine Mass Rejected Events",800,-2000,2000);  
   }
 
-  hMomOriginal = tfs->make<TH1F>("MomOriginal" ,"Original Beamline Momentum" ,400,0,2000);  
-  hMomAfterQuality = tfs->make<TH1F>("MomAfterQuality" ,"Beamline Momentum After Quality Cuts" ,400,0,2000);  
-  hMomRejected = tfs->make<TH1F>("MomRejected" ,"Rejected beamline momentum" ,400,0,2000);  
+  hMomOriginal = tfs->make<TH1F>("MomOriginal" ,"Original Beamline Momentum" ,100,0,2000);  
+  hMomAfterQuality = tfs->make<TH1F>("MomAfterQuality" ,"Beamline Momentum After Quality Cuts" ,100,0,2000);  
+  hMomRejected = tfs->make<TH1F>("MomRejected" ,"Rejected beamline momentum" ,100,0,2000);  
 
   hProjVsRealWC = tfs->make<TH2F>("hProjVsRealWC","hProjVsRealWC", 100, -40.0, 40.0, 200, -40.0, 40.0);  
   hRadDist = tfs->make<TH1F>("hRadDist","hRadDist", 200, 0.0, 100.0);  

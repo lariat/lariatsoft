@@ -128,6 +128,11 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
   
   //return sc1;
 }
+float WCTrackBuilderAlg::GetScalingFactor()
+{
+
+  return fMomentumScalingCalibrationFromSim;
+}
 //--------------------------------------------------------------
 //Main function called for each trigger
 void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_pz_list,

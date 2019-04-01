@@ -54,7 +54,8 @@ namespace ldp{
 		   float WC2YMult,
 		   float WC3YMult,
 		   float WC4YMult,		   
-		   bool PickyTrackCheck)
+		   bool PickyTrackCheck,
+		   float unscaledmomentum)
 		   
   { 
     fMomentum = momentum;
@@ -80,7 +81,8 @@ namespace ldp{
     fWC2YMult=WC2YMult;
     fWC3YMult=WC3YMult;
     fWC4YMult=WC4YMult;    
-    fPickyTrackCheck=PickyTrackCheck;    
+    fPickyTrackCheck=PickyTrackCheck; 
+    fUnscaledMomentum=unscaledmomentum;   
     //fHitTime = hitTimeVect;
     fDownstreamDir.SetXYZ(hitPositionVect[3][0] - hitPositionVect[2][0],
                           hitPositionVect[3][1] - hitPositionVect[2][1],
@@ -110,7 +112,8 @@ namespace ldp{
 		   float WC2YMult,
 		   float WC3YMult,
 		   float WC4YMult,
-		   bool PickyTrackCheck)
+		   bool PickyTrackCheck,
+		   float unscaledmomentum)
   { 
     fMomentum = momentum;
     fMomentum2M = momentum2m;
@@ -137,6 +140,7 @@ namespace ldp{
     fWC3YMult=WC3YMult;
     fWC4YMult=WC4YMult; 
     fPickyTrackCheck=PickyTrackCheck;
+    fUnscaledMomentum=unscaledmomentum;
     //fHitTime = hitTimeVect;
     fDownstreamDir.SetXYZ(hitPositionVect[3][0] - hitPositionVect[2][0],
                           hitPositionVect[3][1] - hitPositionVect[2][1],

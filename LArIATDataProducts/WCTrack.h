@@ -46,6 +46,7 @@ namespace ldp {
     float fWC3YMult;
     float fWC4YMult;    
     bool fPickyTrackCheck;
+    float fUnscaledMomentum;
     //These are indexed by hit: each
     //hit is represented by the same
     //index in all three.
@@ -81,7 +82,8 @@ namespace ldp {
 	     float WC2YMult,
 	     float WC3YMult,
 	     float WC4YMult,	     
-	     bool PickyTrackCheck);
+	     bool PickyTrackCheck,
+	     float unscaledmomentum);
 
 
         WCTrack( float momentum,
@@ -107,7 +109,8 @@ namespace ldp {
 	     float WC2YMult,
 	     float WC3YMult,
 	     float WC4YMult,
-	     bool PickyTrackCheck);
+	     bool PickyTrackCheck,
+	     float unscaledmomentum);
 
     // Get Methods
 
@@ -136,6 +139,7 @@ namespace ldp {
     bool                IsPicky()                                    const;
     TVector3            DownstreamDir()                              const;
     TVector3            ProjectionAtZ(float z, bool useXYFace=false) const;
+    float               UnscaledMomentum()                           const;
 
 
 #endif
@@ -162,6 +166,7 @@ inline float    ldp::WCTrack::WC3YMult()       const { return fWC3YMult;        
 inline float    ldp::WCTrack::WC4YMult()       const { return fWC4YMult;         }
 inline bool     ldp::WCTrack::IsPicky()       const { return fPickyTrackCheck; }
 inline TVector3 ldp::WCTrack::DownstreamDir() const { return fDownstreamDir;   }
+inline float    ldp::WCTrack::UnscaledMomentum() const{return fUnscaledMomentum;}
 
 #endif
 

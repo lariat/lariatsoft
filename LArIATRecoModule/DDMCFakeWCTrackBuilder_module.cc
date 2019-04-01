@@ -226,6 +226,7 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
 
   std::vector<double> reco_pz_list;   // Put momentum here
   std::vector<double> reco_pz2M_list; // Put momentum here
+  std::vector<double> unscaled_reco_pz_list;
   std::vector<double> y_kink_list;
   std::vector<double> x_dist_list;
   std::vector<double> y_dist_list;
@@ -239,7 +240,7 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
   float hit_position_vect[4][3];   // WC1 [0][xyz]
   int   WCMissed; 
   float residual;  
-
+  
   //Bogus Filling (I'm not going to need them later)
   y_kink_list.push_back(-99999.);
   x_dist_list.push_back(-99999.);
@@ -252,7 +253,7 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
   hit_wire_vect.push_back(-99999.);
   WCMissed = 0 ; 
   residual = 0.;  
-
+  unscaled_reco_pz_list.push_back(-99999);
   // Semi-Bogus filling (only position at WC4 needed)
   art::ServiceHandle<geo::Geometry> geom;
   //std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = geom->AuxDetGeoVec();
@@ -441,7 +442,8 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
                              WC2Mult,
                              WC3Mult,
                              WC4Mult,			     
-                             PickyTrackCheck);
+                             PickyTrackCheck,
+			     unscaled_reco_pz_list[iTrack]);
 
   (*WCTrackCol).push_back( the_track );
  

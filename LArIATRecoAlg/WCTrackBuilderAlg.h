@@ -203,7 +203,7 @@ class WCTrackBuilderAlg{
 
   float calculateRecoPz(float theta_x_us, float theta_x_ds, float bestTrackSlope );
 				  					    
- 					    
+  float GetScalingFactor();					    
   float fMCMagneticField;
   float fB_field_tesla;	
    float fMomentumScalingCalibrationFromSim;
