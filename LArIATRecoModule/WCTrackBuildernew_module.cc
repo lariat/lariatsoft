@@ -203,6 +203,7 @@ void WCTrackBuildernew::produce(art::Event & e)
    		    		    
     std::vector<double> reco_pz_list;                  //Final reco pz result for full_track_info = true, not indexed by trigger
     std::vector<double> reco_pz2M_list;
+    std::vector<double> unscaled_reco_pz_list;
     std::vector<double> x_face_list;
     std::vector<double> y_face_list;
     std::vector<double> theta_list;
@@ -231,7 +232,7 @@ void WCTrackBuildernew::produce(art::Event & e)
        hit_position_vect[i][j]=99999;
        }
      }
-    if(nevt<200){PlotHitsBeforeClustering(tdc_number_vect,hit_channel_vect,hit_time_bin_vect);}
+    
     //int good_trigger_counter = 0;
     fWCHitFinderAlg.createHits(tdc_number_vect,
     			       hit_channel_vect,
@@ -239,7 +240,7 @@ void WCTrackBuildernew::produce(art::Event & e)
 			       good_hits,
 			       fVerbose);
 			       
-    if(nevt<200){MakeSomePlotsFromHits(good_hits);} //limit events contributing to tree		
+   		
   WC1XMult=(float)(good_hits[0][0].hits.size());
   WC2XMult=(float)(good_hits[1][0].hits.size());
   WC3XMult=(float)(good_hits[2][0].hits.size());
@@ -250,6 +251,7 @@ void WCTrackBuildernew::produce(art::Event & e)
   WC3YMult=(float)(good_hits[2][1].hits.size());
   WC4YMult=(float)(good_hits[3][1].hits.size());        
   fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
+  double ScalingFactor=fWCTrackBuilderAlg.GetScalingFactor();
 //std::cout<<"Hit Finding done, going to Track Building"<<std::endl;
   fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
                                          reco_pz2M_list,
@@ -295,6 +297,7 @@ void WCTrackBuildernew::produce(art::Event & e)
       std::vector<float> hit_wire_vect;
       
       WCHitList final_track = final_tracks[iNewTrack];
+      unscaled_reco_pz_list.push_back(reco_pz_list[iNewTrack]/(1/(1+ScalingFactor)));
       
       
       //Filling as done above, but formats the WC and hit wire vectors in the WCAuxDetDigit style
@@ -329,7 +332,8 @@ if(reco_pz2M_list.size() > 0){      ldp::WCTrack the_track(reco_pz_list[iNewTrac
 			     WC2YMult,
 			     WC3YMult,
 			     WC4YMult,			     
-			     PickyTrackCheck);
+			     PickyTrackCheck,
+			     unscaled_reco_pz_list[iNewTrack]);
       (*WCTrackCol).push_back( the_track );}   
 else{
 ldp::WCTrack the_track(reco_pz_list[iNewTrack],
@@ -354,7 +358,8 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
 			     WC2YMult,
 			     WC3YMult,
 			     WC4YMult,	
-			     PickyTrackCheck);
+			     PickyTrackCheck,
+			     unscaled_reco_pz_list[iNewTrack]);
       (*WCTrackCol).push_back( the_track );
 
 }
@@ -510,30 +515,6 @@ void WCTrackBuildernew::beginJob()//fhicl::ParameterSet const & p)
 art::ServiceHandle<art::TFileService> tfs;
 fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7); 
 fTree=tfs->make<TTree>("WCTree","WCTree");
-fTree->Branch("WCx1",&WCx1,"WCx1[200][100]/I");
-fTree->Branch("WCx2",&WCx2,"WCx2[200][100]/I");
-fTree->Branch("WCx3",&WCx3,"WCx3[200][100]/I");
-fTree->Branch("WCx4",&WCx4,"WCx4[200][100]/I");
-fTree->Branch("WCy1",&WCy1,"WCy1[200][100]/I");
-fTree->Branch("WCy2",&WCy2,"WCy2[200][100]/I");
-fTree->Branch("WCy3",&WCy3,"WCy3[200][100]/I");
-fTree->Branch("WCy4",&WCy4,"WCy4[200][100]/I");
-fTree->Branch("WC1Xhit",&WC1Xhit,"WC1Xhit[200][100]/F");
-fTree->Branch("WC1Yhit",&WC1Yhit,"WC1Yhit[200][100]/F");
-fTree->Branch("WC2Xhit",&WC2Xhit,"WC2Xhit[200][100]/F");
-fTree->Branch("WC2Yhit",&WC2Yhit,"WC2Yhit[200][100]/F");
-fTree->Branch("WC3Xhit",&WC3Xhit,"WC3Xhit[200][100]/F");
-fTree->Branch("WC3Yhit",&WC3Yhit,"WC3Yhit[200][100]/F");
-fTree->Branch("WC4Xhit",&WC4Xhit,"WC4Xhit[200][100]/F");
-fTree->Branch("WC4Yhit",&WC4Yhit,"WC4Yhit[200][100]/F");
-fTree->Branch("WC1Xtime",&WC1Xtime,"WC1Xtime[200][100]/F");
-fTree->Branch("WC1Ytime",&WC1Ytime,"WC1Ytime[200][100]/F");
-fTree->Branch("WC2Xtime",&WC2Xtime,"WC2Xtime[200][100]/F");
-fTree->Branch("WC2Ytime",&WC2Ytime,"WC2Ytime[200][100]/F");
-fTree->Branch("WC3Xtime",&WC3Xtime,"WC3Xtime[200][100]/F");
-fTree->Branch("WC3Ytime",&WC3Ytime,"WC3Ytime[200][100]/F");
-fTree->Branch("WC4Xtime",&WC4Xtime,"WC4Xtime[200][100]/F");
-fTree->Branch("WC4Ytime",&WC4Ytime,"WC4Ytime[200][100]/F");
 fTree->Branch("WC1XMult",&WC1XMult,"WC1XMult/F");
 fTree->Branch("WC2XMult",&WC2XMult,"WC2XMult/F");
 fTree->Branch("WC3XMult",&WC3XMult,"WC3XMult/F");
