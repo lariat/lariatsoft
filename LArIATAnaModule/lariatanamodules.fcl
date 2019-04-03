@@ -27,11 +27,11 @@ lariat_anatreeuc:
     module_type:              "AnaTreeT1034UC"
     TreeName:                 "anatreeuc"
     TriggerUtility:           "FragmentToDigit"
-    HitsModuleLabel:          "linecluster"
+    HitsModuleLabel:          "gaushit"
     TrackModuleLabel:         "pmtrack"
     CalorimetryModuleLabel:   "calo"
     ParticleIDModuleLabel:    "pid"
-    ClusterModuleLabel:       "linecluster"
+    ClusterModuleLabel:       "trajcluster"
     WCTrackLabel:             "wctrack"
     TOFModuleLabel:           "tof"
     AGModuleLabel:            "agcounter"
@@ -39,8 +39,8 @@ lariat_anatreeuc:
     ShowerModuleLabel:        "showerreco"
     SimChanModuleLabel:       "largeant"
     MCShowerModuleLabel:      "mcreco"
-    CalorimetryAlg:           @local::standard_calorimetryalgmc
-    WC2TPCModuleLabel:        "WC2TPCtrk"
+    CalorimetryAlg:           @local::lariat_calorimetryalgmc_run2
+    WC2TPCModuleLabel:        "wctracktpctrackmatch"
     WCQualityProducerLabel:   "wcquality"
 }
 
