@@ -24,8 +24,8 @@ art_make(LIBRARY_NAME     RawDataUtilities
                           ${Boost_SYSTEM_LIBRARY}
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
                           ${ART_FRAMEWORK_SERVICES_BASIC}
-                          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                          ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+                          ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
                           ${FHICLCPP}
          DICT_LIBRARIES   lardataobj_RawData
@@ -40,9 +40,9 @@ art_make(LIBRARY_NAME     RawDataUtilities
                           Utilities_DatabaseUtilityT1034_service
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
                           ${ART_FRAMEWORK_SERVICES_BASIC}
-                          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
-                          ${ART_FRAMEWORK_IO_ROOT}
+                          ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+                          ${ART_ROOT_IO_TFILESERVICE_SERVICE}
+                          ${ART_ROOT_IO}
                           ${MF_MESSAGELOGGER}
                           ${ROOT_BASIC_LIB_LIST}
          MODULE_LIBRARIES lardataobj_RawData
@@ -53,8 +53,8 @@ art_make(LIBRARY_NAME     RawDataUtilities
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}
                           ${ART_FRAMEWORK_SERVICES_REGISTRY}
-                          ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                          ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                          ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+                          ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                           art_Persistency_Common canvas
                           art_Persistency_Provenance canvas
                           art_Utilities canvas

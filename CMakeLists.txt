@@ -63,6 +63,7 @@ find_ups_product( cetbuildtools )
 
 # art related products
 find_ups_product( art )
+find_ups_product(art_root_io)
 find_ups_product( artdaq_core )
 
 # products that LArIAT needs for input data

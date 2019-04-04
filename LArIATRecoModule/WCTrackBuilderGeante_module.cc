@@ -29,7 +29,7 @@
 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 
 //ROOT Things

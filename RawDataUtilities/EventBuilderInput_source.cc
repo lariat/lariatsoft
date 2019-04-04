@@ -96,7 +96,7 @@ namespace {
 namespace raw {
 
   // Enable 'pset.get<raw::Compress_t>("compression")'
-  void decode(boost::any const & a, Compress_t & result) {
+  void decode(std::any const & a, Compress_t & result) {
     unsigned tmp;
     fhicl::detail::decode(a, tmp);
     result = static_cast <Compress_t> (tmp);
