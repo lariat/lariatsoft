@@ -91,6 +91,7 @@ namespace caldata {
 
   //-------------------------------------------------
   CalWireT1034::CalWireT1034(fhicl::ParameterSet const& pset)
+  : EDProducer(pset)
   {
     fSpillName="";
     this->reconfigure(pset);

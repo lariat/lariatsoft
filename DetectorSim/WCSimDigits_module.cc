@@ -101,7 +101,7 @@ private:
 
 
 WCSimDigits::WCSimDigits(fhicl::ParameterSet const & p)
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

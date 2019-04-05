@@ -112,6 +112,7 @@ namespace detsim {
 
   //-------------------------------------------------
   SimWireT1034::SimWireT1034(fhicl::ParameterSet const& pset)
+  : EDProducer(pset)
   {
     this->reconfigure(pset);
 
