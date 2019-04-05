@@ -19,6 +19,6 @@ physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgmc_ru
 
 physics.producers.wctrack: { module_type: DDMCFakeWCTrackBuilder }
 physics.producers.wctrack.module_type: DDMCFakeWCTrackBuilder
-physics.producers.wcquality.IsThisMc: true
+physics.producers.wcquality.IsThisMC: true
 physics.producers.wctracktpctrackmatch.IsThisMC: true
 physics.producers.wctracktpctrackuniquematch.IsThisMC: true
