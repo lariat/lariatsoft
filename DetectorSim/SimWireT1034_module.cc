@@ -78,6 +78,7 @@ namespace detsim {
     void GenNoiseInTime(std::vector<float> &noise);
     void GenNoiseInFreq(std::vector<float> &noise);
 
+    CLHEP::HepRandomEngine& fEngine; ///< reference to art-managed random-number engine
     std::string            fDriftEModuleLabel;///< module making the ionization electrons
     raw::Compress_t        fCompression;      ///< compression type to use
 
@@ -113,6 +114,9 @@ namespace detsim {
   //-------------------------------------------------
   SimWireT1034::SimWireT1034(fhicl::ParameterSet const& pset)
   : EDProducer(pset)
+    // get the random number seed, use a random default if not specified
+    // in the configuration file.
+    , fEngine{createEngine(pset.get< unsigned int >("Seed", sim::GetRandomNumberSeed()))}
   {
     this->reconfigure(pset);
 
@@ -121,12 +125,6 @@ namespace detsim {
     fCompression = raw::kNone;
     TString compression(pset.get< std::string >("CompressionType"));
     if(compression.Contains("Huffman",TString::kIgnoreCase)) fCompression = raw::kHuffman;    
-
-    // get the random number seed, use a random default if not specified    
-    // in the configuration file.  
-    unsigned int seed = pset.get< unsigned int >("Seed", sim::GetRandomNumberSeed());
-
-    createEngine(seed);
   }
 
   //-------------------------------------------------
@@ -305,10 +303,7 @@ namespace detsim {
       else if (sigtype == geo::kCollection)
         ped_mean = fCollectionPed;
       //slight variation on ped on order of RMS of baselien variation
-      art::ServiceHandle<art::RandomNumberGenerator> rng;
-      CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-	                                              moduleDescription().moduleLabel());
-      CLHEP::RandGaussQ rGaussPed(engine, 0.0, fBaselineRMS);
+      CLHEP::RandGaussQ rGaussPed(fEngine, 0.0, fBaselineRMS);
       ped_mean += rGaussPed.fire();
       
       for(unsigned int i = 0; i < fNTicks; ++i){
@@ -361,11 +356,7 @@ namespace detsim {
   //-------------------------------------------------                                                                                                 
   void SimWireT1034::GenNoiseInTime(std::vector<float> &noise)
   {
-    //ART random number service                                                                                                                       
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-	                                            moduleDescription().moduleLabel());
-    CLHEP::RandGaussQ rGauss(engine, 0.0, fNoiseFact);
+    CLHEP::RandGaussQ rGauss(fEngine, 0.0, fNoiseFact);
 
     //In this case fNoiseFact is a value in ADC counts
     //It is going to be the Noise RMS
@@ -379,10 +370,7 @@ namespace detsim {
   //-------------------------------------------------
   void SimWireT1034::GenNoiseInFreq(std::vector<float> &noise)
   {
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine(art::ScheduleID::first(),
-	                                            moduleDescription().moduleLabel());
-    CLHEP::RandFlat flat(engine,-1,1);
+    CLHEP::RandFlat flat(fEngine,-1,1);
 
     if(noise.size() != fNTicks)
       throw cet::exception("SimWireT1034")
@@ -449,4 +437,3 @@ namespace detsim {
   
   
 }
-  
