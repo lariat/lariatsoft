@@ -222,7 +222,7 @@ void WCQualityProducer::beginJob()
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
 
-  if(ApplyMassCut) {
+  if(ApplyMassCut &&!IsThisMC) {
     hTOFVsMomOriginal = tfs->make<TH2F>("hTOFVsMomOriginal", "hTOFVsMomOriginal; WC Momentum [MeV/c];TOF [ns];", 1000, 0, 2000, 500, 0, 100); 
     hTOFVsMomAfterQuality     = tfs->make<TH2F>("hTOFvsMomAfterQualitys"    , "hTOFvsMomAfterQualitys;WC Momentum [MeV/c];TOF [ns];", 1000, 0, 2000, 500, 0, 100); 
     hTOFVsMomRejected = tfs->make<TH2F>("hTOFvsMomRejected"    , "hTOFvsMomRejected;WC Momentum [MeV/c];TOF [ns];", 1000, 0, 2000, 500, 0, 100); 
@@ -300,7 +300,7 @@ void WCQualityProducer::produce(art::Event & evt)
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   std::vector<art::Ptr<ldp::TOF> > tof;  
 
-  if(ApplyMassCut) {
+  if(ApplyMassCut && !IsThisMC) {
     // Getting the Time of Flight (TOF) Information
     if(!evt.getByLabel(fTOFModuleLabel,TOFColHandle)) { KeepTheEvent=false; }
     art::fill_ptr_vector(tof, TOFColHandle);   
@@ -331,7 +331,7 @@ void WCQualityProducer::produce(art::Event & evt)
     
     reco_momo = wctrack[iWC]->Momentum();
     hMomOriginal->Fill(reco_momo);
-    if(KeepTheEvent && ApplyMassCut){    //Cant check TOF until I know it exists. So breaking into two if statements.
+    if(KeepTheEvent && ApplyMassCut && !IsThisMC){    //Cant check TOF until I know it exists. So breaking into two if statements.
       if(tof[0]->NTOF()==1){
         double tofObject[1];            // The TOF calculated (in ns) for this TOF object   
         tofObject[0] =  tof[0]->SingleTOF(0);
@@ -349,11 +349,11 @@ void WCQualityProducer::produce(art::Event & evt)
 	{
         mass = reco_momo*pow(radical,0.5);
 	}
-	if(KeepTheEvent && ApplyMassCut) {
+	if(KeepTheEvent && ApplyMassCut && !IsThisMC) {
           hTOFVsMomOriginal->Fill(reco_momo,reco_tof);
           hBeamlineMassOriginal->Fill(mass);
         }
-        if(KeepTheEvent && ApplyMassCut && (mass<=fMassLowerLimit || mass>=fMassUpperLimit)){KeepTheEvent=false;}  
+        if(KeepTheEvent && ApplyMassCut && !IsThisMC && (mass<=fMassLowerLimit || mass>=fMassUpperLimit)){KeepTheEvent=false;}  
       }
     }
     // 
@@ -411,7 +411,7 @@ void WCQualityProducer::produce(art::Event & evt)
   if(UseMidplaneCut && !ExtrapolateToMP){KeepTheEvent=false;}
   if(UseCollimatorCut && !AperturePass ){KeepTheEvent=false;}
   if(KeepTheEvent){
-    if(ApplyMassCut) {
+    if(ApplyMassCut && !IsThisMC) {
       hTOFVsMomAfterQuality->Fill(reco_momo,reco_tof);
       hBeamlineMassAfterQuality->Fill(mass);    
     }
@@ -421,7 +421,7 @@ void WCQualityProducer::produce(art::Event & evt)
   }  
   if(!KeepTheEvent)
   {
-    if (ApplyMassCut)
+    if (ApplyMassCut && !IsThisMC)
     {
      	hTOFVsMomRejected->Fill(reco_momo,reco_tof);
 	hBeamlineMassRejected->Fill(mass);    
