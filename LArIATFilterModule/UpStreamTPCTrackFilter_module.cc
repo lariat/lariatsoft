@@ -117,7 +117,7 @@ private:
 
 // ---------------------- Parameter Setting ---------------------
 UpStreamTPCTrackFilter::UpStreamTPCTrackFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

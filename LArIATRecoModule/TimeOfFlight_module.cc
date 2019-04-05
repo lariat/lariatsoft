@@ -87,7 +87,8 @@ private:
 
 //----------------------------------------------------------------
 lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
-  : fTOFAlg(p)
+  : EDProducer(p),
+    fTOFAlg(p)
 {
 
   // Configures the ROOT histograms and the 

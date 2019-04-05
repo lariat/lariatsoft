@@ -282,7 +282,8 @@ namespace evgen{
 
   //____________________________________________________________________________
   LArIATFileGen::LArIATFileGen(fhicl::ParameterSet const& pset)
-     : fSeed(314159)					                          
+     : EDProducer(pset)
+     , fSeed(314159)					                          
      , fFileName         (pset.get< std::string     	     	>("FileName")         	)      
      , fMuonsFileType    (pset.get< std::string             	>("MuonsFileType")    	)
      , fTreeName         (pset.get< std::string   	     	>("TreeName")         	)      

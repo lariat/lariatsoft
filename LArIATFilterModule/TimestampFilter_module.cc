@@ -74,7 +74,7 @@ private:
 
 
 TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

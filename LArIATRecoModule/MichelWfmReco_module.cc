@@ -346,7 +346,8 @@ private:
 
 
 MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & pset)
-: fOpHitBuilderAlg(pset), 
+: EDProducer(pset),
+fOpHitBuilderAlg(pset), 
 fOpHitBuilderAlg_aveMichel(pset), 
 fOpHitBuilderAlg_aveBG(pset),
 fOpHitBuilderAlg_aveBG_lowPromptPE(pset), 

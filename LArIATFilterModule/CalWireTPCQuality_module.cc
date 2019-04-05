@@ -77,7 +77,7 @@ double 		fnCalWireObjects;
 
 
 CalWireTPCQuality::CalWireTPCQuality(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

@@ -138,6 +138,7 @@ namespace hit{
 //-------------------------------------------------
 //-------------------------------------------------
 GausHitFinder::GausHitFinder(fhicl::ParameterSet const& pset)
+: EDProducer(pset)
 {
   this->reconfigure(pset);
   

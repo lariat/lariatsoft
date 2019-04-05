@@ -120,7 +120,7 @@ struct SortByWire
   };
 
 SpacePointsT1034::SpacePointsT1034(fhicl::ParameterSet const & p)
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

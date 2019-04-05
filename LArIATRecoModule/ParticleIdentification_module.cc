@@ -90,7 +90,7 @@ private:
 
 
 ParticleIdentification::ParticleIdentification(fhicl::ParameterSet const & p)
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

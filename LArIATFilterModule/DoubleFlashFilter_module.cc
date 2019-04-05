@@ -91,8 +91,8 @@ private:
 
 
 DoubleFlashFilter::DoubleFlashFilter(fhicl::ParameterSet const & p)
-:
-fOpHitBuilderAlg(p)
+: EDFilter(p),
+  fOpHitBuilderAlg(p)
 {
   this->reconfigure(p);
   art::ServiceHandle<art::TFileService> tfs;

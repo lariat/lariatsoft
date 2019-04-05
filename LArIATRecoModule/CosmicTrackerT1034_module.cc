@@ -165,6 +165,7 @@ namespace trkf {
 
   //-------------------------------------------------
   CosmicTrackerT1034::CosmicTrackerT1034(fhicl::ParameterSet const& pset) :
+    EDProducer(pset),
     fClusterMatch(pset.get< fhicl::ParameterSet >("ClusterMatch"))
   {
     this->reconfigure(pset);

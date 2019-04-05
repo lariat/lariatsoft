@@ -107,7 +107,7 @@ private:
 
 
 MuonRangeStackHitsSlicing::MuonRangeStackHitsSlicing(fhicl::ParameterSet const & p)
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

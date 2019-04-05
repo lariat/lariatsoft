@@ -198,7 +198,8 @@ private:
 
 
 WCTrackBuilderGeante::WCTrackBuilderGeante(fhicl::ParameterSet const & p)
- : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg")) // these should be initialized
+ : EDProducer(p)
+ , fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg")) // these should be initialized
  , fWCHitFinderAlg(p.get< fhicl::ParameterSet >("WCHitFinderAlg"))            // here instead of reconfigure()
 {
 

@@ -122,7 +122,7 @@ private:
 
 // ---------------------- Parameter Setting ---------------------
 WC2TPCTrackMatch::WC2TPCTrackMatch(fhicl::ParameterSet const & p)
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

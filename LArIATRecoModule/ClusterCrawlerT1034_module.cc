@@ -106,7 +106,8 @@ class cluster::ClusterCrawlerT1034 : public art::EDProducer {
 namespace cluster {
 
   ClusterCrawlerT1034::ClusterCrawlerT1034(fhicl::ParameterSet const& pset)
-    : fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
+    : EDProducer(pset)
+    , fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
     , fCCAlg  (pset.get< fhicl::ParameterSet >("ClusterCrawlerAlg"))
   {      
     

@@ -104,6 +104,7 @@ private:
 
 
 NNShowerFilter::NNShowerFilter(fhicl::ParameterSet const & p)
+: EDFilter(p)
 {
   // Call appropriate produces<>() functions here.
   this->reconfigure(p);

@@ -174,7 +174,7 @@ void WCQualityFilter::beginJob()
 
 
 WCQualityFilter::WCQualityFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

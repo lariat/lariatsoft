@@ -71,7 +71,7 @@ private:
 
 
 lrm::MyNewMod::MyNewMod(fhicl::ParameterSet const & p) //:fTrigFiltAlg(p.get< fhicl::ParameterSet > ("TriggerFilterAlg"))
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.
