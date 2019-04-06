@@ -140,7 +140,7 @@ bool UpStreamTPCMultiplicityFilter::filter(art::Event & evt)
       // ### Grabbing the SpacePoints associated with this track ###
       std::vector<art::Ptr<recob::SpacePoint> > spts = fmsp.at(i);
      
-      if (spts.size()) 
+      if (spts.size()>1) 
 	{
 	  if (spts[0]->XYZ()[2] > spts[1]->XYZ()[2] ) {
 	    fZUSPositionTrack->Fill(spts[0]->XYZ()[2]);
