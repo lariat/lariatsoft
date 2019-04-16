@@ -85,6 +85,8 @@ private:
   TH1F* hEventCount;
   TH1F* hMuMomentum;
   TH1F* hMuMomentum_pass;
+  TH1F* hMuDecayTime;
+  TH1F* hMuDecayTime_pass;
   TH1F* hStoppingMuEndptX;
   TH1F* hStoppingMuEndptY;
   TH1F* hStoppingMuEndptZ;
@@ -165,7 +167,7 @@ bool MichelMCFilter::filter(art::Event & e)
       //std::cout<<"Found primary muon, charge = "<<muCharge<<"\n";
       
       hMuMomentum->Fill( muMomentum );
-
+      
       // Add to counter
       if( muCharge == -1 ) numMuMinus++;
       if( muCharge == 1 ) numMuPlus++;
@@ -208,6 +210,7 @@ bool MichelMCFilter::filter(art::Event & e)
         if( muCharge == -1 ) numMuMinusDecay++;
         isDecayElectron = true;
         std::cout<<"--> Found decay electron\n";
+        hMuDecayTime->Fill( decayTime );
       }
     }
     
@@ -239,6 +242,7 @@ bool MichelMCFilter::filter(art::Event & e)
   if(outFlag) {
     hEventCount->Fill(1);
     hMuMomentum_pass->Fill( muMomentum );
+    hMuDecayTime_pass->Fill( decayTime );
   }
   std::cout<<"Passing event? "<<outFlag<<"\n";
   return outFlag;
@@ -252,8 +256,10 @@ void MichelMCFilter::beginJob()
   hEventCount = tfs->make<TH1F>("EventCount","MichelMCFilter event count",2,0,2);
   hEventCount ->GetXaxis()->SetBinLabel(1,"Generated");  
   hEventCount ->GetXaxis()->SetBinLabel(2,"Passed");  
-  hMuMomentum          = tfs->make<TH1F>("MuMomentum","Initial muon momentum;Momentum [MeV/c]",100.,0.,1000.);
-  hMuMomentum_pass          = tfs->make<TH1F>("MuMomentum_pass","Initial muon momentum (passing filter);Momentum [MeV/c]",100.,0.,1000.);
+  hMuMomentum         = tfs->make<TH1F>("MuMomentum",     "Initial muon momentum;Momentum [MeV/c]",100.,0.,1000.);
+  hMuMomentum_pass    = tfs->make<TH1F>("MuMomentum_pass","Initial muon momentum (passing filter);Momentum [MeV/c]",100.,0.,1000.);
+  hMuDecayTime        = tfs->make<TH1F>("MuDecayTime",      "Muon decay time [ns]",375,0,7500);
+  hMuDecayTime_pass   = tfs->make<TH1F>("MuDecayTime_pass", "Muon decay time (passing filter) [ns]",375,0,7500);
   hStoppingMuEndptX  = tfs->make<TH1F>("StoppingMuEndptX","Stopping muon endpoint;X [cm]",55,-5.,50.);
   hStoppingMuEndptY  = tfs->make<TH1F>("StoppingMuEndptY","Stopping muon endpoint;Y [cm]",50,-25.,25.);
   hStoppingMuEndptZ  = tfs->make<TH1F>("StoppingMuEndptZ","Stopping muon endpoint;Z [cm]",100,-5.,95.);

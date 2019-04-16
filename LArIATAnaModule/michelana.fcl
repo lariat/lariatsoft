@@ -36,6 +36,7 @@ lariat_michelana:
     MinHitSeparation:     20 # 20
     UsePrepulseFit:       "true"  
     ReturnRawIntegrals:   "false"
+    IntegrationOffset:    3
     PrePulseBaselineFit:  1000
     PrePulseDisplay:      500
     PrePulseTau1:         800
@@ -62,7 +63,6 @@ lariat_michelana:
   MuContamCorr_UseTauPrime:       true
   MuContamCorr_TpbFrac:           [0.18, 0.18]
   Wph:                            19.5e-6 # 19.5 +/- 1.0 eV
-  #ChargeSmearFactor:              0. # 10% from Justin's cosmic muon dE/dx study
 
   # Track reco and selection settings:
   HitsModule:                     "gaushit"
@@ -76,7 +76,7 @@ lariat_michelana:
   EdgeMarginY:                    1.5
   EdgeMarginZ:                    1.5
   MuTrackLengthMin:               5.
-  MuResRangeOffset:               0.00 #0.14 #0.23 # 0.17
+  MuResRangeOffset:               0.00
 
   # clustering/shower reco settings:
   CaloAlg:                        @local::lariat_calorimetryalgdata
@@ -88,8 +88,8 @@ lariat_michelana:
   MaxMatchDistance:               4 
   LocalLinearityWindow:           4 #4
   LinThresh:                      0.80
-  LinTol:                         3 # 3
-  LinThreshMuFit:                 0.90
+  LinTol:                         0 # 3
+  LinThreshMuFit:                 0.90 # 0.90
   ShowerAcceptanceAngle:          30. # 60. 
   MaxHitTimeDiffFac:              1.0 # xfactor of RMS # microseconds 
  
@@ -103,18 +103,18 @@ lariat_michelana:
   MinMuClusterSize:               8
   MinElClusterSize:               4
   MaxElClusterSize:               999 
-  MinMuLinearity:                 0.6
+  MinMuLinearity:                 0.7
   MinFracMuHitsLinear:            0.0
-  MinMuClusterHitsEndFit:         4 # 4
-  MinBraggSlope:                  20.
-  MinDecayAngle2D:                20.
-  MaxDecayAngle2D:                160.
+  MinMuClusterHitsEndFit:         5 # 4
+  MinBraggSlope:                  -999.
+  MinDecayAngle2D:                15.
+  MaxDecayAngle2D:                165.
   MinElShowerFrac:                0.0
   MinNumPts3D:                    3
-  MinFracHits3D:                  0.0
+  MinFracHits3D:                  0.15
   
-  MaxSavedHitGraphs:              1000
-  MaxSavedWfmGraphs:              1000 
+  MaxSavedHitGraphs:              100
+  MaxSavedWfmGraphs:              100
 }
 
 # ===============================================================================

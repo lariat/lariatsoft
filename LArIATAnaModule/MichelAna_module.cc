@@ -1,36 +1,36 @@
 ////////////////////////////////////////////////////////////////////////
-/// Class:       MichelAna
-/// Module Type: filter
-/// File:        MichelAna_module.cc
-///
-/// Input data products required:
-///  - raw::OpDetPulses
-///  - recob::Hits
-///  - recob::Tracks
-///  - anab::Calorimetry (not essential)
-/// 
-/// Output: 
-///  - histogram file + TTree 
-///
-/// Primary analysis module for the Michel electron studies using data
-/// from the light-based trigger on stopping cosmic muons.  It combines 
-/// and replaces both MichelWfmReco_module and MichelMCAna_module.
-///
-/// This module takes in reconstructed events containing PMT data, hits, tracks,
-/// and calorimetry objects.  It does PMT waveform reconstruction, looks 
-/// for Michel-like events, and saves all relevant information to a TTree
-/// to be analyzed by a standalone ROOT macro.  Michel electron charge-based
-/// clustering and reconstruction is also performed, following the technique
-/// from MicroBooNE.
-///
-/// Optical waveform processing algorithms from OpHitBuilderAlg are used
-/// to find and integrate hits in the PMTs.
-///
-/// TODO:
-///  [ ] Move Michel clustering routines to separate dedicated alg class.
-///
-/// Generated at Wed Jun 14 13:35:26 2017 by William Foreman using artmod
-/// from cetpkgsupport v1_10_02.
+// Class:       MichelAna
+// Module Type: filter
+// File:        MichelAna_module.cc
+//
+// Input data products required:
+//  - raw::OpDetPulses
+//  - recob::Hits
+//  - recob::Tracks
+//  - anab::Calorimetry (not essential)
+// 
+// Output: 
+//  - histogram file + TTree 
+//
+// Primary analysis module for the Michel electron studies using data
+// from the light-based trigger on stopping cosmic muons.  It combines 
+// and replaces both MichelWfmReco_module and MichelMCAna_module.
+//
+// This module takes in reconstructed events containing PMT data, hits, tracks,
+// and calorimetry objects.  It does PMT waveform reconstruction, looks 
+// for Michel-like events, and saves all relevant information to a TTree
+// to be analyzed by a standalone ROOT macro.  Michel electron charge-based
+// clustering and reconstruction is also performed, following the technique
+// from MicroBooNE.
+//
+// Optical waveform processing algorithms from OpHitBuilderAlg are used
+// to find and integrate hits in the PMTs.
+//
+// TODO:
+//  [ ] Move Michel clustering routines to separate dedicated alg class.
+//
+// Generated at Wed Jun 14 13:35:26 2017 by William Foreman using artmod
+// from cetpkgsupport v1_10_02.
 ////////////////////////////////////////////////////////////////////////
 
 // Framework includes
@@ -130,8 +130,8 @@ struct MichelCluster {
   std::vector<float> prof_X;
   std::vector<float> prof_W;
   std::vector<float> prof_s;
-  std::vector<float> prof_dQds;
-  std::vector<float> prof_dQds_t;
+  std::vector<float> prof_dQ;
+  std::vector<float> prof_dQ_t;
   std::vector<float> prof_lin;
   int   bnd_i;
   float bnd_s;
@@ -473,7 +473,7 @@ private:
   float               fAmplitude[2];
   float               fMuWidth[2];
   float               fWidth[2];
-  float               fTotalPhelCh[2];
+  //float               fTotalPhelCh[2];
   
   // Hit times, trigger condition, saturation flag
   std::vector<short>  fvHitTimes0[2];
@@ -605,6 +605,7 @@ private:
   float               fElShowerCentroid_Z;
   float               fElShowerPhotons;
   float               fElShowerPhotonsPrompt;
+  float               fElShowerEnergyL;
   float               fElShowerEnergyQL;
   TVector3            fMuEnd3D;
   float               fMuEnd3D_X;
@@ -623,6 +624,7 @@ private:
   bool                fTrue_IsMuStopping;
   int                 fTrue_ChargeSign;
   float               fTrue_MuEnergy;
+  float               fTrue_MuMomentum;
   float               fTrue_MuStopTime;
   float               fTrue_MuTrackLength;
   TVector3            fTrue_MuTrackVertex;
@@ -680,8 +682,8 @@ private:
   float               fTrue_MuContam_prompt[2];
   float               fTrue_MuContam_total[2];
   float               fTrue_MuPE;
-  float               fTrue_TotalPhel;
-  float               fTrue_TotalPhelCh[2]; 
+  //float               fTrue_TotalPhel;
+  //float               fTrue_TotalPhelCh[2]; 
   float               fTrue_ElShowerPhel0;
   float               fTrue_ElShowerPhel;
   float               fTrue_ElShowerPhelPr;
@@ -785,9 +787,12 @@ private:
   TH1D*               hElShowerCharge3D;
   TH1D*               hElTrackCharge;
   TH1D*               hElShowerPhotons;
-  TH1D*               hElShowerEnergy;
-  TH1D*               hElShowerEnergyQL;
-  TH2D*               hElShowerEnergyVsPromptPE[2];
+  TH1D*               hEnergyQ_2D;
+  TH1D*               hEnergyQ;
+  TH1D*               hEnergyL;
+  TH1D*               hEnergyQL;
+//  TH1D*               hElShowerEnergy;
+//  TH1D*               hElShowerEnergyQL;
 //  TH1D*               hElTrackdEdx;
   TH1D*               hQoverL;
   TH1D*               hQoverLCrsMuTrk;
@@ -1467,7 +1472,6 @@ void MichelAna::reconfigure(fhicl::ParameterSet const & p)
   fRecomb             = p.get< float >                ("Recomb", 0.645);
   fRecombElec        = p.get< float >                ("RecombElec", 0.688);
   fRecombPhot       = p.get< float >                ("RecombPhot", 0.576);
-//  fChargeSmearFactor        = p.get< float >                ("ChargeSmearFactor",0.);
   fMaxHitTimeDiffFac        = p.get< float >             ("MaxHitTimeDiffFac", 1.0 );
   fMinNumPts3D              = p.get< int >                  ("MinNumPts3D",2);
   fMinFracHits3D            = p.get< float >                ("MinFracHits3D",0.3);
@@ -1574,12 +1578,11 @@ void MichelAna::beginJob()
   fTree->Branch("ProjPtOnWires_Z",          &fProjPtOnWires_Z,        "ProjPtOnWires_Z/F");
   fTree->Branch("TotalCharge",              &fTotalCharge,            "TotalCharge[2]/F");
   fTree->Branch("TotalChargeCol",              &fTotalChargeCol,      "TotalChargeCol[2]/F");
-  fTree->Branch("TotalPhelCh",              &fTotalPhelCh,            "fTotalPhelCh[2]/F");
+//  fTree->Branch("TotalPhelCh",              &fTotalPhelCh,            "fTotalPhelCh[2]/F");
 //  fTree->Branch("TotalIntegral",            &fTotalIntegral,          "TotalIntegral[2]/F");
   fTree->Branch("ElShowerChargeCol",           &fElShowerChargeCol,   "ElShowerChargeCol/F");
   fTree->Branch("ElShowerCharge",           &fElShowerCharge,         "ElShowerCharge/F");
   fTree->Branch("ElShowerEnergy",           &fElShowerEnergy,         "ElShowerEnergy/F");
-  fTree->Branch("ElTrackChargeCol",         &fElTrackChargeCol,    "ElTrackChargeCol/F");
   fTree->Branch("ElTrackCharge",            &fElTrackCharge,          "ElTrackCharge/F");
   fTree->Branch("ElTrackEnergy",            &fElTrackEnergy,          "ElTrackEnergy/F");
   fTree->Branch("MuCharge",                 &fMuCharge,                     "MuCharge/F");
@@ -1623,6 +1626,7 @@ void MichelAna::beginJob()
   fTree->Branch("NumPts3D",                 &fNumPts3D,               "NumPts3D/I");
   //...truth information
   fTree->Branch("True_ChargeSign",            &fTrue_ChargeSign,          "True_ChargeSign/I");
+  fTree->Branch("True_MuMomentum",        &fTrue_MuMomentum,          "True_MuMomentum/F");
   fTree->Branch("True_MuCharge",          &fTrue_MuCharge,            "True_MuCharge/F");
   fTree->Branch("True_MuPhotons",          &fTrue_MuPhotons,            "True_MuPhotons/F");
   fTree->Branch("True_MuEnergyDep",          &fTrue_MuEnergyDep,            "True_MuEnergyDep/F");
@@ -1669,7 +1673,7 @@ void MichelAna::beginJob()
   fTree->Branch("True_PE_prompt", &fTrue_PE_prompt,   "True_PE_prompt[2]/F");
   fTree->Branch("True_PE_total",            &fTrue_PE_total,          "True_ElShowerPhel_total[2]/F");
   fTree->Branch("True_TotalChargeCol",      &fTrue_TotalChargeCol,    "True_TotalChargeCol/F");
-  fTree->Branch("True_TotalPhelCh",         &fTrue_TotalPhelCh,       "True_TotalPhelCh[2]/F");
+//  fTree->Branch("True_TotalPhelCh",         &fTrue_TotalPhelCh,       "True_TotalPhelCh[2]/F");
    
   // TTree dedicated to crossing muon calibration
   fTreeCrsMu = crsMuDir.make<TTree>("anatree_crsmu","anatree_crsmu");
@@ -1754,8 +1758,6 @@ void MichelAna::beginJob()
   float x1_michelEnergy   = 0.;
   float x2_michelEnergy   = 120.;
   int Nbins_michelEnergy  = 60;
-  
-  hPE       = tfs->make<TH1D>("PE","Total Michel light for event;Michel light collected [PEs]",200,0,2000);
   
   // ----------------------------------------------------------------------
   // Loop over the PMTs and make PMT-specific histograms
@@ -1944,11 +1946,6 @@ void MichelAna::beginJob()
     sprintf(histName,"%lu_PE_total_dTcut_shwr",ch);
     sprintf(histTitle,"Opdet %lu, #DeltaT > %3.1f#mus, Michel shwr reco'd;Total light of Michel candidate pulse [PE]",ch,fdTcut/1000);
     hPE_total_dTcut_shwr[ch]     = tfs->make<TH1D>(histName,histTitle,nbins_S[ch],x1_S[ch],x2_S[ch]);
-  
-    hElShowerEnergyVsPromptPE[ch]=tfs->make<TH2D>(Form("%lu_ElShowerEnergyVsPromptPE",ch),";Reconstructed Q-only energy [MeV];Prompt light [pe]",
-      Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy,
-      nbins_S100[ch],x1_S100[ch],x2_S100[ch]);
-      hElShowerEnergyVsPromptPE[ch]->SetOption("colz");
   
     sprintf(histName,"%lu_PE_total_TrueVsReco",ch);
     sprintf(histTitle,"Opdet %lu, #DeltaT > %3.1f#mus, Michel shwr reco'd;True Light [PE];Reco Light [PE]",ch,fdTcut/1000);
@@ -2232,8 +2229,10 @@ void MichelAna::beginJob()
   hElShowerCharge3D         = tfs->make<TH1D>("ElShowerCharge3D","Reco charge of Michel electron;Reconstructed Q [e-]",150,0,3000000);
   hElShowerVis            = tfs->make<TH1D>("ElShowerVis","Visibility of reco'd Michel shower;Fractional photon visibility",100,0.,0.002);
   hElShowerPhotons        = tfs->make<TH1D>("ElShowerPhotons","Photons produced by Michel electron;Reconstructed L [#gamma]",150,0,3000000);
-  hElShowerEnergy         = tfs->make<TH1D>("ElShowerEnergy","Reco Michel Electron Shower Energy;Reconstructed energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
-  hElShowerEnergyQL       = tfs->make<TH1D>("ElShowerEnergyQL","Reco Michel Electron Shower Energy (Q+L);Reconstructed energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
+  hEnergyQ_2D             = tfs->make<TH1D>("EnergyQ_2D","Q-based Michel electron shower energy (2D);Reconstructed energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
+  hEnergyQ                = tfs->make<TH1D>("EnergyQ","Q-based Michel electron shower energy (3D);Reconstructed energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
+  hEnergyL               = tfs->make<TH1D>("EnergyL","L-based Michel electron shower energy;Reconstructed energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
+  hEnergyQL                = tfs->make<TH1D>("EnergyQL","Q+L Michel electron shower energy;Reconstructed energy [MeV]",Nbins_michelEnergy, x1_michelEnergy, x2_michelEnergy);
   hElTrackCharge         = tfs->make<TH1D>("ElTrackCharge","Reco charge of Michel electron (track-like components);Reconstructed Q [e-]",150,0,3000000);
 //  hElTrackdEdx            = tfs->make<TH1D>("ElTrackdEdx","Averaged dE/dx along 3D electron track;dE/dx [MeV/cm]",100,0.,10.);
   hQoverL                 = tfs->make<TH1D>("QoverL","Q/L for Michel electrons;Q/L",80,0.,4.);
@@ -2401,7 +2400,7 @@ void MichelAna::ResetVariables()
     fWidth[i]               = -999.;
     fMuWidth[i]             = -999.;
     fAmplitude[i]           = -999.;
-    fTotalPhelCh[i]           = -999.;
+    //fTotalPhelCh[i]           = -999.;
     fPE_prompt[i] = -999.;
     fPE_2us[i] = -999.;
     fPE_total[i] = -999.;
@@ -2464,7 +2463,7 @@ void MichelAna::ResetVariables()
     fvbs[i]                 .clear();
     fT0[i]                  = 0;
     fMuT0[i]                = 0;
-    fTrue_TotalPhelCh[i]    = 0;
+    //fTrue_TotalPhelCh[i]    = 0;
   }
   fNumTrack                = -9;
   fNumTrackStopping         = 0;
@@ -2634,6 +2633,7 @@ void MichelAna::ResetVariables()
   fElShowerCentroid_X       = -99.;
   fElShowerCentroid_Y       = -99.;
   fElShowerCentroid_Z       = -99.;
+  fElShowerEnergyL          = -999.;
   fElShowerEnergyQL         = -999.;
   
   // Truth information
@@ -2642,6 +2642,7 @@ void MichelAna::ResetVariables()
   fTrue_ElShowerPhelPr      = -999.;
   fTrue_MuPE              = -999.;
   fTrue_ChargeSign          = 0;
+  fTrue_MuMomentum          = -999.;
   fTrue_MuEnergy          = -999.;
   fTrue_IsMuStopping          = false;
   fTrue_MuStopTime        = -999.;
@@ -2785,7 +2786,11 @@ bool MichelAna::filter(art::Event & e)
   hElectronLifetimeFromDB ->Fill(fElectronLifetimeFromDB); 
   hEffTau[0]        ->Fill(fMuContamCorr_EffTau[0]);
   hEffTau[1]        ->Fill(fMuContamCorr_EffTau[1]);
-  if( fElectronLifetime <= 0 ) return false;
+  if( fElectronLifetime <= 0 ) {
+    LOG_VERBATIM("MichelAna")
+    <<"Bad electron lifetime value ("<<fElectronLifetime<<")";
+    return false;
+  }
  
   // If MC, then get the Truth information. This function loops through
   // the MCParticle list and calculates truth-level quantities.
@@ -2816,7 +2821,6 @@ bool MichelAna::filter(art::Event & e)
  
   if( fElectronID >= 0 && fMuonID < 0 ) fTrue_IsBareElShower = true;
 
-  
   // Save track info and look for single stopping tracks or crossing tracks
   if( fLookAtTracks ) {
      
@@ -3260,7 +3264,7 @@ bool MichelAna::filter(art::Event & e)
         hBaselinePE_1000ns[ch]  -> Fill( Integrate(fPMT_wfm[ch],5,5+1000) / fSPE[ch] );
         
         // Integrate the whole waveform to get total PEs (will include muon + electron)
-        fTotalPhelCh[ch] = -1.*Integrate(fPMT_wfm[ch],0,fPMT_wfm[ch].size()-1) / fSPE[ch] ;
+        //fTotalPhelCh[ch] = -1.*Integrate(fPMT_wfm[ch],0,fPMT_wfm[ch].size()-1) / fSPE[ch] ;
 
         // Perform a "first-pass" hit-finding/filtering
         std::vector<short> hitTimes = fOpHitBuilderAlg.GetHits(fPMT_wfm[ch], (size_t)fPulses[ipmt].FirstSample() );
@@ -3431,30 +3435,25 @@ bool MichelAna::filter(art::Event & e)
  
   LOG_VERBATIM("MichelAna")<<"Beginning electron pulse identification..."<<fPulses.size();
   
-  // Now that all optical hits have been reconstructed, try and identify a 
+  // Now that all optical hits have been reconstructed, try and identify 
   // which optical pulse hit belongs to the electron shower on each PMT
   for( size_t ipmt = 0; ipmt < fPulses.size(); ipmt++){
     size_t ch   = fPulses[ipmt].OpChannel();
     if( fNumOpHits[ch] <= 0 ) continue;
 
     int elPulseIndex = -1;
-    
 
     if( fTrue_IsBareElShower && fNumOpHits[ch] == 1 ) {
       elPulseIndex = 0;
-
     } else {
-
       // Calc dT if there are two hits
       if( fNumOpHits[ch] == 2 ) {
         elPulseIndex = 1;
-      
         fdT[ch] = float( fvHitTimes[ch].at(1)-fvHitTimes[ch].at(0) );
         hdT[ch] ->Fill( fdT[ch] );
         hdT_vs_Amp[ch]->Fill( fdT[ch], fvHitAmplitudes[ch].at(1) );
         LOG_VERBATIM("MichelAna") << "Exactly 2 hits in PMT "<<ch<<"  dT = " << fdT[ch] << " ns.";
       }
-    
     }
     
     // --------------------------------------------------
@@ -4131,7 +4130,7 @@ bool MichelAna::filter(art::Event & e)
    
   
   // =========================================================================
-  // 1) Create shower objects.
+  // 1) Create cluster and shower objects.
   // =========================================================================
   
   MichelCluster cl_pl0(0);
@@ -4459,6 +4458,7 @@ bool MichelAna::filter(art::Event & e)
       fElShowerPhotons        = fElShowerPhel_qc / fElShowerVis;
       fElShowerPhotonsPrompt  = fElShowerPhel_prompt / fElShowerVis;
       fElShowerEnergyQL       = ( fElShowerPhotons + fElShowerCharge )*fWph;
+      fElShowerEnergyL        = (fElShowerPhotons / (fExcRatio + 1. - fRecomb)) * fWion;
     }
      
     // ----------------------------------------------------------
@@ -4539,14 +4539,13 @@ bool MichelAna::filter(art::Event & e)
      
         // --------------------------------------------------------------------------- 
         // Cluster size cuts
-        if(   fClusterSize >= fMinClusterSize
-          &&  fMuClusterSize >= fMinMuClusterSize
+        if(   fMuClusterSize >= fMinMuClusterSize
           &&  fElClusterSize >= fMinElClusterSize
           &&  fElClusterSize <= fMaxElClusterSize  ){
           hEventCuts->Fill(5-1);
           
             // -------------------------------------------------------------------
-            if( fBraggSlope > fMinBraggSlope ) {
+            //if( fBraggSlope > fMinBraggSlope ) {
             
               // -----------------------------------------------------------------
               // muon linearity cuts
@@ -4588,9 +4587,9 @@ bool MichelAna::filter(art::Event & e)
                       
                       // "good" shower on induction plane
                     
-                      if( fElShowerSize_Pl0 > 0 &&
-                          fMuClusterSize_Pl0 >= fMinMuClusterSize &&
-                          fElClusterSize_Pl0 >= fMinElClusterSize
+                      if( fElShowerSize_Pl0 > 0 //&&
+                          //fMuClusterSize_Pl0 >= fMinMuClusterSize &&
+                          //fElClusterSize_Pl0 >= fMinElClusterSize
                           //fMuClusterHitsEndFit_Pl0 >= fMinMuClusterHitsEndFit &&
                           //fMuAveLinearity_Pl0 > fMinMuLinearity &&
                           //fFracMuHitsLinear_Pl0 > fMinFracMuHitsLinear &&
@@ -4598,17 +4597,20 @@ bool MichelAna::filter(art::Event & e)
                           //fDecayAngle2D_Pl0 < fMaxDecayAngle2D 
                         ) {
                       
-                        LOG_VERBATIM("MichelAna")
-                        <<"Good 3D shower!";
                              
                         hNumPts3D   ->Fill(fNumPts3D);
                         hFracHits3D  -> Fill(fFracHits3D);  
 
                         // N pts 3D > min
-                        if( fNumPts3D > fMinNumPts3D ) {
+                        if( fNumPts3D >= fMinNumPts3D && fElShowerVis > 0 ) {
+                        
+                          LOG_VERBATIM("MichelAna")
+                          <<"Good 3D shower!";
                          
                           // Frac hits
                           if( fFracHits3D > fMinFracHits3D ) {
+
+                            // Add shower centroid fiducial cut
                             
                             goodShower3D = true;        
                             fNumEvents_Shwr3D++;
@@ -4624,7 +4626,7 @@ bool MichelAna::filter(art::Event & e)
                   } //decay angle   
                 }// mu dir
               }//mu lin
-            } // trunc mean slope
+            //} // trunc mean slope
         }// cluster size
       }//cluster bnd
     }// op ID
@@ -4650,7 +4652,6 @@ bool MichelAna::filter(art::Event & e)
   for( size_t ipmt = 0; ipmt < fPulses.size(); ipmt++){
     size_t ch   = fPulses[ipmt].OpChannel(); 
     if( fDecayTime > fdTcut && goodShower2D ) {
-          hElShowerEnergyVsPromptPE[ch]->Fill( fElShowerEnergy, fPE_prompt[ch] );
           hPE_prompt_dTcut_shwr[ch]       ->Fill(fPE_prompt[ch]);
           hPE_total_dTcut_shwr[ch]        ->Fill(fPE_total[ch]);
           hPE_totalRaw_dTcut_shwr[ch]     ->Fill(fPE_totalRaw[ch]);
@@ -4803,8 +4804,8 @@ bool MichelAna::filter(art::Event & e)
       hTrue_ResQCol                 ->Fill( (fTotalChargeCol[1] - fTrue_TotalChargeCol)/fTrue_TotalChargeCol);
       hTrue_ResQ_Mu                 ->Fill( ( fMuCharge - fTrue_MuCharge ) / fTrue_MuCharge );
     }
-    
-    hElShowerEnergy     ->Fill(fElShowerEnergy);
+   
+    hEnergyQ_2D         ->Fill(fElShowerEnergy);
     hElShowerCharge     ->Fill(fElShowerCharge);
     hElTrackCharge     ->Fill(fElTrackCharge);
     
@@ -4831,7 +4832,10 @@ bool MichelAna::filter(art::Event & e)
       hElShowerCentroid_ZY  ->Fill( fElShowerCentroid_Z, fElShowerCentroid_Y);
       hElShowerCharge3D     ->Fill(fElShowerCharge);
       hElShowerPhotons    ->Fill(fElShowerPhotons);
-      hElShowerEnergyQL   ->Fill(fElShowerEnergyQL);
+      
+      hEnergyQ            ->Fill(fElShowerEnergy);
+      hEnergyL            ->Fill(fElShowerEnergyL);
+      hEnergyQL   ->Fill(fElShowerEnergyQL);
       
       if( fElShowerEnergyQL > 0 ) {
         hTrue_ResQ_Shwr3D           ->Fill( resQ_shw );
@@ -4850,11 +4854,18 @@ bool MichelAna::filter(art::Event & e)
       hRecomb   ->Fill( R ); 
   
       // If good shower, make clustering and waveform graphs
-      MakeClusteringGraphs(cl_pl1);
-      MakeWfmGraphs(e); 
+      //if( fElShowerEnergyL > 60. ){ 
+      //  MakeClusteringGraphs(cl_pl1);
+      //  MakeWfmGraphs(e); 
+      //}
     
     } // endif goodShower3D
   }// endif goodShower3d
+      
+      if( fEventNumber == 17241 ) { 
+        MakeClusteringGraphs(cl_pl1);
+        MakeWfmGraphs(e); 
+      }
         
       
 
@@ -4873,7 +4884,9 @@ bool MichelAna::filter(art::Event & e)
   <<"Event summary: \n"
   <<"  isOneStoppingTrack?        "<<(int)isOneStoppingTrack<<"\n"
   <<"  OpticalMichelID?           "<<(int)fMichelOpticalID<<"\n"
-  <<"  2D shower energy           "<<fElShowerEnergy<<"\n"
+  <<"  Q-based shower energy      "<<fElShowerEnergy<<"\n"
+  <<"  L-based shower energy      "<<fElShowerEnergyL<<"\n"
+  <<"  Q+L energy                 "<<fElShowerEnergyQL<<"\n"
   <<"  3D points                  "<<fNumPts3D;
 
 
@@ -4930,7 +4943,8 @@ void MichelAna::endJob()
 {
   if( fNumEvents_Shwr == 0 ) {
     hTrue_EnergyRes->Fill(-9);
-    hElShowerEnergy->Fill(-9); 
+//    hElShowerEnergy->Fill(-9);
+    hEnergyQ->Fill(-9); 
   }
     
 
@@ -4998,8 +5012,9 @@ void MichelAna::endJob()
   <<"     - track-like component              : "<<hElTrackCharge->GetMean()<<" e-\n" 
   <<"     - shower-like component             : "<<hElShowerCharge->GetMean()-hElTrackCharge->GetMean()<<" e-\n" 
   <<"  Ave Michel charge (3D cut)             : "<<hElShowerCharge3D->GetMean()<<" e-\n" 
-  <<"  Ave energy reconstructed (Q)           : "<<hElShowerEnergy->GetMean()<<" MeV\n" 
-  <<"  Ave energy reconstructed (Q+L)         : "<<hElShowerEnergyQL->GetMean()<<" MeV\n" 
+  <<"  < E_Q >                                : "<<hEnergyQ->GetMean()<<" MeV\n" 
+  <<"  < E_L >                                : "<<hEnergyL->GetMean()<<" MeV\n" 
+  <<"  < E_QL >                               : "<<hEnergyQL->GetMean()<<" MeV\n" 
   <<"\n";
 
   // PMT diagnostic info
@@ -5134,6 +5149,7 @@ void MichelAna::endJob()
     int0    = hAveWfm_mu[ch]->GetCumulative()->GetBinContent(hAveWfm_mu[ch]->GetCumulative()->GetXaxis()->FindBin(-10.));
     int100  = hAveWfm_mu[ch]->GetCumulative()->GetBinContent(hAveWfm_mu[ch]->GetCumulative()->GetXaxis()->FindBin(100.)) - int0;
     int2000 = hAveWfm_mu[ch]->GetCumulative()->GetBinContent(hAveWfm_mu[ch]->GetCumulative()->GetXaxis()->FindBin(2000.-1.)) - int0;
+    /*
     std::cout
     <<"  -------------------------------------------\n"
     <<"  Muon pulse waveform:\n"
@@ -5147,6 +5163,7 @@ void MichelAna::endJob()
     <<"   Prompt integral & ratios:\n"
     <<"     - 100ns      = "<<int100<<"\n" 
     <<"     - 100ns/2us  = "<<int100/int2000<<"\n";
+    */
   }
   
   // --------------------------------------------------------------------
@@ -5195,6 +5212,7 @@ void MichelAna::endJob()
     int100  = hAveWfm_el[ch]->GetCumulative()->GetBinContent(hAveWfm_el[ch]->GetCumulative()->GetXaxis()->FindBin(100.)) - int0;
     int2000 = hAveWfm_el[ch]->GetCumulative()->GetBinContent(hAveWfm_el[ch]->GetCumulative()->GetXaxis()->FindBin(2000.)) - int0;
     int7000 = hAveWfm_el[ch]->GetCumulative()->GetBinContent(hAveWfm_el[ch]->GetCumulative()->GetXaxis()->FindBin(7000.-1.)) - int0;
+    /*
     std::cout
     <<"  -------------------------------------------\n"
     <<"  Electron pulse waveform:\n"
@@ -5209,6 +5227,7 @@ void MichelAna::endJob()
     <<"     - 100ns      = "<<int100<<"\n" 
     <<"     - 100ns/2us  = "<<int100/int2000<<"\n"
     <<"     - 100ns/7us  = "<<int100/int7000<<"\n";
+    */
   }
   
   // --------------------------------------------------------------------
@@ -5245,6 +5264,7 @@ void MichelAna::endJob()
     int100  = hAveWfm_crsmu[ch]->GetCumulative()->GetBinContent(hAveWfm_crsmu[ch]->GetCumulative()->GetXaxis()->FindBin(100.)) - int0;
     int2000 = hAveWfm_crsmu[ch]->GetCumulative()->GetBinContent(hAveWfm_crsmu[ch]->GetCumulative()->GetXaxis()->FindBin(2000.)) - int0;
     int7000 = hAveWfm_crsmu[ch]->GetCumulative()->GetBinContent(hAveWfm_crsmu[ch]->GetCumulative()->GetXaxis()->FindBin(7000.-1.)) - int0;
+    /*
     std::cout
     <<"  -------------------------------------------\n"
     <<"  Crossing muon waveform:\n"
@@ -5259,6 +5279,7 @@ void MichelAna::endJob()
     <<"     - 100ns      = "<<int100<<"\n" 
     <<"     - 100ns/2us  = "<<int100/int2000<<"\n"
     <<"     - 100ns/7us  = "<<int100/int7000<<"\n";
+    */
   }
   
   std::cout<<"\n";
@@ -5292,7 +5313,8 @@ void MichelAna::PerfectWfmReco(raw::OpDetPulse &pulse)
   for(int i=0; i<fNumOpHits[ch]; i++){
         
         float T  = fvHitTimes[ch].at(i);
-        float T0 = fvHitTimes[ch].at(i)-fPulseIntegOffset;
+        //float T0 = fvHitTimes[ch].at(i)-fPulseIntegOffset;
+        float T0 = fvHitTimes[ch].at(i);
         if( T < 0 ) { T = 0; T0 = 0; }
         float PE_100 = Integrate(hPMT_phelTimes[ch],T0,T+100);
         float PE_200 = Integrate(hPMT_phelTimes[ch],T0,T+200);
@@ -5340,7 +5362,7 @@ void MichelAna::PerfectWfmReco(raw::OpDetPulse &pulse)
           float pe_2000 = pe_1800 + tmp + fRand->Gaus(0, CalcSigma( ch,tmp, 200. ));
           tmp = PE_total-PE_2000;  
           float pe_total = pe_2000 + tmp + fRand->Gaus(0, CalcSigma( ch,tmp, fFullWindow-2000. ));
-          float totalPhel = fTrue_TotalPhelCh[ch];
+          //float totalPhel = fTrue_TotalPhelCh[ch];
 
           fvHitADC_100ns[ch]      .push_back( pe_100    *fSPE[ch] );
           fvHitADC_200ns[ch]      .push_back( pe_200    *fSPE[ch] );
@@ -5355,7 +5377,7 @@ void MichelAna::PerfectWfmReco(raw::OpDetPulse &pulse)
           fvHitADC_1800ns[ch]     .push_back( pe_1800   *fSPE[ch] );
           fvHitADC_2000ns[ch]     .push_back( pe_2000   *fSPE[ch] );
           fvHitADC_total[ch]      .push_back( pe_total   *fSPE[ch] );
-          fTotalPhelCh[ch]        = totalPhel + fRand->Gaus(0,CalcSigma(ch,totalPhel,fTruncateWfm));
+          //fTotalPhelCh[ch]        = totalPhel + fRand->Gaus(0,CalcSigma(ch,totalPhel,fTruncateWfm));
 
         
         fvPrepulseBaseline[ch]  .push_back(0);
@@ -5553,6 +5575,7 @@ void MichelAna::GetTruthInfo(art::Event &e){
       muSign            = -1.*(particle.PdgCode()/abs(particle.PdgCode()));
       fTrue_MuStopTime  = particle.T(last);
       fTrue_MuEnergy    = 1000.*( particle.E(0) - particle.Mass() );
+      fTrue_MuMomentum  = 1000.*( particle.P(0) );
       hTrue_MuEnergy    ->Fill( fTrue_MuEnergy );
       
       // save muon endpoint
@@ -5691,48 +5714,38 @@ void MichelAna::GetTruthInfo(art::Event &e){
   fTrue_MuPE = 0;
   fTrue_ElShowerPhel = 0.; 
   fTrue_ElShowerPhelPr = 0.;
-  fTrue_TotalPhel = 0;
+  //fTrue_TotalPhel = 0;
 
   // Loop over PMTs
   for( auto & i : fSelectChannels ) {
 
-    float muX1 = 0.;
-    float elX1 = 0.;
     // Approximate the "hit time" T0 as the time of arrival of the first photon,
-    // + add "front porch" based on average waveforms in data
-    if( fMuonID > 0 ) {
-      fMuT0[i] = (float)hPMT_phelTimes[i]->FindFirstBinAbove(0,1)-1.+fPulseIntegOffset;
-      muX1 = fMuT0[i]-fPulseIntegOffset;
-    }
-    if( fElectronID > 0 ) {
-      fT0[i]   = (float)hPMT_phelTimes_electron[i]->FindFirstBinAbove(0,1)-1.+fPulseIntegOffset;
-      elX1 = fT0[i]-fPulseIntegOffset;
-    }
+    if( fMuonID > 0 )  fMuT0[i] = (float)hPMT_phelTimes[i]->FindFirstBinAbove(0,1)-1.;//+fPulseIntegOffset;
+    if( fElectronID > 0 ) fT0[i]   = (float)hPMT_phelTimes_electron[i]->FindFirstBinAbove(0,1)-1.;//+fPulseIntegOffset;
 
-    // Save prompt, total PEs by integrating the photon arrival 
-    // time histograms
+    // Save prompt, total PEs by integrating the photon arrival time histograms
     if( fElectronID > 0 ) {
-      fTrue_PE_prompt[i]  = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+fPromptWindow);
-      fTrue_PE_2us[i]     = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+2000);
-      fTrue_PE_total[i]   = Integrate(hPMT_phelTimes_electron[i],elX1,fT0[i]+fFullWindow);
+      fTrue_PE_prompt[i]  = Integrate(hPMT_phelTimes_electron[i],fT0[i],fT0[i]+fPromptWindow);
+      fTrue_PE_2us[i]     = Integrate(hPMT_phelTimes_electron[i],fT0[i],fT0[i]+2000);
+      fTrue_PE_total[i]   = Integrate(hPMT_phelTimes_electron[i],fT0[i],fT0[i]+fFullWindow);
       fTrue_ElShowerPhel              += fTrue_PE_total[i];
       fTrue_ElShowerPhelPr            += fTrue_PE_prompt[i];
       hTrue_PE_preTrig[i]     ->Fill( fTrue_PE_total[i] );
     }
     if( fMuonID > 0 ) {
-      fTrue_MuPE_prompt[i]    = Integrate(hPMT_phelTimes_muon[i],     muX1,fMuT0[i]+fPromptWindow);
-      fTrue_MuPE_total[i]     = Integrate(hPMT_phelTimes_muon[i],     muX1,fMuT0[i]+fFullWindow);
+      fTrue_MuPE_prompt[i]    = Integrate(hPMT_phelTimes_muon[i],     fMuT0[i],fMuT0[i]+fPromptWindow);
+      fTrue_MuPE_total[i]     = Integrate(hPMT_phelTimes_muon[i],     fMuT0[i],fMuT0[i]+fFullWindow);
       fTrue_MuPE              += fTrue_MuPE_total[i];
       if( fElectronID > 0 ) {
-        fTrue_MuContam_prompt[i]= Integrate(hPMT_phelTimes_muon[i],     elX1,fT0[i]+fPromptWindow);
-        fTrue_MuContam_total[i] = Integrate(hPMT_phelTimes_muon[i],     elX1,fT0[i]+fFullWindow);
+        fTrue_MuContam_prompt[i]= Integrate(hPMT_phelTimes_muon[i],     fT0[i],fT0[i]+fPromptWindow);
+        fTrue_MuContam_total[i] = Integrate(hPMT_phelTimes_muon[i],     fT0[i],fT0[i]+fFullWindow);
       }
     }
     hTrue_LightYield[i]     ->Fill( hPMT_phelTimes[i]->GetEntries() / fTrue_TotalEnergyDep );
 
     // Record all photons
-    fTrue_TotalPhelCh[i] = Integrate(hPMT_phelTimes[i],-1,-1);
-    fTrue_TotalPhel       += fTrue_TotalPhelCh[i];
+    //fTrue_TotalPhelCh[i] = Integrate(hPMT_phelTimes[i],-1,-1);
+    //fTrue_TotalPhel       += fTrue_TotalPhelCh[i];
   }
 
   LOG_VERBATIM("MichelAna")
@@ -6409,8 +6422,8 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
   <<"BEGIN CLUSTERING PLANE "<<plane<<"\n"
   <<"Looking for hit best matched to mu track startX = "<<muTrackX<<" cm .... "<<muTrackHits.size()<<" total hits associated with mu trk";
 
-//  MakeProximityCluster(cl, fMuTrackVertex.X(), fMaxHitSeparation ); 
-  MakeProximityCluster(cl, fMuTrackVertex.X(), fMaxHitSeparation, fMuTrackHits ); 
+  MakeProximityCluster(cl, fMuTrackVertex.X(), fMaxHitSeparation ); 
+  //MakeProximityCluster(cl, fMuTrackVertex.X(), fMaxHitSeparation, fMuTrackHits ); 
   
   // Assign 2D start-point for electron 
   TVector3 elStart2D, elDir2D;
@@ -6425,44 +6438,224 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
     
     // -------------------------------------------------------------------
     // Create dQ, dQ/ds, X, W profiles
-    float s = 0.;
-    size_t             nprof = cluster.size()-1;
-    std::vector<float> profile_ds(nprof, 0.);
-    std::vector<float> profile_s(nprof, 0.);
-    std::vector<float> profile_dQ(nprof, 0.);
-    std::vector<float> profile_dQds(nprof, 0.);
-    std::vector<float> profile_X(nprof,0.);
-    std::vector<float> profile_W(nprof,0.);
-    std::vector<int>   profile_hitKey(nprof, -9);
+    float               s_tot = 0.;
+    size_t              nprof = cluster.size()-1;
+    std::vector<float>  profile_ds(nprof, 0.);
+    std::vector<float>  profile_s(nprof, 0.);
+    std::vector<float>  profile_dQ(nprof, 0.);
+    std::vector<float>  profile_X(nprof,0.);
+    std::vector<float>  profile_W(nprof,0.);
+    std::vector<int>    profile_hitKey(nprof, -9);
     for(size_t i=1; i<cluster.size(); i++){
       TVector3 loc(fHitW[cluster.at(i)], fHitX[cluster.at(i)], 0.);
       TVector3 loc_prev( fHitW[cluster.at(i-1)], fHitX[cl.cluster.at(i-1)],0.);
       float ds = (loc - loc_prev).Mag();
-      s += ds;
+      s_tot += ds;
       profile_hitKey.at(i-1)= cluster.at(i);
-//      profile_dQ.at(i-1)    = fHitCharge[cluster.at(i)];
       profile_dQ.at(i-1)    = fHitlist[cluster.at(i)]->Integral(); //fHitIntegral[cluster.at(i)];
       profile_X.at(i-1)     = fHitX[cluster.at(i)];
       profile_W.at(i-1)     = fHitW[cluster.at(i)];
-//    profile_dQds.at(i-1)  = fHitCharge[cluster.at(i)];
-      profile_dQds.at(i-1)  = fHitlist[cluster.at(i)]->Integral(); //fHitIntegral[cluster.at(i)];
-      profile_s.at(i-1)     = s;
+      //profile_dQds.at(i-1)  = fHitlist[cluster.at(i)]->Integral(); //fHitIntegral[cluster.at(i)];
+      profile_s.at(i-1)     = s_tot;
       profile_ds.at(i-1)    = ds;
     }
-
-    // -------------------------------------------------------------------
-    // Make truncated mean version of dQ, dQds to smooth it out
-    std::vector<float> profile_dQds_t(nprof, 0.);
-    for( size_t i=0; i<nprof; i++)
-      profile_dQds_t.at(i) = CalcTruncatedMeanInProfile(profile_dQds, i, fTruncMeanWindow, fTruncMeanP);
     
+
     // -------------------------------------------------------------------
-    // Make local linearity profile
+    // Make truncated mean version of dQ and the local linearity profile
+    std::vector<float> profile_dQ_t(nprof, 0.);
     std::vector<float> profile_linearity(nprof, 0.);
-    for(size_t i=0; i<nprof; i++)
+    for( size_t i=0; i<nprof; i++){
+      profile_dQ_t.at(i)      = CalcTruncatedMeanInProfile(profile_dQ, i, fTruncMeanWindow, fTruncMeanP);
       profile_linearity.at(i) = CalcLocalLinearity(profile_X, profile_W, i, fLocalLinearityWindow);
+    }
+    
+    // Assign profiles to MichelCluster object
+    cl.prof_hitKey  = profile_hitKey;
+    cl.prof_X       = profile_X;
+    cl.prof_W       = profile_W;
+    cl.prof_s       = profile_s;
+    cl.prof_dQ      = profile_dQ;
+    cl.prof_dQ_t    = profile_dQ_t;
+    cl.prof_lin     = profile_linearity;
 
+    // ********************************************
+    // ==================================================================
+    // Determine boundary based on dQ and linearity profiles
+    
+    int   bnd0          = -99; // max in trunc. dQ
+    int   bnd1         = -99; // max Q in nbd of bnd0
+    int   bnd           = -99; // final mu-el boundary hit
 
+    // ------------------------------------------------
+    // Find dQt max, requiring that the value is
+    // increasing relative to previous hit
+    float dQtmax = -9.;
+    size_t k1 = 2;
+    size_t k2 = (nprof-1);
+    for(size_t i=k1; i<k2; i++){
+      if( profile_dQ_t.at(i) > dQtmax && profile_dQ_t.at(i) > profile_dQ_t.at(i-1) ) {
+        dQtmax = profile_dQ_t.at(i);
+        bnd0 = i;
+      }
+    }
+    LOG_VERBATIM("MichelAna")
+    <<"Found maximum in dQ_t: "<<dQtmax<<" at index "<<bnd0;
+   
+    // ------------------------------------------
+    // Find bnd1, which is either the max charge hit or the max drop
+    // depending on the mode set in the fcl file
+    float dQmax = -9.;
+    float dropmax = -9.;
+    
+    if( bnd0 > 0 ) {
+
+      int i_maxQ = -99;
+      int i_maxDrop = -99;
+      for(size_t i=0; i< nprof; i++){
+        int dist = int(i) - bnd0;
+        if( dist >= 0 && dist <= fMaxMatchDistance ) {
+          
+          if( profile_dQ.at(i) > dQmax ) {
+            dQmax = profile_dQ.at(i);
+            i_maxQ = i;
+          }
+          
+          float drop = -9;
+          if( i < nprof-1 ) drop = (profile_dQ.at(i) - profile_dQ.at(i+1));
+          if( drop > dropmax ) {
+            dropmax = drop;
+            i_maxDrop = i;
+          }
+          
+        }
+      }
+        
+      hDistMaxTdQdsToMaxQ->Fill(i_maxQ - bnd0);
+      hDistMaxTdQdsToMaxDrop->Fill(i_maxDrop - bnd0);
+    
+      if( (fBndMode == "maxQ" || fBndMode == "")  && i_maxQ >= 0 ) bnd1 = i_maxQ;
+      if( fBndMode == "maxDrop" && i_maxDrop >= 0 ) bnd1 = i_maxDrop;
+      LOG_VERBATIM("MichelAna")
+      <<"Mode: "<<fBndMode<<"... bnd1 = "<<bnd1;
+      
+      if( bnd1 >= 0 ) {
+        cl.maxQ_i = bnd1;
+        cl.maxQ_s = profile_s.at(bnd1);
+      }
+      
+      // -------------------------------------------
+      // Now incorporate linearity. This can proceed in one of two ways:
+      //
+      //  - classic method: check that linearity threshold
+      //    is satisfied at bnd1 or its adjacent hits
+      //    ( bnd = bnd1 )
+      //
+      //  - new method (exp): find local min in linearity
+      //    proceeding bnd1, and label this bnd2
+      //    ( bnd = [bnd1+bnd2]/2 )
+  
+      
+      // ------------------------------------
+      //  CLASSIC METHOD:
+      
+      // Calculate the mean/RMS of the linearity of the hits preceding this one
+      float linearityThresh = fLinThresh;
+      if( fLinTol > 0 && bnd1+1 >= 10 ) {
+        float linMean = -999.; 
+        float linRMS  = 999.;
+        int   N = 0;
+        float sum = 0.;
+        float sum_rms = 0.;
+        for(int i=0; i<bnd1; i++) { sum += profile_linearity.at(i); N++;}
+        linMean = sum / N;
+        for(int i=0; i<bnd1; i++) sum_rms += pow( profile_linearity.at(i)-linMean, 2);
+        linRMS = sqrt( sum_rms / N );
+        float th = linMean - fLinTol * linRMS;
+        if( th > fLinThresh ) linearityThresh = th;
+      }
+      
+      LOG_VERBATIM("MichelAna")
+      <<"Using linearity threshold: "<<linearityThresh;
+
+      // -------------------------------------
+      // Find the covariance at the boundary
+      float minCov = 9;
+      for(int i = std::max(int(0), bnd1-1); i<= std::min(int(nprof-1), bnd1+1); i++){
+        if( profile_linearity.at(i) < minCov ) minCov = profile_linearity.at(i);
+      }
+      cl.minCovAtBnd = minCov;
+      
+
+      // ------------------------------------------------------
+      // If an allowable 'x' coordinate for the boundary was provided
+      // as an argument (xbnd), then merely require that this boundary
+      // point be close to it. Otherwise, look for kink using linearity.
+      if( xbnd <= 0 ) {
+        LOG_VERBATIM("MichelAna")<<"Lin threshold = "<<linearityThresh<<", minCov = "<<cl.minCovAtBnd;
+        if(  minCov <= linearityThresh ) bnd = bnd1;
+      } else {
+        LOG_VERBATIM("MichelAna")<<"Allowable X-coordinate provided ("<<xbnd<<"), ours is "<<fHitX.at(profile_hitKey[bnd1]);
+        double dx = fSamplingRate * fHitlist[profile_hitKey[bnd1]]->RMS() * fDriftVelocity[0];
+        if( fabs(fHitX.at(profile_hitKey[bnd1]) - xbnd ) <= dx ) bnd = bnd1; 
+      }
+      
+      /*
+      // -------------------------------------
+      // NEW METHOD
+      int   bnd2         = -99; // local min in linearity following bnd1a
+      if( bnd1 >= 0 ) {
+
+        float minCov  = 9;
+        float minCov_i = -9;
+        bool flg = false;
+        for(size_t i=bnd1; i< nprof; i++){
+          
+          if( profile_linearity.at(i) <= fLinThresh ){
+            flg = true;
+            if( profile_linearity.at(i) < minCov ) {
+              minCov = profile_linearity.at(i);
+              minCov_i = i;
+            }
+          }
+          if( flg && profile_linearity.at(i) > fLinThresh )
+            break;
+        
+        }
+       
+        if( minCov_i >= 0 ) bnd2 =  minCov_i;
+        LOG_VERBATIM("MichelAna")
+        <<"bnd2 = "<<bnd2;
+      
+        if( bnd1 >= 0 && bnd2 >= 0 ) bnd = (bnd2 + bnd1) / 2;
+       
+      } // endif bnd1 was found
+     */ 
+      
+      
+        
+    }// endif bnd0 was found
+  
+    if( bnd >= 0 ) {
+       
+      LOG_VERBATIM("MichelAna")<<"Boundary pt identified!  bnd = "<<bnd;
+      if( fBndOffset != 0 ){
+        LOG_VERBATIM("MichelAna")<<"Offsetting bnd by "<<fBndOffset<<" hits";
+        bnd += fBndOffset;
+      }
+
+      cl.bnd_i = bnd;
+      cl.bnd_s = profile_s.at(bnd);
+      cl.muEnd2D.SetXYZ(profile_W.at(bnd), profile_X.at(bnd), 0.);
+      cl.muEndHit = profile_hitKey.at(bnd); 
+      cl.muEnd2D_X = profile_X.at(bnd);
+      cl.muEnd2D_W = profile_W.at(bnd);
+      
+    }
+
+    // ********************************************
+
+    /*
     // ======================================================================
     // Determine boundary based on dQ, linearity profiles
     //  - find max in truncated dQ
@@ -6477,11 +6670,11 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
     size_t k1 = 2;
     size_t k2 = (nprof-1);
     for(size_t i=k1; i<k2; i++){
-      if( profile_dQds_t.at(i) > dQtmax 
-        && profile_dQds_t.at(i) > profile_dQds_t.at(i-1)
+      if( profile_dQ_t.at(i) > dQtmax 
+        && profile_dQ_t.at(i) > profile_dQ_t.at(i-1)
         //&& profile_dQds_t.at(i) > profile_dQds_t.at(i-2) 
         ) {
-        dQtmax = profile_dQds_t.at(i);
+        dQtmax = profile_dQ_t.at(i);
         bnd1 = i;
       }
     }
@@ -6489,40 +6682,15 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
     LOG_VERBATIM("MichelAna") 
     <<"Determining boundary point in dQds, dQds_t_max = "<<dQtmax<<" at index "<<bnd1;
 
-    // reject if the max is the first sample
-    //if( (bnd1 >= 0 && bnd1 < 2) ) bnd1 = -99; 
-
-    // ---------------------------------------------------------------------
-    //if( bnd1 > 0 ) {
-    
-      /*
-      // ----------------------------------------------------------------------
-      // Look for max Q (or max drop-off)
-      int i_maxQ = -99;
-      int i_maxDrop = -99;
-      for(size_t i=0; i< nprof; i++){
-        int dist = int(i) - bnd1;
-        float drop = -9.;
-        if( i < nprof-1 ) drop = (profile_dQds.at(i) - profile_dQds.at(i+1));
-        if( abs(dist) <= fMaxMatchDistance ) {
-        //if( dist >= 0 && dist <= fMaxMatchDistance ) {
-          if( profile_dQds.at(i) > dQmax ) {
-            dQmax = profile_dQds.at(i);
-            i_maxQ = i;
-          }
-          if( drop > dropmax ) {
-            dropmax = drop;
-            i_maxDrop = i;
-          }
-        }
-      }
-      */
-      
-      // ----------------------------------------------------------------------
-      // Maximum liklihood method: look for hit surrounding the trunc mean whose
-      // combination of both linearity and charge makes it the best candidate
-      //  P_hit = P_q     * P_lin
-      //        = Q  * (1-lin)
+     
+     // 2/7/2019:
+     //   Trying out a new method where both the charge and linearity
+     //   information is used simultaneously to find the candidate
+     //   boundary hit. The idea is:
+     //     - find max in truncated Q
+     //     - find local min in linearity in neighborhood
+     //     - use the average of the two
+     //        
       
     float dQmax = -9.;
     float pMax = -9.; 
@@ -6534,23 +6702,23 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
       int i_maxP = -99;
       for(size_t i=0; i< nprof; i++){
         int dist = int(i) - bnd1;
-        if( abs(dist) <= fMaxMatchDistance ) {
-        //if( dist >= 0 && dist <= fMaxMatchDistance ) {
+        //if( abs(dist) <= fMaxMatchDistance ) {
+        if( dist >= 0 && dist <= fMaxMatchDistance ) {
           
-          if( profile_dQds.at(i) > dQmax ) {
-            dQmax = profile_dQds.at(i);
+          if( profile_dQ.at(i) > dQmax ) {
+            dQmax = profile_dQ.at(i);
             i_maxQ = i;
           }
           
           
           float drop = -9;
-          if( i < nprof-1 ) drop = (profile_dQds.at(i) - profile_dQds.at(i+1));
+          if( i < nprof-1 ) drop = (profile_dQ.at(i) - profile_dQ.at(i+1));
           if( drop > dropmax ) {
             dropmax = drop;
             i_maxDrop = i;
           }
           
-          float p = profile_dQds.at(i) * (1.-profile_linearity.at(i)); 
+          float p = profile_dQ.at(i) * (1.-profile_linearity.at(i)); 
 //          if( drop > 0 ) p *= drop; ///profile_dQds.at(i);
           if( p > pMax ) {
             pMax = p;
@@ -6580,8 +6748,8 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
         for(size_t i=k1; i<k2; i++){
           //g.SetPoint(g.GetN(),  i, profile_dQds_t.at(i));
           //g.SetPointError(g.GetN()-1,0.,0.05*profile_dQds_t.at(i));
-          g.SetPoint(g.GetN(), profile_s.at(i), profile_dQds_t.at(i));
-          g.SetPointError(g.GetN()-1,0.,0.05*profile_dQds_t.at(i));
+          g.SetPoint(g.GetN(), profile_s.at(i), profile_dQ_t.at(i));
+          g.SetPointError(g.GetN()-1,0.,0.05*profile_dQ_t.at(i));
           //g.SetPoint(g.GetN(), profile_s.at(i), profile_dQ.at(i));
           //g.SetPointError(g.GetN()-1,0.,0.05*profile_dQ.at(i));
         }
@@ -6596,9 +6764,9 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
 
         // ---------------------------------------------------------------
         // Plot the charge ratio of hits of the electron cluster
-        float dQbnd = profile_dQds.at(bnd2);
+        float dQbnd = profile_dQ.at(bnd2);
         for(size_t i=bnd2+1; i< nprof; i++){
-          float ratio = profile_dQds.at(i) / dQbnd;
+          float ratio = profile_dQ.at(i) / dQbnd;
           hElHitChargeRatio->Fill( i-bnd2, ratio );
           //if( i-bnd2 <= 1 && ratio > 0.5 ) {
           //  // re-assign boundary point
@@ -6675,17 +6843,21 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
       cl.muEnd2D_X = profile_X.at(bnd2);
       cl.muEnd2D_W = profile_W.at(bnd2);
     }
-   
+    
     // Assign profiles to MichelCluster object
     cl.prof_hitKey  = profile_hitKey;
     cl.prof_X       = profile_X;
     cl.prof_W       = profile_W;
     cl.prof_s       = profile_s;
-    cl.prof_dQds    = profile_dQds;
-    cl.prof_dQds_t  = profile_dQds_t;
+    cl.prof_dQ      = profile_dQ;
+    cl.prof_dQ_t    = profile_dQ_t;
     cl.prof_lin     = profile_linearity;
-       
+   
+      */ 
      
+
+
+
     // ======================================================================
     // Quality check calculations:
     //  - cluster sizes (total and mu/el subclusters)
@@ -6706,10 +6878,10 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
       float corr = 1.;
       if( fDecayTime > 0 ) corr = exp((fDecayTime/1000.)/fElectronLifetime);
       for(size_t i=0; i< nprof ; i++){
-        if( (int)i <= bnd2 ) {
+        if( (int)i <= cl.bnd_i ) {
           cl.cluster_mu.push_back(profile_hitKey.at(i));
           cl.muCharge += fHitCharge.at(profile_hitKey.at(i)) * corr;
-          if( profile_linearity.at(i) > fLinThreshMuFit && bnd2-(int)i < 20 ) {
+          if( profile_linearity.at(i) > fLinThreshMuFit && cl.bnd_i-(int)i < 20 ) {
             if( muEndDir_Pt1.X() == -9. ) muEndDir_Pt1.SetXYZ(profile_W.at(i), profile_X.at(i), 0.);
             muEndDir_Pt2.SetXYZ(profile_W.at(i), profile_X.at(i), 0.);
             g_mu.SetPoint(g_mu.GetN(),profile_W.at(i), profile_X.at(i));
@@ -6741,7 +6913,7 @@ void MichelAna::Clustering( MichelCluster& cl, float muTrackX, std::vector<int> 
       int numMuHitsGood = 0;
       float sum_lin = 0;
       int N = 0;
-      for(int i=0; i<=bnd2; i++){
+      for(int i=0; i<=cl.bnd_i; i++){
         sum_lin += profile_linearity.at(i);
         N++;
         if( profile_linearity.at(i) > fLinThreshMuFit ) numMuHitsGood++;  
@@ -7072,6 +7244,13 @@ void MichelAna::ProximityCluster(std::vector<int>& cluster, int plane, int seedH
   <<"  total hits in plane "<<plane<<": "<<fNumPlaneHits[plane]<<", cluster size: "<<cluster.size();
 }
 
+
+
+// ****************************************************************************
+// MakeProximityCluster: fills a MichelCluster object. A vector of hit keys is passed
+// as the last argument; clustering is limited only to these hits. If no vector is
+// passed, then *all* found hits on the plane are in play.
+
 void MichelAna::MakeProximityCluster(MichelCluster& cl, float startX, float distThresh ) {
   MakeProximityCluster(cl,startX,distThresh,fHitKey);
 }
@@ -7220,11 +7399,6 @@ float MichelAna::CalcLocalLinearity(std::vector<float>& vx, std::vector<float>& 
   float aveX = sumX / N;
   float aveY = sumY / N;
 
-  // ................................
-  //aveX = vx.at(index);
-  //aveY = vy.at(index);
-  // ................................
-
   // Covariance, std dev
   float cov = 0.;
   float sum_dX2 = 0.;
@@ -7236,13 +7410,6 @@ float MichelAna::CalcLocalLinearity(std::vector<float>& vx, std::vector<float>& 
   }
   float stDevX = sqrt( sum_dX2 / N );
   float stDevY = sqrt( sum_dY2 / N );
-
-  /*
-  if( stDevX*stDevY != 0 ) 
-    return fabs(cov) / (stDevX * stDevY);
-  else 
-    return 1.;
- */
 
   if( stDevX*stDevY == 0 ) {
     return 1.;
@@ -7713,7 +7880,7 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   int plane = cl.plane;
   if ( plane < 0 || plane > 1 ) return;
 
-  size_t nprof = cl.prof_dQds.size();
+  size_t nprof = cl.prof_dQ.size();
 
   float elShowerEnergy = cl.elShowerEnergy;
   
@@ -7767,8 +7934,8 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
     g_dQt.SetMarkerSize(0.8);
     g_dQt.SetLineWidth(2);
     for(size_t i=0; i<nprof; i++){
-      g_dQ.SetPoint(g_dQ.GetN(), cl.prof_s.at(i), cl.prof_dQds.at(i) );
-      g_dQt.SetPoint(g_dQt.GetN(),cl.prof_s.at(i),cl.prof_dQds_t.at(i));
+      g_dQ.SetPoint(g_dQ.GetN(), cl.prof_s.at(i), cl.prof_dQ.at(i) );
+      g_dQt.SetPoint(g_dQt.GetN(),cl.prof_s.at(i),cl.prof_dQ_t.at(i));
     }
     
   TGraph g_lin;
@@ -7785,8 +7952,7 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   g_bnd.SetMarkerColor(kRed);
   g_bnd.SetMarkerStyle(29);
   g_bnd.SetMarkerSize(2.0);
-  //if( cl.bnd_s >= 0 ) g_bnd.SetPoint(0, cl.prof_W.at(cl.bnd_i), cl.prof_X.at(cl.bnd_i) );
-  if( cl.maxQ_i >= 0 ) g_bnd.SetPoint(0, cl.prof_W.at(cl.maxQ_i), cl.prof_X.at(cl.maxQ_i) );
+  if( cl.bnd_i >= 0 ) g_bnd.SetPoint(0, cl.prof_W.at(cl.bnd_i), cl.prof_X.at(cl.bnd_i) );
         
   sprintf(buffer, "clstr%i_r%i_sr%i_e%i_pl%d_%3.0f_MeV", fNumSavedHitGraphs, fRunNumber, fSubRunNumber, fEventNumber, plane, elShowerEnergy);
   if( !fIsRealData && fTrue_ElShowerEnergyDep > 0. ) 
@@ -7823,7 +7989,12 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   double ls = 0.07;
   
   TMultiGraph g2;
-//  if( g_dQ.GetN() > 0 ) {
+  TMultiGraph g3;
+  TLine bndLineA;
+  TLine bndLineB;
+  
+  if( g_dQ.GetN() > 0 ) {
+  
   LOG_VERBATIM("MichelAna")<<"   drawing the profiles..."<<g_dQ.GetN();
   c2.cd(1);
   if(g_dQ.GetN()>0) g2.Add(&g_dQ,"APL");
@@ -7843,6 +8014,7 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   //gPad->SetGridx(1);
   //gPad->SetGridy(1);
   gPad->Update();
+  /*
   TLine maxQLineA(cl.maxQ_s,gPad->GetUymin(),cl.maxQ_s,gPad->GetUymax());
   maxQLineA.SetLineColor(kRed);
   maxQLineA.SetLineWidth(1);
@@ -7851,12 +8023,17 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   bndLineA.SetLineColor(kRed);
   bndLineA.SetLineWidth(2);
   bndLineA.SetLineStyle(7);
-  if( cl.maxQ_s == cl.bnd_s ) maxQLineA.SetLineWidth(0);
+  //if( cl.maxQ_s == cl.bnd_s ) maxQLineA.SetLineWidth(0);
   if( elShowerEnergy >= 0. ) bndLineA.SetLineStyle(1);
   maxQLineA.Draw();
   bndLineA.Draw();
+  */
+  bndLineA.SetX1(cl.bnd_s);
+  bndLineA.SetX2(cl.bnd_s);
+  bndLineA.SetY1(gPad->GetUymin());
+  bndLineA.SetY2(gPad->GetUymax());
+  if( cl.bnd_s > 0 ) bndLineA.Draw();
 
-  TMultiGraph g3;
   c2.cd(2);
   if(g_lin.GetN() > 0 )  g3.Add(&g_lin,"APL");
   g3.Draw("a");
@@ -7873,6 +8050,7 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   //gPad->SetGridx(1);
   //gPad->SetGridy(1);
   gPad->Update();
+  /* 
   TLine maxQLineB(cl.maxQ_s,gPad->GetUymin(),cl.maxQ_s,gPad->GetUymax());
   maxQLineB.SetLineColor(kRed);
   maxQLineB.SetLineWidth(1);
@@ -7881,11 +8059,18 @@ void MichelAna::MakeClusteringGraphs( MichelCluster& cl ) {
   bndLineB.SetLineColor(kRed);
   bndLineB.SetLineWidth(2);
   bndLineB.SetLineStyle(7);
-  if( cl.maxQ_s == cl.bnd_s) maxQLineB.SetLineWidth(0);
+  //if( cl.maxQ_s == cl.bnd_s) maxQLineB.SetLineWidth(0);
   if( elShowerEnergy >= 0. ) bndLineB.SetLineStyle(1);
   maxQLineB.Draw();
   bndLineB.Draw();
-  //}
+  */
+  bndLineB.SetX1(cl.bnd_s);
+  bndLineB.SetX2(cl.bnd_s);
+  bndLineB.SetY1(gPad->GetUymin());
+  bndLineB.SetY2(gPad->GetUymax());
+  if( cl.bnd_s > 0 ) bndLineB.Draw();
+  
+  }
    
   fTCanvas->Update();
   fTCanvas->Write(buffer);

@@ -1,3 +1,5 @@
+add_subdirectory(constants)
+
 cet_enable_asserts()
 
 art_make( NO_PLUGINS

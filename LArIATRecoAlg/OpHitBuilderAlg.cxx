@@ -3,7 +3,7 @@
 // These are functions used to process optical detector information
 // (particulary PMTs) and find/integrate hits.  They've been used
 // mostly to analyze events in the stopping/decaying cosmic muon 
-// samples, and to aid in single photoelectron calibration, but will 
+// samples, and to aid in single photoelectron calibration, but 
 // can adapted for more general use.
 // 
 // Authors: William Foreman, wforeman@uchicago.edu
@@ -38,7 +38,7 @@
 
 
 
-//####################################################################
+//###################################################################################
 OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
 {
   this->reconfigure(pset);
@@ -80,13 +80,13 @@ OpHitBuilderAlg::OpHitBuilderAlg( fhicl::ParameterSet const& pset )
 }
 
 
-//--------------------------------------------------------------  
+//###################################################################################
 //Destructor
 OpHitBuilderAlg::~OpHitBuilderAlg()
 {
 }
 
-//--------------------------------------------------------------
+//###################################################################################
 void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
 
   fTau                  = pset.get<float> ("Tau",-1300.);
@@ -124,7 +124,7 @@ void OpHitBuilderAlg::reconfigure( fhicl::ParameterSet const& pset ){
 
 }
 
-//-------------------------------------------------------------------------
+//###################################################################################
 // Return specific OpDetPulse object from event
 raw::OpDetPulse OpHitBuilderAlg::GetPulse( const art::Event& e, int opchannel){
   
@@ -146,14 +146,14 @@ raw::OpDetPulse OpHitBuilderAlg::GetPulse( const art::Event& e, int opchannel){
  return out; 
 }
 
-//-------------------------------------------------------------------------
+//###################################################################################
 // Resets all of the member data
 void OpHitBuilderAlg::Reset() {
   fBaseline = -999.;
   fRMS      = -999.;
 }
 
-//--------------------------------------------------------------------------
+//###################################################################################
 //GetHits:  The 'meat & potatoes' of OpHitFinding!  This function takes a whole
 //          opDetPulse object and return a vector of hit times. Hits are found using 
 //          a gradient-threshold method, and each is required to exceed some 
@@ -339,7 +339,7 @@ std::vector<short> OpHitBuilderAlg::GetHits( std::vector<float>& wfm, size_t Tri
 
 
 
-//--------------------------------------------------------------
+//###################################################################################
 // MakeGradient
 std::vector<float> OpHitBuilderAlg::MakeGradient( const std::vector<short>& wfm )
 {
@@ -360,7 +360,7 @@ std::vector<float> OpHitBuilderAlg::MakeGradient( const std::vector<float>& wfm 
 
 
 
-//-------------------------------------------------------------
+//###################################################################################
 // Merge hits
 std::vector<short> OpHitBuilderAlg::HitMerger( std::vector<short>& hits, short spacing, int option)
 {
@@ -389,7 +389,7 @@ std::vector<short> OpHitBuilderAlg::HitMerger( std::vector<short>& hits, short s
 }
 
 
-//--------------------------------------------------------------
+//###################################################################################
 std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( const std::vector<short>& wfm, short x1, short x2 )
 {
   std::vector<float> wfm_float(wfm.begin(),wfm.end());
@@ -405,7 +405,7 @@ std::vector<float> OpHitBuilderAlg::GetBaselineAndRMS( const std::vector<float>&
   return out;
 }
 
-//-------------------------------------------------------------
+//###################################################################################
 void OpHitBuilderAlg::CalcBaselineAndRMS( const std::vector<short>& wfm, short x1, short x2 ) { 
   std::vector<float> wfm_float(wfm.begin(),wfm.end());
   CalcBaselineAndRMS(wfm_float,x1,x2);
@@ -421,7 +421,7 @@ void OpHitBuilderAlg::CalcBaselineAndRMS( const std::vector<float>& wfm, short x
 }
 
 
-//------------------------------------------------------------
+//###################################################################################
 void OpHitBuilderAlg::SubtractBaseline( std::vector<float>& wfm ) {
   SubtractBaseline( wfm, fBaseline );
 }
@@ -429,7 +429,7 @@ void OpHitBuilderAlg::SubtractBaseline( std::vector<float>& wfm, float bs ) {
   for(size_t i=0; i<wfm.size();i++) wfm.at(i) -= bs;
 }
 
-//-----------------------------------------------------------
+//###################################################################################
 float OpHitBuilderAlg::MeanInRange( const std::vector<float>& v, int x1, int x2){
   float mean = 0;
   int N = x2 - x1;
@@ -437,7 +437,7 @@ float OpHitBuilderAlg::MeanInRange( const std::vector<float>& v, int x1, int x2)
   return mean;
 }
 
-//-----------------------------------------------------------
+//###################################################################################
 void OpHitBuilderAlg::SmoothOutVector( std::vector<float>& v, int range ) {
   if( range == 0 ) return;
   std::vector<float> v_orig(v.begin(), v.end() );
@@ -449,7 +449,7 @@ void OpHitBuilderAlg::SmoothOutVector( std::vector<float>& v, int range ) {
   }
 }
 
-//-----------------------------------------------------------
+//###################################################################################
 void OpHitBuilderAlg::RebinVector( std::vector<float>& v, int range ) {
   if( range == 0 ) return;
   int N = v.size();
@@ -461,7 +461,7 @@ void OpHitBuilderAlg::RebinVector( std::vector<float>& v, int range ) {
 }
 
 
-// -------------------------------------------------------------
+//###################################################################################
 // Returns a vector<float> containing (1) the hit's amplitude, and 
 // all the specified integrals
 std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<float>& wfm, short hit, short prev_hit, std::vector<short>& windows){
@@ -685,7 +685,7 @@ std::vector<float> OpHitBuilderAlg::GetHitInfo( const std::vector<short>& wfm, s
 }
 
 
-//-------------------------------------------------------------
+//###################################################################################
 // Scans segment of vector<float> around a designated sample point
 // and returns the local minimum
 float OpHitBuilderAlg::GetLocalMinimum(const std::vector<float>& v, short hit)
@@ -723,7 +723,7 @@ short OpHitBuilderAlg::GetLocalMinimum(const std::vector<short>& v, short hit)
 }
 
 
-//-------------------------------------------------------------
+//###################################################################################
 // Scans segment of vector<float> around a designated sample point
 // and returns the local minimum
 float OpHitBuilderAlg::GetLocalMaximum(const std::vector<float>& v, short hit)
@@ -761,7 +761,7 @@ short OpHitBuilderAlg::GetLocalMaximum(const std::vector<short>& v, short hit)
 }
 
 
-//--------------------------------------------------------------
+//###################################################################################
 // Get only amplitude of the specified hit (this function calls the broader
 // "GetHitInfo" function, but returns only the relevant amplitude information).
 float OpHitBuilderAlg::GetHitAmplitude(const std::vector<short>& wfm, short hit,short prev_hit)
@@ -777,7 +777,7 @@ float OpHitBuilderAlg::GetHitAmplitude(const std::vector<float>& wfm, short hit,
 }
 
 
-//--------------------------------------------------------------
+//###################################################################################
 // Get only integral of the specified hit (this function calls the broader
 // "GetHitInfo" function, but returns only the relevant integral information).
 float OpHitBuilderAlg::GetHitPromptIntegral(const std::vector<short>& wfm, short hit, short prev_hit)
@@ -787,7 +787,7 @@ float OpHitBuilderAlg::GetHitPromptIntegral(const std::vector<short>& wfm, short
 
 
 
-//--------------------------------------------------------------
+//###################################################################################
 // Get only integral of the specified hit (this function calls the broader
 // "GetHitInfo" function, but returns only the relevant integral information).
 float OpHitBuilderAlg::GetHitFullIntegral(const std::vector<short>& wfm, short hit, short prev_hit)
@@ -796,7 +796,7 @@ float OpHitBuilderAlg::GetHitFullIntegral(const std::vector<short>& wfm, short h
 }
 
 
-//--------------------------------------------------------------
+//###################################################################################
 // Decide if a given OpDetPulse qualifies as a "clean beam waveform."
 // ie, (1) Timestamp within beam window, and (2) exactly one optical hit
 // that occurs at the trigger time (+/- 1% tolerance)
@@ -815,7 +815,7 @@ bool OpHitBuilderAlg::IsCleanBeamWaveform( raw::OpDetPulse &opdetpulse )
 
 
 
-//--------------------------------------------------------------------------
+//###################################################################################
 // Get pedestal.  This algorithm first calls the much-faster GetBaselineAndRMS 
 // function in order to set the limits of the histogram to be used in proper 
 // pedestal calculation.  Fitting to the histogram is more computationally taxing, 
@@ -855,7 +855,7 @@ std::vector<float> OpHitBuilderAlg::GetPedestalAndRMS( const std::vector<short>&
 }
 
 
-//--------------------------------------------------------------------------
+//###################################################################################
 // Performs a running baseline subtraction
 void OpHitBuilderAlg::SubtractRunningBaseline(const std::vector<float>& wvform, std::vector<float> &wvformout, const size_t nsamples, const size_t range)
 {
@@ -876,7 +876,7 @@ void OpHitBuilderAlg::SubtractRunningBaseline(const std::vector<short>& wvform, 
   SubtractRunningBaseline(wvform_float, wvformout, nsamples, range);
 }
 
-//--------------------------------------------------------------------------
+//###################################################################################
 // Performs a "masked" baseline subtraction using the gradient information to 
 // zero out uninteresting portions of the waveform in an attempt to remove
 // oscillation noise.
@@ -1035,7 +1035,7 @@ void OpHitBuilderAlg::MaskedBaselineSubtraction(const std::vector<float>& wvform
 }
 
  
-//-------------------------------------------------------------------------
+//###################################################################################
 float OpHitBuilderAlg::CalcTruncatedMean( std::vector<float>& v, float p){
   return CalcTruncatedMean(v, p, 0);
 }
@@ -1070,11 +1070,12 @@ float OpHitBuilderAlg::CalcTruncatedMean( std::vector<float>& v, float p, int sk
 
 }
 
-//--------------------------------------------------------------------------
+//###################################################################################
 // Experimental overshoot correction for Hamamatsu PMT in Run IIb+.
 // A falling exponential is applied after each found "hit", whose parameters
-// are based on the pulse amplitude.  Parameterization found by Jose Ignacio 
-// Cevallos Aleman.
+// are based on the pulse amplitude or the integral of the pulse around the peak
+// (ie, -5ns to 45ns relative to "hit" time).  Parameterization found by Jose 
+// Ignacio Cevallos Aleman (UChicago).
 //
 //    f(t) = A*exp(-t/B)
 //    B = 11496 ns
@@ -1086,10 +1087,8 @@ float OpHitBuilderAlg::CalcTruncatedMean( std::vector<float>& v, float p, int sk
 //    50 samples, -5 to 45 relative to hit time:
 //      A(int) = 0.2777 + 0.0002466*int
 //
-//void OpHitBuilderAlg::CorrectWfmOvershoot(const std::vector<float>& wfm_in, std::vector<float>& wfm_out, std::vector<short> hits, std::string mode="int") 
 void OpHitBuilderAlg::CorrectWfmOvershoot(std::vector<float>& wfm_in, std::vector<short> hits, std::string mode="int") 
 {
-//  if( wfm_out.size() != wfm_in.size() ) return;
 
   // Define hit number limit
   const size_t maxHits = 50;
@@ -1154,12 +1153,12 @@ void OpHitBuilderAlg::CorrectWfmOvershoot(std::vector<float>& wfm_in, std::vecto
 }
 
 
-//--------------------------------------------------------------------------
+//###################################################################################
 float OpHitBuilderAlg::CorrectWfmTF1(const std::vector<float>& wfm, short i, const TF1& f, int polarity){
   return polarity*( wfm[i] - f.Eval(i) ); 
 }
 
-//-------------------------------------------------------------------------
+//###################################################################################
 float OpHitBuilderAlg::FindIntersection(float x1, float y1, float x2, float y2, float thresh){
     float dx = x2 - x1;
     if( dx <= 0 ) return 0.;
@@ -1169,7 +1168,7 @@ float OpHitBuilderAlg::FindIntersection(float x1, float y1, float x2, float y2, 
 }
 
 
-//--------------------------------------------------------------------------
+//###################################################################################
 // eventType: Classify event based on its timestamp.
 std::string OpHitBuilderAlg::eventType(float T){
   if      ( T >= 0.   &&  T < 1.2 ) {return "pedestal";}
@@ -1178,7 +1177,7 @@ std::string OpHitBuilderAlg::eventType(float T){
   else                              {return "unknown";} 
 }
 
-//--------------------------------------------------------------------------
+//###################################################################################
 // eventType: filter events.  Returns TRUE if Timestamp matches any of
 // the input categories 
 bool OpHitBuilderAlg::eventTypeFilter(float T, std::vector<std::string> categories){
