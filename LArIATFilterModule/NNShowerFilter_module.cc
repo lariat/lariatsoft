@@ -22,7 +22,7 @@
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AuxDetParticleID.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "canvas/Persistency/Common/FindOneP.h" 
 
 #include "lardata/ArtDataHelper/MVAReader.h"
@@ -104,6 +104,7 @@ private:
 
 
 NNShowerFilter::NNShowerFilter(fhicl::ParameterSet const & p)
+: EDFilter(p)
 {
   // Call appropriate produces<>() functions here.
   this->reconfigure(p);

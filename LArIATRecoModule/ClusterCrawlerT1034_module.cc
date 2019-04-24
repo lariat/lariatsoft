@@ -38,7 +38,7 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
+#include "art_root_io/TFileService.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas/Utilities/InputTag.h"
@@ -106,7 +106,8 @@ class cluster::ClusterCrawlerT1034 : public art::EDProducer {
 namespace cluster {
 
   ClusterCrawlerT1034::ClusterCrawlerT1034(fhicl::ParameterSet const& pset)
-    : fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
+    : EDProducer(pset)
+    , fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
     , fCCAlg  (pset.get< fhicl::ParameterSet >("ClusterCrawlerAlg"))
   {      
     

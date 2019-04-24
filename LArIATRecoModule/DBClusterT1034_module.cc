@@ -122,7 +122,8 @@ namespace cluster{
 //			    Parameter Set
 // ---------------------------------------------------------------
 DBClusterT1034::DBClusterT1034(fhicl::ParameterSet const & pset)
-: fDBScan(pset.get< fhicl::ParameterSet >("DBScanAlg"))
+: EDProducer(pset),
+  fDBScan(pset.get< fhicl::ParameterSet >("DBScanAlg"))
 // Initialize member data here.
 {
    this->reconfigure(pset);

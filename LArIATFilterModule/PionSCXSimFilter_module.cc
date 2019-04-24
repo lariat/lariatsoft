@@ -98,6 +98,7 @@ namespace PionSCXSimFilter {
   //-----------------------------------------------------------------------
   // constructor
   PionSCXSimFilter::PionSCXSimFilter(fhicl::ParameterSet const& parameterSet)
+  : EDFilter(parameterSet)
   {
     // get a pointer to the geometry service provider
     fGeometry = &*(art::ServiceHandle<geo::Geometry>());

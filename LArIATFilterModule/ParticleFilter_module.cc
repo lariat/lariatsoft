@@ -23,7 +23,7 @@
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AuxDetParticleID.h"
 #include <TH2F.h>
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include <iostream>
 #include <memory>
@@ -74,7 +74,7 @@ private:
 // ### Calling the reconfigure function ###
 // ########################################
 ParticleFilter::ParticleFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

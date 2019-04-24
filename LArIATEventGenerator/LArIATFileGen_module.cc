@@ -18,8 +18,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // nutools includes
@@ -282,7 +282,8 @@ namespace evgen{
 
   //____________________________________________________________________________
   LArIATFileGen::LArIATFileGen(fhicl::ParameterSet const& pset)
-     : fSeed(314159)					                          
+     : EDProducer(pset)
+     , fSeed(314159)					                          
      , fFileName         (pset.get< std::string     	     	>("FileName")         	)      
      , fMuonsFileType    (pset.get< std::string             	>("MuonsFileType")    	)
      , fTreeName         (pset.get< std::string   	     	>("TreeName")         	)      

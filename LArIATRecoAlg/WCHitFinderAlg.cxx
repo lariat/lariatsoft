@@ -14,7 +14,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "larcorealg/Geometry/AuxDetGeo.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // LArIAT includes
 #include "LArIATRecoAlg/WCHitFinderAlg.h"

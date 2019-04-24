@@ -38,8 +38,8 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 
 // LArSoft includes
@@ -165,6 +165,7 @@ namespace trkf {
 
   //-------------------------------------------------
   CosmicTrackerT1034::CosmicTrackerT1034(fhicl::ParameterSet const& pset) :
+    EDProducer(pset),
     fClusterMatch(pset.get< fhicl::ParameterSet >("ClusterMatch"))
   {
     this->reconfigure(pset);
