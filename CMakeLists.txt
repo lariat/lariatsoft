@@ -36,7 +36,6 @@ set_install_root()
 cet_set_compiler_flags(DIAGS CAUTIOUS
   WERROR
   NO_UNDEFINED
-  ALLOW_DEPRECATIONS
   EXTRA_FLAGS -pedantic -Wno-unused-local-typedefs
   EXTRA_CXX_FLAGS
 )
@@ -63,6 +62,7 @@ find_ups_product( cetbuildtools )
 
 # art related products
 find_ups_product( art )
+find_ups_product(art_root_io)
 find_ups_product( artdaq_core )
 
 # products that LArIAT needs for input data

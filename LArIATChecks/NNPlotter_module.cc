@@ -37,7 +37,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/AuxDetParticleID.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -150,7 +150,8 @@ private:
 
 //NNPlotter::NNPlotter(fhicl::ParameterSet const & p)
 NNPlotter::NNPlotter(NNPlotter::Parameters const & config)
-  : fPointIdAlg(config().PointIdAlg()),
+  : EDFilter(config),
+    fPointIdAlg(config().PointIdAlg()),
     fWireProducerLabel(config().WireLabel()),
     fHitModuleLabel(config().HitModuleLabel()),
     fTrackModuleLabel(config().TrackModuleLabel()),

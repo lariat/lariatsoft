@@ -90,6 +90,7 @@ namespace caldata {
   
   //-------------------------------------------------
   CalWireROIT1034::CalWireROIT1034(fhicl::ParameterSet const& pset)
+  : EDProducer(pset)
   {
     this->reconfigure(pset);
 

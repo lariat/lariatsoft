@@ -25,7 +25,7 @@
 #include <vector>
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 
 //ROOT Things
@@ -143,7 +143,8 @@ private:
 
 
 WCTrackBuildernew::WCTrackBuildernew(fhicl::ParameterSet const & p)
- : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg")) // these should be initialized
+ : EDProducer(p)
+ , fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg")) // these should be initialized
  , fWCHitFinderAlg(p.get< fhicl::ParameterSet >("WCHitFinderAlg"))            // here instead of reconfigure()
 {
   // Call appropriate produces<>() functions here.

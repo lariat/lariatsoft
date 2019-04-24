@@ -29,7 +29,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // ###########################
 // ### LArIATsoft Includes ###
@@ -104,7 +104,7 @@ private:
 
 // ---------------------- Parameter Setting ---------------------
 WCTrkMatchToTPCtrkFilter::WCTrkMatchToTPCtrkFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

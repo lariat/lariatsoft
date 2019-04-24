@@ -27,9 +27,9 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 //C++ Includes
 #include <iostream>
@@ -346,7 +346,8 @@ private:
 
 
 MichelWfmReco::MichelWfmReco(fhicl::ParameterSet const & pset)
-: fOpHitBuilderAlg(pset), 
+: EDProducer(pset),
+fOpHitBuilderAlg(pset), 
 fOpHitBuilderAlg_aveMichel(pset), 
 fOpHitBuilderAlg_aveBG(pset),
 fOpHitBuilderAlg_aveBG_lowPromptPE(pset), 
