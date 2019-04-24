@@ -20,7 +20,7 @@
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AuxDetParticleID.h"
 #include <TH2F.h>
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include <iostream>
 #include <memory>
@@ -71,7 +71,7 @@ private:
 
 
 PiMuFilter::PiMuFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

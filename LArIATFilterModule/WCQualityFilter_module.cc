@@ -23,7 +23,7 @@
 #include <TH3F.h>
 #include <TVector3.h>
 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "lardataobj/RecoBase/Track.h"
@@ -174,7 +174,7 @@ void WCQualityFilter::beginJob()
 
 
 WCQualityFilter::WCQualityFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

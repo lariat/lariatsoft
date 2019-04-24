@@ -76,7 +76,9 @@ private:
 };
 
 
-lrm::AerogelCherenkovCounterSlicing::AerogelCherenkovCounterSlicing(fhicl::ParameterSet const & p) : fAGCounterAlg(p.get< fhicl::ParameterSet > ("AGBuilderAlg"))
+lrm::AerogelCherenkovCounterSlicing::AerogelCherenkovCounterSlicing(fhicl::ParameterSet const & p)
+: EDProducer(p),
+  fAGCounterAlg(p.get< fhicl::ParameterSet > ("AGBuilderAlg"))
 {
   // Call appropriate produces<>() functions here.
   // Configures param set

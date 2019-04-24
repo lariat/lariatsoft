@@ -19,8 +19,8 @@
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "CLHEP/Random/JamesRandom.h"
 
 #include "nutools/RandomUtils/NuRandomService.h"
@@ -85,7 +85,8 @@ namespace cluster {
   // Get parameters
   //****************************************************************************
   HoughLineFinderT1034::HoughLineFinderT1034(fhicl::ParameterSet const & pset)
-    : fTriggerUtility{pset.get< std::string >("TriggerUtility")}
+    : EDProducer(pset)
+    , fTriggerUtility{pset.get< std::string >("TriggerUtility")}
       //Get the clustering module label
     , fDBScanModuleLabel{pset.get< std::string >("DBScanModuleLabel")}
     , fHoughSeed{pset.get< unsigned int >("HoughSeed", 0)}
