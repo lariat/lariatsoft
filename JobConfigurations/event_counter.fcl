@@ -1,0 +1,51 @@
+#include "services_lariat.fcl"
+#include "lariatfiltermodules.fcl"
+
+# This script is run over digit files. It uses the 
+# TimestampFilter module to get an estimate of the
+# number of beam and cosmic events.
+
+process_name: EventCount
+
+services:
+{
+ TFileService: { fileName: "eventcount.root" }
+ @table::lariat_services
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
+
+source:
+{
+ module_type: RootInput
+ maxEvents:  -1        # Number of events to create
+}
+
+
+physics:
+{
+
+producers:
+{
+}
+
+filters:
+{
+ tfilt:                @local::lariat_timestampfilter  
+}
+
+analyzers:
+{
+}
+
+reco:          [ tfilt ]
+stream1:       [ ]
+trigger_paths: [ reco ] 
+end_paths:     [ ]  
+}
+
+
+outputs:
+{
+}
+
