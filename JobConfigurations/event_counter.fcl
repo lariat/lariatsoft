@@ -49,3 +49,7 @@ outputs:
 {
 }
 
+# only count events containing raw digits (to avoid possible
+# secondary triggers during an already-ongoing readout)
+physics.filters.tfilt.RequireRawDigits:         true
+
