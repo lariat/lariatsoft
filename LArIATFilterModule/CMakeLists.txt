@@ -23,7 +23,7 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
          RawDataUtilities
          lardataobj_RecoBase
          lardata_ArtDataHelper
-         lardata_RecoObjects larreco_Deprecated
+         lardata_RecoObjects
          lardata_Utilities
          larsim_MCCheater_BackTrackerService_service
          larsim_MCCheater_ParticleInventoryService_service
