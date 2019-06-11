@@ -322,6 +322,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
 float WCTrackBuilderAlg::calculateRecoPz(float theta_x_us, float theta_x_ds, float bestTrackSlope )
 {
   float num   = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV );
+  //float denom = (3.3*(sin(theta_x_ds) - sin(theta_x_us)))*cos(atan(bestTrackSlope));
   float denom = (3.3*(sin(theta_x_ds) - sin(theta_x_us)))*cos(atan(bestTrackSlope));
   return num / denom * (1+fMomentumScalingCalibrationFromSim);
 }
@@ -538,7 +539,10 @@ void WCTrackBuilderAlg::calculateTheMomentum(WCHitList & best_track,
   //float theta_y_us= atan(dy_us/dz_us);
   //float theta_y_ds= atan(dy_ds/dz_ds);
   //reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (3.3*(sin(theta_x_ds) - sin(theta_x_us)))/cos(atan(BestTrackStats[0]));
+  
+  //Calculate the total momentum
   reco_pz = calculateRecoPz(theta_x_us,theta_x_ds,BestTrackStats[0]);
+  
   
   //std::cout<<"B: "<<fB_field_tesla<<" momentum: "<<reco_pz<<std::endl;
   

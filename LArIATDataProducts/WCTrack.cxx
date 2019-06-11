@@ -145,6 +145,12 @@ namespace ldp{
     fDownstreamDir.SetXYZ(hitPositionVect[3][0] - hitPositionVect[2][0],
                           hitPositionVect[3][1] - hitPositionVect[2][1],
                           hitPositionVect[3][2] - hitPositionVect[2][2]);
+	
+    fPz=momentum*cos(theta);
+    fPy=momentum*sin(theta)*sin(phi);
+    fPx=momentum*sin(theta)*cos(phi);		  
+			  
+			  
   }
 
   //--------------------------------------------------

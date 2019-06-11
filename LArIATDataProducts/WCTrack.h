@@ -55,6 +55,7 @@ namespace ldp {
     float fHitPosition[4][3];   //WC is first index, dimension (x,y,z) as the second index. A [4][3] object.  
 //    std::vector<float> fHitTime;
     TVector3 fDownstreamDir;
+    float fPx, fPy, fPz;
 
 #ifndef __GCCXML__
 
@@ -140,6 +141,9 @@ namespace ldp {
     TVector3            DownstreamDir()                              const;
     TVector3            ProjectionAtZ(float z, bool useXYFace=false) const;
     float               UnscaledMomentum()                           const;
+    float               Px()                                         const;
+    float               Py()                                         const;
+    float               Pz()                                         const;
 
 
 #endif
@@ -167,6 +171,9 @@ inline float    ldp::WCTrack::WC4YMult()       const { return fWC4YMult;        
 inline bool     ldp::WCTrack::IsPicky()       const { return fPickyTrackCheck; }
 inline TVector3 ldp::WCTrack::DownstreamDir() const { return fDownstreamDir;   }
 inline float    ldp::WCTrack::UnscaledMomentum() const{return fUnscaledMomentum;}
+inline float    ldp::WCTrack::Px()              const{return fPx;}
+inline float    ldp::WCTrack::Py()              const{return fPy;}
+inline float    ldp::WCTrack::Pz()              const{return fPz;}
 
 #endif
 
