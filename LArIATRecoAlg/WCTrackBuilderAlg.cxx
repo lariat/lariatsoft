@@ -322,8 +322,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
 float WCTrackBuilderAlg::calculateRecoPz(float theta_x_us, float theta_x_ds, float bestTrackSlope )
 {
   float num   = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV );
-  //float denom = (3.3*(sin(theta_x_ds) - sin(theta_x_us)))*cos(atan(bestTrackSlope));
-  float denom = (3.3*(theta_x_ds - theta_x_us))*cos(atan(bestTrackSlope));
+  float denom = (3.3356*(theta_x_ds - theta_x_us))*cos(atan(bestTrackSlope));
   return num / denom * (1+fMomentumScalingCalibrationFromSim);
 }
 
