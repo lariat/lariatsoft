@@ -20,7 +20,7 @@ art_make(
   lardata_Utilities
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
-  nutools_RandomUtils_NuRandomService_service
+  nurandom_RandomUtils_NuRandomService_service
   larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}
@@ -64,7 +64,7 @@ simple_plugin(NNTrackShowerEff "module"
   lardata_Utilities
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
-  nutools_RandomUtils_NuRandomService_service
+  nurandom_RandomUtils_NuRandomService_service
   larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}
@@ -106,7 +106,7 @@ simple_plugin(NNMCTrackShowerEff "module"
   lardata_Utilities
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
-  nutools_RandomUtils_NuRandomService_service
+  nurandom_RandomUtils_NuRandomService_service
   larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}
@@ -148,7 +148,7 @@ simple_plugin(NNPlotter "module"
   lardata_Utilities
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
-  nutools_RandomUtils_NuRandomService_service
+  nurandom_RandomUtils_NuRandomService_service
   larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}

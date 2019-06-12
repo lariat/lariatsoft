@@ -72,6 +72,7 @@ find_ups_product( lariatfragments )
 # non-art library dependences
 find_ups_product( postgresql )
 find_ups_product( nutools )
+find_ups_product( nurandom )
 find_ups_root( root )
 find_ups_geant4( geant4 )
 

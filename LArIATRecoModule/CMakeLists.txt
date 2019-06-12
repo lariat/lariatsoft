@@ -21,7 +21,7 @@ art_make( LIB_LIBRARIES
 	  lardata_ArtDataHelper
 	  lardata_Utilities
 	  larcore_Geometry_AuxDetGeometry_service
-	  nutools_RandomUtils_NuRandomService_service
+	  nurandom_RandomUtils_NuRandomService_service
 	  ${G4_LIB_LIST}
 	  nutools_G4Base
 	  larsim_LArG4
