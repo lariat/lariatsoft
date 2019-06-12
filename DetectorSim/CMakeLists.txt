@@ -19,7 +19,7 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
                           lardata_Utilities
                           larcore_Geometry_AuxDetGeometry_service
 			                    Utilities_SignalShapingServiceT1034_service
-                          nutools_RandomUtils_NuRandomService_service
+                          nurandom_RandomUtils_NuRandomService_service
 			                    lardata_DetectorInfoServices_DetectorClocksServiceStandard_service
                           nusimdata_SimulationBase
                           ${ART_FRAMEWORK_CORE}

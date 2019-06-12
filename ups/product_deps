@@ -14,7 +14,7 @@ product         version
 larsoft		v08_21_00
 LariatFilters   v01_02
 lariatfragments v08_18_00
-artdaq_core     v3_04_15
+artdaq_core     v3_04_17
 LariatBeamFiles v01_00		-	optional
 lariatutil	v08_18_00       -	optional
 
@@ -25,12 +25,12 @@ geant4 v4_10_3_p03c
 
 # e15 - with gcc 6.4.0 and -std=c++14
 qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	LariatBeamFiles	lariatutil	notes
-c2:debug	c2:debug  -nq-		c2:debug	 c2:s83:debug   -nq-		c2:debug
-c2:opt		c2:opt	  -nq-		c2:opt		 c2:s83:opt	-nq-		c2:opt
-c2:prof		c2:prof   -nq-		c2:prof	 	 c2:s83:prof    -nq-		c2:prof
-e17:debug	e17:debug -nq-		e17:debug	 e17:s83:debug  -nq-		e17:debug
-e17:opt		e17:opt	  -nq-		e17:opt		 e17:s83:opt	-nq-		e17:opt
-e17:prof	e17:prof  -nq-		e17:prof	 e17:s83:prof   -nq-		e17:prof
+c2:debug	c2:debug  -nq-		c2:debug	 c2:s84:debug   -nq-		c2:debug
+c2:opt		c2:opt	  -nq-		c2:opt		 c2:s84:opt	-nq-		c2:opt
+c2:prof		c2:prof   -nq-		c2:prof	 	 c2:s84:prof    -nq-		c2:prof
+e17:debug	e17:debug -nq-		e17:debug	 e17:s84:debug  -nq-		e17:debug
+e17:opt		e17:opt	  -nq-		e17:opt		 e17:s84:opt	-nq-		e17:opt
+e17:prof	e17:prof  -nq-		e17:prof	 e17:s84:prof   -nq-		e17:prof
 end_qualifier_list
 
 # table file fragment to set FW_DATA
@@ -40,7 +40,7 @@ table_fragment_begin
     pathPrepend(FHICL_FILE_PATH,      .)
     envSet(ART_WORKBOOK_OUTPUT_BASE,  /lariat/data/users)
     envSet(ART_WORKBOOK_WORKING_BASE, /lariat/app/users)
-    envSet(ART_WORKBOOK_QUAL,         "s83:e17")
+    envSet(ART_WORKBOOK_QUAL,         "s84:e17")
     envSet(LARIATDBNAME,              lariat_prd)
     envSet(LARIATDBPORT,              5443)
     envSet(LARIATDBHOST,              ifdbprod2.fnal.gov)

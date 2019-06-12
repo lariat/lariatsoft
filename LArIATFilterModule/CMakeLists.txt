@@ -27,7 +27,7 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
          lardata_Utilities
          larsim_MCCheater_BackTrackerService_service
          larsim_MCCheater_ParticleInventoryService_service
-         nutools_RandomUtils_NuRandomService_service
+         nurandom_RandomUtils_NuRandomService_service
          nusimdata_SimulationBase
          ${ART_FRAMEWORK_CORE}
          ${ART_FRAMEWORK_PRINCIPAL}
