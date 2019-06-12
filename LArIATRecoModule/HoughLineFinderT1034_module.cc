@@ -23,7 +23,7 @@
 #include "art_root_io/TFileService.h"
 #include "CLHEP/Random/JamesRandom.h"
 
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 //C/C++ standard library
 #include <algorithm>
