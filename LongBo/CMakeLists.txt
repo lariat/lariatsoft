@@ -11,7 +11,7 @@ art_make( MODULE_LIBRARIES larcorealg_Geometry
 			lardataobj_RawData
 			lardataobj_RecoBase
 			lardata_ArtDataHelper
-			lardata_RecoObjects larreco_Deprecated  
+			lardata_RecoObjects
 			larreco_RecoAlg
                         nusimdata_SimulationBase
                         ${LARRECO_LIB}
