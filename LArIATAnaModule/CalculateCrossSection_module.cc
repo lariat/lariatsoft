@@ -139,13 +139,17 @@ private:
   std::string fWCTrackLabel; 
   std::string fWC2TPCModuleLabel; 
   bool fisData;
+  int  fMCKeepFlag; // this flag is usable only when running on MC, otherwise has no effct
+                    // fMCKeepFlag == 0 : Keep All Events
+                    // fMCKeepFlag  > 0 : Keep Only Events whose primary is in TPC
+                    // fMCKeepFlag  < 0 : Keep Only Events whose primary is NOT in TPC
 
   // Fiducial Volume  
   double minX =  1.0; //0.
   double maxX = 46.0; //47
   double minY =-15.0; //20
   double maxY = 15.0; //20
-  double minZ =  1.0; // G10 at z=1.2
+  double minZ =  4.0; // G10 at z=1.2
   double maxZ = 86.0;
   // dEdX maximum value for Cross Section hadron
   double hitDEDXThreshold = 40.;
@@ -182,7 +186,6 @@ private:
   double recoLength;
   int    recoPoints = 241;
   double recoInteractingKE;
-  int    nTracksTPCFF;  
   // Branch in TTree with multiple entries per event
   double recoIncidentKE[241]; 
   double recoDEDX[241] ;      
@@ -206,11 +209,12 @@ lariat::CalculateCrossSection::~CalculateCrossSection()
 
 void lariat::CalculateCrossSection::reconfigure(fhicl::ParameterSet const & pset)
 {
-  fTrackModuleLabel             = pset.get< std::string >("TrackModuleLabel"      , "pmtrack");
+  fTrackModuleLabel             = pset.get< std::string >("TrackModuleLabel"      , "pmtracktc");
   fCalorimetryModuleLabel       = pset.get< std::string >("CalorimetryModuleLabel", "calo"     );
   fWCTrackLabel 		= pset.get< std::string >("WCTrackLabel"          , "wctrack"  );
-  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "wctracktpctrackmatch");
+  fWC2TPCModuleLabel      	= pset.get< std::string >("WC2TPCModuleLabel"     , "WC2TPCtrk");
   fisData      	= pset.get<  bool  >("isData"    , true);
+  fMCKeepFlag   = pset.get<  int   >("MCKeepFlag", 0);
   mass      	= pset.get< double >("fmass"     , 139.57018);
 }
 
@@ -218,12 +222,7 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
 { 
   // Let's get a clean start
   clearVar();
- 
-  run     = evt.run(); 
-  subrun  = evt.subRun(); 
-  eventN  = evt.event();
- 
- // Let's take some Reco stuff...
+  // Let's take some Reco stuff...
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;   // Container of wc tracks  
   std::vector<art::Ptr<ldp::WCTrack> >     wctrack;         // Vector of wc tracks  
   art::Handle< std::vector<recob::Track> > trackListHandle; // Container of reco tracks
@@ -297,54 +296,9 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
       recoVtxY   = realFirstValidPt.Y();         recoEndY   = realLastValidPt.Y();
       recoVtxZ   = realFirstValidPt.Z();         recoEndZ   = realLastValidPt.Z();
       
-            // PileUp Check
-      std::cout<<"\n\n------------------>"<<run<<" "<<subrun<<" "<<eventN<<"\n"<<"Track " << recoVtxX<<" "<<recoVtxY<<" "<<recoVtxZ<<" --- " << recoEndX<<" "<<recoEndY<<" "<<recoEndZ<<"\n";
-
-      for (auto recoTrkPileUp : tracklist ) 
-	{
-	  if (recoTrkPileUp->ID() == matchedRecoTrkKey) continue; // Skip self track
-
-	  auto zFirst = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->FirstValidPoint())).position).Z();
-	  auto zLast  = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->LastValidPoint( ))).position).Z();
-	 
-	  auto minZPileUp = zFirst;
-	  auto minXPileUp = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->FirstValidPoint())).position).X();
-	  auto minYPileUp = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->FirstValidPoint())).position).Y();
-
-	  auto maxZPileUp = zLast;
-	  auto maxXPileUp = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->LastValidPoint())).position).X();
-	  auto maxYPileUp = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->LastValidPoint())).position).Y();
-	  
-	  if (zLast < zFirst) 
-	    {
-	      minZPileUp = zLast;
-	      minXPileUp = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->LastValidPoint())).position).X();
-	      minYPileUp = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->LastValidPoint())).position).Y();
-
-	      maxZPileUp = zFirst;
-	      maxXPileUp = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->FirstValidPoint())).position).X();
-	      maxYPileUp = ((recoTrkPileUp->TrajectoryPoint(recoTrkPileUp->FirstValidPoint())).position).Y();
-
-	    }
-	  
-	  
-	  double tracksDistance = TMath::Sqrt((recoEndX-minXPileUp)*(recoEndX-minXPileUp) + 
-	  				      (recoEndY-minYPileUp)*(recoEndY-minYPileUp) + 
-	  				      (recoEndZ-minZPileUp)*(recoEndZ-minZPileUp) );
-	  
-	  
-	  
-	  //	  if (minZPileUp < 14. && tracksDistance > 2.) {
-	  if (minZPileUp < 14.) {
-	    std::cout<<"          vX: "<<minXPileUp<<" vY: "<<minYPileUp<<" vZ: "<<minZPileUp<< " --  eX: "<<maxXPileUp<<" eY: "<<maxYPileUp<<" eZ: "<<maxZPileUp<<" tracksDistance: "<<tracksDistance<<"\n";
-	    nTracksTPCFF++;}
-	  minZPileUp = 0;
-	} // End PileUp Check
-      
-      std::cout<<"nTracksTPCFF: "<<nTracksTPCFF<<"\n";
-  
       size_t furtherstInZCaloPointIndex  = 0;
       double furtherstInZCaloPointZ      = 0.;
+      bool foundhit=false;
       // if the calorimetry for my reco track is valid, I'll fill the energy deposition at each slice
       if (fmcal.isValid()) {
 	std::vector<art::Ptr<anab::Calorimetry> > calos = fmcal.at(theRecoTrk.key());
@@ -353,14 +307,23 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
 	  if (!calos[j]->PlaneID().isValid)   continue;
 	  if  (calos[j]->PlaneID().Plane == 0) continue;  // Skip Induction Plane
 	  validCaloOnColl++;
+	  std::cout<<"Num Hits: "<<calos[j]->dEdx().size()<<std::endl;
 	  //double recoEnDeposited = 0.;
 	  for (size_t k = 0; k<calos[j]->dEdx().size(); ++k)         
 	    {
+	      //std::cout<<"For hit "<<k<<", longz: "<< furtherstInZCaloPointZ<<std::endl;
+	      //std::cout<<"For hit "<<k<<" z: "<<calos[j]->XYZ()[k].Z()<<std::endl;
 	      if (calos[j]->dEdx()[k] > hitDEDXThreshold ) continue;
 	      //If the following happens, there's a mess in the calorimetry module, skip
 	      if (calos[j]->XYZ()[k].Z() < 0 || calos[j]->XYZ()[k].Z() > 90. ) continue;
 	      // Let's register the furtherst point in Z to determine if the track interacted or not. 
-	      if (calos[j]->XYZ()[k].Z() > furtherstInZCaloPointZ) furtherstInZCaloPointIndex = k;
+	      if (calos[j]->XYZ()[k].Z() > furtherstInZCaloPointZ)
+	      {
+	        foundhit=true;
+	        std::cout<<" New Long! Replacing "<<furtherstInZCaloPointIndex<<", "<<furtherstInZCaloPointZ<<" with "<<k<<", "<<calos[j]->XYZ()[k].Z()<<std::endl;
+	        furtherstInZCaloPointIndex = k;  
+	        furtherstInZCaloPointZ=calos[j]->XYZ()[k].Z();
+	      }
 	      bool isThisPointInActiveVolume = isWithinActiveVolume(calos[j]->XYZ()[k].X(), calos[j]->XYZ()[k].Y(), calos[j]->XYZ()[k].Z());
 	      if (!isThisPointInActiveVolume) continue; // I'm filling the track only with points in active volume
 	      recoPitch_v.push_back(calos[j]->TrkPitchVec()[k]);
@@ -369,8 +332,8 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
 	      recoResR_v .push_back(calos[j]->ResidualRange()[k]);
 	      recoZPos_v .push_back(calos[j]->XYZ()[k].Z());
 	    } // Loop on calo points
-	  
-	  if (!furtherstInZCaloPointIndex) 
+	  //std::cout<<"Index: "<<furtherstInZCaloPointIndex<<" Zlong: "<< calos[j]->XYZ()[furtherstInZCaloPointIndex].Z()<<std::endl;
+	  if (!foundhit) 
 	    {//throw cet::exception("Geometry")    /// <== ... throw exception
 					   //  << "Track doesn't go in? ... somethings going on, may I smell... \n";
 	      recoPitch_v.clear();
@@ -381,7 +344,9 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
 	      recoZPos_v .clear();
 	    }
 	  // Let's check if this track is interacting
-	  if (furtherstInZCaloPointIndex) isTrackInteracting =  isWithinActiveVolume(calos[j]->XYZ()[furtherstInZCaloPointIndex].X(), 
+	  std::cout<<"Found hit "<<foundhit<<std::endl;
+	 // std::cout<<"Checking last point is in volume "<<calos[j]->XYZ()[furtherstInZCaloPointIndex].X()<<" "<<calos[j]->XYZ()[furtherstInZCaloPointIndex].Y()<<" "<<calos[j]->XYZ()[furtherstInZCaloPointIndex].Z()<<std::endl;
+	  if (foundhit) isTrackInteracting =  isWithinActiveVolume(calos[j]->XYZ()[furtherstInZCaloPointIndex].X(), 
 										     calos[j]->XYZ()[furtherstInZCaloPointIndex].Y(), 
 										     calos[j]->XYZ()[furtherstInZCaloPointIndex].Z());
 	  
@@ -434,7 +399,8 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
   //Kinetic energy at the Wire Chamber 4 for this mass hypothesis
   double WCKE             = TMath::Sqrt(WCMom*WCMom + mass*mass) - mass;  
   //How much energy is lost before getting to the TPC?
-  double calculatedEnLoss = energyLossCalculation(); 
+  double calculatedEnLoss = energyLossCalculation();
+  bool keepMCEvent = true;
   if (fisData)
     {
       double WCTheta  = wctrack[0]->Theta();
@@ -447,11 +413,14 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
       calculatedEnLoss = energyLossCalculation(WC4X,onTheFlyPx,fisData);
     }else
     {
+      // Get the backtracker to recover true qua<ntities  
+  //auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  // === BackTracker service ===
+  art::ServiceHandle<cheat::BackTrackerService> bt_serv;
+  art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
+  const sim::ParticleList& plist = pi_serv->ParticleList();
 
-      // Get the backtracker to recover true quantities
-      art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
-      const sim::ParticleList& plist = pi_serv->ParticleList();
-
+      bool primaryInTPC = false; // Let's start by guessing the primary didn't get into the TPC
       for(size_t p = 0; p < plist.size(); ++p)
 	{
 	  auto mcPart = plist.Particle(p);
@@ -462,8 +431,49 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
 	  auto Momentum0   = inTPCPoint->second;
 	  double onTheFlyPx = 1000*Momentum0.X(); // the Momentum Needs To be in MeV
 	  calculatedEnLoss = energyLossCalculation(WC4X,onTheFlyPx,fisData);
+	  
+	  // Let's determine if the primary got to the TPC
+	  for ( auto t = truetraj.begin(); t!= std::prev(truetraj.end()); t++)
+	    {
+	      auto pos = t->first;
+	      if (pos.Z() < minZ) continue;
+	      else if (pos.X() < minX || pos.X() > maxX ) continue;
+	      else if (pos.Y() < minY || pos.Y() > maxY ) continue;
+	      else {
+		primaryInTPC = true;
+		break;
+	      }
+	    }// End search for first point in TPC
+	}
+
+      if (!fMCKeepFlag) 
+	{
+	  keepMCEvent = true; // If fMCKeepFlag ==  0, I don't care if the primary got to the TPC or not, I just want to keep the event
+	}else if (fMCKeepFlag > 0 )
+	{
+	  if (primaryInTPC)
+	    keepMCEvent = true;  // If fMCKeepFlag > 0 , I keep the event if the if the primary got to the, TPC else, I don't!
+	  else
+	    keepMCEvent = false; 
+	} else 
+	{
+	  if (primaryInTPC)
+	    keepMCEvent = false;  // If fMCKeepFlag < 0 , I keep the event if the if the primary didn't get to the TPC, else, I don't!
+	  else
+	    keepMCEvent = true;  
 	}
     }
+
+  if (!keepMCEvent) {
+    return;
+    clearVar();  
+    recoDEDX_v .clear();
+    recoPitch_v.clear();
+    recoEDep_v .clear();
+    recoResR_v .clear();
+    recoZPos_v .clear();
+    recoIncidentKE_v.clear();
+  }
 
   //Initial energy at the TPC Front Face. 
   const double initialKE  = WCKE - calculatedEnLoss;
@@ -481,7 +491,10 @@ void lariat::CalculateCrossSection::analyze(art::Event const & evt)
   for (auto inKE : recoIncidentKE_v) hRecoMCIncidentKE->Fill(inKE); 
   if (isTrackInteracting && recoIncidentKE_v.size())  hRecoMCInteractingKE  ->Fill(recoIncidentKE_v[recoIncidentKE_v.size()-1]); 
 
-
+ 
+  run     = evt.run(); 
+  subrun  = evt.subRun(); 
+  eventN  = evt.event();
 
   EnLoss    = calculatedEnLoss;
   recoKEFF  = initialKE;
@@ -526,7 +539,6 @@ void lariat::CalculateCrossSection::clearVar()
   recoVtxZ  = -999.;  recoEndZ  = -999.;
   recoKEFF  = -999.;  recoLength= -999.;
   recoInteractingKE   = -999.;
-  nTracksTPCFF        = 1;
   isTrackInteracting  = 0; // If this track is interacting put this to 1, if not, put this to 0
   for (int i = 0; i < 240; i++){
     recoIncidentKE[i] = -999.;    recoDEDX[i]     = -999.;      recoPitch[i]     = -999.;      
@@ -555,7 +567,7 @@ void lariat::CalculateCrossSection::endJob()
   */
   // Then we use the number calculated for us, keeping the exponent on the side
   float number_density     = 2.1043083854818523; // * 10^28 m^-3
-  float slab_width         = 0.45;//in cm = 4.5e-3 m
+  float slab_width         = 0.47;//in cm = 4.5e-3 m
   float xsConversionFactor = 1./(number_density*slab_width); // *10^-26 m^2 ==> * 100 barn  
   
   
@@ -679,8 +691,7 @@ void lariat::CalculateCrossSection::beginJob()
   fTree->Branch("eventN"   ,&eventN   ,"eventN/I");
   fTree->Branch("isTrackInteracting"  ,&isTrackInteracting   ,"isTrackInteracting/O");
   fTree->Branch("recoPoints"          ,&recoPoints           ,"recoPoints/I");
-  fTree->Branch("nTracksTPCFF"       ,&nTracksTPCFF         ,"nTracksTPCFF/I");
-
+  
   fTree->Branch("recoVtxX" ,&recoVtxX ,"recoVtxX/D");    fTree->Branch("recoEndX" ,&recoEndX ,"recoEndX/D");
   fTree->Branch("recoVtxY" ,&recoVtxY ,"recoVtxY/D");    fTree->Branch("recoEndY" ,&recoEndY ,"recoEndY/D");
   fTree->Branch("recoVtxZ" ,&recoVtxZ ,"recoVtxZ/D");    fTree->Branch("recoEndZ" ,&recoEndZ ,"recoEndZ/D");
