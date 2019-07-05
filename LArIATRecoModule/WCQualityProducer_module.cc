@@ -83,10 +83,12 @@ private:
   double fMassLowerLimit;
   double fMassUpperLimit;      
   bool IsThisMC;
+  bool ApplyWC4Fiducialization;
 
   double fDataMidDiffXOffset, fDataMidDiffYOffset, fDataXCut, fDataYCut;
   double mid1Hit[3]={-9999,-9999,-9999};
   double mid2Hit[3]={-9999,-9999,-9999};
+  double fWC4FiducialCutLow, fWC4FiducialCutHigh;
   art::ServiceHandle<geo::Geometry> fGeo;  
 
   //---------- Histos ----------
@@ -120,7 +122,7 @@ private:
   bool Magnet1ApertureCheck;
   bool Magnet2ApertureCheck;
   bool DSColApertureCheck;
-  
+  bool WC4FidCheck;
   bool KeepTheEvent; //Depending on which Checks you want to use, the final boolean that combines these checks to decide if the event is good.
   bool Mag1USPassX, Mag1USPassY, Mag1DSPassY, Mag1Pass, Mag2USPassY, Mag2DSPassX, Mag2DSPassY, Mag2Pass, DSColPassX, DSColPassY, DSColPass, AperturePass;  //All the aperture check booleans.
   // === Storing Time of Flight information === 
@@ -297,6 +299,7 @@ void WCQualityProducer::produce(art::Event & evt)
   Magnet2ApertureCheck=true;
   DSColApertureCheck=true;
   KeepTheEvent=true;
+  WC4FidCheck=true;
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   std::vector<art::Ptr<ldp::TOF> > tof;  
 
@@ -366,7 +369,8 @@ void WCQualityProducer::produce(art::Event & evt)
     double WC2Hits[3]= {wctrack[iWC]->HitPosition(1, 0), wctrack[iWC]->HitPosition(1, 1), wctrack[iWC]->HitPosition(1, 2)};
     double WC3Hits[3]= {wctrack[iWC]->HitPosition(2, 0), wctrack[iWC]->HitPosition(2, 1), wctrack[iWC]->HitPosition(2, 2)};
     double WC4Hits[3]= {wctrack[iWC]->HitPosition(3, 0), wctrack[iWC]->HitPosition(3, 1), wctrack[iWC]->HitPosition(3, 2)};
-     
+    std::cout<<WC4_Center[0]-fWC4FiducialCutLow<<" "<<WC4_Center[0]+fWC4FiducialCutHigh<<std::endl;
+    if (WC4Hits[0]<(WC4_Center[0]-fWC4FiducialCutLow) || WC4Hits[0]>(WC4_Center[0]+fWC4FiducialCutHigh)){WC4FidCheck=false;}
      
 
 
@@ -410,6 +414,7 @@ void WCQualityProducer::produce(art::Event & evt)
 }
   if(UseMidplaneCut && !ExtrapolateToMP){KeepTheEvent=false;}
   if(UseCollimatorCut && !AperturePass ){KeepTheEvent=false;}
+  if(ApplyWC4Fiducialization && !WC4FidCheck){ std::cout<<"Rejecting: "<<wctrack[0]->HitPosition(3, 0)<<std::endl;KeepTheEvent=false;}
   if(KeepTheEvent){
     if(ApplyMassCut && !IsThisMC) {
       hTOFVsMomAfterQuality->Fill(reco_momo,reco_tof);
@@ -481,6 +486,9 @@ void WCQualityProducer::reconfigure(fhicl::ParameterSet const & p)
   fMassLowerLimit=p.get<double>("LowerMassLimit",0);
   fMassUpperLimit=p.get<double>("UpperMassLimit",2000);
   IsThisMC = p.get< bool >("IsThisMC", false);
+  fWC4FiducialCutLow=p.get<double>("WC4LowCut",5.715);
+  fWC4FiducialCutHigh=p.get<double>("WC4HighCut",4.285);
+  ApplyWC4Fiducialization=p.get<bool>("ApplyWC4Fiducialization",true);
 
 
 }

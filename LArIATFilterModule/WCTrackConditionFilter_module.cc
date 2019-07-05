@@ -52,6 +52,7 @@ private:
 
   bool bKeepPicky;
   bool bOnlyFourPoint;
+  bool bKeepOnlyNotPicky;
   std::string fWCModuleLabel;
   TH1F* hPassFail;
   TH1F* hFailReason;
@@ -86,11 +87,12 @@ bool WCTrackConditionFilter::filter(art::Event & e)
   //bKeepPicky && !bOnlyFourPoint = 3 and 4 point tracks that are picky (Never used, but why not allow you the option)
   //!bKeepPicky && bOnlyFourPoint = All 4 point tracks (pi+ analysis uses this)
   //!bKeepPicky && !bOnlyFourPoint = All 3 and 4 point tracks (high stats, poor purity)
-  if (bKeepPicky && bOnlyFourPoint && isthispicky && isthisfourpoint){hPassFail->Fill(1);keepthisevent=true;}
-  if(!bKeepPicky && bOnlyFourPoint && isthisfourpoint){hPassFail->Fill(1);keepthisevent=true;}
-  if(!bOnlyFourPoint && bKeepPicky && isthispicky){hPassFail->Fill(1);keepthisevent=true;}
-  if(!bOnlyFourPoint && !bKeepPicky){hPassFail->Fill(1);keepthisevent=true;}
-  
+  //BONUS: bKeepOnlyNotPicky = Return all four point tracks that are not picky. These are the tracks that get added going from all picky to all four point.
+  if (bKeepPicky && bOnlyFourPoint && isthispicky && isthisfourpoint && !bKeepOnlyNotPicky){hPassFail->Fill(1);keepthisevent=true;}
+  if(!bKeepPicky && bOnlyFourPoint && isthisfourpoint && !bKeepOnlyNotPicky){hPassFail->Fill(1);keepthisevent=true;}
+  if(!bOnlyFourPoint && bKeepPicky && isthispicky && !bKeepOnlyNotPicky){hPassFail->Fill(1);keepthisevent=true;}
+  if(!bOnlyFourPoint && !bKeepPicky && !bKeepOnlyNotPicky){hPassFail->Fill(1);keepthisevent=true;}
+  if(bKeepOnlyNotPicky && !isthispicky && isthisfourpoint){hPassFail->Fill(1); keepthisevent=true;}
   if(!keepthisevent){hPassFail->Fill(0); hFailReason->Fill(2);}
   return keepthisevent;
 
@@ -117,6 +119,7 @@ void WCTrackConditionFilter::reconfigure(fhicl::ParameterSet const & p)
   fWCModuleLabel=p.get<std::string>("WCModuleLabel","wctrack");
   bKeepPicky=p.get<bool>("PickyTracksOnly","false");
   bOnlyFourPoint=p.get<bool>("FourPointOnly","false");
+  bKeepOnlyNotPicky=p.get<bool>("NotPickyTracksOnly","false");
 }
 
 void WCTrackConditionFilter::respondToCloseInputFile(art::FileBlock const & fb)

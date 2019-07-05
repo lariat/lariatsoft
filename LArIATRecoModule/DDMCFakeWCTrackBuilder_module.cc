@@ -250,7 +250,10 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
   WC_vect.push_back(2);        // 1, 2, 3, 4 
   WC_vect.push_back(3);        // 1, 2, 3, 4 
   WC_vect.push_back(4);        // 1, 2, 3, 4 
+  for(int i=0; i<8; i++)
+  {
   hit_wire_vect.push_back(-99999.);
+  }
   WCMissed = 0 ; 
   residual = 0.;  
   unscaled_reco_pz_list.push_back(-99999);
