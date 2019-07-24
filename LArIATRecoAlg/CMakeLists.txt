@@ -6,10 +6,10 @@ art_make( LIBRARY_NAME  LArIATRecoAlg
           larcorealg_Geometry
           lardataobj_RawData
           Utilities_DatabaseUtilityT1034_service
-	  nutools_G4Base
+	  nug4_G4Base
 	  larsim_LArG4
 	  nusimdata_SimulationBase
-	  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+	  larsim_Simulation nug4_ParticleNavigation lardataobj_Simulation
 	  ${G4_LIB_LIST}
           ${ART_FRAMEWORK_CORE}
           ${ART_FRAMEWORK_PRINCIPAL}

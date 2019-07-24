@@ -1,7 +1,7 @@
 
 include_directories( $ENV{NUTOOLS_INC} )
 
-art_make(MODULE_LIBRARIES larsim_Simulation nutools_ParticleNavigation
+art_make(MODULE_LIBRARIES larsim_Simulation nug4_ParticleNavigation
                         lardataobj_Simulation
                         larcoreobj_SummaryData
                         larcorealg_Geometry

@@ -39,7 +39,7 @@
 
 // Larsoft things
 #include "larcore/Geometry/Geometry.h"
-#include "nutools/G4Base/DetectorConstruction.h"
+#include "nug4/G4Base/DetectorConstruction.h"
 
 // Geant4 Things
 #include "Geant4/G4SteppingVerbose.hh"
