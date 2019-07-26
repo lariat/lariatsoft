@@ -21,7 +21,7 @@ art_make(
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
   nurandom_RandomUtils_NuRandomService_service
-  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+  larsim_Simulation nug4_ParticleNavigation lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}
@@ -65,7 +65,7 @@ simple_plugin(NNTrackShowerEff "module"
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
   nurandom_RandomUtils_NuRandomService_service
-  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+  larsim_Simulation nug4_ParticleNavigation lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}
@@ -107,7 +107,7 @@ simple_plugin(NNMCTrackShowerEff "module"
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
   nurandom_RandomUtils_NuRandomService_service
-  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+  larsim_Simulation nug4_ParticleNavigation lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}
@@ -149,7 +149,7 @@ simple_plugin(NNPlotter "module"
   larsim_MCCheater_BackTrackerService_service
   larsim_MCCheater_ParticleInventoryService_service
   nurandom_RandomUtils_NuRandomService_service
-  larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
+  larsim_Simulation nug4_ParticleNavigation lardataobj_Simulation
   nusimdata_SimulationBase
   ${ART_FRAMEWORK_CORE}
   ${ART_FRAMEWORK_PRINCIPAL}

@@ -23,7 +23,7 @@ art_make( LIB_LIBRARIES
 	  larcore_Geometry_AuxDetGeometry_service
 	  nurandom_RandomUtils_NuRandomService_service
 	  ${G4_LIB_LIST}
-	  nutools_G4Base
+	  nug4_G4Base
 	  larsim_LArG4
 
 	  nusimdata_SimulationBase
