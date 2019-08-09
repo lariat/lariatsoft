@@ -11,7 +11,7 @@ gdmldir product_dir gdml
 # dependencies on external packages
 product         version
 
-larsoft		v08_27_00
+larsoft		v08_28_00
 LariatFilters   v01_02
 lariatfragments v08_18_00
 artdaq_core     v3_04_20
