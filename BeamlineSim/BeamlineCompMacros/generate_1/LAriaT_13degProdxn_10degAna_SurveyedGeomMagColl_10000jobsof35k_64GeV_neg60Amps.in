@@ -1,0 +1,203 @@
+#  Meson Center LArIAT Tertiary Beam - November 2016
+#    produce at 13 deg.    Beware of stuff sneaking past collimator
+#
+#  Remember, lengths are in mm, fields is Tesla !  Momentum in MeV
+
+#  Assorted corrections made on magnet details,  8 Jan 2013
+#______________________________________________________________________
+
+
+randomseed Set PROCESSJOBNUMBER
+param worldMaterial=Air
+physics QGSP_BIC
+param inch=25.4
+param histoFile=sim_LAriaT_13degProdxn_10degAna_SurveyedGeomMagColl_10000jobsof35k_64GeV_neg60Amps.root
+## Maybe we should just let the output get dumped to the stdout.
+## output $histoFile.out
+#param first=0
+#param last=100
+
+param sinUS=0.224951054 #sin (13 deg)
+param cosUS=0.974370065 #cos (13 deg)
+param sinDS=0.052335956 #sin ( 3 deg)
+param cosDS=0.998629535 #cos ( 3 deg)
+ 
+#      killshld   used to kill tracks in shielding, significantly faster running
+param killshld=0
+ 
+#   Use Bscale to change fields.  +1 is nominal, and maximum value ( 100 A on NDBs >> 1.0)
+ param Bscale=1.0
+ 
+#g4ui when=4 “/vis/scene/add/axes 1 2 3 500 mm” 
+g4ui when=4 “/vis/viewer/set/background 1 1 1” 
+
+
+#    Beam used to check central momentum of spectrometer ( no target )
+#beam gaussian particle=proton nEvents=10000 sigmaX=2.0 sigmaY=2.0 beamZ=00.0 \
+#   meanMomentum=720.0 sigmaP=50.0 rotation=y-13
+
+ beam gaussian particle=pi+ firstEvent=$first lastEvent=$last sigmaX=2.0 sigmaY=2.0 beamZ=-500.0 \
+   meanMomentum=64000.0
+	
+ trackcuts  keep=pi+,pi-,pi0,kaon+,kaon-,mu+,mu-,e+,e-,gamma,proton,anti_proton
+
+#  Cu int. length.  135 g/Cm^2;  density = 9; so int length = 3.9 cm ( 39mm )
+# Target is a right parallelogramatic prism 1.25" = 31.75 mm high and wide, measured transverse to incoming beam.
+# 31.75 mm / (5 tan (16 deg)) = 22.145 mm
+# 31.75 mm / (5 tan (13 deg)) = 27.5048 mm (if we make a new one)
+# target:
+box slab height=31.75 length=209.55 width=6.35 material=Cu color=1,0.01,0.01
+place slab rename=slabMinus2 x=+2*(31.75)/5 z=-2*22.145
+place slab rename=slabMinus1 x=+1*(31.75)/5 z=-1*22.145
+place slab rename=slabCenter  x=0*(31.75)/5  z=0*22.145
+place slab rename=slabPlus2  x=-1*(31.75)/5 z=+1*22.145
+place slab rename=slabPlus2  x=-2*(31.75)/5 z=+2*22.145
+
+ 
+#------------------------------------ collimator -------------------------
+
+group  NewCol
+# Base plate  58 inches x 32 inches, 5.19
+# Four slabs 5.19, 2, 5.19, 5.19,  all 32 inches wide
+# Trap hole = 5.65*cos(16),  2.83 at ds, cos(16) at us,   42.76/cos16 long
+# The Fe length = 42.76 inches ~= 1086 mm
+# The Fe stack is 10 inches high =254 mm
+# Collimator opening is 2" high
+
+ box botslab height=5.19*25.4 length=58.00*25.4  width=32.0*25.4  material=Fe color=0,1,1 kill=$killshld
+ box topbot  height=5.19*25.4 length=42.76*25.4  width=32.0*25.4  material=Fe color=0,1,1 kill=$killshld
+ #box mid     height=2.00*25.4 length=42.76*25.4  width=32.0*25.4  material=Fe color=0,1,1 kill=$killshld
+
+ box mid    height=2.00*25.4 length=42.76*25.4  width=11.6*25.4  material=Fe color=0,1,1 kill=$killshld
+ trap Coll height=1160.0 upperWidth=70.0 lowerWidth=150.0 length=2.0*25.4 color=1,0,0 material=Air
+	
+ param zmov=7.62*25.4
+
+ place botslab rename=btslab z=0.00  y=-6.19*25.4
+ place topbot  rename=bot     z=$zmov  y=-(1.0+5.19/2.0)*25.4
+ place mid  rename=midleft    z=$zmov  y=0.0 x=+296/2+67.29  rotation=y-14.03
+ place mid  rename=midrigh    z=$zmov  y=0.0 x=-296/2-67.29  rotation=y-17.97
+ place topbot  rename=top     z=$zmov  y=(1.0+5.19/2.0)*25.4
+
+ # Do we really need to place a trapezoid of air in the collimator hole?
+ #place Coll z=7.62*25.4+3.0 rotation=x-90,y-16
+
+endgroup
+
+ place NewCol z=(29.0+7.62)*25.4    x=-8.315*25.4+40.0  rotation=y3
+
+#----------------------------------------------------------------------
+ param FramKill=0
+group ChFram
+  box FramS height=254.0 width=63.0  length=25.0 color=1,0,1 kill=$FramKill material=Al
+  box FramT height=63.0  width=128.0 length=25.0 color=1,0,1 kill=$FramKill material=Al
+  place FramS rename=FrameLeft   z=0.0 x=-95.5 
+  place FramS rename=FrameRight	 z=0.0 x=+95.5 
+  place FramT rename=FrameBottom z=0.0 y=-95.5 
+  place FramT rename=FrameTop	 z=0.0 y=+95.5 
+ endgroup
+#---------------------------------------------------------------------- 
+
+
+#--------------------StartLine: Fake Detector ------------------
+ virtualdetector StartLine width=400.0 height=200 material=Air color=0.9,0.9,0.7
+  place StartLine rotation=y-13 z=1400.0-26.4 x=-300 y=0
+
+#--------------------/StartLine Fake Detector ------------------
+
+#     Time of Flight (TOF) counter
+  param TOFusThick=50.8   ### 2 inches thick?
+  virtualdetector TOFus width=150 height=150 length=$TOFusThick material=LUCITE color=0.05,0.05,0.93	
+   place TOFus rotation=z45,y-13 z=1423.0 x=-346.54341
+
+#  Wire chambers are Fenker chambers, 128 mm sq. instrumented, Det1, 2,3,4
+#  Fermilab TM-1179      2557.000     Feb 1983
+
+  virtualdetector Det  width=128.0  height=125.0 color=0,1,0  length=25.0
+
+  place Det rename=Det1   z=1730.3369 x=-403.0472 y=0.0508 rotation=y-13
+  place ChFram            z=1730.3369 x=-403.0472 y=0.0508 rotation=y-13
+
+  place Det rename=Det2   z=3181.9215 x=-738.0351 y=0.0762 rotation=y-13
+  place ChFram            z=3181.9215 x=-738.0351 y=0.0762 rotation=y-13
+  
+ genericbend NDB fieldWidth=305.9 fieldHeight=140.4 fieldLength=571.85 kill=$killshld \
+	ironColor=1,0,0 ironWidth=533.4 ironHeight=474.675 ironLength=466.725
+	
+param B1=0.2121
+param B1z=3801.00
+param B2=0.2121
+param B2z=4491.00
+
+
+#---------------------   total 10 deg bend ---------------------------------------
+	
+place NDB rename=NDB22 By=$B1 z=$B1z rotation=Y-13+2.5 x=-918.44
+place NDB rename=NDB21 By=$B2 z=$B2z rotation=Y-5.5    x=-1006.46
+  
+  place Det rename=Det3 z=5167.5665 x=-1064.133 y=-2.921 rotation=y-3 
+  place ChFram          z=5167.5665 x=-1064.133 y=-2.921 rotation=y-3 
+
+
+#  virtualdetector MagVet  width=200.0  height=200.0 color=1,0,1  length=25.0 kill=1
+#  
+#  place MagVet rename=MagVet1 z=$B2z+600.0 x=+225.0-1060.0 rotation=y-3
+#  place MagVet rename=MagVet2 z=$B2z+600.0 x=-225.0-1060.0 rotation=y-3
+
+#----------Downstream aperture collimator -------------------------
+#    top and bottom blocks, and wedge side blocks
+# Overall: l=36" w=30" h=23"
+
+group DScoll
+  box dstb   height=8.5*$inch length=36*$inch width=30*$inch material=Fe color=0,1,1 kill=$killshld
+  box dsside height=6*$inch  length=36*$inch width=11*$inch  material=Fe color=0,.8,1 kill=$killshld
+
+  place dsside rename=dsl  z=0 x=+8.475*$inch
+  place dsside rename=dsr  z=0 x=-8.475*$inch
+  place dstb   rename=dst  z=0  y=+(4.25+3)*$inch 
+  place dstb   rename=dsb  z=0  y=-(4.25+3)*$inch 
+endgroup
+
+place DScoll z=6048.0 x=-1095.0 rotation=y-3.0
+
+#-----------------------------------------------------------------
+  ## Complex group of detectors right before the TiWindow:
+  place Det rename=Det4 z=7606.4872 x=-1195.0827 y=-20.4724 rotation=y-3
+  place ChFram          z=7606.4872 x=-1195.0827 y=-20.4724 rotation=y-3
+  
+
+#   Downstream TOF Counter  
+param TOFdsThick=11   ### 2 inches thick?
+param TOFdsHeight=130.0 ### 13 cm 
+virtualdetector TOFds width=170 height=170 length=$TOFdsThick material=LUCITE color=0.05,0.05,0.93
+  place TOFds rename=TOFds z=8005.9022  x=-1186.1546-30 y=-11.695 rotation=y-3  
+
+#virtualdetector TiWindow radius=114.5 length=1.0 material=Air color=1,0,0 
+#  place TiWindow z=$B2z+2600.0 x=-1124.3  rotation=y-3
+
+##Back this fake detector up, 2mm in z and 2mm*tan(3 deg)= 0.105mm in x
+#virtualdetector BigDisk radius=875 length=1.0 material=Air color=0.9,0.9,0.7 
+#  place BigDisk z=$B2z+2600.0+10 x=-1124.3-0.524  rotation=y-3
+
+#   dimensions from Lariat paper  Note - not rotated with respect to secondary beam/building
+# box LarDet color=.5,.5,1 height=400.0 width=470.0 length=900.0
+# place LarDet z=$B2z+2600.0+1400.0 x=-1150
+#
+# 
+###  material LAr A=40 Z=18 density=1.40 state=l
+###  box TPC height=400 width=460 length=900 material=LAr color=0.9,0.9,0.9
+###  place TPC z=$B2z+$B2ztoTPCcenter rotation=y3 x=28.8
+#
+#group PunchPaddles
+#virtualdetector Punch height=1010.0 width=310.0 length=10.0 material=POLYSTYRENE color=0.3,0.01,0.85
+#param offset=(310.0/2)-10.0 ## Centers of these paddles go off the beam center a little, but overlap each other.
+#param root2=0.707106781
+#
+#  place Punch rename=PunchUL z=+5.0  x=+$offset
+#  place Punch rename=PunchLR z=-5.0  x=-$offset
+#  place Punch rename=PunchUR z=+15  y=+$offset rotation=z+90
+#  place Punch rename=PunchLL z=+20  y=-$offset rotation=z+90
+#
+#endgroup
+#
+#place PunchPaddles z=$B2z+2600.0+($cosDS*2100) x=-1124.0-($sinDS*2100) rotation=z+45,y-3

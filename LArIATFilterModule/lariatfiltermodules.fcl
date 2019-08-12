@@ -2,7 +2,11 @@
 
 
 BEGIN_PROLOG
-
+lariat_wctrackedge:
+{
+  module_type: WCTrackWCEdgeFilter
+  
+}
 lariat_triggerpattern:
 {
   module_type:        TriggerPatternFilter
@@ -91,7 +95,7 @@ lariat_upstreamtpctrack:
 {
 module_type:		UpStreamTPCTrackFilter
 TrackModuleLabel:	"pmtrack"
-upstreamZPosition:	2	# the minimum upstream z position of the earliest spacepoint (cm)
+upstreamZPosition:	4	# the minimum upstream z position of the earliest spacepoint (cm)
 nTracksUpstream:	1	# number of tracks which must be in this upstream portion of the TPC
 }
 
@@ -229,5 +233,10 @@ lariat_wcqualityexistence:
 lariat_wccondition:
 {
   module_type: WCTrackConditionFilter
+}
+
+lariat_keepbeamfilter:
+{
+  module_type: KeepBeamFilter
 }
 END_PROLOG

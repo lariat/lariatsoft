@@ -26,6 +26,7 @@
 #include "lardata/Utilities/AssociationUtil.h"
 #include <memory>
 #include "art/Framework/Services/Optional/TFileService.h"
+#include "lardataobj/RecoBase/PFParticle.h"
 #include <TH1.h>
 class WC2TPCMatchExistenceFilter;
 class WC2TPCMatchExistenceFilter : public art::EDFilter {
@@ -44,48 +45,57 @@ public:
 private:
   std::string fTrackModuleLabel;
   std::string fWCTrackLabel;
-  std::string fWC2TPCModuleLabel;
-  TH1F* fWC2TPCPassFail;
+  //std::string fWC2TPCModuleLabel;
+  std::string fWCTPCTrkProducerLabel;
+  TH1F* hWC2TPCPassFail;
 };
 WC2TPCMatchExistenceFilter::WC2TPCMatchExistenceFilter(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
 {
-  fWC2TPCModuleLabel = p.get< std::string  >("WC2TPCModuleLabel", "WC2TPCtrk");
-  fTrackModuleLabel = p.get< std::string  >("TrackModuleLabel","pmtracktc");
+  fTrackModuleLabel = p.get< std::string  >("TrackModuleLabel","pmtrack");
   fWCTrackLabel = p.get< std::string  >("WCTrackLabel","wctrack");
+  
+  fWCTPCTrkProducerLabel   = p.get< std::string >("WCTPCTrackMatchLabel", "wctracktpctrackuniquematch");
   //bData = p.get<bool>("isData");
 }
 bool WC2TPCMatchExistenceFilter::filter(art::Event & e)
 {
-    art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
-    std::vector<art::Ptr<ldp::WCTrack> > wctrack;
-    
-    if(e.getByLabel(fWCTrackLabel, wctrackHandle))
+  art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
+  std::vector<art::Ptr<ldp::WCTrack> > wctrack;
+   
+  if(e.getByLabel(fWCTrackLabel, wctrackHandle))
+    {art::fill_ptr_vector(wctrack, wctrackHandle);}
+  art::FindOneP<recob::Track> fopwctpc(wctrackHandle, e, fWCTPCTrkProducerLabel);
+  
+  bool keepevent=false;
+/*   art::Handle< std::vector<recob::Track> > TrackHandle;
+  std::vector<art::Ptr<recob::Track> > tpctrack;
+  
+   if(e.getByLabel(fTrackModuleLabel, TrackHandle))
+    {art::fill_ptr_vector(tpctrack, TrackHandle);}
+    art::FindOneP<ldp::WCTrack> fopwctpc(TrackHandle, e, fWCTrackLabel);  */
+    //std::cout<<wcquality_handle->size()<<std::endl; 
+    if(!(fopwctpc.isValid()))
+    { hWC2TPCPassFail->Fill(0); return false;}
+    else if((fopwctpc.isValid()))
     {
-      art::fill_ptr_vector(wctrack, wctrackHandle);
+       for (unsigned int iassn=0; iassn<fopwctpc.size(); ++iassn)
+       {
+         cet::maybe_ref<recob::Track const> trackWC2TPC(*fopwctpc.at(iassn));
+	 if(trackWC2TPC){keepevent=true;}
+       }
     }
-    art::FindOneP<recob::Track> WCTrackAssn(wctrackHandle,   e, fWC2TPCModuleLabel);
-    if(WCTrackAssn.isValid())
-    {
-      for (unsigned int indexAssn = 0; indexAssn < WCTrackAssn.size(); ++indexAssn ) 
-      {
-        // =========================                                                                                       
-        // === Get the TPC track ===
-        // =========================                                                                      
-        cet::maybe_ref<recob::Track const> trackWC2TPC(*WCTrackAssn.at(indexAssn));
-        if (!trackWC2TPC){ fWC2TPCPassFail->Fill(0); return false;}
-        else if (trackWC2TPC)
-        { fWC2TPCPassFail->Fill(1);return true;}
-        
-      }
-   }
-   fWC2TPCPassFail->Fill(0);
-   return false;
+    if(keepevent){hWC2TPCPassFail->Fill(1);}
+    else{hWC2TPCPassFail->Fill(0);}
+    
+    return keepevent;
+
+    
 }
 void WC2TPCMatchExistenceFilter::beginJob()
 {
   art::ServiceHandle<art::TFileService> tfs;
-  fWC2TPCPassFail=tfs->make<TH1F>("PassFail","PassFail",2,-0.5,1.5);
+  hWC2TPCPassFail=tfs->make<TH1F>("PassFail","PassFail",2,-0.5,1.5);
 }
 DEFINE_ART_MODULE(WC2TPCMatchExistenceFilter)
