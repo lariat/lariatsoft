@@ -9,6 +9,13 @@ services:
 
 physics.producers.caldata.dQdxCalibFileName: "LArIATChargeCorrectionFactors_Run1.txt"
 
+physics.producers.tof.HitThreshold:         -10.  # -10.0 for Run I, -3.0 for Run II
+physics.producers.tof.HitDiffMeanUS:        0.6  # 0.6 for Run I, 0.5 for Run II
+physics.producers.tof.HitDiffMeanDS:        1.0  # 1.0 for Run I, 0.4 for Run II
+physics.producers.tof.HitMatchThresholdUS:  3.0
+physics.producers.tof.HitMatchThresholdDS:  6.0
+physics.producers.tof.HitWait:              20.
+
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run1
 physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgdata_run1 
 
