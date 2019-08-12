@@ -1,6 +1,6 @@
 # The parent line must be the first non-comment line in the file
 # This line defines the product name and version
-parent	lariatsoft v08_27_02
+parent	lariatsoft v08_28_00
 defaultqual	e17
 
 # need this line for MRB to add the FHiCL directory (fcl by default)
@@ -11,12 +11,12 @@ gdmldir product_dir gdml
 # dependencies on external packages
 product         version
 
-larsoft		v08_27_02
+larsoft		v08_28_00
 LariatFilters   v01_02
 lariatfragments v08_18_00
 artdaq_core     v3_04_20
 LariatBeamFiles v01_00		-	optional
-lariatutil	v08_27_02       -	optional
+lariatutil	v08_28_00       -	optional
 
 cetbuildtools   v7_12_01	-	only_for_build
 end_product_list
@@ -24,13 +24,15 @@ end_product_list
 geant4 v4_10_3_p03c
 
 # e15 - with gcc 6.4.0 and -std=c++14
-qualifier larsoft	  LariatFilters	lariatfragments	 artdaq_core	LariatBeamFiles	lariatutil	notes
-c2:debug	c2:debug  -nq-		c2:debug	 c2:s86:debug   -nq-		c2:debug
-c2:opt		c2:opt	  -nq-		c2:opt		 c2:s86:opt	-nq-		c2:opt
-c2:prof		c2:prof   -nq-		c2:prof	 	 c2:s86:prof    -nq-		c2:prof
-e17:debug	e17:debug -nq-		e17:debug	 e17:s86:debug  -nq-		e17:debug
-e17:opt		e17:opt	  -nq-		e17:opt		 e17:s86:opt	-nq-		e17:opt
-e17:prof	e17:prof  -nq-		e17:prof	 e17:s86:prof   -nq-		e17:prof
+qualifier 	larsoft	  LariatFilters	lariatfragments	 artdaq_core	LariatBeamFiles	lariatutil	notes
+c2:py3:debug	c2:py3:debug  -nq-	c2:debug	 c2:py3:s86:debug   -nq-	c2:py3:debug
+c2:py3:prof	c2:py3:prof   -nq-	c2:prof		 c2:py3:s86:prof    -nq-	c2:py3:prof
+e17:py3:debug	e17:py3:debug -nq-	e17:debug	 e17:py3:s86:debug  -nq-	e17:py3:debug
+e17:py3:prof	e17:py3:prof  -nq-	e17:prof	 e17:py3:s86:prof   -nq-	e17:py3:prof
+c2:debug	c2:debug      -nq-	c2:debug	 c2:s86:debug       -nq-	c2:debug
+c2:prof		c2:prof       -nq-	c2:prof	 	 c2:s86:prof        -nq-	c2:prof
+e17:debug	e17:debug     -nq-	e17:debug	 e17:s86:debug      -nq-	e17:debug
+e17:prof	e17:prof      -nq-	e17:prof	 e17:s86:prof       -nq-	e17:prof
 end_qualifier_list
 
 # table file fragment to set FW_DATA
