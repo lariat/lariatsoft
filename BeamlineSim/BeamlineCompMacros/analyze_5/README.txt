@@ -26,3 +26,5 @@ WCQuality/WCTrack cut values can be set at the top of the code. Set to values fr
 5. With those in hand, make a bunch of plots comparing simulation to data. 
 
 
+One plot that gets created is the fractional composition of pi/mu/e, as a function of momentum. This is useful for stage 6. For each of the three species, apply a second order polynomial fit over the momentum range, and note/save the fit parameters. They
+can be used to create a more realistic DDMC. This plot uses the HY tracks, so if you want the picky track version, you need to change the script to use the picky track individual particle plots instead of the HY. 

@@ -24,4 +24,8 @@ For all the triggers in a spill, reconstruct the WCTrack and TOF using the sim i
 
 Stage 5: Analyze
 
-With all the tracks reconstructed, hadd them together, and run the appropriate script to return the beamline composition for that sample.
+With all the tracks reconstructed, hadd them together, and run the appropriate script to return the beamline composition for that sample, and get the momentum dependent composition functions, if you want them for the next stage.
+
+Stage 6: DDMC generation
+
+Using code from Elena Gramellini, create text files out of data, and if inclined, use the composition functions from stage 5 to weight the particle distibutions. 
