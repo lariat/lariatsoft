@@ -1,8 +1,0 @@
-#include "Michel_GenRecoAnaMC2.fcl"
-services.SignalShapingServiceT1034:   @local::lariat_signalshapingservice
-services.DetectorPropertiesService:   @local::lariat_detproperties
-physics.producers.daq.NoiseFact:      0.05
-physics.producers.calotc.CaloAlg:     @local::lariat_calorimetryalgmc_default
-physics.filters.michelana.CaloAlg:    @local::lariat_calorimetryalgmc_default
-
-

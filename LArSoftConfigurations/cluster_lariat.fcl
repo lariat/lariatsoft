@@ -151,8 +151,9 @@ lariat_trajclusteralg.Vertex2DCuts:  [6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0.8]
 # 8 Min charge fraction near a merge point (not a vertex)
 # 9 max MCSmom asymmetry for a merge
 
-lariat_trajclusteralg_run2:                       @local::standard_trajclusteralg
+lariat_trajclusteralg_run1:                       @local::standard_trajclusteralg
 
+lariat_trajclusteralg_run2:                       @local::standard_trajclusteralg
 lariat_trajclusteralg_run2.HitFinderModuleLabel:  "gaushit"
 lariat_trajclusteralg_run2.MakeNewHits:           true
 lariat_trajclusteralg_run2.AngleRanges:           [30, 65, 80, 90]

@@ -1,3 +1,0 @@
-#include "Michel_Reco1.fcl"
-services.SignalShapingServiceT1034:   @local::lariat_signalshapingservice
-physics.producers.calotc.CaloAlg:     @local::lariat_calorimetryalgdata_run1_default

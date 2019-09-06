@@ -1,0 +1,44 @@
+#include "services_lariat.fcl"
+#include "ophitbuilderalg.fcl"
+#include "lariatfiltermodules.fcl"
+
+process_name: AveWfm
+
+services:
+{
+  TFileService: { fileName: "AveWfm.root" }
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        
+}
+
+outputs: {}
+
+physics:
+{
+  producers:
+  {
+  }
+  filters:
+  {
+    tfilt: @local::lariat_timestampfilter
+  }
+  analyzers:
+  {
+    wfm:   
+    {
+      module_type: AveragePMTWfm
+      OpHitBuilderAlg: {}
+    }
+  }
+  reco:       [ ]
+  trigger_paths: [ reco ]
+  end_paths:  [ ]
+}
+physics.filters.tfilt.T1:                                       1.2
+physics.filters.tfilt.T2:                                       5.2
+physics.filters.tfilt.RequireRawDigits:                         true

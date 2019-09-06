@@ -7,7 +7,6 @@ physics.analyzers.ser.PostIntWindow:          [ 25,   25,     600 ]
 physics.analyzers.ser.PrePE_TruncP:           0
 physics.analyzers.ser.PrePE_TruncSkew:        0
 
-#physics.analyzers.ser.DownsampleInterval:     20
 physics.analyzers.ser.SelectChannels:	      [ 1 ]
 physics.analyzers.ser.OpDetChannels:	      [ 0,    1 ]
 physics.analyzers.ser.OpDetPolarity:          [-1,    -1 ]

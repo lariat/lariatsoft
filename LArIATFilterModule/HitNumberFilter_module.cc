@@ -65,6 +65,7 @@ private:
   std::string fHitsInstance;
   std::vector<int> fMaxNumHits;
   
+  TH2F* hNumHitsScatter;
   TH1F* hNumHits[2];
   TH1F* hNumHits_pass[2];
   TH1F* hEventPass;
@@ -78,10 +79,15 @@ HitNumberFilter::HitNumberFilter(fhicl::ParameterSet const & p)
 {
   this->reconfigure(p);
   art::ServiceHandle<art::TFileService> tfs;
-  hNumHits[0]       = tfs->make<TH1F>("NumHits_Ind",";Number of reconstructed hits (induction plane)",200,0,1000);
-  hNumHits[1]       = tfs->make<TH1F>("NumHits_Col",";Number of reconstructed hits (collection plane)",200,0,1000);
-  hNumHits_pass[0]       = tfs->make<TH1F>("NumHits_Ind_pass",";Number of reconstructed hits for events passing filter (induction plane)",200,0,1000);
-  hNumHits_pass[1]       = tfs->make<TH1F>("NumHits_Col_pass",";Number of reconstructed hits for evtents passing filter (collection plane)",200,0,1000);
+  
+  int     nbins   = 200;
+  double  max     = 5000;
+  hNumHitsScatter   = tfs->make<TH2F>("NumHits","Number of reconstructed hits;Induction plane;Collection plane",nbins,0,max,nbins,0,max);
+  hNumHitsScatter   ->SetOption("colz");
+  hNumHits[0]       = tfs->make<TH1F>("NumHits_Ind",";Number of reconstructed hits (induction plane)",nbins,0,max);
+  hNumHits[1]       = tfs->make<TH1F>("NumHits_Col",";Number of reconstructed hits (collection plane)",nbins,0,max);
+  hNumHits_pass[0]  = tfs->make<TH1F>("NumHits_Ind_pass",";Number of reconstructed hits for events passing filter (induction plane)",nbins,0,max);
+  hNumHits_pass[1]  = tfs->make<TH1F>("NumHits_Col_pass",";Number of reconstructed hits for evtents passing filter (collection plane)",nbins,0,max);
   hEventPass        = tfs->make<TH1F>("EventPass","0 = rejected events, 1 = passed events",2,0,2);
 }
 
@@ -99,18 +105,16 @@ bool HitNumberFilter::filter(art::Event & e)
     int hitPlane = hitlist[i]->WireID().Plane;
     if( hitPlane < 2 ) nHits[hitPlane]++;
   }
+  hNumHitsScatter->Fill(nHits[0],nHits[1]);
   hNumHits[0]->Fill(nHits[0]);
   hNumHits[1]->Fill(nHits[1]);
   
-  LOG_VERBATIM("HitNumberFilter")
+  LOG_VERBATIM("HitNumberFilter") 
   <<"---- HitNumberFilter -----";
   for(size_t i=0; i<2; i++){
-  LOG_VERBATIM("HitNumberFilter")
-  <<"#hits on plane "<<i<<": "<<nHits[i];
-    if( nHits[i] > fMaxNumHits[i] ) {
-      pass = false;
-      break;
-    }
+    LOG_VERBATIM("HitNumberFilter") 
+    <<"hits on plane "<<i<<": "<<nHits[i]<<"  (max allowed: "<<fMaxNumHits[i]<<")";
+    if( fMaxNumHits[i] >= 0 && nHits[i] > fMaxNumHits[i] ) pass = false;
   }
   
   LOG_VERBATIM("HitNumberFilter")

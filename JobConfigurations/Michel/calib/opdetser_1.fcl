@@ -1,6 +1,5 @@
 #include "opdetser_Michel.fcl"
 
-#physics.analyzers.ser.DownsampleInterval:     20
 #physics.analyzers.ser.SmoothingRange:           1
 
 physics.analyzers.ser.SelectChannels:	      [ 1 ]

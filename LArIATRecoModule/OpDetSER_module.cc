@@ -96,15 +96,17 @@ private:
   TH1F* h_BaselineRMS[10];
   TH1F* h_PrePhelRMS[10];
   TH1F* h_Amplitudes[10];
-  //TH1F* h_TailBaselineDiff[10];
   TH1F* h_Waveform;
   TH1F* h_Waveform_raw;
   TH1F* h_WaveformSER;
   TH1F* h_Live;
 
+  TH1F* h_Tau[10];
+
   short   fAvePulse_preWindow;
   short   fAvePulse_postWindow;
   int     fAvePulse_total;
+  TH1F* h_AvePulse[10];
   TH1F* h_AvePulse_050_150[10];
   TH1F* h_AvePulse_150_250[10];
   TH1F* h_AvePulse_250_350[10];
@@ -114,6 +116,7 @@ private:
   TH1F* h_AvePulse_650_750[10];
   TH1F* h_AvePulse_750_850[10];
   TH1F* h_AvePulse_850_950[10];
+  int fAvePulseCount[10];
   int fAvePulseCount_050_150[10];
   int fAvePulseCount_150_250[10];
   int fAvePulseCount_250_350[10];
@@ -128,12 +131,9 @@ private:
   std::vector<short> fPEWfm_postWindow;
   short fPEWfm_totalSamples[10];
 
-  bool skipSubRun;
-
   // Tunable parameters defined by fcl
-  float               fDownsampleFraction;
-  int                 fDownsampleInterval;
   bool                fAnalyzePhelWfm;
+  bool                fFindSinglePEs;
   std::vector<std::string> fSelectEventTypes;
   std::vector<size_t> fSelectChannels;
   std::vector<size_t> fOpDetChannels;
@@ -187,7 +187,6 @@ private:
   std::string         fDAQModule;
   std::string         fInstanceName;
 
-  int                 fDownsampleCount;
   bool                fSecondFitDone;
 
   std::map<size_t,size_t> iCh;
@@ -220,7 +219,8 @@ fOpAlg(p.get<fhicl::ParameterSet>("OpHitBuilderAlg"))
     fNumberSaturatedEvents[i] = 0;
     fNumberActiveEvents[i]    = 0;
     AvePECount[i]             = 0;
-    
+   
+    fAvePulseCount[i]         = 0; 
     fAvePulseCount_050_150[i] = 0;
     fAvePulseCount_150_250[i] = 0;
     fAvePulseCount_250_350[i] = 0;
@@ -233,8 +233,6 @@ fOpAlg(p.get<fhicl::ParameterSet>("OpHitBuilderAlg"))
   
     fPEWfm_totalSamples[i] = fPEWfm_preWindow[i] + fPEWfm_postWindow[i];
   }
-
-  fDownsampleCount = 0;
 
 }
 
@@ -265,12 +263,10 @@ void OpDetSER::reconfigure(fhicl::ParameterSet const & p)
   std::vector<short>      PEWfm_preWindowDefault{20, 20};
   std::vector<short>      PEWfm_postWindowDefault{50, 50};
 
-
+  fFindSinglePEs          = p.get< bool >                 ("FindSinglePEs",true);
   fAnalyzePhelWfm         = p.get< bool >                 ("AnalyzePhelWfm",true);
   fSER_x1                 = p.get< std::vector<float> >   ("SER_x1",x1Default);
   fSER_x2                 = p.get< std::vector<float> >   ("SER_x2",x2Default);
-  fDownsampleFraction     = p.get< float >                ("DownsampleFraction",1.0);
-  fDownsampleInterval     = p.get< int   >                ("DownsampleInterval",1.0);
   fSelectChannels         = p.get< std::vector<size_t> >  ("SelectChannels",SelectChannelsDefault);
   fOpDetPolarity        = p.get< std::vector<float> >   ("OpDetPolarity",PolarityDefault);
   fOpDetChannels          = p.get< std::vector<size_t> >  ("OpDetChannels", SelectChannelsDefault);
@@ -361,10 +357,6 @@ void OpDetSER::beginJob()
     sprintf(histTitle,"RMS of pre-PE candidate baselines, OpDet %lu;Pre-PE RMS [mV];Counts",ch);
     h_PrePhelRMS[ich]     = tfs->make<TH1F>(histName,histTitle,300,0.0,1.5);
     
-    //sprintf(histName,"%lu_TailBaselineDiff",ch); 
-    //sprintf(histTitle,"PE candidate tail baseline - prePE baseline, OpDet %lu;#Delta ADC",ch);
-    //h_TailBaselineDiff[ich]     = tfs->make<TH1F>(histName,histTitle,150,-5.0,10.0);
-    
     sprintf(histName,"%lu_Amplitudes",ch); 
     sprintf(histTitle,"Waveform amplitudes for OpDet %lu;Amplitude [mV];Counts",ch);
     h_Amplitudes[ich]    = tfs->make<TH1F>(histName,histTitle,2000.,0.,200.);
@@ -381,6 +373,13 @@ void OpDetSER::beginJob()
     if( fSaveAvePulses ){
   
       art::TFileDirectory avePulseDir = tfs->mkdir("AvePulses");
+      
+      h_Tau[ich] = tfs->make<TH1F>(Form("%lu_Tau",ch),Form("Tau from fit to individual pulses;#tau [ns]"),150,0.,3000);
+
+      sprintf(histName,"%lu_AvePulse",ch); 
+      sprintf(histTitle,"Average pulse, OpDet %lu;ns;ADC",ch);
+      h_AvePulse[ich]  = avePulseDir.make<TH1F>(histName,histTitle,fAvePulse_total, -1.*fAvePulse_preWindow, fAvePulse_postWindow);
+      
        
       sprintf(histName,"%lu_AvePulse_050_150",ch); 
       sprintf(histTitle,"Average pulse, OpDet %lu, amplitude 50-150 ADC;ns;ADC",ch);
@@ -425,8 +424,6 @@ void OpDetSER::beginJob()
 //#######################################################################
 void OpDetSER::analyze(art::Event const & e)
 {
-  if( skipSubRun ) return;
-  
   fEventNumber   = e.id().event();
   int runnr     = e.run();
   fSubRunNumber  = e.subRun();
@@ -450,15 +447,7 @@ void OpDetSER::analyze(art::Event const & e)
   // Grab the first OpDetPulse in the handle just to check whether its
   // the right event type for use in this analysis
   fTimestamp   = (float(WaveformHandle->at(0).PMTFrame())*8.)/1.0e09;
-  /*
-  if (  !fOpAlg.eventTypeFilter(fModTimestamp,fSelectEventTypes)
-      ||  !(fModTimestamp >= fTimestamp_T1 || fModTimestamp <= fTimestamp_T2)     ){
-    if(fVerbose) std::cout<<"Timestamp ("<<fModTimestamp<<" sec) out of range --> skipping event\n";
-    return;
-  }
-  */
-  
-  if ( !(fTimestamp >= fTimestamp_T1 || fTimestamp <= fTimestamp_T2) ){
+  if ( (fTimestamp_T1 > 0 && fTimestamp < fTimestamp_T1) || (fTimestamp_T2 > 0 && fTimestamp > fTimestamp_T2) ) { 
     if(fVerbose) std::cout<<"Timestamp ("<<fTimestamp<<" sec) out of range --> skipping event\n";
     return;
   }
@@ -600,66 +589,75 @@ void OpDetSER::analyze(art::Event const & e)
     // ----------------------------------------------------
     // Saving average pulses
     if( fSaveAvePulses ) {
-        
+       
+       std::cout<<"Saving average pulse\n"; 
       // Perform hit-finding
       std::vector<short> vHitTimesTmp = fOpAlg.GetHits(ThePulse);
+     
+      std::cout<<"Found "<<vHitTimesTmp.size()<<" hits\n"; 
 
-      for( size_t iHit = 0; iHit < vHitTimesTmp.size(); iHit++){
+      size_t nhits = vHitTimesTmp.size();
+
+      for( size_t iHit = 0; iHit < nhits; iHit++){
       
         short hittime = vHitTimesTmp[iHit];
 
         // If hit saturates, skip it:
-        if( fOpAlg.GetLocalMinimum(Wfm, hittime) == 0 ) continue;
-      
+        //if( fOpAlg.GetLocalMinimum(Wfm, hittime) == 0 ) continue;
+     
+        // Make sure the hit is sufficiently isolated
+        float t_prev = -9.;
+        float t_next = -9.;
+        if( iHit > 0 ) t_prev = vHitTimesTmp[iHit-1];
+        if( iHit < nhits-1 ) t_next = vHitTimesTmp[iHit+1];
+        if( t_prev > 0 && hittime-t_prev < 5000 ) continue;
+        if( t_next > 0 && t_next-hittime < 2500 ) continue;
+
         // Require hit be at trigger point
-        if( fabs( hittime - short(ThePulse.FirstSample()) ) >= Wfm.size()*0.015 ) continue; 
+        //std::cout<<"Is hit at trigger point? "<<hittime<<"   "<<ThePulse.FirstSample()<<"   "<<Wfm.size()*0.015<<"\n";
+        //if( fabs( hittime - short(ThePulse.FirstSample()) ) >= Wfm.size()*0.05 ) continue; 
+        //std::cout<<"yes\n";
         
         // Require flat pre-hit region
-        float preHitRMS = fOpAlg.GetBaselineAndRMS(wfm_corrected, hittime - 1000, hittime)[1];
-        if( preHitRMS >= 1.5 * rms ) continue;
+        //float preHitRMS = fOpAlg.GetBaselineAndRMS(wfm_corrected, hittime - 1000, hittime)[1];
+//        std::cout<<"Is pre-hit region flat? "<<preHitRMS<<"   ( "<<rms<<")\n";
+        //if( preHitRMS >= 1.5 * rms ) continue;
 
-        float a = fOpAlg.GetLocalMaximum(wfm_corrected, hittime); 
+        float a = fOpAlg.GetLocalMaximum(wfm_corrected, hittime);
         int x1 = (int)hittime - (int)fAvePulse_preWindow;
         int x2 = (int)hittime + (int)fAvePulse_postWindow;
-
+        
         if( x1 >= 0 && x2 < (int)wfm_corrected.size() && a >= 50. && a < 950. ) {
-
-          if( a >= 50. && a < 150. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_050_150[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_050_150[ich]++;
-          } else 
-          if( a >= 150. && a < 250. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_150_250[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_150_250[ich]++;
-          } else 
-          if( a >= 250. && a < 350. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_250_350[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_250_350[ich]++;
-          } else 
-          if( a >= 350. && a < 450. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_350_450[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_350_450[ich]++;
-          } else 
-          if( a >= 450. && a < 550. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_450_550[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_450_550[ich]++;
-          } else 
-          if( a >= 550. && a < 650. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_550_650[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_550_650[ich]++;
-          } else 
-          if( a >= 650. && a < 750. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_650_750[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_650_750[ich]++;
-          } else 
-          if( a >= 750. && a < 850. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_750_850[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_750_850[ich]++;
-          } else 
-          if( a >= 850. && a < 950. ) {
-            for(int jj = 0; jj < fAvePulse_total; jj++) h_AvePulse_850_950[ich] -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
-            fAvePulseCount_850_950[ich]++;
+        
+          TH1D *h_wfm = (TH1D*)h_AvePulse[ich]->Clone("tmp");
+          h_wfm->Reset();
+          for(int jj = 0; jj < fAvePulse_total; jj++) {
+            int bin = h_wfm->GetXaxis()->FindBin(-1.*fAvePulse_preWindow+jj);
+            h_wfm -> SetBinContent(bin, wfm_corrected[x1+jj]);
+            h_wfm -> SetBinError( bin, rms);
+            //h_wfm -> Fill(-1.*fAvePulse_preWindow+jj, wfm_corrected[x1 + jj]);
           }
+          
+          TF1 tau("tau","[0]*exp(-x/[1])",400,2000);
+          tau.SetParameter(0,50);
+          tau.SetParameter(1,1000);
+          tau.SetParLimits(1,0,3000);
+          h_wfm->Fit("tau","QR");
+          if( tau.GetParameter(1) > 0 ) h_Tau[ich]->Fill(tau.GetParameter(1));
+           
+          std::cout<<"Adding pulse\n";
+          h_AvePulse[ich]->Add( h_wfm ); fAvePulseCount[ich]++;
+          if(       a >= 50.  && a < 150. ) { h_AvePulse_050_150[ich]->Add( h_wfm ); fAvePulseCount_050_150[ich]++; }
+          else if(  a >= 150. && a < 250. ) { h_AvePulse_150_250[ich]->Add( h_wfm ); fAvePulseCount_150_250[ich]++; }
+          else if(  a >= 250. && a < 350. ) { h_AvePulse_250_350[ich]->Add( h_wfm ); fAvePulseCount_250_350[ich]++; }
+          else if(  a >= 350. && a < 450. ) { h_AvePulse_350_450[ich]->Add( h_wfm ); fAvePulseCount_350_450[ich]++; }
+          else if(  a >= 450. && a < 550. ) { h_AvePulse_450_550[ich]->Add( h_wfm ); fAvePulseCount_450_550[ich]++; }
+          else if(  a >= 550. && a < 650. ) { h_AvePulse_550_650[ich]->Add( h_wfm ); fAvePulseCount_550_650[ich]++; }
+          else if(  a >= 650. && a < 750. ) { h_AvePulse_650_750[ich]->Add( h_wfm ); fAvePulseCount_650_750[ich]++; }
+          else if(  a >= 750. && a < 850. ) { h_AvePulse_750_850[ich]->Add( h_wfm ); fAvePulseCount_750_850[ich]++; }
+          else if(  a >= 850. && a < 950. ) { h_AvePulse_850_950[ich]->Add( h_wfm ); fAvePulseCount_850_950[ich]++; }
+          
+          delete h_wfm;
 
         }
 
@@ -669,7 +667,10 @@ void OpDetSER::analyze(art::Event const & e)
 
     } //<-- done saving ave pulses
     // -------------------------------------
-      
+     
+     
+    if( fFindSinglePEs ) {
+       
     // Determine range of samples to scan over
     short t1 = std::max((short)ThePulse.FirstSample() + fT1, (int)fPrePEBaselineWindow);
     short t2 = std::min((short)ThePulse.FirstSample() + fT2, (int)NSamples-10);
@@ -760,16 +761,6 @@ void OpDetSER::analyze(art::Event const & e)
           continue;
         }
           
-        /*
-        float tailave = 0.;
-        short range=5;
-        for(short jj=i-range+1; jj<=i; jj++) {
-          tailave += (wfm_corrected[jj] - prePE_baseline)/range;
-        }
-
-        if( counter == (int)fPostIntWindow[ich]) h_TailBaselineDiff[ich]->Fill(tailave - prePE_baseline);
-        */
-        
 	//----------------------------------
 	// End integration if we've reached the minimum required window size and
 	// the signal has returned to baseline
@@ -936,6 +927,8 @@ void OpDetSER::analyze(art::Event const & e)
 
     LiveSamples[ich]         += liveSamples;
     if(fVerbose) std::cout<<"Live samples for this event... "<<liveSamples<<"\n"; 
+ 
+  }// endif search for single pes
     
   } // endLoop over OpDets
     
@@ -945,17 +938,6 @@ void OpDetSER::analyze(art::Event const & e)
 //#######################################################################
 void OpDetSER::beginSubRun(art::SubRun const & sr)
 {
-  skipSubRun = false;
-  // -------------------------------------------
-  // Downsampling feature for large datasets
-  fDownsampleCount++;
-  if( fDownsampleCount >= fDownsampleInterval ) {
-    fDownsampleCount = 0;
-  } else {
-    skipSubRun = true;
-    if( fVerbose)std::cout<< "Skipping subrun (downsample count = "<<fDownsampleCount<<", interval = "<<fDownsampleInterval<<")\n";
-  }
-  // -------------------------------------------
 }
 
 //#######################################################################
@@ -1029,8 +1011,10 @@ void OpDetSER::endJob()
    
     // Normalize the average pulse histograms
     if( fSaveAvePulses ) {
-    
-      std::cout<<"Ave pulse count, 50-150 ADC: "<<fAvePulseCount_050_150[ich]<<"\n"; 
+   
+       
+      std::cout<<"Ave pulse count             : "<<fAvePulseCount[ich]<<"\n"; 
+      std::cout<<"Ave pulse count, 50-150 ADC : "<<fAvePulseCount_050_150[ich]<<"\n"; 
       std::cout<<"Ave pulse count, 150-250 ADC: "<<fAvePulseCount_150_250[ich]<<"\n"; 
       std::cout<<"Ave pulse count, 250-350 ADC: "<<fAvePulseCount_250_350[ich]<<"\n"; 
       std::cout<<"Ave pulse count, 350-450 ADC: "<<fAvePulseCount_350_450[ich]<<"\n"; 
@@ -1041,6 +1025,7 @@ void OpDetSER::endJob()
       std::cout<<"Ave pulse count, 850-950 ADC: "<<fAvePulseCount_850_950[ich]<<"\n"; 
 
     
+      if( fAvePulseCount[ich]         > 0 ){ NormalizeWfmHistogram(h_AvePulse[ich], fAvePulseCount[ich]);}
       if( fAvePulseCount_050_150[ich] > 0 ){ NormalizeWfmHistogram(h_AvePulse_050_150[ich], fAvePulseCount_050_150[ich]);}
       if( fAvePulseCount_150_250[ich] > 0 ){ NormalizeWfmHistogram(h_AvePulse_150_250[ich], fAvePulseCount_150_250[ich]);}
       if( fAvePulseCount_250_350[ich] > 0 ){ NormalizeWfmHistogram(h_AvePulse_250_350[ich], fAvePulseCount_250_350[ich]);}
@@ -1050,7 +1035,18 @@ void OpDetSER::endJob()
       if( fAvePulseCount_650_750[ich] > 0 ){ NormalizeWfmHistogram(h_AvePulse_650_750[ich], fAvePulseCount_650_750[ich]);}
       if( fAvePulseCount_750_850[ich] > 0 ){ NormalizeWfmHistogram(h_AvePulse_750_850[ich], fAvePulseCount_750_850[ich]);}
       if( fAvePulseCount_850_950[ich] > 0 ){ NormalizeWfmHistogram(h_AvePulse_850_950[ich], fAvePulseCount_850_950[ich]);}
-   
+  
+      // do fit
+      TF1 f_tail("f_tail","[0]*exp(-x/[1])",400,2000);
+      f_tail.SetParameter(0,100);
+      //f_tail.SetParLimits(0,1,1e5);
+      f_tail.SetParameter(1,1000);
+      f_tail.SetParLimits(1,300,1800);
+      h_AvePulse[ich]->Fit("f_tail","RQ");
+      std::cout
+      <<"Tau fit to ave waveform (400ns - 2us) = "<<f_tail.GetParameter(1)<<" +/- "<<f_tail.GetParError(1)<<" ns\n"
+      <<"Tau from event-by-event               = "<<h_Tau[ich]->GetMean()<<" +/- "<<h_Tau[ich]->GetRMS()/sqrt(h_Tau[ich]->Integral())<<" ns\n"
+      <<"RMS = "<<h_Tau[ich]->GetRMS()<<" ns\n";
     }
     
     // Normalize the summed PE waveform to get an average
@@ -1132,7 +1128,6 @@ std::vector<float> OpDetSER::FitSER(TH1F* h_SER, float x1, float x2, float meanS
     return out;
   }
  
-  
   // Fit out the SER
   TF1 SER_fit("SER_fit","([0]/([2]*sqrt(2.*TMath::Pi())))*exp(-0.5*pow((x-[1])/[2],2))"
         "+ [3]*((1./(sqrt(1.)*[5]*sqrt(2.*TMath::Pi())))*exp(-0.5*pow((x-1.*[4])/(sqrt(1)*[5]),2))" 
@@ -1182,7 +1177,7 @@ std::vector<float> OpDetSER::FitSER(TH1F* h_SER, float x1, float x2, float meanS
     if( refit && SER_fit.GetChisquare()/(SER_fit.GetNDF()-1) > fSecondFitChi2Thresh ) {
       fSecondFitDone = true;
       //SER_fit.SetRange(SER_fit.GetParameter(1)+1.0*SER_fit.GetParameter(2), x2);
-//      SER_fit.SetRange(SER_fit.GetParameter(1)-2.0*SER_fit.GetParameter(2), SER_fit.GetParameter(4)*2.5);
+      //SER_fit.SetRange(SER_fit.GetParameter(1)-2.0*SER_fit.GetParameter(2), SER_fit.GetParameter(4)*2.5);
       SER_fit.SetRange(SER_fit.GetParameter(1)-1.0*SER_fit.GetParameter(2), SER_fit.GetParameter(4)*3.5);
       h_SER->GetFunction("SER_fit")->Delete();
       h_SER->Fit("SER_fit","QR");

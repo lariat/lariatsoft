@@ -1,0 +1,10 @@
+#include "Michel_GenMC1.fcl"
+
+services:
+{
+  TFileService: { fileName: "MichelMCGen.root" }
+  RandomNumberGenerator: {}
+  @table::lariat_simulation_services_run2
+}
+
+physics.producers.daq: @local::lariat_simwire_run2

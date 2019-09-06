@@ -24,6 +24,11 @@ lariat_hitnumberfilter:
   module_type:                HitNumberFilter
 }
 
+lariat_signaltonoise:
+{
+  module_type:                SignalToNoise
+}
+
 lariat_wirenoisefilter:
 {
 module_type:			WireNoiseFilter
