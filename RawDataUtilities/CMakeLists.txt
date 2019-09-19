@@ -18,7 +18,7 @@ art_make(LIBRARY_NAME     RawDataUtilities
                           art_Persistency_Provenance canvas
                           art_Utilities canvas
                           ${MF_MESSAGELOGGER}
-                          
+                          ${ARTDAQ-CORE_UTILITIES}
                           cetlib cetlib_except
                           ${ROOT_BASIC_LIB_LIST}
                           ${Boost_SYSTEM_LIBRARY}
