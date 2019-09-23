@@ -1,12 +1,15 @@
 # for classes_def.xml!!
 include_directories( ${CMAKE_CURRENT_SOURCE_DIR} )
 
-include_directories( $ENV{ARTDAQ_CORE_INC}                     )
+## handled by find_ups_product
+##include_directories( $ENV{ARTDAQ_CORE_INC}                     )
+##include_directories( $ENV{LARDATA_INC}                         )
+##include_directories( $ENV{LARCORE_INC}                         )
+##include_directories( $ENV{LARSIM_INC}                          )
+##include_directories( $ENV{POSTGRESQL_INC}                      )
 include_directories( $ENV{LARIATFRAGMENTS_INC}/LArIATFragments )
-include_directories( $ENV{LARDATA_INC}                         )
-include_directories( $ENV{LARCORE_INC}                         )
-include_directories( $ENV{LARSIM_INC}                          )
-include_directories( $ENV{POSTGRESQL_INC}                      )
+
+cet_find_library( ARTDAQCORE_UTILITIES NAMES artdaq-core_Utilities PATHS ENV ARTDAQ_CORE_LIB NO_DEFAULT_PATH )
 
 art_make(LIBRARY_NAME     RawDataUtilities
          LIB_LIBRARIES    lardataobj_RawData
@@ -18,7 +21,7 @@ art_make(LIBRARY_NAME     RawDataUtilities
                           art_Persistency_Provenance canvas
                           art_Utilities canvas
                           ${MF_MESSAGELOGGER}
-                          
+                          ${ARTDAQCORE_UTILITIES}
                           cetlib cetlib_except
                           ${ROOT_BASIC_LIB_LIST}
                           ${Boost_SYSTEM_LIBRARY}
