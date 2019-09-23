@@ -82,6 +82,9 @@ include(ArtDictionary)
 include(ArtMake)
 include(BuildPlugins)
 
+# artdaq_core Utility library
+cet_find_library( ARTDAQ-CORE_UTILITIES NAMES artdaq-core_Utilities PATHS ENV ARTDAQ_CORE_LIB )
+
 # source
 add_subdirectory(Calibration)
 add_subdirectory(DetectorSim)
