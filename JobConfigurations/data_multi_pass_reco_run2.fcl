@@ -247,13 +247,13 @@ physics.producers.wctracktpctrackmatch.ClusterLabel:        "trajcluster"
 physics.producers.wctracktpctrackmatch.TrackLabel:          "pmtrack"
 physics.producers.wctracktpctrackmatch.TOFLabel:            "tof"
 physics.producers.wctracktpctrackmatch.WCTrackLabel:        "wctrack"
-physics.producers.wctracktpctrackmatch.AlphaCut:            0.2
+physics.producers.wctracktpctrackmatch.AlphaCut:            0.226893
 physics.producers.wctracktpctrackmatch.MinTrackLengthZProj: 4.0
 physics.producers.wctracktpctrackmatch.MinUpstreamZ:        2.0
 physics.producers.wctracktpctrackmatch.MaxUpstreamZ:        6.0
 physics.producers.wctracktpctrackmatch.CircularCutXCenter:  1.6
 physics.producers.wctracktpctrackmatch.CircularCutYCenter:  -0.17
-physics.producers.wctracktpctrackmatch.CircularCutRadius:   3.5
+physics.producers.wctracktpctrackmatch.CircularCutRadius:   5.0
 physics.producers.wctracktpctrackmatch.UniqueMatchMode:     false
 
 physics.producers.wctracktpctrackuniquematch.HitLabel:            "trajcluster"
@@ -261,7 +261,7 @@ physics.producers.wctracktpctrackuniquematch.ClusterLabel:        "trajcluster"
 physics.producers.wctracktpctrackuniquematch.TrackLabel:          "pmtrack"
 physics.producers.wctracktpctrackuniquematch.TOFLabel:            "tof"
 physics.producers.wctracktpctrackuniquematch.WCTrackLabel:        "wctrack"
-physics.producers.wctracktpctrackuniquematch.AlphaCut:            0.2
+physics.producers.wctracktpctrackuniquematch.AlphaCut:            0.226893
 physics.producers.wctracktpctrackuniquematch.MinTrackLengthZProj: 4.0
 physics.producers.wctracktpctrackuniquematch.MinUpstreamZ:        2.0
 physics.producers.wctracktpctrackuniquematch.MaxUpstreamZ:        6.0
