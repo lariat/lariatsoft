@@ -73,7 +73,6 @@ physics:
     timestampfilter: @local::lariat_timestampfilter
     toffilter:       @local::lariat_toffilter
     wctrackfilter:   @local::lariat_wctrackfilter
-    wccondition: @local::lariat_wccondition
     hitnumfilter:    @local::lariat_hitnumberfilter
   }
 
@@ -84,7 +83,7 @@ physics:
 
   #define the producer and filter modules for this path, order matters, 
   #filters reject all following items.  see lines starting physics.producers below
-  reco: [ timestampfilter, @sequence::beamlinereco, toffilter, wctrackfilter, wccondition, wcquality, caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctracktpctrackmatch, wctracktpctrackuniquematch ]
+  reco: [ timestampfilter, @sequence::beamlinereco, toffilter, wctrackfilter, wcquality, caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctracktpctrackmatch, wctracktpctrackuniquematch ]
 
   ana: [ anatree ]
 
@@ -177,16 +176,13 @@ physics.producers.wctrack.WCTrackBuilderAlg.MCMagneticFieldTesla: 0.3361 #.3361T
 physics.producers.wctrack.WCTrackBuilderAlg.LEffective:           1143.7 
 physics.producers.wctrack.WCTrackBuilderAlg.MomentumScaleCalibration: 0 # With WCReco momentum fixes, this calibration is not needed
 
-physics.filters.wccondition.PickyTracksOnly: false
-physics.filters.wccondition.FourPointOnly: true
-
 physics.producers.wcquality.DataMPXCut: 1.5  #How far, from mean, can tracks be to pass. In cm 
 physics.producers.wcquality.DataMPYCut: 1.5 #How far, from mean, can tracks be to pass 
 physics.producers.wcquality.DataMPXOffset: 0.3 #Mean of Data DeltaX distribution. In cm
 physics.producers.wcquality.DataMPYOffset: 0  # Mean of Data DeltaY distrubition
 physics.producers.wcquality.ApplyMidplaneCut: true
 physics.producers.wcquality.ApplyCollimatorCut: true
-physics.producers.wcquality.ApplyMassCut: true #Turn this off if you dont want a mass cut done for you.
+physics.producers.wcquality.ApplyMassCut: false #Turn this off if you dont want a mass cut done for you.
 physics.producers.wcquality.LowerMassLimit: -350 #These are for low mass particles, change to match your definition of kaon or proton
 physics.producers.wcquality.UpperMassLimit: 350 #These are for low mass particles, change to match your definition of kaon or proton
 
