@@ -37,7 +37,7 @@ cet_set_compiler_flags(DIAGS CAUTIOUS
   WERROR
   NO_UNDEFINED
   ALLOW_DEPRECATIONS
-  EXTRA_FLAGS -pedantic -Wno-unused-local-typedefs
+  EXTRA_FLAGS -pedantic -Wno-unused-local-typedefs -Wno-unused-variable
   EXTRA_CXX_FLAGS
 )
 
@@ -71,6 +71,7 @@ find_ups_product( lariatfragments )
 find_ups_product( postgresql )
 find_ups_product( nutools )
 find_ups_root( root )
+find_ups_geant4( geant4 )
 
 # macros for artdaq_dictionary and simple_plugin
 include(ArtDictionary)
@@ -86,6 +87,7 @@ add_subdirectory(LArIATDataProducts)
 add_subdirectory(LArIATDataProviders)
 add_subdirectory(LArIATEventGenerator)
 add_subdirectory(LArIATFilterModule)
+add_subdirectory(LArIATLArG4)
 add_subdirectory(LArIATRecoAlg)
 add_subdirectory(LArIATRecoModule)
 add_subdirectory(LArIATChecks)
