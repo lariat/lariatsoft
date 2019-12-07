@@ -339,7 +339,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
       
       // ### Initialize the counter for the number of matches ###
       int nWC_TPC_TrackMatch = 0;
-      std::pair <int,int>  matchCandidate;
+      //std::pair <int,int>  matchCandidate; // unused - defined below
       std::map<float,std::pair <int,int>> mapCandidates; // the map takes the figure of merit as key and the couple as value 
       
       // ###################################################
