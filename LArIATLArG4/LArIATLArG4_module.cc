@@ -246,6 +246,7 @@ namespace larg4 {
     std::vector<std::string>   fInputLabels;
     std::vector<std::string>   fKeepParticlesInVolumes; ///<Only write particles that have trajectories through these volumes
 
+    bool                       fSkipStepIgnoreProcess; ///< skip steps with ignoreProcess
     double                     fStepSizeLimit;      ///< lower limit for G4 step size [cm]
 
     /// Configures and returns a particle filter
@@ -271,6 +272,7 @@ namespace larg4 {
     , fSmartStacking         (pset.get< int         >("SmartStacking",0)                    )
     , fOffPlaneMargin        (pset.get< double      >("ChargeRecoveryMargin",0.0)           )
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
+    , fSkipStepIgnoreProcess (pset.get< bool        >("SkipStepIgnoreProcess", true)        )
     , fStepSizeLimit         (pset.get< double      >("StepSizeLimit", -1.)                 )
 
   {
@@ -399,6 +401,7 @@ namespace larg4 {
     fparticleListAction = new larg4::ParticleListActionT1034(lgp->ParticleKineticEnergyCut(),
                                                              lgp->StoreTrajectories(),
                                                              lgp->KeepEMShowerDaughters(),
+                                                             fSkipStepIgnoreProcess,
                                                              fStepSizeLimit);
     uaManager->AddAndAdoptAction(fparticleListAction);
 

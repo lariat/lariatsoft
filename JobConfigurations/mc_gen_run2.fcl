@@ -71,6 +71,7 @@ outputs:
 
 physics.producers.generator.InputFileName: "hepevt.txt"
 
+physics.producers.largeant.SkipStepIgnoreProcess:  false  # skip steps with ignoreProcess
 physics.producers.largeant.StepSizeLimit:  0.03  # limit for G4 step size [cm]
 
 services.MagneticField.FieldDescriptions: [{UseField: 1 ConstantField: [0.0,0.175,0.0] MagnetizedVolume: "NDBmagnet1"}, 

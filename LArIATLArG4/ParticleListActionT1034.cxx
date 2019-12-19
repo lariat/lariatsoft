@@ -58,11 +58,13 @@ namespace larg4 {
   ParticleListActionT1034::ParticleListActionT1034(double energyCut,
                                                    bool   storeTrajectories,
                                                    bool   keepEMShowerDaughters,
+                                                   bool   skipStepIgnoreProcess,
                                                    double stepSizeLimit)
   : fenergyCut(energyCut * CLHEP::GeV)
   , fparticleList(0)
   , fstoreTrajectories(storeTrajectories)
   , fKeepEMShowerDaughters(keepEMShowerDaughters)
+  , fSkipStepIgnoreProcess(skipStepIgnoreProcess)
   , fStepSizeLimit(stepSizeLimit)
   {
     // Create the particle list that we'll (re-)use during the course
@@ -355,6 +357,8 @@ namespace larg4 {
     // against the voxelization process name (set in PhysicsList.cxx).
     G4String process = step->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
     G4bool ignoreProcess = process.contains("LArVoxel") || process.contains("OpDetReadout"); 
+
+    if (!fSkipStepIgnoreProcess) ignoreProcess = false;
 
     LOG_DEBUG("ParticleListActionT1034::SteppingAction")
     << ": DEBUG - process='"

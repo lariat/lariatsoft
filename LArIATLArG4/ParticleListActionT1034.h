@@ -56,7 +56,7 @@ namespace larg4 {
     }; // ParticleInfo_t
 
     // Standard constructors and destructors;
-    ParticleListActionT1034(double energyCut, bool storeTrajectories=false, bool keepEMShowerDaughters=false, double stepSizeLimit=-1.);
+    ParticleListActionT1034(double energyCut, bool storeTrajectories=false, bool keepEMShowerDaughters=false, bool skipStepIgnoreProcess=true, double stepSizeLimit=-1.);
     virtual ~ParticleListActionT1034();
 
     // UserActions method that we'll override, to obtain access to
@@ -113,6 +113,7 @@ namespace larg4 {
                                    TLorentzVector const& mom,
                                    std::string    const& process);
 
+    bool                     fSkipStepIgnoreProcess; ///< skip steps with ignoreProcess
     double                   fStepSizeLimit;         ///< lower limit for step size [cm]
     TLorentzVector           fLastPosition;          ///< position of the last point added to particle
 
