@@ -110,6 +110,7 @@ private:
     float offset;
 
     int subRun = -999;
+    int run = -999;
 
     //Algorithm object for track building
     WCTrackBuilderAlg fWCTrackBuilderAlg;
@@ -169,9 +170,11 @@ void WCTrackBuildernew::produce(art::Event & e)
     // If this is a new subrun in *real* data, then load B-field from DB.
     // (For MC, this is taken from the fhicl parameter "MCMagneticFieldTesla")
     if( e.isRealData() ){
-      if( subRun != (int)e.subRun() ) {
+      bool newEvent = (run != (int)e.run() && subRun != (int)e.subRun() );
+      if( newEvent ) {
         fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( e.run(), e.subRun() );
-        subRun = e.subRun();
+        subRun  = e.subRun();
+        run     = e.run();
       }
     }
   
