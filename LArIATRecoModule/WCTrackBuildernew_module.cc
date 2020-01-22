@@ -109,6 +109,7 @@ private:
     //Offset ont he B field
     float offset;
 
+    int subRun = -999;
 
     //Algorithm object for track building
     WCTrackBuilderAlg fWCTrackBuilderAlg;
@@ -165,6 +166,15 @@ WCTrackBuildernew::WCTrackBuildernew(fhicl::ParameterSet const & p)
 
 void WCTrackBuildernew::produce(art::Event & e)
 {
+    // If this is a new subrun in *real* data, then load B-field from DB.
+    // (For MC, this is taken from the fhicl parameter "MCMagneticFieldTesla")
+    if( e.isRealData() ){
+      if( subRun != (int)e.subRun() ) {
+        fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( e.run(), e.subRun() );
+        subRun = e.subRun();
+      }
+    }
+  
     //std::cout<<"Event start"<<std::endl;
     ResetTree();
     //Creating the WCTrack Collection
@@ -815,10 +825,12 @@ void WCTrackBuildernew::beginRun(art::Run & r)
 
 void WCTrackBuildernew::beginSubRun(art::SubRun & sr)
 {
-   std::cout<<"Module B: "<<fWCTrackBuilderAlg.fMCMagneticField<<std::endl;
     // If the field override is not set, get the actual magnetic field value for the alg
-    if( fWCTrackBuilderAlg.fMCMagneticField == 0 ){ 
-    	fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );}
+    // Check if MC -- if not, load the magnetic field from a DB:
+//    if( !sr.isRealData() ) fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );}
+    
+    //if( fWCTrackBuilderAlg.fMCMagneticField == 0 ){ 
+    //	fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );}
 }
 
 void WCTrackBuildernew::endJob()

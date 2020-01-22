@@ -51,8 +51,8 @@ class WCTrackBuilderAlg{
     *
     * All distances are in mm and momentum is in MeV
     */
-   void reconstructTracks(std::vector<double> & reco_pz_list,
-					     std::vector<double> & reco_pz2M_list,               
+   void reconstructTracks(std::vector<double> & reco_p_list,
+					     std::vector<double> & reco_p_2M_list,               
 					     std::vector<double> & x_face_list,
 					     std::vector<double> & y_face_list,
 					     std::vector<double> & incoming_theta_list,
@@ -77,8 +77,8 @@ class WCTrackBuilderAlg{
 			  TH1F*  & WCDist);
    
    float buildFourPointTracks(std::vector<std::vector<WCHitList> > & good_hits,
-	                      std::vector<double> & reco_pz_list,
-			      std::vector<double> & reco_pz2M_list,
+	                      std::vector<double> & reco_p_list,
+			      std::vector<double> & reco_p_2M_list,
 			      std::vector<double> & x_face_list,
 		              std::vector<double> & y_face_list,
 			      std::vector<double> & incoming_theta_list,
@@ -106,8 +106,8 @@ class WCTrackBuilderAlg{
 		             float (&x)[4],
 			     float (&y)[4],
 			     float (&z)[4],
-			     float & reco_pz,
-			     float & reco_pz2M,
+			     float & reco_p,
+			     float & reco_p_2M,
 			     std::vector<float> & BestTrackStats,
 			     float offset);
 			     
@@ -115,7 +115,7 @@ class WCTrackBuilderAlg{
 		             float (&x)[4],
 			     float (&y)[4],
 			     float (&z)[4],
-			     float & reco_pz,
+			     float & reco_p,
 			     std::vector<float> & BestTrackStats);				 
 				 
    void projectToTPC(WCHitList & best_track,
@@ -130,7 +130,7 @@ class WCTrackBuilderAlg{
 		    
 		    				 
    float buildThreePointTracks(std::vector<std::vector<WCHitList> > & good_hits,
-	                      std::vector<double> & reco_pz_list,
+	                      std::vector<double> & reco_p_list,
 			      std::vector<double> & x_face_list,
 		              std::vector<double> & y_face_list,
 			      std::vector<double> & incoming_theta_list,
@@ -148,7 +148,7 @@ class WCTrackBuilderAlg{
 				       float(&x)[4],
 				       float(&y)[4],
 				       float(&z)[4],
-				       float & reco_pz,
+				       float & reco_p,
 				       std::vector<float> & BestTrackStats,
 				       int & WCMissed);
 				       				 
@@ -157,7 +157,7 @@ class WCTrackBuilderAlg{
 			         float(&x)[4],
 			         float(&y)[4],
 			         float(&z)[4],
-				 float & reco_pz,
+				 float & reco_p,
 				 std::vector<float> & BestTrackStats,
 				 std::vector<float> & missed_wires,
 				 int & WCMissed);
@@ -173,7 +173,7 @@ class WCTrackBuilderAlg{
 
   void MakeDiagnosticPlots(std::vector<std::vector<WCHitList> > & good_hits,
 					    std::vector<TH2F*> & RecoDiff,	                      
-					    std::vector<double> & reco_pz_list,
+					    std::vector<double> & reco_p_list,
 			      		    std::vector<double> & x_face_list,
 		              		    std::vector<double> & y_face_list,
 			      		    std::vector<double> & incoming_theta_list,
@@ -199,9 +199,10 @@ class WCTrackBuilderAlg{
   float CalculateTheMomentumError(float (&x)[4],
 				  float (&y)[4],
 			          float (&z)[4],
-				  float & reco_pz);
+				  float & reco_p);
 
-  float calculateRecoPz(float theta_x_us, float theta_x_ds, float bestTrackSlope );
+  //float calculateRecoPz(float theta_x_us, float theta_x_ds, float bestTrackSlope );
+  float calculateMomentum(float theta_x_us, float theta_x_ds, float bestTrackSlope );
 				  					    
   float GetScalingFactor();					    
   float fMCMagneticField;

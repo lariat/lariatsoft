@@ -369,7 +369,7 @@ void WCQualityProducer::produce(art::Event & evt)
     double WC2Hits[3]= {wctrack[iWC]->HitPosition(1, 0), wctrack[iWC]->HitPosition(1, 1), wctrack[iWC]->HitPosition(1, 2)};
     double WC3Hits[3]= {wctrack[iWC]->HitPosition(2, 0), wctrack[iWC]->HitPosition(2, 1), wctrack[iWC]->HitPosition(2, 2)};
     double WC4Hits[3]= {wctrack[iWC]->HitPosition(3, 0), wctrack[iWC]->HitPosition(3, 1), wctrack[iWC]->HitPosition(3, 2)};
-    std::cout<<WC4_Center[0]-fWC4FiducialCutLow<<" "<<WC4_Center[0]+fWC4FiducialCutHigh<<std::endl;
+    //std::cout<<WC4_Center[0]-fWC4FiducialCutLow<<" "<<WC4_Center[0]+fWC4FiducialCutHigh<<std::endl;
     if (WC4Hits[0]<(WC4_Center[0]-fWC4FiducialCutLow) || WC4Hits[0]>(WC4_Center[0]+fWC4FiducialCutHigh)){WC4FidCheck=false;}
      
 
