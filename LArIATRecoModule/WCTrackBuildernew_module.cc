@@ -140,6 +140,7 @@ private:
     int nevt=0;     
     //Misc
     bool fVerbose;
+    bool fSaveTree;
     bool fPickyTracks;
     bool fCheckTracks;
     int WCx1[200][100],WCx2[200][100],WCx3[200][100],WCx4[200][100],WCy1[200][100],WCy2[200][100],WCy3[200][100],WCy4[200][100]; //Arrays for the wires hit in each WC
@@ -395,7 +396,7 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
     //std::cout<<"Event Number "<<nevt<<std::endl;
     ++nevt;
    
-    fTree->Fill();
+    if(fSaveTree) fTree->Fill();
    // std::cout<<"Event Done"<<std::endl;
     //hit_position_vect.clear();//clear the position vector for the next event.				
 }
@@ -526,16 +527,18 @@ void WCTrackBuildernew::beginJob()//fhicl::ParameterSet const & p)
   // Implementation of optional member function here.
       // Implementation of optional member function here.
 art::ServiceHandle<art::TFileService> tfs;
-fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7); 
-fTree=tfs->make<TTree>("WCTree","WCTree");
-fTree->Branch("WC1XMult",&WC1XMult,"WC1XMult/F");
-fTree->Branch("WC2XMult",&WC2XMult,"WC2XMult/F");
-fTree->Branch("WC3XMult",&WC3XMult,"WC3XMult/F");
-fTree->Branch("WC4XMult",&WC4XMult,"WC4XMult/F");
-fTree->Branch("WC1YMult",&WC1YMult,"WC1YMult/F");
-fTree->Branch("WC2YMult",&WC2YMult,"WC2YMult/F");
-fTree->Branch("WC3YMult",&WC3YMult,"WC3YMult/F");
-fTree->Branch("WC4YMult",&WC4YMult,"WC4YMult/F");
+fWCDist= tfs->make<TH1F>("WCCond","WC Conditions",7,0,7);
+if( fSaveTree ) { 
+  fTree=tfs->make<TTree>("WCTree","WCTree");
+  fTree->Branch("WC1XMult",&WC1XMult,"WC1XMult/F");
+  fTree->Branch("WC2XMult",&WC2XMult,"WC2XMult/F");
+  fTree->Branch("WC3XMult",&WC3XMult,"WC3XMult/F");
+  fTree->Branch("WC4XMult",&WC4XMult,"WC4XMult/F");
+  fTree->Branch("WC1YMult",&WC1YMult,"WC1YMult/F");
+  fTree->Branch("WC2YMult",&WC2YMult,"WC2YMult/F");
+  fTree->Branch("WC3YMult",&WC3YMult,"WC3YMult/F");
+  fTree->Branch("WC4YMult",&WC4YMult,"WC4YMult/F");
+}
 //Hists that should be used for diagnostics and deleted before production
 if(fCheckTracks){
   for(int i=0; i<99; ++i){
@@ -859,8 +862,7 @@ void WCTrackBuildernew::reconfigure(fhicl::ParameterSet const & p)
     fPickyTracks=p.get<bool>("PickyTracks");
     fCheckTracks=p.get<bool>("CheckTracks");
     offset = p.get<float>("BFieldOffset");
-
-
+    fSaveTree = p.get<bool>("SaveTree",true);
 }
 // 
 // void WCTrackBuildernew::respondToCloseInputFile(art::FileBlock const & fb)
