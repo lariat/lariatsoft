@@ -88,7 +88,7 @@ void TOFFilter::reconfigure(fhicl::ParameterSet const & p)
   fTOFModuleLabel 		= p.get< std::string >("TOFModuleLabel");
   fnTOFObjects			= p.get< double >("nTOFObjects", 1.0);
   fTOFLowerBound                = p.get< double >("TOFLowerBound", 0.0);
-  fTOFUpperBound                = p.get< double >("TOFUpperBound", 30.0);
+  fTOFUpperBound                = p.get< double >("TOFUpperBound", 80.0);
 }
 
 // ---------------------- Begin Job ---------------------------

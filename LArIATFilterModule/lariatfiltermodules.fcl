@@ -28,6 +28,11 @@ lariat_hitnumberfilter:
     module_type:                HitNumberFilter 
 }
 
+lariat_beamrecofilter:
+{
+  module_type: BeamRecoFilter
+}
+
 lariat_kaonfilter:
 {
   module_type:                 KaonFilter
@@ -87,7 +92,7 @@ module_type:	TOFFilter
 TOFModuleLabel:	"tof"	# TOF module label
 nTOFObjects: 	1 	# number of TOF objects in the event to pass the filter
 TOFLowerBound:	0	# minimum time for the TOF object (ns)
-TOFUpperBound:  30	# maximum time for the TOF object (ns)
+TOFUpperBound:  80	# maximum time for the TOF object (ns)
 
 }
 
