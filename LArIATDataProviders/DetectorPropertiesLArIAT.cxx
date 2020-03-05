@@ -132,11 +132,11 @@ namespace ldp{
     tbl.Load();
     
     if (tbl.NRow() == 0) {
-      std::cout << "No lifetime found from database!  Defaulting to nominal fhicl setting.";
+      std::cout << "No lifetime found from database!  Defaulting to nominal fhicl setting.\n";
       return false;
     }
     if (tbl.NRow() > 1) {
-      std::cout << "More than one lifetime found from database!  This should NEVER happen, aborting.";
+      std::cout << "More than one lifetime found from database!  This should NEVER happen, aborting.\n";
       abort();
     }
 
@@ -586,28 +586,55 @@ namespace ldp{
 
         const double dir((tpcgeom.DriftDirection() == geo::kNegX) ? +1.0 :-1.0);
         fDriftDirection[cstat][tpc] = dir;
+        
+        std::cout
+        <<"\n"
+        <<"=======================================================\n"
+        <<"=======       DetectorPropertiesLArIAT      ===========\n\n"
+        <<"T = "<<temperature<<" K\n"
+        <<"Calculating drift velocities:\n";
+	
+        // Get field in gap between planes
+	double efieldgap[3];
+	double driftVelocitygap[3];
+	double fXTicksCoefficientgap[3];
+	for (int igap = 0; igap<3; ++igap){
+	  efieldgap[igap] = Efield(igap);
+	  driftVelocitygap[igap] = DriftVelocity(efieldgap[igap], temperature);
+          fXTicksCoefficientgap[igap] = 0.001 * driftVelocitygap[igap] * samplingRate;
+          std::cout
+          <<"  - region "<<igap<<": E="<<Efield(igap)<<" kV/cm, Vd= "<<driftVelocitygap[igap]<<" cm/us, XTicksCoeff= "<<fXTicksCoefficientgap[igap]<<"\n";
+	}
 
+        std::cout
+        <<"\n"
+        <<"Global trigger offset      : "<<triggerOffset<<" ticks\n"
+        <<"Time offset U              : "<<fTimeOffsetU<<" ticks\n"
+        <<"Time offset V              : "<<fTimeOffsetV<<" ticks\n";
+
+        // The X=0 point in LArIAT is located directly between the un-instrumented
+        // shield plane (X=0.2cm) and the induction plane (X=-0.2cm). When calculating
+        // drift times on each plane, we want to apply an offset such that the time
+        // corresponds to this X=0 point. 
+
+        // Geometric time offset for the first readout plane (only works if xyz[0] < 0)
+        const double* xyz = tpcgeom.PlaneLocation(0);
+        double geoTimeOffset = triggerOffset;
+        if( xyz[0] < 0 ) geoTimeOffset += -xyz[0]/(dir * fXTicksCoefficient);
+        std::cout
+        <<"Plane 0 X-location         : "<<xyz[0]<<" cm\n"
+        <<"Geometric offset           : "<<geoTimeOffset<<" ticks\n\n";
+
+        // Loop over planes and do plane-specific calculations
 	int nplane = tpcgeom.Nplanes();
 	fXTicksOffsets[cstat][tpc].resize(nplane, 0.);
 	for(int plane = 0; plane < nplane; ++plane) {
 	  const geo::PlaneGeo& pgeom = tpcgeom.Plane(plane);
 	  
-	  
-	  // Get field in gap between planes
-	  double efieldgap[3];
-	  double driftVelocitygap[3];
-	  double fXTicksCoefficientgap[3];
-	  for (int igap = 0; igap<3; ++igap){
-	    efieldgap[igap] = Efield(igap);
-	    driftVelocitygap[igap] = DriftVelocity(efieldgap[igap], temperature);
-	    fXTicksCoefficientgap[igap] = 0.001 * driftVelocitygap[igap] * samplingRate;
-	  }
-	  
-	  // Calculate geometric time offset.
-	  // only works if xyz[0]<=0
-	  const double* xyz = tpcgeom.PlaneLocation(0);
-	  
-	  fXTicksOffsets[cstat][tpc][plane] = -xyz[0]/(dir * fXTicksCoefficient) + triggerOffset;
+          fXTicksOffsets[cstat][tpc][plane] = geoTimeOffset;
+
+          std::cout
+          <<"Calculating XTicksOffset for plane "<<plane<<":\n";
 
 	  if (nplane==3){
 	    /*
@@ -626,19 +653,27 @@ namespace ldp{
 	  }	  
 	  else if (nplane==2){ ///< special case for ArgoNeuT
 	    /*
-	 |    ---------- plane = 1 (collection)
-	 |                      Coeff[2]
-	 |    ---------- plane = 0 (2nd induction) x = xyz[0]
-	 |    ---------- x = 0, Coeff[1]
-	 V    ---------- first induction plane
-	 x                      Coeff[0]
-For plane = 0, t offset is pitch/Coeff[1] - (pitch+xyz[0])/Coeff[0]
-                         = -xyz[0]/Coeff[0] - pitch*(1/Coeff[0]-1/Coeff[1])
+	 |    x = -0.6cm ---------- plane = 1 (collection)
+	 |                Coeff[2]
+	 |    x = -0.2cm ---------- plane = 0 (induction) x = xyz[0]
+	 |                Coeff[1]
+         |    x = 0      ----------
+         |                Coeff[1]
+	 V    x = 0.2cm  ---------- shield plane (not read out)
+	 x                Coeff[0]
+              
+              For plane 0, t offset = pitch/Coeff[1] - (pitch+xyz[0])/Coeff[0]
+                                    = -xyz[0]/Coeff[0] - pitch*(1/Coeff[0]-1/Coeff[1])
 	    */
 	    for (int ip = 0; ip < plane; ++ip){
-	      fXTicksOffsets[cstat][tpc][plane] += tpcgeom.PlanePitch(ip,ip+1)/fXTicksCoefficientgap[ip+2];
+              float planePitch = tpcgeom.PlanePitch(ip,ip+1);
+	      fXTicksOffsets[cstat][tpc][plane] += planePitch/fXTicksCoefficientgap[ip+2];
+              std::cout
+              <<"  drift over gap dist "<<planePitch<<" cm: +"<<planePitch/fXTicksCoefficientgap[ip+2]<<"\n";
 	    }
 	    fXTicksOffsets[cstat][tpc][plane] -= tpcgeom.PlanePitch()*(1/fXTicksCoefficient-1/fXTicksCoefficientgap[1]);
+            std::cout
+            <<"  offset to account for X=0 loc: -"<<tpcgeom.PlanePitch()*(1/fXTicksCoefficient-1/fXTicksCoefficientgap[1])<<"\n";
 	  }
 
 	  // Add view dependent offset
@@ -652,7 +687,13 @@ For plane = 0, t offset is pitch/Coeff[1] - (pitch+xyz[0])/Coeff[0]
 	  else
 	    throw cet::exception(__FUNCTION__) << "Bad view = "
 						       << view << "\n" ;
-	}	
+	
+        std::cout<<"  final tick offset = "<<fXTicksOffsets[cstat][tpc][plane]<<"\n\n";
+          
+        }
+        	
+        std::cout
+        <<"=======================================================\n\n";
       }
     }
 

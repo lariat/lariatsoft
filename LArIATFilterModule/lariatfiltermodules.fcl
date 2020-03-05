@@ -23,9 +23,26 @@ T2:				999.   # time (s) within spill cycle (default accept ALL times)
 RequireRawDigits:               false
 }
 
-lariat_hitnumberfilter: 
-{ 
-    module_type:                HitNumberFilter 
+lariat_hitnumberfilter:
+{
+  module_type:                HitNumberFilter
+}
+
+lariat_signaltonoise:
+{
+  module_type:                SignalToNoise
+}
+
+lariat_wirenoisefilter:
+{
+module_type:			WireNoiseFilter
+fMinWireRmsInd:                 -9. # min allowable RMS on ind plane (ignore if < 0) 
+fMaxWireRmsInd:                 -9. # max allowable RMS on ind plane (ignore if < 0) 
+fMinWireRmsCol:                 -9. # min allowable RMS on col plane (ignore if < 0) 
+fMaxWireRmsCol:                 -9. # max allowable RMS on col plane (ignore if < 0) 
+fWireAdcThreshInd:              30. # ticks with higher ADC will be ignored in calculation
+fWireAdcThreshCol:              30. # ticks with higher ADC will be ignored in calculation
+fBaselineSamples:               100 # num. ticks to use in RMS calculation (use full signal if <0)
 }
 
 lariat_beamrecofilter:

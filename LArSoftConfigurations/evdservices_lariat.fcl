@@ -6,16 +6,16 @@
 BEGIN_PROLOG
 
 lariat_colordrawingopt:                       @local::standard_colordrawingopt
-lariat_colordrawingopt.RawQLow:               [-10.]
-lariat_colordrawingopt.RawQHigh:              [ 400.]
+lariat_colordrawingopt.RawQLow:               [-50.] #[-10.]
+lariat_colordrawingopt.RawQHigh:              [ 350. ] #400.]
 lariat_rawdrawingopt:                         @local::standard_rawdrawingopt
 lariat_rawdrawingopt.RawDataLabel:            "daq"
 lariat_rawdrawingopt.TotalTicks:              3072
 lariat_rawdrawingopt.DetPedestalRetrievalAlg.DefaultCollMean:  0
 lariat_rawdrawingopt.DetPedestalRetrievalAlg.DefaultIndMean:   0
 lariat_recodrawingopt:                        @local::standard_recodrawingopt
-lariat_colordrawingopt.RecoQLow:              [-10.]
-lariat_colordrawingopt.RecoQHigh:             [ 400.]
+lariat_colordrawingopt.RecoQLow:              [-50.] #[-10.]
+lariat_colordrawingopt.RecoQHigh:             [350.] #[ 400.]
 lariat_analysisdrawingopt:                    @local::standard_analysisdrawingopt
 #{
 # DrawCalorimetry:                             1                                     

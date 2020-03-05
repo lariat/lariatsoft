@@ -24,6 +24,12 @@ lariat_simwire:
 }
 #lariat_simwireana: @local::standard_simwireana
 
+# Scale simulated wire noise to match conditions
+# in run periods (run2 is already the default)
+lariat_simwire_run1:                  @local::lariat_simwire
+lariat_simwire_run1.NoiseFact:        0.23 
+lariat_simwire_run2:                  @local::lariat_simwire
+
 lariat_tofsim:
 {
    module_type: "TOFSimDigits"

@@ -1,0 +1,22 @@
+#include "data_reco_run1.fcl"
+
+services:
+{
+  TFileService: { fileName: "reco_hist.root" }
+  RandomNumberGenerator: {} # ART native random number generator
+  @table::lariat_services_5mm
+}
+
+physics.producers.caldata.dQdxCalibFileName:  "LArIATChargeCorrectionFactors_Run2.txt"
+
+physics.producers.tof.HitThreshold:           -3.  # -10.0 for Run I, -3.0 for Run II
+physics.producers.tof.HitDiffMeanUS:          0.5  # 0.6 for Run I, 0.5 for Run II
+physics.producers.tof.HitDiffMeanDS:          0.4  # 1.0 for Run I, 0.4 for Run II
+physics.producers.tof.HitMatchThresholdUS:    3.0
+physics.producers.tof.HitMatchThresholdDS:    6.0
+physics.producers.tof.HitWait:                20.
+
+physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg_run2
+
+physics.producers.calotc.CaloAlg:               @local::lariat_calorimetryalgdata_run2
+

@@ -48,6 +48,7 @@ util::SignalShapingServiceT1034::~SignalShapingServiceT1034()
 // Reconfigure method.
 void util::SignalShapingServiceT1034::reconfigure(const fhicl::ParameterSet& pset)
 {
+
   // Reset initialization flag.
   
   fInit = false;
@@ -285,7 +286,7 @@ double util::SignalShapingServiceT1034::GetRawNoise(unsigned int const channel) 
     temp = 3;
   }
   double rawNoise;
-
+  
   auto tempNoise = fNoiseFactVec.at(plane);
   rawNoise = tempNoise.at(temp);
 
@@ -474,6 +475,8 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     unsigned int ii = 0;
     unsigned int nbinc = TMath::Nint(fCol3DCorrection*(fabs(pitch))/(driftvelocity*detprop->SamplingRate())); ///number of bins //KP
 
+    std::cout<<"Using collection field response amplitude "<<fColFieldRespAmp<<"\n";
+
     fColFieldResponse.resize(nbinc, 0.);
    integral = 0;
     for(ii = 1; ii < nbinc; ++ii){
@@ -487,6 +490,8 @@ void util::SignalShapingServiceT1034::SetFieldResponse()
     unsigned int nbini = TMath::Nint(fInd3DCorrection*(fabs(pitch))/(driftvelocity*detprop->SamplingRate()));
     unsigned int size = 2 * (nbini + 1);
     fIndFieldResponse.resize(size, 0.);
+    
+    std::cout<<"Using induction field response amplitude "<<fIndFieldRespAmp<<"\n";
 
     if(fIndFieldParams.size() < 1) throw art::Exception( art::errors::InvalidNumber )
         << "Invalid IndFieldParams size";

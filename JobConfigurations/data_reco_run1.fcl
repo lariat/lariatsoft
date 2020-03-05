@@ -1,0 +1,150 @@
+# =================================================
+#   Simple "classic" reco script without the bells
+#   and whistles. Useful for quick debugging.
+#   (multi-pass fringe hit removal is not performed)
+# =================================================
+
+#include "services_lariat.fcl"
+#include "resourcetracking_services.fcl"
+#include "caldata_lariat.fcl"
+#include "hitfindermodules_lariat.fcl"
+#include "lariatclustermodules.fcl"
+#include "trackfindermodules.fcl"
+#include "calorimetry.fcl"
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "cluster_lariat.fcl"
+#include "lariatfiltermodules.fcl"
+ 
+process_name: Reco2D
+
+services:
+{
+  TFileService: { fileName: "histos.root" }
+  @table::lariat_services
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+beamlinereco: [ tof, wctrack ]
+tpcreco: [ caldata,
+           gaushit,
+           hitnumfilt,
+           trajcluster,
+           pmtracktc,
+           calotc
+           ]
+
+physics:
+{
+
+ producers:
+ {
+  ### beamline producers 
+  tof:                   @local::lariat_tof
+  wctrack:               @local::lariat_wctrackbuilder
+  
+  ### calwire producers 
+  caldata:              @local::lariat_calroi
+
+  ### hit-finder producers 
+  gaushit:             @local::lariat_gaushitfinder
+
+  ### cluster-finder producers
+  trajcluster:          @local::lariat_trajcluster_data
+
+  ### track-finder producers
+  pmtracktc:              @local::standard_pmalgtrackmaker
+  
+  ### calorimetry and pid
+  calotc:                 @local::standard_calodata
+ }
+
+ filters:
+ {
+  tfilt:                @local::lariat_timestampfilter  
+  hitnumfilt:           @local::lariat_hitnumberfilter
+ }
+
+ analyzers:
+ {
+ }
+
+ reco:          [ tfilt, @sequence::beamlinereco, @sequence::tpcreco ]
+ stream1:       [ out1 ]
+ trigger_paths: [ reco ] 
+ end_paths:     [ stream1 ]  
+}
+
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "lariat_r%R_%tc_%#.root"
+   dataTier:    "reconstructed-2d"
+   SelectEvents: [ reco ]
+   outputCommands:  [   
+                    "keep *_*_*_*", 
+#                    "drop raw::RawDigits_*_*_*", 
+                    "drop raw::AuxDetDigits_*_*_*",
+                    "drop recob::Wires_*_*_*"
+#                    "drop raw::RawDigitrecob::Wirevoidart::Assns_*_*_*",
+#                    "drop raw::RawDigitrecob::Hitvoidart::Assns_*_*_*",
+#                    "drop recob::Hitrecob::Wirevoidart::Assns_*_*_*"
+                    ]
+   compressionLevel: 1
+ }
+}
+
+# ====================================================================
+# Calibration constants for different alg (centralized settings)
+
+physics.filters.tfilt.T1:                                       0.0
+physics.filters.tfilt.T2:                                       5.2
+physics.filters.tfilt.RequireRawDigits:                         true
+
+physics.producers.tof.HitThreshold:                             -10.  # -10.0 for Run I, -3.0 for Run II
+physics.producers.tof.HitDiffMeanUS:                            0.6  # 0.6 for Run I, 0.5 for Run II
+physics.producers.tof.HitDiffMeanDS:                            1.0  # 1.0 for Run I, 0.4 for Run II
+physics.producers.tof.HitMatchThresholdUS:                      3.0
+physics.producers.tof.HitMatchThresholdDS:                      6.0
+physics.producers.tof.HitWait:                                  20.
+
+physics.producers.caldata.DigitModuleLabel:                     "daq"
+physics.producers.caldata.DodQdxCalib:                          true
+physics.producers.caldata.dQdxCalibFileName:                    "LArIATChargeCorrectionFactors_Run1.txt"
+physics.producers.caldata.PostsampleBins:                       300 
+
+physics.producers.gaushit.CalDataModuleLabel:                   "caldata"
+physics.producers.gaushit.FilterHits:                           true
+physics.producers.gaushit.AllHitsInstanceName:                  "allhits"
+physics.producers.gaushit.MinSig:                               [ 10.,   10.  ] 
+physics.producers.gaushit.HitFilterAlg.MinPulseSigma:           [ 6.0,  12.0   ] 
+
+physics.filters.hitnumfilt.HitsModuleLabel:                     "gaushit"
+physics.filters.hitnumfilt.HitsInstance:                        ""
+physics.filters.hitnumfilt.MaxNumHits:                          [ 500, 500 ]
+
+physics.producers.trajcluster.HitFinderModuleLabel:             "gaushit"
+physics.producers.trajcluster.TrajClusterAlg:                   @local::lariat_trajclusteralg_run1
+
+physics.producers.pmtracktc.ClusterModuleLabel:                 "trajcluster"
+physics.producers.pmtracktc.HitModuleLabel:                     "trajcluster"
+physics.producers.pmtracktc.PMAlgTracking.MinSeedSize2ndPass:   3
+physics.producers.pmtracktc.PMAlgTracking.FlipToBeam:           false
+physics.producers.pmtracktc.PMAlgTracking.RunVertexing:         true # false
+physics.producers.pmtracktc.PMAlgTracking.AutoFlip_dQdx:        true # default false
+
+physics.producers.calotc.CaloAlg:                               @local::lariat_calorimetryalgdata_run1
+physics.producers.calotc.TrackModuleLabel:                      "pmtracktc"
+physics.producers.calotc.SpacePointModuleLabel:                 "pmtracktc"
+physics.producers.calotc.UseArea:                               "true"
+

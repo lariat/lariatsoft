@@ -8,6 +8,7 @@ lariat_signalshapingservice:
   DeconNorm: 50
   ADCPerPCAtLowestASICGain: 9390 #ADC/pC
   #ADCPerPCAtLowestASICGain: 4000 #ADC/pC
+  #ADCPerPCAtLowestASICGain: 6400 #ADC/pC
   # ASICGains:           [4.7, 7.8, 14, 25] #Default: 7.8
   ASICGainInMVPerFC:  [ 25, 25 ] #mV/fC for Ind & col planes
   ShapeTimeConst:  [ 3.0, 3.0 ] #Gain and Peaking time (microseconds)	
@@ -17,7 +18,6 @@ lariat_signalshapingservice:
   NoiseFactVec:         [[ 1.12, 0.86, 0.60, 0.26 ], [ 0.89, 0.66, 0.48, 0.26 ]]
   # to turn off noise
   # NoiseFactVec:         [[ 0.0, 0.0, 0.0, 0.0 ], [ 0.0, 0.0, 0.0, 0.0 ], [ 0.0, 0.0, 0.0, 0.0 ]]
-
 
   #FieldBins:        75 # for UseFunctionFieldShape: true
 #  FieldBins:        400
@@ -29,7 +29,7 @@ lariat_signalshapingservice:
 
   Col3DCorrection:  2.5
   #Ind3DCorrection:  1.5
-  Ind3DCorrection: 1.25
+  Ind3DCorrection:  1.25 # 1.25
   ColFieldRespAmp:  1.0
   IndFieldRespAmp:  1.0
 
@@ -88,16 +88,13 @@ lariat_signalshapingservice:
   IndFieldParams: [ 0.85]
   ColFieldShape: "x^[2]/(1.0+(x/[0])^[1])"
   ColFieldParams: [ 8.0,16.0,.75 ]  
-
-
 }
 
 lariat_signalshapingservice_run1:                     @local::lariat_signalshapingservice
 lariat_signalshapingservice_run2:                     @local::lariat_signalshapingservice
-lariat_signalshapingservice_run1.IndFieldRespAmp:     0.74
-lariat_signalshapingservice_run1.ColFieldRespAmp:     0.62
+lariat_signalshapingservice_run1.IndFieldRespAmp:     0.74 
+lariat_signalshapingservice_run1.ColFieldRespAmp:     0.62 
 lariat_signalshapingservice_run2.IndFieldRespAmp:     0.66
-lariat_signalshapingservice_run2.ColFieldRespAmp:     0.50
-
+lariat_signalshapingservice_run2.ColFieldRespAmp:     0.50 
 
 END_PROLOG

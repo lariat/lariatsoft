@@ -1,0 +1,10 @@
+#include "Michel_GenRecoAnaMC2.fcl"
+services:
+{
+  TFileService: { fileName: "Ana_nonoise.root" }
+  RandomNumberGenerator: {}
+  @table::lariat_simulation_services_run2
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+physics.producers.daq.NoiseFact: 0.0001
+

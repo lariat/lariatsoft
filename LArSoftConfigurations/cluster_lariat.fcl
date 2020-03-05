@@ -104,12 +104,25 @@ lariat_trajclusteralg.DebugWire:            0
 lariat_trajclusteralg.DebugTick:            0
 lariat_trajclusteralg.DebugWorkID:          0
 #lariat_trajclusteralg.SkipAlgs:             [ "ChkStop", "CTKink", "VtxHitsSwap","SplitHiChgHits","CTKink","HED","Split" ]
+lariat_trajclusteralg.SkipAlgs:             [ "ChkStop", "CTKink", "VtxHitsSwap","SplitHiChgHits","CTKink","HED","Split" ]
+
 #    Valid AlgNames:  MaskHits MaskBadTPs Michel DeltaRay CTKink CTStepChk TryNextPass RvPrp CHMH Split Comp3DVx Comp3DVxIG HED 
 #                     HamVx HamVx2 JunkTj Killed Merge TEP CHMEH FillGap Ghost ChkInTraj StopBadFits FixBegin BeginChg FixEnd UUH 
 #                     MisdVxTj VtxTj ChkVxTj RefVtx VxMerge NoKinkChk SoftKink ChkStop ChkStopEP FTBRvProp StopAtTj M3D Mat3DMerge 
 #                     TjHiVx3Score VtxHitsSwap SplitHiChgHits InShower ShowerTj ShwrParent MergeOverlap MergeSubShowers MergeNrShowers 
 #                     MergeShChain SplitTarjCV
 #    Or specify All to turn all algs off
+#lariat_trajclusteralg.Vertex2DCuts:  [6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0.8]
+# 0 User definition of a short Tj => max number of Tj points
+# 1 max separation between a vertex and the start of a trajectory for a user-defined short Tj
+# 2 max separation for a user-defined long Tj
+# 3 max position pull when attaching a Tj to a vertex
+# 4 max position error for creating a Tj or attaching Tjs to an existing vertex
+# 5 Min MCSMom of Tjs that can be used to create a vertex
+# 6 min frac of Points/Wire between a vtx and a Tj. Ideally one if the efficiency is good
+# 7 min Score
+# 8 Min charge fraction near a merge point (not a vertex)
+# 9 max MCSmom asymmetry for a merge
 
 lariat_trajclusteralg.ShowerTag: [ 0, 100, 10, 50, 2.5, 1, 15, 3, 5, 1, 1, 10, -13 ]
 # 0 Mode (<= 0 OFF, 1 = Tag InShower tjs before 3D match, > 1 Find showers)
@@ -138,8 +151,9 @@ lariat_trajclusteralg.Vertex2DCuts:  [6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0.8]
 # 8 Min charge fraction near a merge point (not a vertex)
 # 9 max MCSmom asymmetry for a merge
 
-lariat_trajclusteralg_run2:                       @local::standard_trajclusteralg
+lariat_trajclusteralg_run1:                       @local::standard_trajclusteralg
 
+lariat_trajclusteralg_run2:                       @local::standard_trajclusteralg
 lariat_trajclusteralg_run2.HitFinderModuleLabel:  "gaushit"
 lariat_trajclusteralg_run2.MakeNewHits:           true
 lariat_trajclusteralg_run2.AngleRanges:           [30, 65, 80, 90]

@@ -46,14 +46,15 @@ physics:
  recopath: []
 }
 
-services.RawDrawingOptions.MinimumSignal: 5
+
+services.RawDrawingOptions.MinimumSignal: 20
 services.RecoDrawingOptions.DrawClusters: 1
-services.RecoDrawingOptions.ClusterModuleLabels: ["linecluster"]
-services.RecoDrawingOptions.HitModuleLabels: ["linecluster"]
+services.RecoDrawingOptions.ClusterModuleLabels: ["trajcluster"]
+services.RecoDrawingOptions.HitModuleLabels: ["gaushit"]
 services.RecoDrawingOptions.DrawTracks: 1
 services.RecoDrawingOptions.DrawTrackTrajectoryPoints: 1
-services.RecoDrawingOptions.TrackModuleLabels: ["pmtrack"]
+services.RecoDrawingOptions.TrackModuleLabels: ["pmtracktc"]
 services.RecoDrawingOptions.Draw2DEndPoints: 1
-services.RecoDrawingOptions.EndPoint2DModuleLabels: ["linecluster"]
+services.RecoDrawingOptions.EndPoint2DModuleLabels: ["pmtracktc"]
 services.RecoDrawingOptions.DrawVertices: 1
-services.RecoDrawingOptions.VertexModuleLabels: ["pmtrack"]
+services.RecoDrawingOptions.VertexModuleLabels: ["pmtracktc"]
