@@ -96,7 +96,6 @@ add_subdirectory(Utilities)
 # fcl files
 add_subdirectory(JobConfigurations)
 add_subdirectory(JobConfigurations/Michel)
-add_subdirectory(JobConfigurations/Michel/default)
 add_subdirectory(JobConfigurations/old_fcl)
 add_subdirectory(LArSoftConfigurations)
 add_subdirectory(mccconfigs)
