@@ -6,4 +6,4 @@
 *.tmp
 
 # don't ignore these
-!LArIATDataProviders/PhotonLibrary*.root
+!PhotonLibrary*.root
