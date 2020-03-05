@@ -139,16 +139,16 @@ bool MichelMCFilter::filter(art::Event & e)
   //std::cout<<"Beginning event filter.\n";
   hEventCount->Fill(0);
 
-  bool muonStopsInTPC = false;
-  bool muonEntersTPC = false;
-  bool isDecayElectron = false;
-  bool isPrimaryElectron = false;
-  bool outFlag = false;
-  int muID = -99;
-  int muCharge = 0;
-  float muStopTime = -999.;
-  float muMomentum = -99.;
-  float decayTime = -999.;
+  bool  muonStopsInTPC    = false;
+  bool  muonEntersTPC     = false;
+  bool  isDecayElectron   = false;
+  bool  isPrimaryElectron = false;
+  bool  outFlag           = false;
+  int   muID              = -99;
+  int   muCharge          = 0;
+  float muStopTime        = -999.;
+  float muMomentum        = -99.;
+  float decayTime         = -999.;
 
   // Get MCParticles from event
   art::Handle< std::vector<simb::MCParticle> > particleHandle;
