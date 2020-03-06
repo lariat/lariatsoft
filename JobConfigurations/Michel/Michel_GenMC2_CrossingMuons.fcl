@@ -1,5 +1,0 @@
-#include "Michel_GenMC2.fcl"
-services.TFileService.filename = "CrossingMuonGen.root"
-physics.filters.mufilt.RequireEnteringMuon:   true
-physics.filters.mufilt.RequireStoppingMuon:   false
-physics.filters.mufilt.RequireDecayElectron:  false

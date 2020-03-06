@@ -1,8 +1,0 @@
-#include "Michel_Ana.fcl"
-services:
-{
-  TFileService: { fileName: "MichelAnaMC.root" }
-  @table::lariat_simulation_services
-}
-physics.filters.michelana:      @local::lariat_michelana_mc1
-physics.filt:                   [ michelana ]

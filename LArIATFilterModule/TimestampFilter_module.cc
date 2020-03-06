@@ -28,8 +28,6 @@
 // LArSoft includes
 #include "lardataobj/RawData/OpDetPulse.h"
 #include "lardataobj/RawData/RawDigit.h"
-#include "lardataobj/RawData/raw.h"
-#include "larevt/Filters/ChannelFilter.h"
 
 // ROOT includes
 #include <TH1F.h>
@@ -72,7 +70,6 @@ private:
   TH1F* hTimestamps;
   TH1F* hTimestamps_pass;
   TH1F* hEvtCount;
-  TH1F* hEvtSelection;
 
 };
 
@@ -88,77 +85,55 @@ TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
   
   hEvtCount         = tfs->make<TH1F>("EvtCount","Counted events",2,0,2);
   hEvtCount         ->SetOption("HIST TEXT");
-  hEvtCount         ->GetXaxis()->SetBinLabel(1,"Beam");      
-  hEvtCount         ->GetXaxis()->SetBinLabel(2,"Cosmic");         
+  hEvtCount->GetXaxis()->SetBinLabel(1,"Beam");      
+  hEvtCount->GetXaxis()->SetBinLabel(2,"Cosmic");         
   
-  hEvtSelection     = tfs->make<TH1F>("EvtSelection","",3,0,3);
-  hEvtSelection     ->SetOption("HIST TEXT");
-  hEvtSelection     ->GetXaxis()->SetBinLabel(1,"Total evts");       
-  hEvtSelection     ->GetXaxis()->SetBinLabel(2,"Raw digit check"); 
-  hEvtSelection     ->GetXaxis()->SetBinLabel(3,"Timestamp cut");  
 }
 
 bool TimestampFilter::filter(art::Event & e)
 {
-  // Set flags
-  bool timestampFlag  = true;
-  bool rawDigitFlag   = true;
-  
-  // set timestamp
-  float timeStamp     = -9.;
-
-  // ------------------------------------------------------------------------
-  // First do timestamp filtering (this only applies to real data)
-  if( e.isRealData() ) {
-    
-    //std::cout<<"TimestampFilter: run "<<e.run()<<", subrun "<<e.subRun()<<", event "<<e.id().event()<<"\n";
-    // Get the timestamp (within the spill cycle) from the opdetpulse
-    // objects because I don't know where else this info is saved!
-    art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
-    e.getByLabel(fDAQModuleLabel, fDAQModuleInstanceName, opdetHandle);
-    
-    if( (size_t)opdetHandle->size() > 0 ){
-      // All we want is the timestamp so just grab the first opdetpulse
-      // we can find and call it a day
-      art::Ptr< raw::OpDetPulse > ThePulsePtr(opdetHandle,0); 
-      raw::OpDetPulse pulse = *ThePulsePtr;
-      timeStamp = ((float)pulse.PMTFrame()*8.)/1.0e09;
-      //std::cout<<"Timestamp = "<<timeStamp<<" sec\n";
-    }
-  
-    if( timeStamp < fT1 || timeStamp > fT2 ) timestampFlag = false;
- 
-  }
-    
-  // ----------------------------------------------------------------------
-  // Check that raw digits exist
+  // -----------------------------------------------
+  // Require event contain non-empty container of RawDigits (wires)
+  // If empty, skip event immediately.
   art::Handle< std::vector<raw::RawDigit> > DigitHandle;;
   std::vector<art::Ptr<raw::RawDigit> > digit;
   if(e.getByLabel("daq",DigitHandle))
     {art::fill_ptr_vector(digit, DigitHandle);} 
-  if( fRequireRawDigits && digit.size() == 0 ) rawDigitFlag = false;
- 
-  bool passFlag = false;
-  hEvtSelection->Fill(0);
+  //std::cout<<"Number of rawDigits: "<<digit.size()<<"\n";
+  if( fRequireRawDigits && digit.size() == 0 ) return false;
 
-  if( rawDigitFlag ) {
-    hEvtSelection->Fill(1);
-    
-    // count up event types
-    if( timeStamp >= 1.1 && timeStamp <= 5.2 )  hEvtCount->Fill(0);
-    else if (timeStamp > 5.2 )                  hEvtCount->Fill(1);
-    
-    // fill timestamp histogram
+  // if MC, then timestamp is meaningless
+  if( !e.isRealData() ) return true;
+  
+  //std::cout<<"TimestampFilter: run "<<e.run()<<", subrun "<<e.subRun()<<", event "<<e.id().event()<<"\n";
+  // Get the timestamp (within the spill cycle) from the opdetpulse
+  // objects because I don't know where else this info is saved!
+  art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
+  e.getByLabel(fDAQModuleLabel, fDAQModuleInstanceName, opdetHandle);
+  
+  float timeStamp = -1.;
+  
+  if( (size_t)opdetHandle->size() > 0 ){
+    // All we want is the timestamp so just grab the first opdetpulse
+    // we can find and call it a day
+    art::Ptr< raw::OpDetPulse > ThePulsePtr(opdetHandle,0); 
+    raw::OpDetPulse pulse = *ThePulsePtr;
+    timeStamp = ((float)pulse.PMTFrame()*8.)/1.0e09;
+    //std::cout<<"Timestamp = "<<timeStamp<<" sec\n";
     hTimestamps->Fill(timeStamp);
 
-    if( timestampFlag ) {
-      hEvtSelection->Fill(2);
-      passFlag = true;
-      hTimestamps_pass->Fill(timeStamp);
-    }
+    // Counting up "beam" and "cosmic" events
+    if( timeStamp >= 1.1 && timeStamp <= 5.2 )  hEvtCount->Fill(0);
+    else if (timeStamp > 5.2 )                  hEvtCount->Fill(1);
+
   }
   
-  return passFlag;
+  if( timeStamp >= fT1 && timeStamp <= fT2 ) {
+    hTimestamps_pass->Fill(timeStamp);
+    return true;
+  }
+  
+  return false;
 
 }
 
@@ -184,7 +159,8 @@ void TimestampFilter::reconfigure(fhicl::ParameterSet const & p)
   fT2				= p.get< float  >("T2",60);
   fDAQModuleLabel               = p.get< std::string >  ("DAQModule","daq");
   fDAQModuleInstanceName        = p.get< std::string >  ("DAQInstanceName","");
-  fRequireRawDigits             = p.get< bool >         ("RequireRawDigits",true);
+  fRequireRawDigits             = p.get< bool >         ("RequireRawDigits",true); 
+  
 }
 
 

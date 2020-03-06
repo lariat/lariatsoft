@@ -9,7 +9,6 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
          larreco_RecoAlg_ClusterRecoUtil
          Utilities_DatabaseUtilityT1034_service
          larreco_RecoAlg
-	       larreco_Calorimetry
          lardataobj_RawData
          larsim_Simulation nutools_ParticleNavigation lardataobj_Simulation
          larcoreobj_SummaryData

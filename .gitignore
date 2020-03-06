@@ -3,7 +3,3 @@
 \#*
 *.root
 *.swp
-*.tmp
-
-# don't ignore these
-!PhotonLibrary*.root

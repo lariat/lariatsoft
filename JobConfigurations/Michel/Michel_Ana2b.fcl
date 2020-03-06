@@ -1,3 +1,0 @@
-#include "Michel_Ana.fcl"
-services.DetectorPropertiesService:     @local::lariat_detproperties_run2
-physics.filters.michelana:              @local::lariat_michelana_run2b

@@ -330,8 +330,7 @@ namespace detsim {
     // that doesn't really work for LArIAT, so pre-pedestal subtract the data
     // and keep the pedestal value for reference in the RawDigit
     //adcvec.at(i) = (unsigned short)(adcval);
-    //adcvec.at(i) = (unsigned short)(adcval - ped_mean );
-    adcvec.at(i) = (unsigned short)(adcval - ped_mean + 0.5 ); // +0.5 for proper rounding when casting to short
+    adcvec.at(i) = (unsigned short)(adcval - ped_mean);
 
       }// end loop over signal size
 
@@ -416,6 +415,7 @@ namespace detsim {
       
       else
 	{
+	  
 	  pval = fNoiseHist->GetBinContent(i)*((1-fNoiseRand)+2*fNoiseRand*rnd[0])*fNoiseFact; 
 	  //mf::LogInfo("SimWireT1034")  << " pval: " << pval;
 	//  std::cout << " noise " << i << " " << pval << " " << fNoiseHist->GetBinContent(i) << std::endl;

@@ -1,7 +1,0 @@
-#include "Michel_Reco.fcl"
-
-physics.filters.noisefilt.MinWireRmsCol:                           2.2
-physics.filters.noisefilt.MaxWireRmsCol:                           4.0
-physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgdata_run1
-physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgdata_run1
-
