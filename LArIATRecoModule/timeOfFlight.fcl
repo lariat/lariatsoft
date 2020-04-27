@@ -1,11 +1,11 @@
 #include "services_lariat.fcl"
 #include "lariat_reco_algs.fcl"
 
-process_name: TimeOfFlightSlicing
+process_name: TimeOfFlight
 
 services:
 {
-  TFileService: { fileName: "TimeOfFlightSlicing_histo.root" }
+  TFileService: { fileName: "TimeOfFlight_histo.root" }
   message:      @local::standard_info
   @table::lariat_services
 }
@@ -32,7 +32,7 @@ physics:
   {
     TimeOfFlight:
     {
-      module_type:         TimeOfFlightSlicing
+      module_type:         TimeOfFlight
       SourceLabel:         "daq"
       MakeHistograms:      true
     }

@@ -4,8 +4,8 @@ LArIATSoft
 
 Time Of Flight producer module
 
-Module: TimeOfFlightSlicing_module.cc 
-FHiCL: TimeOfFlightSlicing.fcl
+Module: TimeOfFlight_module.cc 
+FHiCL: timeOfFlight.fcl
 Header: LArIATDataProducts/TOF.h
 Class: LArIATDataProducts/TOF.cxx
 Dictionary: LArIATDataProducts/classes.h and classes_def.xml
@@ -51,17 +51,17 @@ Irene Nutini     - irene.nutini@stud.unifi.it
 #include "LArIATRecoAlg/TOFBuilderAlg.h"
 
 namespace lrm {
-  class TimeOfFlightSlicing;
+  class TimeOfFlight;
 }
 
-class lrm::TimeOfFlightSlicing : public art::EDProducer {
+class lrm::TimeOfFlight : public art::EDProducer {
 public:
-  explicit TimeOfFlightSlicing(fhicl::ParameterSet const & p);
+  explicit TimeOfFlight(fhicl::ParameterSet const & p);
 
-  TimeOfFlightSlicing(TimeOfFlightSlicing const &) = delete;
-  TimeOfFlightSlicing(TimeOfFlightSlicing &&) = delete;
-  TimeOfFlightSlicing & operator = (TimeOfFlightSlicing const &) = delete;
-  TimeOfFlightSlicing & operator = (TimeOfFlightSlicing &&) = delete;
+  TimeOfFlight(TimeOfFlight const &) = delete;
+  TimeOfFlight(TimeOfFlight &&) = delete;
+  TimeOfFlight & operator = (TimeOfFlight const &) = delete;
+  TimeOfFlight & operator = (TimeOfFlight &&) = delete;
 
   void produce(art::Event & e) override;
   void beginJob() override;
@@ -94,7 +94,7 @@ private:
 };
 
 //----------------------------------------------------------------
-lrm::TimeOfFlightSlicing::TimeOfFlightSlicing(fhicl::ParameterSet const & p)
+lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
   : fTOFAlg(p)
 {
 
@@ -105,7 +105,7 @@ lrm::TimeOfFlightSlicing::TimeOfFlightSlicing(fhicl::ParameterSet const & p)
   produces<std::vector<ldp::TOF> >();
 }
 
-void lrm::TimeOfFlightSlicing::produce(art::Event & e)
+void lrm::TimeOfFlight::produce(art::Event & e)
 {
 
   //Clearing the persistent members so we don't have repetition
@@ -156,7 +156,7 @@ void lrm::TimeOfFlightSlicing::produce(art::Event & e)
   return;
 }
 
-void lrm::TimeOfFlightSlicing::beginJob()
+void lrm::TimeOfFlight::beginJob()
 {
   // Opens up the file service to read information from the ROOT file input
   art::ServiceHandle<art::TFileService> tfs;
@@ -172,56 +172,56 @@ void lrm::TimeOfFlightSlicing::beginJob()
   }
 }
 
-void lrm::TimeOfFlightSlicing::beginRun(art::Run & r)
+void lrm::TimeOfFlight::beginRun(art::Run & r)
 {
   fRun = r.run();
 }
 
-void lrm::TimeOfFlightSlicing::beginSubRun(art::SubRun & sr)
+void lrm::TimeOfFlight::beginSubRun(art::SubRun & sr)
 {
   fSubRun = sr.subRun();
 }
 
-void lrm::TimeOfFlightSlicing::endJob()
+void lrm::TimeOfFlight::endJob()
 {
   // Implementation of optional member function here. 
 }
 
-void lrm::TimeOfFlightSlicing::endRun(art::Run & r)
+void lrm::TimeOfFlight::endRun(art::Run & r)
 {
   // Implementation of optional member function here.
 }
 
-void lrm::TimeOfFlightSlicing::endSubRun(art::SubRun & sr)
+void lrm::TimeOfFlight::endSubRun(art::SubRun & sr)
 {
   // Implementation of optional member function here. 
 }
 
-void lrm::TimeOfFlightSlicing::reconfigure(fhicl::ParameterSet const & p)
+void lrm::TimeOfFlight::reconfigure(fhicl::ParameterSet const & p)
 {   
    fMakeHistograms     = p.get< bool >("MakeHistograms", true);
    fSlicerSourceLabel  = p.get< std::string >("SourceLabel");
    std::cout<<"TOF Label: "<<fSlicerSourceLabel<<std::endl;
 }
 
-void lrm::TimeOfFlightSlicing::respondToCloseInputFile(art::FileBlock const & fb)
+void lrm::TimeOfFlight::respondToCloseInputFile(art::FileBlock const & fb)
 {
   // Implementation of optional member function here.
 }
 
-void lrm::TimeOfFlightSlicing::respondToCloseOutputFiles(art::FileBlock const & fb)
+void lrm::TimeOfFlight::respondToCloseOutputFiles(art::FileBlock const & fb)
 {
   // Implementation of optional member function here.
 }
 
-void lrm::TimeOfFlightSlicing::respondToOpenInputFile(art::FileBlock const & fb)
+void lrm::TimeOfFlight::respondToOpenInputFile(art::FileBlock const & fb)
 {
   // Implementation of optional member function here.
 }
 
-void lrm::TimeOfFlightSlicing::respondToOpenOutputFiles(art::FileBlock const & fb)
+void lrm::TimeOfFlight::respondToOpenOutputFiles(art::FileBlock const & fb)
 {
   // Implementation of optional member function here.
 }
 
-DEFINE_ART_MODULE(lrm::TimeOfFlightSlicing)
+DEFINE_ART_MODULE(lrm::TimeOfFlight)
