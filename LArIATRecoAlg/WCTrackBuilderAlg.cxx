@@ -99,7 +99,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fMP_M                 = pset.get<float> ("MidplaneSlopeFactor", 1);
   fMidplane_intercept   = pset.get<float> ("MidplaneIntercept", 31067.4); 
   fMidplane_slope       = pset.get<float> ("MidplaneSlope", 8.0);
-  fMomentumScalingCalibrationFromSim = pset.get<float> ("MomentumScaleCalibration", 0.0); //-0.026); <-- no longer needed with fixes to WC reco
+  fMomentumScalingCalibrationFromSim = pset.get<float> ("MomentumScaleCalibration", -0.0033); // from Martin's study; see section 6.1 of the LArIAT detector paper [arXiv:1911.10379]
 // Where the midplane was before allowing 3 point tracks.  For 3 pt tracks, the intercept and slope will be multiplied by a factor, depending on current setting and WC missed. 
 // Don't change these values unless you plan to recalibrate for all current (A) runs. -G Pulliam.
   
