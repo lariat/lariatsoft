@@ -64,7 +64,23 @@ TOFBuilderAlg::~TOFBuilderAlg()
 void TOFBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
   // TOF Adjustment parameters
-  fLinear = pset.get<float>("Linear",-10); // ns
+  //---------------------------------------------------------------------------
+  fLinear = pset.get<float>("Linear", -10+0.26); // ns
+  //---------------------------------------------------------------------------
+  // NOTE for fLinear:
+  //---------------------------------------------------------------------------
+  //
+  // Value: (-10+0.26) ns
+  //
+  // The -10 ns offset was determined by placing the DSTOF paddle on top of
+  // the USTOF paddle and triggering on the coincidence of these two paddles
+  // (cosmic muons).  More details can be found in the LArIAT e-log:
+  //
+  //     http://dbweb0.fnal.gov/ECL/lariat/E/show_thread?e=5554
+  //
+  // The +0.26 ns offset is from Martin's calibration study.
+  //
+  //---------------------------------------------------------------------------
   fMultiple = pset.get<float>("Multiple",1.0);  
 
   // Hit finding/matching parameters
