@@ -73,9 +73,9 @@ private:
   bool              fVerbose;
   bool              fPlotHistograms;
 
-  TH2F*             fPzVsTOF;
+  TH2F*             fPVsTOF;
   TH1F*             fNTOF;
-  TH1F*             fPz;
+  TH1F*             fP;
   TH1F*             fY_Kink;
   TH1F*             fX_Dist;
   TH1F*             fY_Dist;
@@ -165,7 +165,7 @@ void ParticleIdentification::produce(art::Event & e)
 	std::cout << "Number of hits in TOF: " << theTOF.NTOF() << std::endl;
       if( fPlotHistograms ){
 	fNTOF->Fill(theTOF.NTOF());
-	fPz->Fill(theWCTrack.Momentum());
+	fP->Fill(theWCTrack.Momentum());
 	fY_Kink->Fill(theWCTrack.YKink());
 	fX_Dist->Fill(theWCTrack.DeltaDist(0));
 	fY_Dist->Fill(theWCTrack.DeltaDist(1));
@@ -176,8 +176,8 @@ void ParticleIdentification::produce(art::Event & e)
 	fPhi_Dist->Fill(theWCTrack.Phi());
 	fTOF->Fill(theTOF.SingleTOF(0));
 	short timeOfFlight = theTOF.SingleTOF(0);
-	float pz = theWCTrack.Momentum();
-	fPzVsTOF->Fill(pz,timeOfFlight);
+	float p = theWCTrack.Momentum();
+	fPVsTOF->Fill(p,timeOfFlight);
       }
 
       //Send to PIDAlg for identification
@@ -191,9 +191,9 @@ void ParticleIdentification::beginJob()
   // Implementation of optional member function here.
   if( fPlotHistograms ){
     art::ServiceHandle<art::TFileService> tfs;
-    fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz vs. Time of Flight",160,0,1600,60,20,80);
+    fPVsTOF = tfs->make<TH2F>("PVsTOF","P vs. Time of Flight",160,0,1600,60,20,80);
     fNTOF = tfs->make<TH1F>("NTOF","Number of TOF values per TOF object",10,0,10);
-    fPz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum",180,0,1800);
+    fP = tfs->make<TH1F>("Reco_P","Reconstructed momentum",180,0,1800);
     fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",100,-5*3.1415926/180,5*3.141592654/180);
     fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",120,-60,60);
     fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",120,-60,60);
@@ -203,8 +203,8 @@ void ParticleIdentification::beginJob()
     fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",100,0,0.2);
     fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",100,0,6.28318);
     
-    fPz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
-    fPz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
+    fP->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
+    fP->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
     fY_Kink->GetXaxis()->SetTitle("Reconstructed y_kink (radians)");
     fY_Kink->GetYaxis()->SetTitle("Tracks per 0.000872 radians");
     fX_Dist->GetXaxis()->SetTitle("X distance between US and DS track ends");

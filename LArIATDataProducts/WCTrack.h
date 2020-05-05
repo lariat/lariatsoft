@@ -28,7 +28,7 @@ namespace ldp {
 
   private:
 
-    float fMomentum;                    //Reconstructed momentum in the XZ plane (coord system origin is at secondary target)
+    float fMomentum;                    //Reconstructed momentum
     float fMomentum2M;
     float fYKink;                       //Angle difference between upstream and downstream tracks
     float fDeltaDist[3];                //Distance between upstream and downstream track ends

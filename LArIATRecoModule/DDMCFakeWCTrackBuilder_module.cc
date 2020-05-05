@@ -132,7 +132,7 @@ public:
 //  void respondToOpenInputFile(art::FileBlock const & fb) override;
 //  void respondToOpenOutputFiles(art::FileBlock const & fb) override;					    
 					    
-  void plotTheTrackInformation( std::vector<double> reco_pz_list,
+  void plotTheTrackInformation( std::vector<double> reco_p_list,
 				std::vector<double> x_face_list,
 				std::vector<double> y_face_list,
 				std::vector<double> theta_list,
@@ -160,7 +160,7 @@ private:
     
     //int evtcounter = 0;
     //Histograms for plotting
-    TH1F* fReco_Pz;
+    TH1F* fReco_P;
     TH1F* fY_Kink;
     TH1F* fX_Dist;
     TH1F* fY_Dist;
@@ -224,9 +224,9 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
   // These are a bunch of variables we need to fill
   // in order to contructed the WC Fake track. Some of them might be bogus
 
-  std::vector<double> reco_pz_list;   // Put momentum here
-  std::vector<double> reco_pz2M_list; // Put momentum here
-  std::vector<double> unscaled_reco_pz_list;
+  std::vector<double> reco_p_list;   // Put momentum here
+  std::vector<double> reco_p2M_list; // Put momentum here
+  std::vector<double> unscaled_reco_p_list;
   std::vector<double> y_kink_list;
   std::vector<double> x_dist_list;
   std::vector<double> y_dist_list;
@@ -256,7 +256,7 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
   }
   WCMissed = 0 ; 
   residual = 0.;  
-  unscaled_reco_pz_list.push_back(-99999);
+  unscaled_reco_p_list.push_back(-99999);
   // Semi-Bogus filling (only position at WC4 needed)
   art::ServiceHandle<geo::Geometry> geom;
   //std::vector<geo::AuxDetGeo*> const & theAuxDetGeoVect = geom->AuxDetGeoVec();
@@ -392,8 +392,8 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
       std::cout<<"trueTheta "<<trueTheta*57.2958<<" truePhi "<<truePhi*57.2958 <<std::endl;
     }
   //Fill the meaningful quantities
-  reco_pz_list  .push_back(1000*momentum.Z());   // Put momentum here
-  reco_pz2M_list.push_back(1000*momentum.Z());   // Put momentum here
+  reco_p_list  .push_back(1000*momentum.Mag());   // Put momentum here
+  reco_p2M_list.push_back(1000*momentum.Mag());   // Put momentum here
   x_face_list.push_back(XProj); // Projection on FF
   y_face_list.push_back(YProj); // 
   theta_list .push_back(trueTheta);  // Calculate your own from the MC
@@ -422,8 +422,8 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
    WC3Mult = 3;
    WC4Mult = 4;
    PickyTrackCheck = true;		 
-   ldp::WCTrack the_track(   reco_pz_list[iTrack],
-                             reco_pz2M_list[iTrack],
+   ldp::WCTrack the_track(   reco_p_list[iTrack],
+                             reco_p2M_list[iTrack],
                              y_kink_list[iTrack],
                              x_dist_list[iTrack],
                              y_dist_list[iTrack],
@@ -446,13 +446,13 @@ void DDMCFakeWCTrackBuilder::produce(art::Event & e)
                              WC3Mult,
                              WC4Mult,			     
                              PickyTrackCheck,
-			     unscaled_reco_pz_list[iTrack]);
+			     unscaled_reco_p_list[iTrack]);
 
   (*WCTrackCol).push_back( the_track );
  
  
   //Plot the reconstructed momentum, y_kink, and delta X, Y, Z in histos
-  plotTheTrackInformation(reco_pz_list,
+  plotTheTrackInformation(reco_p_list,
 			  x_face_list,
 			  y_face_list,
 			  theta_list,
@@ -484,7 +484,7 @@ void DDMCFakeWCTrackBuilder::ResetTree()
 }
 
 //===================================================================================
-void DDMCFakeWCTrackBuilder::plotTheTrackInformation( std::vector<double> reco_pz_list,
+void DDMCFakeWCTrackBuilder::plotTheTrackInformation( std::vector<double> reco_p_list,
 						      std::vector<double> x_face_list,
 						      std::vector<double> y_face_list,
 						      std::vector<double> theta_list,
@@ -495,8 +495,8 @@ void DDMCFakeWCTrackBuilder::plotTheTrackInformation( std::vector<double> reco_p
 						      std::vector<double> z_dist_list)
 {
   //Loop through the tracks and fill
-  for( size_t iTrack = 0; iTrack < reco_pz_list.size(); ++iTrack ){
-    fReco_Pz->Fill(reco_pz_list.at(iTrack));
+  for( size_t iTrack = 0; iTrack < reco_p_list.size(); ++iTrack ){
+    fReco_P->Fill(reco_p_list.at(iTrack));
     fY_Kink->Fill(y_kink_list.at(iTrack));
     fX_Dist->Fill(x_dist_list.at(iTrack));
     fY_Dist->Fill(y_dist_list.at(iTrack));
@@ -527,7 +527,7 @@ void DDMCFakeWCTrackBuilder::beginJob()//fhicl::ParameterSet const & p)
 
   
   //Hists that should probably stay for the production run.    
-  fReco_Pz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum in XZ plane", 180, 0, 1800);
+  fReco_P = tfs->make<TH1F>("Reco_P","Reconstructed momentum in XZ plane", 180, 0, 1800);
   fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",200,-10*3.1415926/180,10*3.141592654/180);
   fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",1200,-60,1260);
   fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",1200,-600,600);
@@ -547,8 +547,8 @@ void DDMCFakeWCTrackBuilder::beginJob()//fhicl::ParameterSet const & p)
 
   fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",400,-.4,0.4);
   fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",2000,-6.28318,6.28318);                   
-  fReco_Pz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
-  fReco_Pz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
+  fReco_P->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
+  fReco_P->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
   fY_Kink->GetXaxis()->SetTitle("Reconstructed y_kink (radians)");
   fY_Kink->GetYaxis()->SetTitle("Tracks per 0.000872 radians");
   fX_Dist->GetXaxis()->SetTitle("X distance between US and DS track ends");

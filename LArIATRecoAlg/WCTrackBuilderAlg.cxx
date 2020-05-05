@@ -538,13 +538,10 @@ void WCTrackBuilderAlg::calculateTheMomentum(WCHitList & best_track,
   float theta_x_ds= atan(dx_ds/dz_ds);
   //float theta_y_us= atan(dy_us/dz_us);
   //float theta_y_ds= atan(dy_ds/dz_ds);
-  //reco_pz = (fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) / (3.3*(sin(theta_x_ds) - sin(theta_x_us)))/cos(atan(BestTrackStats[0]));
   
   //Calculate the total momentum
   reco_p = calculateMomentum(theta_x_us,theta_x_ds,BestTrackStats[0]);
   
-  
-  //std::cout<<"B: "<<fB_field_tesla<<" momentum: "<<reco_pz<<std::endl;
   
   //Calculating the event using the 2 magnets aproximation
   float theta_central = (theta_x_us*(1+offset)+theta_x_ds*(1-offset))/2.;
@@ -558,8 +555,6 @@ void WCTrackBuilderAlg::calculateTheMomentum(WCHitList & best_track,
   float thetaM2_2 = theta_x_ds + 3.*fDeg_to_Rad;   
   double pM2 = double(fabs(fB_field_tesla*(1-offset)) * fL_eff/2. * fmm_to_m * fGeV_to_MeV ) / double (3.3*(sin(thetaM2_2) - sin(thetaM2_1)))/cos(atan(BestTrackStats[0]));
   reco_p_2M = double(pM2+pM1)/2.;
-  //std::cout<<"Reco pz 1 magnet "<<reco_pz<<" Reco Pz 2 magnets "<<reco_p_2M<<std::endl;
-  //std::cout<<"Dispersion of the momentum: "<<fabs(reco_pz - reco_p_2M)/reco_pz<<std::endl;
   
 }
 //==================================================================================
@@ -1194,7 +1189,6 @@ void WCTrackBuilderAlg::MakeDiagnosticPlots(std::vector<std::vector<WCHitList> >
   Recodiff[86]->Fill(reco_p,restwo_doug);
   Recodiff[87]->Fill(reco_p,resthree_doug);
   //Ending Doug's method.
-  //float fourmom=reco_pz;
   float fourwires[8]={0,0,0,0,0,0,0,0};
   float fourtimes[8]={0,0,0,0,0,0,0,0};
   for(int i=0; i<8; ++i){

@@ -201,7 +201,6 @@ class WCTrackBuilderAlg{
 			          float (&z)[4],
 				  float & reco_p);
 
-  //float calculateRecoPz(float theta_x_us, float theta_x_ds, float bestTrackSlope );
   float calculateMomentum(float theta_x_us, float theta_x_ds, float bestTrackSlope );
 				  					    
   float GetScalingFactor();					    

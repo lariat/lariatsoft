@@ -150,10 +150,10 @@ private:
 
   //Histogramming and distribution generation
   //parameters and hists
-  TH2F*             fPzVsTOF;
-  TH2F*             fPzVsTOFGood;
+  TH2F*             fPVsTOF;
+  TH2F*             fPVsTOFGood;
   TH1F*             fNTOF;
-  TH1F*             fPz;
+  TH1F*             fP;
   TH1F*             fY_Kink;
   TH1F*             fX_Dist;
   TH1F*             fY_Dist;
@@ -177,11 +177,11 @@ private:
   TH1F*             fNMuRSHitsObjectHist;
   TH1F*             fNMuRSTrackHist;
 
-  TH2F*             fPzVsTOFProtons;
-  TH2F*             fPzVsTOFKaons;
-  TH2F*             fPzVsTOFPiMu;
-  TH2F*             fPzVsTOFPions;
-  TH2F*             fPzVsTOFMuons;
+  TH2F*             fPVsTOFProtons;
+  TH2F*             fPVsTOFKaons;
+  TH2F*             fPVsTOFPiMu;
+  TH2F*             fPVsTOFPions;
+  TH2F*             fPVsTOFMuons;
   TH1F*             fPDGCodes;
 
   TH1F*             fMuRSTracks;
@@ -349,7 +349,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
 			      TOFColHandle,
 			      MuRSColHandle );
 
-  //we want to know the Pz vs. TOF, so make sure that there is only one TOF object with one TOF within. Find the TOF
+  //we want to know the P vs. TOF, so make sure that there is only one TOF object with one TOF within. Find the TOF
   if( TOFColHandle->size() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
   if( TOFColHandle->at(0).NTOF() != 1 ) {e.put(std::move(AuxDetParticleIDCol)); return;}
   float reco_TOF = TOFColHandle->at(0).SingleTOF(0);
@@ -359,8 +359,8 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   float reco_momentum = WCTrackColHandle->at(0).Momentum();
   setPriors( reco_momentum );
 
-  //Fill the Pz vs. TOF histo before making the momentum cut
-  fPzVsTOF->Fill(reco_momentum,reco_TOF);
+  //Fill the P vs. TOF histo before making the momentum cut
+  fPVsTOF->Fill(reco_momentum,reco_TOF);
 
   //Make a cut to reduce ambiguity in particle species based on mass distributions
   if(reco_momentum > fMaxMomentumForPID ){ e.put(std::move(AuxDetParticleIDCol)); return; }
@@ -383,7 +383,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   
   
 
-  ///////////////// PARTICLE ID Pz vs. TOF/////////////////////////////
+  ///////////////// PARTICLE ID P vs. TOF/////////////////////////////
   //We take the calculated mass of the particle and find the value of 3
   //p.d.f.s at that mass. Each p.d.f. is a gaussian with the parameters
   //defined in the class definition above, and represents a particle
@@ -403,7 +403,7 @@ void ParticleIdentificationSlicing::produce(art::Event & e)
   doThePiMu_Proton_KaonSeparation( reco_momentum,
 				   reco_TOF,
 				   proton_kaon_pimu_likelihood_ratios );
-  ///////////////// PARTICLE ID ENDING Pz vs. TOF /////////////////////
+  ///////////////// PARTICLE ID ENDING P vs. TOF /////////////////////
 
   
   //Now we check to see if the pimu likelihood ratio is above some 
@@ -501,8 +501,8 @@ void ParticleIdentificationSlicing::plotTheGoodTracksAndTOFInfo( art::Handle< st
 								 art::Handle< std::vector<ldp::TOF> > TOFColHandle,
 								 art::Handle< std::vector<ldp::MuonRangeStackHits> > MuRSColHandle )
 {
-  fPzVsTOFGood->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
-  fPz->Fill(WCTrackColHandle->at(0).Momentum());
+  fPVsTOFGood->Fill(WCTrackColHandle->at(0).Momentum(),TOFColHandle->at(0).SingleTOF(0));
+  fP->Fill(WCTrackColHandle->at(0).Momentum());
   fTOF->Fill(TOFColHandle->at(0).SingleTOF(0));
   fY_Kink->Fill(WCTrackColHandle->at(0).YKink());
   fX_Dist->Fill(WCTrackColHandle->at(0).DeltaDist(0));
@@ -1053,19 +1053,19 @@ void ParticleIdentificationSlicing::fillPIDHistos( int finalPDGCode,
   LOG_VERBATIM("ParticleIdentificationSlicing") << "TOF: " << TOF << ", P: " << momentum;
 
   if( finalPDGCode == 2212 || finalPDGCode == -2212 ){
-    fPzVsTOFProtons->Fill(momentum,TOF);
+    fPVsTOFProtons->Fill(momentum,TOF);
   }
   if( finalPDGCode == 321 || finalPDGCode == -321 ){
-    fPzVsTOFKaons->Fill(momentum,TOF);
+    fPVsTOFKaons->Fill(momentum,TOF);
   }
   if( finalPDGCode == 21113 ){
-    fPzVsTOFPiMu->Fill(momentum,TOF);
+    fPVsTOFPiMu->Fill(momentum,TOF);
   } 
   if( finalPDGCode == 211 || finalPDGCode == -211 ){
-    fPzVsTOFPions->Fill(momentum,TOF);
+    fPVsTOFPions->Fill(momentum,TOF);
   }
   if( finalPDGCode == 13 || finalPDGCode == -13 ){
-    fPzVsTOFMuons->Fill(momentum,TOF);
+    fPVsTOFMuons->Fill(momentum,TOF);
   }
 
   fPDGCodes->Fill(finalPDGCode);
@@ -1201,10 +1201,10 @@ void ParticleIdentificationSlicing::beginJob()
 {
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
-  fPzVsTOF = tfs->make<TH2F>("PzVsTOF","Pz vs. Time of Flight",160,0,1600,70,10,80);
-  fPzVsTOFGood = tfs->make<TH2F>("PzVsTOFGood","Pz vs. Time of Flight for used events",160,0,1600,70,10,80);
+  fPVsTOF = tfs->make<TH2F>("PvsTOF","P vs. Time of Flight",160,0,1600,70,10,80);
+  fPVsTOFGood = tfs->make<TH2F>("PvsTOFGood","P vs. Time of Flight for used events",160,0,1600,70,10,80);
   fNTOF = tfs->make<TH1F>("NTOF","Number of TOF values per TOF object",10,0,10);
-  fPz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum",180,0,1800);
+  fP = tfs->make<TH1F>("Reco_P","Reconstructed momentum",180,0,1800);
   fTOF = tfs->make<TH1F>("Reco_TOF","Reconstructed Time of Flight",70,20,90);
   fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",100,-5*3.1415926/180,5*3.141592654/180);
   fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",120,-60,60);
@@ -1229,11 +1229,11 @@ void ParticleIdentificationSlicing::beginJob()
   fNMuRSHitsObjectHist = tfs->make<TH1F>("MuRSHitObjects","Number of MuRSHits Objects in the event",5,0,5);
   fNMuRSTrackHist = tfs->make<TH1F>("NMuRSTracks","Number of MuRSTracks per event",15,0,15);
 
-  fPzVsTOFProtons = tfs->make<TH2F>("PzVsTOFProtons","Pz Vs. TOF for Protons",160,0,1600,70,10,80);
-  fPzVsTOFKaons = tfs->make<TH2F>("PzVsTOFKaons","Pz Vs. TOF for Kaons",160,0,1600,70,10,80);
-  fPzVsTOFPiMu = tfs->make<TH2F>("PzVsTOFPiMu","Pz Vs. TOF for Pions/Muons",160,0,1600,70,10,80);
-  fPzVsTOFPions = tfs->make<TH2F>("PzVsTOFPions","Pz Vs. TOF for Pions",160,0,1600,70,10,80);
-  fPzVsTOFMuons = tfs->make<TH2F>("PzVsTOFMuons","Pz Vs. TOF for Muons",160,0,1600,70,10,80);
+  fPVsTOFProtons = tfs->make<TH2F>("PvsTOFProtons","P Vs. TOF for Protons",160,0,1600,70,10,80);
+  fPVsTOFKaons = tfs->make<TH2F>("PvsTOFKaons","P Vs. TOF for Kaons",160,0,1600,70,10,80);
+  fPVsTOFPiMu = tfs->make<TH2F>("PvsTOFPiMu","P Vs. TOF for Pions/Muons",160,0,1600,70,10,80);
+  fPVsTOFPions = tfs->make<TH2F>("PvsTOFPions","P Vs. TOF for Pions",160,0,1600,70,10,80);
+  fPVsTOFMuons = tfs->make<TH2F>("PvsTOFMuons","P Vs. TOF for Muons",160,0,1600,70,10,80);
   fPDGCodes = tfs->make<TH1F>("PDGCodes","PDG Codes", 4425,-2212,2213);
   
   fMuRSTracks = tfs->make<TH1F>("GoodTrackTimes","Good MuRS Track Times",3072,0,3072);
@@ -1243,8 +1243,8 @@ void ParticleIdentificationSlicing::beginJob()
   fProtonProb = tfs->make<TH1F>("ProtonProb","Probability of a Proton for each event.",100,0,1);
   
   
-  fPz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
-  fPz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
+  fP->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
+  fP->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
   fY_Kink->GetXaxis()->SetTitle("Reconstructed y_kink (radians)");
   fY_Kink->GetYaxis()->SetTitle("Tracks per 0.000872 radians");
   fX_Dist->GetXaxis()->SetTitle("X distance between US and DS track ends");
@@ -1263,20 +1263,20 @@ void ParticleIdentificationSlicing::beginJob()
   fPhi_Dist->GetYaxis()->SetTitle("Tracks per 0.0628 radians");
   fParticleMass->GetXaxis()->SetTitle("Particle Mass (MeV/c^2)");
   fParticleMass->GetYaxis()->SetTitle("Counts");
-  fPzVsTOF->GetXaxis()->SetTitle("Momentum (MeV/c)");
-  fPzVsTOF->GetYaxis()->SetTitle("TOF (ns)");
-  fPzVsTOFGood->GetXaxis()->SetTitle("Momentum (MeV/c)");
-  fPzVsTOFGood->GetYaxis()->SetTitle("TOF (ns)");
-  fPzVsTOFProtons->GetXaxis()->SetTitle("Momentum (MeV/c)");
-  fPzVsTOFProtons->GetYaxis()->SetTitle("TOF (ns)");
-  fPzVsTOFKaons->GetXaxis()->SetTitle("Momentum (MeV/c)");
-  fPzVsTOFKaons->GetYaxis()->SetTitle("TOF (ns)");
-  fPzVsTOFPiMu->GetXaxis()->SetTitle("Momentum (MeV/c)");
-  fPzVsTOFPiMu->GetYaxis()->SetTitle("TOF (ns)");
-  fPzVsTOFPions->GetXaxis()->SetTitle("Momentum (MeV/c)");
-  fPzVsTOFPions->GetYaxis()->SetTitle("TOF (ns)");
-  fPzVsTOFMuons->GetXaxis()->SetTitle("Momentum (MeV/c)");
-  fPzVsTOFMuons->GetYaxis()->SetTitle("TOF (ns)");
+  fPVsTOF->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPVsTOF->GetYaxis()->SetTitle("TOF (ns)");
+  fPVsTOFGood->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPVsTOFGood->GetYaxis()->SetTitle("TOF (ns)");
+  fPVsTOFProtons->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPVsTOFProtons->GetYaxis()->SetTitle("TOF (ns)");
+  fPVsTOFKaons->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPVsTOFKaons->GetYaxis()->SetTitle("TOF (ns)");
+  fPVsTOFPiMu->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPVsTOFPiMu->GetYaxis()->SetTitle("TOF (ns)");
+  fPVsTOFPions->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPVsTOFPions->GetYaxis()->SetTitle("TOF (ns)");
+  fPVsTOFMuons->GetXaxis()->SetTitle("Momentum (MeV/c)");
+  fPVsTOFMuons->GetYaxis()->SetTitle("TOF (ns)");
 
 
 

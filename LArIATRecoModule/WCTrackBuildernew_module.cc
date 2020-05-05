@@ -88,7 +88,7 @@ public:
 					    std::vector<float> & hit_wire_vect);
 					    
 					    
-  void plotTheTrackInformation( std::vector<double> reco_pz_list,
+  void plotTheTrackInformation( std::vector<double> reco_p_list,
 				std::vector<double> x_face_list,
 				std::vector<double> y_face_list,
 				std::vector<double> theta_list,
@@ -123,7 +123,7 @@ private:
     
     //int evtcounter = 0;
     //Histograms for plotting
-    TH1F* fReco_Pz;
+    TH1F* fReco_P;
     TH1F* fY_Kink;
     TH1F* fX_Dist;
     TH1F* fY_Dist;
@@ -216,9 +216,9 @@ void WCTrackBuildernew::produce(art::Event & e)
 			    hit_time_bin_vect ); 
 			      
    		    		    
-    std::vector<double> reco_pz_list;                  //Final reco pz result for full_track_info = true, not indexed by trigger
-    std::vector<double> reco_pz2M_list;
-    std::vector<double> unscaled_reco_pz_list;
+    std::vector<double> reco_p_list;                  //Final reco p result for full_track_info = true, not indexed by trigger
+    std::vector<double> reco_p2M_list;
+    std::vector<double> unscaled_reco_p_list;
     std::vector<double> x_face_list;
     std::vector<double> y_face_list;
     std::vector<double> theta_list;
@@ -268,8 +268,8 @@ void WCTrackBuildernew::produce(art::Event & e)
   fTrack_Type->Fill(fWCHitFinderAlg.getTrackType(good_hits));
   double ScalingFactor=fWCTrackBuilderAlg.GetScalingFactor();
 //std::cout<<"Hit Finding done, going to Track Building"<<std::endl;
-  fWCTrackBuilderAlg.reconstructTracks(  reco_pz_list,
-                                         reco_pz2M_list,
+  fWCTrackBuilderAlg.reconstructTracks(  reco_p_list,
+                                         reco_p2M_list,
 					 x_face_list,
 					 y_face_list,
 					 theta_list,
@@ -302,8 +302,6 @@ void WCTrackBuildernew::produce(art::Event & e)
         hit_position_vect[i][j] *= 0.1;
     }
   }
-  //std::cout<<" reco_pz : "<<reco_pz_list.size()<<std::endl;
-  //if(reco_pz2M_list.size())  std::cout<<"Checking the filling up of reco_pz2m: "<<reco_pz2M_list.size()<<" "<<reco_pz2M_list[0]<<" "<<reco_pz_list[0]<<std::endl;
      //Pick out the tracks created under this current trigger and fill WCTrack objects with info.
     //(This must be done because the track/etc. lists encompass all triggers
     int tracknumber=final_tracks.size();
@@ -312,7 +310,7 @@ void WCTrackBuildernew::produce(art::Event & e)
       std::vector<float> hit_wire_vect;
       
       WCHitList final_track = final_tracks[iNewTrack];
-      unscaled_reco_pz_list.push_back(reco_pz_list[iNewTrack]/(1/(1+ScalingFactor)));
+      unscaled_reco_p_list.push_back(reco_p_list[iNewTrack]/(1/(1+ScalingFactor)));
       
       
       //Filling as done above, but formats the WC and hit wire vectors in the WCAuxDetDigit style
@@ -324,8 +322,8 @@ void WCTrackBuildernew::produce(art::Event & e)
  else{PickyTrackCheck=false;}      
 
       //WCTrack object creation and association with trigger created
-if(reco_pz2M_list.size() > 0){      ldp::WCTrack the_track(reco_pz_list[iNewTrack],
-	                     reco_pz2M_list[iNewTrack],
+if(reco_p2M_list.size() > 0){      ldp::WCTrack the_track(reco_p_list[iNewTrack],
+	                     reco_p2M_list[iNewTrack],
                              y_kink_list[iNewTrack],
 			     x_dist_list[iNewTrack],
 			     y_dist_list[iNewTrack],
@@ -348,10 +346,10 @@ if(reco_pz2M_list.size() > 0){      ldp::WCTrack the_track(reco_pz_list[iNewTrac
 			     WC3YMult,
 			     WC4YMult,			     
 			     PickyTrackCheck,
-			     unscaled_reco_pz_list[iNewTrack]);
+			     unscaled_reco_p_list[iNewTrack]);
       (*WCTrackCol).push_back( the_track );}   
 else{
-ldp::WCTrack the_track(reco_pz_list[iNewTrack],
+ldp::WCTrack the_track(reco_p_list[iNewTrack],
                              y_kink_list[iNewTrack],
 			     x_dist_list[iNewTrack],
 			     y_dist_list[iNewTrack],
@@ -374,14 +372,14 @@ ldp::WCTrack the_track(reco_pz_list[iNewTrack],
 			     WC3YMult,
 			     WC4YMult,	
 			     PickyTrackCheck,
-			     unscaled_reco_pz_list[iNewTrack]);
+			     unscaled_reco_p_list[iNewTrack]);
       (*WCTrackCol).push_back( the_track );
 
 }
     }
 
     //Plot the reconstructed momentum, y_kink, and delta X, Y, Z in histos
-    plotTheTrackInformation(reco_pz_list,
+    plotTheTrackInformation(reco_p_list,
 			    x_face_list,
 			    y_face_list,
 			    theta_list,
@@ -495,7 +493,7 @@ void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_tra
     }
   }
   //===================================================================================
-  void WCTrackBuildernew::plotTheTrackInformation( std::vector<double> reco_pz_list,
+  void WCTrackBuildernew::plotTheTrackInformation( std::vector<double> reco_p_list,
 							 std::vector<double> x_face_list,
 							 std::vector<double> y_face_list,
 							 std::vector<double> theta_list,
@@ -506,8 +504,8 @@ void WCTrackBuildernew::createAuxDetStyleVectorsFromHitLists(WCHitList final_tra
 							 std::vector<double> z_dist_list)
   {
     //Loop through the tracks and fill
-    for( size_t iTrack = 0; iTrack < reco_pz_list.size(); ++iTrack ){
-      fReco_Pz->Fill(reco_pz_list.at(iTrack));
+    for( size_t iTrack = 0; iTrack < reco_p_list.size(); ++iTrack ){
+      fReco_P->Fill(reco_p_list.at(iTrack));
       fY_Kink->Fill(y_kink_list.at(iTrack));
       fX_Dist->Fill(x_dist_list.at(iTrack));
       fY_Dist->Fill(y_dist_list.at(iTrack));
@@ -670,7 +668,7 @@ fRecodiff[98]=tfs->make<TH2F>("dist","Distance of Closest Approach", 100,0,100,1
 }
 
 //Hists that should probably stay for the production run.    
-    fReco_Pz = tfs->make<TH1F>("Reco_Pz","Reconstructed momentum in XZ plane", 180, 0, 1800);
+    fReco_P = tfs->make<TH1F>("Reco_P","Reconstructed momentum in XZ plane", 180, 0, 1800);
     fY_Kink = tfs->make<TH1F>("Y_Kink","Angle between US/DS tracks in Y direction (degrees)",200,-10*3.1415926/180,10*3.141592654/180);
     fX_Dist = tfs->make<TH1F>("X_Dist","X distance between US/DS tracks at midplane (mm)",1200,-60,1260);
     fY_Dist = tfs->make<TH1F>("Y_Dist","Y distance between US/DS tracks at midplane (mm)",1200,-600,600);
@@ -679,8 +677,8 @@ fRecodiff[98]=tfs->make<TH2F>("dist","Distance of Closest Approach", 100,0,100,1
     fY_Face_Dist = tfs->make<TH1F>("Y_Face","Y Location of Track's TPC Entry (mm)",800,-400,400);
     fTheta_Dist = tfs->make<TH1F>("Theta","Track Theta (w.r.t. TPC Z axis), (radians),",400,-.4,0.4);
     fPhi_Dist = tfs->make<TH1F>("Phi","Track Phi (w.r.t. TPC X axis), (radians)",2000,-6.28318,6.28318);                   
-    fReco_Pz->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
-    fReco_Pz->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
+    fReco_P->GetXaxis()->SetTitle("Reconstructed momentum (MeV/c)");
+    fReco_P->GetYaxis()->SetTitle("Tracks per 10 MeV/c");
     fY_Kink->GetXaxis()->SetTitle("Reconstructed y_kink (radians)");
     fY_Kink->GetYaxis()->SetTitle("Tracks per 0.000872 radians");
     fX_Dist->GetXaxis()->SetTitle("X distance between US and DS track ends");
