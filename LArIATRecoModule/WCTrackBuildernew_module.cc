@@ -139,6 +139,7 @@ private:
     
     int nevt=0;     
     //Misc
+    bool fLoadBFieldFromDatabase;
     bool fVerbose;
     bool fSaveTree;
     bool fPickyTracks;
@@ -170,7 +171,7 @@ void WCTrackBuildernew::produce(art::Event & e)
 {
     // If this is a new subrun in *real* data, then load B-field from DB.
     // (For MC, this is taken from the fhicl parameter "MCMagneticFieldTesla")
-    if( e.isRealData() ){
+    if( e.isRealData() && fLoadBFieldFromDatabase ){
       bool sameSubRun = ( run == (int)e.run() && subRun == (int)e.subRun() );
       if( !sameSubRun ) {
         fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( e.run(), e.subRun() );
@@ -863,6 +864,7 @@ void WCTrackBuildernew::reconfigure(fhicl::ParameterSet const & p)
     fCheckTracks=p.get<bool>("CheckTracks");
     offset = p.get<float>("BFieldOffset");
     fSaveTree = p.get<bool>("SaveTree",true);
+    fLoadBFieldFromDatabase = p.get<bool>("LoadBFieldFromDatabase",true);
 }
 // 
 // void WCTrackBuildernew::respondToCloseInputFile(art::FileBlock const & fb)
