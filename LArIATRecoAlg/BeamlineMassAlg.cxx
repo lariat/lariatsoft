@@ -54,6 +54,15 @@ BeamlineMassAlg::BeamlineMassAlg( fhicl::ParameterSet const& pset )
   this->reconfigure(pset);
 }
 
+BeamlineMassAlg::BeamlineMassAlg( )
+{
+  fTOFModuleLabel       = "tof";
+  fWCTrackModuleLabel   = "wctrack";
+  fLength               = 6.685;
+  fTc                   = -1;
+}
+
+
 //--------------------------------------------------------------  
 //Destructor
 BeamlineMassAlg::~BeamlineMassAlg()

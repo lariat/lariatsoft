@@ -32,6 +32,7 @@ class BeamlineMassAlg{
   
   //Constructor/destructor
   BeamlineMassAlg( fhicl::ParameterSet const& pset );
+  BeamlineMassAlg();
   ~BeamlineMassAlg();
 
   void    reconfigure( fhicl::ParameterSet const& pset );
