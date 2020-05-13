@@ -39,7 +39,7 @@ class BeamlineMassAlg{
   void    reconfigure( fhicl::ParameterSet const& pset );
 
   // setters
-  void    SetLength( float L ){ fLength = L; }
+  void    SetLength( float L ){ fLength = L; fTc = -1;}
   void    SetLightTravelTime( float Tc){ fTc = Tc; }
   void    SetTOFModuleLabel(std::string label){ fTOFModuleLabel = label;}
   void    SetWCTrackModuleLabel(std::string label){ fWCTrackModuleLabel = label;}
