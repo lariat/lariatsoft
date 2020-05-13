@@ -4,6 +4,7 @@ art_make( LIBRARY_NAME  LArIATRecoAlg
           larcorealg_Geometry
           lardataobj_RawData
           Utilities_DatabaseUtilityT1034_service
+          LArIATDataProducts
           ${ART_FRAMEWORK_CORE}
           ${ART_FRAMEWORK_PRINCIPAL}
           ${ART_FRAMEWORK_SERVICES_REGISTRY}
