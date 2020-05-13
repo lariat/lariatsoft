@@ -4,6 +4,7 @@
 // C++ includes
 #include <iostream>
 #include <memory>
+#include <math.h>
 
 // Art includes
 #include "art/Framework/Core/EDAnalyzer.h"

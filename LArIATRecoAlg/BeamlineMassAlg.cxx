@@ -84,7 +84,7 @@ float BeamlineMassAlg::GetMass( float TOF, float P ) {
   float c = 0.299792458;    // m/ns
   float tc = fLength / c;
   if( fTc > 0 ) tc = fTc;
-  float radical = pow(TOF/tc,2) - 1.;
+  float radical = (TOF*TOF)/(tc*tc) - 1.;
   if( radical >= 0. ) m = P * sqrt( radical );
   else                m = -P * sqrt( -radical ); 
   return m;
