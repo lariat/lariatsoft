@@ -45,33 +45,7 @@
 //  wforeman @ iit.edu
 //
 /////////////////////////////////////////////////////////////////////
-
-// C++ includes
-#include <iostream>
-#include <memory>
-
-// Art includes
-#include "art/Framework/Core/EDAnalyzer.h"
-#include "art/Framework/Core/ModuleMacros.h"
-#include "art/Framework/Principal/Event.h"
-#include "art/Framework/Principal/Handle.h"
-#include "art/Framework/Principal/Run.h"
-#include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "canvas/Utilities/InputTag.h"
-#include "fhiclcpp/ParameterSet.h"
-#include "messagefacility/MessageLogger/MessageLogger.h"
-
-// LArSoft includes
-#include "larcore/Geometry/Geometry.h"
-#include "lardataobj/RecoBase/Track.h"
-#include "nusimdata/SimulationBase/MCParticle.h"
-
-// LArIATSoft includes
-#include "LArIATDataProducts/WCTrack.h"
-#include "LArIATDataProducts/TOF.h"
 #include "LArIATRecoAlg/BeamlineMassAlg.h"
-
 
 //--------------------------------------------------------------
 //Constructor
