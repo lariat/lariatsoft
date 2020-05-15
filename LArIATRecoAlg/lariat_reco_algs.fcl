@@ -28,4 +28,14 @@ lariat_wctrackbuilderalgbase:
 {
 }
 
+lariat_beamlinemassalg:
+{
+  Length:           6.685 # m
+  LightTravelTime:  -1.   # ns
+  # Set > 0 to override Length.
+  # light travel time is 22.3 ns in
+  # detector paper, which corresponds
+  # to L = 6.685 m
+}
+
 END_PROLOG
