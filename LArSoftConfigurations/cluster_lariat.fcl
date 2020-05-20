@@ -69,6 +69,10 @@ lariat_blurredcluster.GlobalTPCRecon: false
 lariat_blurredcluster.BlurredClusterAlg.BlurTick: 15
 lariat_blurredcluster.BlurredClusterAlg.BlurWire: 15
 
+#######################################################################
+# Trajcluster settings
+lariat_trajcluster:                 @local::standard_trajcluster
+lariat_trajcluster.TrajClusterAlg:  @local::standard_trajclusteralg 
 
 ########################################################################
 # Trajcluster alg settings tuned for LArIAT

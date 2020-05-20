@@ -119,6 +119,12 @@ private:
   
   // === Storing information into TTree ====
   TTree* fTree;
+  
+  // === Enable saving different types of data into tree ===
+  bool  fSaveBeamlineInfo;
+  bool  fSaveGeantInfo;
+  bool  fSaveMCShowerInfo;
+  bool  fSaveAerogelInfo;
    
   //=== Storing Run Information ===
   int run;			//<---Run Number
@@ -443,6 +449,11 @@ lariat::AnaTreeT1034::~AnaTreeT1034()
 
 void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
 {
+
+  fSaveBeamlineInfo             = pset.get< bool >      ("SaveBeamlineInfo",true);
+  fSaveGeantInfo                = pset.get< bool >      ("SaveGeantInfo",true);
+  fSaveMCShowerInfo             = pset.get< bool >      ("SaveMCShowerInfo",true);
+  fSaveAerogelInfo              = pset.get< bool >      ("SaveAerogelInfo", false);
   //fTrigModuleLabel	 	= pset.get< std::string >("TriggerUtility");
   fHitsModuleLabel      	= pset.get< std::string >("HitsModuleLabel");
   fTrackModuleLabel		= pset.get< std::string >("TrackModuleLabel");
@@ -672,11 +683,11 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
    
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
-  //							FILLING THE MCTruth Geant4 INFORMATION
+  //							FILLING THE MCShower Geant4 INFORMATION
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
 
-  if(!isdata)
+  if(!isdata && fSaveMCShowerInfo )
     {
       art::Handle< std::vector<sim::MCShower> > mcshowerh;
       evt.getByLabel(fMCShowerModuleLabel, mcshowerh);
@@ -761,13 +772,13 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
 
-  if(!isdata)
+  if(!isdata && fSaveGeantInfo )
     {
       // ######################################
       // ### Making a vector of MCParticles ###
       // ######################################   
       std::vector<const simb::MCParticle* > geant_part;
-      
+     
       // ### Looping over all the Geant4 particles from the BackTracker ###
       for(size_t p = 0; p < plist.size(); ++p) 
 		{
@@ -1063,173 +1074,174 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
  }//<---End checking if this is MC 
    
     
-  // ----------------------------------------------------------------------------------------------------------------------------
-  // ----------------------------------------------------------------------------------------------------------------------------
-  //							FILLING THE WIRE CHAMBER TRACK INFORMATION
-  // ----------------------------------------------------------------------------------------------------------------------------
-  // ----------------------------------------------------------------------------------------------------------------------------
-  nwctrks = wctrack.size();
-   
-  //int wct_count = 0;
-  
-  // ########################################
-  // ### Looping over Wire Chamber Tracks ###
-  // ########################################
-  for(size_t wct_count = 0; wct_count < wctrack.size(); wct_count++)
-    //for(const auto& wctrack : (*wctrackHandle)) //trackHandle works somewhat like a pointer to a vector of tracks, so dereference the handle to loop over
-    //the vector, then use each "track" as a ldp::WCTrack
-    {
-      
-      
-      // ##############################################
-      // ### Filling Wire Chamber Track information ###
-      // ##############################################
-      wctrk_XFaceCoor[wct_count] = wctrack[wct_count]->XYFace(0); //indices are 0 for x and 1 for y according to header for WCTrack
-      wctrk_YFaceCoor[wct_count] = wctrack[wct_count]->XYFace(1); //indices are 0 for x and 1 for y according to header for WCTrack
-      
-      wctrk_momentum[wct_count] = wctrack[wct_count]->Momentum();
-      wctrk_theta[wct_count] = wctrack[wct_count]->Theta();
-      wctrk_phi[wct_count] = wctrack[wct_count]->Phi();
-      wctrk_XDist[wct_count] = wctrack[wct_count]->DeltaDist(0);
-      wctrk_YDist[wct_count] = wctrack[wct_count]->DeltaDist(1);
-      wctrk_ZDist[wct_count] = wctrack[wct_count]->DeltaDist(2);
-      Y_Kink[wct_count] = wctrack[wct_count]->YKink();
-      WC1xPos[wct_count] = wctrack[wct_count]->HitPosition(0,0);
-      WC1yPos[wct_count] = wctrack[wct_count]->HitPosition(0,1);
-      WC1zPos[wct_count] = wctrack[wct_count]->HitPosition(0,2);
-      WC2xPos[wct_count] = wctrack[wct_count]->HitPosition(1,0);
-      WC2yPos[wct_count] = wctrack[wct_count]->HitPosition(1,1);
-      WC2zPos[wct_count] = wctrack[wct_count]->HitPosition(1,2);
-      WC3xPos[wct_count] = wctrack[wct_count]->HitPosition(2,0);
-      WC3yPos[wct_count] = wctrack[wct_count]->HitPosition(2,1);
-      WC3zPos[wct_count] = wctrack[wct_count]->HitPosition(2,2);
-      WC4xPos[wct_count] = wctrack[wct_count]->HitPosition(3,0);
-      WC4yPos[wct_count] = wctrack[wct_count]->HitPosition(3,1);
-      WC4zPos[wct_count] = wctrack[wct_count]->HitPosition(3,2);
-      WCTrackResidual[wct_count]= wctrack[wct_count]->Residual();
-      WCTrackWCMissed[wct_count]= wctrack[wct_count]->WCMissed();
 
-
-      // Compute wcP, wcPx and wcPy
-      if (TMath::Cos(wctrk_theta[wct_count])) 
-	{ 
-	  float PT = wctrk_momentum[wct_count];
-	  float tanThetaCosPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Cos(wctrk_phi[wct_count]);
-	  float tanThetaSinPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Sin(wctrk_phi[wct_count]);
-	  float den = TMath::Sqrt(1+tanThetaCosPhi*tanThetaCosPhi);
-	  wcPz[wct_count] = PT/den;
-	  wcPy[wct_count] = wcPz[wct_count]*tanThetaSinPhi;
-	  wcPx[wct_count] = wcPz[wct_count]*tanThetaCosPhi;
-	  wcP [wct_count] = wcPz[wct_count]* TMath::Sqrt(1+TMath::Tan(wctrk_theta[wct_count])*TMath::Tan(wctrk_theta[wct_count]));
-
-
-	}
-      
-      // === Getting individual channel information ===
-      for(size_t chIt = 0; 2*chIt+1 < wctrack[wct_count]->NHits(); ++chIt)
-	{
-	  if(float(chIt)!=wctrack[wct_count]->WCMissed()){  
-	    XWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt);
-	    YWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt+1);
-	 
-	    XAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt);
-	    YAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt+1);
-	  }//<-- end if chIt != WCMissed  
-	}//<---End chIt loop
-      
-    }//<---end wctrack auto loop
-      
-	 
-   
-  // ----------------------------------------------------------------------------------------------------------------------------
-  // ----------------------------------------------------------------------------------------------------------------------------
-  //							FILLING THE TIME OF FLIGHT INFORMATION
-  // ----------------------------------------------------------------------------------------------------------------------------
-  // ----------------------------------------------------------------------------------------------------------------------------
-  ntof = tof.size();
-  // ################################
-  // ### Looping over TOF objects ###
-  // ################################
-  size_t tof_counter = 0; // book-keeping
-  for(size_t i = 0; i < tof.size(); i++) {
+  if( fSaveBeamlineInfo ) {
     
-    size_t number_tof = tof[i]->NTOF();
-
-    for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
-      tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
-      tof_timestamp[tof_counter] = tof[i]->TimeStamp(tof_idx);
-      cTOF[tof_counter] = tof_timestamp[tof_counter]*0.299792 ;
-      ++tof_counter;
-     } // loop over TOF
-
-  }//<---End tof_count loop
-
-  // Beamline Mass info
-  if ( ntof == 1 && nwctrks == 1)
-    {
-      double reco_momo = wctrackHandle->at(0).Momentum();
-      double reco_tof = tofObject[0];// TOFColHandle->at(0).SingleTOF(0);
-      //double fSpeedOfLight = 3e+8;
-      double fDistanceTraveled = 6.652;
-      //float fMass = pow(pow((fSpeedOfLight*(reco_tof)*(1E-9)/fDistanceTraveled)*reco_momo, 2.0) - pow(reco_momo,2.0),0.5);
-      float fMass = -99999.;
-      float radical = reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1;
+    // ----------------------------------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------------------
+    //							FILLING THE WIRE CHAMBER TRACK INFORMATION
+    // ----------------------------------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------------------
+    nwctrks = wctrack.size();
+     
+    //int wct_count = 0;
+   
+    // ########################################
+    // ### Looping over Wire Chamber Tracks ###
+    // ########################################
+    for(size_t wct_count = 0; wct_count < wctrack.size(); wct_count++)
+      //for(const auto& wctrack : (*wctrackHandle)) //trackHandle works somewhat like a pointer to a vector of tracks, so dereference the handle to loop over
+      //the vector, then use each "track" as a ldp::WCTrack
+      {
+        
+        
+        // ##############################################
+        // ### Filling Wire Chamber Track information ###
+        // ##############################################
+        wctrk_XFaceCoor[wct_count] = wctrack[wct_count]->XYFace(0); //indices are 0 for x and 1 for y according to header for WCTrack
+        wctrk_YFaceCoor[wct_count] = wctrack[wct_count]->XYFace(1); //indices are 0 for x and 1 for y according to header for WCTrack
+        
+        wctrk_momentum[wct_count] = wctrack[wct_count]->Momentum();
+        wctrk_theta[wct_count] = wctrack[wct_count]->Theta();
+        wctrk_phi[wct_count] = wctrack[wct_count]->Phi();
+        wctrk_XDist[wct_count] = wctrack[wct_count]->DeltaDist(0);
+        wctrk_YDist[wct_count] = wctrack[wct_count]->DeltaDist(1);
+        wctrk_ZDist[wct_count] = wctrack[wct_count]->DeltaDist(2);
+        Y_Kink[wct_count] = wctrack[wct_count]->YKink();
+        WC1xPos[wct_count] = wctrack[wct_count]->HitPosition(0,0);
+        WC1yPos[wct_count] = wctrack[wct_count]->HitPosition(0,1);
+        WC1zPos[wct_count] = wctrack[wct_count]->HitPosition(0,2);
+        WC2xPos[wct_count] = wctrack[wct_count]->HitPosition(1,0);
+        WC2yPos[wct_count] = wctrack[wct_count]->HitPosition(1,1);
+        WC2zPos[wct_count] = wctrack[wct_count]->HitPosition(1,2);
+        WC3xPos[wct_count] = wctrack[wct_count]->HitPosition(2,0);
+        WC3yPos[wct_count] = wctrack[wct_count]->HitPosition(2,1);
+        WC3zPos[wct_count] = wctrack[wct_count]->HitPosition(2,2);
+        WC4xPos[wct_count] = wctrack[wct_count]->HitPosition(3,0);
+        WC4yPos[wct_count] = wctrack[wct_count]->HitPosition(3,1);
+        WC4zPos[wct_count] = wctrack[wct_count]->HitPosition(3,2);
+        WCTrackResidual[wct_count]= wctrack[wct_count]->Residual();
+        WCTrackWCMissed[wct_count]= wctrack[wct_count]->WCMissed();
+  
+  
+        // Compute wcP, wcPx and wcPy
+        if (TMath::Cos(wctrk_theta[wct_count])) 
+          { 
+            float PT = wctrk_momentum[wct_count];
+            float tanThetaCosPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Cos(wctrk_phi[wct_count]);
+            float tanThetaSinPhi = TMath::Tan(wctrk_theta[wct_count]) * TMath::Sin(wctrk_phi[wct_count]);
+            float den = TMath::Sqrt(1+tanThetaCosPhi*tanThetaCosPhi);
+            wcPz[wct_count] = PT/den;
+            wcPy[wct_count] = wcPz[wct_count]*tanThetaSinPhi;
+            wcPx[wct_count] = wcPz[wct_count]*tanThetaCosPhi;
+            wcP [wct_count] = wcPz[wct_count]* TMath::Sqrt(1+TMath::Tan(wctrk_theta[wct_count])*TMath::Tan(wctrk_theta[wct_count]));
+  
+  
+          }
+        
+        // === Getting individual channel information ===
+        for(size_t chIt = 0; 2*chIt+1 < wctrack[wct_count]->NHits(); ++chIt)
+          {
+            if(float(chIt)!=wctrack[wct_count]->WCMissed()){  
+              XWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt);
+              YWireHist[wct_count][chIt] = wctrack[wct_count]->HitWire(2*chIt+1);
+           
+              XAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt);
+              YAxisHist[wct_count][chIt] = wctrack[wct_count]->WC(2*chIt+1);
+            }//<-- end if chIt != WCMissed  
+          }//<---End chIt loop
+        
+      }//<---end wctrack auto loop
+  	 
+     
+    // ----------------------------------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------------------
+    //							FILLING THE TIME OF FLIGHT INFORMATION
+    // ----------------------------------------------------------------------------------------------------------------------------
+    // ----------------------------------------------------------------------------------------------------------------------------
+    ntof = tof.size();
+    
+    // ################################
+    // ### Looping over TOF objects ###
+    // ################################
+    size_t tof_counter = 0; // book-keeping
+    for(size_t i = 0; i < tof.size(); i++) {
       
-      if (reco_tof>0)
-	{
-	  if (radical < 0)
-	    {
-	      fMass = -reco_momo*pow(-radical ,0.5);
-	    }else
-	    {  fMass = reco_momo*pow(radical ,0.5); }
-	  
-	  massObj = fMass;
-	}
-    }
+      size_t number_tof = tof[i]->NTOF();
+  
+      for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
+        tofObject[tof_counter] =  tof[i]->SingleTOF(tof_idx);
+        tof_timestamp[tof_counter] = tof[i]->TimeStamp(tof_idx);
+        cTOF[tof_counter] = tof_timestamp[tof_counter]*0.299792 ;
+        ++tof_counter;
+       } // loop over TOF
+  
+    }//<---End tof_count loop
+  
+    // Beamline Mass info
+    if ( ntof == 1 && nwctrks == 1)
+      {
+        double reco_momo = wctrackHandle->at(0).Momentum();
+        double reco_tof = tofObject[0];// TOFColHandle->at(0).SingleTOF(0);
+        //double fSpeedOfLight = 3e+8;
+        double fDistanceTraveled = 6.652;
+        //float fMass = pow(pow((fSpeedOfLight*(reco_tof)*(1E-9)/fDistanceTraveled)*reco_momo, 2.0) - pow(reco_momo,2.0),0.5);
+        float fMass = -99999.;
+        float radical = reco_tof*0.299792458*0.299792458*reco_tof/(fDistanceTraveled*fDistanceTraveled) - 1;
+        
+        if (reco_tof>0)
+  	{
+  	  if (radical < 0)
+  	    {
+  	      fMass = -reco_momo*pow(-radical ,0.5);
+  	    }else
+  	    {  fMass = reco_momo*pow(radical ,0.5); }
+  	  
+  	  massObj = fMass;
+  	}
+      }
+    
+  }// Beamline Info
 
 
+
+  
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   //                                                   FILLING THE AEROGEL COUNTER INFORMATION
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
-
-  //   ldp::AGCounter counter;
-  
-  nAG = agc.size();
-  // ################################
-  // ### Looping over aerogel counter objects ###
-  // ################################
-  size_t agc_counter = 0; // book-keeping
-  for(size_t i = 0; i < agc.size(); i++)
-    {
-
-      size_t number_agc = agc[i]->GetNHits();
-    
-      
+  if( fSaveAerogelInfo ) {
      
+    nAG = agc.size();
+    // ################################
+    // ### Looping over aerogel counter objects ###
+    // ################################
+    size_t agc_counter = 0; // book-keeping
+    for(size_t i = 0; i < agc.size(); i++)
+      {
+        size_t number_agc = agc[i]->GetNHits();
+        for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
+          HitTimeStamp1p10_1[agc_counter]=agc[i]->GetHitTimeStamp1p10_1(agc_idx);
+          HitTimeStamp1p10_2[agc_counter]=agc[i]->GetHitTimeStamp1p10_2(agc_idx);
+          HitTimeStamp1p06_1[agc_counter]=agc[i]->GetHitTimeStamp1p06_1(agc_idx);
+          HitTimeStamp1p06_2[agc_counter]=agc[i]->GetHitTimeStamp1p06_2(agc_idx);
 
-      for (size_t agc_idx = 0; agc_idx < number_agc; ++agc_idx) {
-	//        for (size_t agc_idx = 0; agc_idx < 1; ++agc_idx) {
-	HitTimeStamp1p10_1[agc_counter]=agc[i]->GetHitTimeStamp1p10_1(agc_idx);
-	HitTimeStamp1p10_2[agc_counter]=agc[i]->GetHitTimeStamp1p10_2(agc_idx);
-	HitTimeStamp1p06_1[agc_counter]=agc[i]->GetHitTimeStamp1p06_1(agc_idx);
-	HitTimeStamp1p06_2[agc_counter]=agc[i]->GetHitTimeStamp1p06_2(agc_idx);
+          HitPulseArea1p10_1[agc_counter]=agc[i]->GetHitPulseArea1p10_1(agc_idx);
+          HitPulseArea1p10_2[agc_counter]=agc[i]->GetHitPulseArea1p10_2(agc_idx);
+          HitPulseArea1p06_1[agc_counter]=agc[i]->GetHitPulseArea1p06_1(agc_idx);
+          HitPulseArea1p06_2[agc_counter]=agc[i]->GetHitPulseArea1p06_2(agc_idx);
 
-	HitPulseArea1p10_1[agc_counter]=agc[i]->GetHitPulseArea1p10_1(agc_idx);
-	HitPulseArea1p10_2[agc_counter]=agc[i]->GetHitPulseArea1p10_2(agc_idx);
-	HitPulseArea1p06_1[agc_counter]=agc[i]->GetHitPulseArea1p06_1(agc_idx);
-	HitPulseArea1p06_2[agc_counter]=agc[i]->GetHitPulseArea1p06_2(agc_idx);
+          HitExist1p10_1[agc_counter]=agc[i]->GetHitExist1p10_1(agc_idx);
+          HitExist1p10_2[agc_counter]=agc[i]->GetHitExist1p10_2(agc_idx);
+          HitExist1p06_1[agc_counter]=agc[i]->GetHitExist1p06_1(agc_idx);
+          HitExist1p06_2[agc_counter]=agc[i]->GetHitExist1p06_2(agc_idx);
 
-	HitExist1p10_1[agc_counter]=agc[i]->GetHitExist1p10_1(agc_idx);
-	HitExist1p10_2[agc_counter]=agc[i]->GetHitExist1p10_2(agc_idx);
-	HitExist1p06_1[agc_counter]=agc[i]->GetHitExist1p06_1(agc_idx);
-	HitExist1p06_2[agc_counter]=agc[i]->GetHitExist1p06_2(agc_idx);
+          ++agc_counter;
+        } // loop over aerogel pulses
 
-	++agc_counter;
-      } // loop over aerogel pulses
-
-    }//<---End aerogel counters
+      }//<---End aerogel counters
+    }
      
 
   //        short unsigned int number_agc = agc[i]->GetNHits();
@@ -1827,6 +1839,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("hit_y", hit_y, "hit_y[nhits]/F");
   fTree->Branch("hit_z", hit_z, "hit_z[nhits]/F");
 
+  if( fSaveBeamlineInfo ) {
   fTree->Branch("nwctrks",&nwctrks,"nwctrks/I");
   fTree->Branch("wctrk_XFaceCoor",wctrk_XFaceCoor,"wctrk_XFaceCoor[nwctrks]/D");
   fTree->Branch("wctrk_YFaceCoor",wctrk_YFaceCoor,"wctrk_YFaceCoor[nwctrks]/D");
@@ -1866,7 +1879,9 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
   fTree->Branch("cTOF", cTOF, "cTOF[ntof]/F"); 
   fTree->Branch("mass", &massObj, "massObj/F");
+  }
 
+  if( fSaveAerogelInfo ) {
   fTree->Branch("nAG", &nAG, "nAG/I");
   fTree->Branch("HitTimeStamp1p10_1", HitTimeStamp1p10_1, "HitTimeStamp1p10_1[nAG]/D");
   fTree->Branch("HitTimeStamp1p10_2", HitTimeStamp1p10_2, "HitTimeStamp1p10_2[nAG]/D");
@@ -1880,14 +1895,15 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("HitExist1p10_2", HitExist1p10_2, "HitExist1p10_2[nAG]/O");
   fTree->Branch("HitExist1p06_1", HitExist1p06_1, "HitExist1p06_1[nAG]/O");
   fTree->Branch("HitExist1p06_2", HitExist1p06_2, "HitExist1p06_2[nAG]/O");
+  }
 
   fTree->Branch("maxTrackIDE", &maxTrackIDE, "maxTrackIDE/I");
   fTree->Branch("IDEEnergy", IDEEnergy, "IDEEnergy[maxTrackIDE]/D");
   fTree->Branch("IDEPos", IDEPos, "IDEPos[maxTrackIDE][3]/D");
-
+  
+  if( fSaveGeantInfo ) {
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
-  
   fTree->Branch("pdg",pdg,"pdg[geant_list_size]/I");
   fTree->Branch("Eng",Eng,"Eng[geant_list_size]/D");
   fTree->Branch("Px",Px,"Px[geant_list_size]/D");
@@ -1919,8 +1935,9 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][5000]/D");
   fTree->Branch("InteractionPoint"         ,&InteractionPoint         );
   fTree->Branch("InteractionPointType"     ,&InteractionPointType     );
+  }
 
-
+  if( fSaveMCShowerInfo ) {
   fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
   fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
   fTree->Branch("mcshwr_pdg", mcshwr_pdg, "mcshwr_pdg[no_mcshowers]/D");
@@ -1960,6 +1977,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("mcshwr_AncestorendX", mcshwr_AncestorendX, "mcshwr_AncestorendX[no_mcshowers]/I");
   fTree->Branch("mcshwr_AncestorendY", mcshwr_AncestorendY, "mcshwr_AncestorendY[no_mcshowers]/I");
   fTree->Branch("mcshwr_AncestorendZ", mcshwr_AncestorendZ, "mcshwr_AncestorendZ[no_mcshowers]/I");
+  }
       
   fTree->Branch("nshowers",&nshowers,"nshowers/I");
   fTree->Branch("shwID",shwID,"shwI[nshowers]/I");

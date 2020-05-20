@@ -3,6 +3,13 @@
 
 BEGIN_PROLOG
 
+lariat_pmtrack:                                   @local::standard_pmalgtrackmaker
+lariat_pmtrack.ClusterModuleLabel:                "trajcluster"
+lariat_pmtrack.HitModuleLabel:                    "trajcluster"
+lariat_pmtrack.PMAlgTracking.MinSeedSize2ndPass:  3
+lariat_pmtrack.PMAlgTracking.FlipToBeam:          true
+lariat_pmtrack.PMAlgTracking.RunVertexing:        true
+
 lariat_track:                               @local::standard_track3Dreco  
 
 lariat_cosmictracker:                       @local::standard_cosmictracker  

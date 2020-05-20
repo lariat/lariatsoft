@@ -64,7 +64,6 @@
 #include "lardataobj/RecoBase/EndPoint2D.h"
 #include "lardataobj/MCBase/MCShower.h"
 #include "lardataobj/MCBase/MCStep.h"
-#include "larreco/Calorimetry/CalorimetryAlg.h"
 
 // #####################
 // ### ROOT includes ###
@@ -316,14 +315,11 @@ private:
   std::string fWC2TPCModuleLabel;
   std::string fWCQualityProducerLabel;
 
-  calo::CalorimetryAlg fCalorimetryAlg;
-
 };
 
 
 lariat::AnaTreeT1034UC::AnaTreeT1034UC(fhicl::ParameterSet const & pset) 
   : EDAnalyzer(pset)
-  , fCalorimetryAlg(pset.get<fhicl::ParameterSet>("CalorimetryAlg"))
 {
   this->reconfigure(pset);
 }
