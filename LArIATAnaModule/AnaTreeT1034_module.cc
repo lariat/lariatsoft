@@ -295,22 +295,22 @@ private:
   int no_primaries;				//<---Number of primary Geant4 particles in the event
   int geant_list_size;				//<---Number of Geant4 particles tracked
   int pdg[kMaxPrimaries];			//<---PDG Code number of this particle
-  double StartPointx[kMaxPrimaries];		//<---X position that this Geant4 particle started at
-  double StartPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle started at
-  double StartPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle started at
-  double Eng[kMaxPrimaries];			//<---Initial Energy of the particle
-  double Px[kMaxPrimaries];			//<---Initial Px momentum of the particle
-  double Py[kMaxPrimaries];			//<---Initial Py momentum of the particle
-  double Pz[kMaxPrimaries];			//<---Initial Pz momentum of the particle
-
-  double EndPointx[kMaxPrimaries];		//<---X position that this Geant4 particle ended at
-  double EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
-  double EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
-  double EndEng[kMaxPrimaries];			//<---End Energy of the particle
-  double EndPx[kMaxPrimaries];			//<---End Px momentum of the particle
-  double EndPy[kMaxPrimaries];			//<---End Py momentum of the particle
-  double EndPz[kMaxPrimaries];			//<---End Pz momentum of the particle
-
+  float Mass[kMaxPrimaries];			//<---Particle mass
+  float StartPointx[kMaxPrimaries];		//<---X position that this Geant4 particle started at
+  float StartPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle started at
+  float StartPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle started at
+  float Eng[kMaxPrimaries];			//<---Initial Energy of the particle
+  float Px[kMaxPrimaries];			//<---Initial Px momentum of the particle
+  float Py[kMaxPrimaries];			//<---Initial Py momentum of the particle
+  float Pz[kMaxPrimaries];			//<---Initial Pz momentum of the particle
+  float EndPointx[kMaxPrimaries];		//<---X position that this Geant4 particle ended at
+  float EndPointy[kMaxPrimaries];		//<---Y position that this Geant4 particle ended at
+  float EndPointz[kMaxPrimaries];		//<---Z position that this Geant4 particle ended at
+  float EndEng[kMaxPrimaries];			//<---End Energy of the particle
+  float EndPx[kMaxPrimaries];			//<---End Px momentum of the particle
+  float EndPy[kMaxPrimaries];			//<---End Py momentum of the particle
+  float EndPz[kMaxPrimaries];			//<---End Pz momentum of the particle
+  
   int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
   // ### Recording the process as a integer ###
 	  // 0 = primary
@@ -778,15 +778,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // ### Making a vector of MCParticles ###
       // ######################################   
       std::vector<const simb::MCParticle* > geant_part;
-     
+    
       // ### Looping over all the Geant4 particles from the BackTracker ###
       for(size_t p = 0; p < plist.size(); ++p) 
-		{
-	  		// ### Filling the vector with MC Particles ###
-	  		geant_part.push_back(plist.Particle(p)); 
-		}
-	
-     
+        geant_part.push_back(plist.Particle(p)); 
       
       // ### Setting a string for primary ###
       std::string pri("primary");
@@ -855,11 +850,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
          {
    
       	 // ### If this particle is primary, set = 1 ###
-	 if(geant_part[i]->Process()==pri)
-	    {process_primary[i]=1;}
-         // ### If this particle is not-primary, set = 0 ###
-	 else
-	    {process_primary[i]=0;}
+	 if(geant_part[i]->Process()==pri)  process_primary[i]=1;
+	 else                               process_primary[i]=0;
           
 	 // ### Recording the process as a integer ###
 	 // 0 = primary
@@ -874,84 +866,58 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 // 9 = muMinusCaptureAtRest
 	 //10 = ProtonInelastic
 	  
-	 if(geant_part[i]->Process() == pri)
-	    {Process[i] = 0;}
+	 if(geant_part[i]->Process() == pri)                Process[i] = 0;
+	 if(geant_part[i]->Process() == PionMinusInelastic) Process[i] = 1;
+	 if(geant_part[i]->Process() == NeutronInelastic)   Process[i] = 2;
+	 if(geant_part[i]->Process() == hadElastic)         Process[i] = 3;
+	 if(geant_part[i]->Process() == nCapture)           Process[i] = 4;
+	 if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)  Process[i] = 5;
+	 if(geant_part[i]->Process() == Decay)              Process[i] = 6;
+	 if(geant_part[i]->Process() == KaonZeroLInelastic) Process[i] = 7;
+	 if(geant_part[i]->Process() == CoulombScat)        Process[i] = 8;
+	 if(geant_part[i]->Process() == muMinusCaptureAtRest) Process[i] = 9;
+	 if(geant_part[i]->Process() == ProtonInelastic)    Process[i] = 10;
+	 if(geant_part[i]->Process() == KaonPlusInelastic)  Process[i] = 11;
+	 if(geant_part[i]->Process() == hBertiniCaptureAtRest)  Process[i] = 12;
 	     
-	 if(geant_part[i]->Process() == PionMinusInelastic)
-	    {Process[i] = 1;}
-	     
-	 if(geant_part[i]->Process() == NeutronInelastic)
-	    {Process[i] = 2;}
-	     
-	 if(geant_part[i]->Process() == hadElastic)
-	    {Process[i] = 3;}
-	  
-	 if(geant_part[i]->Process() == nCapture)
-	    {Process[i] = 4;}
-	     
-	 if(geant_part[i]->Process() == CHIPSNuclearCaptureAtRest)
-	    {Process[i] = 5;}
-	  
-	 if(geant_part[i]->Process() == Decay)
-	    {Process[i] = 6;}
-	  
-	 if(geant_part[i]->Process() == KaonZeroLInelastic)
-	    {Process[i] = 7;}
-	     
-	 if(geant_part[i]->Process() == CoulombScat)
-	    {Process[i] = 8;}
-	     
-	 if(geant_part[i]->Process() == muMinusCaptureAtRest)
-	    {Process[i] = 9;}
-	     
-	 if(geant_part[i]->Process() == ProtonInelastic)
-	    {Process[i] = 10;}
-			
-	 if(geant_part[i]->Process() == KaonPlusInelastic)
-	    {Process[i] = 11;}
-			
-	 if(geant_part[i]->Process() == hBertiniCaptureAtRest)
-	    {Process[i] = 12;}
-	     
-	
 
-	 // ### Saving the particles mother TrackID ###
-	 Mother[i]=geant_part[i]->Mother();
-	 // ### Saving the particles TrackID ###
-	 TrackId[i]=geant_part[i]->TrackId();
-	 // ### Saving the PDG Code ###
-	 pdg[i]=geant_part[i]->PdgCode();
-	 // ### Saving the particles start and end Energy ###
-	 Eng[i]=geant_part[i]->E();
-	 EndEng[i]=geant_part[i]->EndE();
+	 // ### Saving the particles mother, trackID, pdg, and energy ###
+	 Mother[i]    =geant_part[i]->Mother();
+	 TrackId[i]   =geant_part[i]->TrackId();
+	 pdg[i]       =geant_part[i]->PdgCode();
+         Mass[i]      =geant_part[i]->Mass();
+	 Eng[i]       =geant_part[i]->E();
+	 EndEng[i]    =geant_part[i]->EndE();
+
+          //std::cout<<"Saving particle "<<i<<"   PDG "<<pdg[i]<<" with energy "<<Eng[i]*1e3<<" MeV\n";
 	  
 	 // ### Saving the start and end Px, Py, Pz info ###
-	 Px[i]=geant_part[i]->Px();
-	 Py[i]=geant_part[i]->Py();
-	 Pz[i]=geant_part[i]->Pz();
-	 EndPx[i]=geant_part[i]->EndPx();
-	 EndPy[i]=geant_part[i]->EndPy();
-	 EndPz[i]=geant_part[i]->EndPz();
+	 Px[i]        =geant_part[i]->Px();
+	 Py[i]        =geant_part[i]->Py();
+	 Pz[i]        =geant_part[i]->Pz();
+	 EndPx[i]     =geant_part[i]->EndPx();
+	 EndPy[i]     =geant_part[i]->EndPy();
+	 EndPz[i]     =geant_part[i]->EndPz();
 	  
 	 // ### Saving the Start and End Point for this particle ###
-	 StartPointx[i]=geant_part[i]->Vx();
-	 StartPointy[i]=geant_part[i]->Vy();
-	 StartPointz[i]=geant_part[i]->Vz();
-	 EndPointx[i]=geant_part[i]->EndPosition()[0];
-	 EndPointy[i]=geant_part[i]->EndPosition()[1];
-	 EndPointz[i]=geant_part[i]->EndPosition()[2];
+	 StartPointx[i] =geant_part[i]->Vx();
+	 StartPointy[i] =geant_part[i]->Vy();
+	 StartPointz[i] =geant_part[i]->Vz();
+	 EndPointx[i]   =geant_part[i]->EndPosition()[0];
+	 EndPointy[i]   =geant_part[i]->EndPosition()[1];
+	 EndPointz[i]   =geant_part[i]->EndPosition()[2];
 
 	 // ### Saving the processes for this particle ###
-	 G4Process.push_back( geant_part[i]->Process() );
-	 G4FinalProcess.push_back( geant_part[i]->EndProcess() );
+	 G4Process.push_back(       geant_part[i]->Process()    );
+	 G4FinalProcess.push_back(  geant_part[i]->EndProcess() );
  	  
 	 // ### Saving the number of Daughters for this particle ###
 	 NumberDaughters[i]=geant_part[i]->NumberDaughters();
 
 	 // ### Save intermediary information for the primary track
 	 if(geant_part[i]->Process()==pri){
-	 NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();
-	 simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
+	  NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();
+	  simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
 				
 	 int iPrimPt = 0;	
 	 for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj)
@@ -1878,7 +1844,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("wcPz",wcPz,"wcPz[nwctrks]/F");  
   fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
   fTree->Branch("cTOF", cTOF, "cTOF[ntof]/F"); 
-  fTree->Branch("mass", &massObj, "massObj/F");
+  fTree->Branch("beamlineMass", &massObj, "massObj/F");
   }
 
   if( fSaveAerogelInfo ) {
@@ -1905,20 +1871,21 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
   fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
   fTree->Branch("pdg",pdg,"pdg[geant_list_size]/I");
-  fTree->Branch("Eng",Eng,"Eng[geant_list_size]/D");
-  fTree->Branch("Px",Px,"Px[geant_list_size]/D");
-  fTree->Branch("Py",Py,"Py[geant_list_size]/D");
-  fTree->Branch("Pz",Pz,"Pz[geant_list_size]/D");
-  fTree->Branch("EndEng",EndEng,"EndEng[geant_list_size]/D");
-  fTree->Branch("EndPx",EndPx,"EndPx[geant_list_size]/D");
-  fTree->Branch("EndPy",EndPy,"EndPy[geant_list_size]/D");
-  fTree->Branch("EndPz",EndPz,"EndPz[geant_list_size]/D");
-  fTree->Branch("StartPointx",StartPointx,"StartPointx[geant_list_size]/D");
-  fTree->Branch("StartPointy",StartPointy,"StartPointy[geant_list_size]/D");
-  fTree->Branch("StartPointz",StartPointz,"StartPointz[geant_list_size]/D");
-  fTree->Branch("EndPointx",EndPointx,"EndPointx[geant_list_size]/D");
-  fTree->Branch("EndPointy",EndPointy,"EndPointy[geant_list_size]/D");
-  fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/D");
+  fTree->Branch("Mass",Mass,"Mass[geant_list_size]/F");
+  fTree->Branch("Eng",Eng,"Eng[geant_list_size]/F");
+  fTree->Branch("Px",Px,"Px[geant_list_size]/F");
+  fTree->Branch("Py",Py,"Py[geant_list_size]/F");
+  fTree->Branch("Pz",Pz,"Pz[geant_list_size]/F");
+  fTree->Branch("EndEng",EndEng,"EndEng[geant_list_size]/F");
+  fTree->Branch("EndPx",EndPx,"EndPx[geant_list_size]/F");
+  fTree->Branch("EndPy",EndPy,"EndPy[geant_list_size]/F");
+  fTree->Branch("EndPz",EndPz,"EndPz[geant_list_size]/F");
+  fTree->Branch("StartPointx",StartPointx,"StartPointx[geant_list_size]/F");
+  fTree->Branch("StartPointy",StartPointy,"StartPointy[geant_list_size]/F");
+  fTree->Branch("StartPointz",StartPointz,"StartPointz[geant_list_size]/F");
+  fTree->Branch("EndPointx",EndPointx,"EndPointx[geant_list_size]/F");
+  fTree->Branch("EndPointy",EndPointy,"EndPointy[geant_list_size]/F");
+  fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/F");
   fTree->Branch("Process", Process, "Process[geant_list_size]/I");
   fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
   fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
@@ -1927,12 +1894,12 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("G4Process",&G4Process);//,"G4Process[geant_list_size]");
   fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");  
   fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/I");
-  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][5000]/D");
-  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][5000]/D");
-  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][5000]/D");
-  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][5000]/D");
-  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][5000]/D");
-  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][5000]/D");
+  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][5000]/F");
+  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][5000]/F");
+  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][5000]/F");
+  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][5000]/F");
+  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][5000]/F");
+  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][5000]/F");
   fTree->Branch("InteractionPoint"         ,&InteractionPoint         );
   fTree->Branch("InteractionPointType"     ,&InteractionPointType     );
   }
@@ -2186,6 +2153,7 @@ void lariat::AnaTreeT1034::ResetVars()
   geant_list_size=-999;
   for (int i = 0; i<kMaxPrimaries; ++i){
     pdg[i] = -99999;
+    Mass[i]=-99999;
     Eng[i] = -99999;
     Px[i] = -99999;
     Py[i] = -99999;
