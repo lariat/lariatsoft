@@ -310,6 +310,8 @@ private:
   float EndPx[kMaxPrimaries];			//<---End Px momentum of the particle
   float EndPy[kMaxPrimaries];			//<---End Py momentum of the particle
   float EndPz[kMaxPrimaries];			//<---End Pz momentum of the particle
+  float StartT[kMaxPrimaries];			//<---Start time of particle
+  float EndT[kMaxPrimaries];                    //<---End time of particle
   
   int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
   // ### Recording the process as a integer ###
@@ -889,8 +891,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 Eng[i]       =geant_part[i]->E();
 	 EndEng[i]    =geant_part[i]->EndE();
 
-          //std::cout<<"Saving particle "<<i<<"   PDG "<<pdg[i]<<" with energy "<<Eng[i]*1e3<<" MeV\n";
-	  
+        //std::cout<<"Saving particle "<<i<<"   PDG "<<pdg[i]<<" with energy "<<Eng[i]*1e3<<" MeV\n";
+          
 	 // ### Saving the start and end Px, Py, Pz info ###
 	 Px[i]        =geant_part[i]->Px();
 	 Py[i]        =geant_part[i]->Py();
@@ -898,7 +900,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 EndPx[i]     =geant_part[i]->EndPx();
 	 EndPy[i]     =geant_part[i]->EndPy();
 	 EndPz[i]     =geant_part[i]->EndPz();
-	  
+          
 	 // ### Saving the Start and End Point for this particle ###
 	 StartPointx[i] =geant_part[i]->Vx();
 	 StartPointy[i] =geant_part[i]->Vy();
@@ -906,6 +908,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 EndPointx[i]   =geant_part[i]->EndPosition()[0];
 	 EndPointy[i]   =geant_part[i]->EndPosition()[1];
 	 EndPointz[i]   =geant_part[i]->EndPosition()[2];
+
+         // ### Saving the start and end time
+         StartT[i]      =geant_part[i]->T();
+         EndT[i]        =geant_part[i]->EndT();
 
 	 // ### Saving the processes for this particle ###
 	 G4Process.push_back(       geant_part[i]->Process()    );
@@ -1886,6 +1892,8 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("EndPointx",EndPointx,"EndPointx[geant_list_size]/F");
   fTree->Branch("EndPointy",EndPointy,"EndPointy[geant_list_size]/F");
   fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/F");
+  fTree->Branch("StartT",StartT,"StartT[geant_list_size]/F");
+  fTree->Branch("EndT",EndT,"EndT[geant_list_size]/F");
   fTree->Branch("Process", Process, "Process[geant_list_size]/I");
   fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
   fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
@@ -2173,6 +2181,8 @@ void lariat::AnaTreeT1034::ResetVars()
     Mother[i] = -99999;
     TrackId[i] = -99999;
     process_primary[i] = -99999;
+    StartT[i] = -99999;
+    EndT[i]   = -99999;
 
   }
 
