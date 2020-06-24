@@ -891,8 +891,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	 Eng[i]       =geant_part[i]->E();
 	 EndEng[i]    =geant_part[i]->EndE();
 
-        //std::cout<<"Saving particle "<<i<<"   PDG "<<pdg[i]<<" with energy "<<Eng[i]*1e3<<" MeV\n";
-          
 	 // ### Saving the start and end Px, Py, Pz info ###
 	 Px[i]        =geant_part[i]->Px();
 	 Py[i]        =geant_part[i]->Py();
@@ -919,11 +917,39 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
  	  
 	 // ### Saving the number of Daughters for this particle ###
 	 NumberDaughters[i]=geant_part[i]->NumberDaughters();
-
+        
+         std::cout<<"Saving particle "<<i<<"   PDG "<<pdg[i]<<" with energy "<<Eng[i]*1e3<<" MeV\n";
+        
+         // ### Correcting the "end energy"
+         //
+         // When particles interact in-flight, like in pi- inelastic interactions
+         // for example, G4 sets the final kinetic energy to zero at its very
+         // last step. This isn't helpful!! Instead, set the end energy to be the 
+         // second-to-last trajectory point when this happens.
+         int Npts = geant_part[i]->NumberTrajectoryPoints();
+         if(    geant_part[i]->NumberTrajectoryPoints() >= 2
+            &&  (fabs(pdg[i]) == 211 || fabs(pdg[i]) == 13 || fabs(pdg[i]) == 321 || fabs(pdg[i]) == 2212) ){
+            
+            simb::MCTrajectory traj = geant_part[i]->Trajectory();
+            int last = Npts-1;
+            float E_end = traj.E(last);
+            float KE_end = E_end - geant_part[i]->Mass();
+            float dE_end = E_end - traj.E(last-1);
+            //TVector3 p2(traj.X(last),traj.Y(last),traj.Z(last));
+            //TVector3 p1(traj.X(last-1),traj.Y(last-1),traj.Z(last-1));
+            //float dl = (p2-p1).Mag();
+            // if the final KE is ~ 0 (within 0.1 MeV) and the final
+            // energy drop is significant (>10 MeV), then correct the final energy
+            if( KE_end <= 0.0001 && fabs(dE_end) > 0.010 ){ 
+              EndEng[i]    = traj.E(last-1);
+            }
+         }
+          
 	 // ### Save intermediary information for the primary track
 	 if(geant_part[i]->Process()==pri){
 	  NTrTrajPts[i]=geant_part[i]->NumberTrajectoryPoints();
 	  simb::MCTrajectory truetraj = geant_part[i]->Trajectory();
+
 				
 	 int iPrimPt = 0;	
 	 for(auto itTraj = truetraj.begin(); itTraj != truetraj.end(); ++itTraj)
