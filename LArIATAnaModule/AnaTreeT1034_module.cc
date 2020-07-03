@@ -116,7 +116,12 @@ public:
 private:
   // === Function used to reset all the variables  ===
   void ResetVars();
-  
+ 
+  // === Get path length of MCParticle in TPC ===
+  float TrajLengthInTpcAV(const simb::MCParticle*);
+  bool  IsPointInTpcAV(const simb::MCParticle*, int);
+  bool  IsPointInTpcAV(TVector3&);
+   
   // === Storing information into TTree ====
   TTree* fTree;
   
@@ -312,6 +317,9 @@ private:
   float EndPz[kMaxPrimaries];			//<---End Pz momentum of the particle
   float StartT[kMaxPrimaries];			//<---Start time of particle
   float EndT[kMaxPrimaries];                    //<---End time of particle
+  float PathLenInTpcAV[kMaxPrimaries];          //<---Particle path length in TPC
+  bool  StartInTpcAV[kMaxPrimaries];            //<---Is particle startpoint in TPC active vol?
+  bool  EndInTpcAV[kMaxPrimaries];              //<---Is particle endpoint in TPC active vol?
   
   int Process[kMaxPrimaries];	          	//<---Geant 4 process ID number
   // ### Recording the process as a integer ###
@@ -854,6 +862,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       	 // ### If this particle is primary, set = 1 ###
 	 if(geant_part[i]->Process()==pri)  process_primary[i]=1;
 	 else                               process_primary[i]=0;
+         
+         int last         = geant_part[i]->NumberTrajectoryPoints()-1;
           
 	 // ### Recording the process as a integer ###
 	 // 0 = primary
@@ -910,6 +920,11 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
          // ### Saving the start and end time
          StartT[i]      =geant_part[i]->T();
          EndT[i]        =geant_part[i]->EndT();
+
+         // ### Tpc AV
+         PathLenInTpcAV[i]= TrajLengthInTpcAV(geant_part[i]);
+         StartInTpcAV[i]  = IsPointInTpcAV(geant_part[i],0);
+         EndInTpcAV[i]    = IsPointInTpcAV(geant_part[i],last);
 
 	 // ### Saving the processes for this particle ###
 	 G4Process.push_back(       geant_part[i]->Process()    );
@@ -1916,6 +1931,9 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/F");
   fTree->Branch("StartT",StartT,"StartT[geant_list_size]/F");
   fTree->Branch("EndT",EndT,"EndT[geant_list_size]/F");
+  fTree->Branch("PathLenInTpcAV",PathLenInTpcAV,"PathLenInTpcAV[geant_list_size]/F");
+  fTree->Branch("StartInTpcAV",StartInTpcAV,"StartInTpcAV[geant_list_size]/O");
+  fTree->Branch("EndInTpcAV",EndInTpcAV,"EndInTpcAV[geant_list_size]/O");
   fTree->Branch("Process", Process, "Process[geant_list_size]/I");
   fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
   fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
@@ -1991,6 +2009,44 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][1000]/D");
   //fTree->Branch("TotalMIPESigmaShw",TotalMIPESigmaShw,"TotalMIPESigmaShw[2][nshowers]/D");
 
+}
+
+
+bool lariat::AnaTreeT1034::IsPointInTpcAV(TVector3& v){
+  // Get active volume boundary.
+  art::ServiceHandle<geo::Geometry> geom;
+  double xmin = -2.0 * geom->DetHalfWidth() - 1e-8;
+  double xmax = 2.0 * geom->DetHalfWidth() + 1e-8;
+  double ymin = -geom->DetHalfHeight() -1e-8;
+  double ymax = geom->DetHalfHeight() + 1e-8;
+  double zmin = 0. -1e-8;
+  double zmax = geom->DetLength() + 1e-8;
+  if(   (v.X()>=xmin && v.X()<=xmax)
+    &&  (v.Y()>=ymin && v.Y()<=ymax)
+    &&  (v.Z()>=zmin && v.Z()<=zmax) ) 
+    return true;
+  else 
+    return false;
+}
+
+bool lariat::AnaTreeT1034::IsPointInTpcAV(const simb::MCParticle* part, int i){
+  TVector3 p(part->Vx(i),part->Vy(i), part->Vz(i));
+  return IsPointInTpcAV(p);
+}
+
+
+float lariat::AnaTreeT1034::TrajLengthInTpcAV(const simb::MCParticle* part){
+  float L = 0.; 
+  int nPts = part->NumberTrajectoryPoints();
+  for(int i = 1; i < nPts; ++i) {
+    // if both this and previous point are in AV, add to total traj length
+    TVector3 pA(part->Vx(i-1),part->Vy(i-1),part->Vz(i-1));
+    TVector3 pB(part->Vx(i),part->Vy(i),part->Vz(i));
+    if( IsPointInTpcAV(pA) && IsPointInTpcAV(pB) ) {
+      L += (pB-pA).Mag();
+    }
+  }
+  return L;
 }
 
 void lariat::AnaTreeT1034::ResetVars()
@@ -2205,7 +2261,10 @@ void lariat::AnaTreeT1034::ResetVars()
     process_primary[i] = -99999;
     StartT[i] = -99999;
     EndT[i]   = -99999;
-
+    PathLenInTpcAV[i] = -9999;
+    StartInTpcAV[i] = false;
+    EndInTpcAV[i] = false;
+    
   }
 
 	for(int i = 0; i<kMaxPrimaryPart; i++){
