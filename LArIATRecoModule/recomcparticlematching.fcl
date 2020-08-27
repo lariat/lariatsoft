@@ -6,15 +6,13 @@ standard_recomcparticlematching:
   simulation_label:  "largeant"
   mctrack_label:     "mcreco"
   mcshower_label:    "mcreco"
-  hit_label:         "gaushit"
+  hit_label:         "trajcluster"
   cluster_label:     "trajcluster"
   track_label:       "pmtrack"
   shower_label:      "showerfinder"
-  #cluster_label:     "linecluster"
-  #track_label:       "pmtrack"
   match_tracks:      true
   match_showers:     false
-  debug:             true
+  debug:             false
 }
 
 END_PROLOG
