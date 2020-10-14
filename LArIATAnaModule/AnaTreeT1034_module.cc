@@ -156,9 +156,9 @@ private:
   double trkenddcosy[kMaxTrack];	//<---Direction of the track in the y coordinate at its end point
   double trkenddcosz[kMaxTrack];	//<---Direction of the track in the z coordinate at its end point
   double trklength[kMaxTrack];		//<---Calculated length of the track
-  double trkmomrange[kMaxTrack];	//<---Calculated track momentum from its length assuming a PID of 13
-  double trkmommschi2[kMaxTrack];	//<---Calculated track momentum from multiple scattering using Chi2
-  double trkmommsllhd[kMaxTrack];	//<---Calculated track momentum from multiple scattering
+//  double trkmomrange[kMaxTrack];	//<---Calculated track momentum from its length assuming a PID of 13
+//  double trkmommschi2[kMaxTrack];	//<---Calculated track momentum from multiple scattering using Chi2
+//  double trkmommsllhd[kMaxTrack];	//<---Calculated track momentum from multiple scattering
   int    trkWCtoTPCMatch[kMaxTrack];	//<---Using an association to see if there was a match between WC and TPC
   					//    0 = match, 1 = no match
    
@@ -168,7 +168,7 @@ private:
   double trkx[kMaxTrack][kMaxTrackHits];	//<---X position of the spacepoint
   double trky[kMaxTrack][kMaxTrackHits];	//<---Y position of the spacepoint
   double trkz[kMaxTrack][kMaxTrackHits];	//<---Z position of the spacepoint
-  double trkpitch[kMaxTrack][3];		//<---The track pitch in a given view (0 == Induction, 1 == Collection)
+//  double trkpitch[kMaxTrack][3];		//<---The track pitch in a given view (0 == Induction, 1 == Collection)
    
   // === Storing the tracks Calorimetry Information
   int    trkhits[kMaxTrack][2];
@@ -462,7 +462,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
 
   fSaveBeamlineInfo             = pset.get< bool >      ("SaveBeamlineInfo",true);
   fSaveGeantInfo                = pset.get< bool >      ("SaveGeantInfo",true);
-  fSaveMCShowerInfo             = pset.get< bool >      ("SaveMCShowerInfo",true);
+  fSaveMCShowerInfo             = pset.get< bool >      ("SaveMCShowerInfo", false);
   fSaveAerogelInfo              = pset.get< bool >      ("SaveAerogelInfo", false);
   //fTrigModuleLabel	 	= pset.get< std::string >("TriggerUtility");
   fHitsModuleLabel      	= pset.get< std::string >("HitsModuleLabel");
@@ -493,7 +493,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ### Get potentially useful services ###
   // #######################################
   // === Geometry Service ===
-  art::ServiceHandle<geo::Geometry> geom;
+  //art::ServiceHandle<geo::Geometry> geom;
   // === Liquid Argon Properties Services ===
   //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   // === Detector properties service ===
@@ -1397,6 +1397,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	//-----------------------------------------------------------------------
 	// get track information
 	//-----------------------------------------------------------------------
+
 	// returns type std::pair<recob::Track::Point_t, recob::Track::Point_t>
 	auto trackStartEnd = tracklist[i]->Extent();
 	// returns type std::pair<recob::Track::Vector_t, recob::Track::Vector_t>
@@ -1439,9 +1440,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	trklength[i]         = tracklist[i]->Length();
 	
 	// ### Calculating the track momentum using the momentum calculator ###
-	trkmomrange[i]    = trkm.GetTrackMomentum(trklength[i],13);
-	trkmommschi2[i]   = trkm.GetMomentumMultiScatterChi2(tracklist[i]);
-	trkmommsllhd[i]   = trkm.GetMomentumMultiScatterLLHD(tracklist[i]);
+	//trkmomrange[i]    = trkm.GetTrackMomentum(trklength[i],13);
+	//trkmommschi2[i]   = trkm.GetMomentumMultiScatterChi2(tracklist[i]);
+	//trkmommsllhd[i]   = trkm.GetMomentumMultiScatterLLHD(tracklist[i]);
 	
 	// ### Grabbing the SpacePoints associated with this track ###
 	ntrkhits[i] = fmsp.at(i).size();
@@ -1463,23 +1464,31 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	// ### Calculating the pitch for the track ###
 	// ###########################################
 	// === Looping over our two planes (0 == Induction, 1 == Collection) ===
-	for (int j = 0; j<2; ++j)
-	  {
-	    // ### Putting in a protective try in case we can't set the pitch ###
-	    try
-	      {
-		// ### If we are in the induction plane calculate the tracks pitch in that view ###
-		if (j==0)
-		  trkpitch[i][j] = lar::util::TrackPitchInView(*tracklist[i], geo::kU);
-		// ### If we are in the collection plane calculate the tracks pitch in that view ###
-		else if (j==1)
-		  trkpitch[i][j] = lar::util::TrackPitchInView(*(tracklist[i]), geo::kV);
-	      }//<---End Try statement
+        /* 
+        // By default, spacepoint 0 is used to calculate track pitch. If this is outside
+        // the TPC volume, an error will be thrown. So check for this first.
+        TVector3 trkStart(trkx[i][0],trky[i][0],trkz[i][0]);
+        std::cout<<"   first trajpoint: "<<trkStart.X()<<", "<<trkStart.Y()<<", "<<trkStart.Z()<<"\n";
+        if( IsPointInTpcAV(trkStart) ) {
+          std::cout<<"   in AV\n";
+	  for (int j = 0; j<2; ++j) {
+	    try  // ### Putting in a protective try in case we can't set the pitch ###
+	    {
+	      if      (j==0) trkpitch[i][j] = lar::util::TrackPitchInView(*tracklist[i], geo::kU);
+	      else if (j==1) trkpitch[i][j] = lar::util::TrackPitchInView(*(tracklist[i]), geo::kV);
+	    }//<---End Try statement
 	    catch( cet::exception &e)
-	      {mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
-		trkpitch[i][j] = 0;
-	      }//<---End catch statement
+	    {   
+                mf::LogWarning("AnaTree")<<"caught exeption "<<e<<"\n setting pitch to 0";
+	        trkpitch[i][j] = 0;
+	    }//<---End catch statement
+            std::cout<<"   plane "<<j<<"   pitch "<<trkpitch[i][j]<<"\n";
 	  }// <---End looping over planes (j)
+        } else {
+          trkpitch[i][0] = 0;
+          trkpitch[i][1] = 0;
+        }
+        */
 	
 	
 	// ----------------------------------------------------------------------------------------------------------------------------
@@ -1539,8 +1548,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	      }//<---End looping over calo points (j)
 	    
 	  }//<---End checking Calo info is valid  
-	
-	
+
 	// ----------------------------------------------------------------------------------------------------------------------------
 	// ----------------------------------------------------------------------------------------------------------------------------
 	//						PARTICLE ID INFOR FROM THIS TRACK INFORMATION
@@ -1567,7 +1575,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	      }//<---End PID loop (j)
 	    
 	  }//<---End checking PID info
-	
+
 	// ----------------------------------------------------------------------------------------------------------------------------
 	// ----------------------------------------------------------------------------------------------------------------------------
 	//						RECORDING THE TRAJECTORY POINTS FOR THIS TRACK
@@ -1605,7 +1613,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	    
 	  }//<---End iTrajPt
 	
-	if (fmthm.isValid()){
+        
+        if (fmthm.isValid()){
 	  auto vhit = fmthm.at(i);
 	  auto vmeta = fmthm.data(i);
 	  for (size_t h = 0; h < vhit.size(); ++h){
@@ -1764,6 +1773,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
 void lariat::AnaTreeT1034::beginJob()
 {
+  
+  
+
   // Implementation of optional member function here.
   art::ServiceHandle<art::TFileService> tfs;
   fTree = tfs->make<TTree>("anatree","analysis tree");
@@ -1795,14 +1807,14 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkenddcosz",trkenddcosz,"trkenddcosz[ntracks_reco]/D");
   fTree->Branch("trkWCtoTPCMatch",trkWCtoTPCMatch,"trkWCtoTPCMatch[ntracks_reco]/I");
   fTree->Branch("trklength",trklength,"trklength[ntracks_reco]/D");
-  fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/D");
-  fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/D");
-  fTree->Branch("trkmommsllhd",trkmommsllhd,"trkmommsllhd[ntracks_reco]/D");
-  fTree->Branch("ntrkhits",ntrkhits,"ntrkhits[ntracks_reco]/I");
+//  fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/D");
+//  fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/D");
+//  fTree->Branch("trkmommsllhd",trkmommsllhd,"trkmommsllhd[ntracks_reco]/D");
+  fTree->Branch("ntrkhits",&ntrkhits,"ntrkhits[ntracks_reco]/I");
   fTree->Branch("trkx",trkx,"trkx[ntracks_reco][1000]/D");
   fTree->Branch("trky",trky,"trky[ntracks_reco][1000]/D");
   fTree->Branch("trkz",trkz,"trkz[ntracks_reco][1000]/D");
-  fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/D");
+//  fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/D");
   fTree->Branch("trkhits",trkhits,"trkhits[ntracks_reco][2]/I");
   fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/D");
   fTree->Branch("trkdqdx",trkdqdx,"trkdqdx[ntracks_reco][2][1000]/D");
@@ -1811,7 +1823,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][1000][3]/D");
   fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
   fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
-  
+ 
   fTree->Branch("nTrajPoint", &nTrajPoint, "nTrajPoint[ntracks_reco]/I");
   fTree->Branch("pHat0_X", pHat0_X, "pHat0_X[ntracks_reco][1000]/D");
   fTree->Branch("pHat0_Y", pHat0_Y, "pHat0_Y[ntracks_reco][1000]/D");
@@ -1911,103 +1923,102 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("IDEPos", IDEPos, "IDEPos[maxTrackIDE][3]/D");
   
   if( fSaveGeantInfo ) {
-  fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
-  fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
-  fTree->Branch("pdg",pdg,"pdg[geant_list_size]/I");
-  fTree->Branch("Mass",Mass,"Mass[geant_list_size]/F");
-  fTree->Branch("Eng",Eng,"Eng[geant_list_size]/F");
-  fTree->Branch("Px",Px,"Px[geant_list_size]/F");
-  fTree->Branch("Py",Py,"Py[geant_list_size]/F");
-  fTree->Branch("Pz",Pz,"Pz[geant_list_size]/F");
-  fTree->Branch("EndEng",EndEng,"EndEng[geant_list_size]/F");
-  fTree->Branch("EndPx",EndPx,"EndPx[geant_list_size]/F");
-  fTree->Branch("EndPy",EndPy,"EndPy[geant_list_size]/F");
-  fTree->Branch("EndPz",EndPz,"EndPz[geant_list_size]/F");
-  fTree->Branch("StartPointx",StartPointx,"StartPointx[geant_list_size]/F");
-  fTree->Branch("StartPointy",StartPointy,"StartPointy[geant_list_size]/F");
-  fTree->Branch("StartPointz",StartPointz,"StartPointz[geant_list_size]/F");
-  fTree->Branch("EndPointx",EndPointx,"EndPointx[geant_list_size]/F");
-  fTree->Branch("EndPointy",EndPointy,"EndPointy[geant_list_size]/F");
-  fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/F");
-  fTree->Branch("StartT",StartT,"StartT[geant_list_size]/F");
-  fTree->Branch("EndT",EndT,"EndT[geant_list_size]/F");
-  fTree->Branch("PathLenInTpcAV",PathLenInTpcAV,"PathLenInTpcAV[geant_list_size]/F");
-  fTree->Branch("StartInTpcAV",StartInTpcAV,"StartInTpcAV[geant_list_size]/O");
-  fTree->Branch("EndInTpcAV",EndInTpcAV,"EndInTpcAV[geant_list_size]/O");
-  fTree->Branch("Process", Process, "Process[geant_list_size]/I");
-  fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
-  fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
-  fTree->Branch("TrackId",TrackId,"TrackId[geant_list_size]/I");
-  fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
-  fTree->Branch("G4Process",&G4Process);//,"G4Process[geant_list_size]");
-  fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");  
-  fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/I");
-  fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][5000]/F");
-  fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][5000]/F");
-  fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][5000]/F");
-  fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][5000]/F");
-  fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][5000]/F");
-  fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][5000]/F");
-  fTree->Branch("InteractionPoint"         ,&InteractionPoint         );
-  fTree->Branch("InteractionPointType"     ,&InteractionPointType     );
+    fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
+    fTree->Branch("geant_list_size",&geant_list_size,"geant_list_size/I");
+    fTree->Branch("pdg",pdg,"pdg[geant_list_size]/I");
+    fTree->Branch("Mass",Mass,"Mass[geant_list_size]/F");
+    fTree->Branch("Eng",Eng,"Eng[geant_list_size]/F");
+    fTree->Branch("Px",Px,"Px[geant_list_size]/F");
+    fTree->Branch("Py",Py,"Py[geant_list_size]/F");
+    fTree->Branch("Pz",Pz,"Pz[geant_list_size]/F");
+    fTree->Branch("EndEng",EndEng,"EndEng[geant_list_size]/F");
+    fTree->Branch("EndPx",EndPx,"EndPx[geant_list_size]/F");
+    fTree->Branch("EndPy",EndPy,"EndPy[geant_list_size]/F");
+    fTree->Branch("EndPz",EndPz,"EndPz[geant_list_size]/F");
+    fTree->Branch("StartPointx",StartPointx,"StartPointx[geant_list_size]/F");
+    fTree->Branch("StartPointy",StartPointy,"StartPointy[geant_list_size]/F");
+    fTree->Branch("StartPointz",StartPointz,"StartPointz[geant_list_size]/F");
+    fTree->Branch("EndPointx",EndPointx,"EndPointx[geant_list_size]/F");
+    fTree->Branch("EndPointy",EndPointy,"EndPointy[geant_list_size]/F");
+    fTree->Branch("EndPointz",EndPointz,"EndPointz[geant_list_size]/F");
+    fTree->Branch("StartT",StartT,"StartT[geant_list_size]/F");
+    fTree->Branch("EndT",EndT,"EndT[geant_list_size]/F");
+    fTree->Branch("PathLenInTpcAV",PathLenInTpcAV,"PathLenInTpcAV[geant_list_size]/F");
+    fTree->Branch("StartInTpcAV",StartInTpcAV,"StartInTpcAV[geant_list_size]/O");
+    fTree->Branch("EndInTpcAV",EndInTpcAV,"EndInTpcAV[geant_list_size]/O");
+    fTree->Branch("Process", Process, "Process[geant_list_size]/I");
+    fTree->Branch("NumberDaughters",NumberDaughters,"NumberDaughters[geant_list_size]/I");
+    fTree->Branch("Mother",Mother,"Mother[geant_list_size]/I");
+    fTree->Branch("TrackId",TrackId,"TrackId[geant_list_size]/I");
+    fTree->Branch("process_primary",process_primary,"process_primary[geant_list_size]/I");
+    fTree->Branch("G4Process",&G4Process);//,"G4Process[geant_list_size]");
+    fTree->Branch("G4FinalProcess",&G4FinalProcess);//,"G4FinalProcess[geant_list_size]");  
+    fTree->Branch("NTrTrajPts",NTrTrajPts,"NTrTrajPts[no_primaries]/I");
+    fTree->Branch("MidPosX",MidPosX,"MidPosX[no_primaries][5000]/F");
+    fTree->Branch("MidPosY",MidPosY,"MidPosY[no_primaries][5000]/F");
+    fTree->Branch("MidPosZ",MidPosZ,"MidPosZ[no_primaries][5000]/F");
+    fTree->Branch("MidPx",MidPx,"MidPx[no_primaries][5000]/F");
+    fTree->Branch("MidPy",MidPy,"MidPy[no_primaries][5000]/F");
+    fTree->Branch("MidPz",MidPz,"MidPz[no_primaries][5000]/F");
+    fTree->Branch("InteractionPoint"         ,&InteractionPoint         );
+    fTree->Branch("InteractionPointType"     ,&InteractionPointType     );
   }
 
   if( fSaveMCShowerInfo ) {
-  fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
-  fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
-  fTree->Branch("mcshwr_pdg", mcshwr_pdg, "mcshwr_pdg[no_mcshowers]/D");
-  fTree->Branch("mcshwr_TrackId", mcshwr_TrackId, "mcshwr_TrackId[no_mcshowers]/I");
-  fTree->Branch("mcshwr_startX", mcshwr_startX, "mcshwr_startX[no_mcshowers]/D");
-  fTree->Branch("mcshwr_startY", mcshwr_startY, "mcshwr_startY[no_mcshowers]/D");
-  fTree->Branch("mcshwr_startZ", mcshwr_startZ, "mcshwr_startZ[no_mcshowers]/D");
-  fTree->Branch("mcshwr_endX", mcshwr_endX, "mcshwr_endX[no_mcshowers]/D");
-  fTree->Branch("mcshwr_endY", mcshwr_endY, "mcshwr_endY[no_mcshowers]/D");
-  fTree->Branch("mcshwr_endZ", mcshwr_endZ, "mcshwr_endZ[no_mcshowers]/D");
-  fTree->Branch("mcshwr_CombEngX", mcshwr_CombEngX, "mcshwr_CombEngX[no_mcshowers]/D");
-  fTree->Branch("mcshwr_CombEngY", mcshwr_CombEngY, "mcshwr_CombEngY[no_mcshowers]/D");
-  fTree->Branch("mcshwr_CombEngZ", mcshwr_CombEngZ, "mcshwr_CombEngZ[no_mcshowers]/D");
-  fTree->Branch("mcshwr_CombEngPx", mcshwr_CombEngPx, "mcshwr_CombEngPx[no_mcshowers]/D");
-  fTree->Branch("mcshwr_CombEngPy", mcshwr_CombEngPy, "mcshwr_CombEngPy[no_mcshowers]/D");
-  fTree->Branch("mcshwr_CombEngPz", mcshwr_CombEngPz, "mcshwr_CombEngPz[no_mcshowers]/D");
-  fTree->Branch("mcshwr_CombEngE", mcshwr_CombEngE, "mcshwr_CombEngE[no_mcshowers]/D");
-  fTree->Branch("mcshwr_dEdx", mcshwr_dEdx, "mcshwr_dEdx[no_mcshowers]/D");
-  fTree->Branch("mcshwr_StartDirX", mcshwr_StartDirX, "mcshwr_StartDirX[no_mcshowers]/D");
-  fTree->Branch("mcshwr_StartDirY", mcshwr_StartDirY, "mcshwr_StartDirY[no_mcshowers]/D");
-  fTree->Branch("mcshwr_StartDirZ", mcshwr_StartDirZ, "mcshwr_StartDirZ[no_mcshowers]/D");
-  fTree->Branch("mcshwr_isEngDeposited", mcshwr_isEngDeposited, "mcshwr_isEngDeposited[no_mcshowers]/I");
-  fTree->Branch("mcshwr_Motherpdg", mcshwr_Motherpdg, "mcshwr_Motherpdg[no_mcshowers]/I");
-  fTree->Branch("mcshwr_MotherTrkId", mcshwr_MotherTrkId, "mcshwr_MotherTrkId[no_mcshowers]/I");
-  fTree->Branch("mcshwr_MotherstartX", mcshwr_MotherstartX, "mcshwr_MotherstartX[no_mcshowers]/I");
-  fTree->Branch("mcshwr_MotherstartY", mcshwr_MotherstartY, "mcshwr_MotherstartY[no_mcshowers]/I");
-  fTree->Branch("mcshwr_MotherstartZ", mcshwr_MotherstartZ, "mcshwr_MotherstartZ[no_mcshowers]/I");
-  fTree->Branch("mcshwr_MotherendX", mcshwr_MotherendX, "mcshwr_MotherendX[no_mcshowers]/I");
-  fTree->Branch("mcshwr_MotherendY", mcshwr_MotherendY, "mcshwr_MotherendY[no_mcshowers]/I");
-  fTree->Branch("mcshwr_MotherendZ", mcshwr_MotherendZ, "mcshwr_MotherendZ[no_mcshowers]/I");
-  
-  fTree->Branch("mcshwr_Ancestorpdg", mcshwr_Ancestorpdg, "mcshwr_Ancestorpdg[no_mcshowers]/I");
-  fTree->Branch("mcshwr_AncestorTrkId", mcshwr_AncestorTrkId, "mcshwr_AncestorTrkId[no_mcshowers]/I");
-  fTree->Branch("mcshwr_AncestorstartX", mcshwr_AncestorstartX, "mcshwr_AncestorstartX[no_mcshowers]/I");
-  fTree->Branch("mcshwr_AncestorstartY", mcshwr_AncestorstartY, "mcshwr_AncestorstartY[no_mcshowers]/I");
-  fTree->Branch("mcshwr_AncestorstartZ", mcshwr_AncestorstartZ, "mcshwr_AncestorstartZ[no_mcshowers]/I");
-  fTree->Branch("mcshwr_AncestorendX", mcshwr_AncestorendX, "mcshwr_AncestorendX[no_mcshowers]/I");
-  fTree->Branch("mcshwr_AncestorendY", mcshwr_AncestorendY, "mcshwr_AncestorendY[no_mcshowers]/I");
-  fTree->Branch("mcshwr_AncestorendZ", mcshwr_AncestorendZ, "mcshwr_AncestorendZ[no_mcshowers]/I");
+    fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
+    fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
+    fTree->Branch("mcshwr_pdg", mcshwr_pdg, "mcshwr_pdg[no_mcshowers]/D");
+    fTree->Branch("mcshwr_TrackId", mcshwr_TrackId, "mcshwr_TrackId[no_mcshowers]/I");
+    fTree->Branch("mcshwr_startX", mcshwr_startX, "mcshwr_startX[no_mcshowers]/D");
+    fTree->Branch("mcshwr_startY", mcshwr_startY, "mcshwr_startY[no_mcshowers]/D");
+    fTree->Branch("mcshwr_startZ", mcshwr_startZ, "mcshwr_startZ[no_mcshowers]/D");
+    fTree->Branch("mcshwr_endX", mcshwr_endX, "mcshwr_endX[no_mcshowers]/D");
+    fTree->Branch("mcshwr_endY", mcshwr_endY, "mcshwr_endY[no_mcshowers]/D");
+    fTree->Branch("mcshwr_endZ", mcshwr_endZ, "mcshwr_endZ[no_mcshowers]/D");
+    fTree->Branch("mcshwr_CombEngX", mcshwr_CombEngX, "mcshwr_CombEngX[no_mcshowers]/D");
+    fTree->Branch("mcshwr_CombEngY", mcshwr_CombEngY, "mcshwr_CombEngY[no_mcshowers]/D");
+    fTree->Branch("mcshwr_CombEngZ", mcshwr_CombEngZ, "mcshwr_CombEngZ[no_mcshowers]/D");
+    fTree->Branch("mcshwr_CombEngPx", mcshwr_CombEngPx, "mcshwr_CombEngPx[no_mcshowers]/D");
+    fTree->Branch("mcshwr_CombEngPy", mcshwr_CombEngPy, "mcshwr_CombEngPy[no_mcshowers]/D");
+    fTree->Branch("mcshwr_CombEngPz", mcshwr_CombEngPz, "mcshwr_CombEngPz[no_mcshowers]/D");
+    fTree->Branch("mcshwr_CombEngE", mcshwr_CombEngE, "mcshwr_CombEngE[no_mcshowers]/D");
+    fTree->Branch("mcshwr_dEdx", mcshwr_dEdx, "mcshwr_dEdx[no_mcshowers]/D");
+    fTree->Branch("mcshwr_StartDirX", mcshwr_StartDirX, "mcshwr_StartDirX[no_mcshowers]/D");
+    fTree->Branch("mcshwr_StartDirY", mcshwr_StartDirY, "mcshwr_StartDirY[no_mcshowers]/D");
+    fTree->Branch("mcshwr_StartDirZ", mcshwr_StartDirZ, "mcshwr_StartDirZ[no_mcshowers]/D");
+    fTree->Branch("mcshwr_isEngDeposited", mcshwr_isEngDeposited, "mcshwr_isEngDeposited[no_mcshowers]/I");
+    fTree->Branch("mcshwr_Motherpdg", mcshwr_Motherpdg, "mcshwr_Motherpdg[no_mcshowers]/I");
+    fTree->Branch("mcshwr_MotherTrkId", mcshwr_MotherTrkId, "mcshwr_MotherTrkId[no_mcshowers]/I");
+    fTree->Branch("mcshwr_MotherstartX", mcshwr_MotherstartX, "mcshwr_MotherstartX[no_mcshowers]/I");
+    fTree->Branch("mcshwr_MotherstartY", mcshwr_MotherstartY, "mcshwr_MotherstartY[no_mcshowers]/I");
+    fTree->Branch("mcshwr_MotherstartZ", mcshwr_MotherstartZ, "mcshwr_MotherstartZ[no_mcshowers]/I");
+    fTree->Branch("mcshwr_MotherendX", mcshwr_MotherendX, "mcshwr_MotherendX[no_mcshowers]/I");
+    fTree->Branch("mcshwr_MotherendY", mcshwr_MotherendY, "mcshwr_MotherendY[no_mcshowers]/I");
+    fTree->Branch("mcshwr_MotherendZ", mcshwr_MotherendZ, "mcshwr_MotherendZ[no_mcshowers]/I");
+    fTree->Branch("mcshwr_Ancestorpdg", mcshwr_Ancestorpdg, "mcshwr_Ancestorpdg[no_mcshowers]/I");
+    fTree->Branch("mcshwr_AncestorTrkId", mcshwr_AncestorTrkId, "mcshwr_AncestorTrkId[no_mcshowers]/I");
+    fTree->Branch("mcshwr_AncestorstartX", mcshwr_AncestorstartX, "mcshwr_AncestorstartX[no_mcshowers]/I");
+    fTree->Branch("mcshwr_AncestorstartY", mcshwr_AncestorstartY, "mcshwr_AncestorstartY[no_mcshowers]/I");
+    fTree->Branch("mcshwr_AncestorstartZ", mcshwr_AncestorstartZ, "mcshwr_AncestorstartZ[no_mcshowers]/I");
+    fTree->Branch("mcshwr_AncestorendX", mcshwr_AncestorendX, "mcshwr_AncestorendX[no_mcshowers]/I");
+    fTree->Branch("mcshwr_AncestorendY", mcshwr_AncestorendY, "mcshwr_AncestorendY[no_mcshowers]/I");
+    fTree->Branch("mcshwr_AncestorendZ", mcshwr_AncestorendZ, "mcshwr_AncestorendZ[no_mcshowers]/I");
+    fTree->Branch("nshowers",&nshowers,"nshowers/I");
+    fTree->Branch("shwID",shwID,"shwI[nshowers]/I");
+    fTree->Branch("BestPlaneShw",BestPlaneShw,"BestPlaneShw[nshowers]/I");
+    fTree->Branch("LengthShw",LengthShw,"LengthShw[nshowers]/D");
+    fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][1000]/D");
+    // fTree->Branch("CosStartSigmaShw",CosStartSigmaShw,"CosStartSigmaShw[3][nshowers]/D");
+    fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][1000]/D");
+    //fTree->Branch("CosStartXYZSigmaShw",CosStartXYZSigmaShw,"CosStartXYZSigmaShw[3][nshowers]/D");
+    fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][1000]/D");
+    //fTree->Branch("TotalESigmaShw",TotalESigmaShw,"TotalESigmaShw[2][nshowers]/D");
+    fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][1000]/D");
+    //fTree->Branch("dEdxSigmaPerPlaneShw",dEdxSigmaPerPlaneShw,"dEdxSigmaPerPlaneShw[2][nshowers]/D");
+    fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][1000]/D");
+    //fTree->Branch("TotalMIPESigmaShw",TotalMIPESigmaShw,"TotalMIPESigmaShw[2][nshowers]/D");
   }
       
-  fTree->Branch("nshowers",&nshowers,"nshowers/I");
-  fTree->Branch("shwID",shwID,"shwI[nshowers]/I");
-  fTree->Branch("BestPlaneShw",BestPlaneShw,"BestPlaneShw[nshowers]/I");
-  fTree->Branch("LengthShw",LengthShw,"LengthShw[nshowers]/D");
-  fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][1000]/D");
-  // fTree->Branch("CosStartSigmaShw",CosStartSigmaShw,"CosStartSigmaShw[3][nshowers]/D");
-  fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][1000]/D");
-  //fTree->Branch("CosStartXYZSigmaShw",CosStartXYZSigmaShw,"CosStartXYZSigmaShw[3][nshowers]/D");
-  fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][1000]/D");
-  //fTree->Branch("TotalESigmaShw",TotalESigmaShw,"TotalESigmaShw[2][nshowers]/D");
-  fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][1000]/D");
-  //fTree->Branch("dEdxSigmaPerPlaneShw",dEdxSigmaPerPlaneShw,"dEdxSigmaPerPlaneShw[2][nshowers]/D");
-  fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][1000]/D");
-  //fTree->Branch("TotalMIPESigmaShw",TotalMIPESigmaShw,"TotalMIPESigmaShw[2][nshowers]/D");
 
 }
 
@@ -2015,12 +2026,12 @@ void lariat::AnaTreeT1034::beginJob()
 bool lariat::AnaTreeT1034::IsPointInTpcAV(TVector3& v){
   // Get active volume boundary.
   art::ServiceHandle<geo::Geometry> geom;
-  double xmin = -2.0 * geom->DetHalfWidth() - 1e-8;
-  double xmax = 2.0 * geom->DetHalfWidth() + 1e-8;
-  double ymin = -geom->DetHalfHeight() -1e-8;
-  double ymax = geom->DetHalfHeight() + 1e-8;
-  double zmin = 0. -1e-8;
-  double zmax = geom->DetLength() + 1e-8;
+  float   xmin = 0. +1e-8;
+  float   xmax = 2.0 * geom->DetHalfWidth() - 1e-8;
+  float   ymin = -geom->DetHalfHeight() + 1e-8;
+  float   ymax = geom->DetHalfHeight()  - 1e-8;
+  float   zmin = 0. +1e-8;
+  float   zmax = geom->DetLength() - 1e-8;
   if(   (v.X()>=xmin && v.X()<=xmax)
     &&  (v.Y()>=ymin && v.Y()<=ymax)
     &&  (v.Z()>=zmin && v.Z()<=zmax) ) 
@@ -2092,9 +2103,9 @@ void lariat::AnaTreeT1034::ResetVars()
     trkenddcosy[i] = -99999;
     trkenddcosz[i] = -99999;
     trklength[i] = -99999;
-    trkmomrange[i] = -99999;
-    trkmommschi2[i] = -99999;
-    trkmommsllhd[i] = -99999;
+    //trkmomrange[i] = -99999;
+    //trkmommschi2[i] = -99999;
+    //trkmommsllhd[i] = -99999;
     ntrkhits[i] = -99999;
     for (int j = 0; j<kMaxTrackHits; ++j){
       trkx[i][j] = -99999;
@@ -2108,7 +2119,7 @@ void lariat::AnaTreeT1034::ResetVars()
       trjPt_Z[i][j] = -99999;
     }
     for (int j = 0; j<2; ++j){
-      trkpitch[i][j] = -99999;
+      //trkpitch[i][j] = -99999;
       trkhits[i][j] = -99999; 
       trkke[i][j] = -99999;
       trkpida[i][j] = -99999;
