@@ -160,7 +160,7 @@ private:
 //  double trkmommschi2[kMaxTrack];	//<---Calculated track momentum from multiple scattering using Chi2
 //  double trkmommsllhd[kMaxTrack];	//<---Calculated track momentum from multiple scattering
   int    trkWCtoTPCMatch[kMaxTrack];	//<---Using an association to see if there was a match between WC and TPC
-  					//    0 = match, 1 = no match
+  					//    1 = match, 0 = no match
    
    
   // === Storing the tracks SpacePoints (Individual 3D points)
