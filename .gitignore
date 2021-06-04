@@ -3,3 +3,5 @@
 \#*
 *.root
 *.swp
+*.bak
+*.backup

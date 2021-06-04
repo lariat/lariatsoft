@@ -7,24 +7,7 @@ services:
 {
   # Load the service that manages root files for histograms.
   TFileService: { fileName: "OpDetExample_histo.root" }
-  TimeTracker:  {}
-  RandomNumberGenerator: {} #ART native random number generator
-  #message:      @local::standard_info
-  message:       @local::standard_debug
-  scheduler:    { } 	     
   @table::lariat_services
-}
-
-# Configuration of the messaging service to show/hide
-# debug messages from the optical hit finding algorithms.
-# (To suppress messages, set limit: 0).
-services.message.destinations.debugmsg: {
-  type: "cout"
-  threshold: "INFO"
-  append: true
-  categories: {
-    OpHitBuilder: { limit: 1e6 timespan: 0 }
-  }
 }
 
 source:
@@ -75,7 +58,7 @@ physics:
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
-#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#block and put it in the trigger_paths then you need to put a SelectEvents: [XXX]
 #entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
 outputs:
 {

@@ -83,7 +83,7 @@ public:
   void endJob() override;
   void endRun(art::Run & r) override;
   void endSubRun(art::SubRun & sr) override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void respondToCloseInputFile(art::FileBlock const & fb) override;
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const & fb) override;
@@ -122,7 +122,8 @@ namespace cluster{
 //			    Parameter Set
 // ---------------------------------------------------------------
 DBClusterT1034::DBClusterT1034(fhicl::ParameterSet const & pset)
-: fDBScan(pset.get< fhicl::ParameterSet >("DBScanAlg"))
+: EDProducer(pset),
+  fDBScan(pset.get< fhicl::ParameterSet >("DBScanAlg"))
 // Initialize member data here.
 {
    this->reconfigure(pset);
@@ -248,7 +249,7 @@ void DBClusterT1034::produce(art::Event & evt)
 	 // #######################################
 	 std::cout<<"Loop over fps.size"<<std::endl;
 	 for(unsigned int j = 0; j < fDBScan.fps.size(); ++j){
-	   LOG_VERBATIM("DBClusterT1034") << "j = " << j 
+	   MF_LOG_VERBATIM("DBClusterT1034") << "j = " << j 
 					  << "\nallhits.size() = " << allhits.size()
 					  << " , fDBScan.fps.size() = " << fDBScan.fps.size();
 	   if(allhits.size() != fDBScan.fps.size()) break;

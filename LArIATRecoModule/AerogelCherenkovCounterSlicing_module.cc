@@ -61,7 +61,7 @@ public:
   void endJob() override;
   void endRun(art::Run & r) override;
   void endSubRun(art::SubRun & sr) override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void respondToCloseInputFile(art::FileBlock const & fb) override;
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const & fb) override;
@@ -76,7 +76,9 @@ private:
 };
 
 
-lrm::AerogelCherenkovCounterSlicing::AerogelCherenkovCounterSlicing(fhicl::ParameterSet const & p) : fAGCounterAlg(p.get< fhicl::ParameterSet > ("AGBuilderAlg"))
+lrm::AerogelCherenkovCounterSlicing::AerogelCherenkovCounterSlicing(fhicl::ParameterSet const & p)
+: EDProducer(p),
+  fAGCounterAlg(p.get< fhicl::ParameterSet > ("AGBuilderAlg"))
 {
   // Call appropriate produces<>() functions here.
   // Configures param set

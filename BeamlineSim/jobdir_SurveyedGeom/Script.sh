@@ -1,14 +1,14 @@
-source /grid/fermiapp/products/common/etc/setups.sh
-source /grid/fermiapp/products/larsoft/setup
+#!/bin/bash
+
+source  /cvmfs/mu2e.opensciencegrid.org/artexternals/setup
+source /cvmfs/fermilab.opensciencegrid.org/products/common/etc/setup
+source /cvmfs/lariat.opensciencegrid.org/setup_lariat.sh
 export GROUP=lariat
 export JOBSUB_GROUP=lariat
-export PRODUCTS=/grid/fermiapp/products/lariat/:${PRODUCTS}
-setup jobsub_client
-setup G4beamline v2_16 -q e6:prof:nu
-setup git
-
-setup ifdhc
-
+setup jobsub_client v1_2_6_2
+setup G4beamline v2_16a -q e6:prof:nu
+setup ifdhc v2_3_0 
+setup root v5_34_23 -q e6:prof
 jobsize=Size
 SUBspillcount=subspillcountn
 first=$((${PROCESS}*${jobsize}))
@@ -38,6 +38,7 @@ echo '$REALUSER: ' $REALUSER
 
 ifdh cp MergedAtStartLinesim_input.root /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$SUBSPILL.root
 ifdh cp MergedAtStartLinesim_input.pickle /pnfs/lariat/scratch/users/$REALUSER/MCdata/MergedAtStartLinesim_input$SUBSPILL.pickle
+ifdh cp sim_input.root /pnfs/lariat/scratch/users/$REALUSER/RawG4BLFiles/sim_input$SUBSPILL.root
 ls -lrth
 echo $CONDOR_DIR_INPUT
 

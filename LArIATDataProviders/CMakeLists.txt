@@ -4,10 +4,10 @@ art_make( NO_PLUGINS
           LIBRARY_NAME  LArIATDataProviders
           LIB_LIBRARIES
   	                wda
-	                nutools_IFDatabase
+	                nuevdb_IFDatabase
                         larcorealg_Geometry
                         ${MF_MESSAGELOGGER}
-                        ${MF_UTILITIES}
+                        
                         cetlib cetlib_except
                         ${FHICLCPP}
                         ${ROOT_BASIC_LIB_LIST}

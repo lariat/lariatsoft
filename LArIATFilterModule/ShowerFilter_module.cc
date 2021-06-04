@@ -31,16 +31,15 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "canvas/Persistency/Common/FindOneP.h" 
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include <TH2F.h>
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "cetlib/maybe_ref.h"
-#include "larsim/MCCheater/ParticleInventoryService.h"
 
 // ###########################
 // ### LArIATsoft Includes ###
@@ -52,13 +51,15 @@
 #include "larcore/Geometry/Geometry.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "larsim/MCCheater/BackTracker.h"
+#include "larsim/MCCheater/ParticleInventoryService.h"
+
 // ####################
 // ### C++ Includes ###
 // ####################
 #include <iostream>
 #include <memory>
 
-const int kMaxTrack      = 1000;  //maximum number of tracks
+//const int kMaxTrack      = 1000; // unused  //maximum number of tracks
 
 class ShowerFilter;
 
@@ -80,8 +81,7 @@ public:
   // Selected optional functions.
   void beginJob() override;
   void endJob() override;
-
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p);
   bool CutCheck(std::vector<double> lengths, double lcut, double ncut);
 
 private:
@@ -100,7 +100,6 @@ double fPassingRatioScale;
 double fConeLength;
 double fStartRadius;
 double fEndRadius;
-
 double fWC2TPCCircularXCenter;
 double fWC2TPCCircularYCenter;
 double fWC2TPCCircularRadius;
@@ -131,7 +130,7 @@ TVector3 TruthMom;
 
 
 ShowerFilter::ShowerFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.
@@ -175,6 +174,7 @@ TruthMom.SetZ(0.0);
     // WC info
     art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
     std::vector<art::Ptr<ldp::WCTrack> > wctrack;
+<<<<<<< HEAD
    
     if(e.getByLabel(fWCTrackLabel, wctrackHandle))
       art::fill_ptr_vector(wctrack, wctrackHandle);
@@ -325,19 +325,13 @@ if(!bData && !bDoneWC2TPC){
     double YDist=Tracklist[i]->Start().Y() - yface-fWC2TPCCircularYCenter;
     
     if((XDist*XDist+YDist*YDist)>(fWC2TPCCircularRadius*fWC2TPCCircularRadius) || (acos(wcz.Dot(tpcz) / (wcz.Mag() * tpcz.Mag())) > fWC2TPCAlphaCut)){continue;}
-/*     if(
-      (Tracklist[i]->Start().X() - xface) < -2 || 
-      (Tracklist[i]->Start().X() - xface) > 6  ||
-      (Tracklist[i]->Start().Y() - xface) > -3 ||
-      (Tracklist[i]->Start().Y() - xface) > 6 ||
-       acos(wcz.Dot(tpcz) / (wcz.Mag() * tpcz.Mag())) > fWC2TPCAlphaCut) {continue;} */
     //std::cout << "space match " << std::endl;
     //closest_track_index = i;
     
     nMatched += 1;
     
     //Get the vectors necessary for the cone cut.
-    MatchedTrkStartDir=Tracklist[i]->DirectionAtPoint(0);
+    MatchedTrkStartDir=Tracklist[i]->DirectionAtPoint<TVector3>(0);
 // The Z component of the direction is negative sometimes, indicating the track is in reverse. If it's extremely backgoing (Z<-.95), flip the tracjectory to make it point forward. Also keep a count of how often this happens.
     if(MatchedTrkStartDir[2]<-0.95)
     {
@@ -345,8 +339,8 @@ if(!bData && !bDoneWC2TPC){
     }
 //also, I bet that means the track start and end position are reversed, so we'll make sure the track starts upstream by flipping the start and end point if the end point is upstream.
 //Again keep a counter and hope it increases when the direction counter increases.
-    MatchedTrkStartPos=Tracklist[i]->Vertex();
-    MatchedTrkEndPos=Tracklist[i]->End();
+    MatchedTrkStartPos=Tracklist[i]->Vertex<TVector3>();
+    MatchedTrkEndPos=Tracklist[i]->End<TVector3>();
     if(MatchedTrkEndPos[2]<MatchedTrkStartPos[2]){MatchedTrkStartPos=MatchedTrkEndPos;  ++reversetrackcount;}
   }
   
@@ -356,8 +350,6 @@ if(!bData && !bDoneWC2TPC){
     return false; 
   }
 }
-
-
   fMomWCPass->Fill(mom);
    int shortTrack=0;
   // int longTrack=0;
@@ -368,18 +360,14 @@ if(!bData && !bDoneWC2TPC){
      trkLengthvect.push_back(Tracklist[p]->Length()); //Get the length of the track   
 //Time to use the cone method to find whether this track should matter or not.  First get the start and end position of this track, just in case the track is in reverse.
 
-     TVector3 TrkStart=Tracklist[p]->Vertex();
-     TVector3 TrkEnd=Tracklist[p]->End();
+     TVector3 TrkStart=Tracklist[p]->Vertex<TVector3>();
+     TVector3 TrkEnd=Tracklist[p]->End<TVector3>();
      
 //Though the cone doesn't have to start at its geometric vertex , finding where that vertex would be is helpful for some trig. As the axis of the cone is along the wc2tpc track, the vertex is found projecting backwards along the wc2tpc track, using cone
 //parameters to define how far back to project.
 
      double L_project=fStartRadius*fConeLength/(fEndRadius-fStartRadius);
      TVector3 ConeVertex=MatchedTrkStartPos-L_project*MatchedTrkStartDir;
-     //std::cout<<"For this event, the Matched Track Starts at: ("<<MatchedTrkStartPos[0]<<", "<<MatchedTrkStartPos[1]<<", "<<MatchedTrkStartPos[2]<<")."<<std::endl;
-     //std::cout<<"For this event, the Cone Vertex is at: ("<<ConeVertex[0]<<", "<<ConeVertex[1]<<", "<<ConeVertex[2]<<")."<<std::endl;
-     //std::cout<<"For this trk, the Track Start is at: ("<<TrkStart[0]<<", "<<TrkStart[1]<<", "<<TrkStart[2]<<")."<<std::endl;
-     //std::cout<<"For this trk, the Track End is at: ("<<TrkEnd[0]<<", "<<TrkEnd[1]<<", "<<TrkEnd[2]<<")."<<std::endl;
 //For the start and end pos of this track, we need the unit vector from the cone vertex to those points.
         
      TVector3 VertextoStart=(TrkStart-ConeVertex).Unit();

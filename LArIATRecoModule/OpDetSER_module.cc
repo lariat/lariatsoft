@@ -18,8 +18,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -60,7 +60,7 @@ public:
   void endJob() override;
   void endRun(art::Run const & r) override;
   void endSubRun(art::SubRun const & sr) override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   std::vector<float> FitSER(TH1D* h_SER, float x1, float x2, float meanSet, float width, float pedMaxWidth, bool refit);
 
 private:
@@ -141,7 +141,7 @@ private:
   short               SER_bins[10];
   char		      histName[100];
   char                histTitle[100];
-  char		      buffer[200];
+  //char		      buffer[200]; // unused
   std::string         fDAQModule;
   std::string         fInstanceName;
 

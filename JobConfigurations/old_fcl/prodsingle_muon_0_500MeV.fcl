@@ -84,7 +84,7 @@ physics:
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
-#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#block and put it in the trigger_paths then you need to put a SelectEvents: [XXX]
 #entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
 outputs:
 {
@@ -92,6 +92,8 @@ outputs:
  {
    module_type: RootOutput
    fileName:    "single_muon.root" #default file name, can override from command line with -o or --output
+   dataTier:    "reconstructed-2d"
+   compressionLevel: 1
  }
 }
 
@@ -166,9 +168,10 @@ physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
 physics.producers.pmtrack.ClusterModuleLabel: "linecluster"
 physics.producers.pmtrack.HitModuleLabel:     "linecluster"
-physics.producers.pmtrack.MinSeedSize2ndPass: 3
-physics.producers.pmtrack.FlipToBeam: true
-physics.producers.pmtrack.RunVertexing: true
+physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
+physics.producers.pmtrack.PMAlgTracking.RunVertexing: true
+
 
 ################################################################
 ################################################################

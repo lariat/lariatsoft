@@ -112,7 +112,7 @@ ana: [ anatree ]
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
-#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#block and put it in the trigger_paths then you need to put a SelectEvents: [XXX]
 #entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
 outputs:
 {
@@ -196,7 +196,7 @@ physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.pid.TrackModuleLabel:       "pmtrack"
-physics.producers.calo.CaloAlg.CalAreaConstants: [0.0247,0.048]
+physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run1
 physics.producers.showerreco.InputProducer:        "linecluster"
 
 #### Here we try to suppress known and pointless messages

@@ -27,8 +27,8 @@ extern "C" {
 #include "art/Framework/Principal/Event.h"
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
@@ -78,6 +78,7 @@ namespace detsim {
     void GenNoiseInTime(std::vector<float> &noise);
     void GenNoiseInFreq(std::vector<float> &noise);
 
+    CLHEP::HepRandomEngine& fEngine; ///< reference to art-managed random-number engine
     std::string            fDriftEModuleLabel;///< module making the ionization electrons
     raw::Compress_t        fCompression;      ///< compression type to use
 
@@ -112,6 +113,10 @@ namespace detsim {
 
   //-------------------------------------------------
   SimWireT1034::SimWireT1034(fhicl::ParameterSet const& pset)
+  : EDProducer(pset)
+    // get the random number seed, use a random default if not specified
+    // in the configuration file.
+    , fEngine{createEngine(pset.get< unsigned int >("Seed", sim::GetRandomNumberSeed()))}
   {
     this->reconfigure(pset);
 
@@ -120,12 +125,6 @@ namespace detsim {
     fCompression = raw::kNone;
     TString compression(pset.get< std::string >("CompressionType"));
     if(compression.Contains("Huffman",TString::kIgnoreCase)) fCompression = raw::kHuffman;    
-
-    // get the random number seed, use a random default if not specified    
-    // in the configuration file.  
-    unsigned int seed = pset.get< unsigned int >("Seed", sim::GetRandomNumberSeed());
-
-    createEngine(seed);
   }
 
   //-------------------------------------------------
@@ -193,7 +192,7 @@ namespace detsim {
     fNTicks = fFFT->FFTSize();
 
    if ( fNTicks%2 != 0 ) 
-      LOG_DEBUG("SimWireT1034") << "Warning: FFTSize not a power of 2. "
+      MF_LOG_DEBUG("SimWireT1034") << "Warning: FFTSize not a power of 2. "
 				     << "May cause issues in (de)convolution.\n";
 
     if ( fNTimeSamples > fNTicks ) 
@@ -215,7 +214,8 @@ namespace detsim {
     // it requires a specific implementation of DetectorClocksService.
     art::ServiceHandle<detinfo::DetectorClocksServiceStandard> tss;
     // In case trigger simulation is run in the same job...
-    tss->preProcessEvent(evt);
+    //FIXME: you should never call preProcessEvent
+    tss->preProcessEvent(evt, art::ScheduleContext::invalid());
 
     auto const* ts = lar::providerFrom<detinfo::DetectorClocksService>();
 
@@ -303,9 +303,7 @@ namespace detsim {
       else if (sigtype == geo::kCollection)
         ped_mean = fCollectionPed;
       //slight variation on ped on order of RMS of baselien variation
-      art::ServiceHandle<art::RandomNumberGenerator> rng;
-      CLHEP::HepRandomEngine &engine = rng->getEngine();
-      CLHEP::RandGaussQ rGaussPed(engine, 0.0, fBaselineRMS);
+      CLHEP::RandGaussQ rGaussPed(fEngine, 0.0, fBaselineRMS);
       ped_mean += rGaussPed.fire();
       
       for(unsigned int i = 0; i < fNTicks; ++i){
@@ -358,10 +356,7 @@ namespace detsim {
   //-------------------------------------------------                                                                                                 
   void SimWireT1034::GenNoiseInTime(std::vector<float> &noise)
   {
-    //ART random number service                                                                                                                       
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandGaussQ rGauss(engine, 0.0, fNoiseFact);
+    CLHEP::RandGaussQ rGauss(fEngine, 0.0, fNoiseFact);
 
     //In this case fNoiseFact is a value in ADC counts
     //It is going to be the Noise RMS
@@ -375,9 +370,7 @@ namespace detsim {
   //-------------------------------------------------
   void SimWireT1034::GenNoiseInFreq(std::vector<float> &noise)
   {
-    art::ServiceHandle<art::RandomNumberGenerator> rng;
-    CLHEP::HepRandomEngine &engine = rng->getEngine();
-    CLHEP::RandFlat flat(engine,-1,1);
+    CLHEP::RandFlat flat(fEngine,-1,1);
 
     if(noise.size() != fNTicks)
       throw cet::exception("SimWireT1034")
@@ -444,4 +437,3 @@ namespace detsim {
   
   
 }
-  

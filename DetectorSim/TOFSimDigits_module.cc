@@ -16,8 +16,8 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 //LArSoft libraries
 
@@ -58,7 +58,7 @@ public:
   TOFSimDigits(TOFSimDigits &&) = delete;
   TOFSimDigits & operator = (TOFSimDigits const &) = delete;
   TOFSimDigits & operator = (TOFSimDigits &&) = delete;
-  void  reconfigure(fhicl::ParameterSet const & p) override;
+  void  reconfigure(fhicl::ParameterSet const & p) ;
   void beginJob() override;
   // Required functions.
   void produce(art::Event & e) override;
@@ -98,7 +98,7 @@ void TOFSimDigits::beginJob()
 
 
 TOFSimDigits::TOFSimDigits(fhicl::ParameterSet const & p)
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

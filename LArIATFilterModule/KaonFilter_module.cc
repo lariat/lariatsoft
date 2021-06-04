@@ -20,7 +20,7 @@
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AuxDetParticleID.h"
 #include <TH2F.h>
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 #include <iostream>
 #include <memory>
@@ -45,7 +45,7 @@ public:
   // Selected optional functions.
   void beginJob() override;
   void endJob() override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void respondToCloseInputFile(art::FileBlock const & fb) override;
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const  &fb) override;
@@ -66,7 +66,7 @@ private:
 
 
 KaonFilter::KaonFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

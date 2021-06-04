@@ -19,7 +19,7 @@
 #include "larcorealg/Geometry/PlaneGeo.h"
 #include "larcoreobj/SimpleTypesAndConstants/PhysicalConstants.h"
 
-#include "nutools/IFDatabase/Table.h"
+#include "nuevdb/IFDatabase/Table.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // Art includes

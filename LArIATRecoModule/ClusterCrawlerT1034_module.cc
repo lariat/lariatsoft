@@ -38,7 +38,7 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
+#include "art_root_io/TFileService.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "canvas/Utilities/Exception.h"
 #include "canvas/Utilities/InputTag.h"
@@ -84,9 +84,9 @@ class cluster::ClusterCrawlerT1034 : public art::EDProducer {
     explicit ClusterCrawlerT1034(fhicl::ParameterSet const & pset);
     virtual ~ClusterCrawlerT1034();
 
-    void reconfigure(fhicl::ParameterSet const & pset) override;
+    void reconfigure(fhicl::ParameterSet const & pset) ;
     void produce(art::Event & evt) override;
-    void beginJob();
+    void beginJob() override;
 
   private:
     hit::CCHitFinderAlg    fCCHFAlg;            ///< define CCHitFinderAlg object
@@ -106,7 +106,8 @@ class cluster::ClusterCrawlerT1034 : public art::EDProducer {
 namespace cluster {
 
   ClusterCrawlerT1034::ClusterCrawlerT1034(fhicl::ParameterSet const& pset)
-    : fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
+    : EDProducer(pset)
+    , fCCHFAlg(pset.get< fhicl::ParameterSet >("CCHitFinderAlg"))
     , fCCAlg  (pset.get< fhicl::ParameterSet >("ClusterCrawlerAlg"))
   {      
     
@@ -175,7 +176,7 @@ namespace cluster {
     size_t startVertex = 0;
     size_t lastID = 0;
 
-    LOG_VERBATIM("Summary") << "Number of Triggers: " << tdu.NTriggers();
+    MF_LOG_VERBATIM("Summary") << "Number of Triggers: " << tdu.NTriggers();
     for (size_t t=0; t<tdu.NTriggers(); ++t)                              
     {
        art::Ptr<raw::Trigger> trig = tdu.EventTriggersPtr()[t];  
@@ -183,11 +184,11 @@ namespace cluster {
        // Skip trigger if empty
        art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(t);
 
-       LOG_VERBATIM("ClusterCrawlerT1034") << "#####################################################"
+       MF_LOG_VERBATIM("ClusterCrawlerT1034") << "#####################################################"
                                             << "\n #####################################################"                 
                                             << "\n Trigger Number: " << t << "   Raw Digit vector size: "<< rdvec.size();
        if(!rdvec.size()){mf::LogInfo("ClusterCrawlerT1034") << " Raw Digit vector is empty. Skipping the trigger"; continue;}
-       LOG_VERBATIM("ClusterCrawlerT1034") << " ";
+       MF_LOG_VERBATIM("ClusterCrawlerT1034") << " ";
 
        // get the starting index of the hits, clusters and vertices for this trigger
        startHit = hits->size();
@@ -369,8 +370,8 @@ namespace cluster {
     unsigned short plane  =   0;
     double xyz[3]   = {0, 0, 0};
     clusToHits.resize(tcl.size());
-    LOG_VERBATIM("ClusterCrawlerT1034") << " Number of Clusters in the trigger: " <<tcl.size();
-    LOG_VERBATIM("ClusterCrawlerT1034") << " ";
+    MF_LOG_VERBATIM("ClusterCrawlerT1034") << " Number of Clusters in the trigger: " <<tcl.size();
+    MF_LOG_VERBATIM("ClusterCrawlerT1034") << " ";
  
     for(unsigned int icl = 0; icl < tcl.size(); ++icl) 
     {
@@ -422,7 +423,7 @@ namespace cluster {
                            recob::Cluster::Sentry  // sentry
                          );
 
-          LOG_VERBATIM("ClusterCrawlerT1034") << " /////////////////////////////////////// "
+          MF_LOG_VERBATIM("ClusterCrawlerT1034") << " /////////////////////////////////////// "
                                                << "\n /////////////////////////////////////// "
                                                << "\n Cluster ID " << clus.back().ID() << "   Number of hits " << nclhits << "   View " << view
                                                << "\n Cluster Info: Start Wire " << clstr.BeginWir << "   End Wire " << clstr.EndWir

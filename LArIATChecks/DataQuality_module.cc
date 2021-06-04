@@ -14,12 +14,12 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "fhiclcpp/ParameterSet.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 // LArSoft includes
 #include "lardataobj/RawData/AuxDetDigit.h"
@@ -149,14 +149,14 @@ namespace DataQuality {
     double fV1740PostPercent;
     double fV1740BPostPercent;
     double fV1751PostPercent;
-    double fV1742PostPercent;
+    //double fV1742PostPercent; // unused
 
     // record lengths (number of time ticks) of the CAEN
     // V1740 and V1751 digitizers
     size_t fV1740RecordLength;
     size_t fV1740BRecordLength;
     size_t fV1751RecordLength;
-    size_t fV1742RecordLength;
+    //size_t fV1742RecordLength; // unused
 
     // sampling rate in MHz
     double fV1740SamplingRate;

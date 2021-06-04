@@ -18,7 +18,7 @@
 #include "lardata/DetectorInfoServices/DetectorClocksService.h"
 
 // Art includes
-#include "art/Persistency/RootDB/SQLite3Wrapper.h"
+#include "art_root_io/RootDB/SQLite3Wrapper.h"
 #include "fhiclcpp/make_ParameterSet.h"
 
 namespace ldp{
@@ -75,7 +75,7 @@ namespace ldp{
   }
 
   //-------------------------------------------------------------
-  void DetectorPropertiesServiceLArIAT::preProcessEvent(const art::Event& evt)
+  void DetectorPropertiesServiceLArIAT::preProcessEvent(const art::Event& evt, art::ScheduleContext)
   {
     // Make sure TPC Clock is updated with TimeService (though in principle it shouldn't change
     fProp->UpdateClocks(lar::providerFrom<detinfo::DetectorClocksService>());

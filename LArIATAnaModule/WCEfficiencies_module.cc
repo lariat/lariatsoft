@@ -17,8 +17,8 @@
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 // LArSoft Libraries
 #include "lardataobj/RawData/AuxDetDigit.h"
@@ -40,7 +40,7 @@ public:
   WCEfficiencies & operator = (WCEfficiencies const &) = delete;
   WCEfficiencies & operator = (WCEfficiencies &&) = delete;
   void beginJob() override;
-  void  reconfigure(fhicl::ParameterSet const & p) override;
+  void  reconfigure(fhicl::ParameterSet const & p) ;
   
   // Required functions.
   void analyze(art::Event const & e) override;

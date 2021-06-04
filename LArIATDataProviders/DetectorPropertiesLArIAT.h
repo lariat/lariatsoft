@@ -14,7 +14,7 @@
 #include "larcorealg/Geometry/GeometryCore.h"
 #include "larcorealg/CoreUtils/ProviderPack.h"
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
-#include "lardata/DetectorInfo/DetectorClocks.h"
+#include "lardataalg/DetectorInfo/DetectorClocks.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 
 // framework libraries

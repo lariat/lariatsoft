@@ -27,9 +27,9 @@ Irene Nutini     - irene.nutini@stud.unifi.it
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 //C++ Includes
 #include <iostream>
@@ -70,7 +70,7 @@ public:
   void endJob() override;
   void endRun(art::Run & r) override;
   void endSubRun(art::SubRun & sr) override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void respondToCloseInputFile(art::FileBlock const & fb) override;
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const & fb) override;
@@ -95,7 +95,8 @@ private:
 
 //----------------------------------------------------------------
 lrm::TimeOfFlight::TimeOfFlight(fhicl::ParameterSet const & p)
-  : fTOFAlg(p)
+  : EDProducer(p),
+    fTOFAlg(p)
 {
 
   // Configures the ROOT histograms and the 

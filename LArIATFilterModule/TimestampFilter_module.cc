@@ -20,7 +20,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -57,7 +57,7 @@ public:
   // Selected optional functions.
   void beginJob() override;
   void endJob() override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
 
 private:
 
@@ -75,7 +75,7 @@ private:
 
 
 TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

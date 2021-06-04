@@ -25,7 +25,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -33,6 +33,7 @@
 // LArSoft includes
 #include "lardataobj/RawData/OpDetPulse.h"
 #include "lardataobj/RawData/RawDigit.h"
+#include "larcorealg/CoreUtils/NumericUtils.h"
 
 // ROOT includes
 #include <TH1F.h>
@@ -65,7 +66,7 @@ public:
   // Selected optional functions.
   void beginJob() override;
   void endJob() override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
 
 private:
 
@@ -90,8 +91,8 @@ private:
 
 
 DoubleFlashFilter::DoubleFlashFilter(fhicl::ParameterSet const & p)
-:
-fOpHitBuilderAlg(p)
+: EDFilter(p),
+  fOpHitBuilderAlg(p)
 {
   this->reconfigure(p);
   art::ServiceHandle<art::TFileService> tfs;
@@ -154,7 +155,9 @@ bool DoubleFlashFilter::filter(art::Event & e)
   std::cout<<"  "<<hit1<<"   "<<hit2<<"  ("<<dt<<")    first sample = "<<firstSample<<"\n";
 
   // Require first hit occurs near the "trigger time"
-  if( abs(hit1 - opdetpulse.FirstSample()) >= 200 ) return false;
+  // for c2: call to abs is ambiguous
+  //if( abs(hit1 - opdetpulse.FirstSample()) >= 200 ) return false;
+  if( util::absDiff(hit1, (short)opdetpulse.FirstSample()) >= 200 ) return false;
   
   // Require second hit be delayed by appropriate amount
   if( dt >= fT1 && dt <= fT2 ) {

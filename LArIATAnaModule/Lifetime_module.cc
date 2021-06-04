@@ -20,12 +20,12 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "canvas/Persistency/Common/FindOneP.h" 
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 //#include "cetlib/maybe_ref.h"
 
 // ########################
@@ -60,7 +60,6 @@
 #include "larevt/Filters/ChannelFilter.h"
 //#include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
-#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AGCounter.h"
@@ -275,7 +274,7 @@ public:
 
    // Selected optional functions.
   // void beginJob();
-   void endJob();
+   void endJob() override;
 
    void reconfigure(fhicl::ParameterSet const & p);
 
@@ -296,9 +295,9 @@ private:
   static const int kMaxTracks=260;
    int    ntrkhits[kMaxTracks];
    
-   double trkx[kMaxTracks][1000];
-   double trky[kMaxTracks][1000];
-   double trkz[kMaxTracks][1000];
+   //double trkx[kMaxTracks][1000]; // unused
+   //double trky[kMaxTracks][1000]; // unused
+   //double trkz[kMaxTracks][1000]; // unused
    int    hit_plane[kMaxHits];
    int    hit_wire[kMaxHits];
    int    hit_trkkey[kMaxHits];
@@ -324,43 +323,43 @@ private:
    double trkendz[kMaxTracks];
 
 
-   int tothit;
-   int minitr;
-   int checkitr;
-   int entries;
+   //int tothit; // unused
+   //int minitr; // unused
+   //int checkitr; // unused
+   //int entries; // unused
    int fpretrig;             // number of time ticks of pre trigger
-   double avfittau;	    // average tau from fit
-   double eavfittau;	    // error on average tau from fit
-   double avtau;            // final average tau
-   double errtau;           // error on final average tau
-   double chisqr;
+   //double avfittau; // unused	    // average tau from fit
+   //double eavfittau; // unused	    // error on average tau from fit
+   //double avtau; // unused            // final average tau
+   //double errtau; // unused           // error on final average tau
+   //double chisqr; // unused
    double fchargecut;        // cut on hitcharge
-   double fitvalue;
-   double lik;
-   double tau;
-   double mpc;             // Corrected most probable value
-   double dqdx;            // dQ0/dx after tau scaling
-   double prob;
-   double mintau;
-   double minlik;
-   double minerrtau;
-   double maxerrtau;
-   double sigminoserrlow[3];
-   double sigminoserrhi[3];
-   double lowtaulimit;     // lower limit on tau minimization
-   double hitaulimit;      // upper limit on tau minimization
-   double lowsigmalimit;   // lower limit on sigma minimization
-   double hisigmalimit;    // upper limit on sigma minimization
-   double lowdqdxolimit;   // lower limit on dqdxo minimization
-   double hidqdxolimit;    // upper limit on dqdxo minimization
-   double hitau;
-   double lowtau;
-   double distance;
-   double expo0;
-   double expo1;
-   double landau1;
-   double lowcut;
-   double hicut;
+   //double fitvalue; // unused
+   //double lik; // unused
+   //double tau; // unused
+   //double mpc; // unused             // Corrected most probable value
+   //double dqdx; // unused            // dQ0/dx after tau scaling
+   //double prob; // unused
+   //double mintau; // unused
+   //double minlik; // unused
+   //double minerrtau; // unused
+   //double maxerrtau; // unused
+   //double sigminoserrlow[3]; // unused
+   //double sigminoserrhi[3]; // unused
+   //double lowtaulimit; // unused     // lower limit on tau minimization
+   //double hitaulimit; // unused      // upper limit on tau minimization
+   //double lowsigmalimit; // unused   // lower limit on sigma minimization
+   //double hisigmalimit; // unused    // upper limit on sigma minimization
+   //double lowdqdxolimit; // unused   // lower limit on dqdxo minimization
+   //double hidqdxolimit; // unused    // upper limit on dqdxo minimization
+   //double hitau; // unused
+   //double lowtau; // unused
+   //double distance; // unused
+   //double expo0; // unused
+   //double expo1; // unused
+   //double landau1; // unused
+   //double lowcut; // unused
+   //double hicut; // unused
    double fsampling;   // TPC fsampling rate for time ticks to microseconds conversion
    std::vector<double> fvariable;
    std::vector<double> fstep;
@@ -389,17 +388,17 @@ private:
    std::vector<double> vazi;
    std::vector<double> valti;
 
-    int       besttime    = -1;
-    int       ngoodtracks = 0;
+    //int       besttime    = -1; // unused
+    //int       ngoodtracks = 0; // unused
     int       itime       = 0; 
     static const int tbinsize    = 256;             // 192, 384
     static const int ntbins      = 3072/tbinsize;   // being 3072 the time ticks of a drift window
-    int       pretrig     = 189;             // pre trigger time ticks. 189= 24.2 mus of pre-sampling
+    //int       pretrig     = 189; // unused             // pre trigger time ticks. 189= 24.2 mus of pre-sampling
     int       hitcut      = 5;               // minimum number of hits in track 
-    double    aa          = 0.0;
-    double    bb          = 0.0;
-    double    chargecut   = 6000; //1400.; Run 1 value           // charge threshold to flag a hit as belonging to a delta
-    double    sampling    = 0.128;           // TPC sampling rate in mus
+    //double    aa          = 0.0; // unused
+    //double    bb          = 0.0; // unused
+    //double    chargecut   = 6000; // unused //1400.; // unused Run 1 value           // charge threshold to flag a hit as belonging to a delta
+    //double    sampling    = 0.128; // unused           // TPC sampling rate in mus
     double    trkzenith   = 0.0;             // track angle
     double    tbangle     = 0.0;             // track angle respect to beam
     double    strght      = 0.0;             // Track straightness
@@ -407,23 +406,23 @@ private:
     double    chisqrc     = 0.0;             // ChiSquare for fits
     double    chisqri     = 0.0;             // ChiSquare for fits
     double    cfact[240];                    // Correction factor for wire charge non uniformity
-    int       goodtrk; 
+    //int       goodtrk; // unused 
     int       nentry      = 0;
-    double    pedestalvalue = 504;
+    //double    pedestalvalue = 504; // unused
    	                	   
     Bool_t Object_exists;
 
-    double year  = 0.0;
-    double month = 0.0;
-    double day   = 0.0;
-    double hour  = 0.0;
-    double min   = 0.0;
-    double sec   = 0.0;
+    //double year  = 0.0; // unused
+    //double month = 0.0; // unused
+    //double day   = 0.0; // unused
+    //double hour  = 0.0; // unused
+    //double min   = 0.0; // unused
+    //double sec   = 0.0; // unused
 
     TH1D *hitcharge[9999][ntbins];
-    TH1D *hittime[9999][ntbins];          // Rob -> I only need this 
+    //TH1D *hittime[9999][ntbins]; // unused          // Rob -> I only need this 
     TFile *myfile[9999][ntbins]; 
-    TH1D *hitcharge_read[9999][ntbins];
+    //TH1D *hitcharge_read[9999][ntbins]; // unused
 
     TH1D *hzenith = new TH1D("hzenith","Track Zenith Angle",360,0,180);
     TH1D *htbangle = new TH1D("htbangle","Track Angle wrt beam",360,0,180);
@@ -600,8 +599,8 @@ void lariat::Lifetime::analyze(art::Event const & evt)
    if(fVerbose) std::cout << "Tracklist size " << tracklist.size() << std::endl;
 
    ntracks_reco=tracklist.size();
-   double larStart[3];
-   double larEnd[3];
+   recob::Track::Vector_t larStart;
+   recob::Track::Vector_t larEnd;
    std::vector<double> trackStart;
    std::vector<double> trackEnd;
    double    sampling    = 0.128;
@@ -626,17 +625,16 @@ void lariat::Lifetime::analyze(art::Event const & evt)
       trkendz[i]        = extent.second.Z();
 
       // ### Recording the directional cosine at the start of the track ###
-      memset(larStart, 0, 3);
-      memset(larEnd, 0, 3);
-      tracklist[i]->Direction(larStart,larEnd);
-      trkstartdcosx[i]  = larStart[0];
-      trkstartdcosy[i]  = larStart[1];
-      trkstartdcosz[i]  = larStart[2];
+      larStart = tracklist[i]->VertexDirection();
+      larEnd = tracklist[i]->EndDirection();
+      trkstartdcosx[i]  = larStart.X();
+      trkstartdcosy[i]  = larStart.Y();
+      trkstartdcosz[i]  = larStart.Z();
     
       // ### Recording the directional cosine at the end of the track ###
-      trkenddcosx[i]    = larEnd[0];
-      trkenddcosy[i]    = larEnd[1];
-      trkenddcosz[i]    = larEnd[2];
+      trkenddcosx[i]    = larEnd.X();
+      trkenddcosy[i]    = larEnd.Y();
+      trkenddcosz[i]    = larEnd.Z();
 
     
       // ### Grabbing the SpacePoints associated with this track ###
@@ -691,7 +689,9 @@ void lariat::Lifetime::analyze(art::Event const & evt)
 
    for (size_t i = 0; i<hitlist.size() && int(i)< 20000; ++i)
    {
-      cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
+      // for c2: rdref is defined here but never used
+      //         Is there a side effect?
+      //cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
       geo::WireID wireid = hitlist[i]->WireID();
 
       hit_plane[i]   = wireid.Plane;
@@ -941,10 +941,9 @@ void lariat::Lifetime::analyze(art::Event const & evt)
 void lariat::Lifetime::endJob()
 {
 
-cout << "***************************************************************"<< endl
-     << "                      Histograms created!                      "<< endl
-     << "***************************************************************"<< endl;
+std::cout << "***************************************************************\n"
+          << "                      Histograms created!                      \n"
+          << "***************************************************************"<< std::endl;
 }
 
 DEFINE_ART_MODULE(lariat::Lifetime)
-

@@ -25,7 +25,7 @@
 #include <memory>
 #include <TH1F.h>
 #include <TH2F.h>
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "lardataobj/RecoBase/Track.h"
@@ -66,9 +66,9 @@ private:
   std::string fWCTrackLabel    ;
   size_t      fNumberWCTrack;
   std::string fTrackModuleLabel;  
-  double fUpstreamZPosition;  
-  double fnTracksUpstream;    
-  double fUpstreamZThreshold; 
+  //double fUpstreamZPosition; // unused  
+  //double fnTracksUpstream; // unused    
+  //double fUpstreamZThreshold; // unused 
   double fMassUpperLimit;  
   double fMassLowerLimit;
 
@@ -97,7 +97,7 @@ void MassSelectionFilter::beginJob()
   
 }
 MassSelectionFilter::MassSelectionFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

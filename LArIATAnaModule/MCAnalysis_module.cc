@@ -20,8 +20,8 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "canvas/Persistency/Common/FindOneP.h" 
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
@@ -57,7 +57,6 @@
 #include "larevt/Filters/ChannelFilter.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
-#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/AGCounter.h"
@@ -86,7 +85,7 @@ const int kMaxPrimaries  = 20000;  //maximum number of primary particles
 const int kMaxTruePrimaryPts = 100000; //maximum number of truth trajectory points
 // ### Number of centimeters in Z we require a track ###
 // ### to have a space point within (default = 2 cm) ###
-const double FirstSpacePointZPos = 2.0;
+//const double FirstSpacePointZPos = 2.0; // unused
 
 
 // ##############################################################
@@ -111,8 +110,8 @@ const double XUpperFid = 47;
 const double YLowerFid = -20;
 const double YUpperFid = 20;
 
-const double ZLowerFid = 0;
-const double ZUpperFid = 90;
+//const double ZLowerFid = 0; // unused
+//const double ZUpperFid = 90; // unused
 
 
 // ########################################################################
@@ -133,13 +132,13 @@ const int nLowZTracksAllowed = 4;
 const double alphaCut = 10;
 
 //Create the cross section from the incident and interaction plots
-const float rho = 1400; //kg/m^3
+//const float rho = 1400; // unused //kg/m^3
 //  float cm_per_m = 100;
-const float molar_mass = 39.9; //g/mol
-const float g_per_kg = 1000; 
-const float avogadro = 6.02e+23; //number/mol
-const float number_density = rho*g_per_kg/molar_mass*avogadro;
-const float slab_width = 0.0045;//in m
+//const float molar_mass = 39.9; // unused //g/mol
+//const float g_per_kg = 1000; // unused 
+//const float avogadro = 6.02e+23; // unused //number/mol
+//const float number_density = rho*g_per_kg/molar_mass*avogadro; // unused
+//const float slab_width = 0.0045; // unused//in m
 
 
 
@@ -158,7 +157,7 @@ public:
    void analyze(art::Event const & e) override;
 
    // Selected optional functions.
-   void beginJob();
+   void beginJob() override;
    void reconfigure(fhicl::ParameterSet const & p);
    void endJob() override;
 private:
@@ -171,7 +170,7 @@ private:
    int subrun;			//<---SubRun Number
    int event;			//<---Event Number
 
-   double trkidpri;
+   //double trkidpri; // unused
    double trkidmot;
    
    //####### dummy variable ##############//
@@ -205,12 +204,13 @@ private:
    int nEvtsMCTrackMatch=0;
    int nEventsPassingAlpha=0;
    int nEvtsTrackZPos =0;
-   int nEvtsGoodMC = 0;
+   //int nEvtsGoodMC = 0; // unused
    int nLowZTrkEvents =0;
-   float mcPhi = 0;
-   float mcTheta = 0;
+   //float mcPhi = 0; // unused
+   //float mcTheta = 0; // unused
    double NTpts;
-   double alpha, DeltaX, DeltaY, DeltaZ;
+   //double alpha, DeltaX, DeltaY, DeltaZ; // alpha unused
+   double DeltaX, DeltaY, DeltaZ;
    
    // === Storing Geant4 MC Truth Information ===
    double g4Primary_X0[kMaxPrimaries];
@@ -308,32 +308,32 @@ TH1D *fDeltaEndZPiMinusAbsorptionAtRest;
 // ############################################
 // ### Histogram for Delta End Y vs process ###
 // ############################################
-TH1D *fDeltaEndYInElastic;
-TH1D *fDeltaEndYNeutronInElastic;
-TH1D *fDeltaEndYHadElastic;
-TH1D *fDeltaEndYnCap;
-TH1D *fDeltaEndYnuclearCapatureAtRest;
-TH1D *fDeltaEndYDecay;
-TH1D *fDeltaEndYKaonZeroInElastic;
-TH1D *fDeltaEndYCoulombScat;
-TH1D *fDeltaEndYMuMinusCapture;
-TH1D *fDeltaEndYProtonInelastic;
-TH1D *fDeltaEndYPiMinusAbsorptionAtRest;
+//TH1D *fDeltaEndYInElastic; // unused
+//TH1D *fDeltaEndYNeutronInElastic; // unused
+//TH1D *fDeltaEndYHadElastic; // unused
+//TH1D *fDeltaEndYnCap; // unused
+//TH1D *fDeltaEndYnuclearCapatureAtRest; // unused
+//TH1D *fDeltaEndYDecay; // unused
+//TH1D *fDeltaEndYKaonZeroInElastic; // unused
+//TH1D *fDeltaEndYCoulombScat; // unused
+//TH1D *fDeltaEndYMuMinusCapture; // unused
+//TH1D *fDeltaEndYProtonInelastic; // unused
+//TH1D *fDeltaEndYPiMinusAbsorptionAtRest; // unused
 
 // ############################################
 // ### Histogram for Delta End X vs process ###
 // ############################################
-TH1D *fDeltaEndXInElastic;
-TH1D *fDeltaEndXNeutronInElastic;
-TH1D *fDeltaEndXHadElastic;
-TH1D *fDeltaEndXnCap;
-TH1D *fDeltaEndXnuclearCapatureAtRest;
-TH1D *fDeltaEndXDecay;
-TH1D *fDeltaEndXKaonZeroInElastic;
-TH1D *fDeltaEndXCoulombScat;
-TH1D *fDeltaEndXMuMinusCapture;
-TH1D *fDeltaEndXProtonInelastic;
-TH1D *fDeltaEndXPiMinusAbsorptionAtRest;
+//TH1D *fDeltaEndXInElastic; // unused
+//TH1D *fDeltaEndXNeutronInElastic; // unused
+//TH1D *fDeltaEndXHadElastic; // unused
+//TH1D *fDeltaEndXnCap; // unused
+//TH1D *fDeltaEndXnuclearCapatureAtRest; // unused
+//TH1D *fDeltaEndXDecay; // unused
+//TH1D *fDeltaEndXKaonZeroInElastic; // unused
+//TH1D *fDeltaEndXCoulombScat; // unused
+//TH1D *fDeltaEndXMuMinusCapture; // unused
+//TH1D *fDeltaEndXProtonInelastic; // unused
+//TH1D *fDeltaEndXPiMinusAbsorptionAtRest; // unused
 
 
 // #########################################################
@@ -740,7 +740,7 @@ int nUpStreamTrk = 0;
 // ##################################################
 for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    {
-   TVector3 p_hat_dm0;
+   recob::Track::Vector_t p_hat_dm0;
    // ### Resetting the variables for each track ###
    dummyXpoint = 999, dummyYpoint = 999, dummyZpoint = 999;
    // ########################################################
@@ -966,8 +966,8 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    // ################################################
    // ### Calculating the angles for the Geant4 MC ###
    // ################################################
-   TVector3 z_hat_MC(0,0,1);
-   TVector3 p_hat_0_MC;
+   recob::Track::Vector_t z_hat_MC(0,0,1);
+   recob::Track::Vector_t p_hat_0_MC;
 
    // ### Setting the vector for the MC using the ###
    // ###  extrapolated Momentum vector   ###
@@ -981,7 +981,7 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    float mcTheta = 0;
 
    // === Calculating Theta for MC ===
-   mcTheta = acos(z_hat_MC.Dot(p_hat_0_MC)/p_hat_0_MC.Mag());
+   mcTheta = acos(z_hat_MC.Dot(p_hat_0_MC)/p_hat_0_MC.R());
  // std::cout<<"Truth Theta"<<mcTheta<<std::endl;
    // === Calculating Phi for MC ===
    if( p_hat_0_MC.Y() > 0 && p_hat_0_MC.X() > 0 ){ mcPhi = atan(p_hat_0_MC.Y()/p_hat_0_MC.X()); }
@@ -1008,8 +1008,8 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
    // ### Calculating the angles for the Upstream Tracks ###
    // ######################################################
 
-   TVector3 z_hat_TPC(0,0,1);
-   TVector3 p_hat_0_TPC;
+   recob::Track::Vector_t z_hat_TPC(0,0,1);
+   recob::Track::Vector_t p_hat_0_TPC;
    std::cout<<"nUpStreamTrk"<<nUpStreamTrk<<std::endl;
    for(int aa = 0; aa < nUpStreamTrk; aa++)
       {
@@ -1020,7 +1020,7 @@ for(size_t iTrk = 0; iTrk<tracklist.size(); iTrk++)
       
       
       // ### Calculating TPC track theta ###
-      dummyTrk_Theta[aa] = acos(z_hat_TPC.Dot(p_hat_0_TPC)/p_hat_0_TPC.Mag());
+      dummyTrk_Theta[aa] = acos(z_hat_TPC.Dot(p_hat_0_TPC)/p_hat_0_TPC.R());
       
       // ### Calculating TPC track phi ###
       if( p_hat_0_TPC.Y() > 0 && p_hat_0_TPC.X() > 0 ){ dummyTrk_Phi[aa] = atan(p_hat_0_TPC.Y()/p_hat_0_TPC.X()); }

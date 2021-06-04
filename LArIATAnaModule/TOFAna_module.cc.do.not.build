@@ -55,7 +55,7 @@ public:
 
   // Required functions.
   void analyze(art::Event const & e) override;
-  void  reconfigure(fhicl::ParameterSet const & p) override;
+  void  reconfigure(fhicl::ParameterSet const & p) ;
   void  beginJob();
   double* FittingWaveform(std::vector <short> wvform); 
   std::string fTOFModuleLabel;

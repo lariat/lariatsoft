@@ -38,8 +38,8 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
 
 // LArSoft includes
@@ -165,6 +165,7 @@ namespace trkf {
 
   //-------------------------------------------------
   CosmicTrackerT1034::CosmicTrackerT1034(fhicl::ParameterSet const& pset) :
+    EDProducer(pset),
     fClusterMatch(pset.get< fhicl::ParameterSet >("ClusterMatch"))
   {
     this->reconfigure(pset);
@@ -233,7 +234,7 @@ namespace trkf {
     double timetick = detprop->SamplingRate()*1e-3;    //time sample in us
     //double presamplings = detprop->TriggerOffset(); // presamplings in ticks  
     //double plane_pitch = geom->PlanePitch(0,1);   //wire plane pitch in cm 
-    double wire_pitch = geom->WirePitch(0,1,0);    //wire pitch in cm
+    double wire_pitch = geom->WirePitch(); //wire pitch in cm
     // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
     double Efield_drift = detprop->Efield(0);  // Electric Field in the drift region in kV/cm
     // Note: LArProperties::Temperature() has moved to DetectorProperties/DetectorPropertiesService
@@ -243,11 +244,11 @@ namespace trkf {
     double driftvelocity = detprop->DriftVelocity(Efield_drift,Temperature);    //drift velocity in the drift region (cm/us)
     double timepitch = driftvelocity*timetick;                         //time sample (cm) 
 
-    LOG_VERBATIM("CosmicTrackerT1034") << " ";       
-    LOG_VERBATIM("CosmicTrackerT1034") << " ";    
-    LOG_VERBATIM("CosmicTrackerT1034") << "Cosmic Tracker Section starts here";
-    LOG_VERBATIM("CosmicTrackerT1034") << "TimeTick (in mus): " << timetick;       
-    LOG_VERBATIM("CosmicTrackerT1034") << "TimePitch (in cm): " << timepitch;      
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";       
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";    
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << "Cosmic Tracker Section starts here";
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << "TimeTick (in mus): " << timetick;       
+    MF_LOG_VERBATIM("CosmicTrackerT1034") << "TimePitch (in cm): " << timepitch;      
                   
     art::FindManyP<recob::Cluster> fc(tdu.EventTriggersPtr(), evt, fClusterModuleLabel);                   
   
@@ -259,11 +260,11 @@ namespace trkf {
        // Skip trigger if empty
        art::PtrVector<raw::RawDigit> rdvec = tdu.TriggerRawDigitsPtr(t);
 
-       LOG_VERBATIM("CosmicTrackerT1034") << " ";       
-       LOG_VERBATIM("CosmicTrackerT1034") << " ";
-       LOG_VERBATIM("CosmicTrackerT1034") << "Trigger Number: " << t << "   Raw Digit vector size: "<< rdvec.size();
+       MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";       
+       MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";
+       MF_LOG_VERBATIM("CosmicTrackerT1034") << "Trigger Number: " << t << "   Raw Digit vector size: "<< rdvec.size();
        if(!rdvec.size()){mf::LogInfo("CosmicTrackerT1034") << " Raw Digit vector is empty. Skipping the trigger"; continue;}                              
-       LOG_VERBATIM("CosmicTrackerT1034") << " ";
+       MF_LOG_VERBATIM("CosmicTrackerT1034") << " ";
 
        // get input Cluster object(s).
        clusterlist.clear();
@@ -916,9 +917,10 @@ namespace trkf {
                       }//np>=2
                    }//loop over space points
                 }  //if (fDirSPS)  //calculat direction for each spacepoint
-                std::vector< std::vector<double> > dQdx;
-                std::vector<double> mom(2, util::kBogusD);
-                tcol->push_back(recob::Track(xyz, dircos, dQdx, mom, tcol->size()));
+		tcol->push_back(recob::Track(recob::TrackTrajectory(recob::tracking::convertCollToPoint(xyz),
+								    recob::tracking::convertCollToVector(dircos),
+								    recob::Track::Flags_t(xyz.size()), false),
+					     0, -1., 0, recob::tracking::SMatrixSym55(), recob::tracking::SMatrixSym55(), tcol->size()));
         
                 // make associations between the track and space points
                 util::CreateAssn(*this, evt, *tcol, *spcol, *tspassn, spStart, spEnd);

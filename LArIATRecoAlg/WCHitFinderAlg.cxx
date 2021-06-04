@@ -14,7 +14,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "larcorealg/Geometry/AuxDetGeo.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // LArIAT includes
 #include "LArIATRecoAlg/WCHitFinderAlg.h"
@@ -90,7 +90,7 @@ void WCHitFinderAlg::createHits( std::vector<int> tdc_number_vect,
 					   std::vector<std::vector<WCHitList> > & good_hits,
 					   bool verbose)
 {
-  fVerbose = verbose;
+  bVerbose = verbose;
   
   //Initialize hit/cluster time/channel buffers that are only defined for one trigger value
   std::vector<std::vector<float> > hit_time_buffer;
@@ -129,10 +129,8 @@ void WCHitFinderAlg::initializeBuffers( std::vector<std::vector<float> > & hit_t
     cluster_wire_buffer.push_back(temp_buffer);
   }
   
-//Sanity check
- if( fVerbose == true ){
- std::cout << "Length of the hit time buffer: " << hit_time_buffer.size() << std::endl;
-}
+  //Sanity check
+  if(bVerbose){ std::cout << "Length of the hit time buffer: " << hit_time_buffer.size() << std::endl; }
 
 }
 //=====================================================================
@@ -148,10 +146,10 @@ void WCHitFinderAlg::fillTimeAndWireBuffers( const std::vector<int> & tdc_number
 						const std::vector<float> & hit_channel_vect)
 {
 //Sanity check
-if( fVerbose ){
- std::cout << "*************** Buffer Filling Info *****************" << std::endl;
-}
-
+  if( bVerbose ){
+    std::cout << "*************** Buffer Filling Info *****************" << std::endl;
+  }
+  
   //Loop over the wire plane axes
   for( int iWCAx = 0; iWCAx < fNumber_wire_chambers*2 ; ++iWCAx ){
     //Loop over the tdc labels (possibly repeated) within this trigger and find those with the WCAxis = iWCAx
@@ -166,7 +164,7 @@ if( fVerbose ){
 	hit_time_buffer.at(iWCAx).push_back(float(hit_time_vect.at(iTDC)));
 
 	//Sanity Check
-	//	if( fVerbose ){
+	//	if( bVerbose ){
 	//  std::cout << "(iTDC,Channel): (" << tdc_number_vect.at(iTDC)-1 << "," << hit_channel_vect.at(trigger_number).at(iTDC) << "), (WCAx,Wire): (" << iWCAx << "," << wire << ")" << ", time: " << hit_time_vect.at(trigger_number).at(iTDC) << std::endl;
 	//	}
       }
@@ -229,7 +227,7 @@ void WCHitFinderAlg::createHitAndScaledHitVectors( int WCAx_number,
 						      WCHitList & scaled_hit_list)
 {
   //Sanity Check
-  if( fVerbose ){
+  if( bVerbose ){
     if( hit_time_buffer.size() != hit_wire_buffer.size() ){ std::cout << "Error: vector size mismatch." << std::endl; }
     if( hit_time_buffer.at(WCAx_number).size() != hit_wire_buffer.at(WCAx_number).size() ){ std::cout << "Error: sub-vector size mismatch." << std::endl; }
   }
@@ -412,12 +410,12 @@ void WCHitFinderAlg::findGoodHits( std::vector<std::vector<float> > cluster_time
   for( int iWCAx = 0; iWCAx < fNumber_wire_chambers*2 ; ++iWCAx ){
     
     //Sanity check
-    if(fVerbose){
+    if(bVerbose){
       if( cluster_time_buffer.at(iWCAx).size() != cluster_wire_buffer.at(iWCAx).size() ){
 	std::cout << "Cluster wire/time buffer size mismatch! Error!" << std::endl;
 	return;
-      }
-    }    
+      }   
+    } 
     size_t number_clusters = cluster_time_buffer.at(iWCAx).size();   
     
 
@@ -434,7 +432,7 @@ void WCHitFinderAlg::findGoodHits( std::vector<std::vector<float> > cluster_time
     }
   }
   
-  if( fVerbose ){
+  if( bVerbose ){
     std::cout << "Number of good hits in each wire plane: "; 
     for( int iWC = 0; iWC < 4 ; ++iWC ){
       for (int iAx = 0; iAx < 2 ; ++iAx ){
@@ -459,7 +457,7 @@ void WCHitFinderAlg::finalizeGoodHits(float wire,
       float average_wire = (hit.wire+wire)/2;
       float average_time = (hit.time+time)/2;
       finalGoodHitList.hits.erase(finalGoodHitList.hits.begin()+iHit);
-      std::cout<<"FINALIZING!!! Wire= "<<wire<<" changing to average wire= "<<average_wire<<" and time= "<<time<<" changing to average time "<<average_time<<std::endl; 
+      if(bVerbose) { std::cout<<"FINALIZING!!! Wire= "<<wire<<" changing to average wire= "<<average_wire<<" and time= "<<time<<" changing to average time "<<average_time<<std::endl; }
       wire = average_wire;
       time = average_time;
     }

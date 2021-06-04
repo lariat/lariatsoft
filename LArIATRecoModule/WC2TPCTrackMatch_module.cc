@@ -31,7 +31,7 @@
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // ###########################
 // ### LArIATsoft Includes ###
@@ -85,7 +85,7 @@ public:
   void endJob() override;
   void endRun(art::Run & r) override;
   void endSubRun(art::SubRun & sr) override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void respondToCloseInputFile(art::FileBlock const & fb) override;
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const & fb) override;
@@ -140,7 +140,7 @@ private:
 
 // ---------------------- Parameter Setting ---------------------
 WC2TPCTrackMatch::WC2TPCTrackMatch(fhicl::ParameterSet const & p)
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
 
@@ -266,42 +266,41 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
   // #######################################
   // ### Looping over all the tpcTracks ###
   // ######################################
-  for(size_t i=0; i<tracklist.size();++i)
+  for(size_t i=0; i<tracklist.size();++i) {
+    // ### Clearing the vectors for each track ###
+      
+    TVector3 p_hat_0;
+      
+    // ### Making temp variables to find the most upstream ###
+    // ###         of all the trajectory points            ###
+    FirstTrjPtZ = 999;
+    FirstTrjPtY = 999;
+    FirstTrjPtX = 999;
+      
+    pHatX = 999;
+    pHatY = 999;
+      
+    // ##############################################
+    // ### Looping over all the trajectory points ###
+    // ##############################################
+    for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
     {
-      // ### Clearing the vectors for each track ###
-      
-      TVector3 p_hat_0;
-      
-      // ### Making temp variables to find the most upstream ###
-      // ###         of all the trajectory points            ###
-      FirstTrjPtZ = 999;
-      FirstTrjPtY = 999;
-      FirstTrjPtX = 999;
-      
-      pHatX = 999;
-      pHatY = 999;
-      
-      // ##############################################
-      // ### Looping over all the trajectory points ###
-      // ##############################################
-      for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
-	{
-	  
-	  // ### Recording this point if it is the most upstream point ###
-	  if(tracklist[i]->LocationAtPoint(iTrajPt).Z() < FirstTrjPtZ && 
-	     tracklist[i]->LocationAtPoint(iTrajPt).Z() > 0.0 && tracklist[i]->LocationAtPoint(iTrajPt).Y() > -20.0 &&
-	     tracklist[i]->LocationAtPoint(iTrajPt).Y() < 20.0 && tracklist[i]->LocationAtPoint(iTrajPt).X() > 0.0 &&
-	     tracklist[i]->LocationAtPoint(iTrajPt).X() < 43.5)
+	    // ### Recording this point if it is the most upstream point ###
+	    if(tracklist[i]->LocationAtPoint(iTrajPt).Z() < FirstTrjPtZ && 
+	      tracklist[i]->LocationAtPoint(iTrajPt).Z() > 0.0 && tracklist[i]->LocationAtPoint(iTrajPt).Y() > -20.0 &&
+	      tracklist[i]->LocationAtPoint(iTrajPt).Y() < 20.0 && tracklist[i]->LocationAtPoint(iTrajPt).X() > 0.0 &&
+	      tracklist[i]->LocationAtPoint(iTrajPt).X() < 43.5)
 	    {
-	      p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
+	        
+        p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
 	      //Strange directionality convention - I'm reversing the direction vector
 	      //if it's pointing in the negative X direction
 	      if( p_hat_0.Z() < 0 )
-		{
-		  p_hat_0.SetX(p_hat_0.X()*-1);
-		  p_hat_0.SetY(p_hat_0.Y()*-1);
-		  p_hat_0.SetZ(p_hat_0.Z()*-1);
-		}
+		    {
+		      p_hat_0.SetX(p_hat_0.X()*-1);
+		      p_hat_0.SetY(p_hat_0.Y()*-1);
+          p_hat_0.SetZ(p_hat_0.Z()*-1);
+		    }
 	      
 	      // ###    Storing the temp variables of what is now      ###
 	      // ### considered the most upstream point for this track ###
@@ -312,9 +311,10 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	      pHatY = p_hat_0.Y();
 	      pHatX = p_hat_0.X();
 	    }//<---End only storing points if they are the lowest Z point
-	}//<---End iTrajPt loop
-      // ### Calculating the Theta for the TPC Track ###
-      tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());
+    }//<---End iTrajPt loop
+    
+    // ### Calculating the Theta for the TPC Track ###
+    tpcTheta[i]=acos(z_hat.Dot(p_hat_0)/p_hat_0.Mag());
       
       // ###################################################
       // ### Saving for looping later the upstream point ###
@@ -347,8 +347,7 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
   // ###################################################
   // ### Vectors for angles between TPC and WC Track ###
   // ###################################################
-      
-  
+
   // ############################################
   // ### Loop over all the eligible tpcTracks ###
   // ############################################
@@ -463,68 +462,67 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	  // ### Only counting the track if it passes the alpha, DeltaX and Delta Y ###
 	  // ###       and is far enough upstream in the TPC in Z position          ###
 	  if(alpha < falpha &&  UpStreamTrjPointZ[aa] < fMaxZPos)
-	    {
-	      if (fCircleCut)
-		{
-		  // Calculate radius
-		  double thisRadius = 
-		    (DeltaX_WC_TPC_Track - fX0) * (DeltaX_WC_TPC_Track - fX0) +
-		    (DeltaY_WC_TPC_Track - fY0) * (DeltaY_WC_TPC_Track - fY0 );
+	  {
+	    if (fCircleCut)
+      {
+        // Calculate radius
+        double thisRadius = 
+        (DeltaX_WC_TPC_Track - fX0) * (DeltaX_WC_TPC_Track - fX0) +
+        (DeltaY_WC_TPC_Track - fY0) * (DeltaY_WC_TPC_Track - fY0 );
 		  
 		  
-		  if ( thisRadius < fRCut*fRCut ){
-		    xAfter = DeltaX_WC_TPC_Track;
-		    yAfter = DeltaY_WC_TPC_Track;
-		    alphaAfter = alpha;
-		    fTreeAfter->Fill();
-		    xAfter     = -999.;
-		    yAfter     = -999.;
-		    alphaAfter = -999.;
+        if ( thisRadius < fRCut*fRCut ){
+          xAfter = DeltaX_WC_TPC_Track;
+          yAfter = DeltaY_WC_TPC_Track;
+          alphaAfter = alpha;
+          fTreeAfter->Fill();
+          xAfter     = -999.;
+          yAfter     = -999.;
+          alphaAfter = -999.;
 		    
-		    // ### Filling Histograms ###
-		    hDeltaXAfterCut->Fill(DeltaX_WC_TPC_Track);
-		    hDeltaYAfterCut->Fill(DeltaY_WC_TPC_Track);
-		    hAlphaAfterCut->Fill(alpha);
-		    nWC_TPC_TrackMatch++;
+          // ### Filling Histograms ###
+          hDeltaXAfterCut->Fill(DeltaX_WC_TPC_Track); 
+          hDeltaYAfterCut->Fill(DeltaY_WC_TPC_Track);
+          hAlphaAfterCut->Fill(alpha);
+          nWC_TPC_TrackMatch++;
 		    
-		    // We store all possible wc-tpc track combination
-		    // With their figure of merith as a key of the map.
-		    std::pair <int,int>  matchCandidate (wcTrackKey[bb],tpcTrackKey[aa]);
-		    // This figure of merith is a poor choice and needs to be revised
-		    // We would do a better job with some MC tuning
-		    // ROOT has an instrument that gives you the pdf of multiple cuts... ask Jeremy Hewes
-		    float figOfMerit = DeltaX_WC_TPC_Track*2.5 + DeltaY_WC_TPC_Track*2.22 + alpha; 
-		    mapCandidates[figOfMerit] = matchCandidate; 
-		  }	
-		}
-	      else // Regular square cut 
-		{
-		  if ( DeltaX_WC_TPC_Track > fDeltaXLow && 
-		       DeltaY_WC_TPC_Track > fDeltaYLow && 
-		       DeltaX_WC_TPC_Track < fDeltaXHigh &&
-		       DeltaY_WC_TPC_Track < fDeltaYHigh && 
-		       UpStreamTrjPointZ[aa] < fMaxZPos){
-		    xAfter = DeltaX_WC_TPC_Track;
-		    yAfter = DeltaY_WC_TPC_Track;
-		    alphaAfter = alpha;
-		    fTreeAfter->Fill();
-		    xAfter     = -999.;
-		    yAfter     = -999.;
-		    alphaAfter = -999.;
+          // We store all possible wc-tpc track combination
+          // With their figure of merith as a key of the map.
+          std::pair <int,int>  matchCandidate (wcTrackKey[bb],tpcTrackKey[aa]);
+          // This figure of merith is a poor choice and needs to be revised
+          // We would do a better job with some MC tuning
+          // ROOT has an instrument that gives you the pdf of multiple cuts... ask Jeremy Hewes
+          float figOfMerit = DeltaX_WC_TPC_Track*2.5 + DeltaY_WC_TPC_Track*2.22 + alpha; 
+          mapCandidates[figOfMerit] = matchCandidate; 
+        }	
+    } else // Regular square cut 
+    { 
+      if (  DeltaX_WC_TPC_Track > fDeltaXLow && 
+            DeltaY_WC_TPC_Track > fDeltaYLow && 
+            DeltaX_WC_TPC_Track < fDeltaXHigh &&
+            DeltaY_WC_TPC_Track < fDeltaYHigh && 
+            UpStreamTrjPointZ[aa] < fMaxZPos){
+            xAfter = DeltaX_WC_TPC_Track;
+            yAfter = DeltaY_WC_TPC_Track;
+            alphaAfter = alpha;
+            fTreeAfter->Fill();
+            xAfter     = -999.;
+            yAfter     = -999.;
+            alphaAfter = -999.;
 		    
-		    // ### Filling Histograms ###
-		    hDeltaXAfterCut->Fill(DeltaX_WC_TPC_Track);
-		    hDeltaYAfterCut->Fill(DeltaY_WC_TPC_Track);
-		    hAlphaAfterCut->Fill(alpha);
-		    nWC_TPC_TrackMatch++;			
-		    std::pair <int,int>  matchCandidate (wcTrackKey[bb],tpcTrackKey[aa]);
-		    float figOfMerit = DeltaX_WC_TPC_Track*2.5 + DeltaY_WC_TPC_Track*2.22 + alpha; 
-		    mapCandidates[figOfMerit] = matchCandidate; 
-		  }
-		}
-	    }
-	}//<---End bb loop
-    }//<---End aa loop
+            // ### Filling Histograms ###
+            hDeltaXAfterCut->Fill(DeltaX_WC_TPC_Track);
+            hDeltaYAfterCut->Fill(DeltaY_WC_TPC_Track);
+            hAlphaAfterCut->Fill(alpha);
+            nWC_TPC_TrackMatch++;			
+            std::pair <int,int>  matchCandidate (wcTrackKey[bb],tpcTrackKey[aa]);
+            float figOfMerit = DeltaX_WC_TPC_Track*2.5 + DeltaY_WC_TPC_Track*2.22 + alpha; 
+            mapCandidates[figOfMerit] = matchCandidate; 
+      }
+    }
+  }
+    }//<---End bb loop
+  }//<---End aa loop
   
   
   

@@ -20,7 +20,7 @@
 #include "TComplex.h"
 
 // framework libraries
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "cetlib/search_path.h"
 #include "fhiclcpp/ParameterSet.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h" 
@@ -98,6 +98,7 @@ namespace caldata {
   
   //-------------------------------------------------
   CalWireROIT1034::CalWireROIT1034(fhicl::ParameterSet const& pset)
+  : EDProducer(pset)
   {
     this->reconfigure(pset);
 

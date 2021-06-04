@@ -28,8 +28,8 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h" 
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 
 #include <memory>
 #include <utility>
@@ -120,7 +120,7 @@ struct SortByWire
   };
 
 SpacePointsT1034::SpacePointsT1034(fhicl::ParameterSet const & p)
-// :
+: EDProducer(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.
@@ -215,7 +215,7 @@ void SpacePointsT1034::produce(art::Event & evt)
   double presamplings = fPreSamplings; // 60.;
   const double wireShift=50.; // half the number of wires from the Induction(Collection) plane intersecting with a wire from the Collection(Induction) plane.
   double plane_pitch = geom->PlanePitch(0,1);   //wire plane pitch in cm 
-  double wire_pitch = geom->WirePitch(0,1,0);    //wire pitch in cm
+  double wire_pitch = geom->WirePitch(); //wire pitch in cm
   //double Efield_drift = 0.5;  // Electric Field in the drift region in kV/cm
   // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
   double Efield_drift = detprop->Efield(0);  // Electric Field in the drift region in kV/cm
@@ -701,9 +701,10 @@ std::cout << "Trigger num:	" << trig << "	N Clusters for the trigger	" << Cluste
 	  ///\todo really should fill the direction cosines with unique values 
 	  std::vector<TVector3> dircos(spacepoints.size(), DirCos);
 
-	  std::vector< std::vector<double> > dQdx;
-	  std::vector<double> mom(2, util::kBogusD);
-	  tcol->push_back(recob::Track(xyz, dircos, dQdx, mom, tcol->size()));
+	  tcol->push_back(recob::Track(recob::TrackTrajectory(recob::tracking::convertCollToPoint(xyz),
+							      recob::tracking::convertCollToVector(dircos),
+							      recob::Track::Flags_t(xyz.size()), false),
+				       0, -1., 0, recob::tracking::SMatrixSym55(), recob::tracking::SMatrixSym55(), tcol->size()));
 
 	  // make associations between the track and space points
 	  util::CreateAssn(*this, evt, *tcol, *spcol, *tspassn, spStart, spEnd);

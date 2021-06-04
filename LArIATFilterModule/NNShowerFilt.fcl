@@ -46,7 +46,7 @@ outputs:
  out1:
  {
    module_type: RootOutput
-   SelectEvents: {SelectEvents:[filt]}
+   SelectEvents:[filt]
    fileName:    "NNShowerFilter_events.root"
    dataTier:    "reconstructed-2d"
    compressionLevel: 1
@@ -56,10 +56,10 @@ outputs:
 physics.filters.ShowerFilt.ShowerThresh: 0.75
 physics.filters.ShowerFilt.RemoveOrSelect: true # selects things above the threshold
 
-physics.filters.ShowerFilt.NNetModuleLabel: "emtrkmichelid:emtrkmichel:EvtFilterMaker"
-physics.filters.ShowerFilt.HitModuleLabel: "linecluster"
-physics.filters.ShowerFilt.TrackModuleLabel: "pmtrack"
+physics.filters.ShowerFilt.NNetModuleLabel: "emtrkmichelid:emtrkmichel:EmTrackId"
+physics.filters.ShowerFilt.HitModuleLabel: "gaushit"
+physics.filters.ShowerFilt.TrackModuleLabel: "pmtracktc"
 physics.filters.ShowerFilt.WCTrackLabel: "wctrack"
 
-physics.filters.ShowerFilt.Data: true
+physics.filters.ShowerFilt.Data: false
 physics.filters.ShowerFilt.Verbose: false

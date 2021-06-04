@@ -81,7 +81,7 @@ namespace ldp{
 				art::ActivityRegistry& reg);
 
       virtual void   reconfigure(fhicl::ParameterSet const& pset) override;
-      void   preProcessEvent(const art::Event& evt);
+      void   preProcessEvent(const art::Event& evt, art::ScheduleContext);
       void   postOpenFile(const std::string& filename);
       void   preBeginRun(const art::Run& run) { fGotElectronLifetimeFromDB=false; }
 	

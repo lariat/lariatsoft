@@ -47,7 +47,7 @@ namespace PionSCXSimFilter {
     virtual ~PionSCXSimFilter();
 
     // this method reads in any parameters from the .fcl files
-    virtual void reconfigure(fhicl::ParameterSet const& parameterSet) override;
+    virtual void reconfigure(fhicl::ParameterSet const& parameterSet) ;
 
     // the filter routine, called once per event
     bool filter(art::Event & event) override;
@@ -98,6 +98,7 @@ namespace PionSCXSimFilter {
   //-----------------------------------------------------------------------
   // constructor
   PionSCXSimFilter::PionSCXSimFilter(fhicl::ParameterSet const& parameterSet)
+  : EDFilter(parameterSet)
   {
     // get a pointer to the geometry service provider
     fGeometry = &*(art::ServiceHandle<geo::Geometry>());

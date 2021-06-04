@@ -20,8 +20,8 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "TVirtualFFT.h"
 
@@ -65,7 +65,7 @@ public:
 
   // Selected optional functions.
   void beginJob() override;
- // void reconfigure(fhicl::ParameterSet const & p) override;
+ // void reconfigure(fhicl::ParameterSet const & p) ;
   void endJob() override;
 static Double_t twoexp(Double_t *x,Double_t *par);
 
@@ -90,16 +90,16 @@ private:
    double fExpS2L;
    double fExpS2H;
    double fExpS3;
-	double fP1;
-	double fSigma;
-	double fLowLimit;
-	double fHighLimit;
+	//double fP1; // unused
+	//double fSigma; // unused
+	//double fLowLimit; // unused
+	//double fHighLimit; // unused
 
    double fFitStart;
    double fFitEnd;
    int fSamples;
     TF1 *fitexp2;
-    TF1 *fitconv;
+    //TF1 *fitconv; // unused
 
     int  fNumberOfPMTs;
     int  fBaselineCounts;

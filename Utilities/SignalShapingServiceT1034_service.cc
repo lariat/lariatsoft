@@ -6,7 +6,7 @@
 #include "SignalShapingServiceT1034.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "larcore/Geometry/Geometry.h"
 #include "larcorealg/Geometry/TPCGeo.h"
 #include "larcorealg/Geometry/PlaneGeo.h"
@@ -513,7 +513,7 @@ void util::SignalShapingServiceT1034::SetElectResponse(double shapingtime, doubl
   //auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
   art::ServiceHandle<util::LArFFT> fft;
 
-  LOG_DEBUG("SignalShapingT1034") << "Setting T1034 electronics response function...";
+  MF_LOG_DEBUG("SignalShapingT1034") << "Setting T1034 electronics response function...";
 
   int nticks = fft->FFTSize();
   fElectResponse.resize(nticks, 0.);
@@ -562,7 +562,7 @@ void util::SignalShapingServiceT1034::SetElectResponse(double shapingtime, doubl
   }// end loop over time buckets
     
 
-  LOG_DEBUG("SignalShapingT1034") << " Done.";
+  MF_LOG_DEBUG("SignalShapingT1034") << " Done.";
 
  //normalize fElectResponse[i], before the convolution   
   

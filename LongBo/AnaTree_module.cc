@@ -16,8 +16,8 @@
 #include "canvas/Persistency/Common/Ptr.h"
 #include "canvas/Persistency/Common/PtrVector.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "canvas/Persistency/Common/FindMany.h"
 #include "canvas/Utilities/InputTag.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
@@ -66,7 +66,7 @@ public:
   void analyze(art::Event const & e) override;
 
   void beginJob() override;
-  //void reconfigure(fhicl::ParameterSet const & p) override;
+  //void reconfigure(fhicl::ParameterSet const & p) ;
 
 private:
 
@@ -243,9 +243,8 @@ void bo::AnaTree::analyze(art::Event const & evt)
     cluendtick[i] = clusterlist[i]->EndTick();
     cluplane[i] = clusterlist[i]->Plane().Plane;
   }
-  //track information
-  trkf::TrackMomentumCalculator trkm;
-  trkm.SetMinLength(10); //change the minimal track length requirement to 10 cm
+  //track information (change the minimal track length requirement to 10 cm)
+  trkf::TrackMomentumCalculator trkm{10.0};
   ntracks_reco=tracklist.size();
   for(size_t i=0; i<tracklist.size();++i){
     //-------------------------------------------------------------------------

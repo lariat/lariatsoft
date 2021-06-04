@@ -13,9 +13,9 @@
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileDirectory.h"
 
 
 // LArIAT includes
@@ -67,7 +67,7 @@ void MURSAlg::makeTheMuRSTracks( std::map<int, std::vector<int> > MuonRangeStack
                                 std::vector<ldp::MuRSTrack> & finalMuRSTrackVect,
                                 std::vector<size_t> const punchHits )
 {
-  LOG_DEBUG("MURSAlg")
+  MF_LOG_DEBUG("MURSAlg")
   << "makeTheMuRSTracks called.";
 
   //Filling some histos about plane multiplicity per event

@@ -25,7 +25,7 @@
 #include <vector>
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "lardata/Utilities/AssociationUtil.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 
 //ROOT Things
@@ -70,7 +70,7 @@ public:
   void endJob() override;
 //  void endRun(art::Run & r) override;
 //  void endSubRun(art::SubRun & sr) override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
 //  void respondToCloseInputFile(art::FileBlock const & fb) override;
 //  void respondToCloseOutputFiles(art::FileBlock const & fb) override;
 //  void respondToOpenInputFile(art::FileBlock const & fb) override;
@@ -157,7 +157,8 @@ private:
 
 
 WCTrackBuildernew::WCTrackBuildernew(fhicl::ParameterSet const & p)
- : fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg")) // these should be initialized
+ : EDProducer(p)
+ , fWCTrackBuilderAlg(p.get< fhicl::ParameterSet > ("WCTrackBuilderAlg")) // these should be initialized
  , fWCHitFinderAlg(p.get< fhicl::ParameterSet >("WCHitFinderAlg"))            // here instead of reconfigure()
 {
   // Call appropriate produces<>() functions here.

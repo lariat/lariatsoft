@@ -8,9 +8,8 @@ lariat_detproperties:
   GetElectronlifetimeFromDB: true
   ElectronlifetimeTag: "" # use tag "v1.0" for DB snapshot prior to Feb 8, 2018 
   UseDatabaseForMC: false
-
-  Temperature:        90.7  #(tuned to yield drift vel. consistent w/ DocDB 2750)
-  Efield:             [0.484,0.700,0.890]  #(E-field study, DocDB 2750)
+  Temperature:        90.7                  # measured from sensors, DocDB 2750
+  Efield:             [0.4865,0.700,0.890]  # E-field study, DocDB 2750
   Electronlifetime:   1600
 
   ElectronsToADC:    6.8906513e-3 # 1fC = 43.008 ADC counts for MicroBooNE  
@@ -27,6 +26,8 @@ lariat_detproperties:
   SternheimerX0:    0.2000  # Ar Sternheimer parameter x0.
   SternheimerX1:    3.0000  # Ar Sternheimer parameter x0.
   SternheimerCbar:  5.2146  # Ar Sternheimer parameter Cbar.
+  
+  SamplingRate:      -128.  # Set <= 0 to get from TPCClock.TimeTick() (prev. default behavior)
 
 
   # PARAMETER NOT RECOGNIZED IN v06_44_00 
@@ -38,6 +39,32 @@ lariat_detproperties:
 # DocDB 2750 shows electric field was consistent with value
 # calculated from circuit diagram within error.
 lariat_detproperties_run2:        @local::lariat_detproperties
+
+# Detector properties for reconstructing and analyzing field-scan data taken during Run II.
+# Run numbers 9635-9701 (SAMWeb defs: "driftScan_xxxVcm_digits")
+lariat_detproperties_run2_fieldscan:              @local::lariat_detproperties_run2
+lariat_detproperties_run2_fieldscan.SamplingRate: 256
+lariat_detproperties_run2_fieldscan.TimeOffsetU:  -50.
+lariat_detproperties_run2_fieldscan.TimeOffsetV:  -47.
+lariat_detproperties_270Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_270Vcm.Efield:       [ 0.260,  0.377,  0.479 ]
+lariat_detproperties_300Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_300Vcm.Efield:       [ 0.288,  0.420,  0.529 ]
+lariat_detproperties_350Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_350Vcm.Efield:       [ 0.337,  0.489,  0.621 ]
+lariat_detproperties_400Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_400Vcm.Efield:       [ 0.386,  0.559,  0.710 ]
+lariat_detproperties_450Vcm:              @local::lariat_detproperties_run2_fieldscan
+lariat_detproperties_450Vcm.Efield:       [ 0.434,  0.630,  0.800 ]
+
+# Run II had slightly lower measured electric field (DocDB 2750)
+#   Update (07/26/2018): probably misguided to conclude from E-field study 
+#   that field was actually lower in Run II. Results based on measusured 
+#   drift velocity showed 468 +/- 20 V/cm, consistent with value calculated 
+#   from circuit diagram, 486.5 V/cm (which is known much more precisely). 
+#   So, commenting this piece out. - w.foreman
+#lariat_detproperties_run2.Efield: [ 0.468, 0.700, 0.890 ]
+
 
 # Detector properties for reconstructing and analyzing field-scan data taken during Run II.
 # Run numbers 9635-9701 (SAMWeb defs: "driftScan_xxxVcm_digits")

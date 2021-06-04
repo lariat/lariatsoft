@@ -45,8 +45,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
@@ -82,12 +82,8 @@
 #include "larevt/Filters/ChannelFilter.h"
 #include "lardataobj/AnalysisBase/Calorimetry.h"
 #include "lardataobj/AnalysisBase/ParticleID.h"
-#include "larreco/RecoAlg/TrackMomentumCalculator.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "RawDataUtilities/TriggerDigitUtility.h"
-
-
-
 
 // #####################
 // ### ROOT includes ###
@@ -124,7 +120,7 @@ public:
   // Selected optional functions.
   void beginJob   (                ) override;
   void endJob     (                ) override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
 
   void calcXS (float wcTrackMomentum,
 	       std::vector<art::Ptr<anab::Calorimetry> > caloTPCTrack);
@@ -150,7 +146,7 @@ private:
   std::string      fTPCTrackHandleLabel;
   std::string      fNonStoppingTPCTrackBuildLabel;
 
-  double fupstreamZPosition;
+  //double fupstreamZPosition; // unused
   // The parameters we'll read from the .fcl file.
   //  bool  fAmIData;                /// amIData True if real Data, False if MC
   bool  fUseNonStoppingOnly;
@@ -198,23 +194,23 @@ private:
   TH1F*  fWCTrackEventNumbers;	            /// Doxygen comment
 
   // === Storing the tracks Calorimetry Information
-  int    trkhits[2];
-  double trkke[2];
-  double trkdedx[2][1000];
-  double trkrr[2][1000];
-  double trkpitchhit[2][1000];
+  //int    trkhits[2]; // unused
+  //double trkke[2]; // unused
+  //double trkdedx[2][1000]; // unused and redefined elsewhere
+  //double trkrr[2][1000]; // unused and redefined elsewhere
+  //double trkpitchhit[2][1000]; // unused and redefined elsewhere
 
-  TH1F  *fTotNTrack;
-  TH1F  *fStoppingTrack;
-  TH1F  *fDifferenceTrack;
-  TH1F  *fNTrackPassedCuts;
+  //TH1F  *fTotNTrack; // unused
+  //TH1F  *fStoppingTrack; // unused
+  //TH1F  *fDifferenceTrack; // unused
+  //TH1F  *fNTrackPassedCuts; // unused
   
-  TH1F *fdEdx;
-  TH2F *fdEdxRange;
-  TH1F *fFitPar;
+  //TH1F *fdEdx; // unused
+  //TH2F *fdEdxRange; // unused
+  //TH1F *fFitPar; // unused
 
-  double fLowLimitStop;
-  double fUpLimitStop;
+  //double fLowLimitStop; // unused
+  //double fUpLimitStop; // unused
 
 
 

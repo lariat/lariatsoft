@@ -1,3 +1,6 @@
+include_directories ( $ENV{GEANT4_FQ_DIR}/include )
+include_directories ( $ENV{GEANT4_FQ_DIR}/lib64 )
+
 art_make(LIB_LIBRARIES    larcorealg_Geometry
                           larreco_RecoAlg_ClusterRecoUtil
                           lardataobj_MCBase
@@ -40,7 +43,11 @@ art_make(LIB_LIBRARIES    larcorealg_Geometry
                           cetlib cetlib_except
                           ${CLHEP}
                           ${ROOT_BASIC_LIB_LIST}
-
+	                        ${G4_LIB_LIST}
+	                        nug4_G4Base
+	                        larsim_LArG4
+	                        ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+	                        ${ART_ROOT_IO_TFILESERVICE_SERVICE}
 )
 
 install_headers()

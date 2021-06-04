@@ -22,7 +22,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
@@ -66,7 +66,7 @@ public:
   // Required functions.
   bool filter(art::Event & e) override;
   // Optional functions
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void beginJob   (                ) override;
 
 private:
@@ -85,7 +85,7 @@ private:
 
 
 UpStreamTPCMultiplicityFilter::UpStreamTPCMultiplicityFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   // Call appropriate produces<>() functions here.

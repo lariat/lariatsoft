@@ -7,6 +7,7 @@
 ////////////////////////////////////////////////////////////////////////
 
 #include "Geo/GeoObjectSorterLArIAT.h"
+#include "fhiclcpp/ParameterSet.h"
 #include "larcorealg/Geometry/AuxDetGeo.h"
 #include "larcorealg/Geometry/AuxDetSensitiveGeo.h"
 #include "larcorealg/Geometry/CryostatGeo.h"

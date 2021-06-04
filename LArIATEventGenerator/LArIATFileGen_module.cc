@@ -18,8 +18,8 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Core/ModuleMacros.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 
 // nutools includes
@@ -153,6 +153,11 @@ void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
   };
   
   
+
+#if defined __clang__
+  #pragma clang diagnostic push
+  #pragma clang diagnostic ignored "-Wunused-private-field"
+#endif
   /// module to produce single or multiple specified particles in the detector
   class LArIATFileGen : public art::EDProducer {
 
@@ -206,12 +211,12 @@ void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
     TTree *TNtupleSorted;
     unsigned int countFile;
 
-    Float_t xtmp, ytmp, ztmp;
+    //Float_t xtmp, ytmp, ztmp; // unused
     Float_t pxtmp, pytmp, pztmp;
     Float_t charge;
-    Float_t         E;
-    Float_t         costheta;
-    Float_t         phi;
+    //Float_t         E; // unused
+    //Float_t         costheta; // unused
+    //Float_t         phi; // unused
     Float_t         xdet;
     Float_t         ydet;
     Float_t         zdet;
@@ -259,6 +264,9 @@ void det_info::SetBranches(TTree * TNtuple,std::vector< std::string > var_names)
     int fEventCounter;
 
   };
+#if defined __clang__
+  #pragma clang diagnostic pop
+#endif
   
   
   
@@ -274,7 +282,8 @@ namespace evgen{
 
   //____________________________________________________________________________
   LArIATFileGen::LArIATFileGen(fhicl::ParameterSet const& pset)
-     : fSeed(314159)					                          
+     : EDProducer(pset)
+     , fSeed(314159)					                          
      , fFileName         (pset.get< std::string     	     	>("FileName")         	)      
      , fMuonsFileType    (pset.get< std::string             	>("MuonsFileType")    	)
      , fTreeName         (pset.get< std::string   	     	>("TreeName")         	)      
@@ -736,7 +745,7 @@ namespace evgen{
 	    }
 	  countFile++;
 	  
-	  LOG_DEBUG("LArIATFileGen: countFile is ") << countFile <<std::endl;
+	  MF_LOG_DEBUG("LArIATFileGen: countFile is ") << countFile <<std::endl;
 	  char * cstr, *ptok;
 	  
       // Split this line into tokens

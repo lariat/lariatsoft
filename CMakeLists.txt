@@ -24,7 +24,7 @@ IF (NOT CETBUILDTOOLS_VERSION)
     MESSAGE (FATAL_ERROR "ERROR: setup cetbuildtools to get the cmake modules")
 ENDIF()
 
-set(CMAKE_MODULE_PATH $ENV{CANVAS_DIR}/Modules
+set(CMAKE_MODULE_PATH $ENV{CANVAS_ROOT_IO_DIR}/Modules
 		      $ENV{CETBUILDTOOLS_DIR}/Modules
 		      ${CMAKE_MODULE_PATH})
 
@@ -50,17 +50,21 @@ find_ups_product( larsoft )
 find_ups_product( larcoreobj )
 find_ups_product( larcore )
 find_ups_product( lardataobj )
+find_ups_product( lardataalg )
 find_ups_product( lardata )
 find_ups_product( larevt )
 find_ups_product( larsim )
+find_ups_product( nug4 )
 find_ups_product( larreco )
 find_ups_product( larana )
 find_ups_product( larpandora )
 find_ups_product( lareventdisplay )
 find_ups_product( cetbuildtools )
 
+
 # art related products
 find_ups_product( art )
+find_ups_product(art_root_io)
 find_ups_product( artdaq_core )
 
 # products that LArIAT needs for input data
@@ -69,7 +73,8 @@ find_ups_product( lariatfragments )
 
 # non-art library dependences
 find_ups_product( postgresql )
-find_ups_product( nutools )
+find_ups_product( nuevdb )
+find_ups_product( nurandom )
 find_ups_root( root )
 find_ups_geant4( geant4 )
 
@@ -77,6 +82,9 @@ find_ups_geant4( geant4 )
 include(ArtDictionary)
 include(ArtMake)
 include(BuildPlugins)
+
+# artdaq_core Utility library
+cet_find_library( ARTDAQ-CORE_UTILITIES NAMES artdaq-core_Utilities PATHS ENV ARTDAQ_CORE_LIB )
 
 # source
 add_subdirectory(Calibration)

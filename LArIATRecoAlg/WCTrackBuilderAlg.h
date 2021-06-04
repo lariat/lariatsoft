@@ -16,7 +16,7 @@
 //Framework includes
 #include "fhiclcpp/ParameterSet.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 
 // LArSoft includes
@@ -44,7 +44,7 @@ class WCTrackBuilderAlg{
   
    void reconfigure( fhicl::ParameterSet const& pset );
    
-   void loadXMLDatabaseTableForBField( int run, int subrun );
+   double loadXMLDatabaseTableForBField( int run, int subrun );
    
    /**
     * Main method you use to build tracks.
@@ -207,11 +207,11 @@ class WCTrackBuilderAlg{
   float fMCMagneticField;
   float fB_field_tesla;	
    float fMomentumScalingCalibrationFromSim;
+  int   fNHits;
   private:
   
-  bool  fPickyTracks;
+  bool  bPickyTracks;
   bool  fDiagnostics;
-  int   fNHits;
   int   fWCMissed;
   float trackres;
   //float hit_position_vect_alg[4][3];				 
@@ -239,7 +239,7 @@ class WCTrackBuilderAlg{
   
   				 
   //Misc				 
-  bool fVerbose;
+  bool bVerbose;
   int fRun;
   int fSubRun;
   float current;

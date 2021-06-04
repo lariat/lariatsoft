@@ -28,6 +28,7 @@ services:
  #@table::standard_resourcetrackers
   RandomNumberGenerator: {} #ART native random number generator
   #message:      @local::lariat_message_services
+  message:      @local::standard_debug
   @table::lariat_services
 }
 #services.DatabaseUtil.ShouldConnect: false
@@ -45,15 +46,15 @@ tpcreco: [ caldata,
            gaushit,
            linecluster,
            trajcluster,
-#           pandora,
+           #pandora,
            showerreco,
            pmtrack,
            pmtracktc,
            pmtrajfit,
            calo,
            pid
-#           pandoracalo,
-#           pandorapid,
+           #pandoracalo,
+           #pandorapid,
            #blurredcluster
            #emshower
            ]
@@ -136,7 +137,7 @@ physics:
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
-#block and put it in the trigger_paths then you need to put a SelectEvents: {SelectEvents: [XXX]}
+#block and put it in the trigger_paths then you need to put a SelectEvents: [XXX]
 #entry in the output stream you want those to go to, where XXX is the label of the filter module(s)
 outputs:
 {
@@ -214,7 +215,7 @@ physics.producers.linecluster.ClusterCrawlerAlg.DebugWire:  0
 physics.producers.linecluster.ClusterCrawlerAlg.DebugHit: 0
 
 #physics.producers.trajcluster.TrajClusterAlg.MinPts: [10,3,2]
-#physics.producers.trajcluster.TrajClusterAlg.Match3DCuts: [ 0.3, 0.1, 2, 0.5 ]
+#physics.producers.trajcluster.TrajClusterAlg.Match3DCuts: [ 0.3, -0.3, 4, 0.9, 2000, 10, 0.2]
 #physics.producers.trajcluster.TrajClusterAlg.SkipAlgs: [  "VtxHitsSwap", "SplitHiChgHits", "CTKink", "HED", "Split
 physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:     0
 physics.producers.trajcluster.TrajClusterAlg.DebugPlane: -1
@@ -270,16 +271,17 @@ physics.producers.emshower.EMShowerAlg.CalorimetryAlg:    @local::lariat_calorim
 #services.SignalShapingServiceT1034.IndFilter:       "(x>0.0)*gaus"
 #services.SignalShapingServiceT1034.IndFilterParams: [ 1.0, 0.0, 0.2 ]
 
-#services.message.destinations.debugmsg.type:  "file"
-#services.message.destinations.errormsg.type:  "cerr"
-#services.message.destinations.warningmsg.type:  "cout"
+#physics.producers.trajcluster.TrajClusterAlg.DebugCryostat:   0
+#physics.producers.trajcluster.TrajClusterAlg.DebugTPC:        0
+#physics.producers.trajcluster.TrajClusterAlg.DebugPlane:      3
+#physics.producers.trajcluster.TrajClusterAlg.DebugWire:       0
+#physics.producers.trajcluster.TrajClusterAlg.DebugTick:       2222 # 3333
+#physics.producers.trajcluster.TrajClusterAlg.DebugWorkID:     0
+#
 #services.message.destinations.debugmsg.categories.default: {limit: 1}
 #services.message.destinations.debugmsg.categories.ArtState.limit: 0
-#services.message.destinations.debugmsg.categories.BackTrackerService.limit: 0
+#services.message.destinations.debugmsg.categories.BackTracker.limit: 0
 #services.message.destinations.debugmsg.categories.NuRandomService.limit: 0
 #services.message.destinations.debugmsg.categories.TC.limit: -1
-#services.message.destinations.warningmsg.categories.TC.limit: -1
-#services.message.destinations.warningmsg.categories.RootInputFile.limit: 0
-#services.message.destinations.errormsg.categories.TC.limit: -1
 #services.message.destinations.debugmsg.categories.default.reportEvery: 1
 #services.message.destinations.debugmsg.filename: "debug.txt"
