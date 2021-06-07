@@ -1588,7 +1588,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	// ##############################################
 	for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
 	  {
-	    p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
+      recob::Track::Vector_t tmp = tracklist[i]->DirectionAtPoint(iTrajPt);
+      p_hat_0.SetXYZ(tmp.X(),tmp.Y(),tmp.Z());
 	    
 	    //Strange directionality convention - I'm reversing the direction vector
 	    //if it's pointing in the negative X direction

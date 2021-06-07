@@ -124,7 +124,7 @@
 #include "art/Framework/Services/Optional/RandomNumberGenerator.h"
 
 // support libraries
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 #include "TRandom3.h"
 #include "TMath.h"
@@ -478,9 +478,12 @@ bool OpFastScintillationT1034::RecordPhotonsProduced(const G4Step& aStep, double
   }
 
   double const xyz[3] = { x0[0]/CLHEP::cm, x0[1]/CLHEP::cm, x0[2]/CLHEP::cm };
-  float const* Visibilities = pvs->GetAllVisibilities(xyz);
-  float const* ReflVisibilities = nullptr;
-  float const* ReflT0s = nullptr;
+  //float const* Visibilities = pvs->GetAllVisibilities(xyz);
+  //float const* ReflVisibilities = nullptr;
+  //float const* ReflT0s = nullptr;
+  phot::MappedCounts_t Visibilities = pvs->GetAllVisibilities(xyz);
+  phot::MappedCounts_t ReflVisibilities;
+  phot::MappedCounts_t ReflT0s;
   if(pvs->StoreReflected()) {
     ReflVisibilities = pvs->GetAllVisibilities(xyz,true);
     if(pvs->StoreReflT0())

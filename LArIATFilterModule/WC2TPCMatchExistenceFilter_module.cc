@@ -25,7 +25,7 @@
 #include "lardataobj/RecoBase/Track.h"
 #include "lardata/Utilities/AssociationUtil.h"
 #include <memory>
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "lardataobj/RecoBase/PFParticle.h"
 #include <TH1.h>
 class WC2TPCMatchExistenceFilter;
@@ -52,6 +52,7 @@ private:
 WC2TPCMatchExistenceFilter::WC2TPCMatchExistenceFilter(fhicl::ParameterSet const & p)
 // :
 // Initialize member data here.
+: EDFilter(p)
 {
   fTrackModuleLabel = p.get< std::string  >("TrackModuleLabel","pmtrack");
   fWCTrackLabel = p.get< std::string  >("WCTrackLabel","wctrack");

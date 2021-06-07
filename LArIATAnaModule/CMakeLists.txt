@@ -18,7 +18,6 @@ art_make(LIB_LIBRARIES larcorealg_Geometry
          larcorealg_Geometry
          larcore_Geometry_Geometry_service
          RawDataUtilities
-         lardataobj_RecoBase
          lardata_ArtDataHelper
          lardata_RecoObjects
          lardata_Utilities

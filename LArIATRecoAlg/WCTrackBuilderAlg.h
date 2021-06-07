@@ -44,7 +44,7 @@ class WCTrackBuilderAlg{
   
    void reconfigure( fhicl::ParameterSet const& pset );
    
-   double loadXMLDatabaseTableForBField( int run, int subrun );
+   void loadXMLDatabaseTableForBField( int run, int subrun );
    
    /**
     * Main method you use to build tracks.

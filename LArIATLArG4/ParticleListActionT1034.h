@@ -16,11 +16,12 @@
 #ifndef LArIATLArG4_ParticleListActionT1034_h
 #define LArIATLArG4_ParticleListActionT1034_h
 
-#include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
-#include "nutools/ParticleNavigation/ParticleList.h" // larg4::PositionInVolumeFilter
+#include "larcorealg/CoreUtils/ParticleFilters.h"
+#include "nug4/G4Base/PrimaryParticleInformation.h"
+#include "nug4/G4Base/UserAction.h"
+#include "nug4/ParticleNavigation/ParticleList.h" // larg4::PositionInVolumeFilter
 
 #include "nusimdata/SimulationBase/MCParticle.h"
-#include "nutools/G4Base/UserAction.h"
 
 #include "Geant4/globals.hh"
 #include <map>
@@ -68,7 +69,7 @@ namespace larg4 {
     virtual void     	     SteppingAction    (const G4Step* );
 
     /// Grabs a particle filter
-    void ParticleFilter(std::unique_ptr<PositionInVolumeFilter>&& filter)
+    void ParticleFilter(std::unique_ptr<util::PositionInVolumeFilter>&& filter)
       { fFilter = std::move(filter); }
   
 
@@ -106,7 +107,7 @@ namespace larg4 {
                                                      ///< multiple MCTruth objects.				  
     bool                     fKeepEMShowerDaughters; ///< whether to keep EM shower secondaries, tertiaries, etc     
     
-    std::unique_ptr<PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
+    std::unique_ptr<util::PositionInVolumeFilter> fFilter; ///< filter for particles to be kept
     
     /// Adds a trajectory point to the current particle, and runs the filter
     void AddPointToCurrentParticle(TLorentzVector const& pos,

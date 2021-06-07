@@ -4,7 +4,7 @@
 /// \author miceli@fnal.gov, talion@fnal.gov
 ////////////////////////////////////////////////////////////////////////
 
-#include "nutools/G4Base/DetectorConstruction.h"
+#include "nug4/G4Base/DetectorConstruction.h"
 
 // Framework includes
 #include "art/Framework/Services/Registry/ServiceHandle.h"
@@ -98,7 +98,7 @@ namespace larg4 {
       std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_" + std::to_string(svNum); 
       AuxDetReadoutT1034* adReadout = new larg4::AuxDetReadoutT1034(SDName, adNum, svNum);
 
-      LOG_DEBUG("AuxDetReadoutGeometryT1034") << "found" << path[depth]->GetName() 
+      MF_LOG_DEBUG("AuxDetReadoutGeometryT1034") << "found" << path[depth]->GetName() 
 					 << ", number " << adNum << ":" << svNum;
 
       // Tell Geant4's sensitive-detector manager about the AuxDetReadoutT1034 class
@@ -152,7 +152,7 @@ namespace larg4 {
       std::string SDName = "AuxDetSD_AuxDet" + std::to_string(adNum) + "_0"; 
       AuxDetReadoutT1034* adReadout = new larg4::AuxDetReadoutT1034(SDName, adNum, 0);
 
-      LOG_DEBUG("AuxDetReadoutGeometryT1034") << "found" << path[depth]->GetName() 
+      MF_LOG_DEBUG("AuxDetReadoutGeometryT1034") << "found" << path[depth]->GetName() 
 					 << ", number " << adNum << ":0";
 
       // Tell Geant4's sensitive-detector manager about the AuxDetReadoutT1034 class

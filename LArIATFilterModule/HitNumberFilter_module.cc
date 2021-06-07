@@ -19,7 +19,7 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "canvas/Utilities/InputTag.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -57,7 +57,7 @@ public:
   // Selected optional functions.
   void beginJob() override;
   void endJob() override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p);
 
 private:
 
@@ -73,7 +73,7 @@ private:
 
 
 HitNumberFilter::HitNumberFilter(fhicl::ParameterSet const & p)
-// :
+ : EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);
@@ -102,16 +102,16 @@ bool HitNumberFilter::filter(art::Event & e)
   hNumHits[0]->Fill(nHits[0]);
   hNumHits[1]->Fill(nHits[1]);
   
-  LOG_VERBATIM("HitNumberFilter")
+  MF_LOG_VERBATIM("HitNumberFilter")
   <<"---- HitNumberFilter -----";
   for(size_t i=0; i<2; i++){
-  LOG_VERBATIM("HitNumberFilter")
+  MF_LOG_VERBATIM("HitNumberFilter")
   <<"#hits on plane "<<i<<": "<<nHits[i];
     if( fMaxNumHits[i] > 0 && nHits[i] > fMaxNumHits[i] )
       pass = false;
   }
   
-  LOG_VERBATIM("HitNumberFilter")
+  MF_LOG_VERBATIM("HitNumberFilter")
   <<"Does event pass? "<<pass<<"\n"
   <<"--------------------------";
  

@@ -59,7 +59,7 @@
 #include <iostream>
 #include <memory>
 
-//const int kMaxTrack      = 1000; // unused  //maximum number of tracks
+const int kMaxTrack      = 1000; // unused  //maximum number of tracks
 
 class ShowerFilter;
 
@@ -174,7 +174,6 @@ TruthMom.SetZ(0.0);
     // WC info
     art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
     std::vector<art::Ptr<ldp::WCTrack> > wctrack;
-<<<<<<< HEAD
    
     if(e.getByLabel(fWCTrackLabel, wctrackHandle))
       art::fill_ptr_vector(wctrack, wctrackHandle);
@@ -191,7 +190,8 @@ TruthMom.SetZ(0.0);
 	if (trackWC2TPC)
 	{
 	  recob::Track MatchedTrack=*WCTrackAssn.at(indexAssn);
-	  MatchedTrkStartDir=MatchedTrack.DirectionAtPoint(0);
+	  recob::Track::Vector_t tmpTrkStartDir=MatchedTrack.DirectionAtPoint(0);
+    MatchedTrkStartDir.SetXYZ(tmpTrkStartDir.X(),tmpTrkStartDir.Y(),tmpTrkStartDir.Z());
 // The Z component of the direction is negative sometimes, indicating the track is in reverse. If it's extremely backgoing (Z<-.95), flip the tracjectory to make it point forward. Also keep a count of how often this happens.
           if(MatchedTrkStartDir[2]<-0.95)
 	  {
@@ -199,8 +199,9 @@ TruthMom.SetZ(0.0);
 	  }
 //also, I bet that means the track start and end position are reversed, so we'll make sure the track starts upstream by flipping the start and end point if the end point is upstream.
 //Again keep a counter and hope it increases when the direction counter increases.
-	 MatchedTrkStartPos=MatchedTrack.Vertex();
-	 MatchedTrkEndPos=MatchedTrack.End();
+	
+   MatchedTrkStartPos.SetXYZ(MatchedTrack.Vertex().X(), MatchedTrack.Vertex().Y(), MatchedTrack.Vertex().Z());
+	 MatchedTrkEndPos  .SetXYZ(MatchedTrack.End().X()   , MatchedTrack.End().Y(),    MatchedTrack.End().Z());
 	  if(MatchedTrkEndPos[2]<MatchedTrkStartPos[2]){MatchedTrkStartPos=MatchedTrkEndPos;  ++reversetrackcount;}
 	  // std::cout<<"For this event, the Matched Track Starts at: ("<<MatchedTrkStartPos[0]<<", "<<MatchedTrkStartPos[1]<<", "<<MatchedTrkStartPos[2]<<")."<<std::endl;
 	} //if trackWC2TPC
@@ -332,6 +333,9 @@ if(!bData && !bDoneWC2TPC){
     
     //Get the vectors necessary for the cone cut.
     MatchedTrkStartDir=Tracklist[i]->DirectionAtPoint<TVector3>(0);
+    //recob::Track::Point_t tmp = Tracklist[i]->DirectionAtPoint<TVector3>(0);
+    //MatchedTrkStartDir.SetXYZ( tmp.X(), tmp.Y(), tmp.Z() );
+
 // The Z component of the direction is negative sometimes, indicating the track is in reverse. If it's extremely backgoing (Z<-.95), flip the tracjectory to make it point forward. Also keep a count of how often this happens.
     if(MatchedTrkStartDir[2]<-0.95)
     {

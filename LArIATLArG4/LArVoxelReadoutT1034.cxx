@@ -22,7 +22,7 @@
 #include "Geant4/G4ThreeVector.hh"
 
 // framework libraries
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
 
@@ -90,7 +90,7 @@ namespace larg4 {
     bSingleTPC = true;
     fCstat = cryostat;
     fTPC = tpc;
-    LOG_DEBUG("LArVoxelReadoutT1034")
+    MF_LOG_DEBUG("LArVoxelReadoutT1034")
       << GetName() << "covers C=" << fCstat << " T=" << fTPC;
   } // LArVoxelReadoutT1034::SetSingleTPC()
 
@@ -98,7 +98,7 @@ namespace larg4 {
     bSingleTPC = false;
     fCstat = 0;
     fTPC = 0;
-    LOG_DEBUG("LArVoxelReadoutT1034") << GetName() << " autodetects TPC";
+    MF_LOG_DEBUG("LArVoxelReadoutT1034") << GetName() << " autodetects TPC";
   } // LArVoxelReadoutT1034::SetDiscoverTPC()
   
   
@@ -123,7 +123,7 @@ namespace larg4 {
     fDontDriftThem         = fLgpHandle->DisableWireplanes();
     fSkipWireSignalInTPCs  = fLgpHandle->SkipWireSignalInTPCs();
 
-    LOG_DEBUG("LArVoxelReadoutT1034")  << " e lifetime: "        << fElectronLifetime
+    MF_LOG_DEBUG("LArVoxelReadoutT1034")  << " e lifetime: "        << fElectronLifetime
                                   << "\n Temperature: "     << detprop->Temperature()
                                   << "\n Drift velocity: "  << fDriftVelocity[0]
                                   <<" "<<fDriftVelocity[1]<<" "<<fDriftVelocity[2];
@@ -264,7 +264,7 @@ namespace larg4 {
             throw cet::exception
               ("LArIATLArG4") << "No TPC ID found in LArVoxelReadoutT1034::ProcessHits()";
           } // if
-          LOG_DEBUG("LArVoxelReadoutT1034Hit") << " hit in C=" << cryostat << " T=" << tpc;
+          MF_LOG_DEBUG("LArVoxelReadoutT1034Hit") << " hit in C=" << cryostat << " T=" << tpc;
         } // if more than one TPC
         
         // Note that if there is no particle ID for this energy deposit, the
@@ -416,7 +416,7 @@ namespace larg4 {
       // if we have no electrons (too small energy or too large recombination)
       // we are done already here
       if (nIonizedElectrons <= 0) {
-        LOG_DEBUG("LArVoxelReadoutT1034")
+        MF_LOG_DEBUG("LArVoxelReadoutT1034")
           << "No electrons drifted to readout, " << energy << " MeV lost.";
         return;
       }

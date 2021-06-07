@@ -291,8 +291,9 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
 	      tracklist[i]->LocationAtPoint(iTrajPt).Y() < 20.0 && tracklist[i]->LocationAtPoint(iTrajPt).X() > 0.0 &&
 	      tracklist[i]->LocationAtPoint(iTrajPt).X() < 43.5)
 	    {
-	        
-        p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
+	       
+        recob::Track::Vector_t a = tracklist[i]->DirectionAtPoint(iTrajPt);
+        p_hat_0.SetXYZ(a.X(),a.Y(),a.Z());
 	      //Strange directionality convention - I'm reversing the direction vector
 	      //if it's pointing in the negative X direction
 	      if( p_hat_0.Z() < 0 )
@@ -355,7 +356,6 @@ void WC2TPCTrackMatch::produce(art::Event & evt)
     {
       float DeltaX_WC_TPC_Track = 999;
       float DeltaY_WC_TPC_Track = 999;
-      //p_hat_0 = tracklist[aa]->DirectionAtPoint(aa);
       float tpc_Theta=tpcTheta[aa];
       //std::cout<<"&&&& TPC Theta "<<tpcTheta[aa]<<" "<<std::endl;
       // ###########################################

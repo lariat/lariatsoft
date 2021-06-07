@@ -27,7 +27,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
@@ -119,7 +119,7 @@ class RecoMCParticleMatching : public art::EDProducer
   void endSubRun(art::SubRun & subrun) override;
 
   // this method reads in any parameters from the .fcl files
-  void reconfigure(fhicl::ParameterSet const& pset) override;
+  void reconfigure(fhicl::ParameterSet const& pset);
 
   // the produce routine, called once per event
   void produce(art::Event & event) override;
@@ -192,7 +192,7 @@ class RecoMCParticleMatching : public art::EDProducer
 //-----------------------------------------------------------------------
 // constructor
 RecoMCParticleMatching::RecoMCParticleMatching(fhicl::ParameterSet const& pset)
-//  : EDProducer(pset)
+  : EDProducer(pset)
 {
   // reconfigure parameters
   this->reconfigure(pset);

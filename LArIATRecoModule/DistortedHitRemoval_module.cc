@@ -26,12 +26,9 @@
 #include "art/Framework/Principal/Handle.h"
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
-//#include "art/Framework/Services/Registry/ServiceHandle.h"
-//#include "art/Framework/Services/Optional/TFileService.h"
 #include "canvas/Persistency/Common/FindOneP.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/Ptr.h" 
-//#include "canvas/Persistency/Common/PtrVector.h"
 #include "canvas/Utilities/Exception.h"
 #include "fhiclcpp/ParameterSet.h"
 #include "messagefacility/MessageLogger/MessageLogger.h"
@@ -88,7 +85,7 @@ class DistortedHitRemoval : public art::EDProducer
   void endSubRun(art::SubRun & subrun) override;
 
   // this method reads in any parameters from the .fcl files
-  void reconfigure(fhicl::ParameterSet const& pset) override;
+  void reconfigure(fhicl::ParameterSet const& pset);
 
   // the produce routine, called once per event
   void produce(art::Event & event) override;
@@ -122,6 +119,7 @@ class DistortedHitRemoval : public art::EDProducer
 //-----------------------------------------------------------------------
 // constructor
 DistortedHitRemoval::DistortedHitRemoval(fhicl::ParameterSet const& pset)
+: EDProducer(pset)
 {
   // reconfigure parameters
   this->reconfigure(pset);
@@ -135,7 +133,9 @@ DistortedHitRemoval::DistortedHitRemoval(fhicl::ParameterSet const& pset)
   // let HitCollectionCreator declare that we are going to produce
   // hits and associations with wires and raw digits
   // (with no particular product label)
-  recob::HitCollectionCreator::declare_products(*this);
+  //recob::HitCollectionCreator::declare_products(*this);
+  produces< std::vector<recob::Hit> >();
+
 }
 
 //-----------------------------------------------------------------------
@@ -265,8 +265,9 @@ void DistortedHitRemoval::produce(art::Event & event)
       raw_digits(hit_handle, event, hit_producer_label_);
 
   // hit collection creator
-  recob::HitCollectionCreator hit_collection_creator(
-      *this, event, wires.isValid(), raw_digits.isValid());
+  //recob::HitCollectionCreator hit_collection_creator(
+   //   *this, event, wires.isValid(), raw_digits.isValid());
+  recob::HitCollectionCreator hit_collection_creator(event, wires.isValid(), raw_digits.isValid());
 
   // loop over hits
   for (auto const& hit : hit_vector)

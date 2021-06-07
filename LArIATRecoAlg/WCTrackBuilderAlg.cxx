@@ -17,7 +17,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "larcorealg/Geometry/AuxDetGeo.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 
 // LArIAT includes
 #include "LArIATRecoAlg/WCTrackBuilderAlg.h"
@@ -87,7 +87,7 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   //fSigmaYDist           = pset.get<float >("SigmaYDist",          18.0      );
 
  // fPrintDisambiguation = false;
-  fPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
+  bPickyTracks          = pset.get<bool  >("PickyTracks",         false     );
   fDiagnostics          = pset.get<bool  >("Diagnostics",         false     );
   
   //Survey constants
@@ -126,7 +126,6 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
   fB_field_tesla= (-.1538*pow(10,-4)*pow(current,3)+.2245*pow(10,-2)*pow(current,2)-.1012*current+36.59)*current/10000; // Doug Jensen's cubic equation for magnetic field as a function of current.
   std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla <<std::endl;
   
-  //return sc1;
 }
 float WCTrackBuilderAlg::GetScalingFactor()
 {
@@ -156,7 +155,7 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_p_list,
 					     float (&hit_position_vect)[4][3],
                                              float offset)
 {					   
-  fPickyTracks = pickytracks;
+  bPickyTracks = pickytracks;
   fDiagnostics= diagnostics;
   
 //  for(int i=0; i<4; ++i){
@@ -283,7 +282,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
   if(fNHits<3){
     skip = true;
   } 
-  if(fPickyTracks){
+  if(bPickyTracks){
     for(size_t iWC=0; iWC<4; ++iWC){
       for(size_t iAX=0; iAX<2; ++iAX){
         if(good_hits[iWC][iAX].hits.size() != 1){  
@@ -294,7 +293,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
       }
     }   
   }
-  if(!fPickyTracks){
+  if(!bPickyTracks){
     if(WCMissed==1 || WCMissed==4){ //skip events with less than 3 X/Y hits or is missing the first or last WC
       skip = true;
     }  
@@ -303,7 +302,7 @@ bool WCTrackBuilderAlg::shouldSkipTrigger(std::vector<std::vector<WCHitList> > &
     //skip=true;
     //}
   if( skip == true ){
-    if( fVerbose ){
+    if( bVerbose ){
       std::cout << "skipping this event." << std::endl;
     }
     //Clear the hit lists for each WC/axis

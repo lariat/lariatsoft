@@ -190,7 +190,6 @@ private:
   // geant4 stuff
   G4ErrorPropagatorManager* g4emgr;
   LArIATFieldMap* FieldMapObject;
-  double temp_B_field;
   //int   fWCMissed;
 
     
@@ -291,6 +290,7 @@ void WCTrackBuilderGeante::produce(art::Event & e)
    		    		    
   std::vector<double> reco_pz_list;     //Final reco pz result for full_track_info = true, not indexed by trigger
   std::vector<double> reco_pz2M_list;
+  std::vector<double> unscaled_reco_p_list;
   std::vector<double> x_face_list;
   std::vector<double> y_face_list;
   std::vector<double> theta_list;
@@ -547,17 +547,49 @@ void WCTrackBuilderGeante::produce(art::Event & e)
 	    createAuxDetStyleVectorsFromHitLists(event_final_tracks[i],
 						 WC_vect,
 						 hit_wire_vect);
+  
+      // added 6/7/2021 to make compatible with WCTrack updates from Greg
+      float WC1XMult,WC2XMult,WC3XMult,WC4XMult, WC1YMult,WC2YMult,WC3YMult,WC4YMult;
+      WC1XMult=(float)(good_hits[0][0].hits.size());
+      WC2XMult=(float)(good_hits[1][0].hits.size());
+      WC3XMult=(float)(good_hits[2][0].hits.size());
+      WC4XMult=(float)(good_hits[3][0].hits.size());
+      WC1YMult=(float)(good_hits[0][1].hits.size());
+      WC2YMult=(float)(good_hits[1][1].hits.size());
+      WC3YMult=(float)(good_hits[2][1].hits.size());
+      WC4YMult=(float)(good_hits[3][1].hits.size());        
+      bool PickyTrackCheck;
+      if(WC1XMult==1 && WC2XMult==1 && WC3XMult==1 && WC4XMult==1 && WC1YMult==1 && WC2YMult==1 && WC3YMult==1 && WC4YMult==1) { PickyTrackCheck=true;}
+      else{PickyTrackCheck=false;}      
 
-	    ldp::WCTrack the_track(reco_pz_list[i], reco_pz2M_list[i],			     
-				   y_kink_list[i], x_dist_list[i],			     
-				   y_dist_list[i], z_dist_list[i], 
-				   x_face_list[i], y_face_list[i],			     
-				   theta_list[i], phi_list[i],			     
-				   WC_vect,
-				   hit_wire_vect,
-				   temp_pos,
-				   WCMissed,
-				   vec_residuals[i]);
+	    ldp::WCTrack the_track(
+        reco_pz_list[i], 
+        reco_pz2M_list[i],			     
+				y_kink_list[i], 
+        x_dist_list[i],			     
+				y_dist_list[i], 
+        z_dist_list[i], 
+				x_face_list[i],
+        y_face_list[i],			     
+				theta_list[i], 
+        phi_list[i],			     
+				WC_vect,
+				hit_wire_vect,
+				temp_pos,
+				WCMissed,
+				vec_residuals[i],
+			  WC1XMult,
+			  WC2XMult,
+			  WC3XMult,
+			  WC4XMult,
+			  WC1YMult,
+			  WC2YMult,
+			  WC3YMult,
+			  WC4YMult,			     
+			  PickyTrackCheck,
+			  unscaled_reco_p_list[i]
+        );
+
 
 	    (*WCTrackCol).push_back( the_track );
 	  }
@@ -636,8 +668,12 @@ void WCTrackBuilderGeante::produce(art::Event & e)
 	  std::vector<int> WC_vect;
 	  std::vector<float> hit_wire_vect;
       
-	  WCHitList final_track = event_final_tracks[iNewTrack];      
-      
+	  WCHitList final_track = event_final_tracks[iNewTrack];
+    // added 6/7/2021 to make compatible with WCTrack changes made by Greg
+    // (needs to be fixed by someone more familiar with code)
+    float ScalingFactor = 0;
+    unscaled_reco_p_list.push_back(reco_pz_list[iNewTrack]/(1/(1+ScalingFactor)));
+
 	  //Filling as done above, but formats the WC and hit wire vectors in the WCAuxDetDigit style
 	  createAuxDetStyleVectorsFromHitLists(final_track, WC_vect, hit_wire_vect);
 		           
@@ -652,6 +688,20 @@ void WCTrackBuilderGeante::produce(art::Event & e)
 
 	  hWC3Res->Fill(residuals[1]);
 	  hWC4Res->Fill(residuals[2]);
+      
+      // added 6/7/2021 to make compatible with WCTrack updates from Greg
+      float WC1XMult,WC2XMult,WC3XMult,WC4XMult, WC1YMult,WC2YMult,WC3YMult,WC4YMult;
+      WC1XMult=(float)(good_hits[0][0].hits.size());
+      WC2XMult=(float)(good_hits[1][0].hits.size());
+      WC3XMult=(float)(good_hits[2][0].hits.size());
+      WC4XMult=(float)(good_hits[3][0].hits.size());
+      WC1YMult=(float)(good_hits[0][1].hits.size());
+      WC2YMult=(float)(good_hits[1][1].hits.size());
+      WC3YMult=(float)(good_hits[2][1].hits.size());
+      WC4YMult=(float)(good_hits[3][1].hits.size());        
+      bool PickyTrackCheck;
+      if(WC1XMult==1 && WC2XMult==1 && WC3XMult==1 && WC4XMult==1 && WC1YMult==1 && WC2YMult==1 && WC3YMult==1 && WC4YMult==1) { PickyTrackCheck=true;}
+      else{PickyTrackCheck=false;}      
 
 	  if(residuals[1] < fResWC3Cut and residuals[2] < fResWC4Cut) {
 	    ldp::WCTrack the_track(reco_pz_list[iNewTrack],
@@ -667,7 +717,18 @@ void WCTrackBuilderGeante::produce(art::Event & e)
 				   hit_wire_vect,
 				   hit_position_array,
 				   WCMissed,
-				   residual);
+				   residual,
+			  WC1XMult,
+			  WC2XMult,
+			  WC3XMult,
+			  WC4XMult,
+			  WC1YMult,
+			  WC2YMult,
+			  WC3YMult,
+			  WC4YMult,			     
+			  PickyTrackCheck,
+			  unscaled_reco_p_list[iNewTrack]
+      );
 	    (*WCTrackCol).push_back( the_track );	      
 	  } // residuals cut
 	} // nTracks loop
@@ -1063,22 +1124,15 @@ void WCTrackBuilderGeante::beginRun(art::Run & r)
 
 void WCTrackBuilderGeante::beginSubRun(art::SubRun & sr)
 {
-  
-  
-
-  temp_B_field = 0.0;
-  if( fWCTrackBuilderAlg.fMCMagneticField == 0 ) {       
-    temp_B_field = fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );
-  }
-  if(bVerbose) { std::cout << "B field from database: " << temp_B_field << std::endl; }
+  if( fWCTrackBuilderAlg.fMCMagneticField == 0 ) fWCTrackBuilderAlg.loadXMLDatabaseTableForBField( sr.run(), sr.subRun() );
+  if(bVerbose) { std::cout << "B field from database: " << fWCTrackBuilderAlg.fB_field_tesla << std::endl; }
 
   // a debugging thing
-  if(temp_B_field == 0.0) {
+  if(fWCTrackBuilderAlg.fB_field_tesla == 0.0) {
     fWCTrackBuilderAlg.fB_field_tesla = 0.315;
-    temp_B_field = 0.315;
   }
 
-  FieldMapObject->SetBField(temp_B_field);
+  FieldMapObject->SetBField(fWCTrackBuilderAlg.fB_field_tesla);
   
 }
 

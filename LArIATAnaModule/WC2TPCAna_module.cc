@@ -16,8 +16,8 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "art/Framework/Services/Registry/ServiceHandle.h" 
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include "canvas/Persistency/Common/FindOneP.h" 
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "messagefacility/MessageLogger/MessageLogger.h" 
@@ -382,8 +382,9 @@ void lariat::WC2TPCAna::analyze(art::Event const & evt)
 	     tracklist[i]->LocationAtPoint(iTrajPt).Y() < 20.0 && tracklist[i]->LocationAtPoint(iTrajPt).X() > 0.0 &&
 	     tracklist[i]->LocationAtPoint(iTrajPt).X() < 43.5)
 	    {
-	      
-	      p_hat_0 = tracklist[i]->DirectionAtPoint(iTrajPt);
+	     
+        recob::Track::Vector_t tmp = tracklist[i]->DirectionAtPoint(iTrajPt);
+        p_hat_0.SetXYZ(tmp.X(),tmp.Y(),tmp.Z());
 	      //Strange directionality convention - I'm reversing the direction vector
 	      //if it's pointing in the negative Z direction
 	      if( p_hat_0.Z() < 0 )

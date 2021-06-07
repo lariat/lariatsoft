@@ -22,7 +22,7 @@
 #include "messagefacility/MessageLogger/MessageLogger.h"
 #include "lardataobj/RecoBase/PFParticle.h"
 #include <memory>
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 class WCQualityExistenceFilter;
 class WCQualityExistenceFilter : public art::EDFilter {
 public:
@@ -42,7 +42,7 @@ private:
   TH1F* hPassFail;
 };
 WCQualityExistenceFilter::WCQualityExistenceFilter(fhicl::ParameterSet const & p)
-// :
+ : EDFilter(p)
 // Initialize member data here.
 {
   fWCQualityProducerLabel   = p.get< std::string >("WCQualityProducerLabel", "wcquality");

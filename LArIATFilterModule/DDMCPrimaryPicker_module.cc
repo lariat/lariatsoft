@@ -18,8 +18,8 @@
 #include "canvas/Persistency/Common/Ptr.h" 
 #include "canvas/Persistency/Common/PtrVector.h" 
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "art/Framework/Services/Optional/TFileService.h" 
-#include "art/Framework/Services/Optional/TFileDirectory.h"
+#include "art_root_io/TFileService.h"
+#include "art_root_io/TFileDirectory.h"
 #include <memory>
 #include "larsim/MCCheater/BackTrackerService.h"
 #include "larsim/MCCheater/ParticleInventoryService.h"
@@ -50,7 +50,7 @@ public:
   // Selected optional functions.
   void beginJob() override;
   void endJob() override;
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p);
   void respondToCloseInputFile(art::FileBlock const & fb) override;
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const  &fb) override;
@@ -64,7 +64,7 @@ private:
 
 
 DDMCPrimaryPicker::DDMCPrimaryPicker(fhicl::ParameterSet const & p)
-// :
+ : EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

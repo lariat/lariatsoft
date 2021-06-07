@@ -20,7 +20,7 @@
 #include "LArIATLArG4/ISCalculationSeparateT1034.h"
 
 #include "messagefacility/MessageLogger/MessageLogger.h"
-#include "cetlib/exception.h"
+#include "cetlib_except/exception.h"
 
 namespace larg4{
 
@@ -127,7 +127,7 @@ namespace larg4{
     // 1.e-3 converts fEnergyDeposit to GeV
     fNumIonElectrons = fGeVToElectrons * 1.e-3 * fEnergyDeposit * recomb;
 
-    LOG_DEBUG("ISCalculationSeparateT1034") << " Electrons produced for " << fEnergyDeposit 
+    MF_LOG_DEBUG("ISCalculationSeparateT1034") << " Electrons produced for " << fEnergyDeposit 
 				       << " MeV deposited with "     << recomb 
 				       << " recombination: "         << fNumIonElectrons;
 
@@ -143,7 +143,7 @@ namespace larg4{
 
     if(fScintByParticleType){
 
-      LOG_DEBUG("ISCalculationSeparateT1034") << "scintillating by particle type";
+      MF_LOG_DEBUG("ISCalculationSeparateT1034") << "scintillating by particle type";
 
       // Get the definition of the current particle
       G4ParticleDefinition *pDef = step->GetTrack()->GetDynamicParticle()->GetDefinition();
@@ -216,7 +216,7 @@ namespace larg4{
       fNumScintPhotons = fScintYieldFactor * scintYield * fEnergyDeposit;
     }
 
-    LOG_DEBUG("ISCalculationSeparateT1034") << "number photons: " << fNumScintPhotons 
+    MF_LOG_DEBUG("ISCalculationSeparateT1034") << "number photons: " << fNumScintPhotons 
 				       << " energy: "        << fEnergyDeposit/CLHEP::MeV
 				       << " saturation: " 
 				       << fEMSaturation->VisibleEnergyDepositionAtAStep(step)

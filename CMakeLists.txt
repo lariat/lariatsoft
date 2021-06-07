@@ -36,7 +36,6 @@ set_install_root()
 cet_set_compiler_flags(DIAGS CAUTIOUS
   WERROR
   NO_UNDEFINED
-  ALLOW_DEPRECATIONS
   EXTRA_FLAGS -pedantic -Wno-unused-local-typedefs -Wno-unused-variable
   EXTRA_CXX_FLAGS
 )

@@ -5,10 +5,7 @@
 /// \author  seligman@nevis.columbia.edu
 ////////////////////////////////////////////////////////////////////////
 
-//#include "larsim/LArG4/ParticleListAction.h"
-#include "nutools/G4Base/PrimaryParticleInformation.h"
 #include "lardataobj/Simulation/sim.h"
-#include "nutools/ParticleNavigation/ParticleList.h"
 
 #include "LArIATLArG4/ParticleListActionT1034.h"
 
@@ -106,7 +103,7 @@ namespace larg4 {
     // of the first EM particle that led to this one
     std::map<int,int>::const_iterator itr = fParentIDMap.find(trackid);
     while( itr != fParentIDMap.end() ){
-      LOG_DEBUG("ParticleListActionT1034")
+      MF_LOG_DEBUG("ParticleListActionT1034")
       << "parentage for " << trackid
       << " " << (*itr).second;
       
@@ -115,7 +112,7 @@ namespace larg4 {
       parentid = (*itr).second;
       itr = fParentIDMap.find(parentid);
     }
-    LOG_DEBUG("ParticleListActionT1034") << "final parent ID " << parentid; 
+    MF_LOG_DEBUG("ParticleListActionT1034") << "final parent ID " << parentid; 
 
     return parentid;
   }
@@ -231,7 +228,7 @@ namespace larg4 {
         // if we still can't find the parent in the particle navigator,
         // we have to give up
         if( !fparticleList->KnownParticle(pid) ){
-          LOG_WARNING("ParticleListActionT1034")
+          MF_LOG_WARNING("ParticleListActionT1034")
           << "can't find parent id: "
           << parentID
           << " in the particle list, or fParentIDMap."
@@ -360,7 +357,7 @@ namespace larg4 {
 
     if (!fSkipStepIgnoreProcess) ignoreProcess = false;
 
-    LOG_DEBUG("ParticleListActionT1034::SteppingAction")
+    MF_LOG_DEBUG("ParticleListActionT1034::SteppingAction")
     << ": DEBUG - process='"
     << process << "'"
     << " ignoreProcess=" << ignoreProcess

@@ -25,7 +25,7 @@ art_make(LIB_LIBRARIES    larcorealg_Geometry
                           larsim_MCCheater_BackTrackerService_service
                           larsim_MCCheater_ParticleInventoryService_service
                           larcore_Geometry_AuxDetGeometry_service
-                          nutools_RandomUtils_NuRandomService_service
+                          nurandom_RandomUtils_NuRandomService_service
                           nusimdata_SimulationBase
                           ${ART_FRAMEWORK_CORE}
                           ${ART_FRAMEWORK_PRINCIPAL}
@@ -33,6 +33,7 @@ art_make(LIB_LIBRARIES    larcorealg_Geometry
                           ${ART_FRAMEWORK_SERVICES_BASIC}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+	                        ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR}
                           art_Persistency_Common canvas
                           art_Persistency_Provenance canvas

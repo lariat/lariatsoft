@@ -24,7 +24,7 @@
 #include <TH3F.h>
 #include <TVector3.h>
 
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "LArIATDataProducts/TOF.h"
 #include "LArIATDataProducts/WCTrack.h"
 #include "lardataobj/RecoBase/Track.h"
@@ -55,7 +55,7 @@ public:
   KeepBeamFilter & operator = (KeepBeamFilter const &) = delete;
   KeepBeamFilter & operator = (KeepBeamFilter &&) = delete;
 
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p);
 
   //bool insideImagPipe(std::vector<double> pos);
   //bool CheckUpstreamMagnetAperture(std::vector<double> hit1, std::vector<double> hit2);
@@ -359,7 +359,7 @@ void KeepBeamFilter::beginJob()
 
 
 KeepBeamFilter::KeepBeamFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

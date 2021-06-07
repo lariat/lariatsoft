@@ -27,7 +27,7 @@
 #include "art/Framework/Principal/Run.h"
 #include "art/Framework/Principal/SubRun.h"
 #include "art/Framework/Services/Registry/ServiceHandle.h"
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 #include "art/Persistency/Common/PtrMaker.h"
 #include "canvas/Persistency/Common/FindManyP.h"
 #include "canvas/Persistency/Common/Ptr.h" 
@@ -102,7 +102,7 @@ class WCTrackTPCTrackMatch : public art::EDProducer
   void endSubRun(art::SubRun & subrun) override;
 
   // this method reads in any parameters from the .fcl files
-  void reconfigure(fhicl::ParameterSet const& pset) override;
+  void reconfigure(fhicl::ParameterSet const& pset);
 
   // the produce routine, called once per event
   void produce(art::Event & event) override;
@@ -238,6 +238,7 @@ class WCTrackTPCTrackMatch : public art::EDProducer
 //-----------------------------------------------------------------------
 // constructor
 WCTrackTPCTrackMatch::WCTrackTPCTrackMatch(fhicl::ParameterSet const& pset)
+: EDProducer(pset)
 {
   // reconfigure parameters
   this->reconfigure(pset);
@@ -842,7 +843,9 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
     std::vector< size_t > pfparticle_daughter_indices;
     pfparticle_vector.emplace_back(211, 0, 0, pfparticle_daughter_indices);
 
-    art::PtrMaker< recob::PFParticle > make_pfparticle_ptr(event, *this);
+    //art::PtrMaker< recob::PFParticle > make_pfparticle_ptr(event, *this);
+    art::PtrMaker< recob::PFParticle > make_pfparticle_ptr(event);
+//    make_pfparticle_ptr.emplace(event);
 
     art::Ptr< recob::PFParticle > pfparticle_ptr
         = make_pfparticle_ptr(pfparticle_vector.size() - 1);

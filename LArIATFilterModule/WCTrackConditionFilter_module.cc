@@ -19,7 +19,7 @@
 #include "LArIATDataProducts/WCTrack.h"
 #include <memory>
 #include <TH1F.h>
-#include "art/Framework/Services/Optional/TFileService.h"
+#include "art_root_io/TFileService.h"
 class WCTrackConditionFilter;
 
 class WCTrackConditionFilter : public art::EDFilter {
@@ -42,7 +42,7 @@ public:
 
   void endJob() override;
 
-  void reconfigure(fhicl::ParameterSet const & p) override;
+  void reconfigure(fhicl::ParameterSet const & p) ;
   void respondToCloseInputFile(art::FileBlock const & fb) override;
   void respondToCloseOutputFiles(art::FileBlock const & fb) override;
   void respondToOpenInputFile(art::FileBlock const  &fb) override;
@@ -61,7 +61,7 @@ private:
 
 
 WCTrackConditionFilter::WCTrackConditionFilter(fhicl::ParameterSet const & p)
-// :
+: EDFilter(p)
 // Initialize member data here.
 {
   this->reconfigure(p);

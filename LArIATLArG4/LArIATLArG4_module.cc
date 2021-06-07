@@ -21,8 +21,11 @@
 #ifndef LARIATLARG4_LARIATLARG4_H
 #define LARIATLARG4_LARIATLARG4_H 1
 
-#include "nutools/G4Base/G4Helper.h"
-#include "nutools/G4Base/ConvertMCTruthToG4.h"
+#include "nug4/G4Base/G4Helper.h"
+#include "nug4/G4Base/ConvertMCTruthToG4.h"
+#include "nug4/G4Base/DetectorConstruction.h"
+#include "nug4/G4Base/UserActionManager.h"
+#include "nug4/ParticleNavigation/ParticleList.h"
 
 // C++ Includes
 #include <sstream> // std::ostringstream
@@ -48,33 +51,26 @@
 #include "cetlib/search_path.h"
 
 // art extensions
-#include "nutools/RandomUtils/NuRandomService.h"
+#include "nurandom/RandomUtils/NuRandomService.h"
 
 // LArSoft Includes
-//#include "larsim/LArG4/LArVoxelReadoutGeometry.h"
 #include "larsim/LArG4/PhysicsList.h"
-//#include "larsim/LArG4/ParticleListAction.h"
 #include "larsim/LArG4/G4BadIdeaAction.h"
 #include "larsim/LArG4/IonizationAndScintillationAction.h"
 #include "larsim/LArG4/OpDetSensitiveDetector.h"
 #include "larsim/LArG4/OpDetReadoutGeometry.h"
 #include "larsim/LArG4/LArStackingAction.h"
-//#include "larsim/LArG4/LArVoxelReadout.h"
 #include "larsim/LArG4/MaterialPropertyLoader.h"
 #include "larsim/LArG4/OpDetPhotonTable.h"
-//#include "larsim/LArG4/AuxDetReadoutGeometry.h"
-//#include "larsim/LArG4/AuxDetReadout.h"
-#include "larsim/LArG4/ParticleFilters.h" // larg4::PositionInVolumeFilter
+#include "larcorealg/CoreUtils/ParticleFilters.h"
 #include "larsim/Simulation/LArG4Parameters.h"
 #include "nusimdata/SimulationBase/MCTruth.h"
-#include "nutools/ParticleNavigation/ParticleList.h"
+//#include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
 #include "lardataobj/Simulation/SimPhotons.h"
 #include "lardataobj/Simulation/SimChannel.h"
 #include "lardataobj/Simulation/OpDetBacktrackerRecord.h"
 #include "lardataobj/Simulation/AuxDetSimChannel.h"
 #include "larcore/Geometry/Geometry.h"
-#include "nutools/G4Base/DetectorConstruction.h"
-#include "nutools/G4Base/UserActionManager.h"
 
 // LArIATSoft includes
 #include "LArIATLArG4/AuxDetReadoutT1034.h"
@@ -250,9 +246,12 @@ namespace larg4 {
     double                     fStepSizeLimit;      ///< lower limit for G4 step size [cm]
 
     /// Configures and returns a particle filter
-    std::unique_ptr<PositionInVolumeFilter> CreateParticleVolumeFilter
+    std::unique_ptr<util::PositionInVolumeFilter> CreateParticleVolumeFilter
       (std::set<std::string> const& vol_names) const;
-    
+  
+    CLHEP::HepRandomEngine& fEngine;
+//    detinfo::DetectorPropertiesData fDetProp;
+
   };
 
 } // namespace LArG4
@@ -262,7 +261,8 @@ namespace larg4 {
   //----------------------------------------------------------------------
   // Constructor
   LArIATLArG4::LArIATLArG4(fhicl::ParameterSet const& pset)
-    : fG4Help                (0)
+    : EDProducer             (pset)
+    , fG4Help                (0)
     , flarVoxelListAction    (0)
     , fparticleListAction    (0)
     , fG4PhysListName        (pset.get< std::string >("G4PhysListName","larg4::PhysicsList"))
@@ -274,9 +274,11 @@ namespace larg4 {
     , fKeepParticlesInVolumes        (pset.get< std::vector< std::string > >("KeepParticlesInVolumes",{}))
     , fSkipStepIgnoreProcess (pset.get< bool        >("SkipStepIgnoreProcess", true)        )
     , fStepSizeLimit         (pset.get< double      >("StepSizeLimit", -1.)                 )
-
+    , fEngine                (art::ServiceHandle<rndm::NuRandomService> {} 
+                              ->createEngine(*this,"HepJamesRandom", "propagation", pset, "PropagationSeed"))
+    //, fDetProp{art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob()}
   {
-    LOG_DEBUG("LArIATLArG4") << "Debug: LArIATLArG4()";
+    MF_LOG_DEBUG("LArIATLArG4") << "Debug: LArIATLArG4()";
     art::ServiceHandle<art::RandomNumberGenerator> rng;
 
     if (pset.has_key("Seed")) {
@@ -288,11 +290,11 @@ namespace larg4 {
     // special tag setting up a global engine for use by Geant4/CLHEP;
     // obtain the random seed from NuRandomService,
     // unless overridden in configuration with key "Seed" or "GEANTSeed"
-    art::ServiceHandle<rndm::NuRandomService>()
+    (void)art::ServiceHandle<rndm::NuRandomService>()
       ->createEngine(*this, "G4Engine", "GEANT", pset, "GEANTSeed");
     // same thing for the propagation engine:
-    art::ServiceHandle<rndm::NuRandomService>()
-      ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
+    //art::ServiceHandle<rndm::NuRandomService>()
+    //  ->createEngine(*this, "HepJamesRandom", "propagation", pset, "PropagationSeed");
 
     //get a list of generators to use, otherwise, we'll end up looking for anything that's
     //made an MCTruth object
@@ -348,6 +350,8 @@ namespace larg4 {
     MPL->GetPropertiesFromServices();
     MPL->UpdateGeometry(G4LogicalVolumeStore::GetInstance());
 
+//    auto const detProp = art::ServiceHandle<detinfo::DetectorPropertiesService const>()->DataForJob();
+
     // Tell the detector about the parallel LAr voxel geometry.
     std::vector<G4VUserParallelWorld*> pworlds;
     // Intialize G4 physics and primary generator action
@@ -356,13 +360,12 @@ namespace larg4 {
     // create the ionization and scintillation calculator;
     // this is a singleton (!) so it does not make sense
     // to create it in LArVoxelReadoutGeometryT1034
-    IonizationAndScintillationT1034::CreateInstance(rng->getEngine("propagation"));
+    IonizationAndScintillationT1034::CreateInstance(fEngine);
 
     // make a parallel world for each TPC in the detector
     LArVoxelReadoutGeometryT1034::Setup_t readoutGeomSetupData;
     readoutGeomSetupData.readoutSetup.offPlaneMargin = fOffPlaneMargin;
-    readoutGeomSetupData.readoutSetup.propGen
-      = &(rng->getEngine("propagation"));
+    readoutGeomSetupData.readoutSetup.propGen = &fEngine;
     pworlds.push_back(new LArVoxelReadoutGeometryT1034
       ("LArVoxelReadoutGeometry", readoutGeomSetupData)
       );
@@ -427,7 +430,7 @@ namespace larg4 {
     
   }
   
-  std::unique_ptr<PositionInVolumeFilter> LArIATLArG4::CreateParticleVolumeFilter
+  std::unique_ptr<util::PositionInVolumeFilter> LArIATLArG4::CreateParticleVolumeFilter
     (std::set<std::string> const& vol_names) const
   {
     
@@ -440,7 +443,7 @@ namespace larg4 {
       = geom.FindAllVolumePaths(vol_names);
     
     // collection of interesting volumes
-    PositionInVolumeFilter::AllVolumeInfo_t GeoVolumePairs;
+    util::PositionInVolumeFilter::AllVolumeInfo_t GeoVolumePairs;
     GeoVolumePairs.reserve(node_paths.size()); // because we are obsessed
   
     //for each interesting volume, follow the node path and collect
@@ -473,14 +476,14 @@ namespace larg4 {
 
     }
     
-    return std::make_unique<PositionInVolumeFilter>(std::move(GeoVolumePairs));
+    return std::make_unique<util::PositionInVolumeFilter>(std::move(GeoVolumePairs));
     
   } // CreateParticleVolumeFilter()
     
 
   void LArIATLArG4::produce(art::Event& evt)
   {
-    LOG_DEBUG("LArIATLArG4") << "produce()";
+    MF_LOG_DEBUG("LArIATLArG4") << "produce()";
 
     // loop over the lists and put the particles and voxels into the event as collections
     std::unique_ptr< std::vector<sim::SimChannel>  >               scCol                      (new std::vector<sim::SimChannel>);
@@ -491,8 +494,9 @@ namespace larg4 {
     std::unique_ptr< std::vector<sim::SimPhotonsLite>  >           LitePhotonCol              (new std::vector<sim::SimPhotonsLite>);
     std::unique_ptr< std::vector< sim::OpDetBacktrackerRecord > >  cOpDetBacktrackerRecordCol (new std::vector<sim::OpDetBacktrackerRecord>);
     
-    art::PtrMaker<simb::MCParticle> makeMCPartPtr(evt, *this);
-
+    //<art::PtrMaker<simb::MCParticle> makeMCPartPtr(evt, *this);
+    std::optional<art::PtrMaker<simb::MCParticle>> makeMCPartPtr;
+    makeMCPartPtr.emplace(evt);
 
     // Fetch the lists of LAr voxels and particles.
     art::ServiceHandle<sim::LArG4Parameters> lgp;
@@ -525,7 +529,7 @@ namespace larg4 {
       for(size_t m = 0; m < mclistHandle->size(); ++m){
         art::Ptr<simb::MCTruth> mct(mclistHandle, m);
 
-        LOG_DEBUG("LArIATLArG4") << *(mct.get());
+        MF_LOG_DEBUG("LArIATLArG4") << *(mct.get());
 
         // The following tells Geant4 to track the particles in this interaction.
         fG4Help->G4Run(mct);
@@ -550,7 +554,7 @@ namespace larg4 {
           }
           partCol->push_back(std::move(p));
           
-          tpassn->addSingle(mct, makeMCPartPtr(partCol->size() - 1));
+          tpassn->addSingle(mct, (*makeMCPartPtr)(partCol->size() - 1));
           
           // FIXME workaround until https://cdcvs.fnal.gov/redmine/issues/12067
           // is solved and adopted in LArSoft, after which moving will suffice
@@ -582,14 +586,14 @@ namespace larg4 {
     //
     if(theOpDetDet){
       if(!fUseLitePhotons){      
-        LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
+        MF_LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
        	std::vector<sim::SimPhotons>& ThePhotons = OpDetPhotonTable::Instance()->GetPhotons();
       	PhotonCol->reserve(ThePhotons.size());
       	for(auto& it : ThePhotons)
       	  PhotonCol->push_back(std::move(it));
       }
       else{
-        LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
+        MF_LOG_DEBUG("Optical") << "Storing OpDet Hit Collection in Event";
         
         std::map<int, std::map<int, int> > ThePhotons = OpDetPhotonTable::Instance()->GetLitePhotons();
         
@@ -652,7 +656,7 @@ namespace larg4 {
 
         LArVoxelReadoutT1034::ChannelMap_t& channels = larVoxelReadout->GetSimChannelMap(c, t);
         if (!channels.empty()) {
-          LOG_DEBUG("LArIATLArG4") << "now put " << channels.size() << " SimChannels"
+          MF_LOG_DEBUG("LArIATLArG4") << "now put " << channels.size() << " SimChannels"
             " from C=" << c << " T=" << t << " into the event";
         }
 
@@ -722,7 +726,7 @@ namespace larg4 {
           // Convert the G4VSensitiveDetector* to a AuxDetReadoutT1034*.
         larg4::AuxDetReadoutT1034 *auxDetReadout = dynamic_cast<larg4::AuxDetReadoutT1034*>(sd);
         
-        LOG_DEBUG("LArIATLArG4") << "now put the AuxDetSimTracks in the event";
+        MF_LOG_DEBUG("LArIATLArG4") << "now put the AuxDetSimTracks in the event";
         
         const sim::AuxDetSimChannel adsc = auxDetReadout->GetAuxDetSimChannel();
         adCol->push_back(adsc);

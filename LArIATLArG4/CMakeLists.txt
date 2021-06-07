@@ -11,18 +11,20 @@ art_make(
                            lardata_Utilities
                            larsim_LArG4
                            larsim_Simulation 
-                           nutools_ParticleNavigation
+                           nug4_ParticleNavigation
                            lardataobj_Simulation
                            larcorealg_Geometry
                            larcore_Geometry_Geometry_service
                            nusimdata_SimulationBase
-                           nutools_G4Base
+                           nug4_G4Base
                            ${ART_FRAMEWORK_CORE}
                            ${ART_FRAMEWORK_PRINCIPAL}
                            ${ART_FRAMEWORK_SERVICES_REGISTRY}
                            ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+#                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
                            ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
+                           ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+                           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                            art_Persistency_Common
                            art_Persistency_Provenance
                            art_Utilities
@@ -47,15 +49,17 @@ art_make(
                            larsim_LArG4
                            larsim_MCCheater_ParticleInventoryService_service
                            larsim_Simulation
-                           nutools_ParticleNavigation
+                           nug4_ParticleNavigation
                            lardataobj_Simulation
                            larcorealg_Geometry
                            larcore_Geometry_Geometry_service
-                           nutools_RandomUtils_NuRandomService_service
+                           nurandom_RandomUtils_NuRandomService_service
                            nusimdata_SimulationBase
                            ${ART_FRAMEWORK_SERVICES_REGISTRY}
                            ${ART_FRAMEWORK_SERVICES_OPTIONAL}
-                           ${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                           #${ART_FRAMEWORK_SERVICES_OPTIONAL_TFILESERVICE_SERVICE}
+                           ${ART_ROOT_IO_TFILE_SUPPORT} ${ROOT_CORE}
+                           ${ART_ROOT_IO_TFILESERVICE_SERVICE}
                            ${ART_FRAMEWORK_SERVICES_OPTIONAL_RANDOMNUMBERGENERATOR_SERVICE}
                            canvas
                            ${MF_MESSAGELOGGER}
@@ -65,7 +69,7 @@ art_make(
                            ${ROOT_GENVECTOR}
                            ${ROOT_BASIC_LIB_LIST}
                            ${ROOT_GEOM}
-                           nutools_G4Base
+                           nug4_G4Base
                            ${CLHEP}
                            ${G4_LIB_LIST}
 )
