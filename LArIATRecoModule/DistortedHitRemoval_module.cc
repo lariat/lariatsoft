@@ -133,8 +133,8 @@ DistortedHitRemoval::DistortedHitRemoval(fhicl::ParameterSet const& pset)
   // let HitCollectionCreator declare that we are going to produce
   // hits and associations with wires and raw digits
   // (with no particular product label)
-  //recob::HitCollectionCreator::declare_products(*this);
-  produces< std::vector<recob::Hit> >();
+  recob::HitCollectionCreator::declare_products(producesCollector(), "", true, false );
+  //produces< std::vector<recob::Hit> >();
 
 }
 
@@ -236,19 +236,18 @@ void DistortedHitRemoval::produce(art::Event & event)
   {
     // get z-coordinate of spacepoint
     const double z = spacepoint->XYZ()[2];
-
     // skip if the spacepoint is within the fiducial region
     if (z > z_low_ and z < z_high_) continue;
 
     // std::vector< art::Ptr< recob::Hit > >
-    auto const& hits = find_many_hits_from_spacepoints.at(spacepoint.key());
-
-    // loop over associated hits
-    for (auto const& hit : hits)
-    {
+      
+      auto const& hits = find_many_hits_from_spacepoints.at(spacepoint.key());
+      // loop over associated hits
+      for (auto const& hit : hits)
+      {
       // store associated hit as a distorted hit
-      distorted_hits.insert(*hit);
-    } // end loop over associated hits
+        distorted_hits.insert(*hit);
+      }   // end loop over associated hits
 
   } // end loop over spacepoints
 
@@ -256,18 +255,20 @@ void DistortedHitRemoval::produce(art::Event & event)
   // copy over undistorted hits
   //-------------------------------------------------------------------
 
+  
+
   // find wire from hits
   const art::FindOneP< recob::Wire >
       wires(hit_handle, event, hit_producer_label_);
 
   // find raw digit from hits
-  const art::FindOneP< raw::RawDigit >
-      raw_digits(hit_handle, event, hit_producer_label_);
+  // (in LArSoft v08_38_01, standard GausHitFinder can no longer
+  // be configured to save RawDigit <--> Hit associations.
+  //const art::FindOneP< raw::RawDigit >
+  //raw_digits(hit_handle, event, hit_producer_label_);
 
   // hit collection creator
-  //recob::HitCollectionCreator hit_collection_creator(
-   //   *this, event, wires.isValid(), raw_digits.isValid());
-  recob::HitCollectionCreator hit_collection_creator(event, wires.isValid(), raw_digits.isValid());
+  recob::HitCollectionCreator hit_collection_creator(event, wires.isValid(), false);
 
   // loop over hits
   for (auto const& hit : hit_vector)
@@ -277,10 +278,10 @@ void DistortedHitRemoval::produce(art::Event & event)
 
     // get associated wire and raw digit
     art::Ptr< recob::Wire >   const& wire      = wires.at(hit.key());
-    art::Ptr< raw::RawDigit > const& raw_digit = raw_digits.at(hit.key());
+//    art::Ptr< raw::RawDigit > const& raw_digit = raw_digits.at(hit.key());
 
     // copy undistorted hit, and associated wire and raw digit
-    hit_collection_creator.emplace_back(*hit, wire, raw_digit);
+    hit_collection_creator.emplace_back(*hit, wire); //, raw_digit);
   } // end loop over hits
 
   // put the hit collection and associations into the event

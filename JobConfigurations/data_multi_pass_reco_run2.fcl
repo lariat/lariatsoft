@@ -1,6 +1,6 @@
 #include "services_lariat.fcl"
 #include "caldata_lariat.fcl"
-#include "hitfindermodules.fcl"
+#include "hitfindermodules_lariat.fcl"
 #include "trackfindermodules.fcl"
 #include "calorimetry.fcl"
 #include "calorimetry_lariat.fcl"
@@ -55,7 +55,7 @@ physics:
     # tpc producers
     caldata:               @local::lariat_calroi
 
-    gaushitOrigin:         @local::gaus_hitfinder
+    gaushitOrigin:         @local::lariat_gaushitfinder
     trajclusterOrigin:     @local::standard_trajcluster
     pmtrackOrigin:         @local::standard_pmalgtrackmaker
 
@@ -78,12 +78,22 @@ physics:
 
   analyzers:
   {
-    anatree: @local::lariat_anatreeuc
+    anatree: @local::lariat_anatree
   }
 
   #define the producer and filter modules for this path, order matters, 
   #filters reject all following items.  see lines starting physics.producers below
-  reco: [ timestampfilter, @sequence::beamlinereco, toffilter, wctrackfilter, wcquality, caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctracktpctrackmatch, wctracktpctrackuniquematch ]
+  reco: [ timestampfilter, 
+          @sequence::beamlinereco, 
+          toffilter, 
+          wctrackfilter, 
+          wcquality, 
+          caldata, 
+          @sequence::tpcrecoOrigin, 
+          @sequence::tpcreco, 
+          wctracktpctrackmatch, 
+          wctracktpctrackuniquematch 
+        ]
 
   ana: [ anatree ]
 
@@ -96,7 +106,7 @@ physics:
 
   #end_paths is a keyword and contains the paths that do not modify the art::Event, 
   #ie analyzers and output streams.  these all run simultaneously
-  end_paths:     [ ana, stream1 ]
+  end_paths:     [ stream1, ana ]
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
@@ -195,7 +205,8 @@ physics.producers.gaushitOrigin.Chi2NDFRetry:        1000.
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
 physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteralg_run2
-physics.producers.trajclusterOrigin.TrajClusterAlg.HitFinderModuleLabel: "gaushitOrigin"
+physics.producers.trajclusterOrigin.HitModuleLabel: "gaushitOrigin"
+#physics.producers.trajclusterOrigin.TrajClusterAlg.HitFinderModuleLabel: "gaushitOrigin"
 
 physics.producers.pmtrackOrigin.ClusterModuleLabel: "trajclusterOrigin"
 physics.producers.pmtrackOrigin.HitModuleLabel:     "trajclusterOrigin"
@@ -224,7 +235,8 @@ physics.filters.hitnumfilter.MaxNumHits:                          [ -999, -999 ]
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
 physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg_run2
-physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel: "gaushit"
+physics.producers.trajcluster.HitModuleLabel: "gaushit"
+#physics.producers.trajcluster.TrajClusterAlg.HitFinderModuleLabel: "gaushit"
 
 physics.producers.pmtrack.ClusterModuleLabel: "trajcluster"
 physics.producers.pmtrack.HitModuleLabel:     "trajcluster"
@@ -266,7 +278,7 @@ physics.producers.wctracktpctrackuniquematch.CircularCutYCenter:  -0.17
 physics.producers.wctracktpctrackuniquematch.CircularCutRadius:   3.5
 physics.producers.wctracktpctrackuniquematch.UniqueMatchMode:     true
 
-physics.analyzers.anatree.SelectEvents:            [ reco ]
+#physics.analyzers.anatree.SelectEvents:            [ reco ]
 physics.analyzers.anatree.TreeName:                "anatree"
 physics.analyzers.anatree.HitsModuleLabel:         "gaushit"
 physics.analyzers.anatree.TrackModuleLabel:        "pmtrack"
