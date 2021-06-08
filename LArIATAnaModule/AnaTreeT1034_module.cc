@@ -47,6 +47,7 @@
 #include "lardata/ArtDataHelper/TrackUtils.h" // lar::util::TrackPitchInView()
 #include "lardata/DetectorInfoServices/LArPropertiesService.h"
 #include "lardata/DetectorInfoServices/DetectorPropertiesService.h"
+#include "lardata/DetectorInfoServices/DetectorClocksService.h"
 #include "lardata/Utilities/AssociationUtil.h"
 
 //#include "RawData/ExternalTrigger.h"
@@ -80,7 +81,7 @@
 #include "TTree.h"
 #include "TTimeStamp.h"
 
-const int kMaxTrack      = 1000;     //maximum number of tracks
+const int kMaxTrack      = 10000;     //maximum number of tracks
 const int kMaxHits       = 20000;    //maximum number of hits
 const int kMaxTrackHits  = 1000;     //maximum number of space points
 const int kMaxTrajHits   = 1000;     //maximum number of trajectory points
@@ -93,7 +94,7 @@ const int kMaxPrimaries  = 20000;    //maximum number of true particles tracked
 const int kMaxShower     = 100;      //maximum number of Reconstructed showers
 const int kMaxMCShower   = 1000;     //maximum number of MCShower Object
 const int kMaxTruePrimaryPts = 5000; //maximum number of points in the true primary trajectory
-const int kMaxIDE = 5000; //maximum number of points in the true primary trajectory
+const int kMaxIDE        = 5000; //maximum number of points in the true primary trajectory
 
 namespace lariat
 {
@@ -121,7 +122,7 @@ private:
   float TrajLengthInTpcAV(const simb::MCParticle*);
   bool  IsPointInTpcAV(const simb::MCParticle*, int);
   bool  IsPointInTpcAV(TVector3&);
-   
+  
   // === Storing information into TTree ====
   TTree* fTree;
   
@@ -136,26 +137,26 @@ private:
   int subrun;			//<---SubRun Number
   int event;			//<---Event Number
   double evttime;		//<---Event Time Stamp
-  double efield[3];		//<---Electric Field
+  float efield;		//<---Electric Field
   int t0;
   //int trigtime[16];		//<---Trigger time
 
   // === Storing Track Information ===
   int ntracks_reco;		//<---Number of reconstructed tracks
-  double trkvtxx[kMaxTrack];	//<---Track Start X Position (in cm)
-  double trkvtxy[kMaxTrack];	//<---Track Start Y Position (in cm)
-  double trkvtxz[kMaxTrack];	//<---Track Start Z Position (in cm)
-  double trkendx[kMaxTrack];	//<---Track End X Position (in cm)
-  double trkendy[kMaxTrack];	//<---Track End Y Position (in cm)
-  double trkendz[kMaxTrack];	//<---Track End Z Position (in cm)
+  float trkvtxx[kMaxTrack];	//<---Track Start X Position (in cm)
+  float trkvtxy[kMaxTrack];	//<---Track Start Y Position (in cm)
+  float trkvtxz[kMaxTrack];	//<---Track Start Z Position (in cm)
+  float trkendx[kMaxTrack];	//<---Track End X Position (in cm)
+  float trkendy[kMaxTrack];	//<---Track End Y Position (in cm)
+  float trkendz[kMaxTrack];	//<---Track End Z Position (in cm)
 
-  double trkstartdcosx[kMaxTrack];	//<---Direction of the track in the x coordinate at its start point
-  double trkstartdcosy[kMaxTrack];	//<---Direction of the track in the y coordinate at its start point
-  double trkstartdcosz[kMaxTrack];	//<---Direction of the track in the z coordinate at its start point
-  double trkenddcosx[kMaxTrack];	//<---Direction of the track in the x coordinate at its end point
-  double trkenddcosy[kMaxTrack];	//<---Direction of the track in the y coordinate at its end point
-  double trkenddcosz[kMaxTrack];	//<---Direction of the track in the z coordinate at its end point
-  double trklength[kMaxTrack];		//<---Calculated length of the track
+  float trkstartdcosx[kMaxTrack];	//<---Direction of the track in the x coordinate at its start point
+  float trkstartdcosy[kMaxTrack];	//<---Direction of the track in the y coordinate at its start point
+  float trkstartdcosz[kMaxTrack];	//<---Direction of the track in the z coordinate at its start point
+  float trkenddcosx[kMaxTrack];	//<---Direction of the track in the x coordinate at its end point
+  float trkenddcosy[kMaxTrack];	//<---Direction of the track in the y coordinate at its end point
+  float trkenddcosz[kMaxTrack];	//<---Direction of the track in the z coordinate at its end point
+  float trklength[kMaxTrack];		//<---Calculated length of the track
 //  double trkmomrange[kMaxTrack];	//<---Calculated track momentum from its length assuming a PID of 13
 //  double trkmommschi2[kMaxTrack];	//<---Calculated track momentum from multiple scattering using Chi2
 //  double trkmommsllhd[kMaxTrack];	//<---Calculated track momentum from multiple scattering
@@ -164,29 +165,29 @@ private:
   
   // === Storing the tracks SpacePoints (Individual 3D points)
   int    ntrkhits[kMaxTrack];			//<---Number of SpacePoints associated with track
-  double trkx[kMaxTrack][kMaxTrackHits];	//<---X position of the spacepoint
-  double trky[kMaxTrack][kMaxTrackHits];	//<---Y position of the spacepoint
-  double trkz[kMaxTrack][kMaxTrackHits];	//<---Z position of the spacepoint
-  double trkpitch[kMaxTrack][3];		//<---The track pitch in a given view (0 == Induction, 1 == Collection)
+  float trkx[kMaxTrack][kMaxTrackHits];	//<---X position of the spacepoint
+  float trky[kMaxTrack][kMaxTrackHits];	//<---Y position of the spacepoint
+  float trkz[kMaxTrack][kMaxTrackHits];	//<---Z position of the spacepoint
+  float trkpitch[kMaxTrack][3];		//<---The track pitch in a given view (0 == Induction, 1 == Collection)
 
   // === Storing the tracks Calorimetry Information
   int    trkhits[kMaxTrack][2];
-  double trkpida[kMaxTrack][2];
-  double trkke[kMaxTrack][2];
-  double trkdedx[kMaxTrack][2][1000];
-  double trkdqdx[kMaxTrack][2][1000];
-  double trkrr[kMaxTrack][2][1000];
-  double trkpitchhit[kMaxTrack][2][1000];
-  double trkxyz[kMaxTrack][2][1000][3];
+  float trkpida[kMaxTrack][2];
+  float trkke[kMaxTrack][2];
+  float trkdedx[kMaxTrack][2][1000];
+  float trkdqdx[kMaxTrack][2][1000];
+  float trkrr[kMaxTrack][2][1000];
+  float trkpitchhit[kMaxTrack][2][1000];
+  float trkxyz[kMaxTrack][2][1000][3];
 
   // === Storing trajectory information for the track ===
   int nTrajPoint[kMaxTrack];			//<---Storing the number of trajectory points
-  double pHat0_X[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the x-dir
-  double pHat0_Y[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the y-dir
-  double pHat0_Z[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the z-dir
-  double trjPt_X[kMaxTrack][kMaxTrajHits];     //<---Storing the trajector point location in X
-  double trjPt_Y[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Y
-  double trjPt_Z[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Z
+  float pHat0_X[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the x-dir
+  float pHat0_Y[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the y-dir
+  float pHat0_Z[kMaxTrack][kMaxTrajHits];	//<---Storing trajectory point in the z-dir
+  float trjPt_X[kMaxTrack][kMaxTrajHits];     //<---Storing the trajector point location in X
+  float trjPt_Y[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Y
+  float trjPt_Z[kMaxTrack][kMaxTrajHits];	//<---Storing the trajector point location in Z
 
 
   std::vector<int>    InteractionPoint;         //<---Geant 4 Primary Trj Point Corresponding to the Interaction
@@ -201,17 +202,14 @@ private:
   int    hit_plane[kMaxHits];	//<---Plane number of the hit
   int    hit_wire[kMaxHits];	//<---Wire number of the hit
   int    hit_channel[kMaxHits];//<---Channel number of the hit
-  double hit_peakT[kMaxHits];	//<---Peak Time of the hit (in drift ticks)
-  double hit_charge[kMaxHits];	//<---Number of ADC's assoicated with the hit (not in units of actual charge)
-  double hit_ph[kMaxHits];	//<---Amplitude of the hit (usually the gaussian associated with the hit)
-  double hit_tstart[kMaxHits];	//<---Start time of the hit (in drift ticks)
-  double hit_tend[kMaxHits];	//<---End time of the hit (in drift ticks)
   int    hit_trkid[kMaxHits];	//<---The track ID associated with this hit (NEED TO CHECK IF THIS IS RIGHT)
-  int    hit_pk[kMaxHits];	//<---This stores the raw ADC value (pedestal subtracted) for this hit
-  int    hit_t[kMaxHits];	//<---Stores the time tick value for the current hit
-  int    hit_ch[kMaxHits];	//<---Stores the hits "charge" in integrated raw ADC (pedestal subtracted)
-  int    hit_fwhh[kMaxHits];	//<---Calculated Full width / half max value for the hit
   int    hit_trkkey[kMaxHits]; //<---track index if hit is associated with a track
+  float  hit_peakT[kMaxHits];	//<---Peak Time of the hit (in drift ticks)
+  float  hit_charge[kMaxHits];	//<---Number of ADC's assoicated with the hit (not in units of actual charge)
+  float  hit_ph[kMaxHits];	//<---Amplitude of the hit (usually the gaussian associated with the hit)
+  float  hit_rms[kMaxHits]; // <---Hit width (RMS) in time-ticks
+  float  hit_tstart[kMaxHits];	//<---Start time of the hit (in drift ticks)
+  float  hit_tend[kMaxHits];	//<---End time of the hit (in drift ticks)
   float  hit_dQds[kMaxHits];   //<---hit dQ/ds
   float  hit_dEds[kMaxHits];   //<---hit dE/ds
   float  hit_ds[kMaxHits];     //<---hit ds
@@ -219,31 +217,41 @@ private:
   float  hit_x[kMaxHits];        //<---hit x coordinate
   float  hit_y[kMaxHits];        //<---hit y coordinate
   float  hit_z[kMaxHits];        //<---hit z coordinate
+  
+  int    hit_g4id[kMaxHits];    //<--- G4 Track ID that made this hit
+  float  hit_frac[kMaxHits];    //<--- Fraction of hit energy contributed by leading MCParticle (g4id)
+  float  hit_nelec[kMaxHits];   //<--- Number of electrons collected at wire
+  float  hit_energy[kMaxHits];  //<--- True deposited energy of hit
+
+  //int    hit_pk[kMaxHits];	//<---This stores the raw ADC value (pedestal subtracted) for this hit
+  //int    hit_t[kMaxHits];	//<---Stores the time tick value for the current hit
+  //int    hit_ch[kMaxHits];	//<---Stores the hits "charge" in integrated raw ADC (pedestal subtracted)
+  //int    hit_fwhh[kMaxHits];	//<---Calculated Full width / half max value for the hit
 
   // === Storing 2-d Cluster Information ===
   int    nclus;
-  double clustertwire[kMaxCluster];
-  double clusterttick[kMaxCluster];
-  double cluendwire[kMaxCluster];
-  double cluendtick[kMaxCluster];
+  float clustertwire[kMaxCluster];
+  float clusterttick[kMaxCluster];
+  float cluendwire[kMaxCluster];
+  float cluendtick[kMaxCluster];
   int    cluplane[kMaxCluster];
 
 
   // === Storing Wire Chamber Track Information ===
   int nwctrks;
-  double wctrk_XFaceCoor[kMaxWCTracks];	//<---The projected X position of the wctrack at the front face of the TPC
-  double wctrk_YFaceCoor[kMaxWCTracks];	//<---The projected Y position of the wctrack at the front face of the TPC
-  double wctrk_momentum[kMaxWCTracks];		//<---Reconstructed moomentum
-  double wctrk_theta[kMaxWCTracks];		//<---angle of track w.r.t. z axis
-  double wctrk_phi[kMaxWCTracks];		//<---angle of track w.r.t. x axis
-  double wctrk_XDist[kMaxWCTracks];             //<---X distance between upstream and downstream tracks
-  double wctrk_YDist[kMaxWCTracks];             //<---Y distance between upstream and downstream tracks
-  double wctrk_ZDist[kMaxWCTracks];             //<---Z distance between upstream and downstream tracks
-  double XWireHist[kMaxWCTracks][1000];		//<---Coord in terms of wire number
-  double YWireHist[kMaxWCTracks][1000];		//<---Coord in terms of wire number
-  double XAxisHist[kMaxWCTracks][1000];		//<---coord in terms of units.
-  double YAxisHist[kMaxWCTracks][1000];		//<---coord in terms of units.
-  double Y_Kink[kMaxWCTracks];                  //<---angle in Y between upstream and downstream tracks.
+  float wctrk_XFaceCoor[kMaxWCTracks];	//<---The projected X position of the wctrack at the front face of the TPC
+  float wctrk_YFaceCoor[kMaxWCTracks];	//<---The projected Y position of the wctrack at the front face of the TPC
+  float wctrk_momentum[kMaxWCTracks];		//<---Reconstructed moomentum
+  float wctrk_theta[kMaxWCTracks];		//<---angle of track w.r.t. z axis
+  float wctrk_phi[kMaxWCTracks];		//<---angle of track w.r.t. x axis
+  float wctrk_XDist[kMaxWCTracks];             //<---X distance between upstream and downstream tracks
+  float wctrk_YDist[kMaxWCTracks];             //<---Y distance between upstream and downstream tracks
+  float wctrk_ZDist[kMaxWCTracks];             //<---Z distance between upstream and downstream tracks
+  float XWireHist[kMaxWCTracks][1000];		//<---Coord in terms of wire number
+  float YWireHist[kMaxWCTracks][1000];		//<---Coord in terms of wire number
+  float XAxisHist[kMaxWCTracks][1000];		//<---coord in terms of units.
+  float YAxisHist[kMaxWCTracks][1000];		//<---coord in terms of units.
+  float Y_Kink[kMaxWCTracks];                  //<---angle in Y between upstream and downstream tracks.
   float  WC1xPos[kMaxWCTracks];
   float  WC1yPos[kMaxWCTracks];
   float  WC1zPos[kMaxWCTracks];
@@ -266,8 +274,8 @@ private:
 
   // === Storing Time of Flight information ===
   int ntof;
-  double tofObject[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
-  double tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
+  float tofObject[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
+  float tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
   float cTOF[kMaxTOF];	//<---Time Stamp for this TOF object*C
   // === Storing Mass  information ===
   float massObj;	//<---Beamline Mass object
@@ -292,8 +300,8 @@ private:
 
   // === Storing SimChannel Stuff ===
   int maxTrackIDE;
-  double IDEEnergy[kMaxIDE];
-  double IDEPos[kMaxIDE][3];
+  float IDEEnergy[kMaxIDE];
+  float IDEPos[kMaxIDE][3];
 
   // === Storing Geant4 MC Truth Information ===
   int no_primaries;				//<---Number of primary Geant4 particles in the event
@@ -344,12 +352,12 @@ private:
 
   // === Storing additionnal Geant4 MC Truth Information for the primary track only ===
   int NTrTrajPts[kMaxPrimaryPart];                                                       //<--Nb. of true points in the true primary trajectories
-  double MidPosX[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--X position of a point in the true primary trajectory
-  double MidPosY[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Y position of a point in the true primary trajectory
-  double MidPosZ[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Z position of a point in the true primary trajectory
-  double MidPx[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<- Px momentum of a point in the true primary trajectory
-  double MidPy[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Py momentum of a point in the true primary trajectory
-  double MidPz[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Pz momentum of a point in the true primary trajectory
+  float MidPosX[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--X position of a point in the true primary trajectory
+  float MidPosY[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Y position of a point in the true primary trajectory
+  float MidPosZ[kMaxPrimaryPart][kMaxTruePrimaryPts];//<--Z position of a point in the true primary trajectory
+  float MidPx[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<- Px momentum of a point in the true primary trajectory
+  float MidPy[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Py momentum of a point in the true primary trajectory
+  float MidPz[kMaxPrimaryPart][kMaxTruePrimaryPts];  //<--Pz momentum of a point in the true primary trajectory
 
   // ==== Storing MCShower MCTruth Information ===
 
@@ -357,69 +365,66 @@ private:
   int       mcshwr_origin[kMaxMCShower];                //MC Shower origin information.
   int       mcshwr_pdg[kMaxMCShower];                   //MC Shower particle PDG code.
   int       mcshwr_TrackId[kMaxMCShower];               //MC Shower particle G4 track ID.
-  double    mcshwr_startX[kMaxMCShower];                //MC Shower particle G4 startX
-  double    mcshwr_startY[kMaxMCShower];                //MC Shower particle G4 startY
-  double    mcshwr_startZ[kMaxMCShower];                //MC Shower particle G4 startZ
-  double    mcshwr_endX[kMaxMCShower];                  //MC Shower particle G4 endX
-  double    mcshwr_endY[kMaxMCShower];                  //MC Shower particle G4 endY
-  double    mcshwr_endZ[kMaxMCShower];                  //MC Shower particle G4 endZ
-  double    mcshwr_CombEngX[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point X Position.
-  double    mcshwr_CombEngY[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point Y Position.
-  double    mcshwr_CombEngZ[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point Z Position.
-  double    mcshwr_CombEngPx[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
-  double    mcshwr_CombEngPy[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
-  double    mcshwr_CombEngPz[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
-  double    mcshwr_CombEngE[kMaxMCShower];            //MC Shower Combined energy deposition information, Energy
-  double    mcshwr_dEdx[kMaxMCShower];                  //MC Shower dEdx, MeV/cm
-  double    mcshwr_StartDirX[kMaxMCShower];             //MC Shower Direction of begining of shower, X direction
-  double    mcshwr_StartDirY[kMaxMCShower];             //MC Shower Direction of begining of shower, Y direction
-  double    mcshwr_StartDirZ[kMaxMCShower];             //MC Shower Direction of begining of shower, Z direction
+  float    mcshwr_startX[kMaxMCShower];                //MC Shower particle G4 startX
+  float    mcshwr_startY[kMaxMCShower];                //MC Shower particle G4 startY
+  float    mcshwr_startZ[kMaxMCShower];                //MC Shower particle G4 startZ
+  float    mcshwr_endX[kMaxMCShower];                  //MC Shower particle G4 endX
+  float    mcshwr_endY[kMaxMCShower];                  //MC Shower particle G4 endY
+  float    mcshwr_endZ[kMaxMCShower];                  //MC Shower particle G4 endZ
+  float    mcshwr_CombEngX[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point X Position.
+  float    mcshwr_CombEngY[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point Y Position.
+  float    mcshwr_CombEngZ[kMaxMCShower];              //MC Shower Combined energy deposition information, Start Point Z Position.
+  float    mcshwr_CombEngPx[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+  float    mcshwr_CombEngPy[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+  float    mcshwr_CombEngPz[kMaxMCShower];           //MC Shower Combined energy deposition information, Momentum X direction.
+  float    mcshwr_CombEngE[kMaxMCShower];            //MC Shower Combined energy deposition information, Energy
+  float    mcshwr_dEdx[kMaxMCShower];                  //MC Shower dEdx, MeV/cm
+  float    mcshwr_StartDirX[kMaxMCShower];             //MC Shower Direction of begining of shower, X direction
+  float    mcshwr_StartDirY[kMaxMCShower];             //MC Shower Direction of begining of shower, Y direction
+  float    mcshwr_StartDirZ[kMaxMCShower];             //MC Shower Direction of begining of shower, Z direction
   int       mcshwr_isEngDeposited[kMaxMCShower];        //tells whether if this shower deposited energy in the detector or not.
 
                                                         //yes = 1; no =0;
   //MC Shower mother information
   int        mcshwr_Motherpdg[kMaxMCShower];            //MC Shower's mother PDG code.
   int        mcshwr_MotherTrkId[kMaxMCShower];          //MC Shower's mother G4 track ID.
-  double     mcshwr_MotherstartX[kMaxMCShower];         //MC Shower's mother  G4 startX .
-  double     mcshwr_MotherstartY[kMaxMCShower];         //MC Shower's mother  G4 startY .
-  double     mcshwr_MotherstartZ[kMaxMCShower];         //MC Shower's mother  G4 startZ .
-  double     mcshwr_MotherendX[kMaxMCShower];          //MC Shower's mother  G4 endX   .
-  double     mcshwr_MotherendY[kMaxMCShower];          //MC Shower's mother  G4 endY   .
-  double     mcshwr_MotherendZ[kMaxMCShower];          //MC Shower's mother  G4 endZ   .
+  float     mcshwr_MotherstartX[kMaxMCShower];         //MC Shower's mother  G4 startX .
+  float     mcshwr_MotherstartY[kMaxMCShower];         //MC Shower's mother  G4 startY .
+  float     mcshwr_MotherstartZ[kMaxMCShower];         //MC Shower's mother  G4 startZ .
+  float     mcshwr_MotherendX[kMaxMCShower];          //MC Shower's mother  G4 endX   .
+  float     mcshwr_MotherendY[kMaxMCShower];          //MC Shower's mother  G4 endY   .
+  float     mcshwr_MotherendZ[kMaxMCShower];          //MC Shower's mother  G4 endZ   .
 
   //MC Shower ancestor information
   int        mcshwr_Ancestorpdg[kMaxMCShower];          //MC Shower's ancestor PDG code.
   int        mcshwr_AncestorTrkId[kMaxMCShower];        //MC Shower's ancestor G4 track ID.
-  double     mcshwr_AncestorstartX[kMaxMCShower];       //MC Shower's ancestor  G4 startX
-  double     mcshwr_AncestorstartY[kMaxMCShower];       //MC Shower's ancestor  G4 startY
-  double     mcshwr_AncestorstartZ[kMaxMCShower];       //MC Shower's ancestor  G4 startZ
-  double     mcshwr_AncestorendX[kMaxMCShower];         //MC Shower's ancestor  G4 endX
-  double     mcshwr_AncestorendY[kMaxMCShower];         //MC Shower's ancestor  G4 endY
-  double     mcshwr_AncestorendZ[kMaxMCShower];         //MC Shower's ancestor  G4 endZ
+  float     mcshwr_AncestorstartX[kMaxMCShower];       //MC Shower's ancestor  G4 startX
+  float     mcshwr_AncestorstartY[kMaxMCShower];       //MC Shower's ancestor  G4 startY
+  float     mcshwr_AncestorstartZ[kMaxMCShower];       //MC Shower's ancestor  G4 startZ
+  float     mcshwr_AncestorendX[kMaxMCShower];         //MC Shower's ancestor  G4 endX
+  float     mcshwr_AncestorendY[kMaxMCShower];         //MC Shower's ancestor  G4 endY
+  float     mcshwr_AncestorendZ[kMaxMCShower];         //MC Shower's ancestor  G4 endZ
 
   // === Storing Shower Reco Information using ShowerReco3D ===
 
   int nshowers; ///number of showers per event
   int shwID[kMaxShower];//ID of the reco shower
-  double CosStartShw[3][kMaxShower];
-  //double CosStartSigmaShw[3][kMaxShower]; // unused
-  double CosStartXYZShw[3][kMaxShower];
-  //double CosStartXYZSigmaShw[3][kMaxShower]; // unused
-  double TotalEShw[2][kMaxShower];/// total energy of the shower (under investigation...)
-  //double TotalESigmaShw[2][kMaxShower];// not working
-  double dEdxPerPlaneShw[2][kMaxShower];
-  //double dEdxSigmaPerPlaneShw[2][kMaxShower];//not working
-  double TotalMIPEShw[2][kMaxShower];
-  //double TotalMIPESigmaShw[2][kMaxShower];//not working
+  float CosStartShw[3][kMaxShower];
+  //float CosStartSigmaShw[3][kMaxShower]; // unused
+  float CosStartXYZShw[3][kMaxShower];
+  //float CosStartXYZSigmaShw[3][kMaxShower]; // unused
+  float TotalEShw[2][kMaxShower];/// total energy of the shower (under investigation...)
+  //float TotalESigmaShw[2][kMaxShower];// not working
+  float dEdxPerPlaneShw[2][kMaxShower];
+  //float dEdxSigmaPerPlaneShw[2][kMaxShower];//not working
+  float TotalMIPEShw[2][kMaxShower];
+  //float TotalMIPESigmaShw[2][kMaxShower];//not working
   int BestPlaneShw[kMaxShower];
-  double LengthShw[kMaxShower];
+  float LengthShw[kMaxShower];
 
 
 
   // ==== NEED TO FIX THESE VARIABLES....FILLED WITH DUMMY VALUES FOR NOW ===
-  double hit_rms[kMaxHits];
-  double hit_nelec[kMaxHits];
-  double hit_energy[kMaxHits];
   //int    hit_trkkey[kMaxHits];
   int    hit_clukey[kMaxHits];
 
@@ -495,7 +500,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // === Liquid Argon Properties Services ===
   //auto const* larprop = lar::providerFrom<detinfo::LArPropertiesService>();
   // === Detector properties service ===
-  auto const* detprop = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  auto const* detprop   = lar::providerFrom<detinfo::DetectorPropertiesService>();
+  auto const* detclock  = lar::providerFrom<detinfo::DetectorClocksService>();
   // === BackTracker service ===
   art::ServiceHandle<cheat::BackTrackerService> bt_serv;
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
@@ -522,9 +528,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   // === Electric Field ===
   // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
-  efield[0] = detprop->Efield(0);
-  efield[1] = detprop->Efield(1);
-  efield[2] = detprop->Efield(2);
+  efield = detprop->Efield(0);
 
   // === Trigger Offset ====
   t0 = detprop->TriggerOffset();
@@ -1580,72 +1584,74 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	// ---------------------------------------------------------------------------------------------------------------------------- 
 	
 	nTrajPoint[i] = tracklist[i]->NumberTrajectoryPoints();
+
+  // ### Storing the trajectory points in a similar way to PionXS ###
+  TVector3 p_hat_0;
+  // ##############################################
+  // ### Looping over all the trajectory points ###
+  // ##############################################
+  for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
+  {
+    recob::Track::Vector_t tmp = tracklist[i]->DirectionAtPoint(iTrajPt);
+    p_hat_0.SetXYZ(tmp.X(),tmp.Y(),tmp.Z());
+
+    //Strange directionality convention - I'm reversing the direction vector
+    //if it's pointing in the negative X direction
+    if( p_hat_0.Z() < 0 )
+    {
+      p_hat_0.SetX(p_hat_0.X()*-1);
+      p_hat_0.SetY(p_hat_0.Y()*-1);
+      p_hat_0.SetZ(p_hat_0.Z()*-1);
+    }
+    
+    pHat0_X[i][iTrajPt] = p_hat_0.X();
+    pHat0_Y[i][iTrajPt] = p_hat_0.Y();
+    pHat0_Z[i][iTrajPt] = p_hat_0.Z();
+
+    trjPt_X[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).X();
+    trjPt_Y[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Y();
+    trjPt_Z[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Z();
+
+  }//<---End iTrajPt
 	
-	// ### Storing the trajectory points in a similar way to PionXS ###
-	TVector3 p_hat_0;
-	// ##############################################
-	// ### Looping over all the trajectory points ###
-	// ##############################################
-	for( size_t iTrajPt = 0; iTrajPt < tracklist[i]->NumberTrajectoryPoints() ; ++iTrajPt )
-	  {
-      recob::Track::Vector_t tmp = tracklist[i]->DirectionAtPoint(iTrajPt);
-      p_hat_0.SetXYZ(tmp.X(),tmp.Y(),tmp.Z());
-	    
-	    //Strange directionality convention - I'm reversing the direction vector
-	    //if it's pointing in the negative X direction
-	    if( p_hat_0.Z() < 0 )
-	      {
-		p_hat_0.SetX(p_hat_0.X()*-1);
-		p_hat_0.SetY(p_hat_0.Y()*-1);
-		p_hat_0.SetZ(p_hat_0.Z()*-1);
-	      }
-      
-      
-	    pHat0_X[i][iTrajPt] = p_hat_0.X();
-	    pHat0_Y[i][iTrajPt] = p_hat_0.Y();
-	    pHat0_Z[i][iTrajPt] = p_hat_0.Z();
-	    
-	    trjPt_X[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).X();
-	    trjPt_Y[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Y();
-	    trjPt_Z[i][iTrajPt] = tracklist[i]->LocationAtPoint(iTrajPt).Z();
-	    
-	  }//<---End iTrajPt
-	
-        
-        if (fmthm.isValid()){
-	  auto vhit = fmthm.at(i);
-	  auto vmeta = fmthm.data(i);
-	  for (size_t h = 0; h < vhit.size(); ++h){
-	    if (vhit[h].key()<kMaxHits){
-	      //hit_trkkey[vhit[h].key()] = tracklist[i].key();
-	      if (vmeta[h]->Dx()){
-		hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCalorimetryAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
-		hit_dEds[vhit[h].key()] = fCalorimetryAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
-	      }
-	      hit_ds[vhit[h].key()] = vmeta[h]->Dx();
-	      hit_resrange[vhit[h].key()] = tracklist[i]->Length(vmeta[h]->Index());
-	      hit_x[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).X();
-	      hit_y[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Y();
-	      hit_z[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Z();
-	    }
+  // If valid association was made between tracks/hits... 
+  if (fmthm.isValid()){
+    auto vhit = fmthm.at(i);
+    auto vmeta = fmthm.data(i);
+    for (size_t h = 0; h < vhit.size(); ++h){
+      if (vhit[h].key()<kMaxHits){
+        //hit_trkkey[vhit[h].key()] = tracklist[i].key();
+        if (vmeta[h]->Dx()){
+          hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCalorimetryAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
+          hit_dEds[vhit[h].key()] = fCalorimetryAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
+        }
+        hit_ds[vhit[h].key()] = vmeta[h]->Dx();
+        hit_resrange[vhit[h].key()] = tracklist[i]->Length(vmeta[h]->Index());
+        hit_x[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).X();
+        hit_y[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Y();
+        hit_z[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Z();
+      }
 	  }//loop over all hits
 	}//fmthm is valid   
 	
-	if (!isdata&&fmth.isValid()){
-	  // Find true track for each reconstructed track
-	  int TrackID = 0;
+  // If this is MC...
+	if (!isdata && fmth.isValid()){
+    
+    // Find true track for each reconstructed track
+    int TrackID = 0;
 	 
-	  std::vector< art::Ptr<recob::Hit> > allHits = fmth.at(i);
+    std::vector< art::Ptr<recob::Hit> > allHits = fmth.at(i);
 	  
-	  std::map<int,double> trkide;
-	  for(size_t h = 0; h < allHits.size(); ++h){
-	    art::Ptr<recob::Hit> hit = allHits[h];
-	    std::vector<sim::TrackIDE> TrackIDs = bt_serv->HitToTrackIDEs(hit);
-	    for(size_t e = 0; e < TrackIDs.size(); ++e){
-	      trkide[TrackIDs[e].trackID] += TrackIDs[e].energy;
-	    }	    
-	  }
-	  // Work out which IDE despoited the most charge in the hit if there was more than one.
+    std::map<int,double> trkide;
+    for(size_t h = 0; h < allHits.size(); ++h){
+      art::Ptr<recob::Hit> hit = allHits[h];
+      std::vector<sim::TrackIDE> TrackIDs = bt_serv->HitToTrackIDEs(hit);
+      for(size_t e = 0; e < TrackIDs.size(); ++e){
+        trkide[TrackIDs[e].trackID] += TrackIDs[e].energy;
+      }	    
+    }
+	  
+    // Work out which IDE despoited the most charge in the hit if there was more than one.
 	  double maxe = -1;
 	  double tote = 0;
 	  for (std::map<int,double>::iterator ii = trkide.begin(); ii!=trkide.end(); ++ii){
@@ -1658,7 +1664,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	      if ((ii->second)>maxtrackenergy){
 		maxtrackenergy = ii->second;
 		primarytrkkey = tracklist[i].key();
-	      }
+	  }
 	    }
 	  }
 	  // Now have trackID, so get PdG code and T0 etc.
@@ -1670,10 +1676,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 	
       }//<---End track loop (i)
 
-    art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
+    //art::FindOne<raw::RawDigit>       ford(hitListHandle,   evt, fHitsModuleLabel);
     nhits = hitlist.size();
     for (size_t i = 0; i<hitlist.size() && int(i)< kMaxHits; ++i){
-      cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
+//      cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
       unsigned int channel = hitlist[i]->Channel();
       geo::WireID wireid = hitlist[i]->WireID();
       hit_plane[i]   = wireid.Plane;
@@ -1684,6 +1690,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       hit_ph[i]      = hitlist[i]->PeakAmplitude();
       hit_tstart[i]  = hitlist[i]->StartTick();
       hit_tend[i]    = hitlist[i]->EndTick();
+      hit_rms[i]     = hitlist[i]->RMS();
       if (fmtk.isValid()){
         if (fmtk.at(i).size()!=0){
           hit_trkid[i] = fmtk.at(i)[0]->ID();
@@ -1695,7 +1702,66 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           hit_clukey[i] = fmc.at(i)[0].key();
         }
       }
+
+      // If this is MC, map hit to its G4 Track ID
+      if(!evt.isRealData()){
+        std::vector<sim::TrackIDE> trackIDEs = bt_serv->HitToTrackIDEs(hitlist[i]);
+        if( !trackIDEs.size() ) break;
+        // Loop through and find the leading TrackIDE, and keep
+        // track of the total energy of ALL IDEs.
+        float maxe = 0;
+        float bestfrac = 0;
+        int bestid = 0;
+        int ne = 0;
+        for(size_t i = 0; i < trackIDEs.size(); ++i){
+          ne += trackIDEs[i].numElectrons;
+          if( trackIDEs[i].energy > maxe ) {
+            maxe = trackIDEs[i].energy;
+            bestfrac = trackIDEs[i].energyFrac;
+            bestid = trackIDEs[i].trackID;
+          }
+        }
+        hit_g4id[i] = bestid;
+        hit_frac[i] = bestfrac;
+        hit_energy[i] = maxe;
+        hit_nelec[i] = ne;
+      }
+
+      /*
+      // Calculate energy deposition that resulted in this hit
+      if (!evt.isRealData()){
+        hit_nelec[i] = 0;
+        hit_energy[i] = 0;
+        const sim::SimChannel* chan = 0;
+        for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
+          if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) {
+            chan = fSimChannels[sc];
+            break;
+          }
+        }
+        if (chan){
+          const auto & tdcidemap = chan->TDCIDEMap();
+          for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
+            // loop over the vector of IDE objects.
+            const std::vector<sim::IDE> & idevec = (*mapitr).second;
+            for(size_t iv = 0; iv < idevec.size(); ++iv){
+              hit_nelec[i] += idevec[iv].numElectrons;
+              hit_energy[i] += idevec[iv].energy;
+            }
+          }
+        }
+      }
+      */
+
+      /*
+        
+      // ---------------------------------------------------------------------
+      // Removing this, since RawDigit associations are no longer saved in v08_38_01.
+      // TODO: re-write this section getting the RawDigit via associations between
+      // wires (ie, recob::Hit <--> recob::Wire <--> raw::RawDigits)
+      // ---------------------------------------------------------------------
       if (hit_plane[i]==1){//collection plane
+        
         if( rdref.isValid() ){
           raw::RawDigit const& rd(rdref.ref());
           int dataSize = rd.Samples();
@@ -1761,6 +1827,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           }
         } // if cet::maybe_ref is valid
       }
+      */
     }
   }
   catch (art::Exception const&e){ }
@@ -1781,74 +1848,73 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("subrun",&subrun,"subrun/I");
   fTree->Branch("event",&event,"event/I");
   fTree->Branch("evttime",&evttime,"evttime/D");
-  fTree->Branch("efield",efield,"efield[3]/D");
+  fTree->Branch("efield",&efield,"efield/F");
   fTree->Branch("t0",&t0,"t0/I");
-  //fTree->Branch("trigtime",trigtime,"trigtime[16]/I");
   fTree->Branch("nclus",&nclus,"nclus/I");
-  fTree->Branch("clustertwire",clustertwire,"clustertwire[nclus]/D");
-  fTree->Branch("clusterttick",clusterttick,"clusterttick[nclus]/D");
-  fTree->Branch("cluendwire",cluendwire,"cluendwire[nclus]/D");
-  fTree->Branch("cluendtick",cluendtick,"cluendtick[nclus]/D");
+  fTree->Branch("clustertwire",clustertwire,"clustertwire[nclus]/F");
+  fTree->Branch("clusterttick",clusterttick,"clusterttick[nclus]/F");
+  fTree->Branch("cluendwire",cluendwire,"cluendwire[nclus]/F");
+  fTree->Branch("cluendtick",cluendtick,"cluendtick[nclus]/F");
   fTree->Branch("cluplane",cluplane,"cluplane[nclus]/I");
   fTree->Branch("ntracks_reco",&ntracks_reco,"ntracks_reco/I");
-  fTree->Branch("trkvtxx",trkvtxx,"trkvtxx[ntracks_reco]/D");
-  fTree->Branch("trkvtxy",trkvtxy,"trkvtxy[ntracks_reco]/D");
-  fTree->Branch("trkvtxz",trkvtxz,"trkvtxz[ntracks_reco]/D");
-  fTree->Branch("trkendx",trkendx,"trkendx[ntracks_reco]/D");
-  fTree->Branch("trkendy",trkendy,"trkendy[ntracks_reco]/D");
-  fTree->Branch("trkendz",trkendz,"trkendz[ntracks_reco]/D");
-  fTree->Branch("trkstartdcosx",trkstartdcosx,"trkstartdcosx[ntracks_reco]/D");
-  fTree->Branch("trkstartdcosy",trkstartdcosy,"trkstartdcosy[ntracks_reco]/D");
-  fTree->Branch("trkstartdcosz",trkstartdcosz,"trkstartdcosz[ntracks_reco]/D");
-  fTree->Branch("trkenddcosx",trkenddcosx,"trkenddcosx[ntracks_reco]/D");
-  fTree->Branch("trkenddcosy",trkenddcosy,"trkenddcosy[ntracks_reco]/D");
-  fTree->Branch("trkenddcosz",trkenddcosz,"trkenddcosz[ntracks_reco]/D");
+  fTree->Branch("trkvtxx",trkvtxx,"trkvtxx[ntracks_reco]/F");
+  fTree->Branch("trkvtxy",trkvtxy,"trkvtxy[ntracks_reco]/F");
+  fTree->Branch("trkvtxz",trkvtxz,"trkvtxz[ntracks_reco]/F");
+  fTree->Branch("trkendx",trkendx,"trkendx[ntracks_reco]/F");
+  fTree->Branch("trkendy",trkendy,"trkendy[ntracks_reco]/F");
+  fTree->Branch("trkendz",trkendz,"trkendz[ntracks_reco]/F");
+  fTree->Branch("trkstartdcosx",trkstartdcosx,"trkstartdcosx[ntracks_reco]/F");
+  fTree->Branch("trkstartdcosy",trkstartdcosy,"trkstartdcosy[ntracks_reco]/F");
+  fTree->Branch("trkstartdcosz",trkstartdcosz,"trkstartdcosz[ntracks_reco]/F");
+  fTree->Branch("trkenddcosx",trkenddcosx,"trkenddcosx[ntracks_reco]/F");
+  fTree->Branch("trkenddcosy",trkenddcosy,"trkenddcosy[ntracks_reco]/F");
+  fTree->Branch("trkenddcosz",trkenddcosz,"trkenddcosz[ntracks_reco]/F");
   fTree->Branch("trkWCtoTPCMatch",trkWCtoTPCMatch,"trkWCtoTPCMatch[ntracks_reco]/I");
-  fTree->Branch("trklength",trklength,"trklength[ntracks_reco]/D");
-//  fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/D");
-//  fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/D");
-//  fTree->Branch("trkmommsllhd",trkmommsllhd,"trkmommsllhd[ntracks_reco]/D");
+  fTree->Branch("trklength",trklength,"trklength[ntracks_reco]/F");
+//  fTree->Branch("trkmomrange",trkmomrange,"trkmomrange[ntracks_reco]/F");
+//  fTree->Branch("trkmommschi2",trkmommschi2,"trkmommschi2[ntracks_reco]/F");
+//  fTree->Branch("trkmommsllhd",trkmommsllhd,"trkmommsllhd[ntracks_reco]/F");
   fTree->Branch("ntrkhits",&ntrkhits,"ntrkhits[ntracks_reco]/I");
-  fTree->Branch("trkx",trkx,"trkx[ntracks_reco][1000]/D");
-  fTree->Branch("trky",trky,"trky[ntracks_reco][1000]/D");
-  fTree->Branch("trkz",trkz,"trkz[ntracks_reco][1000]/D");
-//  fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/D");
+  fTree->Branch("trkx",trkx,"trkx[ntracks_reco][1000]/F");
+  fTree->Branch("trky",trky,"trky[ntracks_reco][1000]/F");
+  fTree->Branch("trkz",trkz,"trkz[ntracks_reco][1000]/F");
+//  fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2]/F");
   fTree->Branch("trkhits",trkhits,"trkhits[ntracks_reco][2]/I");
-  fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/D");
-  fTree->Branch("trkdqdx",trkdqdx,"trkdqdx[ntracks_reco][2][1000]/D");
-  fTree->Branch("trkrr",trkrr,"trkrr[ntracks_reco][2][1000]/D");
-  fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/D");
-  fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][1000][3]/D");
-  fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/D");
-  fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/D");
+  fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/F");
+  fTree->Branch("trkdqdx",trkdqdx,"trkdqdx[ntracks_reco][2][1000]/F");
+  fTree->Branch("trkrr",trkrr,"trkrr[ntracks_reco][2][1000]/F");
+  fTree->Branch("trkpitchhit",trkpitchhit,"trkpitchhit[ntracks_reco][2][1000]/F");
+  fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][1000][3]/F");
+  fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/F");
+  fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/F");
   fTree->Branch("nTrajPoint", &nTrajPoint, "nTrajPoint[ntracks_reco]/I");
-  fTree->Branch("pHat0_X", pHat0_X, "pHat0_X[ntracks_reco][1000]/D");
-  fTree->Branch("pHat0_Y", pHat0_Y, "pHat0_Y[ntracks_reco][1000]/D");
-  fTree->Branch("pHat0_Z", pHat0_Z, "pHat0_Z[ntracks_reco][1000]/D");
-  fTree->Branch("trjPt_X", trjPt_X, "trjPt_X[ntracks_reco][1000]/D");
-  fTree->Branch("trjPt_Y", trjPt_Y, "trjPt_Y[ntracks_reco][1000]/D");
-  fTree->Branch("trjPt_Z", trjPt_Z, "trjPt_Z[ntracks_reco][1000]/D");
+  fTree->Branch("pHat0_X", pHat0_X, "pHat0_X[ntracks_reco][1000]/F");
+  fTree->Branch("pHat0_Y", pHat0_Y, "pHat0_Y[ntracks_reco][1000]/F");
+  fTree->Branch("pHat0_Z", pHat0_Z, "pHat0_Z[ntracks_reco][1000]/F");
+  fTree->Branch("trjPt_X", trjPt_X, "trjPt_X[ntracks_reco][1000]/F");
+  fTree->Branch("trjPt_Y", trjPt_Y, "trjPt_Y[ntracks_reco][1000]/F");
+  fTree->Branch("trjPt_Z", trjPt_Z, "trjPt_Z[ntracks_reco][1000]/F");
   fTree->Branch("trkg4id", trkg4id, "trkg4id[ntracks_reco]/I");
   fTree->Branch("primarytrkkey", primarytrkkey, "primarytrkkey/I");
   fTree->Branch("nhits",&nhits,"nhits/I");
   fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
   fTree->Branch("hit_wire",hit_wire,"hit_wire[nhits]/I");
   fTree->Branch("hit_channel",hit_channel,"hit_channel[nhits]/I");
-  fTree->Branch("hit_peakT",hit_peakT,"hit_peakT[nhits]/D");
-  fTree->Branch("hit_charge",hit_charge,"hit_charge[nhits]/D");
-  fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/D");
-  fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/D");
-  fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/D");
+  fTree->Branch("hit_peakT",hit_peakT,"hit_peakT[nhits]/F");
+  fTree->Branch("hit_charge",hit_charge,"hit_charge[nhits]/F");
+  fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/F");
+  fTree->Branch("hit_rms",hit_rms,"hit_rms[nhits]/F");
+  fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/F");
+  fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/F");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
   fTree->Branch("hit_trkkey",hit_trkkey,"hit_trkkey[nhits]/I");
   fTree->Branch("hit_clukey",hit_clukey,"hit_clukey[nhits]/I");
-  fTree->Branch("hit_pk",hit_pk,"hit_pk[nhits]/I");
-  fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
-  fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
-  fTree->Branch("hit_fwhh",hit_fwhh,"hit_fwhh[nhits]/I");
-  fTree->Branch("hit_rms",hit_rms,"hit_rms[nhits]/D");
-  fTree->Branch("hit_nelec",hit_nelec,"hit_nelec[nhits]/D");
-  fTree->Branch("hit_energy",hit_energy,"hit_energy[nhits]/D");
+  //fTree->Branch("hit_pk",hit_pk,"hit_pk[nhits]/I");
+  //fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
+  //fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
+  //fTree->Branch("hit_fwhh",hit_fwhh,"hit_fwhh[nhits]/I");
+  //fTree->Branch("hit_nelec",hit_nelec,"hit_nelec[nhits]/F");
+  //fTree->Branch("hit_energy",hit_energy,"hit_energy[nhits]/F");
   fTree->Branch("hit_dQds", hit_dQds, "hit_dQds[nhits]/F");
   fTree->Branch("hit_dEds", hit_dEds, "hit_dEds[nhits]/F");
   fTree->Branch("hit_ds", hit_ds, "hit_ds[nhits]/F");
@@ -1859,19 +1925,19 @@ void lariat::AnaTreeT1034::beginJob()
 
   if( fSaveBeamlineInfo ) {
   fTree->Branch("nwctrks",&nwctrks,"nwctrks/I");
-  fTree->Branch("wctrk_XFaceCoor",wctrk_XFaceCoor,"wctrk_XFaceCoor[nwctrks]/D");
-  fTree->Branch("wctrk_YFaceCoor",wctrk_YFaceCoor,"wctrk_YFaceCoor[nwctrks]/D");
-  fTree->Branch("wctrk_momentum",wctrk_momentum,"wctrk_momentum[nwctrks]/D");
-  fTree->Branch("wctrk_theta",wctrk_theta,"wctrk_theta[nwctrks]/D");
-  fTree->Branch("wctrk_phi",wctrk_phi,"wctrk_phi[nwctrks]/D");
-  fTree->Branch("wctrk_XDist",wctrk_XDist,"wctrk_XDist[nwctrks]/D");
-  fTree->Branch("wctrk_YDist",wctrk_YDist,"wctrk_YDist[nwctrks]/D");
-  fTree->Branch("wctrk_ZDist",wctrk_ZDist,"wctrk_ZDist[nwctrks]/D");
-  fTree->Branch("XWireHist",XWireHist,"XWireHist[nwctrks][1000]/D");
-  fTree->Branch("YWireHist",YWireHist,"YWireHist[nwctrks][1000]/D");
-  fTree->Branch("XAxisHist",XAxisHist,"XAxisHist[nwctrks][1000]/D");
-  fTree->Branch("YAxisHist",YAxisHist,"YAxisHist[nwctrks][1000]/D");
-  fTree->Branch("Y_Kink",Y_Kink,"Y_Kink[nwctrks]/D");
+  fTree->Branch("wctrk_XFaceCoor",wctrk_XFaceCoor,"wctrk_XFaceCoor[nwctrks]/F");
+  fTree->Branch("wctrk_YFaceCoor",wctrk_YFaceCoor,"wctrk_YFaceCoor[nwctrks]/F");
+  fTree->Branch("wctrk_momentum",wctrk_momentum,"wctrk_momentum[nwctrks]/F");
+  fTree->Branch("wctrk_theta",wctrk_theta,"wctrk_theta[nwctrks]/F");
+  fTree->Branch("wctrk_phi",wctrk_phi,"wctrk_phi[nwctrks]/F");
+  fTree->Branch("wctrk_XDist",wctrk_XDist,"wctrk_XDist[nwctrks]/F");
+  fTree->Branch("wctrk_YDist",wctrk_YDist,"wctrk_YDist[nwctrks]/F");
+  fTree->Branch("wctrk_ZDist",wctrk_ZDist,"wctrk_ZDist[nwctrks]/F");
+  fTree->Branch("XWireHist",XWireHist,"XWireHist[nwctrks][1000]/F");
+  fTree->Branch("YWireHist",YWireHist,"YWireHist[nwctrks][1000]/F");
+  fTree->Branch("XAxisHist",XAxisHist,"XAxisHist[nwctrks][1000]/F");
+  fTree->Branch("YAxisHist",YAxisHist,"YAxisHist[nwctrks][1000]/F");
+  fTree->Branch("Y_Kink",Y_Kink,"Y_Kink[nwctrks]/F");
   fTree->Branch("WC1xPos",WC1xPos,"WC1xPos[nwctrks]/F");
   fTree->Branch("WC1yPos",WC1yPos,"WC1yPos[nwctrks]/F");
   fTree->Branch("WC1zPos",WC1zPos,"WC1zPos[nwctrks]/F");
@@ -1888,23 +1954,23 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("WCTrackWCMissed", WCTrackWCMissed,"WCTrackWCMissed[nwctrks]/I");
 
   fTree->Branch("ntof", &ntof, "ntof/I");
-  fTree->Branch("tofObject", tofObject, "tofObject[ntof]/D");
+  fTree->Branch("tofObject", tofObject, "tofObject[ntof]/F");
 
   fTree->Branch("wcP" ,wcP ,"wcP[nwctrks]/F");
   fTree->Branch("wcPx",wcPx,"wcPx[nwctrks]/F");
   fTree->Branch("wcPy",wcPy,"wcPy[nwctrks]/F");
   fTree->Branch("wcPz",wcPz,"wcPz[nwctrks]/F");  
-  fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/D"); 
+  fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/F"); 
   fTree->Branch("cTOF", cTOF, "cTOF[ntof]/F"); 
   fTree->Branch("beamlineMass", &massObj, "massObj/F");
   }
 
   if( fSaveAerogelInfo ) {
   fTree->Branch("nAG", &nAG, "nAG/I");
-  fTree->Branch("HitTimeStamp1p10_1", HitTimeStamp1p10_1, "HitTimeStamp1p10_1[nAG]/D");
-  fTree->Branch("HitTimeStamp1p10_2", HitTimeStamp1p10_2, "HitTimeStamp1p10_2[nAG]/D");
-  fTree->Branch("HitTimeStamp1p06_1", HitTimeStamp1p06_1, "HitTimeStamp1p06_1[nAG]/D");
-  fTree->Branch("HitTimeStamp1p06_2", HitTimeStamp1p06_2, "HitTimeStamp1p06_2[nAG]/D");
+  fTree->Branch("HitTimeStamp1p10_1", HitTimeStamp1p10_1, "HitTimeStamp1p10_1[nAG]/F");
+  fTree->Branch("HitTimeStamp1p10_2", HitTimeStamp1p10_2, "HitTimeStamp1p10_2[nAG]/F");
+  fTree->Branch("HitTimeStamp1p06_1", HitTimeStamp1p06_1, "HitTimeStamp1p06_1[nAG]/F");
+  fTree->Branch("HitTimeStamp1p06_2", HitTimeStamp1p06_2, "HitTimeStamp1p06_2[nAG]/F");
   fTree->Branch("HitPulseArea1p10_1", HitPulseArea1p10_1, "HitPulseArea1p10_1[nAG]/F");
   fTree->Branch("HitPulseArea1p10_2", HitPulseArea1p10_2, "HitPulseArea1p10_2[nAG]/F");
   fTree->Branch("HitPulseArea1p06_1", HitPulseArea1p06_1, "HitPulseArea1p06_1[nAG]/F");
@@ -1916,8 +1982,8 @@ void lariat::AnaTreeT1034::beginJob()
   }
 
   fTree->Branch("maxTrackIDE", &maxTrackIDE, "maxTrackIDE/I");
-  fTree->Branch("IDEEnergy", IDEEnergy, "IDEEnergy[maxTrackIDE]/D");
-  fTree->Branch("IDEPos", IDEPos, "IDEPos[maxTrackIDE][3]/D");
+  fTree->Branch("IDEEnergy", IDEEnergy, "IDEEnergy[maxTrackIDE]/F");
+  fTree->Branch("IDEPos", IDEPos, "IDEPos[maxTrackIDE][3]/F");
   
   if( fSaveGeantInfo ) {
     fTree->Branch("no_primaries",&no_primaries,"no_primaries/I");
@@ -1963,26 +2029,26 @@ void lariat::AnaTreeT1034::beginJob()
 
   if( fSaveMCShowerInfo ) {
     fTree->Branch("no_mcshowers", &no_mcshowers, "no_mcshowers/I");
-    fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/D");
-    fTree->Branch("mcshwr_pdg", mcshwr_pdg, "mcshwr_pdg[no_mcshowers]/D");
+    fTree->Branch("mcshwr_origin", mcshwr_origin, "mcshwr_origin[no_mcshowers]/F");
+    fTree->Branch("mcshwr_pdg", mcshwr_pdg, "mcshwr_pdg[no_mcshowers]/F");
     fTree->Branch("mcshwr_TrackId", mcshwr_TrackId, "mcshwr_TrackId[no_mcshowers]/I");
-    fTree->Branch("mcshwr_startX", mcshwr_startX, "mcshwr_startX[no_mcshowers]/D");
-    fTree->Branch("mcshwr_startY", mcshwr_startY, "mcshwr_startY[no_mcshowers]/D");
-    fTree->Branch("mcshwr_startZ", mcshwr_startZ, "mcshwr_startZ[no_mcshowers]/D");
-    fTree->Branch("mcshwr_endX", mcshwr_endX, "mcshwr_endX[no_mcshowers]/D");
-    fTree->Branch("mcshwr_endY", mcshwr_endY, "mcshwr_endY[no_mcshowers]/D");
-    fTree->Branch("mcshwr_endZ", mcshwr_endZ, "mcshwr_endZ[no_mcshowers]/D");
-    fTree->Branch("mcshwr_CombEngX", mcshwr_CombEngX, "mcshwr_CombEngX[no_mcshowers]/D");
-    fTree->Branch("mcshwr_CombEngY", mcshwr_CombEngY, "mcshwr_CombEngY[no_mcshowers]/D");
-    fTree->Branch("mcshwr_CombEngZ", mcshwr_CombEngZ, "mcshwr_CombEngZ[no_mcshowers]/D");
-    fTree->Branch("mcshwr_CombEngPx", mcshwr_CombEngPx, "mcshwr_CombEngPx[no_mcshowers]/D");
-    fTree->Branch("mcshwr_CombEngPy", mcshwr_CombEngPy, "mcshwr_CombEngPy[no_mcshowers]/D");
-    fTree->Branch("mcshwr_CombEngPz", mcshwr_CombEngPz, "mcshwr_CombEngPz[no_mcshowers]/D");
-    fTree->Branch("mcshwr_CombEngE", mcshwr_CombEngE, "mcshwr_CombEngE[no_mcshowers]/D");
-    fTree->Branch("mcshwr_dEdx", mcshwr_dEdx, "mcshwr_dEdx[no_mcshowers]/D");
-    fTree->Branch("mcshwr_StartDirX", mcshwr_StartDirX, "mcshwr_StartDirX[no_mcshowers]/D");
-    fTree->Branch("mcshwr_StartDirY", mcshwr_StartDirY, "mcshwr_StartDirY[no_mcshowers]/D");
-    fTree->Branch("mcshwr_StartDirZ", mcshwr_StartDirZ, "mcshwr_StartDirZ[no_mcshowers]/D");
+    fTree->Branch("mcshwr_startX", mcshwr_startX, "mcshwr_startX[no_mcshowers]/F");
+    fTree->Branch("mcshwr_startY", mcshwr_startY, "mcshwr_startY[no_mcshowers]/F");
+    fTree->Branch("mcshwr_startZ", mcshwr_startZ, "mcshwr_startZ[no_mcshowers]/F");
+    fTree->Branch("mcshwr_endX", mcshwr_endX, "mcshwr_endX[no_mcshowers]/F");
+    fTree->Branch("mcshwr_endY", mcshwr_endY, "mcshwr_endY[no_mcshowers]/F");
+    fTree->Branch("mcshwr_endZ", mcshwr_endZ, "mcshwr_endZ[no_mcshowers]/F");
+    fTree->Branch("mcshwr_CombEngX", mcshwr_CombEngX, "mcshwr_CombEngX[no_mcshowers]/F");
+    fTree->Branch("mcshwr_CombEngY", mcshwr_CombEngY, "mcshwr_CombEngY[no_mcshowers]/F");
+    fTree->Branch("mcshwr_CombEngZ", mcshwr_CombEngZ, "mcshwr_CombEngZ[no_mcshowers]/F");
+    fTree->Branch("mcshwr_CombEngPx", mcshwr_CombEngPx, "mcshwr_CombEngPx[no_mcshowers]/F");
+    fTree->Branch("mcshwr_CombEngPy", mcshwr_CombEngPy, "mcshwr_CombEngPy[no_mcshowers]/F");
+    fTree->Branch("mcshwr_CombEngPz", mcshwr_CombEngPz, "mcshwr_CombEngPz[no_mcshowers]/F");
+    fTree->Branch("mcshwr_CombEngE", mcshwr_CombEngE, "mcshwr_CombEngE[no_mcshowers]/F");
+    fTree->Branch("mcshwr_dEdx", mcshwr_dEdx, "mcshwr_dEdx[no_mcshowers]/F");
+    fTree->Branch("mcshwr_StartDirX", mcshwr_StartDirX, "mcshwr_StartDirX[no_mcshowers]/F");
+    fTree->Branch("mcshwr_StartDirY", mcshwr_StartDirY, "mcshwr_StartDirY[no_mcshowers]/F");
+    fTree->Branch("mcshwr_StartDirZ", mcshwr_StartDirZ, "mcshwr_StartDirZ[no_mcshowers]/F");
     fTree->Branch("mcshwr_isEngDeposited", mcshwr_isEngDeposited, "mcshwr_isEngDeposited[no_mcshowers]/I");
     fTree->Branch("mcshwr_Motherpdg", mcshwr_Motherpdg, "mcshwr_Motherpdg[no_mcshowers]/I");
     fTree->Branch("mcshwr_MotherTrkId", mcshwr_MotherTrkId, "mcshwr_MotherTrkId[no_mcshowers]/I");
@@ -2003,17 +2069,17 @@ void lariat::AnaTreeT1034::beginJob()
     fTree->Branch("nshowers",&nshowers,"nshowers/I");
     fTree->Branch("shwID",shwID,"shwI[nshowers]/I");
     fTree->Branch("BestPlaneShw",BestPlaneShw,"BestPlaneShw[nshowers]/I");
-    fTree->Branch("LengthShw",LengthShw,"LengthShw[nshowers]/D");
-    fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][1000]/D");
-    // fTree->Branch("CosStartSigmaShw",CosStartSigmaShw,"CosStartSigmaShw[3][nshowers]/D");
-    fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][1000]/D");
-    //fTree->Branch("CosStartXYZSigmaShw",CosStartXYZSigmaShw,"CosStartXYZSigmaShw[3][nshowers]/D");
-    fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][1000]/D");
-    //fTree->Branch("TotalESigmaShw",TotalESigmaShw,"TotalESigmaShw[2][nshowers]/D");
-    fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][1000]/D");
-    //fTree->Branch("dEdxSigmaPerPlaneShw",dEdxSigmaPerPlaneShw,"dEdxSigmaPerPlaneShw[2][nshowers]/D");
-    fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][1000]/D");
-    //fTree->Branch("TotalMIPESigmaShw",TotalMIPESigmaShw,"TotalMIPESigmaShw[2][nshowers]/D");
+    fTree->Branch("LengthShw",LengthShw,"LengthShw[nshowers]/F");
+    fTree->Branch("CosStartShw",CosStartShw,"CosStartShw[3][1000]/F");
+    // fTree->Branch("CosStartSigmaShw",CosStartSigmaShw,"CosStartSigmaShw[3][nshowers]/F");
+    fTree->Branch("CosStartXYZShw",CosStartXYZShw,"CosStartXYZShw[3][1000]/F");
+    //fTree->Branch("CosStartXYZSigmaShw",CosStartXYZSigmaShw,"CosStartXYZSigmaShw[3][nshowers]/F");
+    fTree->Branch("TotalEShw",TotalEShw,"TotalEShw[2][1000]/F");
+    //fTree->Branch("TotalESigmaShw",TotalESigmaShw,"TotalESigmaShw[2][nshowers]/F");
+    fTree->Branch("dEdxPerPlaneShw",dEdxPerPlaneShw,"dEdxPerPlaneShw[2][1000]/F");
+    //fTree->Branch("dEdxSigmaPerPlaneShw",dEdxSigmaPerPlaneShw,"dEdxSigmaPerPlaneShw[2][nshowers]/F");
+    fTree->Branch("TotalMIPEShw",TotalMIPEShw,"TotalMIPEShw[2][1000]/F");
+    //fTree->Branch("TotalMIPESigmaShw",TotalMIPESigmaShw,"TotalMIPESigmaShw[2][nshowers]/F");
   }
       
 }
@@ -2068,14 +2134,9 @@ void lariat::AnaTreeT1034::ResetVars()
   subrun = -99999;
   event = -99999;
   evttime = -99999;
-  for (int i = 0; i<3; ++i){
-    efield[i] = -99999;
-  }
+  efield = -99999;
   t0 = -99999;
-  //  for (int i = 0; i < 16; ++i){
-  //     trigtime[i]=-99999;
-  //  }
-  nclus = -99999;
+  nclus = 0;
   for (int i = 0; i < kMaxCluster; ++i){
     clustertwire[i] = -99999;
     clusterttick[i] = -99999;
@@ -2083,7 +2144,7 @@ void lariat::AnaTreeT1034::ResetVars()
     cluendtick[i] = -99999;
     cluplane[i] = -99999;
   }
-  ntracks_reco = -99999;
+  ntracks_reco = 0;
   for (int i = 0; i < kMaxTrack; ++i){
     trkvtxx[i] = -99999;
     trkvtxy[i] = -99999;
@@ -2102,7 +2163,7 @@ void lariat::AnaTreeT1034::ResetVars()
     //trkmomrange[i] = -99999;
     //trkmommschi2[i] = -99999;
     //trkmommsllhd[i] = -99999;
-    ntrkhits[i] = -99999;
+    ntrkhits[i] = 0;
     for (int j = 0; j<kMaxTrackHits; ++j){
       trkx[i][j] = -99999;
       trky[i][j] = -99999;
@@ -2132,7 +2193,7 @@ void lariat::AnaTreeT1034::ResetVars()
     trkg4id[i] = -9999;
   }
   primarytrkkey = -9999;
-  nhits = -99999;
+  nhits = 0;
   for (int i = 0; i<kMaxHits; ++i){
     hit_plane[i] = -99999;
     hit_wire[i] = -99999;
@@ -2145,13 +2206,15 @@ void lariat::AnaTreeT1034::ResetVars()
     hit_clukey[i] = -99999;
     hit_tstart[i] = -99999;
     hit_tend[i] = -99999;
-    hit_pk[i] = -99999;
-    hit_t[i] = -99999;
-    hit_ch[i] = -99999;
-    hit_fwhh[i] = -99999;
+    //hit_pk[i] = -99999;
+    //hit_t[i] = -99999;
+    //hit_ch[i] = -99999;
+    //hit_fwhh[i] = -99999;
     hit_rms[i] = -99999;
-    hit_nelec[i] = -99999;
-    hit_energy[i] = -99999;
+    hit_g4id[i] = -999;
+    hit_frac[i] = -999;
+    hit_nelec[i] = -999;
+    hit_energy[i] = -999;
     hit_dQds[i] = -99999;
     hit_dEds[i] = -99999;
     hit_ds[i] = -99999;
@@ -2161,7 +2224,7 @@ void lariat::AnaTreeT1034::ResetVars()
     hit_z[i] = -99999;
   }
 
-  nwctrks = -99999;
+  nwctrks = 0;
 
   for (int i = 0; i < kMaxWCTracks; i++)
     {
@@ -2200,7 +2263,7 @@ void lariat::AnaTreeT1034::ResetVars()
       wcPz[i] = -99999;
     }//<---End I loop
 
-  ntof = -99999;
+  ntof = 0;
   massObj = -99999;
   for (int i = 0; i < kMaxTOF; i++)
     {
@@ -2211,7 +2274,7 @@ void lariat::AnaTreeT1034::ResetVars()
 
     }//<---End i loop
 
-  nAG = -99999;
+  nAG = 0;
   for (int i = 0; i < kMaxAG; i++)
     {
       HitTimeStamp1p10_1[i] = -99999;
@@ -2231,7 +2294,7 @@ void lariat::AnaTreeT1034::ResetVars()
 
     }//<---End i loop
 
-  maxTrackIDE = -999;
+  maxTrackIDE = 0;
 
   for(size_t i = 0; i < kMaxIDE; ++i) {
     IDEEnergy[i] = -999;
@@ -2242,8 +2305,8 @@ void lariat::AnaTreeT1034::ResetVars()
 
   } // End of maxTrackID loop
 
-  no_primaries = -99999;
-  geant_list_size=-999;
+  no_primaries = 0;
+  geant_list_size=0;
   for (int i = 0; i<kMaxPrimaries; ++i){
     pdg[i] = -99999;
     Mass[i]=-99999;
@@ -2286,7 +2349,7 @@ void lariat::AnaTreeT1034::ResetVars()
     }
   }
 
-  nshowers = -99999;
+  nshowers = 0;
   for (int i = 0; i<kMaxShower; ++i)
     {
       shwID[i] = -99999;
