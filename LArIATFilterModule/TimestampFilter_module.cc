@@ -83,10 +83,11 @@ TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
   hTimestamps       = tfs->make<TH1F>("Timestamps",";Time in spill [sec]",300,0,60.);
   hTimestamps_pass  = tfs->make<TH1F>("Timestamps_pass",";Time in spill [sec]",300,0.,60.);
   
-  hEvtCount         = tfs->make<TH1F>("EvtCount","Counted events",2,0,2);
-  hEvtCount         ->SetOption("HIST TEXT");
-  hEvtCount->GetXaxis()->SetBinLabel(1,"Beam");      
-  hEvtCount->GetXaxis()->SetBinLabel(2,"Cosmic");         
+  hEvtCount = tfs->make<TH1F>("EvtCount","Counted events",3,0,3);
+  hEvtCount->SetOption("HIST TEXT");
+  hEvtCount->GetXaxis()->SetBinLabel(1,"Pedestal");
+  hEvtCount->GetXaxis()->SetBinLabel(2,"Beam");      
+  hEvtCount->GetXaxis()->SetBinLabel(3,"Cosmic");         
   
 }
 
@@ -123,8 +124,9 @@ bool TimestampFilter::filter(art::Event & e)
     hTimestamps->Fill(timeStamp);
 
     // Counting up "beam" and "cosmic" events
-    if( timeStamp >= 1.1 && timeStamp <= 5.2 )  hEvtCount->Fill(0);
-    else if (timeStamp > 5.2 )                  hEvtCount->Fill(1);
+    if(       timeStamp >= 0.0 && timeStamp <  1.1  ) hEvtCount->Fill(0);
+    else if ( timeStamp >= 1.1 && timeStamp <= 5.2  ) hEvtCount->Fill(1);
+    else if ( timeStamp > 5.2                       ) hEvtCount->Fill(2);
 
   }
   
@@ -147,8 +149,9 @@ void TimestampFilter::endJob()
   std::cout
   <<"====================================\n"
   <<"=====     TimestampFilter   ========\n\n"
-  <<"Beam events  : "<<hEvtCount->GetBinContent(1)<<"\n"
-  <<"Cosmic events: "<<hEvtCount->GetBinContent(2)<<"\n\n"
+  <<"Pedestal events : "<<hEvtCount->GetBinContent(1)<<"\n"
+  <<"Beam events     : "<<hEvtCount->GetBinContent(2)<<"\n"
+  <<"Cosmic events   : "<<hEvtCount->GetBinContent(3)<<"\n\n"
   <<"====================================\n";
 }
 
