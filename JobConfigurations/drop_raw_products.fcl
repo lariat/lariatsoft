@@ -1,0 +1,44 @@
+#
+# This fhicl takes an input ArtROOT file containing reconstructed events
+# and outputs a file with the raw::Digit, recob::Wire objects dropped
+# to save a considerable amount of disk space. The intermediate hit/track/cluster
+# objects created during the multi-pass reconstruction are also dropped. 
+# Add this as the final fcl in your grid reco stage if you only intend to 
+# access the higher-level objects like hits, tracks, and showers for your analysis.
+#
+
+#include "services_lariat.fcl"
+
+process_name: DropRaw
+
+services:
+{
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1
+}
+
+physics:
+{
+ stream1:   [ out1 ]
+ end_paths: [ stream1 ]
+}
+
+outputs.out1.outputCommands:  [
+   "keep *_*_*_*",
+   "drop raw::RawDigits_*_*_*",
+   "drop raw::AuxDetDigits_*_*_*",
+   "drop raw::OpDetPulse_*_*_*",
+   "drop recob::Wires_*_*_*",
+   "drop raw::RawDigitrecob::Wirevoidart::Assns_*_*_*",
+   "drop raw::RawDigitrecob::Hitvoidart::Assns_*_*_*",
+   "drop recob::Hitrecob::Wirevoidart::Assns_*_*_*"
+   "drop *_gaushitOrigin_*_*",
+   "drop *_pmtrackOrigin_*_*",
+   "drop *_trajclusterOrigin_*_*",
+]
+
