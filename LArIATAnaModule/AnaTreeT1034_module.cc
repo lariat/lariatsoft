@@ -1904,6 +1904,10 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("hit_charge",hit_charge,"hit_charge[nhits]/F");
   fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/F");
   fTree->Branch("hit_rms",hit_rms,"hit_rms[nhits]/F");
+  fTree->Branch("hit_g4id",hit_g4id,"hit_g4id[nhits]/I");
+  fTree->Branch("hit_frac",hit_frac,"hit_frac[nhits]/F");
+  fTree->Branch("hit_nelec",hit_nelec,"hit_nelec[nhits]/F");
+  fTree->Branch("hit_energy",hit_energy,"hit_energy[nhits]/F");
   fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/F");
   fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/F");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
@@ -1913,8 +1917,6 @@ void lariat::AnaTreeT1034::beginJob()
   //fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
   //fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
   //fTree->Branch("hit_fwhh",hit_fwhh,"hit_fwhh[nhits]/I");
-  //fTree->Branch("hit_nelec",hit_nelec,"hit_nelec[nhits]/F");
-  //fTree->Branch("hit_energy",hit_energy,"hit_energy[nhits]/F");
   fTree->Branch("hit_dQds", hit_dQds, "hit_dQds[nhits]/F");
   fTree->Branch("hit_dEds", hit_dEds, "hit_dEds[nhits]/F");
   fTree->Branch("hit_ds", hit_ds, "hit_ds[nhits]/F");
