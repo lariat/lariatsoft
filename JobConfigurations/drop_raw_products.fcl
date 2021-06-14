@@ -36,9 +36,9 @@ outputs.out1.outputCommands:  [
    "drop recob::Wires_*_*_*",
    "drop raw::RawDigitrecob::Wirevoidart::Assns_*_*_*",
    "drop raw::RawDigitrecob::Hitvoidart::Assns_*_*_*",
-   "drop recob::Hitrecob::Wirevoidart::Assns_*_*_*"
+   "drop recob::Hitrecob::Wirevoidart::Assns_*_*_*",
    "drop *_gaushitOrigin_*_*",
    "drop *_pmtrackOrigin_*_*",
-   "drop *_trajclusterOrigin_*_*",
+   "drop *_trajclusterOrigin_*_*"
 ]
 
