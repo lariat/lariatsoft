@@ -124,6 +124,7 @@ class WCTrackTPCTrackMatch : public art::EDProducer
   double      circular_cut_radius_;
   bool        unique_match_mode_;
   bool        isThisMC_;
+  bool        saveTree_;
 
   // vector for primary vtx
   TVector3 primary_vtx_;
@@ -267,98 +268,101 @@ void WCTrackTPCTrackMatch::beginJob()
   // access art's TFileService
   art::ServiceHandle< art::TFileService > tfs;
 
-  ttree_ = tfs->make<TTree>("wctracktpctrackmatch", "wctracktpctrackmatch");
+  if( saveTree_ ) {
 
-  ttree_->Branch("event",  &event_,  "event/I");
-  ttree_->Branch("run",    &run_,    "run/I");
-  ttree_->Branch("subrun", &subrun_, "subrun/I");
+    ttree_ = tfs->make<TTree>("wctracktpctrackmatch", "wctracktpctrackmatch");
 
-  ttree_->Branch("number_tofs", &number_tofs_, "number_tofs/I");
-  ttree_->Branch("number_wctracks", &number_wctracks_, "number_wctracks/I");
+    ttree_->Branch("event",  &event_,  "event/I");
+    ttree_->Branch("run",    &run_,    "run/I");
+    ttree_->Branch("subrun", &subrun_, "subrun/I");
 
-  ttree_->Branch("number_matches_", &number_matches_, "number_matches/I");
+    ttree_->Branch("number_tofs", &number_tofs_, "number_tofs/I");
+    ttree_->Branch("number_wctracks", &number_wctracks_, "number_wctracks/I");
 
-  ttree_->Branch("reco_tof", &reco_tof_);
-  ttree_->Branch("reco_wctrack_momentum", &reco_wctrack_momentum_);
+    ttree_->Branch("number_matches_", &number_matches_, "number_matches/I");
 
-  ttree_->Branch("wctrack_missed", &wctrack_missed_);
-  ttree_->Branch("wctrack_picky", &wctrack_picky_);
+    ttree_->Branch("reco_tof", &reco_tof_);
+    ttree_->Branch("reco_wctrack_momentum", &reco_wctrack_momentum_);
 
-  ttree_->Branch("wctrack_x", &wctrack_x_);
-  ttree_->Branch("wctrack_y", &wctrack_y_);
-  ttree_->Branch("wctrack_theta", &wctrack_theta_);
-  ttree_->Branch("wctrack_phi", &wctrack_phi_);
+    ttree_->Branch("wctrack_missed", &wctrack_missed_);
+    ttree_->Branch("wctrack_picky", &wctrack_picky_);
 
-  ttree_->Branch("track_key", &track_key_);
-  ttree_->Branch("delta_x", &delta_x_);
-  ttree_->Branch("delta_y", &delta_y_);
-  ttree_->Branch("delta_z", &delta_z_);
-  ttree_->Branch("delta_r", &delta_r_);
-  ttree_->Branch("alpha", &alpha_);
+    ttree_->Branch("wctrack_x", &wctrack_x_);
+    ttree_->Branch("wctrack_y", &wctrack_y_);
+    ttree_->Branch("wctrack_theta", &wctrack_theta_);
+    ttree_->Branch("wctrack_phi", &wctrack_phi_);
 
-  ttree_->Branch("preselected_delta_x", &preselected_delta_x_);
-  ttree_->Branch("preselected_delta_y", &preselected_delta_y_);
-  ttree_->Branch("preselected_delta_z", &preselected_delta_z_);
-  ttree_->Branch("preselected_delta_r", &preselected_delta_r_);
-  ttree_->Branch("preselected_alpha",   &preselected_alpha_);
-  ttree_->Branch("preselected_upstream_x", &preselected_upstream_x_);
-  ttree_->Branch("preselected_upstream_y", &preselected_upstream_y_);
-  ttree_->Branch("preselected_upstream_z", &preselected_upstream_z_);
-  ttree_->Branch("preselected_downstream_x", &preselected_downstream_x_);
-  ttree_->Branch("preselected_downstream_y", &preselected_downstream_y_);
-  ttree_->Branch("preselected_downstream_z", &preselected_downstream_z_);
+    ttree_->Branch("track_key", &track_key_);
+    ttree_->Branch("delta_x", &delta_x_);
+    ttree_->Branch("delta_y", &delta_y_);
+    ttree_->Branch("delta_z", &delta_z_);
+    ttree_->Branch("delta_r", &delta_r_);
+    ttree_->Branch("alpha", &alpha_);
 
-  ttree_->Branch("selected_delta_x", &selected_delta_x_);
-  ttree_->Branch("selected_delta_y", &selected_delta_y_);
-  ttree_->Branch("selected_delta_z", &selected_delta_z_);
-  ttree_->Branch("selected_delta_r", &selected_delta_r_);
-  ttree_->Branch("selected_alpha",   &selected_alpha_);
-  ttree_->Branch("selected_upstream_x", &selected_upstream_x_);
-  ttree_->Branch("selected_upstream_y", &selected_upstream_y_);
-  ttree_->Branch("selected_upstream_z", &selected_upstream_z_);
-  ttree_->Branch("selected_downstream_x", &selected_downstream_x_);
-  ttree_->Branch("selected_downstream_y", &selected_downstream_y_);
-  ttree_->Branch("selected_downstream_z", &selected_downstream_z_);
+    ttree_->Branch("preselected_delta_x", &preselected_delta_x_);
+    ttree_->Branch("preselected_delta_y", &preselected_delta_y_);
+    ttree_->Branch("preselected_delta_z", &preselected_delta_z_);
+    ttree_->Branch("preselected_delta_r", &preselected_delta_r_);
+    ttree_->Branch("preselected_alpha",   &preselected_alpha_);
+    ttree_->Branch("preselected_upstream_x", &preselected_upstream_x_);
+    ttree_->Branch("preselected_upstream_y", &preselected_upstream_y_);
+    ttree_->Branch("preselected_upstream_z", &preselected_upstream_z_);
+    ttree_->Branch("preselected_downstream_x", &preselected_downstream_x_);
+    ttree_->Branch("preselected_downstream_y", &preselected_downstream_y_);
+    ttree_->Branch("preselected_downstream_z", &preselected_downstream_z_);
 
-  ttree_->Branch("wctrack_proj_missed", &wctrack_proj_missed_);
-  ttree_->Branch("wctrack_proj_picky", &wctrack_proj_picky_);
+    ttree_->Branch("selected_delta_x", &selected_delta_x_);
+    ttree_->Branch("selected_delta_y", &selected_delta_y_);
+    ttree_->Branch("selected_delta_z", &selected_delta_z_);
+    ttree_->Branch("selected_delta_r", &selected_delta_r_);
+    ttree_->Branch("selected_alpha",   &selected_alpha_);
+    ttree_->Branch("selected_upstream_x", &selected_upstream_x_);
+    ttree_->Branch("selected_upstream_y", &selected_upstream_y_);
+    ttree_->Branch("selected_upstream_z", &selected_upstream_z_);
+    ttree_->Branch("selected_downstream_x", &selected_downstream_x_);
+    ttree_->Branch("selected_downstream_y", &selected_downstream_y_);
+    ttree_->Branch("selected_downstream_z", &selected_downstream_z_);
 
-  ttree_->Branch("wctrack_proj_x", &wctrack_proj_x_);
-  ttree_->Branch("wctrack_proj_y", &wctrack_proj_y_);
-  ttree_->Branch("wctrack_proj_z", &wctrack_proj_z_);
-  ttree_->Branch("wctrack_proj_theta", &wctrack_proj_theta_);
-  ttree_->Branch("wctrack_proj_phi", &wctrack_proj_phi_);
+    ttree_->Branch("wctrack_proj_missed", &wctrack_proj_missed_);
+    ttree_->Branch("wctrack_proj_picky", &wctrack_proj_picky_);
 
-  ttree_->Branch("track_proj_key", &track_proj_key_);
-  ttree_->Branch("delta_proj_x", &delta_proj_x_);
-  ttree_->Branch("delta_proj_y", &delta_proj_y_);
-  ttree_->Branch("delta_proj_z", &delta_proj_z_);
-  ttree_->Branch("delta_proj_r", &delta_proj_r_);
-  ttree_->Branch("alpha_proj", &alpha_proj_);
+    ttree_->Branch("wctrack_proj_x", &wctrack_proj_x_);
+    ttree_->Branch("wctrack_proj_y", &wctrack_proj_y_);
+    ttree_->Branch("wctrack_proj_z", &wctrack_proj_z_);
+    ttree_->Branch("wctrack_proj_theta", &wctrack_proj_theta_);
+    ttree_->Branch("wctrack_proj_phi", &wctrack_proj_phi_);
 
-  ttree_->Branch("preselected_delta_proj_x", &preselected_delta_proj_x_);
-  ttree_->Branch("preselected_delta_proj_y", &preselected_delta_proj_y_);
-  ttree_->Branch("preselected_delta_proj_z", &preselected_delta_proj_z_);
-  ttree_->Branch("preselected_delta_proj_r", &preselected_delta_proj_r_);
-  ttree_->Branch("preselected_alpha_proj",   &preselected_alpha_proj_);
-  ttree_->Branch("preselected_upstream_proj_x", &preselected_upstream_proj_x_);
-  ttree_->Branch("preselected_upstream_proj_y", &preselected_upstream_proj_y_);
-  ttree_->Branch("preselected_upstream_proj_z", &preselected_upstream_proj_z_);
-  ttree_->Branch("preselected_downstream_proj_x", &preselected_downstream_proj_x_);
-  ttree_->Branch("preselected_downstream_proj_y", &preselected_downstream_proj_y_);
-  ttree_->Branch("preselected_downstream_proj_z", &preselected_downstream_proj_z_);
+    ttree_->Branch("track_proj_key", &track_proj_key_);
+    ttree_->Branch("delta_proj_x", &delta_proj_x_);
+    ttree_->Branch("delta_proj_y", &delta_proj_y_);
+    ttree_->Branch("delta_proj_z", &delta_proj_z_);
+    ttree_->Branch("delta_proj_r", &delta_proj_r_);
+    ttree_->Branch("alpha_proj", &alpha_proj_);
 
-  ttree_->Branch("selected_delta_proj_x", &selected_delta_proj_x_);
-  ttree_->Branch("selected_delta_proj_y", &selected_delta_proj_y_);
-  ttree_->Branch("selected_delta_proj_z", &selected_delta_proj_z_);
-  ttree_->Branch("selected_delta_proj_r", &selected_delta_proj_r_);
-  ttree_->Branch("selected_alpha_proj",   &selected_alpha_proj_);
-  ttree_->Branch("selected_upstream_proj_x", &selected_upstream_proj_x_);
-  ttree_->Branch("selected_upstream_proj_y", &selected_upstream_proj_y_);
-  ttree_->Branch("selected_upstream_proj_z", &selected_upstream_proj_z_);
-  ttree_->Branch("selected_downstream_proj_x", &selected_downstream_proj_x_);
-  ttree_->Branch("selected_downstream_proj_y", &selected_downstream_proj_y_);
-  ttree_->Branch("selected_downstream_proj_z", &selected_downstream_proj_z_);
+    ttree_->Branch("preselected_delta_proj_x", &preselected_delta_proj_x_);
+    ttree_->Branch("preselected_delta_proj_y", &preselected_delta_proj_y_);
+    ttree_->Branch("preselected_delta_proj_z", &preselected_delta_proj_z_);
+    ttree_->Branch("preselected_delta_proj_r", &preselected_delta_proj_r_);
+    ttree_->Branch("preselected_alpha_proj",   &preselected_alpha_proj_);
+    ttree_->Branch("preselected_upstream_proj_x", &preselected_upstream_proj_x_);
+    ttree_->Branch("preselected_upstream_proj_y", &preselected_upstream_proj_y_);
+    ttree_->Branch("preselected_upstream_proj_z", &preselected_upstream_proj_z_);
+    ttree_->Branch("preselected_downstream_proj_x", &preselected_downstream_proj_x_);
+    ttree_->Branch("preselected_downstream_proj_y", &preselected_downstream_proj_y_);
+    ttree_->Branch("preselected_downstream_proj_z", &preselected_downstream_proj_z_);
+
+    ttree_->Branch("selected_delta_proj_x", &selected_delta_proj_x_);
+    ttree_->Branch("selected_delta_proj_y", &selected_delta_proj_y_);
+    ttree_->Branch("selected_delta_proj_z", &selected_delta_proj_z_);
+    ttree_->Branch("selected_delta_proj_r", &selected_delta_proj_r_);
+    ttree_->Branch("selected_alpha_proj",   &selected_alpha_proj_);
+    ttree_->Branch("selected_upstream_proj_x", &selected_upstream_proj_x_);
+    ttree_->Branch("selected_upstream_proj_y", &selected_upstream_proj_y_);
+    ttree_->Branch("selected_upstream_proj_z", &selected_upstream_proj_z_);
+    ttree_->Branch("selected_downstream_proj_x", &selected_downstream_proj_x_);
+    ttree_->Branch("selected_downstream_proj_y", &selected_downstream_proj_y_);
+    ttree_->Branch("selected_downstream_proj_z", &selected_downstream_proj_z_);
+  }
 }
 
 //-----------------------------------------------------------------------
@@ -399,6 +403,7 @@ void WCTrackTPCTrackMatch::reconfigure(fhicl::ParameterSet const& pset)
   circular_cut_radius_     = pset.get< double >("CircularCutRadius", 3.5);
   unique_match_mode_       = pset.get< bool   >("UniqueMatchMode", true);
   isThisMC_                = pset.get< bool   >("IsThisMC", false);
+  saveTree_                = pset.get< bool > ("SaveTree", true);
 }
 
 //-----------------------------------------------------------------------
@@ -813,7 +818,7 @@ void WCTrackTPCTrackMatch::produce(art::Event & event)
   } // end loop over WC tracks
 
   // fill TTree object
-  ttree_->Fill();
+  if( saveTree_ ) ttree_->Fill();
 
   //if (selected_trk_idx > -1)
   //{
