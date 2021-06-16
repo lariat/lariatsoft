@@ -98,7 +98,6 @@ add_subdirectory(LArIATLArG4)
 add_subdirectory(LArIATRecoAlg)
 add_subdirectory(LArIATRecoModule)
 add_subdirectory(LArIATChecks)
-add_subdirectory(LongBo)
 add_subdirectory(RawDataUtilities)
 add_subdirectory(Utilities)
 
@@ -106,7 +105,6 @@ add_subdirectory(Utilities)
 add_subdirectory(JobConfigurations)
 add_subdirectory(JobConfigurations/old_fcl)
 add_subdirectory(LArSoftConfigurations)
-add_subdirectory(mccconfigs)
 
 # tests
 add_subdirectory(test)

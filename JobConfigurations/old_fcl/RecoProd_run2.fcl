@@ -81,7 +81,7 @@ physics:
 
   ### cluster-finder producers
   linecluster:          @local::standard_linecluster
-  trajcluster:          @local::lariat_trajcluster_data
+  trajcluster:          @local::lariat_trajcluster
   blurredcluster:       @local::standard_blurredcluster
 
   ### track-finder producers

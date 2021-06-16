@@ -149,9 +149,11 @@ void TimestampFilter::endJob()
   std::cout
   <<"====================================\n"
   <<"=====     TimestampFilter   ========\n\n"
-  <<"Pedestal events : "<<hEvtCount->GetBinContent(1)<<"\n"
-  <<"Beam events     : "<<hEvtCount->GetBinContent(2)<<"\n"
-  <<"Cosmic events   : "<<hEvtCount->GetBinContent(3)<<"\n\n"
+  <<"Total events         : "<<(int)hTimestamps->GetEntries()<<"\n"
+  <<" -pedestal (0-1 sec) : "<<(int)hEvtCount->GetBinContent(1)<<"\n"
+  <<" -beam (1.2-5.2 sec) : "<<(int)hEvtCount->GetBinContent(2)<<"\n"
+  <<" -cosmic (> 5.2 sec) : "<<(int)hEvtCount->GetBinContent(3)<<"\n\n"
+  <<"Events passed        : "<<(int)hTimestamps_pass->GetEntries()<<"\n\n"
   <<"====================================\n";
 }
 

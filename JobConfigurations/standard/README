@@ -1,0 +1,5 @@
+These scripts originally existed in lariatsoft/mccconfigs, but haven't really been maintained
+and kept up-to-date. For now, users should refer to the reco scripts in the top level of JobConfigurations,
+which reflect the most recent development, configurations, and tunings. - WForeman, 5/16/2021
+
+TODO: Update these fhicls!

@@ -8,7 +8,6 @@ services:
 }
 
 # Remove the timestamp filter and any beamline reco
-
 physics.reco: [ caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco, wctrack, wctracktpctrackmatch ]
 
 physics.producers.caldata.DigitModuleLabel: "daq"

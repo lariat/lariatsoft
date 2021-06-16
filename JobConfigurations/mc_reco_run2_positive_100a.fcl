@@ -1,4 +1,4 @@
-#include "mc_multi_pass_reco_run2.fcl"
+#include "mc_reco_run2.fcl"
 services:
 {
   TFileService: { fileName: "reco_hist.root" }

@@ -1,9 +1,10 @@
-#include "data_multi_pass_reco_run2.fcl"
+#include "data_multi_pass_reco.fcl"
 
 services:
 {
   TFileService: { fileName: "reco_hist.root" }
   RandomNumberGenerator: {} # ART native random number generator
+  TimeTracker: { }
   @table::lariat_services
 }
 
@@ -15,6 +16,9 @@ physics.producers.tof.HitDiffMeanDS:        1.0  # 1.0 for Run I, 0.4 for Run II
 physics.producers.tof.HitMatchThresholdUS:  3.0
 physics.producers.tof.HitMatchThresholdDS:  6.0
 physics.producers.tof.HitWait:              20.
+
+physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteralg
+physics.producers.trajcluster.TrajClusterAlg:       @local::lariat_trajclusteralg
 
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run1
 physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgdata_run1 
