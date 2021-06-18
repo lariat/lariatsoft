@@ -34,7 +34,9 @@
 // LArSoft libraries
 #include "larcoreobj/SimpleTypesAndConstants/RawTypes.h" // raw::ChannelID_t
 #include "larcore/Geometry/Geometry.h"
-#include "larevt/Filters/ChannelFilter.h"
+//#include "larevt/Filters/ChannelFilter.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusProvider.h"
+#include "larevt/CalibrationDBI/Interface/ChannelStatusService.h"
 #include "lardataobj/RawData/RawDigit.h"
 #include "lardataobj/RawData/raw.h"
 #include "lardataobj/RecoBase/Wire.h"
@@ -218,8 +220,10 @@ namespace caldata {
 
     raw::ChannelID_t channel = raw::InvalidChannelID; // channel number
     unsigned int bin(0);     // time bin loop variable
-    
-    filter::ChannelFilter chanFilt;
+   
+    //Get the channels status
+    //filter::ChannelFilter chanFilt; // DEPRECATED, use ChannelStatusService
+    lariov::ChannelStatusProvider const& channelStatus(art::ServiceHandle<lariov::ChannelStatusService const>()->GetProvider());
     
     std::vector<float> holder;                // holds signal data
     std::vector<short> rawadc(transformSize);  // vector holding uncompressed adc values
@@ -236,7 +240,8 @@ namespace caldata {
       channel = digitVec->Channel();
       
       // skip bad channels
-      if(!chanFilt.BadChannel(channel)) {
+      //if(!chanFilt.BadChannel(channel)) {
+      if(!channelStatus.IsBad(channel)) {
         holder.resize(transformSize);
         
 	dataSize = digitVec->Samples();
