@@ -28,6 +28,18 @@ physics:
  end_paths: [ stream1 ]
 }
 
+outputs:
+{
+  out1:
+  {
+    module_type: RootOutput
+    fileName:    "%ifb_%p.root"
+    dataTier:    "reconstructed"
+    compressionLevel: 1
+  }
+}
+
+
 outputs.out1.outputCommands:  [
    "keep *_*_*_*",
    "drop raw::RawDigits_*_*_*",

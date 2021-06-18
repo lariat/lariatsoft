@@ -117,7 +117,7 @@ outputs:
   out1:
   {
     module_type: RootOutput
-    fileName:    "%ifb_%tc_reco.root"
+    fileName:    "%ifb_%p_%tc.root"
     dataTier:    "reconstructed"
     compressionLevel: 1
     SelectEvents: [reco]

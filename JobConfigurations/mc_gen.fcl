@@ -66,7 +66,7 @@ outputs:
  {
    module_type: RootOutput
 #   fileName:    "text_gen.root" #default file name, can override from command line with -o or --output
-   fileName:    "LArIATGen_%p_%tc.root"
+   fileName:    "%p_%tc.root"
    dataTier:    "generated"
  }
 }

@@ -6,4 +6,3 @@ services:
   RandomNumberGenerator: {} 
   @table::lariat_simulation_services_run2_negative_60A
 }
-outputs.out1.fileName:    "LArIATGen_Neg60A_%p_%tc.root"
