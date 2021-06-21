@@ -106,7 +106,7 @@ physics:
 
   #end_paths is a keyword and contains the paths that do not modify the art::Event, 
   #ie analyzers and output streams.  these all run simultaneously
-  end_paths:     [ stream1, ana ]
+  end_paths:     [ ana, stream1 ]
 }
 
 #block to define where the output goes.  if you defined a filter in the physics
@@ -202,6 +202,7 @@ physics.producers.gaushitOrigin.Chi2NDFRetry:        1000.
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
 physics.producers.trajclusterOrigin.HitModuleLabel: "gaushitOrigin"
+physics.producers.trajclusterOrigin.HitTruthModuleLabel: "gaushitOrigin"
 physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteralg_run2
 
 physics.producers.pmtrackOrigin.ClusterModuleLabel: "trajclusterOrigin"
@@ -231,6 +232,7 @@ physics.filters.hitnumfilter.MaxNumHits:                          [ -999, -999 ]
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
 physics.producers.trajcluster.HitModuleLabel: "gaushit"
+physics.producers.trajcluster.HitTruthModuleLabel: "gaushit"
 physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg_run2
 
 physics.producers.pmtrack.ClusterModuleLabel: "trajcluster"
