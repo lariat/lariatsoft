@@ -72,30 +72,45 @@ lariat_blurredcluster.BlurredClusterAlg.BlurWire: 15
 
 ########################################################################
 # Trajcluster alg settings tuned for LArIAT
+#
+# NOTE: These settings were ported from v06_61_00_04. In that version, very different 
+#       settings were used for RUN1 and RUN2. Specifically, the RUN2 alg parameterset
+#       does *not* inherit from RUN1, but instead uses the standard TrajCluster config 
+#       as a base and changes parameters from there. Because of this, there are quite a 
+#       few major configuration settings that are not shared between the runs.
+#       It's not clear to me why this is the case (bug? typo?), but the settings have been
+#       preserved as best as possible for consistency. Analyses using RUN1 should revisit 
+#       this issue; I suspect the settings used for RUN2 are based off more extensive 
+#       tuning and are probably preferred in RUN1 as well. 
+#       - W.Foreman (5/22/2021)
+#
+
+#-----------------------------------------------------------------------
 lariat_trajclusteralg:                      @local::standard_trajclusteralg
 lariat_trajclusteralg.CaloAlg:              @local::lariat_calorimetryalgdata_run1
+lariat_trajclusteralg.AngleRanges:          [30, 65, 85, 90]
 lariat_trajclusteralg.Mode:                 -1 # step from DS to US
 lariat_trajclusteralg.MinAmp:               0.1
 lariat_trajclusteralg.NPTsAve:              10
 lariat_trajclusteralg.MaxChi:               3
 lariat_trajclusteralg.HitErrFac:            0.5
 lariat_trajclusteralg.ProjectionErrFactor:  1
-lariat_trajclusteralg.ChargeCuts:           [5, 0.15, 0.25]
+lariat_trajclusteralg.ChargeCuts:           [ 5, 0.15, 0.25 ]
 lariat_trajclusteralg.MaxWireSkipNoSignal:  5
 lariat_trajclusteralg.MaxWireSkipWithSignal:20
 lariat_trajclusteralg.KinkCuts:             [0.45, 4, 3] # kink angle, MCS kink significance, nPts fit
 lariat_trajclusteralg.ChkStopCuts:          [1.3, 5, 2.5] # [Min chg ratio, Chg slope pull cut, Chg fit Chi cut]
 lariat_trajclusteralg.JTMaxHitSep:          -3
-lariat_trajclusteralg.MinPtsFit:            [ 4,  4, 2]
+lariat_trajclusteralg.MinPtsFit:            [ 4, 3, 2]
 lariat_trajclusteralg.MinPts:               [10, 3, 3]        # Min number of points in the trajectory required on each pass
 lariat_trajclusteralg.MaxAngleCode:         [0, 2, 3]
-lariat_trajclusteralg.AngleRanges:          [30, 65, 80, 90]
 lariat_trajclusteralg.MuonTag:              [-40, 500, 3, 3] # [minPtsFit, minMCSMom, maxWireSkipNoSignal, minDeltaRayLen]
 lariat_trajclusteralg.MaxVertexTrajSep:     [6, 6, 4] # Max separation for attaching trajectories to 3D vertices (WSE units)
-lariat_trajclusteralg.SkipAlgs:             [ "VtxHitsSwap", "SplitHiChgHits", "CTKink", "HED", "Split"  ]
+lariat_trajclusteralg.Match3DCuts:          [ 0.3, 2000, 0.25, 2, 2, 2.5 ] # order changed in v08_38: 0 = dx (cm) matching cut, 1 = max number of 3D combinations, 2 = min length for 2-view match, 3 = number of TP3Ds in each plane to fit in each PFP section, 4 = max pull for accepting TP3Ds in sections, 5 = max ChiDOF for a SectionFit";
 lariat_trajclusteralg.SaveShowerTree:       false
 lariat_trajclusteralg.SaveCRTree:           false
 lariat_trajclusteralg.ShowerTag:            [  0, 100, 10, 50, 2.5, 1, 15, 3, 5, 1, 1, 10, -13 ]
+#lariat_trajclusteralg.SkipAlgs:             ["VtxHitsSwap","SplitHiChgHits","CTKink","HED"] # These algs were skipped by default in v06_61
 # 0 Mode (<= 0 OFF, 1 = Tag InShower tjs before 3D match, > 1 Find showers)
 # 1 Max Tj MCSMom for a shower tag
 # 2 Max InShower Tj separation
@@ -121,13 +136,28 @@ lariat_trajclusteralg.Vertex2DCuts:         [ 6, 8, 45, 3, 3, 50, 0.6, 0, 0.8, 0
 # 8 Min charge fraction near a merge point (not a vertex)
 # 9 max MCSmom asymmetry for a merge
 
-# Trajcluster alg settings tuned for LArIAT Run 2
-lariat_trajclusteralg_run2:                       @local::lariat_trajclusteralg
+#-----------------------------------------------------------------------
+lariat_trajclusteralg_run2:                       @local::standard_trajclusteralg
 lariat_trajclusteralg_run2.CaloAlg:               @local::lariat_calorimetryalgdata_run2
+lariat_trajclusteralg_run2.AngleRanges:           [30, 65, 80, 90]
+lariat_trajclusteralg_run2.MinPtsFit:             [ 4,  4, 2]
+lariat_trajclusteralg_run2.MinPts:                [10, 10, 3]
+lariat_trajclusteralg_run2.MaxAngleCode:          [0, 2, 3]
+lariat_trajclusteralg_run2.MaxWireSkipNoSignal:   2
+lariat_trajclusteralg_run2.MaxWireSkipWithSignal: 20
+lariat_trajclusteralg_run2.HitErrFac:             0.4
 lariat_trajclusteralg_run2.ProjectionErrFactor:   3
+lariat_trajclusteralg_run2.MaxChi:                3
+lariat_trajclusteralg_run2.MuonTag:               [-40, 500, 3, 3] 
+lariat_trajclusteralg_run2.ShowerTag:             [ -1, 100, 10, 50, 2.5, 1, 15, 3, 5, 1, 1, 10, -13 ]
 lariat_trajclusteralg_run2.Vertex2DCuts:          [10, 2, 30, 3, 5, 100, 0.6, 0, 0.8, 0.8]
+lariat_trajclusteralg_run2.Match3DCuts:           [ 0.3, 2000, 0.25, 2, 2, 2.5 ] # order changed
+lariat_trajclusteralg_run2.MaxVertexTrajSep:      [6, 6, 4]
+lariat_trajclusteralg_run2.SaveShowerTree:       false
+lariat_trajclusteralg_run2.SaveCRTree:           false
+#lariat_trajclusteralg_run2.SkipAlgs:             ["SplitTjCVx","JunkVx","ChkVxTj","VtxHitsSwap","SplitHiChgHits","CTKink","HED"]
 
-#######################################################################
+#-----------------------------------------------------------------------
 # Trajcluster module settings
 lariat_trajcluster:                                     @local::standard_trajcluster
 lariat_trajcluster.TrajClusterAlg:                      @local::lariat_trajclusteralg 

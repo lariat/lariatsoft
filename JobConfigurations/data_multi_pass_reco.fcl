@@ -2,7 +2,6 @@
 #include "caldata_lariat.fcl"
 #include "hitfindermodules_lariat.fcl"
 #include "trackfindermodules.fcl"
-#include "calorimetry.fcl"
 #include "calorimetry_lariat.fcl"
 #include "lariat_reco_algs.fcl"
 #include "lariatbeamlinereco.fcl"
@@ -206,7 +205,6 @@ physics.producers.trajclusterOrigin.HitTruthModuleLabel: "gaushitOrigin"
 physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteralg_run2
 
 physics.producers.pmtrackOrigin.ClusterModuleLabel: "trajclusterOrigin"
-physics.producers.pmtrackOrigin.EmClusterModuleLabel: "trajclusterOrigin"
 physics.producers.pmtrackOrigin.HitModuleLabel:     "trajclusterOrigin"
 physics.producers.pmtrackOrigin.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtrackOrigin.PMAlgTracking.FlipToBeam: true
@@ -237,7 +235,6 @@ physics.producers.trajcluster.HitTruthModuleLabel: "gaushit"
 physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg_run2
 
 physics.producers.pmtrack.ClusterModuleLabel: "trajcluster"
-physics.producers.pmtrack.EmClusterModuleLabel: "trajcluster"
 physics.producers.pmtrack.HitModuleLabel:     "trajcluster"
 physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
@@ -248,6 +245,7 @@ physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
+physics.producers.calo.FlipTrack_dQdx:        "true"
 
 physics.producers.wctracktpctrackmatch.HitLabel:            "trajcluster"
 physics.producers.wctracktpctrackmatch.ClusterLabel:        "trajcluster"
@@ -277,7 +275,7 @@ physics.producers.wctracktpctrackuniquematch.CircularCutYCenter:  -0.17
 physics.producers.wctracktpctrackuniquematch.CircularCutRadius:   3.5
 physics.producers.wctracktpctrackuniquematch.UniqueMatchMode:     true
 
-#physics.analyzers.anatree.SelectEvents:            [ reco ]
+physics.analyzers.anatree.SelectEvents:            [ reco ]
 physics.analyzers.anatree.TreeName:                "anatree"
 physics.analyzers.anatree.HitsModuleLabel:         "gaushit"
 physics.analyzers.anatree.TrackModuleLabel:        "pmtrack"
