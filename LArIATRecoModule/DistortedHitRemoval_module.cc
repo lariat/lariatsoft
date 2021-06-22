@@ -274,7 +274,20 @@ void DistortedHitRemoval::produce(art::Event & event)
   for (auto const& hit : hit_vector)
   {
     // skip if hit is distorted
-    if (distorted_hits.find(*hit) != distorted_hits.end()) continue;
+    //if (distorted_hits.find(*hit) != distorted_hits.end()) continue;
+    // ^^ not working for some reason in v08_38... instead, identify hits
+    // based on their channel and peak hit time. There are never more than
+    // a handful of distorted hits found, so looping through them each time
+    // shouldn't be too taxing...
+    bool flag = false;
+    for (auto dh : distorted_hits ) {
+      if(    hit->Channel() == dh.Channel() 
+          && hit->PeakTime() == dh.PeakTime() ) {
+        flag = true;
+        break;
+      }
+    }
+    if(flag) continue;
 
     // get associated wire and raw digit
     art::Ptr< recob::Wire >   const& wire      = wires.at(hit.key());
