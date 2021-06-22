@@ -64,7 +64,7 @@ private:
   std::string fHitsModuleLabel;
   std::string fHitsInstance;
   std::vector<int> fMaxNumHits;
-  
+
   TH1F* hNumHits[2];
   TH1F* hNumHits_pass[2];
   TH1F* hEventPass;
@@ -103,7 +103,8 @@ bool HitNumberFilter::filter(art::Event & e)
   hNumHits[1]->Fill(nHits[1]);
   
   MF_LOG_VERBATIM("HitNumberFilter")
-  <<"---- HitNumberFilter -----";
+  <<"---- HitNumberFilter -----\n"
+  <<"Total hits: "<<hitlist.size();
   for(size_t i=0; i<2; i++){
   MF_LOG_VERBATIM("HitNumberFilter")
   <<"#hits on plane "<<i<<": "<<nHits[i];
