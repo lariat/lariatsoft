@@ -206,6 +206,7 @@ physics.producers.trajclusterOrigin.HitTruthModuleLabel: "gaushitOrigin"
 physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteralg_run2
 
 physics.producers.pmtrackOrigin.ClusterModuleLabel: "trajclusterOrigin"
+physics.producers.pmtrackOrigin.EmClusterModuleLabel: "trajclusterOrigin"
 physics.producers.pmtrackOrigin.HitModuleLabel:     "trajclusterOrigin"
 physics.producers.pmtrackOrigin.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtrackOrigin.PMAlgTracking.FlipToBeam: true
@@ -236,6 +237,7 @@ physics.producers.trajcluster.HitTruthModuleLabel: "gaushit"
 physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg_run2
 
 physics.producers.pmtrack.ClusterModuleLabel: "trajcluster"
+physics.producers.pmtrack.EmClusterModuleLabel: "trajcluster"
 physics.producers.pmtrack.HitModuleLabel:     "trajcluster"
 physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
 physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
