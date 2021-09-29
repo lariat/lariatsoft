@@ -1,0 +1,7 @@
+#include "data_multi_pass_reco_run2.fcl"
+
+# Set the timestamp filter
+physics.filters.timestampfilter.DataSelection:      "pedestal"
+
+# Remove beamline reco
+physics.reco: [ caldata, @sequence::tpcrecoOrigin, @sequence::tpcreco ]
