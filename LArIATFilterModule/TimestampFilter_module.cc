@@ -66,10 +66,16 @@ private:
   bool  fRequireRawDigits;
   std::string fDAQModuleLabel;
   std::string fDAQModuleInstanceName;
+  std::string fDataSelection;
 
   TH1F* hTimestamps;
   TH1F* hTimestamps_pass;
   TH1F* hEvtCount;
+
+  // Time ranges for different data classes
+  float range_pedestal[2];
+  float range_beam[2];
+  float range_cosmic[2];
 
 };
 
@@ -79,10 +85,33 @@ TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
 // Initialize member data here.
 {
   this->reconfigure(p);
+
+  // ------------------------------
+  // Set ranges
+  range_pedestal[0] = 0.0;
+  range_pedestal[1] = 1.0;
+  range_beam[0]     = 1.2;
+  range_beam[1]     = 5.2;
+  range_cosmic[0]   = 5.5;
+  range_cosmic[1]   = 60.;
+
+  // ------------------------------
+  // If a data type has been set in the fcl, 
+  // override fT1 and fT2
+  if( fDataSelection != "" ) {
+    std::cout<<"TimestampFilter: "<<fDataSelection<<" data type was provided; T1 and T2 will be overriden.\n";
+    if      ( fDataSelection == "pedestal" ) { fT1 = range_pedestal[0]; fT2 = range_pedestal[1];}
+    else if ( fDataSelection == "beam"     ) { fT1 = range_beam[0];     fT2 = range_beam[1];    }
+    else if ( fDataSelection == "cosmic"   ) { fT1 = range_cosmic[0];   fT2 = range_cosmic[1];  }
+    else if ( fDataSelection == "all"      ) { fT1 = 0.;                fT2 = 999.;             }
+  }
+
+  // TFile service for saving histograms of timestamps
   art::ServiceHandle<art::TFileService> tfs;
   hTimestamps       = tfs->make<TH1F>("Timestamps",";Time in spill [sec]",300,0,60.);
   hTimestamps_pass  = tfs->make<TH1F>("Timestamps_pass",";Time in spill [sec]",300,0.,60.);
   
+  // Data type counter
   hEvtCount = tfs->make<TH1F>("EvtCount","Counted events",3,0,3);
   hEvtCount->SetOption("HIST TEXT");
   hEvtCount->GetXaxis()->SetBinLabel(1,"Pedestal");
@@ -93,6 +122,10 @@ TimestampFilter::TimestampFilter(fhicl::ParameterSet const & p)
 
 bool TimestampFilter::filter(art::Event & e)
 {
+  
+  // if MC, then timestamp is meaningless
+  if( !e.isRealData() ) return true;
+  
   // -----------------------------------------------
   // Require event contain non-empty container of RawDigits (wires)
   // If empty, skip event immediately.
@@ -100,13 +133,8 @@ bool TimestampFilter::filter(art::Event & e)
   std::vector<art::Ptr<raw::RawDigit> > digit;
   if(e.getByLabel("daq",DigitHandle))
     {art::fill_ptr_vector(digit, DigitHandle);} 
-  //std::cout<<"Number of rawDigits: "<<digit.size()<<"\n";
   if( fRequireRawDigits && digit.size() == 0 ) return false;
-
-  // if MC, then timestamp is meaningless
-  if( !e.isRealData() ) return true;
   
-  //std::cout<<"TimestampFilter: run "<<e.run()<<", subrun "<<e.subRun()<<", event "<<e.id().event()<<"\n";
   // Get the timestamp (within the spill cycle) from the opdetpulse
   // objects because I don't know where else this info is saved!
   art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
@@ -118,16 +146,15 @@ bool TimestampFilter::filter(art::Event & e)
     // All we want is the timestamp so just grab the first opdetpulse
     // we can find and call it a day
     art::Ptr< raw::OpDetPulse > ThePulsePtr(opdetHandle,0); 
-    raw::OpDetPulse pulse = *ThePulsePtr;
-    timeStamp = ((float)pulse.PMTFrame()*8.)/1.0e09;
+//    raw::OpDetPulse pulse = *ThePulsePtr;
+    timeStamp = ((float)(*ThePulsePtr).PMTFrame()*8.)/1.0e09;
     //std::cout<<"Timestamp = "<<timeStamp<<" sec\n";
     hTimestamps->Fill(timeStamp);
 
     // Counting up "beam" and "cosmic" events
-    if(       timeStamp >= 0.0 && timeStamp <  1.1  ) hEvtCount->Fill(0);
-    else if ( timeStamp >= 1.1 && timeStamp <= 5.2  ) hEvtCount->Fill(1);
-    else if ( timeStamp > 5.2                       ) hEvtCount->Fill(2);
-
+    if(       timeStamp >= range_pedestal[0] && timeStamp < range_pedestal[1] ) hEvtCount->Fill(0);
+    else if(  timeStamp >= range_beam[0] && timeStamp < range_beam[1]         ) hEvtCount->Fill(1);
+    else if(  timeStamp >= range_cosmic[0] && timeStamp < range_cosmic[1]     ) hEvtCount->Fill(2);
   }
   
   if( timeStamp >= fT1 && timeStamp <= fT2 ) {
@@ -153,6 +180,7 @@ void TimestampFilter::endJob()
   <<" -pedestal (0-1 sec) : "<<(int)hEvtCount->GetBinContent(1)<<"\n"
   <<" -beam (1.2-5.2 sec) : "<<(int)hEvtCount->GetBinContent(2)<<"\n"
   <<" -cosmic (> 5.2 sec) : "<<(int)hEvtCount->GetBinContent(3)<<"\n\n"
+  <<"Allowed range        : "<<fT1<<" - "<<fT2<<"   "<<fDataSelection<<"\n"
   <<"Events passed        : "<<(int)hTimestamps_pass->GetEntries()<<"\n\n"
   <<"====================================\n";
 }
@@ -165,7 +193,7 @@ void TimestampFilter::reconfigure(fhicl::ParameterSet const & p)
   fDAQModuleLabel               = p.get< std::string >  ("DAQModule","daq");
   fDAQModuleInstanceName        = p.get< std::string >  ("DAQInstanceName","");
   fRequireRawDigits             = p.get< bool >         ("RequireRawDigits",true); 
-  
+  fDataSelection                = p.get< std::string >  ("DataSelection",""); 
 }
 
 

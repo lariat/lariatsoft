@@ -1,4 +1,5 @@
 #include "calorimetry_lariat.fcl"
+#include "lariat_reco_algs.fcl"
 
 BEGIN_PROLOG
 
@@ -12,14 +13,25 @@ lariat_anatree:
     ParticleIDModuleLabel:    "pid"
     ClusterModuleLabel:       "linecluster"
     WCTrackLabel:             "wctrack"
-    TOFModuleLabel:	      "tof"
+    TOFModuleLabel:	          "tof"
     AGModuleLabel:            "agcounter"
     G4ModuleLabel:            "largeant"
     ShowerModuleLabel:        "showerreco"
     SimChanModuleLabel:       "largeant"
     MCShowerModuleLabel:      "mcreco"
-    CalorimetryAlg:           @local::standard_calorimetryalgmc
     WC2TPCModuleLabel:	      "WC2TPCtrk"
+    CalorimetryAlg:           @local::standard_calorimetryalgmc
+    BeamlineMassAlg:          @local::lariat_beamlinemassalg
+    SaveBeamlineInfo:         true
+    SaveWireChamberHits:        false
+    SaveGeantInfo:            true
+    SaveGeantTrajectories:      false
+    SaveMCShowerInfo:           false 
+    SaveAerogelInfo:            false
+    SaveSimChannelInfo:       true
+    SaveTrackCalorimetry:     true
+    SaveTrack3DSpacePoints:     false
+    SaveTrackTrajectories:      false
 }
 
 lariat_anatreeuc:

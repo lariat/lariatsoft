@@ -17,10 +17,11 @@ lariat_triggerpattern:
 
 lariat_timestampfilter:
 {
-module_type:			TimestampFilter
-T1:				-999.  # time (s) within spill cycle (default accept ALL times)
-T2:				999.   # time (s) within spill cycle (default accept ALL times)
-RequireRawDigits:               false
+  module_type:	  TimestampFilter
+  DataSelection:  "" # "pedestal", "beam", "cosmic", "all"
+  T1:	-999.  # time (s) within spill cycle (default accept ALL times)
+  T2:	999.   # time (s) within spill cycle (default accept ALL times)
+  RequireRawDigits:               false
 }
 
 lariat_hitnumberfilter: 
