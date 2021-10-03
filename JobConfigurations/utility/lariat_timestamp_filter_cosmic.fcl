@@ -1,0 +1,3 @@
+#include "lariat_timestamp_filter.fcl"
+physics.filters.tfilt.DataSelection:    "cosmic" 
+

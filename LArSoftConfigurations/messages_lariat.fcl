@@ -1,0 +1,29 @@
+
+BEGIN_PROLOG
+
+# Suppress annoying messages from reconstruction
+message_silence_reco: {
+  type:       "cout"
+  threshold:  "INFO"
+  categories: {
+    default:            {}
+    TC:                 { limit: 0 }
+    PMAlgTracker:       { limit: 0 }
+    PMAlgFitter:        { limit: 0 }
+    PMAlgCosmicTagger:  { limit: 0 }
+    #pma::PMAlgCosmicTagger: { limit: 0 }
+    #pma::PMAlgVertexing: { limit: 0 }
+    ProductID:          { limit: 0 }
+    RANDOM:             { limit: 0 }
+    DataProviderAlg:    { limit: 0 }
+  }
+}
+
+# Standard lariat messages service configuration
+lariat_message_services: {
+  destinations: {
+    LogStandardOut: @local::message_silence_reco
+  }
+} 
+
+END_PROLOG

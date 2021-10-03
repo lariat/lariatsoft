@@ -180,6 +180,8 @@ void WCTrackBuilderAlg::reconstructTracks(std::vector<double> & reco_p_list,
   // Assign value to class member variable
   fWCMissed = WCMissed;
 
+  std::cout<<"LArIATRecoAlg: WCMissed = "<<WCMissed<<"\n";
+
   //Depending on if an event has a hit in all 4 WC or whether it missed WC2 or WC3 (but not both), we reconstruct the momentum differently. This code doesn't change from before we allowed 3 point tracks.
   if(fNHits==4){
   
@@ -873,21 +875,17 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
     float theta_x_ds=atan(ds_dx/ds_dz); 
 
     reco_p = calculateMomentum(theta_x_us,theta_x_ds,BestTrackStats[0]);
-    double scalingfactor=0;
-    if(fB_field_tesla<0.3) //Only have correction factors for 60A and 100A. .3T will separate the samples, as that's like ~90A.
-    {
-      scalingfactor=.000121*reco_p+.0458;
-    }
-    if(fB_field_tesla>0.3)
-    {
-      scalingfactor=7.39E-5*reco_p+.0479;
-    }
-    std::cout<<"!!! Momentum being scaled by 1/(1+"<<scalingfactor<<")\n";
-    reco_p=reco_p/(1+scalingfactor);
-
-
     
-    //std::cout<<"momentum scaled"<<std::endl;
+    // ============================================================================================
+    // Scaling of 3-point tracks
+    // Only have correction factors for 60A and 100A. .3T will separate the samples, as that's like ~90A.
+    // ============================================================================================
+    double  scalingfactor=0;
+    if      ( fB_field_tesla<0.3) scalingfactor=.000121*reco_p+.0458;
+    else if ( fB_field_tesla>0.3) scalingfactor=7.39E-5*reco_p+.0479;
+    reco_p=reco_p/(1+scalingfactor);
+    std::cout <<"!!!! NOTE: Momentum of 3-point WC track (missing WC2) being scaled by 1/(1+"<<scalingfactor<<") !!!!!\n";
+  
   }
   //WC 3 missed calibration
   if(WCMissed==3){
@@ -920,17 +918,15 @@ void WCTrackBuilderAlg::calculateTheThreePointMomentum(WCHitList & best_track,
       //reco_p =(fabs(fB_field_tesla) * fL_eff * fmm_to_m * fGeV_to_MeV ) /( float(3.3 * (sin(theta_x_ds)-sin(theta_x_us))*cos(atan(BestTrackStats[0])))); 
       reco_p = calculateMomentum(theta_x_us,theta_x_ds,BestTrackStats[0]);
 
-      double scalingfactor=0;
-    if(fB_field_tesla<0.3) //Only have correction factors for 60A and 100A. .3T will separate the samples, as that's like ~90A.
-    {
-       scalingfactor=-5.71E-5*reco_p-.0483;
-    }
-    if(fB_field_tesla>0.3)
-    {
-       scalingfactor=-4.2E-5*reco_p-.0444;
-    }
-    std::cout<<"!!! Momentum being scaled by 1/(1+"<<scalingfactor<<")\n";
+    // ============================================================================================
+    // Scaling of 3-point tracks
+    // Only have correction factors for 60A and 100A. .3T will separate the samples, as that's like ~90A.
+    // ============================================================================================
+    double scalingfactor=0;
+    if      ( fB_field_tesla<0.3) scalingfactor=-5.71E-5*reco_p-.0483;
+    else if ( fB_field_tesla>0.3) scalingfactor=-4.2E-5*reco_p-.0444;
     reco_p=reco_p/(1+scalingfactor);
+    std::cout <<"!!!! NOTE: Momentum of 3-point WC track (missing WC3) being scaled by 1/(1+"<<scalingfactor<<") !!!!!\n";
     
   }
    if(WCMissed==4){

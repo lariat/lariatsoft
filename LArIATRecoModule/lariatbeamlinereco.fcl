@@ -17,7 +17,7 @@
 BEGIN_PROLOG
 lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Greg Pulliam
 {
-      module_type:         WCTrackBuildernew
+      module_type:         WCTrackBuilder
       SourceLabel:         "daq"
       WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
       WCHitFinderAlg:      @local::lariat_wchitfinderalg  
@@ -29,10 +29,6 @@ lariat_wctrackbuilder:   #Taken from WCTrackBuilder.fcl by Greg Pulliam
       HighYield: true    #True: allows 3 or 4 point tracks to be made, as long as missing WC is 2 or 3. False: Only allow 4 point tracks
       CheckTracks: false  #SET TO FALSE IF YOU ARE DOING PHYSICS RUNS. THIS IS ONLY USED FOR DEBUGGING WHEN YOU ONLY WANT HISTOGRAMS
       BFieldOffset: 0.0025 # This is only applied in reco of 3-point tracks
-      WCTrackBuilderAlg:
-      {
-	MCMagneticFieldTesla:  0
-      }
       LoadBFieldFromDatabase: true
       
 }
@@ -51,11 +47,6 @@ lariat_wctrackbuildergeante:   #Taken from WCTrackBuilder.fcl by Daniel Smith
       HighYield: true    #True: allows 3 or 4 point tracks to be made, as long as missing WC is 2 or 3. False: Only allow 4 point tracks
       CheckTracks: false  #SET TO FALSE IF YOU ARE DOING PHYSICS RUNS. THIS IS ONLY USED FOR DEBUGGING WHEN YOU ONLY WANT HISTOGRAMS
       BFieldOffset: 0.0025
-      WCTrackBuilderAlg:
-      {
-	MCMagneticFieldTesla:  0
-      }
-      
 }
 
 

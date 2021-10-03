@@ -2,7 +2,8 @@
 #include "detectorproperties_lariat.fcl"
 #include "larproperties_lariat.fcl"
 #include "larfft_lariat.fcl"
-#include "messageservice.fcl"
+##  include "messageservice.fcl"
+#include "messages_lariat.fcl"
 #include "simulationservices_lariat.fcl"
 #include "magfield_larsoft.fcl"
 #include "databaseutil_lariat.fcl"
@@ -23,6 +24,7 @@ BEGIN_PROLOG
 
 lariat_services:
 {
+ message:                      @local::lariat_message_services 
  ExptGeoHelperInterface:       @local::lariat_geometry_helper
  Geometry:                     @local::lariat_geo
  AuxDetExptGeoHelperInterface: @local::lariat_auxdetgeometry_helper
@@ -37,7 +39,7 @@ lariat_services:
  BackTrackerService:           @local::standard_backtrackerservice
  ParticleInventoryService:     @local::standard_particleinventoryservice
  NuRandomService:              @local::random_NuRandomService
- DetPedestalService:           @local::lariat_detpedestalservice
+ #DetPedestalService:           @local::lariat_detpedestalservice
  ChannelStatusService:         @local::lariat_channel_filter
  SpaceCharge:                  @local::standard_spacecharge
  #UBOpticalChConfig:           @local::lariat_optical_ch_config

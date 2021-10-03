@@ -11,7 +11,7 @@ process_name: AnaTree
 services:
 {
   # Load the service that manages root files for histograms.
-  TFileService: { fileName: "hists_anatree.root" }
+  TFileService: { fileName: "hist_anatree.root" }
   RandomNumberGenerator: {} #ART native random number generator
   #message:      @local::lariat_message_services
   @table::lariat_services

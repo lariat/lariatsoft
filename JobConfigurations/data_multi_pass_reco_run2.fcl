@@ -2,7 +2,7 @@
 
 services:
 {
-  TFileService: { fileName: "reco_hist.root" }
+  TFileService: { fileName: "hist_%p_%tc.root" }
   RandomNumberGenerator: {} # ART native random number generator
   TimeTracker: { }
   @table::lariat_services_run2

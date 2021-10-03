@@ -5,6 +5,7 @@ lariat_wctrackbuilderalg:
  # PickyTracks: false
   MidplaneInterceptFactor: 1.01
   MidplaneSlopeFactor: 2
+	MCMagneticFieldTesla:  0
 }
 lariat_wchitfinderalg:
 {

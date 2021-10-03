@@ -140,11 +140,13 @@ private:
   bool  fSaveTrackTrajectories;
    
   //=== Storing Run Information ===
-  int run;			//<---Run Number
-  int subrun;			//<---SubRun Number
-  int event;			//<---Event Number
-  double evttime;		//<---Event Time Stamp
-  float efield;		//<---Electric Field
+  int run;			          //<---Run Number
+  int subrun;			        //<---SubRun Number
+  int event;			        //<---Event Number
+  double evttime;		      //<---Event Time (UNIX time)
+  float trig_timestamp;   //<---Trigger timestmap within spill (0-60sec)
+  float efield;		        //<---Electric Field
+  float lifetime;         //<---Electron lifetime
   int t0;
   //int trigtime[16];		//<---Trigger time
 
@@ -205,8 +207,8 @@ private:
   int    hit_plane[kMaxHits];	//<---Plane number of the hit
   int    hit_wire[kMaxHits];	//<---Wire number of the hit
   int    hit_channel[kMaxHits];//<---Channel number of the hit
-  int    hit_trkid[kMaxHits];	//<---The track ID associated with this hit (NEED TO CHECK IF THIS IS RIGHT)
-  int    hit_trkkey[kMaxHits]; //<---track index if hit is associated with a track
+  int    hit_trkid[kMaxHits];	//<---The track ID associated with this hit
+  int    hit_clusterid[kMaxHits];  //<---cluster ID associated with hit (NEED TO GET WORKING!)
   float  hit_peakT[kMaxHits];	//<---Peak Time of the hit (in drift ticks)
   float  hit_charge[kMaxHits];	//<---Number of ADC's assoicated with the hit (not in units of actual charge)
   float  hit_ph[kMaxHits];	//<---Amplitude of the hit (usually the gaussian associated with the hit)
@@ -221,16 +223,10 @@ private:
   float  hit_x[kMaxHits];        //<---hit x coordinate
   float  hit_y[kMaxHits];        //<---hit y coordinate
   float  hit_z[kMaxHits];        //<---hit z coordinate
-  
   int    hit_g4id[kMaxHits];    //<--- G4 Track ID that made this hit
   float  hit_frac[kMaxHits];    //<--- Fraction of hit energy contributed by leading MCParticle (g4id)
   float  hit_nelec[kMaxHits];   //<--- Number of electrons collected at wire
   float  hit_energy[kMaxHits];  //<--- True deposited energy of hit
-
-  //int    hit_pk[kMaxHits];	//<---This stores the raw ADC value (pedestal subtracted) for this hit
-  //int    hit_t[kMaxHits];	//<---Stores the time tick value for the current hit
-  //int    hit_ch[kMaxHits];	//<---Stores the hits "charge" in integrated raw ADC (pedestal subtracted)
-  //int    hit_fwhh[kMaxHits];	//<---Calculated Full width / half max value for the hit
 
   // === Storing 2-d Cluster Information ===
   int    nclus;
@@ -253,10 +249,19 @@ private:
   float wctrk_phi[kMaxWCTracks];        //<---angle of track w.r.t. x axis
   float wctrk_residual[kMaxWCTracks];   //How far off a straight line in YZ plane was the the WCTrack?
   int   wctrk_wcmissed[kMaxWCTracks];   //If this was made with 3 points, was it WC2 or WC3 missed?
+  int   wctrk_picky[kMaxWCTracks];      //<--- track had *exactly* one X/Y hit in each WC
   float wctrk_XDist[kMaxWCTracks];      //<---X distance between upstream and downstream tracks
   float wctrk_YDist[kMaxWCTracks];      //<---Y distance between upstream and downstream tracks
   float wctrk_ZDist[kMaxWCTracks];      //<---Z distance between upstream and downstream tracks
   float wctrk_YKink[kMaxWCTracks];      //<---angle in Y between upstream and downstream tracks
+  int   wctrk_WC1XMult[kMaxWCTracks];   //<--- number of hits found on X-axis wires in WC1
+  int   wctrk_WC1YMult[kMaxWCTracks];   //<--- number of hits found on Y-axis wires in WC1
+  int   wctrk_WC2XMult[kMaxWCTracks];   //<--- number of hits found on X-axis wires in WC2
+  int   wctrk_WC2YMult[kMaxWCTracks];   //<--- number of hits found on Y-axis wires in WC2
+  int   wctrk_WC3XMult[kMaxWCTracks];   //<--- number of hits found on X-axis wires in WC3
+  int   wctrk_WC3YMult[kMaxWCTracks];   //<--- number of hits found on Y-axis wires in WC3
+  int   wctrk_WC4XMult[kMaxWCTracks];   //<--- number of hits found on X-axis wires in WC4
+  int   wctrk_WC4YMult[kMaxWCTracks];   //<--- number of hits found on Y-axis wires in WC4
   float XWireHist[kMaxWCTracks][1000];  //<---Coord in terms of wire number
   float YWireHist[kMaxWCTracks][1000];  //<---Coord in terms of wire number
   float XAxisHist[kMaxWCTracks][1000];  //<---coord in terms of units.
@@ -426,8 +431,6 @@ private:
 
 
   // ==== NEED TO FIX THESE VARIABLES....FILLED WITH DUMMY VALUES FOR NOW ===
-  //int    hit_trkkey[kMaxHits];
-  int    hit_clukey[kMaxHits];
 
 
   //std::string fTrigModuleLabel;
@@ -499,7 +502,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // #############################################
   ResetVars();
 
-
   // #######################################
   // ### Get potentially useful services ###
   // #######################################
@@ -515,31 +517,32 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   art::ServiceHandle<cheat::ParticleInventoryService> pi_serv;
   const sim::ParticleList& plist = pi_serv->ParticleList();
 
-
-  // === Run Number ===
-  run = evt.run();
-  // === Sub-Run Number ===
-  subrun = evt.subRun();
-  // === Event Number ===
-  event = evt.id().event();
+  // Get run, subrun and event number
+  run         = (int)evt.run();
+  subrun      = (int)evt.subRun();
+  event       = (int)evt.event();
+  evttime     = (int)evt.getSubRun().beginTime().value();
+  bool isData = (bool)evt.isRealData();
+  // Get electric field and trigger offset
+  efield      = detprop->Efield(0);
+  lifetime    = detprop->ElectronLifetime();
+  t0          = detprop->TriggerOffset();
+  
+  // Get the timestamp (within the spill cycle) from the opdetpulse
+  // objects because I don't know where else this info is saved!
+  art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
+  evt.getByLabel("daq", "", opdetHandle);
+  trig_timestamp = -1.;
+  if( (size_t)opdetHandle->size() > 0 ){
+    art::Ptr< raw::OpDetPulse > ThePulsePtr(opdetHandle,0); 
+    trig_timestamp = ((float)(*ThePulsePtr).PMTFrame()*8.)/1.0e09;
+  }
 
   std::cout<<std::endl;
   std::cout<<"========================================="<<std::endl;
   std::cout<<"Run = "<<run<<", SubRun = "<<subrun<<", Evt = "<<event<<std::endl;
   std::cout<<"========================================="<<std::endl;
   std::cout<<std::endl;
-
-  // === Event Time ===
-  art::Timestamp ts = evt.time();
-  TTimeStamp tts(ts.timeHigh(), ts.timeLow());
-  evttime = tts.AsDouble();
-
-  // === Electric Field ===
-  // Note: LArProperties::Efield() has moved to DetectorProperties/DetectorPropertiesService
-  efield = detprop->Efield(0);
-
-  // === Trigger Offset ====
-  t0 = detprop->TriggerOffset();
 
   /*
   // ###################################
@@ -563,10 +566,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // #####################################
   // ### Getting the Track Information ###
   // #####################################
-
+  
   art::Handle< std::vector<recob::Track> > trackListHandle; //<---Define trackListHandle as a vector of recob::Track objects
   std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
-
+  
   // === Filling the tracklist from the tracklistHandle ===
   if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
     {art::fill_ptr_vector(tracklist, trackListHandle);}
@@ -574,10 +577,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ###################################
   // ### Getting the Hit Information ###
   // ###################################
-
-  art::Handle< std::vector<recob::Hit> > hitListHandle; //<---Define hitListHandle as a vector of recob::Track objects
-  std::vector<art::Ptr<recob::Hit> > hitlist; //<---Define tracklist as a pointer to recob::tracks
-
+  
+  art::Handle< std::vector<recob::Hit> > hitListHandle; //<---Define hitListHandle as a vector of recob::Hit objects
+  std::vector<art::Ptr<recob::Hit> > hitlist; //<---Define tracklist as a pointer to recob::Hits
+  
   // === Filling the hitlist from the hitlistHandle ===
   if (evt.getByLabel(fHitsModuleLabel,hitListHandle))
     {art::fill_ptr_vector(hitlist, hitListHandle);}
@@ -585,10 +588,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ##########################################
   // ### Getting the 2D Cluster Information ###
   // ##########################################
-
-  art::Handle< std::vector<recob::Cluster> > clusterListHandle; //<---Define clusterListHandle as a vector of recob::Track objects
-  std::vector<art::Ptr<recob::Cluster> > clusterlist; //<---Define cluster as a pointer to recob::cluster
-
+  
+  art::Handle< std::vector<recob::Cluster> > clusterListHandle; //<---Define clusterListHandle as a vector of recob::Cluster objects
+  std::vector<art::Ptr<recob::Cluster> > clusterlist; //<---Define cluster as a pointer to recob::Clusters
+  
   // === Filling the clusterlist from the clusterlistHandle ===
   if (evt.getByLabel(fClusterModuleLabel,clusterListHandle))
     {art::fill_ptr_vector(clusterlist, clusterListHandle);}
@@ -596,11 +599,10 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ###################################################
   // ### Getting the Wire Chamber Track  Information ###
   // ###################################################
-
-
+  
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
   std::vector<art::Ptr<ldp::WCTrack> > wctrack;
-
+  
   if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
     {art::fill_ptr_vector(wctrack, wctrackHandle);}
 
@@ -646,18 +648,13 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ###################################################################
   // ### Setting a boolian to only output MC info if this is MC-info ###
   // ###################################################################
-  bool isdata = false;
-  if (evt.isRealData())
-    {isdata = true;}
-
-  else isdata = false;
 
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   //							FILLING THE Sim Channel INFORMATION
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
-  if(!isdata) {
+  if(!isData) {
 
     art::Handle< std::vector<sim::SimChannel> > SimListHandle;
     std::vector<art::Ptr<sim::SimChannel> > Simlist;
@@ -696,7 +693,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
         } // Loop over IDE
       } // Loop over Time
     } // Loop over Wire
-  } // End of isdata
+  } // End of isData
 
 
 
@@ -706,7 +703,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
 
-  if(!isdata && fSaveMCShowerInfo )
+  if(!isData && fSaveMCShowerInfo )
     {
       art::Handle< std::vector<sim::MCShower> > mcshowerh;
       evt.getByLabel(fMCShowerModuleLabel, mcshowerh);
@@ -790,7 +787,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   //							FILLING THE MCTruth Geant4 INFORMATION
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
-  if(!isdata && fSaveGeantInfo )
+  if(!isData && fSaveGeantInfo )
     {
       // ######################################
       // ### Making a vector of MCParticles ###
@@ -1136,6 +1133,15 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
         WC4zPos[wct_count] = wctrack[wct_count]->HitPosition(3,2);
         wctrk_residual[wct_count]= wctrack[wct_count]->Residual();
         wctrk_wcmissed[wct_count]= wctrack[wct_count]->WCMissed();
+        wctrk_picky[wct_count]= wctrack[wct_count]->IsPicky();
+        wctrk_WC1XMult[wct_count]= wctrack[wct_count]->WC1XMult();
+        wctrk_WC1YMult[wct_count]= wctrack[wct_count]->WC1YMult();
+        wctrk_WC2XMult[wct_count]= wctrack[wct_count]->WC2XMult();
+        wctrk_WC2YMult[wct_count]= wctrack[wct_count]->WC2YMult();
+        wctrk_WC3XMult[wct_count]= wctrack[wct_count]->WC3XMult();
+        wctrk_WC3YMult[wct_count]= wctrack[wct_count]->WC3YMult();
+        wctrk_WC4XMult[wct_count]= wctrack[wct_count]->WC4XMult();
+        wctrk_WC4YMult[wct_count]= wctrack[wct_count]->WC4YMult();
         
         // Calculate XYZ components of momentum vector using TVector3
         float p     = wctrack[wct_count]->Momentum();
@@ -1254,20 +1260,16 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     // === Association between SpacePoints and Tracks ===
     art::FindManyP<recob::SpacePoint> fmsp(trackListHandle, evt, fTrackModuleLabel);
     // === Association between Tracks and 2d Hits ===
-    art::FindManyP<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
+    //art::FindManyP<recob::Track>       fmtk(hitListHandle,   evt, fTrackModuleLabel);
     // === Association between Calorimetry objects and Tracks ===
     art::FindManyP<anab::Calorimetry> fmcal(trackListHandle, evt, fCalorimetryModuleLabel);
     // === Association between Particle ID objects (PID) and Tracks ===
     art::FindManyP<anab::ParticleID>  fmpid(trackListHandle, evt, fParticleIDModuleLabel);
     // ==== Association between Clusters and Hits ===
-    art::FindManyP<recob::Cluster>     fmc(hitListHandle,   evt, fClusterModuleLabel);
-    // ==== Association between Clusters and Showers ===
-    art::FindManyP<recob::Shower> fms (clusterListHandle, evt, fShowerModuleLabel);
-    // ==== Association between Tracks and Hits
+    art::FindManyP<recob::Cluster>    fmcl(hitListHandle,   evt, fClusterModuleLabel);
+    // ==== Association between Tracks and Hit Metadata
     art::FindManyP<recob::Hit> fmth(trackListHandle, evt, fTrackModuleLabel);
     art::FindManyP<recob::Hit, recob::TrackHitMeta> fmthm(trackListHandle, evt, fTrackModuleLabel);
-
-
 
     // ----------------------------------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------------------------------
@@ -1525,17 +1527,18 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       
       }//<---End iTrajPt
 
-      // If valid association was made between tracks/hits... 
+      // Find all associated hits and save information 
+      // about the track they appear in...
       if (fmthm.isValid()){
         auto vhit = fmthm.at(i);
         auto vmeta = fmthm.data(i);
         for (size_t h = 0; h < vhit.size(); ++h){
           if (vhit[h].key()<kMaxHits){
-            //hit_trkkey[vhit[h].key()] = tracklist[i].key();
             if (vmeta[h]->Dx()){
               hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCalorimetryAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
               hit_dEds[vhit[h].key()] = fCalorimetryAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
             }
+            hit_trkid[vhit[h].key()] = i;
             hit_ds[vhit[h].key()] = vmeta[h]->Dx();
             hit_resrange[vhit[h].key()] = tracklist[i]->Length(vmeta[h]->Index());
             hit_x[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).X();
@@ -1544,24 +1547,21 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           }
         }//loop over all hits
       }//fmthm is valid   
-      // If this is MC...
-      if (!isdata && fmth.isValid()){
-        
-        // Find true track for each reconstructed track
-        int TrackID = 0;
-       
+
+      // Find all IDEs for this track by going through the associated hits.
+      if (!isData && fmth.isValid()){
         std::vector< art::Ptr<recob::Hit> > allHits = fmth.at(i);
-        
+        // find true track for each reconstructed track
+        int TrackID = 0;
         std::map<int,double> trkide;
         for(size_t h = 0; h < allHits.size(); ++h){
           art::Ptr<recob::Hit> hit = allHits[h];
           std::vector<sim::TrackIDE> TrackIDs = bt_serv->HitToTrackIDEs(hit);
-          for(size_t e = 0; e < TrackIDs.size(); ++e){
+          for(size_t e = 0; e < TrackIDs.size(); ++e) {
             trkide[TrackIDs[e].trackID] += TrackIDs[e].energy;
-          }	    
+          }
         }
-	  
-        // Work out which IDE despoited the most charge in the hit if there was more than one.
+        // work out which IDE despoited the most charge in the hit if there was more than one.
         double maxe = -1;
         double tote = 0;
         for (std::map<int,double>::iterator ii = trkide.begin(); ii!=trkide.end(); ++ii){
@@ -1577,14 +1577,12 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
             }
           }
         }
-        
         // Now have trackID, so get PdG code and T0 etc.
         const simb::MCParticle *particle = pi_serv->TrackIdToParticle_P(TrackID);
         if (particle) trkg4id[i] = TrackID;
-      
+	    
+      }//endif isMC and association is valid   
 
-	    }//endif isMC and association is valid   
-  
     }//<---End track loop (i)
     
     
@@ -1611,18 +1609,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       hit_tstart[i]  = hitlist[i]->StartTick();
       hit_tend[i]    = hitlist[i]->EndTick();
       hit_rms[i]     = hitlist[i]->RMS();
-      if (fmtk.isValid()){
-        if (fmtk.at(i).size()!=0){
-          hit_trkid[i] = fmtk.at(i)[0]->ID();
-          hit_trkkey[i] = fmtk.at(i)[0].key();
-        }
-      }
-      if (fmc.isValid()){
-        if (fmc.at(i).size()!=0){
-          hit_clukey[i] = fmc.at(i)[0].key();
-        }
-      }
-      
 
       // If this is MC, map hit to its G4 Track ID
       if(!evt.isRealData()){
@@ -1649,33 +1635,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       }
 
       /*
-      // Calculate energy deposition that resulted in this hit
-      if (!evt.isRealData()){
-        hit_nelec[i] = 0;
-        hit_energy[i] = 0;
-        const sim::SimChannel* chan = 0;
-        for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
-          if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) {
-            chan = fSimChannels[sc];
-            break;
-          }
-        }
-        if (chan){
-          const auto & tdcidemap = chan->TDCIDEMap();
-          for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
-            // loop over the vector of IDE objects.
-            const std::vector<sim::IDE> & idevec = (*mapitr).second;
-            for(size_t iv = 0; iv < idevec.size(); ++iv){
-              hit_nelec[i] += idevec[iv].numElectrons;
-              hit_energy[i] += idevec[iv].energy;
-            }
-          }
-        }
-      }
-      */
-
-      /*
-        
       // ---------------------------------------------------------------------
       // Removing this, since RawDigit associations are no longer saved in v08_38_01.
       // TODO: re-write this section getting the RawDigit via associations between
@@ -1770,7 +1729,9 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("subrun",&subrun,"subrun/I");
   fTree->Branch("event",&event,"event/I");
   fTree->Branch("evttime",&evttime,"evttime/D");
+  fTree->Branch("trig_timestamp",&trig_timestamp,"trig_timestamp/F");
   fTree->Branch("efield",&efield,"efield/F");
+  fTree->Branch("lifetime",&lifetime,"lifetime/F");
   fTree->Branch("t0",&t0,"t0/I");
   fTree->Branch("nclus",&nclus,"nclus/I");
   fTree->Branch("clustertwire",clustertwire,"clustertwire[nclus]/F");
@@ -1840,8 +1801,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/F");
   fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/F");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
-  fTree->Branch("hit_trkkey",hit_trkkey,"hit_trkkey[nhits]/I");
-  fTree->Branch("hit_clukey",hit_clukey,"hit_clukey[nhits]/I");
+  //fTree->Branch("hit_clusterid",hit_clusterid,"hit_clusterid[nhits]/I"); 
   //fTree->Branch("hit_pk",hit_pk,"hit_pk[nhits]/I");
   //fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
   //fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
@@ -1865,12 +1825,21 @@ void lariat::AnaTreeT1034::beginJob()
     fTree->Branch("wctrk_Px" ,wctrk_Px,"wctrk_Pz[nwctrks]/F");
     fTree->Branch("wctrk_Py" ,wctrk_Py,"wctrk_Py[nwctrks]/F");
     fTree->Branch("wctrk_Pz" ,wctrk_Pz,"wctrk_Pz[nwctrks]/F");
+    fTree->Branch("wctrk_residual", wctrk_residual,"wctrk_residual[nwctrks]/F");
+    fTree->Branch("wctrk_wcmissed", wctrk_wcmissed,"wctrk_wcmissed[nwctrks]/I");
+    fTree->Branch("wctrk_picky", wctrk_picky,"wctrk_picky[nwctrks]/I");
+    fTree->Branch("wctrk_WC1XMult", wctrk_WC1XMult,"wctrk_WC1XMult[nwctrks]/I");
+    fTree->Branch("wctrk_WC1YMult", wctrk_WC1YMult,"wctrk_WC1YMult[nwctrks]/I");
+    fTree->Branch("wctrk_WC2XMult", wctrk_WC2XMult,"wctrk_WC2XMult[nwctrks]/I");
+    fTree->Branch("wctrk_WC2YMult", wctrk_WC2YMult,"wctrk_WC2YMult[nwctrks]/I");
+    fTree->Branch("wctrk_WC3XMult", wctrk_WC3XMult,"wctrk_WC3XMult[nwctrks]/I");
+    fTree->Branch("wctrk_WC3YMult", wctrk_WC3YMult,"wctrk_WC3YMult[nwctrks]/I");
+    fTree->Branch("wctrk_WC4XMult", wctrk_WC4XMult,"wctrk_WC4XMult[nwctrks]/I");
+    fTree->Branch("wctrk_WC4YMult", wctrk_WC4YMult,"wctrk_WC4YMult[nwctrks]/I");
     fTree->Branch("wctrk_XDist",wctrk_XDist,"wctrk_XDist[nwctrks]/F");
     fTree->Branch("wctrk_YDist",wctrk_YDist,"wctrk_YDist[nwctrks]/F");
     fTree->Branch("wctrk_ZDist",wctrk_ZDist,"wctrk_ZDist[nwctrks]/F");
     fTree->Branch("wctrk_YKink",wctrk_YKink,"wctrk_YKink[nwctrks]/F");
-    fTree->Branch("wctrk_residual", wctrk_residual,"wctrk_residual[nwctrks]/F");
-    fTree->Branch("wctrk_wcmissed", wctrk_wcmissed,"wctrk_wcmissed[nwctrks]/I");
     fTree->Branch("ntof", &ntof, "ntof/I");
     fTree->Branch("tof_time", tof_time, "tof_time[ntof]/F");
     fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/F"); 
@@ -2067,6 +2036,8 @@ void lariat::AnaTreeT1034::ResetVars()
   subrun = -99999;
   event = -99999;
   evttime = -99999;
+  lifetime = -999;
+  trig_timestamp = -999;
   efield = -99999;
   t0 = -99999;
   nclus = 0;
@@ -2135,8 +2106,7 @@ void lariat::AnaTreeT1034::ResetVars()
     hit_charge[i] = -99999;
     hit_ph[i]     = -9999;
     hit_trkid[i]  = -9;
-    hit_trkkey[i] = -999;
-    hit_clukey[i] = -999;
+    hit_clusterid[i] = -999;
     hit_tstart[i] = -999;
     hit_tend[i] = -999;
     //hit_pk[i] = -99999;

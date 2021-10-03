@@ -43,7 +43,7 @@ physics:
  
  #list the modules for this path, order matters, filters reject all following items
  evd: [ evdisp ] 
- recopath: []
+ #recopath: []
 }
 
 services.RawDrawingOptions.MinimumSignal: 5

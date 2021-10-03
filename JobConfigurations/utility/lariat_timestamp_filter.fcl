@@ -7,7 +7,7 @@ process_name: TimestampFilter
 
 services:
 {
-  TFileService: { fileName: "hists_tfilt.root" }
+  TFileService: { fileName: "hist_tfilt.root" }
   TimeTracker: { }
   @table::lariat_services
 }
@@ -67,7 +67,5 @@ outputs:
 # DataSelection can be set to "pedestal", "beam", or "cosmic"
 # Leave blank ("") to use T1 and T2 instead.
 physics.filters.tfilt.DataSelection:    "beam" 
-physics.filters.tfilt.T1:                1.2
-physics.filters.tfilt.T2:                5.2
 physics.filters.tfilt.RequireRawDigits:  true
 

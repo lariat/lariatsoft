@@ -1,0 +1,66 @@
+#include "data_multi_pass_reco_run2.fcl"
+
+physics.filters.tfiltPedestal:               @local::lariat_timestampfilter
+physics.filters.tfiltBeam:                   @local::lariat_timestampfilter
+physics.filters.tfiltCosmic:                 @local::lariat_timestampfilter
+physics.filters.tfiltPedestal.DataSelection: "pedestal"
+physics.filters.tfiltBeam.DataSelection:     "beam"
+physics.filters.tfiltCosmic.DataSelection:   "cosmic"
+
+physics.reco:     [ tfiltBeam,     @sequence::fullRecoBeam ]
+physics.recoPed:  [ tfiltPedestal, @sequence::fullRecoNoBeam ]
+physics.recoCos:  [ tfiltCosmic,  @sequence::fullRecoNoBeam ]
+
+physics.trigger_paths: [ reco,      recoPed,  recoCos ]
+physics.stream1:       [ out1,      out2,     out3    ]
+physics.end_paths:     [ stream1, ana ] 
+
+outputs:
+{
+  out1:
+  {
+    module_type: RootOutput
+    fileName:    "%ifb_BeamTriggers_%p_%tc.root"
+    SelectEvents: [ reco ]
+    dataTier:    "reconstructed"
+    compressionLevel: 1
+  }
+  out2:
+  {
+    module_type: RootOutput
+    fileName:    "%ifb_PedestalTriggers_%p_%tc.root"
+    SelectEvents: [ recoPed ]
+    dataTier:    "reconstructed"
+    compressionLevel: 1
+  }
+  out3:
+  {
+    module_type: RootOutput
+    fileName:    "%ifb_CosmicTriggers_%p_%tc.root"
+    SelectEvents: [ recoCos ]
+    dataTier:    "reconstructed"
+    compressionLevel: 1
+  }
+}
+
+# Drop the first-pass reco products from the event
+outputs.out1.outputCommands:  [
+   "keep *_*_*_*",
+   "drop *_gaushitOrigin_*_*",
+   "drop *_pmtrackOrigin_*_*",
+   "drop *_trajclusterOrigin_*_*"
+]
+# Drop the first-pass reco products from the event
+outputs.out2.outputCommands:  [
+   "keep *_*_*_*",
+   "drop *_gaushitOrigin_*_*",
+   "drop *_pmtrackOrigin_*_*",
+   "drop *_trajclusterOrigin_*_*"
+]
+# Drop the first-pass reco products from the event
+outputs.out3.outputCommands:  [
+   "keep *_*_*_*",
+   "drop *_gaushitOrigin_*_*",
+   "drop *_pmtrackOrigin_*_*",
+   "drop *_trajclusterOrigin_*_*"
+]

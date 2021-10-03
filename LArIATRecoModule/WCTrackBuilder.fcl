@@ -36,7 +36,7 @@ physics:
   {
     WCTrackBuilder:
     {
-      module_type:         WCTrackBuildernew
+      module_type:         WCTrackBuilder
       SourceLabel:         "daq"
       WCTrackBuilderAlg:   @local::lariat_wctrackbuilderalg
       WCHitFinderAlg:      @local::lariat_wchitfinderalg  
