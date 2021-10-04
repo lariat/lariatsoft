@@ -126,7 +126,7 @@ outputs:
     fileName:    "%ifb_%p_%tc.root"
     dataTier:    "reconstructed"
     compressionLevel: 1
-    #SelectEvents: [reco]
+    SelectEvents: [reco]
   }
 }
 
@@ -209,67 +209,37 @@ physics.producers.gaushit.ZHigh:       87.0  # remove hits that are within 3 cm 
 # This module will count the number of reconstructed hits on each plane and 
 # write histograms to the output histogram file. Can also be used to filter 
 # out events with a high number of hits.
-physics.filters.hitnumfilter.HitsModuleLabel:                     "gaushit"
-physics.filters.hitnumfilter.HitsInstance:                        ""
-physics.filters.hitnumfilter.MaxNumHits:                          [ -999, -999 ] # neg. = filter not used
+physics.filters.hitnumfilter.HitsModuleLabel:         "gaushit"
+physics.filters.hitnumfilter.HitsInstance:            ""
+physics.filters.hitnumfilter.MaxNumHits:              [ -999, -999 ] # neg. = filter not used
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
-physics.producers.trajcluster.HitModuleLabel: "gaushit"
-physics.producers.trajcluster.HitTruthModuleLabel: "gaushit"
-physics.producers.trajcluster.TrajClusterAlg: @local::lariat_trajclusteralg_run2
+physics.producers.trajcluster.HitModuleLabel:         "gaushit"
+physics.producers.trajcluster.HitTruthModuleLabel:    "gaushit"
+physics.producers.trajcluster.TrajClusterAlg:         @local::lariat_trajclusteralg_run2
 
-physics.producers.pmtrack.ClusterModuleLabel: "trajcluster"
-physics.producers.pmtrack.HitModuleLabel:     "trajcluster"
+physics.producers.pmtrack.ClusterModuleLabel:               "trajcluster"
+physics.producers.pmtrack.HitModuleLabel:                   "trajcluster"
 physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
-physics.producers.pmtrack.PMAlgTracking.FlipToBeam: true
-physics.producers.pmtrack.PMAlgTracking.RunVertexing: true
+physics.producers.pmtrack.PMAlgTracking.FlipToBeam:         true
+physics.producers.pmtrack.PMAlgTracking.RunVertexing:       true
 
-#physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgmc_run2   # MC
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run2  # data
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.calo.FlipTrack_dQdx:        "true"
 
-physics.producers.wctracktpctrackmatch.HitLabel:            "trajcluster"
-physics.producers.wctracktpctrackmatch.ClusterLabel:        "trajcluster"
-physics.producers.wctracktpctrackmatch.TrackLabel:          "pmtrack"
-physics.producers.wctracktpctrackmatch.TOFLabel:            "tof"
-physics.producers.wctracktpctrackmatch.WCTrackLabel:        "wctrack"
-physics.producers.wctracktpctrackmatch.AlphaCut:            0.226893
-physics.producers.wctracktpctrackmatch.MinTrackLengthZProj: 4.0
-physics.producers.wctracktpctrackmatch.MinUpstreamZ:        2.0
-physics.producers.wctracktpctrackmatch.MaxUpstreamZ:        6.0
-physics.producers.wctracktpctrackmatch.CircularCutXCenter:  1.6
-physics.producers.wctracktpctrackmatch.CircularCutYCenter:  -0.17
-physics.producers.wctracktpctrackmatch.CircularCutRadius:   5.0
-physics.producers.wctracktpctrackmatch.UniqueMatchMode:     false
+# These settings now centralized in LArIATRecoModule/wctracktpctrackmatch.fcl
+#physics.producers.wctracktpctrackmatch.AlphaCut:            0.226893
+#physics.producers.wctracktpctrackmatch.MinTrackLengthZProj: 4.0
+#physics.producers.wctracktpctrackmatch.MinUpstreamZ:        2.0
+#physics.producers.wctracktpctrackmatch.MaxUpstreamZ:        6.0
+#physics.producers.wctracktpctrackmatch.CircularCutXCenter:  1.6
+#physics.producers.wctracktpctrackmatch.CircularCutYCenter:  -0.17
+#physics.producers.wctracktpctrackmatch.CircularCutRadius:   5.0
+#physics.producers.wctracktpctrackmatch.UniqueMatchMode:     false
 
-physics.producers.wctracktpctrackuniquematch.HitLabel:            "trajcluster"
-physics.producers.wctracktpctrackuniquematch.ClusterLabel:        "trajcluster"
-physics.producers.wctracktpctrackuniquematch.TrackLabel:          "pmtrack"
-physics.producers.wctracktpctrackuniquematch.TOFLabel:            "tof"
-physics.producers.wctracktpctrackuniquematch.WCTrackLabel:        "wctrack"
-physics.producers.wctracktpctrackuniquematch.AlphaCut:            0.226893
-physics.producers.wctracktpctrackuniquematch.MinTrackLengthZProj: 4.0
-physics.producers.wctracktpctrackuniquematch.MinUpstreamZ:        2.0
-physics.producers.wctracktpctrackuniquematch.MaxUpstreamZ:        6.0
-physics.producers.wctracktpctrackuniquematch.CircularCutXCenter:  1.6
-physics.producers.wctracktpctrackuniquematch.CircularCutYCenter:  -0.17
-physics.producers.wctracktpctrackuniquematch.CircularCutRadius:   3.5
 physics.producers.wctracktpctrackuniquematch.UniqueMatchMode:     true
 
 physics.analyzers.anatree.SelectEvents:            [ reco ]
-physics.analyzers.anatree.TreeName:                "anatree"
-physics.analyzers.anatree.HitsModuleLabel:         "gaushit"
-physics.analyzers.anatree.TrackModuleLabel:        "pmtrack"
-physics.analyzers.anatree.CalorimetryModuleLabel:  "calo"
-physics.analyzers.anatree.ParticleIDModuleLabel:   "pid"
-physics.analyzers.anatree.ClusterModuleLabel:      "trajcluster"
-physics.analyzers.anatree.WCTrackLabel:            "wctrack"
-physics.analyzers.anatree.TOFModuleLabel:          "tof"
-physics.analyzers.anatree.G4ModuleLabel:           "largeant"
-physics.analyzers.anatree.CalorimetryAlg:          @local::lariat_calorimetryalgdata_run2
-physics.analyzers.anatree.WC2TPCModuleLabel:       "wctracktpctrackmatch"
-physics.analyzers.anatree.WCQualityProducerLabel:  "wcquality"
-

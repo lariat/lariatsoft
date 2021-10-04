@@ -563,27 +563,24 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   trigtime[i] = triglist[i]->GetTrigTime();
   }
   */
-  // #####################################
-  // ### Getting the Track Information ###
-  // #####################################
   
-  art::Handle< std::vector<recob::Track> > trackListHandle; //<---Define trackListHandle as a vector of recob::Track objects
-  std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
-  
-  // === Filling the tracklist from the tracklistHandle ===
-  if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
-    {art::fill_ptr_vector(tracklist, trackListHandle);}
-
   // ###################################
   // ### Getting the Hit Information ###
   // ###################################
   
   art::Handle< std::vector<recob::Hit> > hitListHandle; //<---Define hitListHandle as a vector of recob::Hit objects
   std::vector<art::Ptr<recob::Hit> > hitlist; //<---Define tracklist as a pointer to recob::Hits
-  
-  // === Filling the hitlist from the hitlistHandle ===
   if (evt.getByLabel(fHitsModuleLabel,hitListHandle))
     {art::fill_ptr_vector(hitlist, hitListHandle);}
+
+  // #####################################
+  // ### Getting the Track Information ###
+  // #####################################
+  
+  art::Handle< std::vector<recob::Track> > trackListHandle; //<---Define trackListHandle as a vector of recob::Track objects
+  std::vector<art::Ptr<recob::Track> > tracklist; //<---Define tracklist as a pointer to recob::tracks
+  if (evt.getByLabel(fTrackModuleLabel,trackListHandle))
+    {art::fill_ptr_vector(tracklist, trackListHandle);}
 
   // ##########################################
   // ### Getting the 2D Cluster Information ###
@@ -591,8 +588,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   
   art::Handle< std::vector<recob::Cluster> > clusterListHandle; //<---Define clusterListHandle as a vector of recob::Cluster objects
   std::vector<art::Ptr<recob::Cluster> > clusterlist; //<---Define cluster as a pointer to recob::Clusters
-  
-  // === Filling the clusterlist from the clusterlistHandle ===
   if (evt.getByLabel(fClusterModuleLabel,clusterListHandle))
     {art::fill_ptr_vector(clusterlist, clusterListHandle);}
 
@@ -602,7 +597,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   
   art::Handle< std::vector<ldp::WCTrack> > wctrackHandle;
   std::vector<art::Ptr<ldp::WCTrack> > wctrack;
-  
   if(evt.getByLabel(fWCTrackLabel, wctrackHandle))
     {art::fill_ptr_vector(wctrack, wctrackHandle);}
 
@@ -612,7 +606,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
   std::vector<art::Ptr<ldp::TOF> > tof;
-
   if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
     {art::fill_ptr_vector(tof, TOFColHandle);}
 
@@ -622,7 +615,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   art::Handle< std::vector<ldp::AGCounter> > AGColHandle;
   std::vector<art::Ptr<ldp::AGCounter> > agc;
-
   if(evt.getByLabel(fAGModuleLabel,AGColHandle))
     {art::fill_ptr_vector(agc, AGColHandle);}
 
@@ -632,11 +624,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
 
   art::Handle< std::vector<recob::Shower> > shwListHandle;
   std::vector<art::Ptr<recob::Shower> > shwlist;
-
-  // === Filling the shwlist from the shwlistHandle ===
   if (evt.getByLabel(fShowerModuleLabel,shwListHandle))
     {art::fill_ptr_vector(shwlist, shwListHandle);}
-
 
 
   // ### Something to do with SimChannels...need to come back to ###
@@ -644,11 +633,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   try
     {evt.getView("largeant", fSimChannels);}
   catch (art::Exception const&e){ }
-
-  // ###################################################################
-  // ### Setting a boolian to only output MC info if this is MC-info ###
-  // ###################################################################
-
+  
+  
   // ----------------------------------------------------------------------------------------------------------------------------
   // ----------------------------------------------------------------------------------------------------------------------------
   //							FILLING THE Sim Channel INFORMATION

@@ -6,20 +6,22 @@ BEGIN_PROLOG
 lariat_anatree:
 {
     module_type:              "AnaTreeT1034"
+    TreeName:                 "anatree"
     TriggerUtility:           "FragmentToDigit"
-    HitsModuleLabel:          "linecluster"
+    HitsModuleLabel:          "gaushit"
     TrackModuleLabel:         "pmtrack"
     CalorimetryModuleLabel:   "calo"
     ParticleIDModuleLabel:    "pid"
-    ClusterModuleLabel:       "linecluster"
+    ClusterModuleLabel:       "trajcluster"
     WCTrackLabel:             "wctrack"
     TOFModuleLabel:	          "tof"
     AGModuleLabel:            "agcounter"
     G4ModuleLabel:            "largeant"
-    ShowerModuleLabel:        "showerreco"
     SimChanModuleLabel:       "largeant"
+    ShowerModuleLabel:        "showerreco"
     MCShowerModuleLabel:      "mcreco"
-    WC2TPCModuleLabel:	      "WC2TPCtrk"
+    WC2TPCModuleLabel:	      "wctracktpctrackmatch"
+    WCQualityProducerLabel:   "wcquality"
     CalorimetryAlg:           @local::standard_calorimetryalgmc
     BeamlineMassAlg:          @local::lariat_beamlinemassalg
     SaveBeamlineInfo:         true

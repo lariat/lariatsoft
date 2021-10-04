@@ -9,7 +9,7 @@
 
 #include "services_lariat.fcl"
 
-process_name: DropRaw
+process_name: DropDigits
 
 services:
 {

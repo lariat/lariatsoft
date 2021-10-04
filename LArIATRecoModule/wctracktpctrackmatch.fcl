@@ -1,17 +1,17 @@
 lariat_wctracktpctrackmatch:
 {
   module_type:          "WCTrackTPCTrackMatch"
-  HitLabel:             "gaushit"
+  HitLabel:             "trajcluster"
   ClusterLabel:         "trajcluster"
   TrackLabel:           "pmtrack"
   TOFLabel:             "tof"
   WCTrackLabel:         "wctrack"
-  AlphaCut:             0.2
+  AlphaCut:             0.226893  # previously 0.2
   MinTrackLengthZProj:  4.0
   MinUpstreamZ:         2.0
   MaxUpstreamZ:         6.0
   CircularCutXCenter:   1.6
   CircularCutYCenter:   -0.17
-  CircularCutRadius:    3.5
-  UniqueMatchMode:      true
+  CircularCutRadius:    5.0       # previously 3.5
+  UniqueMatchMode:      false
 }

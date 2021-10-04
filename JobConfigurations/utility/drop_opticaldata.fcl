@@ -42,6 +42,6 @@ outputs:
 
 outputs.out1.outputCommands:  [
    "keep *_*_*_*",
-   "drop raw::OpDetPulse_*_*_*"
+   "drop raw::OpDetPulses_*_*_*"
 ]
 
