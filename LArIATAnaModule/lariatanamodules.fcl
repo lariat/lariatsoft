@@ -34,6 +34,7 @@ lariat_anatree:
     SaveTrackCalorimetry:     true
     SaveTrack3DSpacePoints:     false
     SaveTrackTrajectories:      false
+    SelectBeamlineMassRange:  [ -9, -9 ] # Only save events with beamline mass in this range
 }
 
 lariat_anatreeuc:

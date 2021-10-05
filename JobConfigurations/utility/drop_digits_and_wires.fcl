@@ -9,7 +9,7 @@
 
 #include "services_lariat.fcl"
 
-process_name: DropWiresAndDigits
+process_name: DropDigitsAndWires
 
 services:
 {

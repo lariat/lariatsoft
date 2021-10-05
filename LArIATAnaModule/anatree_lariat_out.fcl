@@ -5,11 +5,11 @@ outputs:
   out1:
   {
     module_type: RootOutput
-    fileName:    "%ifb-%tc.root"
+    fileName:    "%ifb_Out.root"
     dataTier:    "reconstructed"
     compressionLevel: 1
   }
 }
 
-physics.end_paths: [ ana, stream1 ]
+physics.end_paths: [ stream1, ana ]
 

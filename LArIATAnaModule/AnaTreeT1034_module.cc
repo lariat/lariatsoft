@@ -138,13 +138,16 @@ private:
   bool  fSaveTrack3DSpacePoints;
   bool  fSaveTrackCalorimetry;
   bool  fSaveTrackTrajectories;
-   
+
+  // === Select mass range to save to tree
+  std::vector<float> fSelectBeamlineMassRange;
+
   //=== Storing Run Information ===
   int run;			          //<---Run Number
   int subrun;			        //<---SubRun Number
   int event;			        //<---Event Number
   double evttime;		      //<---Event Time (UNIX time)
-  float trig_timestamp;   //<---Trigger timestmap within spill (0-60sec)
+  //float trig_timestamp;   //<---Trigger timestmap within spill (0-60sec)
   float efield;		        //<---Electric Field
   float lifetime;         //<---Electron lifetime
   int t0;
@@ -230,11 +233,11 @@ private:
 
   // === Storing 2-d Cluster Information ===
   int    nclus;
+  int   cluplane[kMaxCluster];
   float clustertwire[kMaxCluster];
   float clusterttick[kMaxCluster];
   float cluendwire[kMaxCluster];
   float cluendtick[kMaxCluster];
-  int    cluplane[kMaxCluster];
 
 
   // === Storing Wire Chamber Track Information ===
@@ -281,7 +284,7 @@ private:
 
   // === Storing Time of Flight information ===
   int   ntof;
-  float tof_time[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
+  float tof[kMaxTOF];		//<---The TOF calculated (in ns?) for this TOF object
   float tof_timestamp[kMaxTOF];	//<---Time Stamp for this TOF object
 
   // === Storing calculated beamline mass ===
@@ -479,6 +482,7 @@ void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
   fSaveTrackCalorimetry         = pset.get< bool >      ("SaveTrackCalorimetry",  true);
   fSaveTrackTrajectories        = pset.get< bool >      ("SaveTrackTrajectories", false);
   fSaveTrack3DSpacePoints       = pset.get< bool >      ("SaveTrack3DSpacePoints",false);
+  fSelectBeamlineMassRange      = pset.get< std::vector<float> > ("SelectBeamlineMassRange",{-9,-9}); 
   fHitsModuleLabel              = pset.get< std::string >("HitsModuleLabel");
   fTrackModuleLabel             = pset.get< std::string >("TrackModuleLabel");
   fCalorimetryModuleLabel       = pset.get< std::string >("CalorimetryModuleLabel");
@@ -527,7 +531,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   efield      = detprop->Efield(0);
   lifetime    = detprop->ElectronLifetime();
   t0          = detprop->TriggerOffset();
-  
+ 
+  /*
   // Get the timestamp (within the spill cycle) from the opdetpulse
   // objects because I don't know where else this info is saved!
   art::Handle< std::vector< raw::OpDetPulse >> opdetHandle;
@@ -537,6 +542,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     art::Ptr< raw::OpDetPulse > ThePulsePtr(opdetHandle,0); 
     trig_timestamp = ((float)(*ThePulsePtr).PMTFrame()*8.)/1.0e09;
   }
+  */
 
   std::cout<<std::endl;
   std::cout<<"========================================="<<std::endl;
@@ -605,9 +611,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
   // ####################################################
 
   art::Handle< std::vector<ldp::TOF> > TOFColHandle;
-  std::vector<art::Ptr<ldp::TOF> > tof;
+  std::vector<art::Ptr<ldp::TOF> > toflist;
   if(evt.getByLabel(fTOFModuleLabel,TOFColHandle))
-    {art::fill_ptr_vector(tof, TOFColHandle);}
+    {art::fill_ptr_vector(toflist, TOFColHandle);}
 
   // ####################################################
   // ### Getting the Aerogel Information ###
@@ -1173,28 +1179,27 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     //							FILLING THE TIME OF FLIGHT INFORMATION
     // ----------------------------------------------------------------------------------------------------------------------------
     // ----------------------------------------------------------------------------------------------------------------------------
-    ntof = tof.size();
+    ntof = toflist.size();
     
     // ################################
     // ### Looping over TOF objects ###
     // ################################
     size_t tof_counter = 0; // book-keeping
-    for(size_t i = 0; i < tof.size(); i++) {
+    for(size_t i = 0; i < toflist.size(); i++) {
       
-      size_t number_tof = tof[i]->NTOF();
+      size_t number_tof = toflist[i]->NTOF();
   
       for (size_t tof_idx = 0; tof_idx < number_tof; ++tof_idx) {
-        tof_time[tof_counter]       =  tof[i]->SingleTOF(tof_idx);
-        tof_timestamp[tof_counter]  = tof[i]->TimeStamp(tof_idx);
-        //cTOF[tof_counter] = tof_timestamp[tof_counter]*0.299792; //<-- Why are we saving this to tree?
+        tof[tof_counter]       =  toflist[i]->SingleTOF(tof_idx);
+        tof_timestamp[tof_counter]  = toflist[i]->TimeStamp(tof_idx)/1.0e9; // this is saved in "trig_timestamp" now
         ++tof_counter;
       } // loop over TOF
   
     }//<---End tof_count loop
-  
+    
     // Beamline Mass info
     if ( ntof == 1 && nwctrks == 1) 
-      beamline_mass = fBeamlineMassAlg.GetMass(tof_time[0], wctrk_momentum[0]);
+      beamline_mass = fBeamlineMassAlg.GetMass(tof[0], wctrk_momentum[0]);
     
   }// Beamline Info
 
@@ -1699,7 +1704,18 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     
   } catch (art::Exception const&e){ }
 
-  fTree->Fill();
+  // ================================
+  // Save to TTree if beamline mass
+  // within selection range
+  bool flag = true;
+  if( fSelectBeamlineMassRange.size()==2 ) {
+    float m1  = fSelectBeamlineMassRange[0];
+    float m2  = fSelectBeamlineMassRange[1];
+    if( m1 > 0 && beamline_mass < m1 ) flag = false;
+    if( m2 > 0 && beamline_mass > m2 ) flag = false;
+  }
+  if( flag ) fTree->Fill();
+
 }
 
 
@@ -1715,7 +1731,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("subrun",&subrun,"subrun/I");
   fTree->Branch("event",&event,"event/I");
   fTree->Branch("evttime",&evttime,"evttime/D");
-  fTree->Branch("trig_timestamp",&trig_timestamp,"trig_timestamp/F");
+  //fTree->Branch("trig_timestamp",&trig_timestamp,"trig_timestamp/F");
   fTree->Branch("efield",&efield,"efield/F");
   fTree->Branch("lifetime",&lifetime,"lifetime/F");
   fTree->Branch("t0",&t0,"t0/I");
@@ -1827,7 +1843,7 @@ void lariat::AnaTreeT1034::beginJob()
     fTree->Branch("wctrk_ZDist",wctrk_ZDist,"wctrk_ZDist[nwctrks]/F");
     fTree->Branch("wctrk_YKink",wctrk_YKink,"wctrk_YKink[nwctrks]/F");
     fTree->Branch("ntof", &ntof, "ntof/I");
-    fTree->Branch("tof_time", tof_time, "tof_time[ntof]/F");
+    fTree->Branch("tof", tof, "tof[ntof]/F");
     fTree->Branch("tof_timestamp", tof_timestamp, "tof_timestamp[ntof]/F"); 
     if( fSaveWireChamberHits ) {
       fTree->Branch("XWireHist",XWireHist,"XWireHist[nwctrks][1000]/F");
@@ -2023,7 +2039,7 @@ void lariat::AnaTreeT1034::ResetVars()
   event = -99999;
   evttime = -99999;
   lifetime = -999;
-  trig_timestamp = -999;
+  //trig_timestamp = -999;
   efield = -99999;
   t0 = -99999;
   nclus = 0;
@@ -2066,7 +2082,7 @@ void lariat::AnaTreeT1034::ResetVars()
       trjPt_Z[i][j] = -99999;
     }
     for (int j = 0; j<2; ++j){
-      ntrkcalopts[i][j] = -99999; 
+      ntrkcalopts[i][j] = -9; 
       trkke[i][j] = -99999;
       trkpida[i][j] = -99999;
       for (int k = 0; k<1000; ++k){
@@ -2155,11 +2171,8 @@ void lariat::AnaTreeT1034::ResetVars()
   beamline_mass = -99999;
   for (int i = 0; i < kMaxTOF; i++)
     {
-      tof_time[i] = -99999;
+      tof[i] = -99999;
       tof_timestamp[i] = -99999;
-      //cTOF[i] = -99999;
-
-
     }//<---End i loop
 
   nAG = 0;
