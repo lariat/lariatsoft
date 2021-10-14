@@ -123,7 +123,7 @@ private:
   float TrajLengthInTpcAV(const simb::MCParticle*);
   bool  IsPointInTpcAV(const simb::MCParticle*, int);
   bool  IsPointInTpcAV(TVector3&);
-  
+
   // === Storing information into TTree ====
   TTree* fTree;
   
@@ -1604,25 +1604,26 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // If this is MC, map hit to its G4 Track ID
       if(!evt.isRealData()){
         std::vector<sim::TrackIDE> trackIDEs = bt_serv->HitToTrackIDEs(hitlist[i]);
-        if( !trackIDEs.size() ) break;
-        // Loop through and find the leading TrackIDE, and keep
-        // track of the total energy of ALL IDEs.
-        float maxe = 0;
-        float bestfrac = 0;
-        int bestid = 0;
-        int ne = 0;
-        for(size_t i = 0; i < trackIDEs.size(); ++i){
-          ne += trackIDEs[i].numElectrons;
-          if( trackIDEs[i].energy > maxe ) {
-            maxe = trackIDEs[i].energy;
-            bestfrac = trackIDEs[i].energyFrac;
-            bestid = trackIDEs[i].trackID;
+        if( trackIDEs.size() ) {
+          // Loop through and find the leading TrackIDE, and keep
+          // track of the total energy of ALL IDEs.
+          float maxe = 0;
+          float bestfrac = 0;
+          int bestid = 0;
+          int ne = 0;
+          for(size_t i = 0; i < trackIDEs.size(); ++i){
+            ne += trackIDEs[i].numElectrons;
+            if( trackIDEs[i].energy > maxe ) {
+              maxe = trackIDEs[i].energy;
+              bestfrac = trackIDEs[i].energyFrac;
+              bestid = trackIDEs[i].trackID;
+            }
           }
+          hit_g4id[i] = bestid;
+          hit_frac[i] = bestfrac;
+          hit_energy[i] = maxe;
+          hit_nelec[i] = ne;
         }
-        hit_g4id[i] = bestid;
-        hit_frac[i] = bestfrac;
-        hit_energy[i] = maxe;
-        hit_nelec[i] = ne;
       }
 
       /*
