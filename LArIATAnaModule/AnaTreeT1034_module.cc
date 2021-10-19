@@ -2086,7 +2086,7 @@ void lariat::AnaTreeT1034::ResetVars()
       ntrkcalopts[i][j] = -9; 
       trkke[i][j] = -99999;
       trkpida[i][j] = -99999;
-      for (int k = 0; k<1000; ++k){
+      for (int k = 0; k<500; ++k){
         trkdedx[i][j][k] = -99999;
         trkdqdx[i][j][k] = -99999;
         trkrr[i][j][k] = -99999;
