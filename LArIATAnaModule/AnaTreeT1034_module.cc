@@ -1419,6 +1419,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
         
         // ### Looping over each calorimetry point (similar to SpacePoint) ###
         for (size_t j = 0; j<calos.size(); ++j){
+
+
           // ### If we don't have calorimetry information for this plane skip ###
           if (!calos[j]->PlaneID().isValid) continue;
           
@@ -1438,8 +1440,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           // ### Looping over all the calorimetry points ###
           // ###############################################
           for (size_t k = 0; k<calos[j]->dEdx().size(); ++k){
-            // ### If we go over 1000 points just skip them ###
-            if (k>=kMaxTrajHits) continue;
+            
+            // ### If we go over 500 points just skip them ###
+            if (k>=500) continue;
 		    
             // ### Recording the dE/dX information for this calo point along the track in this plane ###
             trkdedx[i][pl][k] = calos[j]->dEdx()[k];
@@ -1455,7 +1458,7 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
             trkxyz[i][pl][k][2] = calos[j]->XYZ()[k].Z();
           }//<---End calo points (k)
 		  
-        }//<---End looping over calo points (j)
+        }//<---End looping over calo objects (j)
 	    
       }//<---End checking Calo info is valid 
 
