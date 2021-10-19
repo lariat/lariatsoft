@@ -184,11 +184,11 @@ private:
   int ntrkcalopts[kMaxTrack][2];      //<--- Number of calorimetry points (per plane) for dEdx, dQdx, rr
   float trkpida[kMaxTrack][2];        //<--- Track PIDA score
   float trkke[kMaxTrack][2];          //<--- Track kinetic energy deposited
-  float trkdedx[kMaxTrack][2][1000];  //<--- Track dE/dx
-  float trkdqdx[kMaxTrack][2][1000];  //<--- Track dQ/dx
-  float trkrr[kMaxTrack][2][1000];    //<--- Track residual range
-  float trkpitch[kMaxTrack][2][1000]; //<--- Track pitch
-  float trkxyz[kMaxTrack][2][1000][3];//<--- Track XYZ information from calorimetry
+  float trkdedx[kMaxTrack][2][500];  //<--- Track dE/dx
+  float trkdqdx[kMaxTrack][2][500];  //<--- Track dQ/dx
+  float trkrr[kMaxTrack][2][500];    //<--- Track residual range
+  float trkpitch[kMaxTrack][2][500]; //<--- Track pitch
+  float trkxyz[kMaxTrack][2][500][3];//<--- Track XYZ information from calorimetry
 
   // === Storing trajectory information for the track ===
   int nTrajPoint[kMaxTrack];			        //<---Storing the number of trajectory points
