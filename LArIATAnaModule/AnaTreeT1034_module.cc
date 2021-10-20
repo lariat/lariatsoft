@@ -1438,12 +1438,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           // ###############################################
           // ### Looping over all the calorimetry points ###
           // ###############################################
-          std::cout<<"Calo object "<<j<<" has "<<calos[j]->dEdx().size()<<" points\n";
           for (size_t k = 0; k<calos[j]->dEdx().size(); ++k){
             
-            std::cout<<"  "<<k<<"  rr: "<<calos[j]->ResidualRange()[k]<<"   dEdx: "<<calos[j]->dEdx()[k]<<"\n";
-
-            // ### If we go over 500 points just skip them ###
+            // ### If we go over 1000 points just skip them ###
             if (k>=kMaxTrackHits) continue;
 		    
             // ### Recording the dE/dX information for this calo point along the track in this plane ###
