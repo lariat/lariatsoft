@@ -84,7 +84,7 @@
 
 const int kMaxTrack      = 10000;     //maximum number of tracks
 const int kMaxHits       = 20000;    //maximum number of hits
-const int kMaxTrackHits  = 500;      //maximum number of space points
+const int kMaxTrackHits  = 1000;      //maximum number of space points
 const int kMaxTrajHits   = 1000;     //maximum number of trajectory points
 const int kMaxCluster    = 1000;     //maximum number of clusters
 const int kMaxWCTracks   = 1000;     //maximum number of wire chamber tracks
@@ -184,11 +184,11 @@ private:
   int ntrkcalopts[kMaxTrack][2];      //<--- Number of calorimetry points (per plane) for dEdx, dQdx, rr
   float trkpida[kMaxTrack][2];        //<--- Track PIDA score
   float trkke[kMaxTrack][2];          //<--- Track kinetic energy deposited
-  float trkdedx[kMaxTrack][2][500];  //<--- Track dE/dx
-  float trkdqdx[kMaxTrack][2][500];  //<--- Track dQ/dx
-  float trkrr[kMaxTrack][2][500];    //<--- Track residual range
-  float trkpitch[kMaxTrack][2][500]; //<--- Track pitch
-  float trkxyz[kMaxTrack][2][500][3];//<--- Track XYZ information from calorimetry
+  float trkdedx[kMaxTrack][2][kMaxTrackHits];  //<--- Track dE/dx
+  float trkdqdx[kMaxTrack][2][kMaxTrackHits];  //<--- Track dQ/dx
+  float trkrr[kMaxTrack][2][kMaxTrackHits];    //<--- Track residual range
+  float trkpitch[kMaxTrack][2][kMaxTrackHits]; //<--- Track pitch
+  float trkxyz[kMaxTrack][2][kMaxTrackHits][3];//<--- Track XYZ information from calorimetry
 
   // === Storing trajectory information for the track ===
   int nTrajPoint[kMaxTrack];			        //<---Storing the number of trajectory points
@@ -1420,7 +1420,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
         // ### Looping over each calorimetry point (similar to SpacePoint) ###
         for (size_t j = 0; j<calos.size(); ++j){
 
-
           // ### If we don't have calorimetry information for this plane skip ###
           if (!calos[j]->PlaneID().isValid) continue;
           
@@ -1439,10 +1438,13 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           // ###############################################
           // ### Looping over all the calorimetry points ###
           // ###############################################
+          std::cout<<"Calo object "<<j<<" has "<<calos[j]->dEdx().size()<<" points\n";
           for (size_t k = 0; k<calos[j]->dEdx().size(); ++k){
             
+            std::cout<<"  "<<k<<"  rr: "<<calos[j]->ResidualRange()[k]<<"   dEdx: "<<calos[j]->dEdx()[k]<<"\n";
+
             // ### If we go over 500 points just skip them ###
-            if (k>=500) continue;
+            if (k>=kMaxTrackHits) continue;
 		    
             // ### Recording the dE/dX information for this calo point along the track in this plane ###
             trkdedx[i][pl][k] = calos[j]->dEdx()[k];
@@ -1769,26 +1771,26 @@ void lariat::AnaTreeT1034::beginJob()
     fTree->Branch("ntrkcalopts",ntrkcalopts,"ntrkcalopts[ntracks_reco][2]/I");
     fTree->Branch("trkpida",trkpida,"trkpida[ntracks_reco][2]/F");
     fTree->Branch("trkke",trkke,"trkke[ntracks_reco][2]/F");
-    fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][500]/F");
-    fTree->Branch("trkdqdx",trkdqdx,"trkdqdx[ntracks_reco][2][500]/F");
-    fTree->Branch("trkrr",trkrr,"trkrr[ntracks_reco][2][500]/F");
-    fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2][500]/F");
-    fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][500][3]/F");
+    fTree->Branch("trkdedx",trkdedx,"trkdedx[ntracks_reco][2][1000]/F");
+    fTree->Branch("trkdqdx",trkdqdx,"trkdqdx[ntracks_reco][2][1000]/F");
+    fTree->Branch("trkrr",trkrr,"trkrr[ntracks_reco][2][1000]/F");
+    fTree->Branch("trkpitch",trkpitch,"trkpitch[ntracks_reco][2][1000]/F");
+    fTree->Branch("trkxyz",trkxyz,"trkxyz[ntracks_reco][2][1000][3]/F");
   }
   if( fSaveTrack3DSpacePoints ) {
     fTree->Branch("ntrkpts",&ntrkpts,"ntrkpts[ntracks_reco]/I");
-    fTree->Branch("trkx",trkx,"trkx[ntracks_reco][500]/F");
-    fTree->Branch("trky",trky,"trky[ntracks_reco][500]/F");
-    fTree->Branch("trkz",trkz,"trkz[ntracks_reco][500]/F");
+    fTree->Branch("trkx",trkx,"trkx[ntracks_reco][1000]/F");
+    fTree->Branch("trky",trky,"trky[ntracks_reco][1000]/F");
+    fTree->Branch("trkz",trkz,"trkz[ntracks_reco][1000]/F");
   }
   if( fSaveTrackTrajectories ){
     fTree->Branch("nTrajPoint", &nTrajPoint, "nTrajPoint[ntracks_reco]/I");
-    fTree->Branch("pHat0_X", pHat0_X, "pHat0_X[ntracks_reco][500]/F");
-    fTree->Branch("pHat0_Y", pHat0_Y, "pHat0_Y[ntracks_reco][500]/F");
-    fTree->Branch("pHat0_Z", pHat0_Z, "pHat0_Z[ntracks_reco][500]/F");
-    fTree->Branch("trjPt_X", trjPt_X, "trjPt_X[ntracks_reco][500]/F");
-    fTree->Branch("trjPt_Y", trjPt_Y, "trjPt_Y[ntracks_reco][500]/F");
-    fTree->Branch("trjPt_Z", trjPt_Z, "trjPt_Z[ntracks_reco][500]/F");
+    fTree->Branch("pHat0_X", pHat0_X, "pHat0_X[ntracks_reco][1000]/F");
+    fTree->Branch("pHat0_Y", pHat0_Y, "pHat0_Y[ntracks_reco][1000]/F");
+    fTree->Branch("pHat0_Z", pHat0_Z, "pHat0_Z[ntracks_reco][1000]/F");
+    fTree->Branch("trjPt_X", trjPt_X, "trjPt_X[ntracks_reco][1000]/F");
+    fTree->Branch("trjPt_Y", trjPt_Y, "trjPt_Y[ntracks_reco][1000]/F");
+    fTree->Branch("trjPt_Z", trjPt_Z, "trjPt_Z[ntracks_reco][1000]/F");
   }
   
   fTree->Branch("nhits",&nhits,"nhits/I");
@@ -2086,10 +2088,10 @@ void lariat::AnaTreeT1034::ResetVars()
       trjPt_Z[i][j] = -99999;
     }
     for (int j = 0; j<2; ++j){
-      ntrkcalopts[i][j] = -9; 
+      ntrkcalopts[i][j] = 0; 
       trkke[i][j] = -99999;
       trkpida[i][j] = -99999;
-      for (int k = 0; k<500; ++k){
+      for (int k = 0; k<kMaxTrackHits; ++k){
         trkdedx[i][j][k] = -99999;
         trkdqdx[i][j][k] = -99999;
         trkrr[i][j][k] = -99999;
