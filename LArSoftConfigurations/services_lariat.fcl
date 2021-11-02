@@ -85,6 +85,8 @@ lariat_simulation_services:
  #OpDetResponseInterface:      @local::lariat_opdetresponse
  #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
+lariat_simulation_services.RandomNumberGenerator: {}
+lariat_simulation_services.TFileService: { fileName: "hist.root" } 
 lariat_simulation_services.DetectorPropertiesService.GetElectronlifetimeFromDB: false
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetV: 0.0
