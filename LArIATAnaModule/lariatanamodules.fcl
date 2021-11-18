@@ -22,7 +22,7 @@ lariat_anatree:
     MCShowerModuleLabel:      "mcreco"
     WC2TPCModuleLabel:	      "wctracktpctrackmatch"
     WCQualityProducerLabel:   "wcquality"
-    CalorimetryAlg:           @local::standard_calorimetryalgmc
+    CalorimetryAlg:           @local::lariat_calorimetryalgdata
     BeamlineMassAlg:          @local::lariat_beamlinemassalg
     SaveBeamlineInfo:         true
     SaveWireChamberHits:        false

@@ -1,0 +1,2 @@
+#include "anatree_lariat.fcl"
+physics.analyzers.anatree.CalorimetryAlg: @local::lariat_calorimetryalgdata_run2

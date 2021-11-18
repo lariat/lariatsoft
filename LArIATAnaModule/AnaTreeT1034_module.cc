@@ -214,6 +214,7 @@ private:
   int    hit_clusterid[kMaxHits];  //<---cluster ID associated with hit (NEED TO GET WORKING!)
   float  hit_peakT[kMaxHits];	//<---Peak Time of the hit (in drift ticks)
   float  hit_charge[kMaxHits];	//<---Number of ADC's assoicated with the hit (not in units of actual charge)
+  float  hit_electrons[kMaxHits];	//<---Number of electrons in hit using CalAreaConstants
   float  hit_ph[kMaxHits];	//<---Amplitude of the hit (usually the gaussian associated with the hit)
   float  hit_rms[kMaxHits]; // <---Hit width (RMS) in time-ticks
   float  hit_tstart[kMaxHits];	//<---Start time of the hit (in drift ticks)
@@ -227,9 +228,9 @@ private:
   float  hit_y[kMaxHits];        //<---hit y coordinate
   float  hit_z[kMaxHits];        //<---hit z coordinate
   int    hit_g4id[kMaxHits];    //<--- G4 Track ID that made this hit
-  float  hit_frac[kMaxHits];    //<--- Fraction of hit energy contributed by leading MCParticle (g4id)
-  float  hit_nelec[kMaxHits];   //<--- Number of electrons collected at wire
-  float  hit_energy[kMaxHits];  //<--- True deposited energy of hit
+  float  hit_g4frac[kMaxHits];    //<--- Fraction of hit energy contributed by leading MCParticle (g4id)
+  float  hit_g4nelec[kMaxHits];   //<--- Number of electrons collected at wire
+  float  hit_g4energy[kMaxHits];  //<--- True deposited energy of hit
 
   // === Storing 2-d Cluster Information ===
   int    nclus;
@@ -451,7 +452,7 @@ private:
   std::string fSimChanModuleLabel; // Producer that makes SimIDE information
   std::string fWC2TPCModuleLabel;	// Producer which creates an association between WC and TPC Track
 
-  calo::CalorimetryAlg fCalorimetryAlg;
+  calo::CalorimetryAlg fCaloAlg;
   BeamlineMassAlg      fBeamlineMassAlg;
 
 };
@@ -459,7 +460,7 @@ private:
 
 lariat::AnaTreeT1034::AnaTreeT1034(fhicl::ParameterSet const & pset)
   : EDAnalyzer(pset)
-  , fCalorimetryAlg(pset.get<fhicl::ParameterSet>("CalorimetryAlg"))
+  , fCaloAlg(pset.get<fhicl::ParameterSet>("CalorimetryAlg"))
   , fBeamlineMassAlg(pset.get<fhicl::ParameterSet>("BeamlineMassAlg"))
 {
   this->reconfigure(pset);
@@ -1528,8 +1529,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
         for (size_t h = 0; h < vhit.size(); ++h){
           if (vhit[h].key()<kMaxHits){
             if (vmeta[h]->Dx()){
-              hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCalorimetryAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
-              hit_dEds[vhit[h].key()] = fCalorimetryAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
+              hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCaloAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
+              hit_dEds[vhit[h].key()] = fCaloAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
             }
             hit_trkid[vhit[h].key()] = i;
             hit_ds[vhit[h].key()] = vmeta[h]->Dx();
@@ -1592,16 +1593,17 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
     // cet::maybe_ref<raw::RawDigit const> rdref(ford.at(i));
       unsigned int channel = hitlist[i]->Channel();
       geo::WireID wireid = hitlist[i]->WireID();
-      hit_plane[i]   = wireid.Plane;
-      hit_wire[i]    = wireid.Wire;
-      hit_channel[i] = channel;
-      hit_peakT[i]   = hitlist[i]->PeakTime();
-      hit_driftT[i]  = hitlist[i]->PeakTime()-detprop->GetXTicksOffset(wireid.Plane,0,0);
-      hit_charge[i]  = hitlist[i]->Integral();
-      hit_ph[i]      = hitlist[i]->PeakAmplitude();
-      hit_tstart[i]  = hitlist[i]->StartTick();
-      hit_tend[i]    = hitlist[i]->EndTick();
-      hit_rms[i]     = hitlist[i]->RMS();
+      hit_plane[i]    = wireid.Plane;
+      hit_wire[i]     = wireid.Wire;
+      hit_channel[i]  = channel;
+      hit_peakT[i]    = hitlist[i]->PeakTime();
+      hit_driftT[i]   = hitlist[i]->PeakTime()-detprop->GetXTicksOffset(wireid.Plane,0,0);
+      hit_charge[i]   = hitlist[i]->Integral();
+      hit_electrons[i]= fCaloAlg.ElectronsFromADCArea(hitlist[i]->Integral(),wireid.Plane); 
+      hit_ph[i]       = hitlist[i]->PeakAmplitude();
+      hit_tstart[i]   = hitlist[i]->StartTick();
+      hit_tend[i]     = hitlist[i]->EndTick();
+      hit_rms[i]      = hitlist[i]->RMS();
 
       // If this is MC, map hit to its G4 Track ID
       if(!evt.isRealData()){
@@ -1622,9 +1624,9 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
             }
           }
           hit_g4id[i] = bestid;
-          hit_frac[i] = bestfrac;
-          hit_energy[i] = maxe;
-          hit_nelec[i] = ne;
+          hit_g4frac[i] = bestfrac;
+          hit_g4energy[i] = maxe;
+          hit_g4nelec[i] = ne;
         }
       }
 
@@ -1797,12 +1799,13 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("hit_peakT",hit_peakT,"hit_peakT[nhits]/F");
   fTree->Branch("hit_driftT",hit_driftT,"hit_driftT[nhits]/F");
   fTree->Branch("hit_charge",hit_charge,"hit_charge[nhits]/F");
+  fTree->Branch("hit_electrons",hit_electrons,"hit_electrons[nhits]/F");
   fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/F");
   fTree->Branch("hit_rms",hit_rms,"hit_rms[nhits]/F");
   fTree->Branch("hit_g4id",hit_g4id,"hit_g4id[nhits]/I");
-  fTree->Branch("hit_frac",hit_frac,"hit_frac[nhits]/F");
-  fTree->Branch("hit_nelec",hit_nelec,"hit_nelec[nhits]/F");
-  fTree->Branch("hit_energy",hit_energy,"hit_energy[nhits]/F");
+  fTree->Branch("hit_g4frac",hit_g4frac,"hit_g4frac[nhits]/F");
+  fTree->Branch("hit_g4nelec",hit_g4nelec,"hit_g4nelec[nhits]/F");
+  fTree->Branch("hit_g4energy",hit_g4energy,"hit_g4energy[nhits]/F");
   fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/F");
   fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/F");
   fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
@@ -2109,6 +2112,7 @@ void lariat::AnaTreeT1034::ResetVars()
     hit_peakT[i] = -99999;
     hit_driftT[i] = -99999;
     hit_charge[i] = -99999;
+    hit_electrons[i] = -99999;
     hit_ph[i]     = -9999;
     hit_trkid[i]  = -9;
     hit_clusterid[i] = -999;
@@ -2119,10 +2123,6 @@ void lariat::AnaTreeT1034::ResetVars()
     //hit_ch[i] = -99999;
     //hit_fwhh[i] = -99999;
     hit_rms[i] = -999;
-    hit_g4id[i] = -999;
-    hit_frac[i] = -999;
-    hit_nelec[i] = -999;
-    hit_energy[i] = -999;
     hit_dQds[i] = -999;
     hit_dEds[i] = -999;
     hit_ds[i] = -999;
@@ -2130,6 +2130,10 @@ void lariat::AnaTreeT1034::ResetVars()
     hit_x[i] = -999;
     hit_y[i] = -999;
     hit_z[i] = -999;
+    hit_g4id[i] = -999;
+    hit_g4frac[i] = -999;
+    hit_g4nelec[i] = -999;
+    hit_g4energy[i] = -999;
   }
 
   nwctrks = 0;
