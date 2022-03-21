@@ -10,8 +10,8 @@ lariat_gaushitfinder: @local::gaus_hitfinder
 lariat_gaushitfinder.FilterHits:                  false
 lariat_gaushitfinder.AllHitsInstanceName:         ""
 lariat_gaushitfinder.HitFilterAlg.MinPulseSigma:  [ 6.0, 12.0 ]  
-lariat_gaushitfinder.PulseRatioCuts: [ 0, 0, 0 ]
-lariat_gaushitfinder.PulseHeightCuts: [ 3, 3, 3 ]
+lariat_gaushitfinder.PulseRatioCuts: [ 0, 0 ]
+lariat_gaushitfinder.PulseHeightCuts: [ 3, 3 ]
 lariat_gaushitfinder.HitFinderToolVec.CandidateHitsPlane0.RoiThreshold: 6.0
 lariat_gaushitfinder.HitFinderToolVec.CandidateHitsPlane1.RoiThreshold: 11.0    # thresholds for hit-finding
 
