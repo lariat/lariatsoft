@@ -7,8 +7,8 @@
 // from cetpkgsupport v1_08_06.
 ////////////////////////////////////////////////////////////////////////
 
-#ifndef WCTRACKBUILDERNEW_H
-#define WCTRACKBUILDERNEW_H
+#ifndef WCTRACKBUILDER_H
+#define WCTRACKBUILDER_H
 
 
 #include "art/Framework/Core/EDProducer.h"

@@ -1,0 +1,5 @@
+#include "data_multi_pass_reco_run2.fcl"
+
+physics.producers.wctrack.LoadBFieldFromDatabase:                 false
+physics.producers.wctrack.WCTrackBuilderAlg.BFieldInTesla:        0.2121 #.3361T for 100A .2121T for 60A
+physics.producers.wctrack.WCTrackBuilderAlg.MCMagneticFieldTesla: 0.2121

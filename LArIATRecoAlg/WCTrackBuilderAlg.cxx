@@ -80,7 +80,6 @@ void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
   fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
   fMCMagneticField      = pset.get<float >("MCMagneticFieldTesla", 0.0);
 
-
   //fCentralYKink         = pset.get<float >("CentralYKink",        -0.01    ); //These four are parameters from histos I produced from picky-good tracks
   //fSigmaYKink           = pset.get<float >("SigmaYKink",          0.03      );
   //fCentralYDist         = pset.get<float >("CentralYDist",        0.69      );
@@ -123,10 +122,18 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
 //if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}	
 //if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  	
 //if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
-  fB_field_tesla= (-.1538*pow(10,-4)*pow(current,3)+.2245*pow(10,-2)*pow(current,2)-.1012*current+36.59)*current/10000; // Doug Jensen's cubic equation for magnetic field as a function of current.
+  calculateBField(current);
   std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla <<std::endl;
-  
+
 }
+
+//-----------------------------------------------------------------------------
+void WCTrackBuilderAlg::calculateBField(float curr ) {
+  // Doug Jensen's cubic equation for magnetic field as function of current
+  fB_field_tesla= (-.1538*pow(10,-4)*pow(curr,3)+.2245*pow(10,-2)*pow(curr,2)-.1012*curr+36.59)*curr/10000;
+}
+
+
 float WCTrackBuilderAlg::GetScalingFactor()
 {
 
