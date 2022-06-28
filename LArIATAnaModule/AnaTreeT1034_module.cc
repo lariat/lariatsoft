@@ -231,7 +231,7 @@ private:
   float  hit_g4frac[kMaxHits];    //<--- Fraction of hit energy contributed by leading MCParticle (g4id)
   float  hit_g4nelec[kMaxHits];   //<--- Number of electrons collected at wire
   float  hit_g4energy[kMaxHits];  //<--- True deposited energy of hit
-
+ 
   // === Storing 2-d Cluster Information ===
   int    nclus;
   int   cluplane[kMaxCluster];
@@ -1354,11 +1354,14 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       //-----------------------------------------------------------------------
       // get track information
       //-----------------------------------------------------------------------
-      auto trackStartEnd = tracklist[i]->Extent();
+      //auto trackStartEnd = tracklist[i]->Extent();
       auto larStartEnd = tracklist[i]->Direction();
       // returns type std::pair<recob::Track::Point_t, recob::Track::Point_t>
       // returns type std::pair<recob::Track::Vector_t, recob::Track::Vector_t>
       
+      auto const& startPt = tracklist[i]->Vertex();
+      auto const& endPt   = tracklist[i]->End();
+
       // ### Storing an integer for the match of a WC to TPC track ###
       int trackMatch = 0;
       if(TempTrackMatchedID == tracklist[i]->ID() ){
@@ -1369,14 +1372,20 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       trkWCtoTPCMatch[i] = trackMatch;
 	
       // ### Recording the track vertex x, y, z location ###
-      trkvtxx[i]        = trackStartEnd.first.X();
-      trkvtxy[i]        = trackStartEnd.first.Y();
-      trkvtxz[i]        = trackStartEnd.first.Z();
+      //trkvtxx[i]        = trackStartEnd.first.X();
+      //trkvtxy[i]        = trackStartEnd.first.Y();
+      //trkvtxz[i]        = trackStartEnd.first.Z();
+      trkvtxx[i]        = startPt.X(); 
+      trkvtxy[i]        = startPt.Y();
+      trkvtxz[i]        = startPt.Z();
       
       // ### Recording the track end point x, y, z location ###
-      trkendx[i]        = trackStartEnd.second.X();
-      trkendy[i]        = trackStartEnd.second.Y();
-      trkendz[i]        = trackStartEnd.second.Z();
+      //trkendx[i]        = trackStartEnd.second.X();
+      //trkendy[i]        = trackStartEnd.second.Y();
+      //trkendz[i]        = trackStartEnd.second.Z();
+      trkendx[i]        = endPt.X(); 
+      trkendy[i]        = endPt.Y();
+      trkendz[i]        = endPt.Z();
       
       // ### Recording the directional cosine at the start of the track ###
       trkstartdcosx[i]  = larStartEnd.first.X();
@@ -1604,7 +1613,8 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       hit_tstart[i]   = hitlist[i]->StartTick();
       hit_tend[i]     = hitlist[i]->EndTick();
       hit_rms[i]      = hitlist[i]->RMS();
-
+      
+      
       // If this is MC, map hit to its G4 Track ID
       if(!evt.isRealData()){
         std::vector<sim::TrackIDE> trackIDEs = bt_serv->HitToTrackIDEs(hitlist[i]);
@@ -1630,82 +1640,12 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
         }
       }
 
-      /*
-      // ---------------------------------------------------------------------
-      // Removing this, since RawDigit associations are no longer saved in v08_38_01.
-      // TODO: re-write this section getting the RawDigit via associations between
-      // wires (ie, recob::Hit <--> recob::Wire <--> raw::RawDigits)
-      // ---------------------------------------------------------------------
-      if (hit_plane[i]==1){//collection plane
-        
-        if( rdref.isValid() ){
-          raw::RawDigit const& rd(rdref.ref());
-          int dataSize = rd.Samples();
-          short ped = rd.GetPedestal();
-          std::vector<short> rawadc(dataSize);
-          raw::Uncompress(rd.ADCs(),rawadc,rd.Compression());
-          int t0 = hit_peakT[i] - 3*(hit_peakT[i]-hit_tstart[i]);
-          if (t0<0) t0 = 0;
-          int t1 = hit_peakT[i] + 3*(hit_peakT[i]-hit_tstart[i]);
-          if (t1>=dataSize) t1 = dataSize-1;
-          hit_pk[i] = -1;
-          hit_t[i] = -1;
-          for (int j = t0; j<=t1; ++j){
-            if (rawadc[j]-ped>hit_pk[i]){
-              hit_pk[i] = rawadc[j]-ped;
-              hit_t[i] = j;
-            }
-          }
-          hit_ch[i] = 0;
-          hit_fwhh[i] = 0;
-          double mean_t = 0;
-          double mean_t2 = 0;
-          for (int j = t0; j<=t1; ++j){
-            if (rawadc[j]-ped>=0.5*hit_pk[i]){
-              ++hit_fwhh[i];
-            }
-            if (rawadc[j]-ped>=0.1*hit_pk[i]){
-              hit_ch[i] += rawadc[j]-ped;
-              mean_t += j*(rawadc[j]-ped);
-              mean_t2 += j*j*(rawadc[j]-ped);
-            }
-          }
-          mean_t/=hit_ch[i];
-          mean_t2/=hit_ch[i];
-          hit_rms[i] = sqrt(mean_t2-mean_t*mean_t);
-          if (!evt.isRealData()){
-            //	std::vector<sim::IDE> ides;
-            //	bt_serv->HitToSimIDEs(hitlist[i], ides);
-            hit_nelec[i] = 0;
-            hit_energy[i] = 0;
-            //	for (size_t j = 0; j<ides.size(); ++j){
-            //    hit_nelec[i] += ides[j].numElectrons;
-            //    hit_energy[i] += ides[j].energy;
-            //	}
-            const sim::SimChannel* chan = 0;
-            for(size_t sc = 0; sc < fSimChannels.size(); ++sc){
-              if(fSimChannels[sc]->Channel() == hitlist[i]->Channel()) chan = fSimChannels[sc];
-            }
-            if (chan){
-              const auto & tdcidemap = chan->TDCIDEMap();
-              for(auto mapitr = tdcidemap.begin(); mapitr != tdcidemap.end(); mapitr++){
-                // loop over the vector of IDE objects.
-
-                const std::vector<sim::IDE> & idevec = (*mapitr).second;
-
-                for(size_t iv = 0; iv < idevec.size(); ++iv){
-
-                  hit_nelec[i] += idevec[iv].numElectrons;
-                  hit_energy[i] += idevec[iv].energy;
-                }
-              }
-            }
-          }
-        } // if cet::maybe_ref is valid
-      }
-      */
 
     }//end loop over hits
+
+     
+     
+
     
   } catch (art::Exception const&e){ }
 
@@ -1821,7 +1761,7 @@ void lariat::AnaTreeT1034::beginJob()
   fTree->Branch("hit_x", hit_x, "hit_x[nhits]/F");
   fTree->Branch("hit_y", hit_y, "hit_y[nhits]/F");
   fTree->Branch("hit_z", hit_z, "hit_z[nhits]/F");
-
+ 
   if( fSaveBeamlineInfo ) {
     fTree->Branch("beamline_mass", &beamline_mass, "beamline_mass/F");
     fTree->Branch("nwctrks",&nwctrks,"nwctrks/I");

@@ -37,6 +37,40 @@ lariat_anatree:
     SelectBeamlineMassRange:  [ -9, -9 ] # Only save events with beamline mass in this range
 }
 
+lariat_anatree:
+{
+    module_type:              "AnaTreeT1034"
+    TreeName:                 "anatree"
+    TriggerUtility:           "FragmentToDigit"
+    HitsModuleLabel:          "gaushit"
+    TrackModuleLabel:         "pmtrack"
+    CalorimetryModuleLabel:   "calo"
+    ParticleIDModuleLabel:    "pid"
+    ClusterModuleLabel:       "trajcluster"
+    WCTrackLabel:             "wctrack"
+    TOFModuleLabel:	          "tof"
+    AGModuleLabel:            "agcounter"
+    G4ModuleLabel:            "largeant"
+    SimChanModuleLabel:       "largeant"
+    ShowerModuleLabel:        "showerreco"
+    MCShowerModuleLabel:      "mcreco"
+    WC2TPCModuleLabel:	      "wctracktpctrackmatch"
+    WCQualityProducerLabel:   "wcquality"
+    CalorimetryAlg:           @local::lariat_calorimetryalgdata
+    BeamlineMassAlg:          @local::lariat_beamlinemassalg
+    SaveBeamlineInfo:         true
+    SaveWireChamberHits:        false
+    SaveGeantInfo:            true
+    SaveGeantTrajectories:      false
+    SaveMCShowerInfo:           false 
+    SaveAerogelInfo:            false
+    SaveSimChannelInfo:       true
+    SaveTrackCalorimetry:     true
+    SaveTrack3DSpacePoints:     false
+    SaveTrackTrajectories:      false
+    SelectBeamlineMassRange:  [ -9, -9 ] # Only save events with beamline mass in this range
+}
+
 lariat_anatreeuc:
 {
     module_type:              "AnaTreeT1034UC"

@@ -1,0 +1,3 @@
+#include "data_multi_pass_reco_run1.fcl"
+
+physics.reco: [ @sequence::fullRecoNoBeam ] 
