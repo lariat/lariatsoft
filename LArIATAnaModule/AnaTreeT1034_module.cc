@@ -1533,20 +1533,34 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       // Find all associated hits and save information 
       // about the track they appear in...
       if (fmthm.isValid()){
-        auto vhit = fmthm.at(i);
-        auto vmeta = fmthm.data(i);
+        auto& vhit = fmthm.at(i);
+        auto& vmeta = fmthm.data(i);
         for (size_t h = 0; h < vhit.size(); ++h){
           if (vhit[h].key()<kMaxHits){
             if (vmeta[h]->Dx()){
               hit_dQds[vhit[h].key()] = vhit[h]->Integral()*fCaloAlg.LifetimeCorrection(vhit[h]->PeakTime())/vmeta[h]->Dx();
               hit_dEds[vhit[h].key()] = fCaloAlg.dEdx_AREA(vhit[h], vmeta[h]->Dx());
             }
-            hit_trkid[vhit[h].key()] = i;
-            hit_ds[vhit[h].key()] = vmeta[h]->Dx();
-            hit_resrange[vhit[h].key()] = tracklist[i]->Length(vmeta[h]->Index());
-            hit_x[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).X();
-            hit_y[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Y();
-            hit_z[vhit[h].key()] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Z();
+            // The hit "key" here doesn't correspond to the actual hitlist indices... 
+            // need to loop through and find the match (ugh)
+            int hit_index = -9;
+            for(size_t k=0; k<hitlist.size(); k++){
+              // consider only hits on same plane and wire
+              if( hitlist[k]->WireID().Plane != vhit[h]->WireID().Plane ) continue;
+              if( hitlist[k]->WireID().Wire  != vhit[h]->WireID().Wire ) continue;
+              // if the time matches up exactly, we found our hit
+              if( hitlist[k]->PeakTime() == vhit[h]->PeakTime() ){
+                hit_index = k;
+                break;
+              }
+            }
+            if( hit_index < 0 ) continue;
+            hit_trkid[hit_index] = i;
+            hit_ds[hit_index] = vmeta[h]->Dx();
+            hit_resrange[hit_index] = tracklist[i]->Length(vmeta[h]->Index());
+            hit_x[hit_index] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).X();
+            hit_y[hit_index] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Y();
+            hit_z[hit_index] = tracklist[i]->LocationAtPoint(vmeta[h]->Index()).Z();
           }
         }//loop over all hits
       }//fmthm is valid   
@@ -1614,7 +1628,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
       hit_tend[i]     = hitlist[i]->EndTick();
       hit_rms[i]      = hitlist[i]->RMS();
       
-      
       // If this is MC, map hit to its G4 Track ID
       if(!evt.isRealData()){
         std::vector<sim::TrackIDE> trackIDEs = bt_serv->HitToTrackIDEs(hitlist[i]);
@@ -1625,12 +1638,12 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           float bestfrac = 0;
           int bestid = 0;
           int ne = 0;
-          for(size_t i = 0; i < trackIDEs.size(); ++i){
-            ne += trackIDEs[i].numElectrons;
-            if( trackIDEs[i].energy > maxe ) {
-              maxe = trackIDEs[i].energy;
-              bestfrac = trackIDEs[i].energyFrac;
-              bestid = trackIDEs[i].trackID;
+          for(size_t j = 0; j < trackIDEs.size(); ++j){
+            ne += trackIDEs[j].numElectrons;
+            if( trackIDEs[j].energy > maxe ) {
+              maxe = trackIDEs[j].energy;
+              bestfrac = trackIDEs[j].energyFrac;
+              bestid = trackIDEs[j].trackID;
             }
           }
           hit_g4id[i] = bestid;
@@ -1639,7 +1652,6 @@ void lariat::AnaTreeT1034::analyze(art::Event const & evt)
           hit_g4nelec[i] = ne;
         }
       }
-
 
     }//end loop over hits
 
