@@ -1,0 +1,3 @@
+#include "mc_gen_prodsingle_beamlike.fcl" 
+physics.producers.generator.PDG:          [11]
+physics.producers.generator.P0:           [0.5964]

@@ -82,8 +82,6 @@ lariat_simulation_services:
  NuRandomService:              @local::random_NuRandomService
  ChannelStatusService:         @local::lariat_channel_filter
  SpaceCharge:                  @local::standard_spacecharge
- #OpDetResponseInterface:      @local::lariat_opdetresponse
- #UBOpticalChConfig:           @local::lariat_optical_ch_config
 }
 lariat_simulation_services.RandomNumberGenerator: {}
 lariat_simulation_services.TFileService: { fileName: "hist.root" } 
@@ -91,7 +89,7 @@ lariat_simulation_services.DetectorPropertiesService.GetElectronlifetimeFromDB: 
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services.DetectorPropertiesService.TimeOffsetV: 0.0
 lariat_simulation_services.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run1
-#lariat_simulation_services.LArG4Parameters.KeepEMShowerDaughters:   true
+lariat_simulation_services.LArG4Parameters.KeepEMShowerDaughters:   true
 #lariat_simulation_services.LArG4Parameters.StoreTrajectories:   true
 
 lariat_simulation_services_run2:  @local::lariat_simulation_services
@@ -99,7 +97,6 @@ lariat_simulation_services_run2.DetectorPropertiesService: @local::lariat_detpro
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetU: 0.0
 lariat_simulation_services_run2.DetectorPropertiesService.TimeOffsetV: 0.0
 lariat_simulation_services_run2.SignalShapingServiceT1034: @local::lariat_signalshapingservice_run2
-lariat_simulation_services_run2.LArG4Parameters.KeepEMShowerDaughters:  true
 
 # Magnet-specific service settings for MC
 lariat_simulation_services_run2_negative_100A:    @local::lariat_simulation_services_run2

@@ -1,0 +1,27 @@
+#include "mc_gen_prodsingle.fcl" 
+
+# "Beam-like" particle production starting from where WC4 is located
+# and directed toward the TPC front face. For more accurate beam MC
+# including data-driven angular distributions and pile-up muons, use
+# the DDMC framework.
+#
+# By default, simulate a 500 MeV/cm pion at -100cm
+
+physics.producers.generator.PDG:          [13]
+physics.producers.generator.P0:           [0.500]
+physics.producers.generator.SigmaP:       [0.0]
+physics.producers.generator.PDist:        0
+physics.producers.generator.X0:           [22.5]
+physics.producers.generator.Y0:           [0]
+physics.producers.generator.Z0:           [-100]
+physics.producers.generator.T0:           [0]
+physics.producers.generator.SigmaX:       [5]
+physics.producers.generator.SigmaY:       [5]
+physics.producers.generator.SigmaZ:       [0]
+physics.producers.generator.SigmaT:       [0]
+physics.producers.generator.PosDist:      0
+physics.producers.generator.Theta0XZ:     [0]
+physics.producers.generator.Theta0YZ:     [0]
+physics.producers.generator.SigmaThetaXZ: [5.0]
+physics.producers.generator.SigmaThetaYZ: [3.3]
+physics.producers.generator.AngleDist:    0
