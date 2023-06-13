@@ -1,0 +1,34 @@
+#include "services_lariat.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatanamodules.fcl"
+
+## You will write whatever name you want this process to be called 
+## It is important to note that the same process name cannot be called
+## twice on a ROOT file, so you may have to change this 
+process_name: ParticleDump
+
+services:
+{
+  TFileService: { fileName: "hist_%p_%tc.root" }
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+physics: 
+{
+  analyzers: 
+  {
+    pdump: @local::lariat_particledump
+  }
+
+  ana: [ pdump ] 
+  stream1: [ ]
+  trigger_paths: [ ] 
+  end_paths: [ ana ] 
+}
+

@@ -160,4 +160,11 @@ lariat_CalcXS:
 }
 lariat_anatree.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
 lariat_mcanalysis.CalorimetryAlg.CalAreaConstants: [0.0068,0.0153]
+
+lariat_particledump:
+{
+  module_type: "ParticleDump"
+}
+
+
 END_PROLOG
