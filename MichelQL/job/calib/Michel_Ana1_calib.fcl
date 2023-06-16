@@ -1,0 +1,15 @@
+#include "Michel_Ana.fcl"
+
+services.DetectorPropertiesService.GetElectronlifetimeFromDB: false
+
+physics.filters.michelana:              @local::lariat_michelana_run1
+physics.filters.michelana.LookAtTracks: false
+physics.filters.michelana.Req1StpTrk:   false
+physics.filters.michelana.MakeAveWfms:  true
+physics.filters.michelana.MskBaselineSubtr: false
+physics.filters.michelana.WfmSmoothingRange: 50
+
+physics.filt: [tfilt, michelana]
+physics.filters.tfilt.T1:   5.5
+physics.filters.tfilt.T2:   60.
+physics.filters.tfilt.RequireRawDigits: true

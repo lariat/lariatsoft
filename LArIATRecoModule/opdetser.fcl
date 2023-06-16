@@ -6,10 +6,6 @@ process_name: OpDetSER
 services:
 {
   TFileService: { fileName: "SER.root" }
-  TimeTracker:  {}
-  RandomNumberGenerator: {}
-  message:      @local::standard_info
-  scheduler:    {}
   @table::lariat_services
 }
 
@@ -38,7 +34,7 @@ physics:
 ################################################################
 # Single photoelectron calibration parameters
 
-physics.analyzers.ser.Verbose:                 false
+physics.analyzers.ser.Verbose:                 true
 
 # By default, look only at two PMTs (ch0 and ch1)
 physics.analyzers.ser.SelectChannels:	      [ 0,    1 ]
@@ -72,7 +68,7 @@ physics.analyzers.ser.RunningBaselineLength:   256
 # SER histogram ranges (x1,x2) and initial guesses for fit
 physics.analyzers.ser.SER_x1:                  [ -50.,   -50.,   -1500.  ] # ADC
 physics.analyzers.ser.SER_x2:                  [ 250.,   250.,   15000.  ] # ADC
-physics.analyzers.ser.PedestalMaxWidth:        [ 30.,     30.,   500     ] # ADC
+physics.analyzers.ser.PedestalMaxWidth:        [ 50.,     50.,   500     ] # ADC
 physics.analyzers.ser.Mean_set:                [ 50.,     50.,   4000    ] # ADC
 physics.analyzers.ser.Width_set:               [ 20.,     20.,   100.    ] # ADC
 

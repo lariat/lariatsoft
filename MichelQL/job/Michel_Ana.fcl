@@ -1,0 +1,73 @@
+#include "services_lariat.fcl"
+#include "caldata_lariat.fcl"
+#include "hitfindermodules_lariat.fcl"
+#include "lariatclustermodules.fcl"
+#include "trackfindermodules.fcl"
+#include "calorimetry.fcl"
+#include "particleid.fcl"
+#include "showerreco3d.fcl"
+#include "showerquality.fcl"
+#include "lariat_reco_algs.fcl"
+#include "lariatbeamlinereco.fcl"
+#include "services_lariat.fcl"
+#include "lariatcheckmodules.fcl"
+#include "triggeralgo_service.fcl"
+#include "lariatanamodules.fcl"
+#include "cluster_lariat.fcl"
+#include "showerfindermodules.fcl"
+#include "resourcetracking_services.fcl"
+#include "lariatfiltermodules.fcl"
+#include "michelana.fcl"
+ 
+process_name: Ana
+
+services:
+{
+  TFileService: { fileName: "MichelAna.root" }
+  @table::lariat_services
+}
+services.scheduler.SkipEvent: [ ProductNotFound ]
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
+
+physics:
+{
+
+ producers:
+ {
+ }
+
+ filters:
+ {
+    tfilt:      @local::lariat_timestampfilter  
+    michelana:  @local::lariat_michelana
+ }
+
+ analyzers:
+ {
+ }
+
+filt:          [ michelana ]
+ stream1:       [ out1 ]
+ trigger_paths: [ filt ] 
+ #end_paths:     [ stream1 ]  
+ end_paths:     [ ]
+}
+
+
+outputs:
+{
+ out1:
+ {
+   module_type: RootOutput
+   fileName:    "lariat_r%R_%tc_%#.root"
+   dataTier:    "reconstructed-2d"
+   SelectEvents: [ filt ]
+   compressionLevel: 1
+ }
+}

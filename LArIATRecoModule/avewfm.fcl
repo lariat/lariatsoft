@@ -1,0 +1,58 @@
+#include "services_lariat.fcl"
+#include "ophitbuilderalg.fcl"
+
+process_name: AveWfm
+
+services:
+{
+  TFileService: { fileName: "WfmAnalyzer.root" }
+  @table::lariat_services
+}
+
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        
+}
+
+outputs: {}
+
+physics:
+{
+  analyzers:
+  {
+    ser:
+    {
+      module_type:      OpDetSER
+      OpHitBuilderAlg: { }  
+    }
+  }
+  analysis:   [ ser ]
+  end_paths:  [ analysis ]
+}
+
+################################################################
+physics.analyzers.ser.Verbose:                true
+physics.analyzers.ser.FindSinglePEs:          false
+physics.analyzers.ser.AnalyzePhelWfm:         false
+physics.analyzers.ser.SaveAvePulses:          true
+physics.analyzers.ser.SubtractRunningBaseline:false
+physics.analyzers.ser.SubtractMaskedBaseline: false
+
+physics.analyzers.ser.AvePulse_preWindow:     200
+physics.analyzers.ser.AvePulse_postWindow:    5000
+physics.analyzers.ser.Timestamp_T1:           -1.2
+physics.analyzers.ser.Timestamp_T2:           -5.2
+physics.analyzers.ser.SmoothingRange:         1
+
+physics.analyzers.ser.SelectChannels:	      [ 1 ]
+physics.analyzers.ser.OpDetChannels:	      [ 0,    1 ]
+physics.analyzers.ser.OpDetPolarity:          [-1,    -1 ]
+physics.analyzers.ser.WfmAbsRMSCut:            [ 0.5,  0.5  ] # mV
+physics.analyzers.ser.PulseHitRMSThresh:      [ 3.0,  3.5  ] # xRMS
+physics.analyzers.ser.PrePE_RMSFactorCut:      [ 1.2,  1.2  ] # xRMS
+physics.analyzers.ser.PulseHitRMSThresh:       [ 3.0,  3.0  ] # xRMS
+physics.analyzers.ser.PulseHitThresh_high:     [ 5.,   5.   ] # mV
+
+
+

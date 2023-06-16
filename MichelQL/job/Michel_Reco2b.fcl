@@ -1,0 +1,13 @@
+#include "Michel_Reco.fcl"
+
+services:
+{
+  TFileService: { fileName: "histos.root" }
+  @table::lariat_services_run2
+}
+physics.filters.noisefilt.MinWireRmsCol:                               1.2
+physics.filters.noisefilt.MaxWireRmsCol:                               2.5
+physics.producers.caldata.dQdxCalibFileName:                "LArIATChargeCorrectionFactors_Run2.txt"
+physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgdata_run2
+physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgdata_run2
+

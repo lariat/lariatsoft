@@ -1,0 +1,2 @@
+#include "Michel_Ana.fcl"
+physics.filters.michelana:    @local::lariat_michelana_run1

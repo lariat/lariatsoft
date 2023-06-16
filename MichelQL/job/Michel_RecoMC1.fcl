@@ -1,0 +1,18 @@
+#include "Michel_Reco.fcl"
+
+services:
+{
+  TFileService: { fileName: "histos.root" }
+  @table::lariat_simulation_services
+}
+
+#physics.reco:                                               [ @sequence::tpcreco ]
+physics.filters.tfilt.RequireRawDigits:                         true
+physics.filters.tfilt.MinWireRms:                               0.
+physics.filters.tfilt.MaxWireRms:                               999.
+
+physics.producers.caldata.DodQdxCalib:                      false
+physics.producers.gaushit.HitFilterAlg.MinPulseSigma:       [  5.3, 10.7  ]   # peak RMS is ~11% SMALLER in MC
+
+physics.producers.calo.CaloAlg:                       @local::lariat_calorimetryalgmc_run1
+physics.producers.calotc.CaloAlg:                     @local::lariat_calorimetryalgmc_run1
