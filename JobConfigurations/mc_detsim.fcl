@@ -1,0 +1,8 @@
+#include "mc_gen.fcl"
+
+process_name: DetSim
+
+services.TFileService.fileName: "detsim_hist.root" 
+
+physics.simulate: [ largeant, daq, rns, mcreco ] 
+ 

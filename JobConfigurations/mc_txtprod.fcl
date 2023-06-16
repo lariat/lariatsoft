@@ -1,0 +1,12 @@
+#include "mc_gen.fcl"
+
+process_name: TextProd 
+
+services.TFileService.fileName: "textprod_hist.root" 
+
+physics.simulate: [generator]
+physics.producers.generator.InputFileName: "/lariat/data/users/wforeman/mcgen/negative_60a_pimue/txt/input_merged.txt"
+
+outputs.out1.fileProperties.maxEvents: 100
+outputs.out1.fileName: "%p_%tc_%#.root"
+ 

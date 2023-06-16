@@ -1,0 +1,8 @@
+#include "mc_detsim.fcl"
+
+services:
+{
+  TFileService: { fileName: "detsim_hist.root" }
+  RandomNumberGenerator: {} 
+  @table::lariat_simulation_services_run2
+}
