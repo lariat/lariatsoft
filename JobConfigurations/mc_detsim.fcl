@@ -4,5 +4,11 @@ process_name: DetSim
 
 services.TFileService.fileName: "detsim_hist.root" 
 
+source:
+{
+  module_type: RootInput
+  maxEvents:  -1        # Number of events to create
+}
+
 physics.simulate: [ largeant, daq, rns, mcreco ] 
  
