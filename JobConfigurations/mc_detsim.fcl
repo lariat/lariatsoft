@@ -11,4 +11,5 @@ source:
 }
 
 physics.simulate: [ largeant, daq, rns, mcreco ] 
- 
+
+outputs.out1.fileName:    "%ifb_%p_%tc.root"
