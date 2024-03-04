@@ -53,7 +53,7 @@ outputs:
 }
 
 # Model configuration:
-physics.producers.emtrkmichelid.PointIdAlg.NNetModelFile:      "/lariat/data/users/dsmith/nnclassifier/correct_sigmoid_may27.nnet"
+physics.producers.emtrkmichelid.PointIdAlg.NNetModelFile:      "/exp/lariat/data/users/dsmith/nnclassifier/correct_sigmoid_may27.nnet"
 physics.producers.emtrkmichelid.PointIdAlg.PatchSizeW:         32     # how many wires in patch
 physics.producers.emtrkmichelid.PointIdAlg.PatchSizeD:         40     # how many downsampled ADC entries
 physics.producers.emtrkmichelid.PointIdAlg.DriftWindow:        13      # downsampling window in drift ticks
