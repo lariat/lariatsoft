@@ -161,6 +161,7 @@ physics.producers.tof.HitMatchThresholdDS:  6.0
 physics.producers.tof.HitWait:              20.
 
 physics.producers.wctrack.PickyTracks:                            false
+physics.producers.wctrack.LoadBFieldFromDatabase:                 true
 physics.producers.wctrack.WCTrackBuilderAlg.BFieldInTesla:        0.3361 #.3361T for 100A .2121T for 60A
 physics.producers.wctrack.WCTrackBuilderAlg.MCMagneticFieldTesla: 0.3361 #.3361T for 100A .2121T for 60A. Make this the same as BFieldInTesla. 
 physics.producers.wctrack.WCTrackBuilderAlg.LEffective:           1143.7 
@@ -243,3 +244,17 @@ physics.producers.calo.FlipTrack_dQdx:        "true"
 physics.producers.wctracktpctrackuniquematch.UniqueMatchMode:     true
 
 physics.analyzers.anatree.SelectEvents:            [ reco ]
+  
+  # Shut up common error messages
+  services.message: {
+    destinations: {
+           STDCOUT: {
+              categories: {
+                 BackTracker: { limit: 0  reportEvery: 0 }
+                 ProjectionMatchingAlg: { limit: 0  reportEvery: 0 }
+              }
+              threshold: "WARNING"
+              type: "cout"
+           }
+    }
+  }

@@ -18,6 +18,7 @@
 #include "CLHEP/Units/SystemOfUnits.h"
 #include "larcorealg/Geometry/AuxDetGeo.h"
 #include "art_root_io/TFileService.h"
+#include "cetlib_except/exception.h"
 
 // LArIAT includes
 #include "LArIATRecoAlg/WCTrackBuilderAlg.h"
@@ -77,8 +78,8 @@ WCTrackBuilderAlg::~WCTrackBuilderAlg()
 void WCTrackBuilderAlg::reconfigure( fhicl::ParameterSet const& pset )
 {
 
-  fB_field_tesla        = pset.get<float >("BFieldInTesla",      0.       );
-  fMCMagneticField      = pset.get<float >("MCMagneticFieldTesla", 0.0);
+  fB_field_tesla        = pset.get<float >("BFieldInTesla",         0. );
+  fMCMagneticField      = pset.get<float >("MCMagneticFieldTesla",  0.0);
 
   //fCentralYKink         = pset.get<float >("CentralYKink",        -0.01    ); //These four are parameters from histos I produced from picky-good tracks
   //fSigmaYKink           = pset.get<float >("SigmaYKink",          0.03      );
@@ -114,22 +115,19 @@ void WCTrackBuilderAlg::loadXMLDatabaseTableForBField( int run, int subrun )
   try
   {
     current=(double)fabs(std::stod(fDatabaseUtility->GetIFBeamValue("mid_f_mc7an", fRun,fSubRun)));
+    std::cout<<"Current successfully retrieved from DB: "<<current<<"\n";
   }
-  catch(...){std::cout<<"Current is probably null. Setting to 0"<<std::endl; current=0;}
-  //double sc1=fabs(std::stod(fDatabaseUtility->GetIFBeamValue("end_f_mc7sc1",fRun,fSubRun)));
-//if(fabs(current)>90){fB_field_tesla= .003375*current;}
-//if(fabs(current)<90 && fabs(current)>70){fB_field_tesla= .0034875*current;}	
-//if(fabs(current)<70 && fabs(current)>50){fB_field_tesla= .003525*current;}	
-//if(fabs(current)<50 && fabs(current)>30){fB_field_tesla= .003525*current;}  	
-//if(fabs(current)<30){fB_field_tesla= .0035375*current;}  
+  catch(...){ 
+    std::cout<<"Current is probably null. Setting to 0\n";
+    current=0; 
+  }
   calculateBField(current);
   std::cout << "Run: " << fRun << ", Subrun: " << fSubRun << ", B-field: " << fB_field_tesla <<std::endl;
-
 }
 
 //-----------------------------------------------------------------------------
+// Doug Jensen's cubic equation for magnetic field as function of current
 void WCTrackBuilderAlg::calculateBField(float curr ) {
-  // Doug Jensen's cubic equation for magnetic field as function of current
   fB_field_tesla= (-.1538*pow(10,-4)*pow(curr,3)+.2245*pow(10,-2)*pow(curr,2)-.1012*curr+36.59)*curr/10000;
 }
 

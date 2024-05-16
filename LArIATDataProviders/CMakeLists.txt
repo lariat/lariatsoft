@@ -1,3 +1,6 @@
+
+add_subdirectory(pmtcalib)
+
 cet_enable_asserts()
 
 art_make( NO_PLUGINS

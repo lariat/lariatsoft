@@ -5,7 +5,7 @@
 # including data-driven angular distributions and pile-up muons, use
 # the DDMC framework.
 #
-# By default, simulate a 500 MeV/cm pion at -100cm
+# By default, simulate a 500 MeV/cm muon at -100cm
 
 physics.producers.generator.PDG:          [13]
 physics.producers.generator.P0:           [0.500]

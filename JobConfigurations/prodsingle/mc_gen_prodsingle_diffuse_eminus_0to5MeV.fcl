@@ -1,0 +1,6 @@
+#include "mc_gen_prodsingle_diffuse.fcl" 
+outputs.out1.fileName: "prod_eminus_lariat_0to5MeV_gen.root"
+physics.producers.generator.PadOutVectors:  true
+physics.producers.generator.PDG:    [11,11,11,11,11,11,11,11,11,11]
+physics.producers.generator.P0:     [2.7436e-3]
+physics.producers.generator.SigmaP: [2.7436e-3]

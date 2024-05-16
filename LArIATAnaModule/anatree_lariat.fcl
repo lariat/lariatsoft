@@ -17,6 +17,24 @@ services:
   @table::lariat_services
 }
 
+  # Shut up common error messages
+  services.message: {
+    destinations: {
+           STDCOUT: {
+              categories: {
+                 BackTracker: {
+                   limit: 0
+                   reportEvery: 0
+                 }
+              }
+              threshold: "WARNING"
+              type: "cout"
+           }
+    }
+  }
+
+
+
 
 #This defines the input to your fcl file
 #You can start by reading in a ROOT file
