@@ -1,5 +1,4 @@
-#include "anatree_lariat_lc.fcl"
-
+#include "anatree_lariat.fcl"
 physics.analyzers.anatree.ClusterModuleLabel:     "linecluster"
 physics.analyzers.anatree.TrackModuleLabel:       "pmtracklc"
 physics.analyzers.anatree.CalorimetryModuleLabel: "calolc"
