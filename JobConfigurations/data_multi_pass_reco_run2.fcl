@@ -10,4 +10,6 @@ services:
 
 
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run2
+physics.producers.calolc.CaloAlg:             @local::lariat_calorimetryalgdata_run2
+
 physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgdata_run2 

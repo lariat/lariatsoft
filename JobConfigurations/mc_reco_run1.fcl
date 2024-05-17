@@ -16,6 +16,7 @@ physics.producers.caldata.DodQdxCalib:      false
 physics.producers.wctrack:{module_type: DDMCFakeWCTrackBuilder}
 
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgmc_run1
+physics.producers.calolc.CaloAlg:             @local::lariat_calorimetryalgmc_run1
 physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgmc_run1 
 
 physics.producers.wctrack.module_type: DDMCFakeWCTrackBuilder

@@ -21,5 +21,6 @@ physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteral
 physics.producers.trajcluster.TrajClusterAlg:       @local::lariat_trajclusteralg
 
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run1
+physics.producers.calolc.CaloAlg:             @local::lariat_calorimetryalgdata_run1
 physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgdata_run1 
 

@@ -35,7 +35,7 @@ source:
 
 beamlinereco: [ tof, wctrack ]
 tpcrecoOrigin: [ gaushitOrigin, trajclusterOrigin, pmtrackOrigin ]
-tpcreco: [ gaushit, hitnumfilter, trajcluster, pmtrack, calo ]
+tpcreco: [ gaushit, hitnumfilter, trajcluster, pmtrack, calo, linecluster, pmtracklc, calolc ]
 
 fullRecoBeam:   [
                   @sequence::beamlinereco
@@ -71,15 +71,25 @@ physics:
     # tpc producers
     caldata:               @local::lariat_calroi
 
+    # initial 1st-pass
     gaushitOrigin:         @local::lariat_gaushitfinder
     trajclusterOrigin:     @local::lariat_trajcluster
     pmtrackOrigin:         @local::standard_pmalgtrackmaker
 
+    # primary hit producer
     gaushit:               @local::lariat_distortedhitremoval
+
+    # cluster producers
     trajcluster:           @local::lariat_trajcluster
+    linecluster:           @local::standard_linecluster
+    
+    # track and calo producers
     pmtrack:               @local::standard_pmalgtrackmaker
     calo:                  @local::standard_calodata
+    pmtracklc:             @local::standard_pmalgtrackmaker
+    calolc:                @local::standard_calodata
 
+    # wire-chamber track match producer
     wctracktpctrackmatch:  @local::lariat_wctracktpctrackmatch
     wctracktpctrackuniquematch:  @local::lariat_wctracktpctrackmatch
   }
@@ -94,7 +104,11 @@ physics:
 
   analyzers:
   {
-    anatree: @local::lariat_anatree
+    # standard anatree (using trajcluster)
+    anatree:    @local::lariat_anatree
+
+    # using linecluster
+    anatreelc:  @local::lariat_anatree
   }
 
   #define the producer and filter modules for this path, order matters, 
@@ -185,15 +199,15 @@ physics.producers.gaushitOrigin.CalDataModuleLabel: "caldata"
 physics.producers.gaushitOrigin.Chi2NDFRetry:        1000.
 
 # trajcluster settings are centralized in LArSoftConfigurations/cluster_lariat.fcl
-physics.producers.trajclusterOrigin.HitModuleLabel: "gaushitOrigin"
-physics.producers.trajclusterOrigin.HitTruthModuleLabel: "gaushitOrigin"
-physics.producers.trajclusterOrigin.TrajClusterAlg: @local::lariat_trajclusteralg_run2
+physics.producers.trajclusterOrigin.HitModuleLabel:       "gaushitOrigin"
+physics.producers.trajclusterOrigin.HitTruthModuleLabel:  "gaushitOrigin"
+physics.producers.trajclusterOrigin.TrajClusterAlg:       @local::lariat_trajclusteralg_run2
 
-physics.producers.pmtrackOrigin.ClusterModuleLabel: "trajclusterOrigin"
-physics.producers.pmtrackOrigin.HitModuleLabel:     "trajclusterOrigin"
+physics.producers.pmtrackOrigin.ClusterModuleLabel:               "trajclusterOrigin"
+physics.producers.pmtrackOrigin.HitModuleLabel:                   "trajclusterOrigin"
 physics.producers.pmtrackOrigin.PMAlgTracking.MinSeedSize2ndPass: 3
-physics.producers.pmtrackOrigin.PMAlgTracking.FlipToBeam: true
-physics.producers.pmtrackOrigin.PMAlgTracking.RunVertexing: true
+physics.producers.pmtrackOrigin.PMAlgTracking.FlipToBeam:         true
+physics.producers.pmtrackOrigin.PMAlgTracking.RunVertexing:       true
 
 #//////////////////////////////////////////////////////////////////////
 # second pass of TPC-based reconstruction
@@ -219,17 +233,33 @@ physics.producers.trajcluster.HitModuleLabel:         "gaushit"
 physics.producers.trajcluster.HitTruthModuleLabel:    "gaushit"
 physics.producers.trajcluster.TrajClusterAlg:         @local::lariat_trajclusteralg_run2
 
-physics.producers.pmtrack.ClusterModuleLabel:               "trajcluster"
-physics.producers.pmtrack.HitModuleLabel:                   "trajcluster"
-physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass: 3
-physics.producers.pmtrack.PMAlgTracking.FlipToBeam:         true
-physics.producers.pmtrack.PMAlgTracking.RunVertexing:       true
+physics.producers.linecluster.HitFinderModuleLabel:     "gaushit"
+physics.producers.linecluster.ClusterCrawlerAlg:        @local::lariat_clustercrawleralg 
+
+physics.producers.pmtrack.ClusterModuleLabel:                 "trajcluster"
+physics.producers.pmtrack.HitModuleLabel:                     "trajcluster"
+physics.producers.pmtrack.PMAlgTracking.MinSeedSize2ndPass:   3
+physics.producers.pmtrack.PMAlgTracking.FlipToBeam:           true
+physics.producers.pmtrack.PMAlgTracking.RunVertexing:         true
+
+physics.producers.pmtracklc.ClusterModuleLabel:               "linecluster"
+physics.producers.pmtracklc.HitModuleLabel:                   "linecluster"
+physics.producers.pmtracklc.PMAlgTracking.MinSeedSize2ndPass: 3
+physics.producers.pmtracklc.PMAlgTracking.FlipToBeam:         true
+physics.producers.pmtracklc.PMAlgTracking.RunVertexing:       true
+#physics.producers.pmtracklc.PMAlgTracking.AutoFlip_dQdx:      true
 
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgdata_run2  # data
 physics.producers.calo.TrackModuleLabel:      "pmtrack"
 physics.producers.calo.SpacePointModuleLabel: "pmtrack"
 physics.producers.calo.UseArea:               "true"
 physics.producers.calo.FlipTrack_dQdx:        "true"
+
+physics.producers.calolc.CaloAlg:               @local::lariat_calorimetryalgdata_run2  # data
+physics.producers.calolc.TrackModuleLabel:      "pmtracklc"
+physics.producers.calolc.SpacePointModuleLabel: "pmtracklc"
+physics.producers.calolc.UseArea:               "true"
+physics.producers.calolc.FlipTrack_dQdx:        "true"
 
 # These settings now centralized in LArIATRecoModule/wctracktpctrackmatch.fcl
 #physics.producers.wctracktpctrackmatch.AlphaCut:            0.226893
@@ -243,7 +273,15 @@ physics.producers.calo.FlipTrack_dQdx:        "true"
 
 physics.producers.wctracktpctrackuniquematch.UniqueMatchMode:     true
 
-physics.analyzers.anatree.SelectEvents:            [ reco ]
+physics.analyzers.anatree.SelectEvents:             [ reco ]
+physics.analyzers.anatree.ClusterModuleLabel:       "trajcluster"
+physics.analyzers.anatree.TrackModuleLabel:         "pmtrack"
+physics.analyzers.anatree.CalorimetryModuleLabel:   "calo"
+
+physics.analyzers.anatreelc.SelectEvents:           [ reco ]
+physics.analyzers.anatreelc.ClusterModuleLabel:     "linecluster"
+physics.analyzers.anatreelc.TrackModuleLabel:       "pmtracklc"
+physics.analyzers.anatreelc.CalorimetryModuleLabel: "calolc"
   
   # Shut up common error messages
   services.message: {

@@ -15,6 +15,7 @@ physics.producers.caldata.DigitModuleLabel: "daq"
 physics.producers.caldata.DodQdxCalib:      false
 
 physics.producers.calo.CaloAlg:               @local::lariat_calorimetryalgmc_run2
+physics.producers.calolc.CaloAlg:             @local::lariat_calorimetryalgmc_run2
 physics.analyzers.anatree.CalorimetryAlg:     @local::lariat_calorimetryalgmc_run2 
 
 physics.producers.wctrack: { module_type: DDMCFakeWCTrackBuilder }
