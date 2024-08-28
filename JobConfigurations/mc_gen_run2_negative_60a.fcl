@@ -6,3 +6,6 @@ services:
   RandomNumberGenerator: {} 
   @table::lariat_simulation_services_run2_negative_60A
 }
+
+physics.producers.generator.InputFileName: "/exp/lariat/data/users/wforeman/mcgen/negative_60a_pimue/txt/input_merged.txt"
+outputs.out1.fileName: "%p_%tc_neg_60a_pimue_%#.root"

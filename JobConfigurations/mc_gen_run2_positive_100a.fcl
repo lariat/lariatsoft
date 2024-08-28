@@ -6,3 +6,6 @@ services:
   RandomNumberGenerator: {} 
   @table::lariat_simulation_services_run2_positive_100A
 }
+
+physics.producers.generator.InputFileName: "/exp/lariat/data/users/wforeman/mcgen/positive_100a_pimue/txt/input_merged.txt"
+outputs.out1.fileName: "%p_%tc_pos_100a_pimue_%#.root"

@@ -1,5 +1,10 @@
 #include "mc_gen.fcl"
 
+# This fcl runs only the 'generator' stage of the usual workflow present in the 'mc_gen_xxx.fcl'
+# scripts. When using this script, edit the InputFileName for the generator below to correspond
+# to the desired polarity and magnet current. The output of this file will then be fed to the
+# "mc_detsim_xxx.fcl" scripts to run the detector simulation, followed by the matching "mc_reco_xxx.fcl".
+
 process_name: TextProd 
 
 services.TFileService.fileName: "textprod_hist.root" 
