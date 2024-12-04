@@ -1782,7 +1782,7 @@ void lariat::AnaTreeT1034::beginJob()
     fTree->Branch("wctrk_theta",wctrk_theta,"wctrk_theta[nwctrks]/F");
     fTree->Branch("wctrk_phi",wctrk_phi,"wctrk_phi[nwctrks]/F");
     fTree->Branch("wctrk_momentum",wctrk_momentum,"wctrk_momentum[nwctrks]/F");
-    fTree->Branch("wctrk_Px" ,wctrk_Px,"wctrk_Pz[nwctrks]/F");
+    fTree->Branch("wctrk_Px" ,wctrk_Px,"wctrk_Px[nwctrks]/F");
     fTree->Branch("wctrk_Py" ,wctrk_Py,"wctrk_Py[nwctrks]/F");
     fTree->Branch("wctrk_Pz" ,wctrk_Pz,"wctrk_Pz[nwctrks]/F");
     fTree->Branch("wctrk_residual", wctrk_residual,"wctrk_residual[nwctrks]/F");
