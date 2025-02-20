@@ -128,6 +128,7 @@ private:
   TTree* fTree;
   
   // === Enable saving different types of data into tree ===
+  bool  fSaveHits;
   bool  fSaveBeamlineInfo;
   bool  fSaveWireChamberHits;
   bool  fSaveGeantInfo;
@@ -473,6 +474,7 @@ lariat::AnaTreeT1034::~AnaTreeT1034()
 
 void lariat::AnaTreeT1034::reconfigure(fhicl::ParameterSet const & pset)
 {
+  fSaveHits                     = pset.get< bool >      ("SaveHits",              true);
   fSaveBeamlineInfo             = pset.get< bool >      ("SaveBeamlineInfo",      true);
   fSaveWireChamberHits          = pset.get< bool >      ("SaveWireChamberHits",   false);
   fSaveGeantInfo                = pset.get< bool >      ("SaveGeantInfo",         true);
@@ -1743,36 +1745,38 @@ void lariat::AnaTreeT1034::beginJob()
     fTree->Branch("trjPt_Y", trjPt_Y, "trjPt_Y[ntracks_reco][1000]/F");
     fTree->Branch("trjPt_Z", trjPt_Z, "trjPt_Z[ntracks_reco][1000]/F");
   }
-  
-  fTree->Branch("nhits",&nhits,"nhits/I");
-  fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
-  fTree->Branch("hit_wire",hit_wire,"hit_wire[nhits]/I");
-  fTree->Branch("hit_channel",hit_channel,"hit_channel[nhits]/I");
-  fTree->Branch("hit_peakT",hit_peakT,"hit_peakT[nhits]/F");
-  fTree->Branch("hit_driftT",hit_driftT,"hit_driftT[nhits]/F");
-  fTree->Branch("hit_charge",hit_charge,"hit_charge[nhits]/F");
-  fTree->Branch("hit_electrons",hit_electrons,"hit_electrons[nhits]/F");
-  fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/F");
-  fTree->Branch("hit_rms",hit_rms,"hit_rms[nhits]/F");
-  fTree->Branch("hit_g4id",hit_g4id,"hit_g4id[nhits]/I");
-  fTree->Branch("hit_g4frac",hit_g4frac,"hit_g4frac[nhits]/F");
-  fTree->Branch("hit_g4nelec",hit_g4nelec,"hit_g4nelec[nhits]/F");
-  fTree->Branch("hit_g4energy",hit_g4energy,"hit_g4energy[nhits]/F");
-  fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/F");
-  fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/F");
-  fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
-  //fTree->Branch("hit_clusterid",hit_clusterid,"hit_clusterid[nhits]/I"); 
-  //fTree->Branch("hit_pk",hit_pk,"hit_pk[nhits]/I");
-  //fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
-  //fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
-  //fTree->Branch("hit_fwhh",hit_fwhh,"hit_fwhh[nhits]/I");
-  fTree->Branch("hit_dQds", hit_dQds, "hit_dQds[nhits]/F");
-  fTree->Branch("hit_dEds", hit_dEds, "hit_dEds[nhits]/F");
-  fTree->Branch("hit_ds", hit_ds, "hit_ds[nhits]/F");
-  fTree->Branch("hit_resrange", hit_resrange, "hit_resrange[nhits]/F");
-  fTree->Branch("hit_x", hit_x, "hit_x[nhits]/F");
-  fTree->Branch("hit_y", hit_y, "hit_y[nhits]/F");
-  fTree->Branch("hit_z", hit_z, "hit_z[nhits]/F");
+ 
+  if( fSaveHits ) {
+    fTree->Branch("nhits",&nhits,"nhits/I");
+    fTree->Branch("hit_plane",hit_plane,"hit_plane[nhits]/I");
+    fTree->Branch("hit_wire",hit_wire,"hit_wire[nhits]/I");
+    fTree->Branch("hit_channel",hit_channel,"hit_channel[nhits]/I");
+    fTree->Branch("hit_peakT",hit_peakT,"hit_peakT[nhits]/F");
+    fTree->Branch("hit_driftT",hit_driftT,"hit_driftT[nhits]/F");
+    fTree->Branch("hit_charge",hit_charge,"hit_charge[nhits]/F");
+    fTree->Branch("hit_electrons",hit_electrons,"hit_electrons[nhits]/F");
+    fTree->Branch("hit_ph",hit_ph,"hit_ph[nhits]/F");
+    fTree->Branch("hit_rms",hit_rms,"hit_rms[nhits]/F");
+    fTree->Branch("hit_g4id",hit_g4id,"hit_g4id[nhits]/I");
+    fTree->Branch("hit_g4frac",hit_g4frac,"hit_g4frac[nhits]/F");
+    fTree->Branch("hit_g4nelec",hit_g4nelec,"hit_g4nelec[nhits]/F");
+    fTree->Branch("hit_g4energy",hit_g4energy,"hit_g4energy[nhits]/F");
+    fTree->Branch("hit_tstart",hit_tstart,"hit_tstart[nhits]/F");
+    fTree->Branch("hit_tend",hit_tend,"hit_tend[nhits]/F");
+    fTree->Branch("hit_trkid",hit_trkid,"hit_trkid[nhits]/I");
+    //fTree->Branch("hit_clusterid",hit_clusterid,"hit_clusterid[nhits]/I"); 
+    //fTree->Branch("hit_pk",hit_pk,"hit_pk[nhits]/I");
+    //fTree->Branch("hit_t",hit_t,"hit_t[nhits]/I");
+    //fTree->Branch("hit_ch",hit_ch,"hit_ch[nhits]/I");
+    //fTree->Branch("hit_fwhh",hit_fwhh,"hit_fwhh[nhits]/I");
+    fTree->Branch("hit_dQds", hit_dQds, "hit_dQds[nhits]/F");
+    fTree->Branch("hit_dEds", hit_dEds, "hit_dEds[nhits]/F");
+    fTree->Branch("hit_ds", hit_ds, "hit_ds[nhits]/F");
+    fTree->Branch("hit_resrange", hit_resrange, "hit_resrange[nhits]/F");
+    fTree->Branch("hit_x", hit_x, "hit_x[nhits]/F");
+    fTree->Branch("hit_y", hit_y, "hit_y[nhits]/F");
+    fTree->Branch("hit_z", hit_z, "hit_z[nhits]/F");
+  }
  
   if( fSaveBeamlineInfo ) {
     fTree->Branch("beamline_mass", &beamline_mass, "beamline_mass/F");

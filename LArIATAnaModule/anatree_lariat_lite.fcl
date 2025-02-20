@@ -1,0 +1,4 @@
+#include "anatree_lariat.fcl"
+physics.analyzers.anatree.SaveHits:              false
+physics.analyzers.anatree.SaveGeantTrajectories: false
+physics.analyzers.anatree.SaveTrackTrajectories: false
