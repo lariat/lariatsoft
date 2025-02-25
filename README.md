@@ -69,3 +69,20 @@ In order to submit grid jobs, you may need to set up an older version of ```larb
 unsetup larbatch
 setup larbatch v01_59_00
 ```
+
+## Setting up a specific tagged release
+
+On the LArIAT GPVMs, can set up a specific tagged version of `lariatsoft` without having to create a development area and pull the code down from GitHub.
+
+To see which tags are available as well as their corresponding qualifiers (ie, "e17:prof"):
+```bash
+ups list -aK+ lariatsoft
+```
+
+To set up a specific tag, first set up the SL7 container as described above, then do:
+```bash
+source /cvmfs/lariat.opensciencegrid.org/setup_lariat.sh
+setup lariatsoft <tag> -q <qual>
+```
+
+Tagged release `v08_38_01a` includes all development up through February 2025.
