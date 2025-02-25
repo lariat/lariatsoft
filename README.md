@@ -16,7 +16,7 @@ Once logged on, set up the Scientific Linux (SL7) container:
 sh /exp/lariat/data/users/wforeman/SL7/start_SL7dev_jsl.sh
 ```
 
-Then set up a local development area for the first time:
+To set up a local development area for the first time:
 
 ```bash
 USERDIR="/exp/lariat/app/users/<USERNAME>"
@@ -53,10 +53,15 @@ mrb g -d lariatsoft --repo-type github https://github.com/lariat/lariatsoft
 mrbsetenv
 mrb i --generator ninja
 mrbslp
-
 ```
 
-To set up an existing working area:
+If you find that the installation stage fails, try again using only 1 CPU core:
+```bash
+mrb i -j 1 --generator ninja
+mrbslp
+```
+
+To set up an _existing_ working area:
 ```bash
 cd $PROJDIR
 source localProducts*/setup
