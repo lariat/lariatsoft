@@ -25,21 +25,8 @@ QUALS="e17:prof"
 PROJ="lariatsoft_myarea"
 PROJDIR=$USERDIR/$PROJ
 
-# Need this so UPS knows it is always on SL7 (otherwise the
-# setup in the SL7 container on AlmaLinux9 will not work)
-export UPS_OVERRIDE='-H Linux64bit+3.10-2.17'
-
 source /cvmfs/lariat.opensciencegrid.org/setup_lariat.sh
-unsetup mrb
-setup mrb -o
-setup ninja
-
-# Access samweb and jobsub clients
-source /cvmfs/fermilab.opensciencegrid.org/products/common/etc/setups.sh
-
 export MRB_PROJECT=lariatsoft
-SOFTDIR=$PROJDIR
-cd $USERDIR
 
 mkdir -p $PROJDIR
 cd $PROJDIR
@@ -47,8 +34,8 @@ setup lariatsoft $VERSION -q $QUALS
 mrb newDev
 source localProducts*/setup
 mrb g lariatsoft
-  cd $MRB_SOURCE/lariatsoft
-  git checkout develop
+  # To check out a specific tag or branch, uncomment these lines:
+  #cd $MRB_SOURCE/lariatsoft
   #git checkout tags/$VERSION
 mrbsetenv
 mrb i --generator ninja
@@ -69,11 +56,6 @@ setup $MRB_PROJECT $MRB_PROJECT_VERSION -q $MRB_QUALS
 mrbslp
 ```
 
-In order to submit grid jobs, you may need to set up an older version of ```larbatch```:
-```bash
-unsetup larbatch
-setup larbatch v01_59_00
-```
 
 ## Setting up a specific tagged release
 
