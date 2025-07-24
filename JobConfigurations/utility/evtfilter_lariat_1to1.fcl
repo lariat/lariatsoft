@@ -1,3 +1,4 @@
 #include "evtfilter_lariat.fcl"
+outputs.out1.fileName: "%ifb_evtsel_%#.root"
 outputs.out1.fileProperties.maxInputFiles: 1
 

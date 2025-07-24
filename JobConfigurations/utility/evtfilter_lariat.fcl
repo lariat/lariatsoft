@@ -55,5 +55,4 @@ physics.filters.evtfilter.EventList: "events.tsv"
 physics.filters.evtfilter.Selection: 1
 
 outputs.out1.fileName: "%ifb_evtsel_%#.root"
-outputs.out1.fileProperties.maxEvents: 20
 
